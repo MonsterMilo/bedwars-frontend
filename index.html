@@ -17,7 +17,7 @@
   h1 {
     text-align: center;
     margin-bottom: 30px;
-    color: #ff9800; /* Slightly more orange than #ffb74d */
+    color: #ffb74d;
     font-weight: 700;
     letter-spacing: 1px;
   }
@@ -37,7 +37,6 @@
 
   input[type="text"] {
     flex: 1;
-    max-width: 320px; /* Slightly less long */
     padding: 10px 15px;
     border: 1.8px solid #444;
     border-radius: 5px;
@@ -53,13 +52,13 @@
 
   input[type="text"]:focus {
     outline: none;
-    border-color: #ff9800;
-    box-shadow: 0 0 6px #ff9800aa;
+    border-color: #ffb74d;
+    box-shadow: 0 0 6px #ffb74daa;
     background: #2a2a2a;
   }
 
   button {
-    background: #ff9800;
+    background: #ffb74d;
     border: none;
     color: #121212;
     padding: 10px 18px;
@@ -71,7 +70,7 @@
   }
 
   button:hover {
-    background: #ffb347;
+    background: #ffa726;
   }
 
   .checkbox-group label {
@@ -118,7 +117,7 @@
     width: 110px;
     height: 110px;
     border-radius: 50%;
-    border: 2px solid #ff9800;
+    border: 2px solid #ffb74d;
     flex-shrink: 0;
     background: #2a2a2a;
   }
@@ -136,18 +135,17 @@
     align-items: center;
     font-weight: 700;
     font-size: 1.3em;
-    color: #ffc870;
+    color: #ffcc80;
   }
 
   #statsRank {
     padding: 2px 8px;
     border-radius: 5px;
-    background: #663300; /* Different darker background so it doesn't blend */
-    color: #ffb74d;
+    background: #ffb74d;
+    color: #121212;
     min-width: 70px;
     text-align: center;
     font-size: 0.9em;
-    font-weight: 700;
   }
 
   #statsStar {
@@ -217,8 +215,8 @@
 
   #searchInput:focus {
     outline: none;
-    border-color: #ff9800;
-    box-shadow: 0 0 6px #ff9800aa;
+    border-color: #ffb74d;
+    box-shadow: 0 0 6px #ffb74daa;
     background: #2a2a2a;
   }
 
@@ -236,7 +234,7 @@
 
   thead tr {
     background: #4e342e;
-    color: #ff9800;
+    color: #ffb74d;
     font-weight: 700;
     user-select: none;
   }
@@ -265,7 +263,7 @@
   }
 
   button:focus {
-    outline: 2px solid #ff9800;
+    outline: 2px solid #ffb74d;
     outline-offset: 2px;
   }
 
@@ -280,7 +278,7 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 1.5px solid #ff9800;
+    border: 1.5px solid #ffb74d;
     flex-shrink: 0;
   }
 </style>
@@ -399,7 +397,7 @@
 
   async function loadSweats() {
     try {
-      const res = await fetch(`${backendBaseURL}/sweats`);
+      const res = await fetch(${backendBaseURL}/sweats);
       if (!res.ok) throw new Error("Failed to fetch sweats");
       sweats = await res.json();
       renderTable();
@@ -450,236 +448,263 @@
         kdr: currentStats.kdr,
         finals: currentStats.finals,
         finalDeaths: currentStats.finalDeaths,
+        beds: currentStats.beds,
+        bedsLost: currentStats.bedsLost,
         kills: currentStats.kills,
         deaths: currentStats.deaths,
-        wins: currentStats.wins,
-        losses: currentStats.losses,
-        bedsBroken: currentStats.bedsBroken,
-        bedsLost: currentStats.bedsLost,
-        beatenBy: {
-          milo,
-          potat,
-          aballs,
-          zoiv
-        },
+        milo,
+        potat,
+        aballs,
+        zoiv,
+        uuid: currentUUID,
         dateAdded: todayDate
       };
 
-      const res = await fetch(`${backendBaseURL}/sweats`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(${backendBaseURL}/sweats, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newSweat)
       });
-
       if (!res.ok) throw new Error("Failed to add sweat");
 
-      const addedSweat = await res.json();
-      sweats.push(addedSweat);
-      renderTable();
+      // Reload sweats from backend
+      await loadSweats();
 
       form.reset();
-      status.style.color = "#a5d6a7";
-      status.textContent = "Sweat added successfully!";
-
+      currentUUID = null;
+      currentStats = null;
+      statsDisplay.style.display = "none";
     } catch (err) {
-      status.style.color = "#ef5350";
       status.textContent = "Error: " + err.message;
     }
   });
 
+  searchInput.addEventListener('input', () => {
+    currentFilter = searchInput.value.trim().toLowerCase();
+    renderTable();
+  });
+
   async function fetchAndDisplayStats() {
-    const username = document.getElementById('username').value.trim();
-    if (!username) {
+    const usernameInput = document.getElementById('username');
+    const usernameRaw = usernameInput.value.trim();
+    if (!usernameRaw) {
       alert("Please enter a username first.");
-      return;
+      throw new Error("Username missing");
     }
-    status.style.color = "#ff9800";
-    status.textContent = "Fetching stats for " + username + "...";
+    status.textContent = "Fetching stats...";
     statsDisplay.style.display = "none";
 
-    try {
-      // Hypixel API call to fetch Bedwars stats
-      const res = await fetch(`https://api.hypixel.net/player?key=07f45e1c-48ca-4a41-88ac-3c747677da07&name=${username}`);
-      if (!res.ok) throw new Error("Player not found or API error");
-      const data = await res.json();
-      if (!data.success || !data.player) throw new Error("Player not found or no data");
+    // Fetch UUID and corrected capitalization from your backend mojang proxy
+    const resMojang = await fetch(${backendBaseURL}/mojang/${usernameRaw});
+    if (!resMojang.ok) throw new Error("Username not found");
+    const mojangData = await resMojang.json();
 
-      const player = data.player;
-      const bedwarsStats = player.stats?.Bedwars;
+    currentUUID = mojangData.id;
+    usernameInput.value = mojangData.name; // corrected capitalization
 
-      if (!bedwarsStats) throw new Error("No Bedwars stats found");
+    const data = await getPlayerStats(currentUUID);
+    currentStats = {
+      username: mojangData.name,
+      star: calculateStarFromXP(data.exp),
+      fkdr: data.fkdr,
+      wlr: data.wlr,
+      bblr: data.bblr,
+      kdr: data.kdr,
+      finals: data.finals,
+      finalDeaths: data.finalDeaths,
+      beds: data.beds,
+      bedsLost: data.bedsLost,
+      kills: data.kills,
+      deaths: data.deaths,
+      rank: getHypixelRank(data.player),
+      wins: data.wins,
+      losses: data.losses
+    };
 
-      const rank = (player.rank && player.rank !== "NORMAL") ? player.rank : (player.monthlyPackageRank && player.monthlyPackageRank !== "NONE") ? player.monthlyPackageRank : (player.newPackageRank && player.newPackageRank !== "NONE") ? player.newPackageRank : "NONE";
+    updateStatsDisplay(currentStats);
+    status.textContent = "";
+  }
 
-      // Calculations
-      const wins = bedwarsStats.wins_bedwars || 0;
-      const losses = bedwarsStats.losses_bedwars || 0;
-      const kills = bedwarsStats.kills_bedwars || 0;
-      const deaths = bedwarsStats.deaths_bedwars || 0;
-      const bedsBroken = bedwarsStats.beds_broken_bedwars || 0;
-      const bedsLost = bedwarsStats.beds_lost_bedwars || 0;
+  async function getPlayerStats(uuid) {
+    const res = await fetch(${backendBaseURL}/player/${uuid});
+    if (!res.ok) throw new Error("Player stats not found");
+    const json = await res.json();
+    const data = json.player.stats?.Bedwars || {};
 
-      const finals = bedwarsStats.final_kills_bedwars || 0;
-      const finalDeaths = bedwarsStats.final_deaths_bedwars || 0;
+    const exp = data.Experience || 0;
+    const wins = data.wins_bedwars || 0;
+    const losses = data.losses_bedwars || 0;
+    const finalKills = data.final_kills_bedwars || 0;
+    const finalDeaths = data.final_deaths_bedwars || 0;
+    const bedsBroken = data.beds_broken_bedwars || 0;
+    const bedsLost = data.beds_lost_bedwars || 0;
+    const kills = data.kills_bedwars || 0;
+    const deaths = data.deaths_bedwars || 0;
 
-      const wlr = losses === 0 ? wins : (wins / losses).toFixed(2);
-      const fkdr = finalDeaths === 0 ? finals : (finals / finalDeaths).toFixed(2);
-      const kdr = deaths === 0 ? kills : (kills / deaths).toFixed(2);
-      const bblr = bedsLost === 0 ? bedsBroken : (bedsBroken / bedsLost).toFixed(2);
+    const wlr = wins / (losses === 0 ? 1 : losses);
+    const fkdr = finalKills / (finalDeaths === 0 ? 1 : finalDeaths);
+    const kdr = kills / (deaths === 0 ? 1 : deaths);
+    const bblr = bedsLost === 0 ? bedsBroken : bedsBroken / bedsLost;
 
-      const star = player.achievements?.bedwars_level || 0;
+    return {
+      exp,
+      wlr,
+      fkdr,
+      bblr,
+      kdr,
+      finals: finalKills,
+      finalDeaths,
+      wins,
+      losses,
+      beds: bedsBroken,
+      bedsLost,
+      kills,
+      deaths,
+      player: json.player
+    };
+  }
 
-      currentUUID = player.uuid;
-      currentStats = {
-        username: player.displayname || username,
-        star,
-        fkdr: parseFloat(fkdr),
-        wlr: parseFloat(wlr),
-        bblr: parseFloat(bblr),
-        kdr: parseFloat(kdr),
-        finals,
-        finalDeaths,
-        kills,
-        deaths,
-        wins,
-        losses,
-        bedsBroken,
-        bedsLost
-      };
+  function calculateStarFromXP(exp) {
+    if (exp < 0) return 0;
+    let stars = 0;
+    let xpLeft = exp;
+    while (xpLeft >= 0) {
+      let mod100 = stars % 100;
+      let xpNeeded;
+      if (mod100 === 0) xpNeeded = 500;
+      else if (mod100 === 1) xpNeeded = 1000;
+      else if (mod100 === 2) xpNeeded = 2000;
+      else if (mod100 === 3 || mod100 === 4) xpNeeded = 3500;
+      else xpNeeded = 5000;
+      if (xpLeft < xpNeeded) break;
+      xpLeft -= xpNeeded;
+      stars++;
+    }
+    return stars;
+  }
 
-      statsAvatar.src = `https://crafatar.com/avatars/${player.uuid}?size=100&overlay`;
-      statsAvatar.alt = `Player head of ${currentStats.username}`;
-
-      statsUsername.textContent = currentStats.username;
-      statsRank.textContent = rank;
-      statsStar.textContent = `★${star}`;
-
-      statWins.textContent = wins;
-      statFinals.textContent = finals;
-      statKills.textContent = kills;
-      statBeds.textContent = bedsBroken;
-
-      statLosses.textContent = losses;
-      statFinalDeaths.textContent = finalDeaths;
-      statDeaths.textContent = deaths;
-      statBedsLost.textContent = bedsLost;
-
-      statWLR.textContent = wlr;
-      statFKDR.textContent = fkdr;
-      statKDR.textContent = kdr;
-      statBBLR.textContent = bblr;
-
-      statsDisplay.style.display = "flex";
-      status.textContent = "";
-      status.style.color = "#ef5350";
-
-    } catch (err) {
-      status.style.color = "#ef5350";
-      status.textContent = "Error fetching stats: " + err.message;
-      statsDisplay.style.display = "none";
-      currentUUID = null;
-      currentStats = null;
+  function getHypixelRank(player) {
+    if (!player) return {name:"[NONE]", color:"#AAA", prefix:""};
+    const rank = player.rank || player.newPackageRank || player.packageRank || "NONE";
+    switch(rank) {
+      case "ADMIN": return {name:"ADMIN", color:"#FF5555", prefix:"[ADMIN] "};
+      case "MODERATOR": return {name:"MOD", color:"#55FF55", prefix:"[MOD] "};
+      case "MVP_PLUS": return {name:"MVP+", color:"#FFB74D", prefix:"[MVP+] "};
+      case "MVP": return {name:"MVP", color:"#FFB74D", prefix:"[MVP] "};
+      case "VIP_PLUS": return {name:"VIP+", color:"#FFB74D", prefix:"[VIP+] "};
+      case "VIP": return {name:"VIP", color:"#FFB74D", prefix:"[VIP] "};
+      default: return {name:"[NONE]", color:"#AAA", prefix:""};
     }
   }
 
-  function renderTable() {
-    // Filter sweats by search
-    let filteredSweats = sweats.filter(s => s.username.toLowerCase().includes(currentFilter.toLowerCase()));
+  function updateStatsDisplay(stats) {
+    statsAvatar.src = https://crafatar.com/avatars/${currentUUID}?overlay;
+    statsUsername.textContent = stats.username;
+    statsRank.textContent = stats.rank.prefix || "";
+    statsRank.style.color = stats.rank.color;
+    statsStar.textContent = ★${stats.star};
 
-    // Sort sweats
+    statWins.textContent = stats.wins;
+    statFinals.textContent = stats.finals;
+    statKills.textContent = stats.kills;
+    statBeds.textContent = stats.beds;
+
+    statLosses.textContent = stats.losses;
+    statFinalDeaths.textContent = stats.finalDeaths;
+    statDeaths.textContent = stats.deaths;
+    statBedsLost.textContent = stats.bedsLost;
+
+    statWLR.textContent = stats.wlr.toFixed(2);
+    statFKDR.textContent = stats.fkdr.toFixed(2);
+    statKDR.textContent = stats.kdr.toFixed(2);
+    statBBLR.textContent = stats.bblr.toFixed(2);
+
+    statsDisplay.style.display = "flex";
+  }
+
+  function renderTable() {
+    let filteredSweats = sweats.filter(s => s.username.toLowerCase().includes(currentFilter));
+
     if (sortField) {
-      filteredSweats.sort((a, b) => {
-        if (a[sortField] === undefined) return 1;
-        if (b[sortField] === undefined) return -1;
-        if (typeof a[sortField] === "string") {
-          return sortAsc ? a[sortField].localeCompare(b[sortField]) : b[sortField].localeCompare(a[sortField]);
-        } else {
-          return sortAsc ? a[sortField] - b[sortField] : b[sortField] - a[sortField];
-        }
+      filteredSweats.sort((a,b) => {
+        if (a[sortField] < b[sortField]) return sortAsc ? -1 : 1;
+        if (a[sortField] > b[sortField]) return sortAsc ? 1 : -1;
+        return 0;
       });
     }
 
     tableBody.innerHTML = "";
 
-    for (const sweat of filteredSweats) {
-      const tr = document.createElement('tr');
+    filteredSweats.forEach(s => {
+      const tr = document.createElement("tr");
 
-      // Username with avatar
-      const tdUsername = document.createElement('td');
-      tdUsername.className = "user-cell";
-      const avatar = document.createElement('img');
-      avatar.className = "user-avatar";
-      avatar.src = `https://crafatar.com/avatars/${sweat.uuid || ""}?size=32&overlay`;
-      avatar.alt = `Avatar of ${sweat.username}`;
-      tdUsername.appendChild(avatar);
-      const usernameSpan = document.createElement('span');
-      usernameSpan.textContent = sweat.username;
-      tdUsername.appendChild(usernameSpan);
-      tr.appendChild(tdUsername);
+      const usernameTd = document.createElement("td");
+      usernameTd.classList.add('user-cell');
 
-      // Star
-      const tdStar = document.createElement('td');
-      tdStar.textContent = `★${sweat.star || 0}`;
-      tr.appendChild(tdStar);
+      const avatarImg = document.createElement("img");
+      avatarImg.classList.add('user-avatar');
+      avatarImg.src = https://crafatar.com/avatars/${s.uuid}?overlay;
+      avatarImg.alt = Avatar of ${s.username};
 
-      // FKDR
-      const tdFkdr = document.createElement('td');
-      tdFkdr.textContent = sweat.fkdr?.toFixed(2) ?? "0";
-      tr.appendChild(tdFkdr);
+      const usernameText = document.createElement("span");
+      usernameText.textContent = s.username;
 
-      // WLR
-      const tdWlr = document.createElement('td');
-      tdWlr.textContent = sweat.wlr?.toFixed(2) ?? "0";
-      tr.appendChild(tdWlr);
+      usernameTd.appendChild(avatarImg);
+      usernameTd.appendChild(usernameText);
+      tr.appendChild(usernameTd);
 
-      // Beaten By
-      const tdBeatenBy = document.createElement('td');
-      const beatenBy = [];
-      if (sweat.beatenBy?.milo) beatenBy.push("Milo");
-      if (sweat.beatenBy?.potat) beatenBy.push("Potat");
-      if (sweat.beatenBy?.aballs) beatenBy.push("Aballs");
-      if (sweat.beatenBy?.zoiv) beatenBy.push("Zoiv");
-      tdBeatenBy.textContent = beatenBy.join(", ") || "None";
-      tr.appendChild(tdBeatenBy);
+      const starTd = document.createElement("td");
+      starTd.textContent = s.star;
+      tr.appendChild(starTd);
 
-      // Date Added
-      const tdDate = document.createElement('td');
-      const date = new Date(sweat.dateAdded);
-      tdDate.textContent = date.toLocaleDateString();
-      tr.appendChild(tdDate);
+      const fkdrTd = document.createElement("td");
+      fkdrTd.textContent = s.fkdr.toFixed(2);
+      tr.appendChild(fkdrTd);
 
-      // Remove button
-      const tdRemove = document.createElement('td');
-      const btnRemove = document.createElement('button');
-      btnRemove.textContent = "Remove";
-      btnRemove.addEventListener('click', async () => {
-        if (confirm(`Remove sweat entry for ${sweat.username}?`)) {
-          try {
-            const res = await fetch(`${backendBaseURL}/sweats/${sweat._id}`, {
-              method: 'DELETE'
-            });
-            if (!res.ok) throw new Error("Failed to remove sweat");
-            sweats = sweats.filter(s => s._id !== sweat._id);
-            renderTable();
-          } catch (err) {
-            alert("Error removing sweat: " + err.message);
-          }
-        }
-      });
-      tdRemove.appendChild(btnRemove);
-      tr.appendChild(tdRemove);
+      const wlrTd = document.createElement("td");
+      wlrTd.textContent = s.wlr.toFixed(2);
+      tr.appendChild(wlrTd);
+
+      const beatenByTd = document.createElement("td");
+      let beatenBy = [];
+      if (s.milo) beatenBy.push("Milo");
+      if (s.potat) beatenBy.push("Potat");
+      if (s.aballs) beatenBy.push("Aballs");
+      if (s.zoiv) beatenBy.push("Zoiv");
+      beatenByTd.textContent = beatenBy.join(", ");
+      tr.appendChild(beatenByTd);
+
+      const dateTd = document.createElement("td");
+      dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
+      tr.appendChild(dateTd);
+
+      const removeTd = document.createElement("td");
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "Remove";
+      removeBtn.addEventListener("click", () => removeSweat(s._id));
+      removeTd.appendChild(removeBtn);
+      tr.appendChild(removeTd);
 
       tableBody.appendChild(tr);
+    });
+  }
+
+  async function removeSweat(id) {
+    if (!confirm("Are you sure you want to remove this sweat?")) return;
+    try {
+      const res = await fetch(${backendBaseURL}/sweats/${id}, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to remove sweat");
+      await loadSweats();
+    } catch (err) {
+      alert("Error removing sweat: " + err.message);
     }
   }
 
-  // Sorting header click
-  document.querySelectorAll('th.sortable').forEach(th => {
-    th.addEventListener('click', () => {
+  document.querySelectorAll("th.sortable").forEach(th => {
+    th.addEventListener("click", () => {
       const field = th.dataset.sort;
-      if (sortField === field) {
-        sortAsc = !sortAsc;
-      } else {
+      if (sortField === field) sortAsc = !sortAsc;
+      else {
         sortField = field;
         sortAsc = true;
       }
@@ -687,13 +712,7 @@
     });
   });
 
-  // Search filter
-  searchInput.addEventListener('input', () => {
-    currentFilter = searchInput.value;
-    renderTable();
-  });
-
-  // Initial load
+  // Load all sweats on startup
   loadSweats();
 </script>
 

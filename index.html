@@ -475,32 +475,38 @@
     statsDisplay.style.display = 'none';
 
     try {
-      const res = await fetch(`https://bedwars-backend.onrender.com/sweats/${username}`);
-      if (!res.ok) throw new Error('Player not found');
-      const data = await res.json();
+      // First fetch UUID & username from mojang endpoint
+      const resMojang = await fetch(`https://bedwars-backend.onrender.com/mojang/${username}`);
+      if (!resMojang.ok) throw new Error('Username not found');
+      const mojangData = await resMojang.json();
 
-      currentUUID = data.uuid;
+      // Then fetch player stats using UUID
+      const resPlayer = await fetch(`https://bedwars-backend.onrender.com/player/${mojangData.id}`);
+      if (!resPlayer.ok) throw new Error('Player stats not found');
+      const data = await resPlayer.json();
+
+      currentUUID = mojangData.id;
       currentStats = data;
 
-      statsAvatar.src = `https://crafatar.com/avatars/${data.uuid}?size=110&overlay`;
-      statsUsername.textContent = data.username;
+      statsAvatar.src = `https://crafatar.com/avatars/${mojangData.id}?size=110&overlay=true`;
+      statsUsername.textContent = mojangData.name;
       statsRank.textContent = data.rank || '';
-      statsStar.textContent = `★${data.star}`;
+      statsStar.textContent = `★${data.star || 0}`;
       
-      statWins.textContent = data.wins;
-      statFinals.textContent = data.finals;
-      statKills.textContent = data.kills;
-      statBeds.textContent = data.bedsBroken;
+      statWins.textContent = data.wins || 0;
+      statFinals.textContent = data.finals || 0;
+      statKills.textContent = data.kills || 0;
+      statBeds.textContent = data.bedsBroken || 0;
 
-      statLosses.textContent = data.losses;
-      statFinalDeaths.textContent = data.finalDeaths;
-      statDeaths.textContent = data.deaths;
-      statBedsLost.textContent = data.bedsLost;
+      statLosses.textContent = data.losses || 0;
+      statFinalDeaths.textContent = data.finalDeaths || 0;
+      statDeaths.textContent = data.deaths || 0;
+      statBedsLost.textContent = data.bedsLost || 0;
 
-      statWLR.textContent = data.wlr.toFixed(2);
-      statFKDR.textContent = data.fkdr.toFixed(2);
-      statKDR.textContent = data.kdr.toFixed(2);
-      statBBLR.textContent = data.bblr.toFixed(2);
+      statWLR.textContent = (data.wlr || 0).toFixed(2);
+      statFKDR.textContent = (data.fkdr || 0).toFixed(2);
+      statKDR.textContent = (data.kdr || 0).toFixed(2);
+      statBBLR.textContent = (data.bblr || 0).toFixed(2);
 
       statsDisplay.style.display = 'block';
       status.textContent = '';
@@ -510,79 +516,79 @@
       statsDisplay.style.display = 'none';
       currentUUID = null;
       currentStats = null;
+      console.error(err);
     }
   }
 
-  // Fetch button click handler
-  fetchBtn.addEventListener('click', async () => {
-    const username = document.getElementById('username').value.trim();
-    if (!username) {
-      status.textContent = 'Please enter a username to fetch stats.';
-      return;
-    }
-    await fetchStats(username);
-  });
-
-  // Form submission handler to add sweat
+  // Add sweat submit handler
   form.addEventListener('submit', async e => {
     e.preventDefault();
-
+    status.textContent = '';
     if (!currentUUID || !currentStats) {
-      status.textContent = 'Fetch a valid player first before adding.';
+      status.textContent = 'Please fetch valid player stats before adding sweat.';
       return;
     }
-
-    const usernameInput = document.getElementById('username').value.trim();
-    if (!usernameInput || usernameInput.toLowerCase() !== currentStats.username.toLowerCase()) {
-      status.textContent = 'Username input does not match fetched player.';
-      return;
-    }
-
-    // Collect beaten by checked boxes
+    const username = statsUsername.textContent;
     const beatenBy = [];
-    if(document.getElementById('milo').checked) beatenBy.push('Milo');
-    if(document.getElementById('potat').checked) beatenBy.push('Potat');
-    if(document.getElementById('aballs').checked) beatenBy.push('Aballs');
-    if(document.getElementById('zoiv').checked) beatenBy.push('Zoiv');
+    if (document.getElementById('milo').checked) beatenBy.push('Milo');
+    if (document.getElementById('potat').checked) beatenBy.push('Potat');
+    if (document.getElementById('aballs').checked) beatenBy.push('Aballs');
+    if (document.getElementById('zoiv').checked) beatenBy.push('Zoiv');
 
-    // Build payload
-    const payload = {
+    if (beatenBy.length === 0) {
+      status.textContent = 'Please check at least one checkbox to indicate who beat this player.';
+      return;
+    }
+
+    // Prepare sweat object to send
+    const sweatData = {
       uuid: currentUUID,
-      username: currentStats.username,
-      beatenBy,
-      star: currentStats.star,
-      fkdr: currentStats.fkdr,
-      wlr: currentStats.wlr,
+      username: username,
+      star: currentStats.star || 0,
+      fkdr: currentStats.fkdr || 0,
+      wlr: currentStats.wlr || 0,
+      beatenBy: beatenBy,
       dateAdded: new Date().toISOString()
     };
-
-    status.textContent = 'Adding sweat...';
 
     try {
       const res = await fetch('https://bedwars-backend.onrender.com/sweats', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(sweatData)
       });
       if (!res.ok) throw new Error('Failed to add sweat');
 
-      const newSweat = await res.json();
-      sweats.push(newSweat);
+      // Update local sweats list and re-render
+      sweats.push(sweatData);
       renderTable();
-      status.textContent = `Added sweat for ${newSweat.username}!`;
 
-      // Reset checkboxes
-      ['milo', 'potat', 'aballs', 'zoiv'].forEach(id => {
-        document.getElementById(id).checked = false;
-      });
+      // Reset form and stats display
+      form.reset();
+      statsDisplay.style.display = 'none';
+      currentUUID = null;
+      currentStats = null;
+      status.textContent = `Added sweat for ${username}.`;
 
     } catch (err) {
       status.textContent = 'Error adding sweat.';
+      console.error(err);
     }
   });
 
-  // Initial load
+  // Fetch button handler
+  fetchBtn.addEventListener('click', () => {
+    const usernameInput = document.getElementById('username').value.trim();
+    if (!usernameInput) {
+      status.textContent = 'Please enter a username.';
+      return;
+    }
+    fetchStats(usernameInput);
+  });
+
+  // On page load
   fetchSweats();
+
 </script>
 
 </body>

@@ -480,54 +480,53 @@
    // Fetch stats from API and show in statsDisplay
  async function fetchStats(username) {
    if (!username) return;
-
+ 
    status.textContent = 'Loading stats...';
    statsDisplay.style.display = 'none';
 
    try {
-     // First fetch UUID & username from mojang endpoint
+     // Fetch UUID & username from mojang endpoint
      const resMojang = await fetch(`https://bedwars-backend.onrender.com/mojang/${username}`);
      if (!resMojang.ok) throw new Error('Username not found');
      const mojangData = await resMojang.json();
 
-     // Then fetch player stats using UUID
+     // Fetch player stats using UUID
      const resPlayer = await fetch(`https://bedwars-backend.onrender.com/player/${mojangData.id}`);
      if (!resPlayer.ok) throw new Error('Player stats not found');
      const data = await resPlayer.json();
 
-     console.log('Player data:', data); // <-- Add this here
+     console.log('Player data:', data);
+     const stats = data.player.stats || {};
 
      currentUUID = mojangData.id;
-     currentStats = data;
-
-     const p = data.player;  // Use the player property here
+     currentStats = stats;
 
      statsAvatar.src = `https://crafatar.com/avatars/${mojangData.id}?size=110&overlay=true`;
      statsUsername.textContent = mojangData.name;
-     statsRank.textContent = p.rank || '';
-     statsStar.textContent = `★${p.star || 0}`;
+     statsRank.textContent = data.player.monthlyPackageRank || ''; // Adjust if rank is stored elsewhere
+     statsStar.textContent = `★${stats.star || 0}`;
 
-     statWins.textContent = p.wins || 0;
-     statFinals.textContent = p.finals || 0;
-     statKills.textContent = p.kills || 0;
-     statBeds.textContent = p.bedsBroken || 0;
+     statWins.textContent = stats.wins || 0;
+     statFinals.textContent = stats.finals || 0;
+     statKills.textContent = stats.kills || 0;
+     statBeds.textContent = stats.beds_broken || 0;
 
-     statLosses.textContent = p.losses || 0;
-     statFinalDeaths.textContent = p.finalDeaths || 0;
-     statDeaths.textContent = p.deaths || 0;
-     statBedsLost.textContent = p.bedsLost || 0;
+     statLosses.textContent = stats.losses || 0;
+     statFinalDeaths.textContent = stats.final_deaths || 0;
+     statDeaths.textContent = stats.deaths || 0;
+     statBedsLost.textContent = stats.beds_lost || 0;
 
-     statWLR.textContent = (p.wlr || 0).toFixed(2);
-     statFKDR.textContent = (p.fkdr || 0).toFixed(2);
-     statKDR.textContent = (p.kdr || 0).toFixed(2);
-     statBBLR.textContent = (p.bblr || 0).toFixed(2);
+     statWLR.textContent = (stats.wlr || 0).toFixed(2);
+     statFKDR.textContent = (stats.fkdr || 0).toFixed(2);
+     statKDR.textContent = (stats.kdr || 0).toFixed(2);
+     statBBLR.textContent = (stats.bblr || 0).toFixed(2);
 
      statsDisplay.style.display = 'block';
-     status.textContent = ''; 
+     status.textContent = '';
 
    } catch (err) {
      status.textContent = 'Player not found or error fetching stats.';
-    statsDisplay.style.display = 'none';
+     statsDisplay.style.display = 'none';
      currentUUID = null;
      currentStats = null;
      console.error(err);

@@ -477,60 +477,60 @@
     renderTable();
   });
 
-  // Fetch stats from API and show in statsDisplay
-  async function fetchStats(username) {
-    if (!username) return;
+   // Fetch stats from API and show in statsDisplay
+ async function fetchStats(username) {
+   if (!username) return;
 
-    status.textContent = 'Loading stats...';
+   status.textContent = 'Loading stats...';
+   statsDisplay.style.display = 'none';
+
+   try {
+     // First fetch UUID & username from mojang endpoint
+     const resMojang = await fetch(`https://bedwars-backend.onrender.com/mojang/${username}`);
+     if (!resMojang.ok) throw new Error('Username not found');
+     const mojangData = await resMojang.json();
+
+     // Then fetch player stats using UUID
+     const resPlayer = await fetch(`https://bedwars-backend.onrender.com/player/${mojangData.id}`);
+     if (!resPlayer.ok) throw new Error('Player stats not found');
+     const data = await resPlayer.json();
+
+     currentUUID = mojangData.id;
+     currentStats = data;
+
+     const p = data.player;  // Use the player property here
+
+     statsAvatar.src = `https://crafatar.com/avatars/${mojangData.id}?size=110&overlay=true`;
+     statsUsername.textContent = mojangData.name;
+     statsRank.textContent = p.rank || '';
+     statsStar.textContent = `★${p.star || 0}`;
+
+     statWins.textContent = p.wins || 0;
+     statFinals.textContent = p.finals || 0;
+     statKills.textContent = p.kills || 0;
+     statBeds.textContent = p.bedsBroken || 0;
+
+     statLosses.textContent = p.losses || 0;
+     statFinalDeaths.textContent = p.finalDeaths || 0;
+     statDeaths.textContent = p.deaths || 0;
+     statBedsLost.textContent = p.bedsLost || 0;
+
+     statWLR.textContent = (p.wlr || 0).toFixed(2);
+     statFKDR.textContent = (p.fkdr || 0).toFixed(2);
+     statKDR.textContent = (p.kdr || 0).toFixed(2);
+     statBBLR.textContent = (p.bblr || 0).toFixed(2);
+
+     statsDisplay.style.display = 'block';
+     status.textContent = ''; 
+
+   } catch (err) {
+     status.textContent = 'Player not found or error fetching stats.';
     statsDisplay.style.display = 'none';
-
-    try {
-      // First fetch UUID & username from mojang endpoint
-      const resMojang = await fetch(`https://bedwars-backend.onrender.com/mojang/${username}`);
-      if (!resMojang.ok) throw new Error('Username not found');
-      const mojangData = await resMojang.json();
-
-      // Then fetch player stats using UUID
-      const resPlayer = await fetch(`https://bedwars-backend.onrender.com/player/${mojangData.id}`);
-      if (!resPlayer.ok) throw new Error('Player stats not found');
-      const data = await resPlayer.json();
-
-      console.log('Player data:', data);  // <--- Add this line here
-
-      currentUUID = mojangData.id;
-      currentStats = data;
-
-      statsAvatar.src = `https://crafatar.com/avatars/${mojangData.id}?size=110&overlay=true`;
-      statsUsername.textContent = mojangData.name;
-      statsRank.textContent = data.rank || '';
-      statsStar.textContent = `★${data.star || 0}`;
-      
-      statWins.textContent = data.wins || 0;
-      statFinals.textContent = data.finals || 0;
-      statKills.textContent = data.kills || 0;
-      statBeds.textContent = data.bedsBroken || 0;
-
-      statLosses.textContent = data.losses || 0;
-      statFinalDeaths.textContent = data.finalDeaths || 0;
-      statDeaths.textContent = data.deaths || 0;
-      statBedsLost.textContent = data.bedsLost || 0;
-
-      statWLR.textContent = (data.wlr || 0).toFixed(2);
-      statFKDR.textContent = (data.fkdr || 0).toFixed(2);
-      statKDR.textContent = (data.kdr || 0).toFixed(2);
-      statBBLR.textContent = (data.bblr || 0).toFixed(2);
-
-      statsDisplay.style.display = 'block';
-      status.textContent = '';
-
-    } catch (err) {
-      status.textContent = 'Player not found or error fetching stats.';
-      statsDisplay.style.display = 'none';
-      currentUUID = null;
-      currentStats = null;
-      console.error(err);
-    }
-  }
+     currentUUID = null;
+     currentStats = null;
+     console.error(err);
+   }
+ }
 
   // Add sweat submit handler
   form.addEventListener('submit', async e => {

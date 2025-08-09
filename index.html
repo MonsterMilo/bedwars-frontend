@@ -270,17 +270,17 @@
   /* Added avatar in table row */
   .user-cell {
     display: flex;
-    align-items: center; /* already there */
+    align-items: center;
     gap: 10px;
-    padding-bottom: 0; /* or reduce if needed */
-    line-height: 1.2;   /* ensure consistent line height */
   }
 
   .user-avatar {
-    display: block; /* prevent inline gaps */
-    margin-bottom: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid #f3a023;
+    flex-shrink: 0;
   }
-
 </style>
 </head>
 <body>

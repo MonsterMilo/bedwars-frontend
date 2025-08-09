@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Bedwars Sweat Tracker</title>
 <style>
-  /* Reset some default styles */
+  /* Reset and dark background */
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f5f7fa;
-    color: #333;
+    background: #121212;
+    color: #e0e0e0;
     margin: 20px;
     line-height: 1.4;
   }
@@ -17,7 +17,7 @@
   h1 {
     text-align: center;
     margin-bottom: 30px;
-    color: #2c3e50;
+    color: #90caf9;
     font-weight: 700;
     letter-spacing: 1px;
   }
@@ -25,10 +25,10 @@
   #form-container {
     max-width: 700px;
     margin: 0 auto 40px;
-    background: #fff;
+    background: #1e1e1e;
     padding: 20px 25px;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgb(0 0 0 / 0.1);
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.7);
   }
 
   form > div {
@@ -38,31 +38,39 @@
   input[type="text"] {
     flex: 1;
     padding: 10px 15px;
-    border: 1.8px solid #ccc;
+    border: 1.8px solid #444;
     border-radius: 5px;
     font-size: 16px;
+    background: #222;
+    color: #e0e0e0;
     transition: border-color 0.3s;
+  }
+
+  input[type="text"]::placeholder {
+    color: #777;
   }
 
   input[type="text"]:focus {
     outline: none;
-    border-color: #2980b9;
-    box-shadow: 0 0 5px #2980b9aa;
+    border-color: #90caf9;
+    box-shadow: 0 0 6px #90caf9aa;
+    background: #2a2a2a;
   }
 
   button {
-    background: #2980b9;
+    background: #90caf9;
     border: none;
-    color: white;
+    color: #121212;
     padding: 10px 18px;
     font-size: 16px;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.25s;
+    font-weight: 700;
   }
 
   button:hover {
-    background: #1c5980;
+    background: #64b5f6;
   }
 
   .checkbox-group label {
@@ -70,26 +78,32 @@
     font-weight: 600;
     user-select: none;
     cursor: pointer;
+    color: #bbb;
+  }
+
+  .checkbox-group input[type="checkbox"] {
+    cursor: pointer;
   }
 
   #status {
     margin-top: 10px;
     min-height: 22px;
-    color: #e74c3c;
+    color: #ef5350;
     font-weight: 600;
   }
 
   #statsDisplay {
-    display: none; /* will be set to flex by script */
+    display: none; /* toggled by script */
     max-width: 700px;
     margin: 0 auto 40px;
-    background: white;
+    background: #1e1e1e;
     padding: 15px 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 10px rgb(0 0 0 / 0.1);
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.7);
     align-items: center;
     gap: 15px;
     flex-wrap: wrap;
+    color: #e0e0e0;
   }
 
   #statsContent {
@@ -103,9 +117,9 @@
     width: 110px;
     height: 110px;
     border-radius: 50%;
-    border: 2px solid #2980b9;
+    border: 2px solid #90caf9;
     flex-shrink: 0;
-    background: #ecf0f1;
+    background: #2a2a2a;
   }
 
   #statsRight {
@@ -121,21 +135,21 @@
     align-items: center;
     font-weight: 700;
     font-size: 1.3em;
-    color: #34495e;
+    color: #bbdefb;
   }
 
   #statsRank {
     padding: 2px 8px;
     border-radius: 5px;
-    background: #2980b9;
-    color: white;
+    background: #90caf9;
+    color: #121212;
     min-width: 70px;
     text-align: center;
     font-size: 0.9em;
   }
 
   #statsStar {
-    color: #f39c12;
+    color: #ffb74d;
     font-size: 1.4em;
   }
 
@@ -153,7 +167,7 @@
 
   .stat-label {
     font-size: 0.85em;
-    color: #7f8c8d;
+    color: #90a4ae;
     margin-top: 6px;
     font-weight: 600;
   }
@@ -161,19 +175,19 @@
   .stat-value {
     font-size: 1.1em;
     font-weight: 700;
-    color: #2c3e50;
+    color: #e0e0e0;
   }
 
   .stat-column.good .stat-value {
-    color: #27ae60; /* green */
+    color: #81c784; /* green */
   }
 
   .stat-column.bad .stat-value {
-    color: #c0392b; /* red */
+    color: #e57373; /* red */
   }
 
   .stat-column.neutral .stat-value {
-    color: #8e44ad; /* purple */
+    color: #ba68c8; /* purple */
   }
 
   #searchContainer {
@@ -188,15 +202,22 @@
     max-width: 400px;
     padding: 8px 12px;
     font-size: 16px;
-    border: 1.5px solid #ccc;
+    border: 1.5px solid #444;
     border-radius: 5px;
+    background: #222;
+    color: #e0e0e0;
     transition: border-color 0.3s;
+  }
+
+  #searchInput::placeholder {
+    color: #777;
   }
 
   #searchInput:focus {
     outline: none;
-    border-color: #2980b9;
-    box-shadow: 0 0 6px #2980b9aa;
+    border-color: #90caf9;
+    box-shadow: 0 0 6px #90caf9aa;
+    background: #2a2a2a;
   }
 
   table {
@@ -204,15 +225,16 @@
     max-width: 900px;
     margin: 0 auto 40px;
     border-collapse: collapse;
-    background: #fff;
+    background: #1e1e1e;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.7);
+    color: #e0e0e0;
   }
 
   thead tr {
-    background: #2980b9;
-    color: white;
+    background: #263238;
+    color: #90caf9;
     font-weight: 700;
     user-select: none;
   }
@@ -220,12 +242,12 @@
   th, td {
     padding: 12px 15px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #444;
     vertical-align: middle;
   }
 
   tbody tr:hover {
-    background: #ecf0f1;
+    background: #333;
   }
 
   th.sortable {
@@ -233,7 +255,7 @@
   }
 
   th.sortable:hover {
-    background: #1c5980;
+    background: #455a64;
   }
 
   button {
@@ -241,7 +263,7 @@
   }
 
   button:focus {
-    outline: 2px solid #2980b9;
+    outline: 2px solid #90caf9;
     outline-offset: 2px;
   }
 </style>
@@ -666,7 +688,6 @@
 
   // Load all sweats on startup
   loadSweats();
-
 </script>
 
 </body>

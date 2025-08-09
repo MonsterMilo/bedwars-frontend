@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Bedwars Sweat Tracker</title>
 <style>
-  /* Reset and dark background */
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #121212;
@@ -17,13 +16,13 @@
   h1 {
     text-align: center;
     margin-bottom: 30px;
-    color: #ffb74d;
+    color: #ff8c00; /* darker orange */
     font-weight: 700;
     letter-spacing: 1px;
   }
 
   #form-container {
-    max-width: 1080px;
+    max-width: 480px; /* smaller width for form */
     margin: 0 auto 40px;
     background: #1e1e1e;
     padding: 20px 25px;
@@ -52,13 +51,13 @@
 
   input[type="text"]:focus {
     outline: none;
-    border-color: #ffb74d;
-    box-shadow: 0 0 6px #ffb74daa;
+    border-color: #ff8c00;
+    box-shadow: 0 0 6px #ff8c0022;
     background: #2a2a2a;
   }
 
   button {
-    background: #ffb74d;
+    background: #ff8c00;
     border: none;
     color: #121212;
     padding: 10px 18px;
@@ -70,7 +69,7 @@
   }
 
   button:hover {
-    background: #ffa726;
+    background: #e67600;
   }
 
   .checkbox-group label {
@@ -93,8 +92,8 @@
   }
 
   #statsDisplay {
-    display: none; /* toggled by script */
-    max-width: 1080px;
+    display: none;
+    max-width: 480px;
     margin: 0 auto 40px;
     background: #1e1e1e;
     padding: 15px 20px;
@@ -117,7 +116,7 @@
     width: 110px;
     height: 110px;
     border-radius: 50%;
-    border: 2px solid #ffb74d;
+    border: 2px solid #ff8c00;
     flex-shrink: 0;
     background: #2a2a2a;
   }
@@ -135,21 +134,21 @@
     align-items: center;
     font-weight: 700;
     font-size: 1.3em;
-    color: #ffcc80;
+    color: #ffb84d;
   }
 
   #statsRank {
     padding: 2px 8px;
     border-radius: 5px;
-    background: #ffb74d;
-    color: #121212;
+    background: #bf5700; /* deeper orange background */
+    color: #ffb84d; /* lighter orange text */
     min-width: 70px;
     text-align: center;
     font-size: 0.9em;
   }
 
   #statsStar {
-    color: #ffb300;
+    color: #ff9f00;
     font-size: 1.4em;
   }
 
@@ -167,7 +166,7 @@
 
   .stat-label {
     font-size: 0.85em;
-    color: #b28704;
+    color: #cc7a00;
     margin-top: 6px;
     font-weight: 600;
   }
@@ -215,14 +214,14 @@
 
   #searchInput:focus {
     outline: none;
-    border-color: #ffb74d;
-    box-shadow: 0 0 6px #ffb74daa;
+    border-color: #ff8c00;
+    box-shadow: 0 0 6px #ff8c0022;
     background: #2a2a2a;
   }
 
   table {
     width: 100%;
-    max-width: 1080px;
+    max-width: 1080px; /* wider table */
     margin: 0 auto 40px;
     border-collapse: collapse;
     background: #1e1e1e;
@@ -234,7 +233,7 @@
 
   thead tr {
     background: #4e342e;
-    color: #ffb74d;
+    color: #ff8c00;
     font-weight: 700;
     user-select: none;
   }
@@ -244,6 +243,11 @@
     text-align: left;
     border-bottom: 1px solid #444;
     vertical-align: middle;
+  }
+
+  /* Fix for bottom border alignment in username column */
+  tbody tr td:first-child {
+    border-bottom: 1px solid #444;
   }
 
   tbody tr:hover {
@@ -258,16 +262,7 @@
     background: #6d4c41;
   }
 
-  button {
-    font-weight: 600;
-  }
-
-  button:focus {
-    outline: 2px solid #ffb74d;
-    outline-offset: 2px;
-  }
-
-  /* Added avatar in table row */
+  /* Avatar + username styling in table */
   .user-cell {
     display: flex;
     align-items: center;
@@ -278,8 +273,17 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 1.5px solid #ffb74d;
+    border: 1.5px solid #ff8c00;
     flex-shrink: 0;
+  }
+
+  button {
+    font-weight: 600;
+  }
+
+  button:focus {
+    outline: 2px solid #ff8c00;
+    outline-offset: 2px;
   }
 </style>
 </head>
@@ -467,7 +471,6 @@
       });
       if (!res.ok) throw new Error("Failed to add sweat");
 
-      // Reload sweats from backend
       await loadSweats();
 
       form.reset();
@@ -494,13 +497,13 @@
     status.textContent = "Fetching stats...";
     statsDisplay.style.display = "none";
 
-    // Fetch UUID and corrected capitalization from your backend mojang proxy
+    // Fetch UUID and corrected capitalization
     const resMojang = await fetch(`${backendBaseURL}/mojang/${usernameRaw}`);
     if (!resMojang.ok) throw new Error("Username not found");
     const mojangData = await resMojang.json();
 
     currentUUID = mojangData.id;
-    usernameInput.value = mojangData.name; // corrected capitalization
+    usernameInput.value = mojangData.name;
 
     const data = await getPlayerStats(currentUUID);
     currentStats = {
@@ -527,11 +530,11 @@
 
   async function getPlayerStats(uuid) {
     const res = await fetch(`${backendBaseURL}/player/${uuid}`);
-    if (!res.ok) throw new Error("Player stats not found");
+    if (!res.ok) throw new Error("Failed to fetch player data");
     const json = await res.json();
-    const data = json.player.stats?.Bedwars || {};
+    const data = json.stats?.Bedwars || {};
 
-    const exp = data.Experience || 0;
+    const exp = data.experience || 0;
     const wins = data.wins_bedwars || 0;
     const losses = data.losses_bedwars || 0;
     const finalKills = data.final_kills_bedwars || 0;
@@ -589,10 +592,10 @@
     switch(rank) {
       case "ADMIN": return {name:"ADMIN", color:"#FF5555", prefix:"[ADMIN] "};
       case "MODERATOR": return {name:"MOD", color:"#55FF55", prefix:"[MOD] "};
-      case "MVP_PLUS": return {name:"MVP+", color:"#FFB74D", prefix:"[MVP+] "};
-      case "MVP": return {name:"MVP", color:"#FFB74D", prefix:"[MVP] "};
-      case "VIP_PLUS": return {name:"VIP+", color:"#FFB74D", prefix:"[VIP+] "};
-      case "VIP": return {name:"VIP", color:"#FFB74D", prefix:"[VIP] "};
+      case "MVP_PLUS": return {name:"MVP+", color:"#FF8c00", prefix:"[MVP+] "};
+      case "MVP": return {name:"MVP", color:"#FF8c00", prefix:"[MVP] "};
+      case "VIP_PLUS": return {name:"VIP+", color:"#FF8c00", prefix:"[VIP+] "};
+      case "VIP": return {name:"VIP", color:"#FF8c00", prefix:"[VIP] "};
       default: return {name:"[NONE]", color:"#AAA", prefix:""};
     }
   }

@@ -475,7 +475,7 @@
     statsDisplay.style.display = 'none';
 
     try {
-      const res = await fetch(`https://bedwars-backend.onrender.com/stats/${username}`);
+      const res = await fetch(`https://bedwars-backend.onrender.com/sweats/${username}`);
       if (!res.ok) throw new Error('Player not found');
       const data = await res.json();
 

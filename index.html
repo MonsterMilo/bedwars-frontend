@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Bedwars Sweat Tracker</title>
 <style>
+  /* Your existing CSS unchanged */
   body {
     background: #121212;
     color: #ddd;
@@ -398,44 +399,46 @@
   }
 
   // Render table rows
-function renderTable() {
-  let filtered = sweats.filter(s => s.username.toLowerCase().includes(currentFilter));
-  if (sortField) {
-    filtered.sort((a,b) => {
-      if(sortField === 'dateAdded') {
-        return sortAsc ? new Date(a.dateAdded) - new Date(b.dateAdded) : new Date(b.dateAdded) - new Date(a.dateAdded);
-      }
-      if (typeof a[sortField] === 'number' && typeof b[sortField] === 'number') {
-        return sortAsc ? a[sortField] - b[sortField] : b[sortField] - a[sortField];
-      }
-      if (typeof a[sortField] === 'string' && typeof b[sortField] === 'string') {
-        return sortAsc ? a[sortField].localeCompare(b[sortField]) : b[sortField].localeCompare(a[sortField]);
-      }
-      return 0;
-    });
+  function renderTable() {
+    let filtered = sweats.filter(s => 
+      (s.username && s.username.toLowerCase().includes(currentFilter))
+    );
+
+    if (sortField) {
+      filtered.sort((a,b) => {
+        if(sortField === 'dateAdded') {
+          return sortAsc ? new Date(a.dateAdded) - new Date(b.dateAdded) : new Date(b.dateAdded) - new Date(a.dateAdded);
+        }
+        if (typeof a[sortField] === 'number' && typeof b[sortField] === 'number') {
+          return sortAsc ? a[sortField] - b[sortField] : b[sortField] - a[sortField];
+        }
+        if (typeof a[sortField] === 'string' && typeof b[sortField] === 'string') {
+          return sortAsc ? a[sortField].localeCompare(b[sortField]) : b[sortField].localeCompare(a[sortField]);
+        }
+        return 0;
+      });
+    }
+
+    tableBody.innerHTML = filtered.map(s => `
+      <tr>
+        <td class="username-cell">
+          <img
+            class="avatar-small"
+            src="https://crafatar.com/avatars/${s.uuid || ''}?size=32&overlay"
+            alt="${s.username || 'Unknown'} avatar"
+            onerror="this.onerror=null;this.src='fallback-avatar.png';"
+          />
+          ${s.username || 'Unknown'}
+        </td>
+        <td>${typeof s.star === 'number' ? s.star : 0}</td>
+        <td>${typeof s.fkdr === 'number' ? s.fkdr.toFixed(2) : '0.00'}</td>
+        <td>${typeof s.wlr === 'number' ? s.wlr.toFixed(2) : '0.00'}</td>
+        <td>${Array.isArray(s.beatenBy) ? s.beatenBy.join(', ') : '-'}</td>
+        <td>${s.dateAdded ? new Date(s.dateAdded).toLocaleDateString() : '-'}</td>
+        <td><button class="remove-btn" aria-label="Remove ${s.username || ''} from sweats" data-uuid="${s.uuid || ''}">&times;</button></td>
+      </tr>
+    `).join('');
   }
-
-  tableBody.innerHTML = filtered.map(s => `
-    <tr>
-      <td class="username-cell">
-        <img
-          class="avatar-small"
-          src="https://crafatar.com/avatars/${s.uuid}?size=32&overlay"
-          alt="${s.username} avatar"
-          onerror="this.onerror=null;this.src='fallback-avatar.png';"
-        />
-        ${s.username}
-      </td>
-      <td>${s.star}</td>
-      <td>${s.fkdr.toFixed(2)}</td>
-      <td>${s.wlr.toFixed(2)}</td>
-      <td>${Array.isArray(s.beatenBy) ? s.beatenBy.join(', ') : '-'}</td>
-      <td>${new Date(s.dateAdded).toLocaleDateString()}</td>
-      <td><button class="remove-btn" aria-label="Remove ${s.username} from sweats" data-uuid="${s.uuid}">&times;</button></td>
-    </tr>
-  `).join('');
-}
-
 
   // Sorting handler
   document.querySelectorAll('th.sortable').forEach(th => {

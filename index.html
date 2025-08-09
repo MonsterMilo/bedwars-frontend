@@ -389,6 +389,7 @@
       const res = await fetch('https://bedwars-backend.onrender.com/sweats');
       if (!res.ok) throw new Error('Failed to fetch sweats');
       sweats = await res.json();
+      console.log('Sweats fetched:', sweats);
       renderTable();
     } catch (e) {
       status.textContent = 'Error loading sweat list.';

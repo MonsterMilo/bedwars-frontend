@@ -397,7 +397,7 @@
 
   async function loadSweats() {
     try {
-      const res = await fetch(${backendBaseURL}/sweats);
+      const res = await fetch(`${backendBaseURL}/sweats`);
       if (!res.ok) throw new Error("Failed to fetch sweats");
       sweats = await res.json();
       renderTable();
@@ -460,7 +460,7 @@
         dateAdded: todayDate
       };
 
-      const res = await fetch(${backendBaseURL}/sweats, {
+      const res = await fetch(`${backendBaseURL}/sweats`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newSweat)
@@ -495,7 +495,7 @@
     statsDisplay.style.display = "none";
 
     // Fetch UUID and corrected capitalization from your backend mojang proxy
-    const resMojang = await fetch(${backendBaseURL}/mojang/${usernameRaw});
+    const resMojang = await fetch(`${backendBaseURL}/mojang/${usernameRaw}`);
     if (!resMojang.ok) throw new Error("Username not found");
     const mojangData = await resMojang.json();
 
@@ -526,7 +526,7 @@
   }
 
   async function getPlayerStats(uuid) {
-    const res = await fetch(${backendBaseURL}/player/${uuid});
+    const res = await fetch(`${backendBaseURL}/player/${uuid}`);
     if (!res.ok) throw new Error("Player stats not found");
     const json = await res.json();
     const data = json.player.stats?.Bedwars || {};
@@ -598,11 +598,11 @@
   }
 
   function updateStatsDisplay(stats) {
-    statsAvatar.src = https://crafatar.com/avatars/${currentUUID}?overlay;
+    statsAvatar.src = `https://crafatar.com/avatars/${currentUUID}?overlay`;
     statsUsername.textContent = stats.username;
     statsRank.textContent = stats.rank.prefix || "";
     statsRank.style.color = stats.rank.color;
-    statsStar.textContent = ★${stats.star};
+    statsStar.textContent = `★${stats.star}`;
 
     statWins.textContent = stats.wins;
     statFinals.textContent = stats.finals;
@@ -643,8 +643,8 @@
 
       const avatarImg = document.createElement("img");
       avatarImg.classList.add('user-avatar');
-      avatarImg.src = https://crafatar.com/avatars/${s.uuid}?overlay;
-      avatarImg.alt = Avatar of ${s.username};
+      avatarImg.src = `https://crafatar.com/avatars/${s.uuid}?overlay`;
+      avatarImg.alt = `Avatar of ${s.username}`;
 
       const usernameText = document.createElement("span");
       usernameText.textContent = s.username;
@@ -692,7 +692,7 @@
   async function removeSweat(id) {
     if (!confirm("Are you sure you want to remove this sweat?")) return;
     try {
-      const res = await fetch(${backendBaseURL}/sweats/${id}, { method: "DELETE" });
+      const res = await fetch(`${backendBaseURL}/sweats/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to remove sweat");
       await loadSweats();
     } catch (err) {

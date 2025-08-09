@@ -359,7 +359,265 @@
   <tbody id="sweatTable"></tbody>
 </table>
 
-<!-- Script remains unchanged -->
+<script>
+  const backendBaseURL = "https://bedwars-backend.onrender.com";
+
+  const form = document.getElementById('sweatForm');
+  const tableBody = document.getElementById('sweatTable');
+  const status = document.getElementById('status');
+  const fetchBtn = document.getElementById('fetchBtn');
+  const statsDisplay = document.getElementById('statsDisplay');
+  const searchInput = document.getElementById('searchInput');
+
+  const statsAvatar = document.getElementById('statsAvatar');
+  const statsUsername = document.getElementById('statsUsername');
+  const statsRank = document.getElementById('statsRank');
+  const statsStar = document.getElementById('statsStar');
+
+  const statWins = document.getElementById('statWins');
+  const statFinals = document.getElementById('statFinals');
+  const statKills = document.getElementById('statKills');
+  const statBeds = document.getElementById('statBeds');
+
+  const statLosses = document.getElementById('statLosses');
+  const statFinalDeaths = document.getElementById('statFinalDeaths');
+  const statDeaths = document.getElementById('statDeaths');
+  const statBedsLost = document.getElementById('statBedsLost');
+
+  const statWLR = document.getElementById('statWLR');
+  const statFKDR = document.getElementById('statFKDR');
+  const statKDR = document.getElementById('statKDR');
+  const statBBLR = document.getElementById('statBBLR');
+
+  let sweats = [];
+  let sortField = null;
+  let sortAsc = true;
+  let currentUUID = null;
+  let currentStats = null;
+  let currentFilter = "";
+
+  async function loadSweats() {
+    try {
+      const res = await fetch(`${backendBaseURL}/sweats`);
+      if (!res.ok) throw new Error("Failed to fetch sweats");
+      sweats = await res.json();
+      renderTable();
+    } catch (err) {
+      status.textContent = "Error loading sweats: " + err.message;
+    }
+  }
+
+  fetchBtn.addEventListener('click', async () => {
+    await fetchAndDisplayStats();
+  });
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const milo = document.getElementById('milo').checked;
+    const potat = document.getElementById('potat').checked;
+    const aballs = document.getElementById('aballs').checked;
+    const zoiv = document.getElementById('zoiv').checked;
+
+    if (!username) {
+      alert("Please enter a username first.");
+      return;
+    }
+
+    if (!milo && !potat && !aballs && !zoiv) {
+      alert("Select at least one checkbox.");
+      return;
+    }
+
+    if (!currentUUID || currentUsernameLower() !== username.toLowerCase()) {
+      status.textContent = "Please fetch stats first for this username.";
+      return;
+    }
+
+    status.textContent = "Adding sweat...";
+
+    try {
+      const body = {
+        username: username,
+        uuid: currentUUID,
+        milo,
+        potat,
+        aballs,
+        zoiv
+      };
+      const res = await fetch(`${backendBaseURL}/sweat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error("Failed to add sweat");
+      status.textContent = "Sweat added!";
+      form.reset();
+      statsDisplay.style.display = "none";
+      await loadSweats();
+    } catch (err) {
+      status.textContent = "Error adding sweat: " + err.message;
+    }
+  });
+
+  async function fetchAndDisplayStats() {
+    const username = document.getElementById('username').value.trim();
+    if (!username) {
+      status.textContent = "Enter a Minecraft username first.";
+      return;
+    }
+    status.textContent = "Fetching stats...";
+    statsDisplay.style.display = "none";
+    try {
+      const res = await fetch(`${backendBaseURL}/stats/${encodeURIComponent(username)}`);
+      if (!res.ok) {
+        if (res.status === 404) throw new Error("Player not found");
+        throw new Error("Failed to fetch stats");
+      }
+      const data = await res.json();
+      currentUUID = data.uuid;
+      currentStats = data.stats;
+      showStats(data);
+      status.textContent = "";
+    } catch (err) {
+      status.textContent = err.message;
+      statsDisplay.style.display = "none";
+      currentUUID = null;
+      currentStats = null;
+    }
+  }
+
+  function showStats(data) {
+    statsAvatar.src = `https://crafatar.com/avatars/${data.uuid}?size=128&overlay`;
+    statsUsername.textContent = data.username;
+    statsRank.textContent = data.rank || "None";
+    statsStar.textContent = `★${data.star || 0}`;
+
+    statWins.textContent = data.stats.wins || 0;
+    statFinals.textContent = data.stats.final_kills || 0;
+    statKills.textContent = data.stats.kills || 0;
+    statBeds.textContent = data.stats.beds_broken || 0;
+
+    statLosses.textContent = data.stats.losses || 0;
+    statFinalDeaths.textContent = data.stats.final_deaths || 0;
+    statDeaths.textContent = data.stats.deaths || 0;
+    statBedsLost.textContent = data.stats.beds_lost || 0;
+
+    statWLR.textContent = formatRatio(data.stats.wins, data.stats.losses);
+    statFKDR.textContent = formatRatio(data.stats.final_kills, data.stats.final_deaths);
+    statKDR.textContent = formatRatio(data.stats.kills, data.stats.deaths);
+    statBBLR.textContent = formatRatio(data.stats.beds_broken, data.stats.beds_lost);
+
+    statsDisplay.style.display = "flex";
+  }
+
+  function formatRatio(num, den) {
+    num = num || 0;
+    den = den || 0;
+    if (den === 0) return num.toFixed(2);
+    return (num / den).toFixed(2);
+  }
+
+  function currentUsernameLower() {
+    return statsUsername.textContent.toLowerCase();
+  }
+
+  function renderTable() {
+    let filtered = sweats;
+    if (currentFilter.trim()) {
+      const f = currentFilter.trim().toLowerCase();
+      filtered = sweats.filter(s => s.username.toLowerCase().includes(f));
+    }
+    if (sortField) {
+      filtered.sort((a,b) => {
+        let valA = a[sortField];
+        let valB = b[sortField];
+        if (typeof valA === 'string') valA = valA.toLowerCase();
+        if (typeof valB === 'string') valB = valB.toLowerCase();
+
+        if (valA < valB) return sortAsc ? -1 : 1;
+        if (valA > valB) return sortAsc ? 1 : -1;
+        return 0;
+      });
+    }
+
+    tableBody.innerHTML = "";
+    for (const sweat of filtered) {
+      const tr = document.createElement('tr');
+
+      const userTd = document.createElement('td');
+      userTd.className = "user-cell";
+      const avatarImg = document.createElement('img');
+      avatarImg.className = "user-avatar";
+      avatarImg.src = `https://crafatar.com/avatars/${sweat.uuid}?size=32&overlay`;
+      avatarImg.alt = `${sweat.username} avatar`;
+      userTd.appendChild(avatarImg);
+      userTd.appendChild(document.createTextNode(sweat.username));
+      tr.appendChild(userTd);
+
+      const starTd = document.createElement('td');
+      starTd.textContent = sweat.star || "0";
+      tr.appendChild(starTd);
+
+      const fkdrTd = document.createElement('td');
+      fkdrTd.textContent = sweat.fkdr || "0";
+      tr.appendChild(fkdrTd);
+
+      const wlrTd = document.createElement('td');
+      wlrTd.textContent = sweat.wlr || "0";
+      tr.appendChild(wlrTd);
+
+      const beatenByTd = document.createElement('td');
+      beatenByTd.textContent = sweat.beatenBy || "";
+      tr.appendChild(beatenByTd);
+
+      const dateTd = document.createElement('td');
+      const date = new Date(sweat.dateAdded);
+      dateTd.textContent = date.toLocaleDateString();
+      tr.appendChild(dateTd);
+
+      const removeTd = document.createElement('td');
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = "Remove";
+      removeBtn.addEventListener('click', async () => {
+        if (confirm(`Remove ${sweat.username} from sweat list?`)) {
+          try {
+            const res = await fetch(`${backendBaseURL}/sweat/${sweat.id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error("Failed to remove sweat");
+            await loadSweats();
+          } catch (err) {
+            alert("Error removing sweat: " + err.message);
+          }
+        }
+      });
+      removeTd.appendChild(removeBtn);
+      tr.appendChild(removeTd);
+
+      tableBody.appendChild(tr);
+    }
+  }
+
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const field = th.dataset.sort;
+      if (sortField === field) {
+        sortAsc = !sortAsc;
+      } else {
+        sortField = field;
+        sortAsc = true;
+      }
+      renderTable();
+    });
+  });
+
+  searchInput.addEventListener('input', () => {
+    currentFilter = searchInput.value;
+    renderTable();
+  });
+
+  // Initial load
+  loadSweats();
+</script>
 
 </body>
 </html>

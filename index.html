@@ -785,7 +785,7 @@
 
       // Create the cell for indexValue and append it
       const indexTd = document.createElement("td");
-      indexTd.textContent = indexValue.toFixed(2); // format as needed
+      indexTd.textContent = Math.round(indexValue).toLocaleString();
       tr.appendChild(indexTd);
 
       const beatenByTd = document.createElement("td");

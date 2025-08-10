@@ -389,8 +389,8 @@
   <label for="minFkdr">Min FKDR
     <input id="minFkdr" type="number" step="0.1" placeholder="e.g. 2.5" aria-label="Minimum FKDR">
   </label>
-  <label for="minWlr">Min WLR
-    <input id="minWlr" type="number" step="0.1" placeholder="e.g. 1.2" aria-label="Minimum WLR">
+  <label for="minIndex">Min Index
+    <input id="minIndex" type="number" step="0.1" placeholder="e.g. 10.5" aria-label="Minimum Index">
   </label>
   <label for="minStars">Min Stars
     <input id="minStars" type="number" step="1" placeholder="e.g. 100" aria-label="Minimum Stars">
@@ -402,7 +402,7 @@
 <table>
   <thead>
     <tr>
-      <th>      Username</th>
+      <th>Username</th>
       <th class="sortable" data-sort="star">Star ▲▼</th>
       <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
       <th class="sortable" data-sort="index">Index ▲▼</th>
@@ -712,21 +712,23 @@
 
     // read filter inputs (treat empty as no filter)
     const minFkdr = (filterFkdr && filterFkdr.value.trim() !== "") ? parseFloat(filterFkdr.value) : null;
-    const minWlr = (filterWlr && filterWlr.value.trim() !== "") ? parseFloat(filterWlr.value) : null;
+    const filterIndex = document.getElementById('minIndex');
+    const minIndex = (filterIndex && filterIndex.value.trim() !== "") ? parseFloat(filterIndex.value) : null;
     const minStars = (filterStars && filterStars.value.trim() !== "") ? parseInt(filterStars.value) : null;
 
     // apply numeric filters if set
-    if (minFkdr !== null || minWlr !== null || minStars !== null) {
+    if (minFkdr !== null || minIndex !== null || minStars !== null) {
       filteredSweats = filteredSweats.filter(s => {
         const sFkdr = Number(s.fkdr) || 0;
-        const sWlr = Number(s.wlr) || 0;
+        const sIndex = s.fkdr * s.fkdr * s.star;
         const sStar = Number(s.star) || 0;
         if (minFkdr !== null && sFkdr < minFkdr) return false;
-        if (minWlr !== null && sWlr < minWlr) return false;
+        if (minIndex !== null && sIndex < minIndex) return false;
         if (minStars !== null && sStar < minStars) return false;
         return true;
       });
     }
+
 
     if (sortField) {
       filteredSweats.sort((a, b) => {

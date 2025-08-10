@@ -714,7 +714,7 @@
     const minFkdr = (filterFkdr && filterFkdr.value.trim() !== "") ? parseFloat(filterFkdr.value) : null;
     const minIndex = (filterIndex && filterIndex.value.trim() !== "") ? parseFloat(filterIndex.value) : null;
     const minStars = (filterStars && filterStars.value.trim() !== "") ? parseInt(filterStars.value) : null;
-    const minDate = filterDate && filterDate.value ? new Date(filterDate.value) : null;
+    const minDate = filterDate && filterDate.value ? new Date(filterDate.value + "T00:00:00") : null;
 
 
     // apply numeric filters if set

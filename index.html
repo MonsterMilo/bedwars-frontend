@@ -765,6 +765,13 @@
       wlrTd.textContent = s.wlr.toFixed(2);
       tr.appendChild(wlrTd);
 
+      const indexValue = s.fkdr * s.fkdr * s.star;
+
+      // Create the cell for indexValue and append it
+      const indexTd = document.createElement("td");
+      indexTd.textContent = indexValue.toFixed(2); // format as needed
+      tr.appendChild(indexTd);
+
       const beatenByTd = document.createElement("td");
       let beatenBy = [];
       if (s.milo) beatenBy.push("Milo");

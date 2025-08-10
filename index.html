@@ -821,7 +821,6 @@
     }
   }
 
-document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("th.sortable").forEach(th => {
     th.addEventListener("click", () => {
       const field = th.dataset.sort;
@@ -833,7 +832,6 @@ document.addEventListener("DOMContentLoaded", () => {
       renderTable();
     });
   });
-});
 
   // Load all sweats on startup
   loadSweats();

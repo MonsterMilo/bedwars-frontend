@@ -560,7 +560,7 @@
   });
 
   // Also auto-apply while typing for convenience
-  [filterFkdr, filterIndex, filterStars].forEach(inp => {
+  [filterFkdr, filterWlr, filterStars].forEach(inp => {
     inp.addEventListener('input', () => {
       // don't spam re-render on every keystroke? it's fine here
       renderTable();

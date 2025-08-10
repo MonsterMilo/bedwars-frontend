@@ -446,7 +446,6 @@
 
   // Filter inputs (added)
   const filterFkdr = document.getElementById('minFkdr');
-  const filterWlr = document.getElementById('minWlr');
   const filterStars = document.getElementById('minStars');
   const applyFiltersBtn = document.getElementById('applyFiltersBtn');
   const resetFiltersBtn = document.getElementById('resetFiltersBtn');
@@ -560,12 +559,12 @@
   });
 
   // Also auto-apply while typing for convenience
-  [filterFkdr, filterWlr, filterStars].forEach(inp => {
+  [filterFkdr, filterIndex, filterStars].forEach(inp => {
     inp.addEventListener('input', () => {
-      // don't spam re-render on every keystroke? it's fine here
       renderTable();
     });
   });
+
 
   async function fetchAndDisplayStats() {
     const usernameInput = document.getElementById('username');
@@ -822,6 +821,7 @@
     }
   }
 
+document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("th.sortable").forEach(th => {
     th.addEventListener("click", () => {
       const field = th.dataset.sort;
@@ -833,6 +833,7 @@
       renderTable();
     });
   });
+});
 
   // Load all sweats on startup
   loadSweats();

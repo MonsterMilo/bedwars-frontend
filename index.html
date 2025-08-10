@@ -397,7 +397,6 @@
   <label for="minStars">Min Stars
     <input id="minStars" type="number" step="1" placeholder="e.g. 100" aria-label="Minimum Stars">
   </label>
-  <button id="applyFiltersBtn" type="button" aria-label="Apply filters">Apply</button>
   <button id="resetFiltersBtn" type="button" aria-label="Reset filters">Reset</button>
 </div>
 
@@ -450,7 +449,6 @@
   const filterFkdr = document.getElementById('minFkdr');
   const filterIndex = document.getElementById('minIndex');
   const filterStars = document.getElementById('minStars');
-  const applyFiltersBtn = document.getElementById('applyFiltersBtn');
   const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
   let sweats = [];
@@ -546,11 +544,6 @@
 
   searchInput.addEventListener('input', () => {
     currentFilter = searchInput.value.trim().toLowerCase();
-    renderTable();
-  });
-
-  // Apply / reset filter buttons (added)
-  applyFiltersBtn.addEventListener('click', () => {
     renderTable();
   });
 

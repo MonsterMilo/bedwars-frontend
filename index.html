@@ -767,42 +767,6 @@
 
       const usernameText = document.createElement("span");
       usernameText.textContent = s.username;
-      usernameText.style.cursor = "pointer";        // make it look clickable
-      usernameText.style.textDecoration = "underline";  // optional styling
-
-      usernameText.addEventListener("click", async () => {
-        status.textContent = "Fetching stats...";
-        statsDisplay.style.display = "none";
-
-        try {
-          const data = await getPlayerStats(s.uuid);
-
-          currentUUID = s.uuid;
-          currentStats = {
-            username: s.username,
-            star: s.star,
-            fkdr: data.fkdr,
-            wlr: data.wlr,
-            bblr: data.bblr,
-            kdr: data.kdr,
-            finals: data.finals,
-            finalDeaths: data.finalDeaths,
-            beds: data.beds,
-            bedsLost: data.bedsLost,
-            kills: data.kills,
-            deaths: data.deaths,
-            rank: getHypixelRank(data.player),
-            wins: data.wins,
-            losses: data.losses
-          };
-
-          updateStatsDisplay(currentStats);
-          status.textContent = "";
-        } catch (err) {
-          status.textContent = "Error fetching player stats: " + err.message;
-        }
-      });
-
 
       usernameTd.appendChild(avatarImg);
       usernameTd.appendChild(usernameText);
@@ -826,7 +790,7 @@
       const dateTd = document.createElement("td");
       dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
       tr.appendChild(dateTd);
-
+      
       const beatenByTd = document.createElement("td");
       let beatenBy = [];
       if (s.milo) beatenBy.push("Milo");

@@ -12,6 +12,76 @@
     color: #e0e0e0;
     margin: 20px;
     line-height: 1.4;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  main {
+    display: flex;
+    max-width: 1200px;
+    width: 100%;
+  }
+
+  /* Sidebar for filters */
+  #filterSidebar {
+    background: #1e1e1e;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.7);
+    padding: 20px 25px;
+    width: 200px;
+    margin-right: 30px;
+    color: #f3a023;
+    font-weight: 700;
+    user-select: none;
+  }
+
+  #filterSidebar h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.4em;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .filter-label {
+    font-weight: 600;
+    font-size: 1em;
+  }
+
+  .filter-input {
+    margin-top: 6px;
+    padding: 8px 12px;
+    border: 1.8px solid #444;
+    border-radius: 5px;
+    background: #222;
+    color: #e0e0e0;
+    font-size: 1em;
+    transition: border-color 0.3s;
+  }
+
+  .filter-input::placeholder {
+    color: #777;
+  }
+
+  .filter-input:focus {
+    outline: none;
+    border-color: #f3a023;
+    box-shadow: 0 0 6px #fcac34aa;
+    background: #2a2a2a;
+  }
+
+  /* Main content */
+  #mainContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   h1 {
@@ -220,53 +290,10 @@
     background: #2a2a2a;
   }
 
-  /* --- Filters sidebar --- */
-  #filtersSidebar {
-    max-width: 140px;
-    margin: 0 10px 40px 40px;
-    padding: 15px 20px;
-    background: #1e1e1e;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgb(0 0 0 / 0.7);
-    color: #f3a023;
-    font-weight: 700;
-    font-size: 1.2em;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    user-select: none;
-  }
-
-  #filtersSidebar label {
-    color: #ccc;
-    font-weight: 600;
-    font-size: 0.9em;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  #filtersSidebar input[type="number"] {
+  table {
     width: 100%;
-    padding: 6px 8px;
-    font-size: 1em;
-    border-radius: 5px;
-    border: 1.5px solid #444;
-    background: #222;
-    color: #e0e0e0;
-  }
-
-  /* --- Main container with filters + table --- */
-  #mainContent {
     max-width: 1080px;
     margin: 0 auto 40px;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-  }
-
-  table {
-    flex: 1;
     border-collapse: collapse;
     background: #1e1e1e;
     border-radius: 8px;
@@ -301,6 +328,15 @@
     background: #6d4c41;
   }
 
+  button {
+    font-weight: 600;
+  }
+
+  button:focus {
+    outline: 2px solid #f3a023;
+    outline-offset: 2px;
+  }
+
   /* Added avatar in table row */
   .user-cell {
     display: flex;
@@ -323,96 +359,96 @@
 </head>
 <body>
 
-<h1>Bedwars Sweat Tracker</h1>
+<main>
+  <section id="filterSidebar" aria-label="Filters">
+    <h2>Filter</h2>
+    <div class="filter-group">
+      <label for="filter-stars" class="filter-label">Min Stars</label>
+      <input id="filter-stars" type="number" min="0" class="filter-input" placeholder="0" />
 
-<div id="form-container">
-  <form id="sweatForm" autocomplete="off">
-    <div style="display:flex; gap:10px; align-items:center;">
-      <input type="text" id="username" placeholder="Enter Minecraft username" required />
-      <button type="button" id="fetchBtn">Fetch Stats</button>
+      <label for="filter-fkdr" class="filter-label">Min FKDR</label>
+      <input id="filter-fkdr" type="number" min="0" step="0.01" class="filter-input" placeholder="0" />
+
+      <label for="filter-wlr" class="filter-label">Min WLR</label>
+      <input id="filter-wlr" type="number" min="0" step="0.01" class="filter-input" placeholder="0" />
     </div>
+  </section>
 
-    <div class="checkbox-group" style="margin-top:10px;">
-      <label><input type="checkbox" id="milo" /> Milo</label>
-      <label><input type="checkbox" id="potat" /> Potat</label>
-      <label><input type="checkbox" id="aballs" /> Aballs</label>
-      <label><input type="checkbox" id="zoiv" /> Zoiv</label>
-    </div>
+  <section id="mainContent" aria-label="Bedwars sweat tracker main content">
+    <h1>Bedwars Sweat Tracker</h1>
 
-    <button type="submit">Add Sweat</button>
-    <div id="status" role="alert" aria-live="assertive"></div>
-  </form>
-
-  <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
-    <div id="statsContent">
-      <img id="statsAvatar" src="" alt="Player head" />
-      <div id="statsRight">
-        <div id="statsTopRow">
-          <span id="statsRank"></span>
-          <span id="statsUsername"></span>
-          <span id="statsStar">★0</span>
+    <div id="form-container">
+      <form id="sweatForm" autocomplete="off">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="text" id="username" placeholder="Enter Minecraft username" required aria-label="Minecraft username" />
+          <button type="button" id="fetchBtn">Fetch Stats</button>
         </div>
-        <div id="statsColumns">
-          <div class="stat-column good">
-            <div class="stat-label">Wins:</div><div class="stat-value" id="statWins">0</div>
-            <div class="stat-label">Finals:</div><div class="stat-value" id="statFinals">0</div>
-            <div class="stat-label">Kills:</div><div class="stat-value" id="statKills">0</div>
-            <div class="stat-label">Beds Broken:</div><div class="stat-value" id="statBeds">0</div>
-          </div>
-          <div class="stat-column bad">
-            <div class="stat-label">Losses:</div><div class="stat-value" id="statLosses">0</div>
-            <div class="stat-label">Final Deaths:</div><div class="stat-value" id="statFinalDeaths">0</div>
-            <div class="stat-label">Deaths:</div><div class="stat-value" id="statDeaths">0</div>
-            <div class="stat-label">Beds Lost:</div><div class="stat-value" id="statBedsLost">0</div>
-          </div>
-          <div class="stat-column neutral">
-            <div class="stat-label">WLR:</div><div class="stat-value" id="statWLR">0</div>
-            <div class="stat-label">FKDR:</div><div class="stat-value" id="statFKDR">0</div>
-            <div class="stat-label">KDR:</div><div class="stat-value" id="statKDR">0</div>
-            <div class="stat-label">BBLR:</div><div class="stat-value" id="statBBLR">0</div>
+
+        <div class="checkbox-group" style="margin-top:10px;">
+          <label><input type="checkbox" id="milo" /> Milo</label>
+          <label><input type="checkbox" id="potat" /> Potat</label>
+          <label><input type="checkbox" id="aballs" /> Aballs</label>
+          <label><input type="checkbox" id="zoiv" /> Zoiv</label>
+        </div>
+
+        <button type="submit">Add Sweat</button>
+        <div id="status" role="alert" aria-live="assertive"></div>
+      </form>
+
+      <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
+        <div id="statsContent">
+          <img id="statsAvatar" src="" alt="Player head" />
+          <div id="statsRight">
+            <div id="statsTopRow">
+              <span id="statsRank"></span>
+              <span id="statsUsername"></span>
+              <span id="statsStar">★0</span>
+            </div>
+            <div id="statsColumns">
+              <div class="stat-column good">
+                <div class="stat-label">Wins:</div><div class="stat-value" id="statWins">0</div>
+                <div class="stat-label">Finals:</div><div class="stat-value" id="statFinals">0</div>
+                <div class="stat-label">Kills:</div><div class="stat-value" id="statKills">0</div>
+                <div class="stat-label">Beds Broken:</div><div class="stat-value" id="statBeds">0</div>
+              </div>
+              <div class="stat-column bad">
+                <div class="stat-label">Losses:</div><div class="stat-value" id="statLosses">0</div>
+                <div class="stat-label">Final Deaths:</div><div class="stat-value" id="statFinalDeaths">0</div>
+                <div class="stat-label">Deaths:</div><div class="stat-value" id="statDeaths">0</div>
+                <div class="stat-label">Beds Lost:</div><div class="stat-value" id="statBedsLost">0</div>
+              </div>
+              <div class="stat-column neutral">
+                <div class="stat-label">WLR:</div><div class="stat-value" id="statWLR">0</div>
+                <div class="stat-label">FKDR:</div><div class="stat-value" id="statFKDR">0</div>
+                <div class="stat-label">KDR:</div><div class="stat-value" id="statKDR">0</div>
+                <div class="stat-label">BBLR:</div><div class="stat-value" id="statBBLR">0</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<div id="searchContainer">
-  <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
-</div>
+    <div id="searchContainer">
+      <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
+    </div>
 
-<div id="mainContent" aria-label="Sweat player list and filters">
-  <aside id="filtersSidebar" aria-label="Filters">
-    Filters
-    <label for="minStars">
-      Stars
-      <input id="minStars" type="number" step="1" placeholder="e.g. 100" aria-label="Minimum Stars" />
-    </label>
-    <label for="minFkdr">
-      FKDR
-      <input id="minFkdr" type="number" step="0.1" placeholder="e.g. 2.5" aria-label="Minimum FKDR" />
-    </label>
-    <label for="minWlr">
-      WLR
-      <input id="minWlr" type="number" step="0.1" placeholder="e.g. 1.2" aria-label="Minimum WLR" />
-    </label>
-  </aside>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th class="sortable" data-sort="star">Star ▲▼</th>
-        <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
-        <th class="sortable" data-sort="wlr">WLR ▲▼</th>
-        <th>Beaten By</th>
-        <th class="sortable" data-sort="dateAdded">Date Added ▲▼</th>
-        <th>Remove</th>
-      </tr>
-    </thead>
-    <tbody id="sweatTable"></tbody>
-  </table>
-</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th class="sortable" data-sort="star">Star ▲▼</th>
+          <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
+          <th class="sortable" data-sort="wlr">WLR ▲▼</th>
+          <th>Beaten By</th>
+          <th class="sortable" data-sort="dateAdded">Date Added ▲▼</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody id="sweatTable"></tbody>
+    </table>
+  </section>
+</main>
 
 <script>
   const backendBaseURL = "https://bedwars-backend.onrender.com";
@@ -444,11 +480,6 @@
   const statKDR = document.getElementById('statKDR');
   const statBBLR = document.getElementById('statBBLR');
 
-  // Filter inputs
-  const filterFkdr = document.getElementById('minFkdr');
-  const filterWlr = document.getElementById('minWlr');
-  const filterStars = document.getElementById('minStars');
-
   let sweats = [];
   let sortField = null;
   let sortAsc = true;
@@ -456,241 +487,286 @@
   let currentStats = null;
   let currentFilter = "";
 
+  // New: Get filter inputs
+  const filterStarsInput = document.getElementById('filter-stars');
+  const filterFkdrInput = document.getElementById('filter-fkdr');
+  const filterWlrInput = document.getElementById('filter-wlr');
+
+  // Fetch all sweats from backend
   async function loadSweats() {
     try {
       const res = await fetch(`${backendBaseURL}/sweats`);
       if (!res.ok) throw new Error("Failed to fetch sweats");
       sweats = await res.json();
-      renderTable();
+      renderSweatTable();
     } catch (err) {
-      status.textContent = "Error loading sweats: " + err.message;
+      status.textContent = "Failed to load sweat data.";
     }
   }
 
-  fetchBtn.addEventListener('click', async () => {
-    await fetchAndDisplayStats();
-  });
+  // Fetch Mojang UUID from username
+  async function fetchUUID(usernameRaw) {
+    const username = usernameRaw.trim();
+    if (!username) throw new Error("Username cannot be empty");
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const username = document.getElementById('username').value.trim();
-    const milo = document.getElementById('milo').checked;
-    const potat = document.getElementById('potat').checked;
-    const aballs = document.getElementById('aballs').checked;
-    const zoiv = document.getElementById('zoiv').checked;
+    // Mojang proxy API from backend
+    const res = await fetch(`${backendBaseURL}/mojang/${encodeURIComponent(username)}`);
+    if (!res.ok) throw new Error("Player not found");
+    const data = await res.json();
 
-    if (!username) {
-      alert("Please enter a username first.");
-      return;
-    }
-
-    if (!milo && !potat && !aballs && !zoiv) {
-      alert("Please select at least one player who beat them.");
-      return;
-    }
-
-    status.textContent = "";
-    statsDisplay.style.display = "none";
-
-    try {
-      if (!currentUUID || !currentStats || document.getElementById('username').value.trim().toLowerCase() !== currentStats.username.toLowerCase()) {
-        await fetchAndDisplayStats();
-      }
-
-      const todayDate = new Date().toISOString();
-
-      // POST new sweat to backend
-      const newSweat = {
-        username: currentStats.username,
-        star: currentStats.star,
-        fkdr: currentStats.fkdr,
-        wlr: currentStats.wlr,
-        bblr: currentStats.bblr,
-        kdr: currentStats.kdr,
-        finals: currentStats.finals,
-        finalDeaths: currentStats.finalDeaths,
-        beds: currentStats.beds,
-        bedsLost: currentStats.bedsLost,
-        kills: currentStats.kills,
-        deaths: currentStats.deaths,
-        milo,
-        potat,
-        aballs,
-        zoiv,
-        uuid: currentUUID,
-        dateAdded: todayDate
-      };
-
-      const res = await fetch(`${backendBaseURL}/sweats`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newSweat)
-      });
-
-      if (!res.ok) throw new Error("Failed to add sweat");
-
-      status.textContent = `Added ${currentStats.username} to sweats!`;
-
-      // Reset form
-      form.reset();
-      statsDisplay.style.display = "none";
-      currentUUID = null;
-      currentStats = null;
-
-      await loadSweats();
-    } catch (err) {
-      status.textContent = "Error adding sweat: " + err.message;
-    }
-  });
-
-  async function fetchAndDisplayStats() {
-    const username = document.getElementById('username').value.trim();
-    if (!username) {
-      status.textContent = "Please enter a username.";
-      return;
-    }
-    status.textContent = "Fetching stats...";
-    statsDisplay.style.display = "none";
-
-    try {
-      const res = await fetch(`${backendBaseURL}/stats/${username}`);
-      if (!res.ok) throw new Error("Player not found");
-
-      const data = await res.json();
-      currentUUID = data.uuid;
-      currentStats = data;
-
-      showStats(data);
-      status.textContent = "";
-    } catch (err) {
-      status.textContent = "Error fetching stats: " + err.message;
-    }
+    if (!data.id) throw new Error("Player UUID not found");
+    return { id: data.id, name: data.name };
   }
 
-  function showStats(data) {
-    statsAvatar.src = `https://crafatar.com/avatars/${data.uuid}?size=100&overlay`;
-    statsAvatar.alt = `${data.username}'s Minecraft avatar`;
-
-    statsUsername.textContent = data.username;
-    statsRank.textContent = data.rank ? data.rank : "None";
-    statsStar.textContent = `★${data.star}`;
-
-    statWins.textContent = data.wins;
-    statFinals.textContent = data.finals;
-    statKills.textContent = data.kills;
-    statBeds.textContent = data.beds;
-
-    statLosses.textContent = data.losses;
-    statFinalDeaths.textContent = data.finalDeaths;
-    statDeaths.textContent = data.deaths;
-    statBedsLost.textContent = data.bedsLost;
-
-    statWLR.textContent = data.wlr.toFixed(2);
-    statFKDR.textContent = data.fkdr.toFixed(2);
-    statKDR.textContent = data.kdr.toFixed(2);
-    statBBLR.textContent = data.bblr.toFixed(2);
-
-    statsDisplay.style.display = "flex";
+  // Fetch player Bedwars stats by UUID
+  async function fetchPlayerStats(uuid) {
+    const res = await fetch(`${backendBaseURL}/player/${encodeURIComponent(uuid)}`);
+    if (!res.ok) throw new Error("Failed to fetch player stats");
+    const data = await res.json();
+    return data;
   }
 
-  function renderTable() {
-    // Filtering
-    const minStar = parseFloat(filterStars.value);
-    const minFkdr = parseFloat(filterFkdr.value);
-    const minWlr = parseFloat(filterWlr.value);
-    const searchLower = searchInput.value.trim().toLowerCase();
+  // Update stats display panel with data
+  function updateStatsDisplay(stats, username) {
+    statsDisplay.style.display = 'flex';
 
-    let filtered = sweats.filter(s => {
-      if (minStar && s.star < minStar) return false;
-      if (minFkdr && s.fkdr < minFkdr) return false;
-      if (minWlr && s.wlr < minWlr) return false;
-      if (searchLower && !s.username.toLowerCase().includes(searchLower)) return false;
-      return true;
-    });
+    statsAvatar.src = `https://crafatar.com/avatars/${stats.uuid}?size=100&overlay`;
+    statsAvatar.alt = `${username}'s Minecraft avatar`;
 
-    // Sorting
+    statsUsername.textContent = username;
+    statsRank.textContent = stats.rank ? stats.rank : "No Rank";
+    statsStar.textContent = `★${stats.star ?? 0}`;
+
+    statWins.textContent = stats.wins ?? 0;
+    statFinals.textContent = stats.finalKills ?? 0;
+    statKills.textContent = stats.kills ?? 0;
+    statBeds.textContent = stats.bedsBroken ?? 0;
+
+    statLosses.textContent = stats.losses ?? 0;
+    statFinalDeaths.textContent = stats.finalDeaths ?? 0;
+    statDeaths.textContent = stats.deaths ?? 0;
+    statBedsLost.textContent = stats.bedsLost ?? 0;
+
+    statWLR.textContent = stats.wlr?.toFixed(3) ?? 0;
+    statFKDR.textContent = stats.fkdr?.toFixed(3) ?? 0;
+    statKDR.textContent = stats.kdr?.toFixed(3) ?? 0;
+    statBBLR.textContent = stats.bblr?.toFixed(3) ?? 0;
+  }
+
+  // Render sweat table with filters and sorting
+  function renderSweatTable() {
+    let filtered = sweats;
+
+    // Apply search filter by username
+    if (currentFilter) {
+      filtered = filtered.filter(item =>
+        item.username.toLowerCase().includes(currentFilter.toLowerCase())
+      );
+    }
+
+    // Apply min stars filter
+    const minStars = Number(filterStarsInput.value) || 0;
+    filtered = filtered.filter(item => (item.star ?? 0) >= minStars);
+
+    // Apply min FKDR filter
+    const minFkdr = Number(filterFkdrInput.value) || 0;
+    filtered = filtered.filter(item => (item.fkdr ?? 0) >= minFkdr);
+
+    // Apply min WLR filter
+    const minWlr = Number(filterWlrInput.value) || 0;
+    filtered = filtered.filter(item => (item.wlr ?? 0) >= minWlr);
+
+    // Sort
     if (sortField) {
-      filtered.sort((a,b) => {
-        let av = a[sortField];
-        let bv = b[sortField];
-        if (typeof av === 'string') av = av.toLowerCase();
-        if (typeof bv === 'string') bv = bv.toLowerCase();
+      filtered.sort((a, b) => {
+        let va = a[sortField] ?? 0;
+        let vb = b[sortField] ?? 0;
+        if (typeof va === "string") va = va.toLowerCase();
+        if (typeof vb === "string") vb = vb.toLowerCase();
 
-        if (av < bv) return sortAsc ? -1 : 1;
-        if (av > bv) return sortAsc ? 1 : -1;
+        if (va > vb) return sortAsc ? 1 : -1;
+        if (va < vb) return sortAsc ? -1 : 1;
         return 0;
       });
     }
 
-    tableBody.innerHTML = filtered.map(s => {
-      // Collect who beat them
-      let beatenBy = [];
-      if (s.milo) beatenBy.push("Milo");
-      if (s.potat) beatenBy.push("Potat");
-      if (s.aballs) beatenBy.push("Aballs");
-      if (s.zoiv) beatenBy.push("Zoiv");
-      let beatenByStr = beatenBy.join(", ") || "-";
+    // Clear table body
+    tableBody.innerHTML = "";
 
-      // Player avatar URL
-      const avatarUrl = `https://crafatar.com/avatars/${s.uuid}?size=32&overlay`;
+    filtered.forEach(item => {
+      const tr = document.createElement('tr');
 
-      return `<tr>
-        <td class="user-cell">
-          <img class="user-avatar" src="${avatarUrl}" alt="${s.username} avatar" />
-          ${s.username}
-        </td>
-        <td>${s.star}</td>
-        <td>${s.fkdr.toFixed(2)}</td>
-        <td>${s.wlr.toFixed(2)}</td>
-        <td>${beatenByStr}</td>
-        <td>${new Date(s.dateAdded).toLocaleDateString()}</td>
-        <td><button aria-label="Remove ${s.username}" data-uuid="${s.uuid}">Remove</button></td>
-      </tr>`;
-    }).join('');
+      // Username cell with avatar
+      const userTd = document.createElement('td');
+      userTd.classList.add('user-cell');
+      const avatarImg = document.createElement('img');
+      avatarImg.classList.add('user-avatar');
+      avatarImg.src = `https://crafatar.com/avatars/${item.uuid}?size=32&overlay`;
+      avatarImg.alt = `${item.username} avatar`;
+      userTd.appendChild(avatarImg);
+      userTd.appendChild(document.createTextNode(item.username));
+      tr.appendChild(userTd);
 
-    // Add remove button listeners
-    [...tableBody.querySelectorAll('button')].forEach(btn => {
-      btn.onclick = async e => {
-        const uuid = e.target.dataset.uuid;
-        if (!confirm(`Remove player from sweats?`)) return;
+      // Star
+      const starTd = document.createElement('td');
+      starTd.textContent = `★${item.star ?? 0}`;
+      tr.appendChild(starTd);
 
+      // FKDR
+      const fkdrTd = document.createElement('td');
+      fkdrTd.textContent = (item.fkdr ?? 0).toFixed(3);
+      tr.appendChild(fkdrTd);
+
+      // WLR
+      const wlrTd = document.createElement('td');
+      wlrTd.textContent = (item.wlr ?? 0).toFixed(3);
+      tr.appendChild(wlrTd);
+
+      // Beaten By
+      const beatenByTd = document.createElement('td');
+      beatenByTd.textContent = item.beatenBy || "";
+      tr.appendChild(beatenByTd);
+
+      // Date Added
+      const dateTd = document.createElement('td');
+      const date = new Date(item.dateAdded);
+      dateTd.textContent = date.toLocaleDateString();
+      tr.appendChild(dateTd);
+
+      // Remove button
+      const removeTd = document.createElement('td');
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = "Remove";
+      removeBtn.title = `Remove ${item.username}`;
+      removeBtn.addEventListener('click', async () => {
+        if (!confirm(`Remove ${item.username} from sweats?`)) return;
         try {
-          const res = await fetch(`${backendBaseURL}/sweats/${uuid}`, { method: 'DELETE' });
-          if (!res.ok) throw new Error("Failed to remove player");
-
-          status.textContent = "Player removed!";
+          const res = await fetch(`${backendBaseURL}/sweats/${item.id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error("Failed to remove");
+          status.textContent = `${item.username} removed.`;
           await loadSweats();
-        } catch (err) {
-          status.textContent = "Error removing player: " + err.message;
+        } catch (e) {
+          status.textContent = "Failed to remove sweat.";
         }
-      };
+      });
+      removeTd.appendChild(removeBtn);
+      tr.appendChild(removeTd);
+
+      tableBody.appendChild(tr);
     });
   }
 
-  // Sort header click handlers
+  // Add sweat entry
+  async function addSweat(usernameRaw, checkedIds) {
+    status.textContent = "Fetching player data...";
+    try {
+      const { id: uuid, name } = await fetchUUID(usernameRaw);
+
+      const stats = await fetchPlayerStats(uuid);
+
+      currentUUID = uuid;
+      currentStats = stats;
+
+      updateStatsDisplay(stats, name);
+
+      // Build sweat data to add
+      const newSweat = {
+        uuid,
+        username: name,
+        star: stats.star ?? 0,
+        fkdr: stats.fkdr ?? 0,
+        wlr: stats.wlr ?? 0,
+        beatenBy: checkedIds.join(", "),
+        dateAdded: new Date().toISOString(),
+      };
+
+      // Post new sweat to backend
+      const res = await fetch(`${backendBaseURL}/sweats`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSweat),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to add sweat");
+      }
+
+      status.textContent = `${name} added to sweats.`;
+
+      await loadSweats();
+    } catch (err) {
+      status.textContent = err.message || "Error fetching player.";
+      statsDisplay.style.display = 'none';
+    }
+  }
+
+  // Handle form submission
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const usernameRaw = form.username.value.trim();
+    if (!usernameRaw) {
+      status.textContent = "Please enter a username.";
+      return;
+    }
+
+    const checkedBoxes = Array.from(form.querySelectorAll('input[type=checkbox]:checked'));
+    const checkedIds = checkedBoxes.map(cb => cb.id);
+
+    addSweat(usernameRaw, checkedIds);
+  });
+
+  // Fetch button shortcut: fetch and show stats without adding
+  fetchBtn.addEventListener('click', async () => {
+    const usernameRaw = form.username.value.trim();
+    if (!usernameRaw) {
+      status.textContent = "Please enter a username.";
+      return;
+    }
+
+    status.textContent = "Fetching player data...";
+    try {
+      const { id: uuid, name } = await fetchUUID(usernameRaw);
+      const stats = await fetchPlayerStats(uuid);
+
+      currentUUID = uuid;
+      currentStats = stats;
+
+      updateStatsDisplay(stats, name);
+      status.textContent = `Stats loaded for ${name}.`;
+    } catch (err) {
+      status.textContent = err.message || "Error fetching player.";
+      statsDisplay.style.display = 'none';
+    }
+  });
+
+  // Search input filter
+  searchInput.addEventListener('input', () => {
+    currentFilter = searchInput.value;
+    renderSweatTable();
+  });
+
+  // Filter inputs - auto filter on input
+  filterStarsInput.addEventListener('input', renderSweatTable);
+  filterFkdrInput.addEventListener('input', renderSweatTable);
+  filterWlrInput.addEventListener('input', renderSweatTable);
+
+  // Sorting headers
   document.querySelectorAll('th.sortable').forEach(th => {
     th.addEventListener('click', () => {
-      const field = th.dataset.sort;
-      if (field === sortField) {
+      const field = th.getAttribute('data-sort');
+      if (sortField === field) {
         sortAsc = !sortAsc;
       } else {
         sortField = field;
         sortAsc = true;
       }
-      renderTable();
+      renderSweatTable();
     });
   });
 
-  // Filter inputs trigger table render on input (real-time)
-  [filterStars, filterFkdr, filterWlr].forEach(input => {
-    input.addEventListener('input', () => renderTable());
-  });
-
-  // Search input event
-  searchInput.addEventListener('input', () => renderTable());
-
+  // Initial load
   loadSweats();
 </script>
-
 </body>
 </html>

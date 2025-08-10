@@ -220,6 +220,41 @@
     background: #2a2a2a;
   }
 
+  /* --- Filter styles (added) --- */
+  .filter-bar {
+    max-width: 1080px;
+    margin: 0 auto 18px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .filter-bar label {
+    font-weight: 600;
+    color: #ccc;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .filter-bar input[type="number"] {
+    width: 90px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1.5px solid #444;
+    background: #222;
+    color: #e0e0e0;
+  }
+
+  .filter-bar button {
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 700;
+  }
+  /* ----------------------------- */
+
   table {
     width: 100%;
     max-width: 1080px;
@@ -347,6 +382,21 @@
   <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
 </div>
 
+<!-- FILTER UI (added) -->
+<div class="filter-bar" aria-label="Minimum stat filters">
+  <label for="minFkdr">Min FKDR
+    <input id="minFkdr" type="number" step="0.1" placeholder="e.g. 2.5" aria-label="Minimum FKDR">
+  </label>
+  <label for="minWlr">Min WLR
+    <input id="minWlr" type="number" step="0.1" placeholder="e.g. 1.2" aria-label="Minimum WLR">
+  </label>
+  <label for="minStars">Min Stars
+    <input id="minStars" type="number" step="1" placeholder="e.g. 100" aria-label="Minimum Stars">
+  </label>
+  <button id="applyFiltersBtn" type="button" aria-label="Apply filters">Apply</button>
+  <button id="resetFiltersBtn" type="button" aria-label="Reset filters">Reset</button>
+</div>
+
 <table>
   <thead>
     <tr>
@@ -391,6 +441,13 @@
   const statFKDR = document.getElementById('statFKDR');
   const statKDR = document.getElementById('statKDR');
   const statBBLR = document.getElementById('statBBLR');
+
+  // Filter inputs (added)
+  const filterFkdr = document.getElementById('minFkdr');
+  const filterWlr = document.getElementById('minWlr');
+  const filterStars = document.getElementById('minStars');
+  const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+  const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
   let sweats = [];
   let sortField = null;
@@ -486,6 +543,26 @@
   searchInput.addEventListener('input', () => {
     currentFilter = searchInput.value.trim().toLowerCase();
     renderTable();
+  });
+
+  // Apply / reset filter buttons (added)
+  applyFiltersBtn.addEventListener('click', () => {
+    renderTable();
+  });
+
+  resetFiltersBtn.addEventListener('click', () => {
+    filterFkdr.value = "";
+    filterWlr.value = "";
+    filterStars.value = "";
+    renderTable();
+  });
+
+  // Also auto-apply while typing for convenience
+  [filterFkdr, filterWlr, filterStars].forEach(inp => {
+    inp.addEventListener('input', () => {
+      // don't spam re-render on every keystroke? it's fine here
+      renderTable();
+    });
   });
 
   async function fetchAndDisplayStats() {
@@ -627,7 +704,26 @@
   }
 
   function renderTable() {
+    // basic search filter
     let filteredSweats = sweats.filter(s => s.username.toLowerCase().includes(currentFilter));
+
+    // read filter inputs (treat empty as no filter)
+    const minFkdr = (filterFkdr && filterFkdr.value.trim() !== "") ? parseFloat(filterFkdr.value) : null;
+    const minWlr = (filterWlr && filterWlr.value.trim() !== "") ? parseFloat(filterWlr.value) : null;
+    const minStars = (filterStars && filterStars.value.trim() !== "") ? parseInt(filterStars.value) : null;
+
+    // apply numeric filters if set
+    if (minFkdr !== null || minWlr !== null || minStars !== null) {
+      filteredSweats = filteredSweats.filter(s => {
+        const sFkdr = Number(s.fkdr) || 0;
+        const sWlr = Number(s.wlr) || 0;
+        const sStar = Number(s.star) || 0;
+        if (minFkdr !== null && sFkdr < minFkdr) return false;
+        if (minWlr !== null && sWlr < minWlr) return false;
+        if (minStars !== null && sStar < minStars) return false;
+        return true;
+      });
+    }
 
     if (sortField) {
       filteredSweats.sort((a,b) => {

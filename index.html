@@ -724,6 +724,7 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
     const sStar = Number(s.star) || 0;
     const sIndex = sFkdr * sFkdr * sStar;
     const sDate = new Date(s.dateAdded);
+    console.log('Sweat date:', sDate, 'Min date:', minDate);
 
     if (minFkdr !== null && sFkdr < minFkdr) return false;
     if (minIndex !== null && sIndex < minIndex) return false;

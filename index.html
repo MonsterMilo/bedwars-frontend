@@ -458,7 +458,7 @@
 
   async function loadSweats() {
     try {
-      const res = await fetch(`${backendBaseURL}/sweats`);
+      const res = await fetch(`${backendBaseURL}/sweats?limit=1000`);
       if (!res.ok) throw new Error("Failed to fetch sweats");
       sweats = await res.json();
       renderTable();

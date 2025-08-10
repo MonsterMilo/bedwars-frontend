@@ -257,7 +257,7 @@
 
   table {
     width: 100%;
-    max-width: 1120px;
+    max-width: 1080px;
     margin: 0 auto 40px;
     border-collapse: collapse;
     background: #1e1e1e;
@@ -321,12 +321,6 @@
     vertical-align: middle; /* enforce vertical align */
   }
 
-  table tbody tr td.user-cell {
-  max-width: 160px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  }
 
 </style>
 </head>
@@ -411,7 +405,6 @@
       <th>Username</th>
       <th class="sortable" data-sort="star">Star ▲▼</th>
       <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
-      <th class="sortable" data-sort="wlr">WLR ▲▼</th>
       <th class="sortable" data-sort="index">Index ▲▼</th>
       <th>Beaten By</th>
       <th class="sortable" data-sort="dateAdded">Date Added ▲▼</th>
@@ -784,10 +777,6 @@
       const fkdrTd = document.createElement("td");
       fkdrTd.textContent = s.fkdr.toFixed(2);
       tr.appendChild(fkdrTd);
-
-      const wlrTd = document.createElement("td");
-      wlrTd.textContent = s.wlr.toFixed(2);
-      tr.appendChild(wlrTd);
 
       const indexValue = s.fkdr * s.fkdr * s.star;
 

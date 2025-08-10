@@ -787,6 +787,10 @@
       indexTd.textContent = Math.round(indexValue).toLocaleString();
       tr.appendChild(indexTd);
 
+      const dateTd = document.createElement("td");
+      dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
+      tr.appendChild(dateTd);
+      
       const beatenByTd = document.createElement("td");
       let beatenBy = [];
       if (s.milo) beatenBy.push("Milo");
@@ -795,10 +799,6 @@
       if (s.zoiv) beatenBy.push("Zoiv");
       beatenByTd.textContent = beatenBy.join(", ");
       tr.appendChild(beatenByTd);
-
-      const dateTd = document.createElement("td");
-      dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
-      tr.appendChild(dateTd);
 
       const removeTd = document.createElement("td");
       const removeBtn = document.createElement("button");

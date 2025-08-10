@@ -220,45 +220,53 @@
     background: #2a2a2a;
   }
 
-  /* --- Filter styles (added) --- */
-  .filter-bar {
-    max-width: 1080px;
-    margin: 0 auto 18px;
+  /* --- Filters sidebar --- */
+  #filtersSidebar {
+    max-width: 140px;
+    margin: 0 10px 40px 40px;
+    padding: 15px 20px;
+    background: #1e1e1e;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.7);
+    color: #f3a023;
+    font-weight: 700;
+    font-size: 1.2em;
     display: flex;
-    gap: 12px;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 15px;
+    user-select: none;
   }
 
-  .filter-bar label {
-    font-weight: 600;
+  #filtersSidebar label {
     color: #ccc;
+    font-weight: 600;
+    font-size: 0.9em;
     display: flex;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
+    gap: 6px;
   }
 
-  .filter-bar input[type="number"] {
-    width: 90px;
-    padding: 8px 10px;
-    border-radius: 6px;
+  #filtersSidebar input[type="number"] {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 1em;
+    border-radius: 5px;
     border: 1.5px solid #444;
     background: #222;
     color: #e0e0e0;
   }
 
-  .filter-bar button {
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-weight: 700;
-  }
-  /* ----------------------------- */
-
-  table {
-    width: 100%;
+  /* --- Main container with filters + table --- */
+  #mainContent {
     max-width: 1080px;
     margin: 0 auto 40px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  table {
+    flex: 1;
     border-collapse: collapse;
     background: #1e1e1e;
     border-radius: 8px;
@@ -291,15 +299,6 @@
 
   th.sortable:hover {
     background: #6d4c41;
-  }
-
-  button {
-    font-weight: 600;
-  }
-
-  button:focus {
-    outline: 2px solid #f3a023;
-    outline-offset: 2px;
   }
 
   /* Added avatar in table row */
@@ -382,35 +381,38 @@
   <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
 </div>
 
-<!-- FILTER UI (added) -->
-<div class="filter-bar" aria-label="Minimum stat filters">
-  <label for="minFkdr">Min FKDR
-    <input id="minFkdr" type="number" step="0.1" placeholder="e.g. 2.5" aria-label="Minimum FKDR">
-  </label>
-  <label for="minWlr">Min WLR
-    <input id="minWlr" type="number" step="0.1" placeholder="e.g. 1.2" aria-label="Minimum WLR">
-  </label>
-  <label for="minStars">Min Stars
-    <input id="minStars" type="number" step="1" placeholder="e.g. 100" aria-label="Minimum Stars">
-  </label>
-  <button id="applyFiltersBtn" type="button" aria-label="Apply filters">Apply</button>
-  <button id="resetFiltersBtn" type="button" aria-label="Reset filters">Reset</button>
-</div>
+<div id="mainContent" aria-label="Sweat player list and filters">
+  <aside id="filtersSidebar" aria-label="Filters">
+    Filters
+    <label for="minStars">
+      Stars
+      <input id="minStars" type="number" step="1" placeholder="e.g. 100" aria-label="Minimum Stars" />
+    </label>
+    <label for="minFkdr">
+      FKDR
+      <input id="minFkdr" type="number" step="0.1" placeholder="e.g. 2.5" aria-label="Minimum FKDR" />
+    </label>
+    <label for="minWlr">
+      WLR
+      <input id="minWlr" type="number" step="0.1" placeholder="e.g. 1.2" aria-label="Minimum WLR" />
+    </label>
+  </aside>
 
-<table>
-  <thead>
-    <tr>
-      <th>Username</th>
-      <th class="sortable" data-sort="star">Star ▲▼</th>
-      <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
-      <th class="sortable" data-sort="wlr">WLR ▲▼</th>
-      <th>Beaten By</th>
-      <th class="sortable" data-sort="dateAdded">Date Added ▲▼</th>
-      <th>Remove</th>
-    </tr>
-  </thead>
-  <tbody id="sweatTable"></tbody>
-</table>
+  <table>
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th class="sortable" data-sort="star">Star ▲▼</th>
+        <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
+        <th class="sortable" data-sort="wlr">WLR ▲▼</th>
+        <th>Beaten By</th>
+        <th class="sortable" data-sort="dateAdded">Date Added ▲▼</th>
+        <th>Remove</th>
+      </tr>
+    </thead>
+    <tbody id="sweatTable"></tbody>
+  </table>
+</div>
 
 <script>
   const backendBaseURL = "https://bedwars-backend.onrender.com";
@@ -442,12 +444,10 @@
   const statKDR = document.getElementById('statKDR');
   const statBBLR = document.getElementById('statBBLR');
 
-  // Filter inputs (added)
+  // Filter inputs
   const filterFkdr = document.getElementById('minFkdr');
   const filterWlr = document.getElementById('minWlr');
   const filterStars = document.getElementById('minStars');
-  const applyFiltersBtn = document.getElementById('applyFiltersBtn');
-  const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
   let sweats = [];
   let sortField = null;
@@ -526,285 +526,154 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newSweat)
       });
+
       if (!res.ok) throw new Error("Failed to add sweat");
 
-      // Reload sweats from backend
-      await loadSweats();
+      status.textContent = `Added ${currentStats.username} to sweats!`;
 
+      // Reset form
       form.reset();
+      statsDisplay.style.display = "none";
       currentUUID = null;
       currentStats = null;
-      statsDisplay.style.display = "none";
+
+      await loadSweats();
     } catch (err) {
-      status.textContent = "Error: " + err.message;
+      status.textContent = "Error adding sweat: " + err.message;
     }
   });
 
-  searchInput.addEventListener('input', () => {
-    currentFilter = searchInput.value.trim().toLowerCase();
-    renderTable();
-  });
-
-  // Apply / reset filter buttons (added)
-  applyFiltersBtn.addEventListener('click', () => {
-    renderTable();
-  });
-
-  resetFiltersBtn.addEventListener('click', () => {
-    filterFkdr.value = "";
-    filterWlr.value = "";
-    filterStars.value = "";
-    renderTable();
-  });
-
-  // Also auto-apply while typing for convenience
-  [filterFkdr, filterWlr, filterStars].forEach(inp => {
-    inp.addEventListener('input', () => {
-      // don't spam re-render on every keystroke? it's fine here
-      renderTable();
-    });
-  });
-
   async function fetchAndDisplayStats() {
-    const usernameInput = document.getElementById('username');
-    const usernameRaw = usernameInput.value.trim();
-    if (!usernameRaw) {
-      alert("Please enter a username first.");
-      throw new Error("Username missing");
+    const username = document.getElementById('username').value.trim();
+    if (!username) {
+      status.textContent = "Please enter a username.";
+      return;
     }
     status.textContent = "Fetching stats...";
     statsDisplay.style.display = "none";
 
-    // Fetch UUID and corrected capitalization from your backend mojang proxy
-    const resMojang = await fetch(`${backendBaseURL}/mojang/${usernameRaw}`);
-    if (!resMojang.ok) throw new Error("Username not found");
-    const mojangData = await resMojang.json();
+    try {
+      const res = await fetch(`${backendBaseURL}/stats/${username}`);
+      if (!res.ok) throw new Error("Player not found");
 
-    currentUUID = mojangData.id;
-    usernameInput.value = mojangData.name; // corrected capitalization
+      const data = await res.json();
+      currentUUID = data.uuid;
+      currentStats = data;
 
-    const data = await getPlayerStats(currentUUID);
-    currentStats = {
-      username: mojangData.name,
-      star: calculateStarFromXP(data.exp),
-      fkdr: data.fkdr,
-      wlr: data.wlr,
-      bblr: data.bblr,
-      kdr: data.kdr,
-      finals: data.finals,
-      finalDeaths: data.finalDeaths,
-      beds: data.beds,
-      bedsLost: data.bedsLost,
-      kills: data.kills,
-      deaths: data.deaths,
-      rank: getHypixelRank(data.player),
-      wins: data.wins,
-      losses: data.losses
-    };
-
-    updateStatsDisplay(currentStats);
-    status.textContent = "";
-  }
-
-  async function getPlayerStats(uuid) {
-    const res = await fetch(`${backendBaseURL}/player/${uuid}`);
-    if (!res.ok) throw new Error("Player stats not found");
-    const json = await res.json();
-    const data = json.player.stats?.Bedwars || {};
-
-    const exp = data.Experience || 0;
-    const wins = data.wins_bedwars || 0;
-    const losses = data.losses_bedwars || 0;
-    const finalKills = data.final_kills_bedwars || 0;
-    const finalDeaths = data.final_deaths_bedwars || 0;
-    const bedsBroken = data.beds_broken_bedwars || 0;
-    const bedsLost = data.beds_lost_bedwars || 0;
-    const kills = data.kills_bedwars || 0;
-    const deaths = data.deaths_bedwars || 0;
-
-    const wlr = wins / (losses === 0 ? 1 : losses);
-    const fkdr = finalKills / (finalDeaths === 0 ? 1 : finalDeaths);
-    const kdr = kills / (deaths === 0 ? 1 : deaths);
-    const bblr = bedsLost === 0 ? bedsBroken : bedsBroken / bedsLost;
-
-    return {
-      exp,
-      wlr,
-      fkdr,
-      bblr,
-      kdr,
-      finals: finalKills,
-      finalDeaths,
-      wins,
-      losses,
-      beds: bedsBroken,
-      bedsLost,
-      kills,
-      deaths,
-      player: json.player
-    };
-  }
-
-  function calculateStarFromXP(exp) {
-    if (exp < 0) return 0;
-    let stars = 0;
-    let xpLeft = exp;
-    while (xpLeft >= 0) {
-      let mod100 = stars % 100;
-      let xpNeeded;
-      if (mod100 === 0) xpNeeded = 500;
-      else if (mod100 === 1) xpNeeded = 1000;
-      else if (mod100 === 2) xpNeeded = 2000;
-      else if (mod100 === 3 || mod100 === 4) xpNeeded = 3500;
-      else xpNeeded = 5000;
-      if (xpLeft < xpNeeded) break;
-      xpLeft -= xpNeeded;
-      stars++;
-    }
-    return stars;
-  }
-
-  function getHypixelRank(player) {
-    if (!player) return {name:"[NONE]", color:"#AAA", prefix:""};
-    const rank = player.rank || player.newPackageRank || player.packageRank || "NONE";
-    switch(rank) {
-      case "ADMIN": return {name:"ADMIN", color:"#FF5555", prefix:"[ADMIN] "};
-      case "MODERATOR": return {name:"MOD", color:"#55FF55", prefix:"[MOD] "};
-      case "MVP_PLUS": return {name:"MVP+", color:"#FFB74D", prefix:"[MVP+] "};
-      case "MVP": return {name:"MVP", color:"#FFB74D", prefix:"[MVP] "};
-      case "VIP_PLUS": return {name:"VIP+", color:"#FFB74D", prefix:"[VIP+] "};
-      case "VIP": return {name:"VIP", color:"#FFB74D", prefix:"[VIP] "};
-      default: return {name:"[NONE]", color:"#AAA", prefix:""};
+      showStats(data);
+      status.textContent = "";
+    } catch (err) {
+      status.textContent = "Error fetching stats: " + err.message;
     }
   }
 
-  function updateStatsDisplay(stats) {
-    statsAvatar.src = `https://crafatar.com/avatars/${currentUUID}?overlay`;
-    statsUsername.textContent = stats.username;
-    statsRank.textContent = stats.rank.prefix || "";
-    statsRank.style.color = stats.rank.color;
-    statsStar.textContent = `★${stats.star}`;
+  function showStats(data) {
+    statsAvatar.src = `https://crafatar.com/avatars/${data.uuid}?size=100&overlay`;
+    statsAvatar.alt = `${data.username}'s Minecraft avatar`;
 
-    statWins.textContent = stats.wins;
-    statFinals.textContent = stats.finals;
-    statKills.textContent = stats.kills;
-    statBeds.textContent = stats.beds;
+    statsUsername.textContent = data.username;
+    statsRank.textContent = data.rank ? data.rank : "None";
+    statsStar.textContent = `★${data.star}`;
 
-    statLosses.textContent = stats.losses;
-    statFinalDeaths.textContent = stats.finalDeaths;
-    statDeaths.textContent = stats.deaths;
-    statBedsLost.textContent = stats.bedsLost;
+    statWins.textContent = data.wins;
+    statFinals.textContent = data.finals;
+    statKills.textContent = data.kills;
+    statBeds.textContent = data.beds;
 
-    statWLR.textContent = stats.wlr.toFixed(2);
-    statFKDR.textContent = stats.fkdr.toFixed(2);
-    statKDR.textContent = stats.kdr.toFixed(2);
-    statBBLR.textContent = stats.bblr.toFixed(2);
+    statLosses.textContent = data.losses;
+    statFinalDeaths.textContent = data.finalDeaths;
+    statDeaths.textContent = data.deaths;
+    statBedsLost.textContent = data.bedsLost;
+
+    statWLR.textContent = data.wlr.toFixed(2);
+    statFKDR.textContent = data.fkdr.toFixed(2);
+    statKDR.textContent = data.kdr.toFixed(2);
+    statBBLR.textContent = data.bblr.toFixed(2);
 
     statsDisplay.style.display = "flex";
   }
 
   function renderTable() {
-    // basic search filter
-    let filteredSweats = sweats.filter(s => s.username.toLowerCase().includes(currentFilter));
+    // Filtering
+    const minStar = parseFloat(filterStars.value);
+    const minFkdr = parseFloat(filterFkdr.value);
+    const minWlr = parseFloat(filterWlr.value);
+    const searchLower = searchInput.value.trim().toLowerCase();
 
-    // read filter inputs (treat empty as no filter)
-    const minFkdr = (filterFkdr && filterFkdr.value.trim() !== "") ? parseFloat(filterFkdr.value) : null;
-    const minWlr = (filterWlr && filterWlr.value.trim() !== "") ? parseFloat(filterWlr.value) : null;
-    const minStars = (filterStars && filterStars.value.trim() !== "") ? parseInt(filterStars.value) : null;
+    let filtered = sweats.filter(s => {
+      if (minStar && s.star < minStar) return false;
+      if (minFkdr && s.fkdr < minFkdr) return false;
+      if (minWlr && s.wlr < minWlr) return false;
+      if (searchLower && !s.username.toLowerCase().includes(searchLower)) return false;
+      return true;
+    });
 
-    // apply numeric filters if set
-    if (minFkdr !== null || minWlr !== null || minStars !== null) {
-      filteredSweats = filteredSweats.filter(s => {
-        const sFkdr = Number(s.fkdr) || 0;
-        const sWlr = Number(s.wlr) || 0;
-        const sStar = Number(s.star) || 0;
-        if (minFkdr !== null && sFkdr < minFkdr) return false;
-        if (minWlr !== null && sWlr < minWlr) return false;
-        if (minStars !== null && sStar < minStars) return false;
-        return true;
-      });
-    }
-
+    // Sorting
     if (sortField) {
-      filteredSweats.sort((a,b) => {
-        if (a[sortField] < b[sortField]) return sortAsc ? -1 : 1;
-        if (a[sortField] > b[sortField]) return sortAsc ? 1 : -1;
+      filtered.sort((a,b) => {
+        let av = a[sortField];
+        let bv = b[sortField];
+        if (typeof av === 'string') av = av.toLowerCase();
+        if (typeof bv === 'string') bv = bv.toLowerCase();
+
+        if (av < bv) return sortAsc ? -1 : 1;
+        if (av > bv) return sortAsc ? 1 : -1;
         return 0;
       });
     }
 
-    tableBody.innerHTML = "";
-
-    filteredSweats.forEach(s => {
-      const tr = document.createElement("tr");
-
-      const usernameTd = document.createElement("td");
-      usernameTd.classList.add('user-cell');
-
-      const avatarImg = document.createElement("img");
-      avatarImg.classList.add('user-avatar');
-      avatarImg.src = `https://crafatar.com/avatars/${s.uuid}?overlay`;
-      avatarImg.alt = `Avatar of ${s.username}`;
-
-      const usernameText = document.createElement("span");
-      usernameText.textContent = s.username;
-
-      usernameTd.appendChild(avatarImg);
-      usernameTd.appendChild(usernameText);
-      tr.appendChild(usernameTd);
-
-      const starTd = document.createElement("td");
-      starTd.textContent = s.star;
-      tr.appendChild(starTd);
-
-      const fkdrTd = document.createElement("td");
-      fkdrTd.textContent = s.fkdr.toFixed(2);
-      tr.appendChild(fkdrTd);
-
-      const wlrTd = document.createElement("td");
-      wlrTd.textContent = s.wlr.toFixed(2);
-      tr.appendChild(wlrTd);
-
-      const beatenByTd = document.createElement("td");
+    tableBody.innerHTML = filtered.map(s => {
+      // Collect who beat them
       let beatenBy = [];
       if (s.milo) beatenBy.push("Milo");
       if (s.potat) beatenBy.push("Potat");
       if (s.aballs) beatenBy.push("Aballs");
       if (s.zoiv) beatenBy.push("Zoiv");
-      beatenByTd.textContent = beatenBy.join(", ");
-      tr.appendChild(beatenByTd);
+      let beatenByStr = beatenBy.join(", ") || "-";
 
-      const dateTd = document.createElement("td");
-      dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
-      tr.appendChild(dateTd);
+      // Player avatar URL
+      const avatarUrl = `https://crafatar.com/avatars/${s.uuid}?size=32&overlay`;
 
-      const removeTd = document.createElement("td");
-      const removeBtn = document.createElement("button");
-      removeBtn.textContent = "Remove";
-      removeBtn.addEventListener("click", () => removeSweat(s._id));
-      removeTd.appendChild(removeBtn);
-      tr.appendChild(removeTd);
+      return `<tr>
+        <td class="user-cell">
+          <img class="user-avatar" src="${avatarUrl}" alt="${s.username} avatar" />
+          ${s.username}
+        </td>
+        <td>${s.star}</td>
+        <td>${s.fkdr.toFixed(2)}</td>
+        <td>${s.wlr.toFixed(2)}</td>
+        <td>${beatenByStr}</td>
+        <td>${new Date(s.dateAdded).toLocaleDateString()}</td>
+        <td><button aria-label="Remove ${s.username}" data-uuid="${s.uuid}">Remove</button></td>
+      </tr>`;
+    }).join('');
 
-      tableBody.appendChild(tr);
+    // Add remove button listeners
+    [...tableBody.querySelectorAll('button')].forEach(btn => {
+      btn.onclick = async e => {
+        const uuid = e.target.dataset.uuid;
+        if (!confirm(`Remove player from sweats?`)) return;
+
+        try {
+          const res = await fetch(`${backendBaseURL}/sweats/${uuid}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error("Failed to remove player");
+
+          status.textContent = "Player removed!";
+          await loadSweats();
+        } catch (err) {
+          status.textContent = "Error removing player: " + err.message;
+        }
+      };
     });
   }
 
-  async function removeSweat(id) {
-    if (!confirm("Are you sure you want to remove this sweat?")) return;
-    try {
-      const res = await fetch(`${backendBaseURL}/sweats/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to remove sweat");
-      await loadSweats();
-    } catch (err) {
-      alert("Error removing sweat: " + err.message);
-    }
-  }
-
-  document.querySelectorAll("th.sortable").forEach(th => {
-    th.addEventListener("click", () => {
+  // Sort header click handlers
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
       const field = th.dataset.sort;
-      if (sortField === field) sortAsc = !sortAsc;
-      else {
+      if (field === sortField) {
+        sortAsc = !sortAsc;
+      } else {
         sortField = field;
         sortAsc = true;
       }
@@ -812,7 +681,14 @@
     });
   });
 
-  // Load all sweats on startup
+  // Filter inputs trigger table render on input (real-time)
+  [filterStars, filterFkdr, filterWlr].forEach(input => {
+    input.addEventListener('input', () => renderTable());
+  });
+
+  // Search input event
+  searchInput.addEventListener('input', () => renderTable());
+
   loadSweats();
 </script>
 

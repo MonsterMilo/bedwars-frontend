@@ -375,15 +375,10 @@
             <div class="stat-label">BBLR:</div><div class="stat-value" id="statBBLR">0</div>
           </div>
         </div>
-
-        <div id="statsIndexContainer" style="text-align: center; margin-top: 12px; font-weight: 700; font-size: 1.2em; color: #ffb74d;">
-          Index: <span id="statIndexValue">0</span>
-        </div>
-
       </div>
     </div>
   </div>
-
+</div>
 
 <div id="searchContainer">
   <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
@@ -707,9 +702,6 @@
     statFKDR.textContent = stats.fkdr.toFixed(2);
     statKDR.textContent = stats.kdr.toFixed(2);
     statBBLR.textContent = stats.bblr.toFixed(2);
-
-    const indexValue = stats.fkdr * stats.fkdr * stats.star;
-    document.getElementById('statIndexValue').textContent = Math.round(indexValue).toLocaleString();
 
     statsDisplay.style.display = "flex";
   }

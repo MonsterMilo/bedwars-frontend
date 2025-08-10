@@ -708,6 +708,7 @@
     // basic search filter
     let filteredSweats = sweats.filter(s => s.username.toLowerCase().includes(currentFilter));
 
+
     // read filter inputs (treat empty as no filter)
     const minFkdr = (filterFkdr && filterFkdr.value.trim() !== "") ? parseFloat(filterFkdr.value) : null;
     const minWlr = (filterWlr && filterWlr.value.trim() !== "") ? parseFloat(filterWlr.value) : null;
@@ -727,12 +728,26 @@
     }
 
     if (sortField) {
-      filteredSweats.sort((a,b) => {
-        if (a[sortField] < b[sortField]) return sortAsc ? -1 : 1;
-        if (a[sortField] > b[sortField]) return sortAsc ? 1 : -1;
-        return 0;
-      });
-    }
+      filteredSweats.sort((a, b) => {
+        let valA, valB;
+
+        if (sortField === "index") {
+          valA = a.fkdr * a.fkdr * a.star;
+          valB = b.fkdr * b.fkdr * b.star;
+        } else if (sortField === "dateAdded") {
+          valA = new Date(a.dateAdded);
+          valB = new Date(b.dateAdded);
+        } else {
+          valA = a[sortField];
+          valB = b[sortField];
+       }
+
+    if (valA < valB) return sortAsc ? -1 : 1;
+    if (valA > valB) return sortAsc ? 1 : -1;
+    return 0;
+  });
+}
+
 
     tableBody.innerHTML = "";
 

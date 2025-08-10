@@ -397,6 +397,9 @@
   <label for="minIndex">Min Index
     <input id="minIndex" type="number" step="1" placeholder="e.g. 300" aria-label="Minimum Index">
   </label>
+  <label for="minDate">Min Date
+  <input id="minDate" type="date" aria-label="Minimum Date">
+</label>
   <button id="resetFiltersBtn" type="button" aria-label="Reset filters">Reset</button>
 </div>
 
@@ -449,6 +452,7 @@
   const filterFkdr = document.getElementById('minFkdr');
   const filterIndex = document.getElementById('minIndex');
   const filterStars = document.getElementById('minStars');
+  const filterDate = document.getElementById('minDate');
   const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
   let sweats = [];
@@ -710,19 +714,25 @@
     const minFkdr = (filterFkdr && filterFkdr.value.trim() !== "") ? parseFloat(filterFkdr.value) : null;
     const minIndex = (filterIndex && filterIndex.value.trim() !== "") ? parseFloat(filterIndex.value) : null;
     const minStars = (filterStars && filterStars.value.trim() !== "") ? parseInt(filterStars.value) : null;
+    const minDate = filterDate && filterDate.value ? new Date(filterDate.value) : null;
+
 
     // apply numeric filters if set
-    if (minFkdr !== null || minIndex !== null || minStars !== null) {
-      filteredSweats = filteredSweats.filter(s => {
-       const sFkdr = Number(s.fkdr) || 0;
-        const sStar = Number(s.star) || 0;
-        const sIndex = sFkdr * sFkdr * sStar;
-        if (minFkdr !== null && sFkdr < minFkdr) return false;
-        if (minIndex !== null && sIndex < minIndex) return false;
-        if (minStars !== null && sStar < minStars) return false;
-        return true;
-      });
-    }
+if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== null) {
+  filteredSweats = filteredSweats.filter(s => {
+    const sFkdr = Number(s.fkdr) || 0;
+    const sStar = Number(s.star) || 0;
+    const sIndex = sFkdr * sFkdr * sStar;
+    const sDate = new Date(s.dateAdded);
+
+    if (minFkdr !== null && sFkdr < minFkdr) return false;
+    if (minIndex !== null && sIndex < minIndex) return false;
+    if (minStars !== null && sStar < minStars) return false;
+    if (minDate !== null && sDate < minDate) return false;
+
+    return true;
+  });
+}
 
 
     if (sortField) {

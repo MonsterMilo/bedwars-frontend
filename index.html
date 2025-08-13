@@ -410,6 +410,7 @@
       <th class="sortable" data-sort="star">Star ▲▼</th>
       <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
       <th class="sortable" data-sort="index">Index ▲▼</th>
+      <th>Urchin</th> 
       <th class="sortable" data-sort="dateAdded">Date Added ▲▼</th>
       <th>Beaten By</th>
       <th></th>
@@ -794,6 +795,10 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
       indexTd.textContent = Math.round(indexValue).toLocaleString();
       tr.appendChild(indexTd);
 
+      const urchinTd = document.createElement("td");
+      urchinTd.textContent = s.urchin ? "✔️" : ""; // or s.urchin.toString() for true/false
+      tr.appendChild(urchinTd);
+      
       const dateTd = document.createElement("td");
       dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
       tr.appendChild(dateTd);

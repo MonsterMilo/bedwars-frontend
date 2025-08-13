@@ -323,6 +323,18 @@
     padding: 12px 15px;  
   }
 
+  .tag {
+  display: inline-block;
+  background: #ff7043;
+  color: #121212;
+  font-size: 0.75em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 4px;
+  font-weight: 600;
+  }
+
+
 
 </style>
 </head>
@@ -796,7 +808,14 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
       tr.appendChild(indexTd);
 
       const urchinTd = document.createElement("td");
-      urchinTd.textContent = s.urchin ? "✔️" : ""; // or s.urchin.toString() for true/false
+      if (Array.isArray(s.urchin) && s.urchin.length > 0) {
+          // Join multiple tags as a comma-separated list
+          urchinTd.textContent = s.urchin.map(tag => tag.replace(/_/g, ' ')).join(", ");
+          // Optional: add styling for each tag
+          // urchinTd.innerHTML = s.urchin.map(tag => `<span class="tag">${tag.replace(/_/g,' ')}</span>`).join(' ');
+      } else {
+          urchinTd.textContent = "";
+      }
       tr.appendChild(urchinTd);
       
       const dateTd = document.createElement("td");

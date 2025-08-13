@@ -323,18 +323,6 @@
     padding: 12px 15px;  
   }
 
-  .tag {
-  display: inline-block;
-  background: #ff7043;
-  color: #121212;
-  font-size: 0.75em;
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-right: 4px;
-  font-weight: 600;
-  }
-
-
 
 </style>
 </head>
@@ -422,7 +410,6 @@
       <th class="sortable" data-sort="star">Star ▲▼</th>
       <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
       <th class="sortable" data-sort="index">Index ▲▼</th>
-      <th>Urchin</th> 
       <th class="sortable" data-sort="dateAdded">Date Added ▲▼</th>
       <th>Beaten By</th>
       <th></th>
@@ -537,8 +524,7 @@
         aballs,
         zoiv,
         uuid: currentUUID,
-        dateAdded: todayDate,
-        urchin: []
+        dateAdded: todayDate
       };
 
       const res = await fetch(`${backendBaseURL}/sweats`, {
@@ -808,16 +794,6 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
       indexTd.textContent = Math.round(indexValue).toLocaleString();
       tr.appendChild(indexTd);
 
-      // Create urchin column
-      const urchinTd = document.createElement("td");
-      if (s.urchin && s.urchin.length > 0) {
-        urchinTd.textContent = s.urchin.join(", "); // show tags separated by commas
-      } else {
-        urchinTd.textContent = "-"; // or leave empty
-      }
-      tr.appendChild(urchinTd);
-
-      
       const dateTd = document.createElement("td");
       dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
       tr.appendChild(dateTd);

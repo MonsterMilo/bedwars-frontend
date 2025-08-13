@@ -808,16 +808,15 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
       indexTd.textContent = Math.round(indexValue).toLocaleString();
       tr.appendChild(indexTd);
 
+      // Create urchin column
       const urchinTd = document.createElement("td");
-      if (Array.isArray(s.urchin) && s.urchin.length > 0) {
-          // Join multiple tags as a comma-separated list
-          urchinTd.textContent = s.urchin.map(tag => tag.replace(/_/g, ' ')).join(", ");
-          // Optional: add styling for each tag
-          // urchinTd.innerHTML = s.urchin.map(tag => `<span class="tag">${tag.replace(/_/g,' ')}</span>`).join(' ');
+      if (s.urchin && s.urchin.length > 0) {
+        urchinTd.textContent = s.urchin.join(", "); // show tags separated by commas
       } else {
-          urchinTd.textContent = "";
+        urchinTd.textContent = "-"; // or leave empty
       }
       tr.appendChild(urchinTd);
+
       
       const dateTd = document.createElement("td");
       dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();

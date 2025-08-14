@@ -572,7 +572,7 @@
   });
 
   async function fetchUrchinTags(username) {
-    const urchinKey = "YourUrchinKeyHere"; // replace with your key
+    const urchinKey = "4bc4b6da-6591-44cd-a597-10a2caeecdce"; // replace with your key
     try {
       const res = await fetch(`https://urchin.ws/player/${encodeURIComponent(username)}?key=${urchinKey}&sources=MANUAL`);
       if (!res.ok) throw new Error("Urchin fetch failed");

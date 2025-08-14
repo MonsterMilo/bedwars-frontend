@@ -571,19 +571,19 @@
     });
   });
 
+// Frontend: fetch from your backend
   async function fetchUrchinTags(username) {
-    const urchinKey = "4bc4b6da-6591-44cd-a597-10a2caeecdce"; // replace with your key
     try {
-      const res = await fetch(`https://urchin.ws/player/${encodeURIComponent(username)}?key=${urchinKey}&sources=MANUAL`);
+      const res = await fetch(`${backendBaseURL}/urchin/${encodeURIComponent(username)}`);
       if (!res.ok) throw new Error("Urchin fetch failed");
       const data = await res.json();
       if (data.tags && data.tags.length > 0) {
-        return data.tags.map(tag => tag.type).join(", ");
+       return data.tags.map(tag => tag.type).join(", ");
       }
-      return "None";
-    } catch (err) {
-      console.warn("Failed to fetch Urchin tags:", err);
-      return "None";
+     return "None";
+   } catch (err) {
+        console.warn("Failed to fetch Urchin tags:", err);
+    return "None";
     }
   }
 

@@ -376,6 +376,10 @@
             <div class="stat-label">KDR:</div><div class="stat-value" id="statKDR">0</div>
             <div class="stat-label">BBLR:</div><div class="stat-value" id="statBBLR">0</div>
           </div>
+          <div id="statsUrchin" class="stat-column neutral">
+            <div class="stat-label">Urchin Tags:</div>
+            <div class="stat-value" id="statUrchin">None</div>
+          </div>
         </div>
       </div>
     </div>
@@ -567,6 +571,21 @@
     });
   });
 
+  async function fetchUrchinTags(username) {
+    const urchinKey = "YourUrchinKeyHere"; // replace with your key
+    try {
+      const res = await fetch(`https://urchin.ws/player/${encodeURIComponent(username)}?key=${urchinKey}&sources=MANUAL`);
+      if (!res.ok) throw new Error("Urchin fetch failed");
+      const data = await res.json();
+      if (data.tags && data.tags.length > 0) {
+        return data.tags.map(tag => tag.type).join(", ");
+      }
+      return "None";
+    } catch (err) {
+      console.warn("Failed to fetch Urchin tags:", err);
+      return "None";
+    }
+  }
 
   async function fetchAndDisplayStats() {
     const usernameInput = document.getElementById('username');
@@ -575,7 +594,7 @@
       alert("Please enter a username first.");
       throw new Error("Username missing");
     }
-    status.textContent = "Fetching stats...";
+   status.textContent = "Fetching stats...";
     statsDisplay.style.display = "none";
 
     // Fetch UUID and corrected capitalization from your backend mojang proxy
@@ -596,7 +615,7 @@
       kdr: data.kdr,
       finals: data.finals,
       finalDeaths: data.finalDeaths,
-      beds: data.beds,
+     beds: data.beds,
       bedsLost: data.bedsLost,
       kills: data.kills,
       deaths: data.deaths,
@@ -606,6 +625,9 @@
     };
 
     updateStatsDisplay(currentStats);
+    const urTags = await fetchUrchinTags(currentStats.username);
+    const statUrchinElem = document.getElementById("statUrchin");
+    if (statUrchinElem) statUrchinElem.textContent = urTags;
     status.textContent = "";
   }
 

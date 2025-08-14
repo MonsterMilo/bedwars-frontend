@@ -481,6 +481,16 @@
     await fetchAndDisplayStats();
   });
 
+  function formatUrchinTagType(tagType) {
+  switch(tagType) {
+    case "confirmed_cheater": return "Confirmed Cheater";
+    case "blatant_cheater": return "Blatant Cheater";
+    case "closet_cheater": return "Closet Cheater";
+    case "sniper": return "Sniper";
+    default: return tagType; // fallback
+  }
+}
+
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const username = document.getElementById('username').value.trim();
@@ -586,6 +596,12 @@
     return "None";
     }
   }
+
+  const tags = urchinData.tags
+  .map(t => `${formatUrchinTagType(t.type)}: ${t.reason}`)
+  .join(", ");
+
+  currentStats.urchinTags = tags || "None";
 
   async function fetchAndDisplayStats() {
     const usernameInput = document.getElementById('username');
@@ -724,6 +740,8 @@
     statFKDR.textContent = stats.fkdr.toFixed(2);
     statKDR.textContent = stats.kdr.toFixed(2);
     statBBLR.textContent = stats.bblr.toFixed(2);
+
+    statUrchin.textContent = stats.urchinTags || "None";
 
     statsDisplay.style.display = "flex";
   }

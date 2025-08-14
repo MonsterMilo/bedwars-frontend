@@ -423,328 +423,314 @@
 </table>
 
 <script>
-  const backendBaseURL = "https://bedwars-backend.onrender.com";
+const backendBaseURL = "https://bedwars-backend.onrender.com";
 
-  const form = document.getElementById('sweatForm');
-  const tableBody = document.getElementById('sweatTable');
-  const status = document.getElementById('status');
-  const fetchBtn = document.getElementById('fetchBtn');
-  const statsDisplay = document.getElementById('statsDisplay');
-  const searchInput = document.getElementById('searchInput');
+const form = document.getElementById('sweatForm');
+const tableBody = document.getElementById('sweatTable');
+const status = document.getElementById('status');
+const fetchBtn = document.getElementById('fetchBtn');
+const statsDisplay = document.getElementById('statsDisplay');
+const searchInput = document.getElementById('searchInput');
 
-  const statsAvatar = document.getElementById('statsAvatar');
-  const statsUsername = document.getElementById('statsUsername');
-  const statsRank = document.getElementById('statsRank');
-  const statsStar = document.getElementById('statsStar');
+const statsAvatar = document.getElementById('statsAvatar');
+const statsUsername = document.getElementById('statsUsername');
+const statsRank = document.getElementById('statsRank');
+const statsStar = document.getElementById('statsStar');
 
-  const statWins = document.getElementById('statWins');
-  const statFinals = document.getElementById('statFinals');
-  const statKills = document.getElementById('statKills');
-  const statBeds = document.getElementById('statBeds');
+const statWins = document.getElementById('statWins');
+const statFinals = document.getElementById('statFinals');
+const statKills = document.getElementById('statKills');
+const statBeds = document.getElementById('statBeds');
 
-  const statLosses = document.getElementById('statLosses');
-  const statFinalDeaths = document.getElementById('statFinalDeaths');
-  const statDeaths = document.getElementById('statDeaths');
-  const statBedsLost = document.getElementById('statBedsLost');
+const statLosses = document.getElementById('statLosses');
+const statFinalDeaths = document.getElementById('statFinalDeaths');
+const statDeaths = document.getElementById('statDeaths');
+const statBedsLost = document.getElementById('statBedsLost');
 
-  const statWLR = document.getElementById('statWLR');
-  const statFKDR = document.getElementById('statFKDR');
-  const statKDR = document.getElementById('statKDR');
-  const statBBLR = document.getElementById('statBBLR');
+const statWLR = document.getElementById('statWLR');
+const statFKDR = document.getElementById('statFKDR');
+const statKDR = document.getElementById('statKDR');
+const statBBLR = document.getElementById('statBBLR');
+const statUrchin = document.getElementById('statUrchin');
 
-  // Filter inputs (added)
-  const filterFkdr = document.getElementById('minFkdr');
-  const filterIndex = document.getElementById('minIndex');
-  const filterStars = document.getElementById('minStars');
-  const filterDate = document.getElementById('minDate');
-  const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+const filterFkdr = document.getElementById('minFkdr');
+const filterIndex = document.getElementById('minIndex');
+const filterStars = document.getElementById('minStars');
+const filterDate = document.getElementById('minDate');
+const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
-  let sweats = [];
-  let sortField = null;
-  let sortAsc = true;
-  let currentUUID = null;
-  let currentStats = null;
-  let currentFilter = "";
+let sweats = [];
+let sortField = null;
+let sortAsc = true;
+let currentUUID = null;
+let currentStats = null;
+let currentFilter = "";
 
-  async function loadSweats() {
-    try {
-      const res = await fetch(`${backendBaseURL}/sweats?limit=1000`);
-      if (!res.ok) throw new Error("Failed to fetch sweats");
-      sweats = await res.json();
-      renderTable();
-    } catch (err) {
-      status.textContent = "Error loading sweats: " + err.message;
-    }
+// Load sweats
+async function loadSweats() {
+  try {
+    const res = await fetch(`${backendBaseURL}/sweats?limit=1000`);
+    if (!res.ok) throw new Error("Failed to fetch sweats");
+    sweats = await res.json();
+    renderTable();
+  } catch (err) {
+    status.textContent = "Error loading sweats: " + err.message;
   }
+}
 
-  fetchBtn.addEventListener('click', async () => {
-    await fetchAndDisplayStats();
-  });
+fetchBtn.addEventListener('click', async () => {
+  await fetchAndDisplayStats();
+});
 
-  function formatUrchinTagType(tagType) {
+function formatUrchinTagType(tagType) {
   switch(tagType) {
     case "confirmed_cheater": return "Confirmed Cheater";
     case "blatant_cheater": return "Blatant Cheater";
     case "closet_cheater": return "Closet Cheater";
     case "sniper": return "Sniper";
-    default: return tagType; // fallback
+    default: return tagType; 
   }
 }
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const username = document.getElementById('username').value.trim();
-    const milo = document.getElementById('milo').checked;
-    const potat = document.getElementById('potat').checked;
-    const aballs = document.getElementById('aballs').checked;
-    const zoiv = document.getElementById('zoiv').checked;
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  const username = document.getElementById('username').value.trim();
+  const milo = document.getElementById('milo').checked;
+  const potat = document.getElementById('potat').checked;
+  const aballs = document.getElementById('aballs').checked;
+  const zoiv = document.getElementById('zoiv').checked;
 
-    if (!username) {
-      alert("Please enter a username first.");
-      return;
+  if (!username) {
+    alert("Please enter a username first.");
+    return;
+  }
+
+  if (!milo && !potat && !aballs && !zoiv) {
+    alert("Please select at least one player who beat them.");
+    return;
+  }
+
+  status.textContent = "";
+  statsDisplay.style.display = "none";
+
+  try {
+    if (!currentUUID || !currentStats || document.getElementById('username').value.trim().toLowerCase() !== currentStats.username.toLowerCase()) {
+      await fetchAndDisplayStats();
     }
 
-    if (!milo && !potat && !aballs && !zoiv) {
-      alert("Please select at least one player who beat them.");
-      return;
-    }
+    const todayDate = new Date().toISOString();
+    const newSweat = {
+      username: currentStats.username,
+      star: currentStats.star,
+      fkdr: currentStats.fkdr,
+      wlr: currentStats.wlr,
+      bblr: currentStats.bblr,
+      kdr: currentStats.kdr,
+      finals: currentStats.finals,
+      finalDeaths: currentStats.finalDeaths,
+      beds: currentStats.beds,
+      bedsLost: currentStats.bedsLost,
+      kills: currentStats.kills,
+      deaths: currentStats.deaths,
+      milo,
+      potat,
+      aballs,
+      zoiv,
+      uuid: currentUUID,
+      dateAdded: todayDate
+    };
 
-    status.textContent = "";
-    statsDisplay.style.display = "none";
-
-    try {
-      if (!currentUUID || !currentStats || document.getElementById('username').value.trim().toLowerCase() !== currentStats.username.toLowerCase()) {
-        await fetchAndDisplayStats();
-      }
-
-      const todayDate = new Date().toISOString();
-
-      // POST new sweat to backend
-      const newSweat = {
-        username: currentStats.username,
-        star: currentStats.star,
-        fkdr: currentStats.fkdr,
-        wlr: currentStats.wlr,
-        bblr: currentStats.bblr,
-        kdr: currentStats.kdr,
-        finals: currentStats.finals,
-        finalDeaths: currentStats.finalDeaths,
-        beds: currentStats.beds,
-        bedsLost: currentStats.bedsLost,
-        kills: currentStats.kills,
-        deaths: currentStats.deaths,
-        milo,
-        potat,
-        aballs,
-        zoiv,
-        uuid: currentUUID,
-        dateAdded: todayDate
-      };
-
-      const res = await fetch(`${backendBaseURL}/sweats`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newSweat)
-      });
-      if (!res.ok) throw new Error("Failed to add sweat");
-
-      // Reload sweats from backend
-      await loadSweats();
-
-      form.reset();
-      currentUUID = null;
-      currentStats = null;
-      statsDisplay.style.display = "none";
-    } catch (err) {
-      status.textContent = "Error: " + err.message;
-    }
-  });
-
-  searchInput.addEventListener('input', () => {
-    currentFilter = searchInput.value.trim().toLowerCase();
-    renderTable();
-  });
-
-  resetFiltersBtn.addEventListener('click', () => {
-    filterFkdr.value = "";
-    filterIndex.value = "";
-    filterStars.value = "";
-    filterDate.value = "";
-    renderTable();
-  });
-
-
-  // Also auto-apply while typing for convenience
-  [filterFkdr, filterIndex, filterStars, filterDate].forEach(inp => {
-    inp.addEventListener('input', () => {
-     renderTable();
+    const res = await fetch(`${backendBaseURL}/sweats`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newSweat)
     });
-  });
+    if (!res.ok) throw new Error("Failed to add sweat");
 
-// Frontend: fetch from your backend
-  async function fetchUrchinTags(username) {
-    try {
-      const res = await fetch(`${backendBaseURL}/urchin/${encodeURIComponent(username)}`);
-      if (!res.ok) throw new Error("Urchin fetch failed");
-      const data = await res.json();
-      if (data.tags && data.tags.length > 0) {
-       return data.tags.map(tag => tag.type).join(", ");
-      }
-     return "None";
-   } catch (err) {
-        console.warn("Failed to fetch Urchin tags:", err);
-    return "None";
-    }
-  }
-
-  const tags = urchinData.tags
-  .map(t => `${formatUrchinTagType(t.type)}: ${t.reason}`)
-  .join(", ");
-
-  currentStats.urchinTags = tags || "None";
-
-  async function fetchAndDisplayStats() {
-    const usernameInput = document.getElementById('username');
-    const usernameRaw = usernameInput.value.trim();
-    if (!usernameRaw) {
-      alert("Please enter a username first.");
-      throw new Error("Username missing");
-    }
-   status.textContent = "Fetching stats...";
+    await loadSweats();
+    form.reset();
+    currentUUID = null;
+    currentStats = null;
     statsDisplay.style.display = "none";
-
-    // Fetch UUID and corrected capitalization from your backend mojang proxy
-    const resMojang = await fetch(`${backendBaseURL}/mojang/${usernameRaw}`);
-    if (!resMojang.ok) throw new Error("Username not found");
-    const mojangData = await resMojang.json();
-
-    currentUUID = mojangData.id;
-    usernameInput.value = mojangData.name; // corrected capitalization
-
-    const data = await getPlayerStats(currentUUID);
-    currentStats = {
-      username: mojangData.name,
-      star: calculateStarFromXP(data.exp),
-      fkdr: data.fkdr,
-      wlr: data.wlr,
-      bblr: data.bblr,
-      kdr: data.kdr,
-      finals: data.finals,
-      finalDeaths: data.finalDeaths,
-     beds: data.beds,
-      bedsLost: data.bedsLost,
-      kills: data.kills,
-      deaths: data.deaths,
-      rank: getHypixelRank(data.player),
-      wins: data.wins,
-      losses: data.losses
-    };
-
-    updateStatsDisplay(currentStats);
-    const urTags = await fetchUrchinTags(currentStats.username);
-    const statUrchinElem = document.getElementById("statUrchin");
-    if (statUrchinElem) statUrchinElem.textContent = urTags;
-    status.textContent = "";
+  } catch (err) {
+    status.textContent = "Error: " + err.message;
   }
+});
 
-  async function getPlayerStats(uuid) {
-    const res = await fetch(`${backendBaseURL}/player/${uuid}`);
-    if (!res.ok) throw new Error("Player stats not found");
-    const json = await res.json();
-    const data = json.player.stats?.Bedwars || {};
+searchInput.addEventListener('input', () => {
+  currentFilter = searchInput.value.trim().toLowerCase();
+  renderTable();
+});
 
-    const exp = data.Experience || 0;
-    const wins = data.wins_bedwars || 0;
-    const losses = data.losses_bedwars || 0;
-    const finalKills = data.final_kills_bedwars || 0;
-    const finalDeaths = data.final_deaths_bedwars || 0;
-    const bedsBroken = data.beds_broken_bedwars || 0;
-    const bedsLost = data.beds_lost_bedwars || 0;
-    const kills = data.kills_bedwars || 0;
-    const deaths = data.deaths_bedwars || 0;
+resetFiltersBtn.addEventListener('click', () => {
+  filterFkdr.value = "";
+  filterIndex.value = "";
+  filterStars.value = "";
+  filterDate.value = "";
+  renderTable();
+});
 
-    const wlr = wins / (losses === 0 ? 1 : losses);
-    const fkdr = finalKills / (finalDeaths === 0 ? 1 : finalDeaths);
-    const kdr = kills / (deaths === 0 ? 1 : deaths);
-    const bblr = bedsLost === 0 ? bedsBroken : bedsBroken / bedsLost;
+[filterFkdr, filterIndex, filterStars, filterDate].forEach(inp => {
+  inp.addEventListener('input', () => {
+    renderTable();
+  });
+});
 
-    return {
-      exp,
-      wlr,
-      fkdr,
-      bblr,
-      kdr,
-      finals: finalKills,
-      finalDeaths,
-      wins,
-      losses,
-      beds: bedsBroken,
-      bedsLost,
-      kills,
-      deaths,
-      player: json.player
-    };
-  }
-
-  function calculateStarFromXP(exp) {
-    if (exp < 0) return 0;
-    let stars = 0;
-    let xpLeft = exp;
-    while (xpLeft >= 0) {
-      let mod100 = stars % 100;
-      let xpNeeded;
-      if (mod100 === 0) xpNeeded = 500;
-      else if (mod100 === 1) xpNeeded = 1000;
-      else if (mod100 === 2) xpNeeded = 2000;
-      else if (mod100 === 3 || mod100 === 4) xpNeeded = 3500;
-      else xpNeeded = 5000;
-      if (xpLeft < xpNeeded) break;
-      xpLeft -= xpNeeded;
-      stars++;
+// Fetch Urchin tags from backend
+async function fetchUrchinTags(username) {
+  try {
+    const res = await fetch(`${backendBaseURL}/urchin/${encodeURIComponent(username)}`);
+    if (!res.ok) throw new Error("Urchin fetch failed");
+    const data = await res.json();
+    if (data.tags && data.tags.length > 0) {
+      return data.tags.map(tag => formatUrchinTagType(tag.type)).join(", ");
     }
-    return stars;
+    return "None";
+  } catch (err) {
+    console.warn("Failed to fetch Urchin tags:", err);
+    return "None";
+  }
+}
+
+async function fetchAndDisplayStats() {
+  const usernameInput = document.getElementById('username');
+  const usernameRaw = usernameInput.value.trim();
+  if (!usernameRaw) {
+    alert("Please enter a username first.");
+    throw new Error("Username missing");
   }
 
-  function getHypixelRank(player) {
-    if (!player) return {name:"[NONE]", color:"#AAA", prefix:""};
-    const rank = player.rank || player.newPackageRank || player.packageRank || "NONE";
-    switch(rank) {
-      case "ADMIN": return {name:"ADMIN", color:"#FF5555", prefix:"[ADMIN] "};
-      case "MODERATOR": return {name:"MOD", color:"#55FF55", prefix:"[MOD] "};
-      case "MVP_PLUS": return {name:"MVP+", color:"#FFB74D", prefix:"[MVP+] "};
-      case "MVP": return {name:"MVP", color:"#FFB74D", prefix:"[MVP] "};
-      case "VIP_PLUS": return {name:"VIP+", color:"#FFB74D", prefix:"[VIP+] "};
-      case "VIP": return {name:"VIP", color:"#FFB74D", prefix:"[VIP] "};
-      default: return {name:"[NONE]", color:"#AAA", prefix:""};
-    }
+  status.textContent = "Fetching stats...";
+  statsDisplay.style.display = "none";
+
+  // Fetch UUID
+  const resMojang = await fetch(`${backendBaseURL}/mojang/${usernameRaw}`);
+  if (!resMojang.ok) throw new Error("Username not found");
+  const mojangData = await resMojang.json();
+  currentUUID = mojangData.id;
+  usernameInput.value = mojangData.name;
+
+  // Fetch player stats
+  const data = await getPlayerStats(currentUUID);
+  currentStats = {
+    username: mojangData.name,
+    star: calculateStarFromXP(data.exp),
+    fkdr: data.fkdr,
+    wlr: data.wlr,
+    bblr: data.bblr,
+    kdr: data.kdr,
+    finals: data.finals,
+    finalDeaths: data.finalDeaths,
+    beds: data.beds,
+    bedsLost: data.bedsLost,
+    kills: data.kills,
+    deaths: data.deaths,
+    rank: getHypixelRank(data.player),
+    wins: data.wins,
+    losses: data.losses,
+  };
+
+  // Fetch Urchin tags
+  const urTags = await fetchUrchinTags(currentStats.username);
+  currentStats.urchinTags = urTags;
+
+  updateStatsDisplay(currentStats);
+  status.textContent = "";
+}
+
+async function getPlayerStats(uuid) {
+  const res = await fetch(`${backendBaseURL}/player/${uuid}`);
+  if (!res.ok) throw new Error("Player stats not found");
+  const json = await res.json();
+  const data = json.player.stats?.Bedwars || {};
+
+  const exp = data.Experience || 0;
+  const wins = data.wins_bedwars || 0;
+  const losses = data.losses_bedwars || 0;
+  const finalKills = data.final_kills_bedwars || 0;
+  const finalDeaths = data.final_deaths_bedwars || 0;
+  const bedsBroken = data.beds_broken_bedwars || 0;
+  const bedsLost = data.beds_lost_bedwars || 0;
+  const kills = data.kills_bedwars || 0;
+  const deaths = data.deaths_bedwars || 0;
+
+  return {
+    exp,
+    wlr: wins / (losses === 0 ? 1 : losses),
+    fkdr: finalKills / (finalDeaths === 0 ? 1 : finalDeaths),
+    kdr: kills / (deaths === 0 ? 1 : deaths),
+    bblr: bedsLost === 0 ? bedsBroken : bedsBroken / bedsLost,
+    finals: finalKills,
+    finalDeaths,
+    wins,
+    losses,
+    beds: bedsBroken,
+    bedsLost,
+    kills,
+    deaths,
+    player: json.player
+  };
+}
+
+function calculateStarFromXP(exp) {
+  if (exp < 0) return 0;
+  let stars = 0;
+  let xpLeft = exp;
+  while (xpLeft >= 0) {
+    let mod100 = stars % 100;
+    let xpNeeded;
+    if (mod100 === 0) xpNeeded = 500;
+    else if (mod100 === 1) xpNeeded = 1000;
+    else if (mod100 === 2) xpNeeded = 2000;
+    else if (mod100 === 3 || mod100 === 4) xpNeeded = 3500;
+    else xpNeeded = 5000;
+    if (xpLeft < xpNeeded) break;
+    xpLeft -= xpNeeded;
+    stars++;
   }
+  return stars;
+}
 
-  function updateStatsDisplay(stats) {
-    statsAvatar.src = `https://crafatar.com/avatars/${currentUUID}?overlay`;
-    statsUsername.textContent = stats.username;
-    statsRank.textContent = stats.rank.prefix || "";
-    statsRank.style.color = stats.rank.color;
-    statsStar.textContent = `★${stats.star}`;
-
-    statWins.textContent = stats.wins;
-    statFinals.textContent = stats.finals;
-    statKills.textContent = stats.kills;
-    statBeds.textContent = stats.beds;
-
-    statLosses.textContent = stats.losses;
-    statFinalDeaths.textContent = stats.finalDeaths;
-    statDeaths.textContent = stats.deaths;
-    statBedsLost.textContent = stats.bedsLost;
-
-    statWLR.textContent = stats.wlr.toFixed(2);
-    statFKDR.textContent = stats.fkdr.toFixed(2);
-    statKDR.textContent = stats.kdr.toFixed(2);
-    statBBLR.textContent = stats.bblr.toFixed(2);
-
-    statUrchin.textContent = stats.urchinTags || "None";
-
-    statsDisplay.style.display = "flex";
+function getHypixelRank(player) {
+  if (!player) return {name:"[NONE]", color:"#AAA", prefix:""};
+  const rank = player.rank || player.newPackageRank || player.packageRank || "NONE";
+  switch(rank) {
+    case "ADMIN": return {name:"ADMIN", color:"#FF5555", prefix:"[ADMIN] "};
+    case "MODERATOR": return {name:"MOD", color:"#55FF55", prefix:"[MOD] "};
+    case "MVP_PLUS": return {name:"MVP+", color:"#FFB74D", prefix:"[MVP+] "};
+    case "MVP": return {name:"MVP", color:"#FFB74D", prefix:"[MVP] "};
+    case "VIP_PLUS": return {name:"VIP+", color:"#FFB74D", prefix:"[VIP+] "};
+    case "VIP": return {name:"VIP", color:"#FFB74D", prefix:"[VIP] "};
+    default: return {name:"[NONE]", color:"#AAA", prefix:""};
   }
+}
+
+function updateStatsDisplay(stats) {
+  statsAvatar.src = `https://crafatar.com/avatars/${currentUUID}?overlay`;
+  statsUsername.textContent = stats.username;
+  statsRank.textContent = stats.rank.prefix || "";
+  statsRank.style.color = stats.rank.color;
+  statsStar.textContent = `★${stats.star}`;
+
+  statWins.textContent = stats.wins;
+  statFinals.textContent = stats.finals;
+  statKills.textContent = stats.kills;
+  statBeds.textContent = stats.beds;
+
+  statLosses.textContent = stats.losses;
+  statFinalDeaths.textContent = stats.finalDeaths;
+  statDeaths.textContent = stats.deaths;
+  statBedsLost.textContent = stats.bedsLost;
+
+  statWLR.textContent = stats.wlr.toFixed(2);
+  statFKDR.textContent = stats.fkdr.toFixed(2);
+  statKDR.textContent = stats.kdr.toFixed(2);
+  statBBLR.textContent = stats.bblr.toFixed(2);
+
+  statUrchin.textContent = stats.urchinTags || "None";
+
+  statsDisplay.style.display = "flex";
+}
 
   function renderTable() {
     // basic search filter

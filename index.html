@@ -821,6 +821,14 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
       indexTd.textContent = Math.round(indexValue).toLocaleString();
       tr.appendChild(indexTd);
 
+      const tagCell = document.createElement("td");
+      if (s.urchin_tags && s.urchin_tags.length > 0) {
+        tagCell.textContent = s.urchin_tags.join(", ");
+      } else {
+        tagCell.textContent = "None";
+      }
+      tr.appendChild(tagCell);
+
       const dateTd = document.createElement("td");
       dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
       tr.appendChild(dateTd);

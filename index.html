@@ -414,7 +414,6 @@
       <th class="sortable" data-sort="star">Star ▲▼</th>
       <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
       <th class="sortable" data-sort="index">Index ▲▼</th>
-      <th>Urchin Tags</th>
       <th class="sortable" data-sort="dateAdded">Date Added ▲▼</th>
       <th>Beaten By</th>
       <th></th>
@@ -820,14 +819,6 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
       const indexTd = document.createElement("td");
       indexTd.textContent = Math.round(indexValue).toLocaleString();
       tr.appendChild(indexTd);
-
-      const tagCell = document.createElement("td");
-      if (s.urchin_tags && s.urchin_tags.length > 0) {
-        tagCell.textContent = s.urchin_tags.join(", ");
-      } else {
-        tagCell.textContent = "None";
-      }
-      tr.appendChild(tagCell);
 
       const dateTd = document.createElement("td");
       dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();

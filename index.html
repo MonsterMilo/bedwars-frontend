@@ -5,220 +5,238 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Bedwars Sweat Tracker</title>
 <style>
-  /* Reset and dark background */
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #121212;
-    color: #e0e0e0;
-    margin: 20px;
-    line-height: 1.4;
-  }
+/* Reset and dark background */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #121212;
+  color: #f5f5f5;
+  margin: 20px;
+  line-height: 1.4;
+}
 
-  h1 {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #f3a023;
-    font-weight: 700;
-    letter-spacing: 1px;
-  }
+/* Headings */
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #ff9800; /* brighter amber */
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(255, 152, 0, 0.5);
+}
 
-  #form-container {
-    max-width: 680px;
-    margin: 0 auto 40px;
-    background: #1e1e1e;
-    padding: 20px 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgb(0 0 0 / 0.7);
-  }
+/* Form Container */
+#form-container {
+  max-width: 680px;
+  margin: 0 auto 40px;
+  background: #1a1a1a;
+  padding: 20px 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-  form > div {
-    margin-bottom: 15px;
-  }
+form > div {
+  margin-bottom: 15px;
+}
 
-  input[type="text"] {
-    flex: 1;
-    padding: 10px 15px;
-    border: 1.8px solid #444;
-    border-radius: 5px;
-    font-size: 16px;
-    background: #222;
-    color: #e0e0e0;
-    transition: border-color 0.3s;
-  }
+/* Input Fields */
+input[type="text"] {
+  flex: 1;
+  padding: 10px 15px;
+  border: 2px solid #444;
+  border-radius: 6px;
+  font-size: 16px;
+  background: #1f1f1f;
+  color: #f5f5f5;
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
 
-  input[type="text"]::placeholder {
-    color: #777;
-  }
+input[type="text"]::placeholder {
+  color: #888;
+}
 
-  input[type="text"]:focus {
-    outline: none;
-    border-color: #f3a023;
-    box-shadow: 0 0 6px #fcac34aa;
-    background: #2a2a2a;
-  }
+input[type="text"]:focus {
+  outline: none;
+  border-color: #ff9800;
+  box-shadow: 0 0 10px rgba(255, 152, 0, 0.6);
+  background: #262626;
+}
 
-  button {
-    background: #f3a023;
-    border: none;
-    color: #121212;
-    padding: 10px 18px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.25s;
-    font-weight: 700;
-  }
+/* Buttons */
+button {
+  background: linear-gradient(135deg, #ff9800, #ff6f00);
+  border: none;
+  color: #fff;
+  padding: 10px 18px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.3s;
+  font-weight: 700;
+}
 
-  button:hover {
-    background: #f3a023;
-  }
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(255, 152, 0, 0.7);
+}
 
-  .checkbox-group label {
-    margin-right: 20px;
-    font-weight: 600;
-    user-select: none;
-    cursor: pointer;
-    color: #bbb;
-  }
+/* Checkbox Labels */
+.checkbox-group label {
+  margin-right: 20px;
+  font-weight: 600;
+  user-select: none;
+  cursor: pointer;
+  color: #ccc;
+}
 
-  .checkbox-group input[type="checkbox"] {
-    cursor: pointer;
-  }
+.checkbox-group input[type="checkbox"] {
+  cursor: pointer;
+}
 
-  #status {
-    margin-top: 10px;
-    min-height: 22px;
-    color: #f3a023;
-    font-weight: 600;
-  }
+/* Status Message */
+#status {
+  margin-top: 10px;
+  min-height: 22px;
+  color: #ff9800;
+  font-weight: 600;
+}
 
-  #statsDisplay {
-    display: none; /* toggled by script */
-    max-width: 880px;
-    margin: 0 auto 40px;
-    background: #1e1e1e;
-    padding: 15px 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgb(0 0 0 / 0.7);
-    align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
-    color: #e0e0e0;
-  }
+/* Stats Display */
+#statsDisplay {
+  display: none;
+  max-width: 880px;
+  margin: 0 auto 40px;
+  background: #1a1a1a;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  color: #f5f5f5;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-  #statsContent {
-    display: flex;
-    gap: 15px;
-    width: 100%;
-    align-items: center;
-  }
+#statsContent {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+  align-items: center;
+}
 
-  #statsAvatar {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    border: 2px solid #f3a023;
-    flex-shrink: 0;
-    background: #2a2a2a;
-  }
+#statsAvatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 3px solid #ff9800;
+  flex-shrink: 0;
+  background: #262626;
+}
 
-  #statsRight {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+/* Stats Right Section */
+#statsRight {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  #statsTopRow {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    font-weight: 700;
-    font-size: 1.3em;
-    color: #f3a023;
-  }
+#statsTopRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-weight: 700;
+  font-size: 1.3em;
+  color: #ff9800;
+  text-shadow: 0 0 5px rgba(255, 152, 0, 0.4);
+}
 
-  #statsRank {
-    padding: 2px 8px;
-    border-radius: 5px;
-    background: #754600;
-    color: #121212;
-    min-width: 70px;
-    text-align: center;
-    font-size: 0.9em;
-  }
+#statsRank {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #ff9800, #ff6f00);
+  color: #fff;
+  min-width: 70px;
+  text-align: center;
+  font-size: 0.9em;
+}
 
-  #statsStar {
-    color: #f3a023;
-    font-size: 1.4em;
-  }
+#statsStar {
+  color: #ffd54f;
+  font-size: 1.4em;
+}
 
-  #statsColumns {
-    display: flex;
-    gap: 30px;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
+/* Stat Columns */
+#statsColumns {
+  display: flex;
+  gap: 30px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
 
-  .stat-column {
-    flex: 1;
-    min-width: 140px;
-  }
+.stat-column {
+  flex: 1;
+  min-width: 140px;
+}
 
-  .stat-label {
-    font-size: 0.85em;
-    color: #b28704;
-    margin-top: 6px;
-    font-weight: 600;
-  }
+.stat-label {
+  font-size: 0.85em;
+  color: #ffca28;
+  margin-top: 6px;
+  font-weight: 600;
+}
 
-  .stat-value {
-    font-size: 1.1em;
-    font-weight: 700;
-    color: #e0e0e0;
-  }
+.stat-value {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: #f5f5f5;
+}
 
-  .stat-column.good .stat-value {
-    color: #aed581; /* green */
-  }
+.stat-column.good .stat-value {
+  color: #76ff03; /* neon green */
+  text-shadow: 0 0 5px rgba(118, 255, 3, 0.6);
+}
 
-  .stat-column.bad .stat-value {
-    color: #ef9a9a; /* red */
-  }
+.stat-column.bad .stat-value {
+  color: #ff5252; /* vibrant red */
+  text-shadow: 0 0 5px rgba(255, 82, 82, 0.6);
+}
 
-  .stat-column.neutral .stat-value {
-    color: #ce93d8; /* purple */
-  }
+.stat-column.neutral .stat-value {
+  color: #b388ff; /* vivid purple */
+  text-shadow: 0 0 5px rgba(179, 136, 255, 0.6);
+}
 
-  #searchContainer {
-    max-width: 1080px;
-    margin: 0 auto 20px;
-    display: flex;
-    justify-content: center;
-  }
+/* Search Box */
+#searchContainer {
+  max-width: 1080px;
+  margin: 0 auto 20px;
+  display: flex;
+  justify-content: center;
+}
 
-  #searchInput {
-    width: 100%;
-    max-width: 400px;
-    padding: 8px 12px;
-    font-size: 16px;
-    border: 1.5px solid #444;
-    border-radius: 5px;
-    background: #222;
-    color: #e0e0e0;
-    transition: border-color 0.3s;
-  }
+#searchInput {
+  width: 100%;
+  max-width: 400px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 2px solid #444;
+  border-radius: 6px;
+  background: #1f1f1f;
+  color: #f5f5f5;
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
 
-  #searchInput::placeholder {
-    color: #777;
-  }
+#searchInput::placeholder {
+  color: #888;
+}
 
-  #searchInput:focus {
-    outline: none;
-    border-color: #ffb74d;
-    box-shadow: 0 0 6px #ffb74daa;
-    background: #2a2a2a;
-  }
+#searchInput:focus {
+  outline: none;
+  border-color: #ff9800;
+  box-shadow: 0 0 10px rgba(255, 152, 0, 0.6);
+  background: #262626;
+}
 
   /* --- Filter styles (added) --- */
   .filter-bar {

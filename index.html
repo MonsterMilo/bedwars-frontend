@@ -768,30 +768,33 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
 }
 
 
-    if (sortField) {
-      filteredSweats.sort((a, b) => {
-        let valA, valB;
+if (sortField) {
+  filteredSweats.sort((a, b) => {
+    let valA, valB;
 
-        if (sortField === "index") {
-          valA = a.fkdr * a.fkdr * a.star;
-          valB = b.fkdr * b.fkdr * b.star;
-        } else if (sortField === "dateAdded") {
-          valA = new Date(a.dateAdded);
-          valB = new Date(b.dateAdded);
-        } else if (sortField === "cheating") {
-          // true/false → number (1 or 0) so it sorts cleanly
-          valA = a.cheating ? 1 : 0;
-          valB = b.cheating ? 1 : 0;
-        } else {
-          valA = a[sortField];
-          valB = b[sortField];
-       }
+    if (sortField === "index") {
+      valA = a.fkdr * a.fkdr * a.star;
+      valB = b.fkdr * b.fkdr * b.star;
+    } else if (sortField === "dateAdded") {
+      valA = new Date(a.dateAdded);
+      valB = new Date(b.dateAdded);
+    } else if (sortField === "cheating") {
+      // Convert boolean to number for proper sorting
+      valA = a.cheating ? 1 : 0;
+      valB = b.cheating ? 1 : 0;
+    } else {
+      // Generic case for other fields (star, fkdr, etc.)
+      valA = a[sortField];
+      valB = b[sortField];
+    }
 
+    // Compare values based on sort direction
     if (valA < valB) return sortAsc ? -1 : 1;
     if (valA > valB) return sortAsc ? 1 : -1;
     return 0;
   });
 }
+
 
 
     tableBody.innerHTML = "";

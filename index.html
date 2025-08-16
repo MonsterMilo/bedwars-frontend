@@ -417,7 +417,7 @@ td.user-cell {
       <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
       <th class="sortable" data-sort="index">Index ▲▼</th>
       <th class="sortable" data-sort="int">Cheating ▲▼</th>
-      <th class="sortable" data-sort="dateAdded">Date Added ▲▼</th>
+      <th class="sortable" data-sort="cheating">Date Added ▲▼</th>
       <th>Beaten By</th>
       <th></th>
     </tr>
@@ -778,6 +778,10 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
         } else if (sortField === "dateAdded") {
           valA = new Date(a.dateAdded);
           valB = new Date(b.dateAdded);
+        } else if (sortField === "cheating") {
+          // true/false → number (1 or 0) so it sorts cleanly
+          valA = a.cheating ? 1 : 0;
+          valB = b.cheating ? 1 : 0;
         } else {
           valA = a[sortField];
           valB = b[sortField];

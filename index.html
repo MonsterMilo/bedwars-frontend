@@ -416,7 +416,7 @@ td.user-cell {
       <th class="sortable" data-sort="star">Star ▲▼</th>
       <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
       <th class="sortable" data-sort="index">Index ▲▼</th>
-      <th>Cheating</th>
+      <th>Cheating ▲▼</th>
       <th class="sortable" data-sort="dateAdded">Date Added ▲▼</th>
       <th>Beaten By</th>
       <th></th>
@@ -825,6 +825,10 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
       indexTd.textContent = Math.round(indexValue).toLocaleString();
       tr.appendChild(indexTd);
 
+      const cheatingTd = document.createElement("td");
+      cheatingTd.textContent = s.cheating ? "Yes" : "No";
+      tr.appendChild(cheatingTd);   
+
       const dateTd = document.createElement("td");
       dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
       tr.appendChild(dateTd);
@@ -837,10 +841,6 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
       if (s.zoiv) beatenBy.push("Zoiv");
       beatenByTd.textContent = beatenBy.join(", ");
       tr.appendChild(beatenByTd);
-
-      const cheatingTd = document.createElement("td");
-      cheatingTd.textContent = s.cheating ? "Yes" : "No";
-      tr.appendChild(cheatingTd);   
 
       const removeTd = document.createElement("td");
       const removeBtn = document.createElement("button");

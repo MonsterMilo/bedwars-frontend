@@ -343,6 +343,7 @@ td.user-cell {
       <label><input type="checkbox" id="potat" /> Potat</label>
       <label><input type="checkbox" id="aballs" /> Aballs</label>
       <label><input type="checkbox" id="zoiv" /> Zoiv</label>
+      <label><input type="checkbox" id="cheating" /> Player was cheating</label>
     </div>
 
     <button type="submit">Add Sweat</button>
@@ -415,6 +416,7 @@ td.user-cell {
       <th class="sortable" data-sort="star">Star ▲▼</th>
       <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
       <th class="sortable" data-sort="index">Index ▲▼</th>
+      <th>Cheating</th>
       <th class="sortable" data-sort="dateAdded">Date Added ▲▼</th>
       <th>Beaten By</th>
       <th></th>
@@ -500,6 +502,7 @@ form.addEventListener('submit', async e => {
   const potat = document.getElementById('potat').checked;
   const aballs = document.getElementById('aballs').checked;
   const zoiv = document.getElementById('zoiv').checked;
+  const cheating = document.getElementById('cheating').checked;
 
   if (!username) {
     alert("Please enter a username first.");
@@ -537,6 +540,7 @@ form.addEventListener('submit', async e => {
       potat,
       aballs,
       zoiv,
+      cheating,
       uuid: currentUUID,
       dateAdded: todayDate
     };
@@ -833,6 +837,10 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
       if (s.zoiv) beatenBy.push("Zoiv");
       beatenByTd.textContent = beatenBy.join(", ");
       tr.appendChild(beatenByTd);
+
+      const cheatingTd = document.createElement("td");
+      cheatingTd.textContent = s.cheating ? "Yes" : "No";
+      tr.appendChild(cheatingTd);   
 
       const removeTd = document.createElement("td");
       const removeBtn = document.createElement("button");

@@ -358,11 +358,6 @@ td.user-cell {
   padding: 12px 15px;
 }
 
-#form-container form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
 
 </style>
 </head>
@@ -379,6 +374,7 @@ td.user-cell {
     <div style="display:flex; gap:10px; align-items:center;">
       <input type="text" id="username" placeholder="Enter Minecraft username" required />
       <button type="button" id="fetchBtn">Fetch Stats</button>
+      <div id="status" role="alert" aria-live="assertive" style="margin-top:5px;"></div>
     </div>
 
     <div class="checkbox-group" style="margin-top:10px;">
@@ -392,7 +388,6 @@ td.user-cell {
     </div>
 
     <button type="submit">Add Sweat</button>
-    <div id="status" role="alert" aria-live="assertive"></div>
   </form>
 
   <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">

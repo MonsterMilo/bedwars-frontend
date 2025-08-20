@@ -371,13 +371,11 @@ td.user-cell {
 <h2 class="section-header">Sweat Lookup</h2>
 <div id="form-container">
   <form id="sweatForm" autocomplete="off">
-    <!-- Username input and fetch button -->
     <div style="display:flex; gap:10px; align-items:center;">
       <input type="text" id="username" placeholder="Enter Minecraft username" required />
       <button type="button" id="fetchBtn">Fetch Stats</button>
     </div>
 
-    <!-- Checkboxes -->
     <div class="checkbox-group" style="margin-top:10px;">
       <label><input type="checkbox" id="milo" /> Milo</label>
       <label><input type="checkbox" id="potat" /> Potat</label>
@@ -388,32 +386,9 @@ td.user-cell {
       </label>
     </div>
 
-    <!-- Stats display -->
-    <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
-      <div id="statsContent">
-        <img id="statsAvatar" src="" alt="Player head" />
-        <div id="statsRight">
-          <div id="statsTopRow">
-            <span id="statsRank"></span>
-            <span id="statsUsername"></span>
-            <span id="statsStar">★0</span>
-          </div>
-          <div id="statsColumns">
-            <!-- stat columns here -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Move button visually below stats -->
-    <div style="margin-top:20px;">
-      <button type="submit">Add Sweat</button>
-    </div>
-
+    <button type="submit">Add Sweat</button>
     <div id="status" role="alert" aria-live="assertive"></div>
   </form>
-</div>
-
 
   <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
     <div id="statsContent">

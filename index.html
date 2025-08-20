@@ -389,45 +389,46 @@ td.user-cell {
     <div id="status" role="alert" aria-live="assertive"></div>
   </form>
 
-  <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
-    <div id="statsContent">
-      <img id="statsAvatar" src="" alt="Player head" />
-      <div id="statsRight">
-        <div id="statsTopRow">
-          <span id="statsRank"></span>
-          <span id="statsUsername"></span>
-          <span id="statsStar">★0</span>
-        </div>
-        <div id="statsColumns">
-          <div class="stat-column good">
-            <div class="stat-label">Wins:</div><div class="stat-value" id="statWins">0</div>
-            <div class="stat-label">Finals:</div><div class="stat-value" id="statFinals">0</div>
-            <div class="stat-label">Kills:</div><div class="stat-value" id="statKills">0</div>
-            <div class="stat-label">Beds Broken:</div><div class="stat-value" id="statBeds">0</div>
+    <!-- Stats Display -->
+    <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
+      <div id="statsContent">
+        <img id="statsAvatar" src="" alt="Player head" />
+        <div id="statsRight">
+          <div id="statsTopRow">
+            <span id="statsRank"></span>
+            <span id="statsUsername"></span>
+            <span id="statsStar">★0</span>
           </div>
-          <div class="stat-column bad">
-            <div class="stat-label">Losses:</div><div class="stat-value" id="statLosses">0</div>
-            <div class="stat-label">Final Deaths:</div><div class="stat-value" id="statFinalDeaths">0</div>
-            <div class="stat-label">Deaths:</div><div class="stat-value" id="statDeaths">0</div>
-            <div class="stat-label">Beds Lost:</div><div class="stat-value" id="statBedsLost">0</div>
-          </div>
-          <div class="stat-column neutral">
-            <div class="stat-label">WLR:</div><div class="stat-value" id="statWLR">0</div>
-            <div class="stat-label">FKDR:</div><div class="stat-value" id="statFKDR">0</div>
-            <div class="stat-label">KDR:</div><div class="stat-value" id="statKDR">0</div>
-            <div class="stat-label">BBLR:</div><div class="stat-value" id="statBBLR">0</div>
-          </div>
-          <div id="statsUrchin" class="stat-column neutral">
-            <div class="stat-label">Urchin Tags:</div>
-            <div class="stat-value" id="statUrchin">None</div>
+          <div id="statsColumns">
+            <div class="stat-column good">
+              <div class="stat-label">Wins:</div><div class="stat-value" id="statWins">0</div>
+              <div class="stat-label">Finals:</div><div class="stat-value" id="statFinals">0</div>
+              <div class="stat-label">Kills:</div><div class="stat-value" id="statKills">0</div>
+              <div class="stat-label">Beds Broken:</div><div class="stat-value" id="statBeds">0</div>
+            </div>
+            <div class="stat-column bad">
+              <div class="stat-label">Losses:</div><div class="stat-value" id="statLosses">0</div>
+              <div class="stat-label">Final Deaths:</div><div class="stat-value" id="statFinalDeaths">0</div>
+              <div class="stat-label">Deaths:</div><div class="stat-value" id="statDeaths">0</div>
+              <div class="stat-label">Beds Lost:</div><div class="stat-value" id="statBedsLost">0</div>
+            </div>
+            <div class="stat-column neutral">
+              <div class="stat-label">WLR:</div><div class="stat-value" id="statWLR">0</div>
+              <div class="stat-label">FKDR:</div><div class="stat-value" id="statFKDR">0</div>
+              <div class="stat-label">KDR:</div><div class="stat-value" id="statKDR">0</div>
+              <div class="stat-label">BBLR:</div><div class="stat-value" id="statBBLR">0</div>
+            </div>
+            <div id="statsUrchin" class="stat-column neutral">
+              <div class="stat-label">Urchin Tags:</div>
+              <div class="stat-value" id="statUrchin">None</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+    <button type="submit" style="margin-top:15px;">Add Sweat</button>
+  </form>
 </div>
-
-<button type="submit">Add Sweat</button>
 
 <h2 class="section-header">Defeated Sweats</h2>
 <div id="searchContainer">

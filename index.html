@@ -750,146 +750,145 @@ function updateStatsDisplay(stats) {
   statsDisplay.style.display = "flex";
 }
 
-  function renderTable() {
-    // basic search filter
-    let filteredSweats = sweats.filter(s => s.username.toLowerCase().includes(currentFilter));
+	function renderTable() {
+		// basic search filter
+		let filteredSweats = sweats.filter(s => s.username.toLowerCase().includes(currentFilter));
 
+		// read filter inputs (treat empty as no filter)
+		const minFkdr = (filterFkdr && filterFkdr.value.trim() !== "") ? parseFloat(filterFkdr.value) : null;
+		const minIndex = (filterIndex && filterIndex.value.trim() !== "") ? parseFloat(filterIndex.value) : null;
+		const minStars = (filterStars && filterStars.value.trim() !== "") ? parseInt(filterStars.value) : null;
+		const minDate = filterDate && filterDate.value ? new Date(filterDate.value + "T00:00:00") : null;
 
-    // read filter inputs (treat empty as no filter)
-    const minFkdr = (filterFkdr && filterFkdr.value.trim() !== "") ? parseFloat(filterFkdr.value) : null;
-    const minIndex = (filterIndex && filterIndex.value.trim() !== "") ? parseFloat(filterIndex.value) : null;
-    const minStars = (filterStars && filterStars.value.trim() !== "") ? parseInt(filterStars.value) : null;
-    const minDate = filterDate && filterDate.value ? new Date(filterDate.value + "T00:00:00") : null;
+		// apply numeric filters if set
+		if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== null) {
+			filteredSweats = filteredSweats.filter(s => {
+				const sFkdr = Number(s.fkdr) || 0;
+				const sStar = Number(s.star) || 0;
+				const sIndex = sFkdr * sFkdr * sStar;
+				const sDate = new Date(s.dateAdded);
 
+				if (minFkdr !== null && sFkdr < minFkdr) return false;
+				if (minIndex !== null && sIndex < minIndex) return false;
+				if (minStars !== null && sStar < minStars) return false;
+				if (minDate !== null && sDate < minDate) return false;
 
-    // apply numeric filters if set
-if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== null) {
-  filteredSweats = filteredSweats.filter(s => {
-    const sFkdr = Number(s.fkdr) || 0;
-    const sStar = Number(s.star) || 0;
-    const sIndex = sFkdr * sFkdr * sStar;
-    const sDate = new Date(s.dateAdded);
-    console.log('Sweat date:', sDate, 'Min date:', minDate);
+				return true;
+			});
+		}
 
-    if (minFkdr !== null && sFkdr < minFkdr) return false;
-    if (minIndex !== null && sIndex < minIndex) return false;
-    if (minStars !== null && sStar < minStars) return false;
-    if (minDate !== null && sDate < minDate) return false;
+		// --- STEP 1: count occurrences BEFORE deduplication
+		const usernameCounts = {};
+		filteredSweats.forEach(s => {
+			const uname = s.username.toLowerCase();
+			usernameCounts[uname] = (usernameCounts[uname] || 0) + 1;
+		});
 
-    return true;
-  });
-}
+		// --- STEP 2: remove duplicates if toggle is on
+		if (hideDuplicatesCheckbox && hideDuplicatesCheckbox.checked) {
+			const uniqueMap = new Map();
+			filteredSweats.forEach(s => {
+				const uname = s.username.toLowerCase();
+				if (!uniqueMap.has(uname)) {
+					uniqueMap.set(uname, s);
+				}
+			});
+			filteredSweats = Array.from(uniqueMap.values());
+		}
 
-// Apply duplicate filter if enabled
-if (hideDuplicatesCheckbox && hideDuplicatesCheckbox.checked) {
-  const seen = new Set();
-  filteredSweats = filteredSweats.filter(s => {
-    if (seen.has(s.username.toLowerCase())) return false;
-    seen.add(s.username.toLowerCase());
-    return true;
-  });
-}
+		// --- STEP 3: sorting
+		if (sortField) {
+			filteredSweats.sort((a, b) => {
+				let valA, valB;
 
-if (sortField) {
-  filteredSweats.sort((a, b) => {
-    let valA, valB;
+				if (sortField === "index") {
+					valA = a.fkdr * a.fkdr * a.star;
+					valB = b.fkdr * b.fkdr * b.star;
+				} else if (sortField === "dateAdded") {
+					valA = new Date(a.dateAdded);
+					valB = new Date(b.dateAdded);
+				} else if (sortField === "cheating") {
+					valA = a.cheating ? 1 : 0;
+					valB = b.cheating ? 1 : 0;
+				} else {
+					valA = a[sortField];
+					valB = b[sortField];
+				}
 
-    if (sortField === "index") {
-      valA = a.fkdr * a.fkdr * a.star;
-      valB = b.fkdr * b.fkdr * b.star;
-    } else if (sortField === "dateAdded") {
-      valA = new Date(a.dateAdded);
-      valB = new Date(b.dateAdded);
-    } else if (sortField === "cheating") {
-      // Convert boolean to number for proper sorting
-      valA = a.cheating ? 1 : 0;
-      valB = b.cheating ? 1 : 0;
-    } else {
-      // Generic case for other fields (star, fkdr, etc.)
-      valA = a[sortField];
-      valB = b[sortField];
-    }
+				if (valA < valB) return sortAsc ? -1 : 1;
+				if (valA > valB) return sortAsc ? 1 : -1;
+				return 0;
+			});
+		}
 
-    // Compare values based on sort direction
-    if (valA < valB) return sortAsc ? -1 : 1;
-    if (valA > valB) return sortAsc ? 1 : -1;
-    return 0;
-  });
-}
+		// --- STEP 4: render table
+		tableBody.innerHTML = "";
 
+		filteredSweats.forEach(s => {
+			const tr = document.createElement("tr");
 
+			const usernameTd = document.createElement("td");
+			usernameTd.classList.add('user-cell');
 
-    tableBody.innerHTML = "";
+			const avatarImg = document.createElement("img");
+			avatarImg.classList.add('user-avatar');
+			avatarImg.src = `https://crafatar.com/avatars/${s.uuid}?overlay`;
+			avatarImg.alt = `Avatar of ${s.username}`;
 
-    filteredSweats.forEach(s => {
-      const tr = document.createElement("tr");
+			const usernameText = document.createElement("span");
+			let displayName = s.username;
+			if (hideDuplicatesCheckbox.checked) {
+				const count = usernameCounts[s.username.toLowerCase()];
+				if (count > 1) {
+					displayName += ` (x${count})`;
+				}
+			}
+			usernameText.textContent = displayName;
 
-      const usernameTd = document.createElement("td");
-      usernameTd.classList.add('user-cell');
+			usernameTd.appendChild(avatarImg);
+			usernameTd.appendChild(usernameText);
+			tr.appendChild(usernameTd);
 
-      const avatarImg = document.createElement("img");
-      avatarImg.classList.add('user-avatar');
-      avatarImg.src = `https://crafatar.com/avatars/${s.uuid}?overlay`;
-      avatarImg.alt = `Avatar of ${s.username}`;
+			const starTd = document.createElement("td");
+			starTd.textContent = s.star;
+			tr.appendChild(starTd);
 
-      const usernameText = document.createElement("span");
-      let displayName = s.username;
-      if (hideDuplicatesCheckbox.checked) {
-        // count how many times this username appears in filteredSweats
-        const count = filteredSweats.filter(x => x.username.toLowerCase() === s.username.toLowerCase()).length;
-        if (count > 1) {
-          displayName += ` (x${count})`;
-        }
-      }
-      usernameText.textContent = displayName;
+			const fkdrTd = document.createElement("td");
+			fkdrTd.textContent = s.fkdr.toFixed(2);
+			tr.appendChild(fkdrTd);
 
+			const indexValue = s.fkdr * s.fkdr * s.star;
+			const indexTd = document.createElement("td");
+			indexTd.textContent = Math.round(indexValue).toLocaleString();
+			tr.appendChild(indexTd);
 
-      usernameTd.appendChild(avatarImg);
-      usernameTd.appendChild(usernameText);
-      tr.appendChild(usernameTd);
+			const cheatingTd = document.createElement("td");
+			cheatingTd.textContent = s.cheating ? "Yes" : "No";
+			tr.appendChild(cheatingTd);
 
-      const starTd = document.createElement("td");
-      starTd.textContent = s.star;
-      tr.appendChild(starTd);
+			const dateTd = document.createElement("td");
+			dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
+			tr.appendChild(dateTd);
 
-      const fkdrTd = document.createElement("td");
-      fkdrTd.textContent = s.fkdr.toFixed(2);
-      tr.appendChild(fkdrTd);
+			const beatenByTd = document.createElement("td");
+			let beatenBy = [];
+			if (s.milo) beatenBy.push("Milo");
+			if (s.potat) beatenBy.push("Potat");
+			if (s.aballs) beatenBy.push("Aballs");
+			if (s.zoiv) beatenBy.push("Zoiv");
+			beatenByTd.textContent = beatenBy.join(", ");
+			tr.appendChild(beatenByTd);
 
-      const indexValue = s.fkdr * s.fkdr * s.star;
+			const removeTd = document.createElement("td");
+			const removeBtn = document.createElement("button");
+			removeBtn.textContent = "✖";
+			removeBtn.addEventListener("click", () => removeSweat(s._id));
+			removeTd.appendChild(removeBtn);
+			tr.appendChild(removeTd);
 
-      // Create the cell for indexValue and append it
-      const indexTd = document.createElement("td");
-      indexTd.textContent = Math.round(indexValue).toLocaleString();
-      tr.appendChild(indexTd);
-
-      const cheatingTd = document.createElement("td");
-      cheatingTd.textContent = s.cheating ? "Yes" : "No";
-      tr.appendChild(cheatingTd);   
-
-      const dateTd = document.createElement("td");
-      dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
-      tr.appendChild(dateTd);
-      
-      const beatenByTd = document.createElement("td");
-      let beatenBy = [];
-      if (s.milo) beatenBy.push("Milo");
-      if (s.potat) beatenBy.push("Potat");
-      if (s.aballs) beatenBy.push("Aballs");
-      if (s.zoiv) beatenBy.push("Zoiv");
-      beatenByTd.textContent = beatenBy.join(", ");
-      tr.appendChild(beatenByTd);
-
-      const removeTd = document.createElement("td");
-      const removeBtn = document.createElement("button");
-      removeBtn.textContent = "✖";
-      removeBtn.addEventListener("click", () => removeSweat(s._id));
-      removeTd.appendChild(removeBtn);
-      tr.appendChild(removeTd);
-
-      tableBody.appendChild(tr);
-    });
-  }
+			tableBody.appendChild(tr);
+		});
+	}
 
   async function removeSweat(id) {
     if (!confirm("Are you sure you want to remove this sweat?")) return;

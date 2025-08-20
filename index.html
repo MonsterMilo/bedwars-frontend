@@ -394,9 +394,9 @@ td.user-cell {
   <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
 </div>
 
-<!-- FILTER UI (added) -->
+<!-- FILTER UI -->
 <div class="filter-bar" aria-label="Minimum stat filters">
-    <label for="minStars">Min Stars
+  <label for="minStars">Min Stars
     <input id="minStars" type="number" step="1" placeholder="e.g. 100" aria-label="Minimum Stars">
   </label>
   <label for="minFkdr">Min FKDR
@@ -406,15 +406,22 @@ td.user-cell {
     <input id="minIndex" type="number" step="1" placeholder="e.g. 300" aria-label="Minimum Index">
   </label>
   <label for="minDate">Min Date
-  <input id="minDate" type="date" aria-label="Minimum Date">
-</label>
+    <input id="minDate" type="date" aria-label="Minimum Date">
+  </label>
+
+  <!-- NEW: Hide duplicates filter -->
+  <label for="hideDuplicates">
+    <input type="checkbox" id="hideDuplicates" />
+    Hide duplicate names
+  </label>
+
   <button id="resetFiltersBtn" type="button" aria-label="Reset filters">Reset</button>
 </div>
 
 <table>
   <thead>
     <tr>
-      <th>      Username</th>
+      <th>Username</th>
       <th class="sortable" data-sort="star">Star ▲▼</th>
       <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
       <th class="sortable" data-sort="index">Index ▲▼</th>
@@ -426,6 +433,9 @@ td.user-cell {
   </thead>
   <tbody id="sweatTable"></tbody>
 </table>
+
+</body>
+</html>
 
 <script>
 const backendBaseURL = "https://bedwars-backend.onrender.com";
@@ -462,6 +472,7 @@ const filterFkdr = document.getElementById('minFkdr');
 const filterIndex = document.getElementById('minIndex');
 const filterStars = document.getElementById('minStars');
 const filterDate = document.getElementById('minDate');
+const hideDuplicatesCheckbox = document.getElementById('hideDuplicates');
 const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
 let sweats = [];
@@ -769,6 +780,15 @@ if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== nu
   });
 }
 
+// Apply duplicate filter if enabled
+if (hideDuplicatesCheckbox && hideDuplicatesCheckbox.checked) {
+  const seen = new Set();
+  filteredSweats = filteredSweats.filter(s => {
+    if (seen.has(s.username.toLowerCase())) return false;
+    seen.add(s.username.toLowerCase());
+    return true;
+  });
+}
 
 if (sortField) {
   filteredSweats.sort((a, b) => {
@@ -884,6 +904,11 @@ if (sortField) {
       renderTable();
     });
   });
+
+
+  if (hideDuplicatesCheckbox) {
+    hideDuplicatesCheckbox.addEventListener('change', renderTable);
+  }
 
   // Load all sweats on startup
   loadSweats();

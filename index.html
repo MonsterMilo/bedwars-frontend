@@ -25,6 +25,16 @@ h1 {
   text-shadow: 0 0 12px rgba(0, 200, 255, 0.65);
 }
 
+.section-header {
+  text-align: center;
+  color: #00c8ff;
+  font-weight: 600;
+  margin: 20px 0 10px;
+  font-size: 1.4em;
+  text-shadow: 0 0 6px rgba(0, 200, 255, 0.4);
+}
+
+
 /* Form Container */
 #form-container {
   max-width: 680px;
@@ -265,7 +275,7 @@ button:hover {
 }
 
 #minStars, #minFkdr, #minIndex {
-  width: 66px; /* adjust this value as needed */
+  width: 65px; /* adjust this value as needed */
 }
 
 #minDate {
@@ -354,7 +364,11 @@ td.user-cell {
 <body>
 
 <h1>Bedwars Sweat Tracker</h1>
+<div id="credits" style="text-align:center; color:#7a8490; margin-bottom:25px; font-size:0.9em;">
+  Developed by Milo
+</div>
 
+<h2 class="section-header">Sweat Lookup</h2>
 <div id="form-container">
   <form id="sweatForm" autocomplete="off">
     <div style="display:flex; gap:10px; align-items:center;">
@@ -414,6 +428,7 @@ td.user-cell {
   </div>
 </div>
 
+<h2 class="section-header">Sweat Beaten List</h2>
 <div id="searchContainer">
   <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
 </div>

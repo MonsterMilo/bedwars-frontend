@@ -269,7 +269,23 @@ button:hover {
 }
 
 #minDate {
-  width: 120px; /* adjust this value as needed */
+  width: 110px; /* adjust this value as needed */
+}
+
+/* Remove spinner arrows in Chrome, Edge, Safari */
+#minStars::-webkit-outer-spin-button,
+#minStars::-webkit-inner-spin-button,
+#minFkdr::-webkit-outer-spin-button,
+#minFkdr::-webkit-inner-spin-button,
+#minIndex::-webkit-outer-spin-button,
+#minIndex::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Remove spinner arrows in Firefox */
+#minStars, #minFkdr, #minIndex {
+  -moz-appearance: textfield;
 }
 
 /* Table */

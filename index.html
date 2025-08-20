@@ -430,8 +430,8 @@ td.user-cell {
       </div>
     </div>
   </div>
-  <div style="display:flex; justify-content:center; margin-top:15px;">
-    <button type="submit" style="width:180px; padding:10px 0; font-size:16px;">Add Sweat</button>
+  div style="display:flex; justify-content:center; margin-top:15px;">
+    <button id="addSweatBtn" style="width:180px; padding:10px 0; font-size:16px;">Add Sweat</button>
   </div>
 </div>
 
@@ -520,6 +520,12 @@ const filterStars = document.getElementById('minStars');
 const filterDate = document.getElementById('minDate');
 const hideDuplicatesCheckbox = document.getElementById('hideDuplicates');
 const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+
+const addSweatBtn = document.getElementById('addSweatBtn');
+
+addSweatBtn.addEventListener('click', () => {
+  form.requestSubmit(); // triggers the form submission
+});
 
 let sweats = [];
 let sortField = null;

@@ -412,7 +412,7 @@ td.user-cell {
   <!-- NEW: Hide duplicates filter -->
   <label for="hideDuplicates">
     <input type="checkbox" id="hideDuplicates" />
-    Hide duplicate names
+    Hide dupes
   </label>
 
   <button id="resetFiltersBtn" type="button" aria-label="Reset filters">Reset</button>
@@ -833,7 +833,16 @@ if (sortField) {
       avatarImg.alt = `Avatar of ${s.username}`;
 
       const usernameText = document.createElement("span");
-      usernameText.textContent = s.username;
+      let displayName = s.username;
+      if (hideDuplicatesCheckbox.checked) {
+        // count how many times this username appears in filteredSweats
+        const count = filteredSweats.filter(x => x.username.toLowerCase() === s.username.toLowerCase()).length;
+        if (count > 1) {
+          displayName += ` (x${count})`;
+        }
+      }
+      usernameText.textContent = displayName;
+
 
       usernameTd.appendChild(avatarImg);
       usernameTd.appendChild(usernameText);

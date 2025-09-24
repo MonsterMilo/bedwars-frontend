@@ -649,6 +649,13 @@ async function fetchUrchinTags(username) {
     const res = await fetch(`${backendBaseURL}/urchin/${encodeURIComponent(username)}`);
     if (!res.ok) throw new Error("Urchin fetch failed");
     const data = await res.json();
+
+    // 🔹 Add this check to handle backend fallback
+    if (data.error) {
+      console.warn("Urchin unavailable for", username, "-", data.error);
+      return "None";
+    }
+
     if (data.tags && data.tags.length > 0) {
       return data.tags.map(tag => formatUrchinTagType(tag.type)).join(", ");
     }

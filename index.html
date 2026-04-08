@@ -780,7 +780,7 @@ function getHypixelRank(player) {
 }
 
 function updateStatsDisplay(stats) {
-  statsAvatar.src = `https://crafatar.com/avatars/${currentUUID}?overlay`;
+  statsAvatar.src = `https://visage.surgeplay.com/face/256/${cleanUUID}`;
   statsUsername.textContent = stats.username;
   statsRank.textContent = stats.rank.prefix || "";
   statsRank.style.color = stats.rank.color;

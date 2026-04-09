@@ -18,20 +18,23 @@ body {
 /* Headings */
 h1 {
   text-align: center;
-  margin-bottom: 30px;
-  color: #00c8ff; /* cyan blue */
+  font-size: 2.6em; /* bigger = more important */
+  margin-bottom: 10px; /* tighter to subtitle */
+  color: #00c8ff;
   font-weight: 700;
-  letter-spacing: 1px;
-  text-shadow: 0 0 12px rgba(0, 200, 255, 0.65);
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 14px rgba(0, 200, 255, 0.7);
 }
 
 .section-header {
   text-align: center;
   color: #00c8ff;
   font-weight: 600;
-  margin: 20px 0 10px;
-  font-size: 1.4em;
-  text-shadow: 0 0 6px rgba(0, 200, 255, 0.4);
+  margin: 40px 0 15px; /* more separation between sections */
+  font-size: 1.5em; /* slightly bigger */
+  text-shadow: 0 0 8px rgba(0, 200, 255, 0.5);
+  border-bottom: 1px solid rgba(255,255,255,0.05); /* subtle divider */
+  padding-bottom: 6px;
 }
 
 
@@ -380,7 +383,7 @@ td.user-cell {
       <span style="font-weight:bold; color:#00c8ff; text-shadow: 0 0 6px rgba(0, 200, 255, 0.4);">Beaten By:</span>
       <label><input type="checkbox" id="milo" /> Milo</label>
       <label><input type="checkbox" id="potat" /> Potat</label>
-      <label><input type="checkbox" id="aballs" /> Aballs</label>
+      <label><input type="checkbox" id="aball" /> Aball</label>
       <label><input type="checkbox" id="zoiv" /> Zoiv</label>
       <span style="font-weight:bold; font-size:20px; margin-left:13px; margin-right:23px; color:#00c8ff; text-shadow: 0 0 6px rgba(0, 200, 255, 0.4);">|</span>
       <label><input type="checkbox" id="cheating" /> Cheating</label>
@@ -562,7 +565,7 @@ form.addEventListener('submit', async e => {
   const username = document.getElementById('username').value.trim();
   const milo = document.getElementById('milo').checked;
   const potat = document.getElementById('potat').checked;
-  const aballs = document.getElementById('aballs').checked;
+  const aball = document.getElementById('aball').checked;
   const zoiv = document.getElementById('zoiv').checked;
   const cheating = document.getElementById('cheating').checked;
 
@@ -571,7 +574,7 @@ form.addEventListener('submit', async e => {
     return;
   }
 
-  if (!milo && !potat && !aballs && !zoiv) {
+  if (!milo && !potat && !aball && !zoiv) {
     alert("Please select at least one player who beat them.");
     return;
   }
@@ -600,7 +603,7 @@ form.addEventListener('submit', async e => {
       deaths: currentStats.deaths,
       milo,
       potat,
-      aballs,
+      aball,
       zoiv,
       cheating,
       uuid: currentUUID,
@@ -930,7 +933,7 @@ function updateStatsDisplay(stats) {
 			let beatenBy = [];
 			if (s.milo) beatenBy.push("Milo");
 			if (s.potat) beatenBy.push("Potat");
-			if (s.aballs) beatenBy.push("Aballs");
+			if (s.aball) beatenBy.push("Aball");
 			if (s.zoiv) beatenBy.push("Zoiv");
 			beatenByTd.textContent = beatenBy.join(", ");
 			tr.appendChild(beatenByTd);

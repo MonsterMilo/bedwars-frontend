@@ -9,10 +9,42 @@
 /* Reset and dark background */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #0d1117;
+  background-color: #05080f; /* updated */
   color: #e5e5e5;
   margin: 20px;
   line-height: 1.4;
+  overflow-x: hidden;
+}
+/* 🌌 Animated star background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+
+  background-image:
+    radial-gradient(white 1px, transparent 1px),
+    radial-gradient(white 1px, transparent 1px);
+
+  background-size: 40px 40px, 80px 80px;
+  background-position: 0 0, 20px 20px;
+
+  opacity: 0.05;
+
+  animation: starDrift 120s linear infinite;
+
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes starDrift {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100px); }
+}
+
+/* keep UI above background */
+body > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Headings */

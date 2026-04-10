@@ -33,18 +33,12 @@ body {
   opacity: 0.9;
 }
 
-/* star container */
 #starfield {
   position: fixed;
   inset: 0;
-  z-index: 0;
   pointer-events: none;
-
-  transform: translateY(0px);
-  will-change: transform;
+  z-index: 0;
 }
-
-
 
 /* star animation */
 @keyframes twinkle {
@@ -457,7 +451,7 @@ td.user-cell {
 <div id="nebula"></div>
 <div id="starfield"></div>
 <h1>Bedwars Sweat Tracker</h1>
-<div id="credits">Developed by Milo • Powered by Hypixel API and Urchin API</div>
+<div id="credits">Developed by Milo • Powered by Hypixel API</div>
 
 <h2 class="section-header">Sweat Lookup</h2>
 <div id="form-container">
@@ -575,57 +569,57 @@ td.user-cell {
 
 const starContainer = document.getElementById("starfield");
 
-const STAR_COUNT = 250; // increase for denser sky
+const STAR_COUNT = 250;
 
+// ---------- STAR CREATION ----------
 for (let i = 0; i < STAR_COUNT; i++) {
   const star = document.createElement("div");
   star.classList.add("star");
 
-  // random size (tiny realistic variation)
-  const size = Math.random() * 2.2; // 0.2px to ~2.4px
+  const size = Math.random() * 2.2;
   star.style.width = size + "px";
   star.style.height = size + "px";
 
-  // random position
-  star.style.left = Math.random() * 100 + "vw";
-  star.style.top = Math.random() * 100 + "vh";
+  // expanded space so no gaps appear
+  star.style.left = Math.random() * 200 + "vw";
+  star.style.top = Math.random() * 200 + "vh";
 
   star.style.animationDuration = (2 + Math.random() * 3) + "s";
   star.style.animationDelay = (Math.random() * 5) + "s";
 
-  // occasional brighter stars
   if (Math.random() < 0.15) {
     star.classList.add("bright");
   }
 
-  // slight random opacity variation
   star.style.opacity = 0.3 + Math.random() * 0.7;
 
   starContainer.appendChild(star);
 }
 
+// ---------- SCROLL PARALLAX ----------
 let lastScrollY = window.scrollY;
+let offset = 0;
 let velocity = 0;
-let currentOffset = 0;
 
 window.addEventListener("scroll", () => {
   const currentScrollY = window.scrollY;
 
-  // how fast user is scrolling
-  velocity = currentScrollY - lastScrollY;
+  // REVERSED direction (scroll down = stars move down)
+  velocity = lastScrollY - currentScrollY;
 
   lastScrollY = currentScrollY;
 });
 
+// ---------- ANIMATION LOOP ----------
 function animateStars() {
-  // dampen velocity (smooth decay)
+  // smooth decay
   velocity *= 0.9;
 
-  // apply movement
-  currentOffset += velocity * 0.5;
+  // accumulate movement
+  offset += velocity * 0.5;
 
-  // move star layer
-  starContainer.style.transform = `translateY(${currentOffset}px)`;
+  // apply movement
+  starContainer.style.transform = `translateY(${offset}px)`;
 
   requestAnimationFrame(animateStars);
 }

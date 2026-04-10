@@ -567,9 +567,10 @@ td.user-cell {
 
 <script>
 
+
 const starContainer = document.getElementById("starfield");
 
-const STAR_COUNT = 3500;
+const STAR_COUNT = 1800;
 
 // ---------- STAR CREATION ----------
 for (let i = 0; i < STAR_COUNT; i++) {
@@ -581,7 +582,7 @@ for (let i = 0; i < STAR_COUNT; i++) {
   star.style.height = size + "px";
 
   // expanded space so no gaps appear
-  const AREA = 1500;
+  const AREA = 300;
 
   star.style.left = Math.random() * AREA + "vw";
   star.style.top = Math.random() * AREA + "vh";
@@ -600,9 +601,14 @@ for (let i = 0; i < STAR_COUNT; i++) {
 
 window.addEventListener("scroll", () => {
   const scrollY = window.scrollY;
+  const docHeight = document.body.scrollHeight - window.innerHeight;
 
-  starContainer.style.transform = `translateY(${-scrollY * 0.7}px)`;
+  const progress = scrollY / docHeight;
+
+  // map full page scroll to large movement range
+  starContainer.style.transform = `translateY(${-progress * 5000}px)`;
 });
+
 const backendBaseURL = "https://bedwars-backend.onrender.com";
 
 const form = document.getElementById('sweatForm');

@@ -569,7 +569,7 @@ td.user-cell {
 
 const starContainer = document.getElementById("starfield");
 
-const STAR_COUNT = 600;
+const STAR_COUNT = 1800;
 
 // ---------- STAR CREATION ----------
 for (let i = 0; i < STAR_COUNT; i++) {
@@ -605,7 +605,7 @@ window.addEventListener("scroll", () => {
   const progress = scrollY / docHeight;
 
   // map full page scroll to large movement range
-  starContainer.style.transform = `translateY(${-progress * 3000}px)`;
+  starContainer.style.transform = `translateY(${-progress * 5000}px)`;
 });
 
 const backendBaseURL = "https://bedwars-backend.onrender.com";

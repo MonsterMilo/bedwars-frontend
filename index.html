@@ -62,10 +62,16 @@ body {
   background: white;
   border-radius: 50%;
 
-  opacity: 0.2;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+  opacity: 0.8;
 
-  animation: twinkle 4s infinite ease-in-out;
+  box-shadow:
+    0 0 4px rgba(255, 255, 255, 0.6),
+    0 0 8px rgba(255, 255, 255, 0.4);
+
+  animation: twinkle 6s infinite ease-in-out;
+  animation-fill-mode: both;
+
+  will-change: opacity, transform;
 }
 
 /* bright stars */
@@ -580,9 +586,9 @@ for (let i = 0; i < STAR_COUNT; i++) {
 
   if (Math.random() < 0.5) {
     size = 0.8;
-    star.style.opacity = 0.1 + Math.random() * 0.2;
+    star.dataset.baseOpacity = (0.1 + Math.random() * 0.2);
   } else {
-    star.style.opacity = 0.3 + Math.random() * 0.7;
+    star.dataset.baseOpacity = (0.3 + Math.random() * 0.7);
   }
 
   star.style.width = size + "px";
@@ -609,6 +615,8 @@ window.addEventListener("scroll", () => {
   const progress = Math.min(scrollY / starFieldHeight, 1);
 
   starContainer.style.transform = `translateY(${-progress * starFieldHeight}px)`;
+
+  // fade whole layer smoothly without fighting CSS opacity per-star
   starContainer.style.opacity = 1 - progress;
 });
 

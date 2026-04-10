@@ -1291,7 +1291,7 @@ const closeModal = document.getElementById("closeModal");
 
 // click on player row
 document.addEventListener("click", async (e) => {
-  if (e.target.tagName === "BUTTON") return; // 👈 prevents delete triggering modal
+  if (e.target.tagName === "BUTTON") return;
 
   const row = e.target.closest("tr[data-username]");
   if (!row) return;
@@ -1300,17 +1300,11 @@ document.addEventListener("click", async (e) => {
   const uuid = row.dataset.uuid;
 
   modal.style.display = "flex";
+  modalUsername.textContent = "Loading...";
+  modalStats.innerHTML = "Fetching live stats...";
 
   if (!uuid) {
     modalUsername.textContent = username;
-    modalStats.innerHTML = "Missing UUID for this player.";
-    return;
-  }
-
-modalUsername.textContent = "Loading...";
-modalStats.innerHTML = "Fetching live stats...";
-
-  if (!uuid) {
     modalStats.innerHTML = "Missing UUID for this player.";
     return;
   }
@@ -1319,7 +1313,14 @@ modalStats.innerHTML = "Fetching live stats...";
     const res = await fetch(`${backendBaseURL}/stats/uuid/${uuid}`);
     const data = await res.json();
 
-    modalUsername.textContent = username;
+    const currentName = data.username;
+
+    if (currentName && currentName.toLowerCase() !== username.toLowerCase()) {
+      modalUsername.textContent = `${username} (now ${currentName})`;
+    } else {
+      modalUsername.textContent = username;
+    }
+    
     modalSkin.src = `https://visage.surgeplay.com/full/256/${uuid}`;
 
     modalStats.innerHTML = `
@@ -1334,7 +1335,6 @@ modalStats.innerHTML = "Fetching live stats...";
   }
 });
 
-// close modal
 closeModal.onclick = () => modal.style.display = "none";
 
 window.onclick = (e) => {

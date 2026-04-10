@@ -581,7 +581,7 @@ for (let i = 0; i < STAR_COUNT; i++) {
   star.style.height = size + "px";
 
   // expanded space so no gaps appear
-  const AREA = 140;
+  const AREA = 200;
 
   star.style.left = Math.random() * AREA + "vw";
   star.style.top = Math.random() * AREA + "vh";
@@ -598,27 +598,12 @@ for (let i = 0; i < STAR_COUNT; i++) {
   starContainer.appendChild(star);
 }
 
-// ---------- SCROLL PARALLAX ----------
-let offset = 0;
-let lastScrollY = window.scrollY;
-
 window.addEventListener("scroll", () => {
-  const currentScrollY = window.scrollY;
+  const scrollY = window.scrollY;
 
-  const delta = currentScrollY - lastScrollY;
-
-  // REVERSED direction (scroll down → stars move down)
-  offset -= delta * 1.2;
-
-  lastScrollY = currentScrollY;
+  // stronger, stable, long-page compatible movement
+  starContainer.style.transform = `translateY(${-scrollY * 0.4}px)`;
 });
-
-function animateStars() {
-  starContainer.style.transform = `translateY(${offset}px)`;
-  requestAnimationFrame(animateStars);
-}
-
-animateStars();
 
 const backendBaseURL = "https://bedwars-backend.onrender.com";
 

@@ -402,6 +402,30 @@ th.sortable:hover {
   background: #22303c;
 }
 
+.user-cell span {
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+tbody tr:hover {
+  background: rgba(0, 200, 255, 0.05);
+}
+
+tbody tr:hover .user-cell span {
+  color: #00c8ff;
+  text-shadow:
+    0 0 6px rgba(0, 200, 255, 0.8),
+    0 0 14px rgba(0, 200, 255, 0.6),
+    0 0 24px rgba(0, 200, 255, 0.3);
+}
+
+tbody tr {
+  transition: transform 0.08s ease, background 0.2s ease;
+}
+
+tbody tr:active {
+  transform: scale(0.99);
+}
+
 /* Added avatar in table row */
 .user-cell {
   display: flex;
@@ -487,52 +511,64 @@ td.user-cell {
 /* layout under username */
 .modal-body {
   display: flex;
-  gap: 26px;
+  gap: 22px;
   align-items: center;
-  justify-content: flex-start;
-  padding-left: 10px;
+  justify-content: center;
+  margin-top: 10px;
 }
 
 /* skin styling */
 #modalSkin {
-  width: 140px;
-  height: 180px;
+  width: 160px;
+  height: 240px;
 
   object-fit: contain;
 
   border-radius: 14px;
 
-  background: radial-gradient(circle, rgba(0,200,255,0.15), transparent);
+  background: radial-gradient(circle, rgba(0,200,255,0.18), transparent);
 
   box-shadow:
-    0 0 15px rgba(0, 200, 255, 0.6),
-    0 0 35px rgba(0, 200, 255, 0.25);
+    0 0 18px rgba(0, 200, 255, 0.7),
+    0 0 45px rgba(0, 200, 255, 0.25);
+
+  border: 1px solid rgba(0, 200, 255, 0.3);
 
   flex-shrink: 0;
 }
 
 /* stats block */
 #modalStats {
-  font-size: 16px;
-  line-height: 1.8;
-  min-width: 180px;
+  font-size: 17px;
+  line-height: 1.9;
+  min-width: 200px;
 
-  margin-left: 10px;
+  margin-left: 18px;
 
   color: #cfefff;
 
   text-shadow:
-    0 0 6px rgba(0, 200, 255, 0.25),
-    0 0 12px rgba(0, 200, 255, 0.15);
+    0 0 8px rgba(0, 200, 255, 0.25),
+    0 0 14px rgba(0, 200, 255, 0.18);
 }
 
 /* glowing labels/numbers */
 #modalStats p {
   margin: 6px 0;
-  padding: 2px 6px;
-  border-radius: 6px;
+  padding: 4px 8px;
+  border-radius: 8px;
 
-  background: rgba(0, 200, 255, 0.04);
+  background: rgba(0, 200, 255, 0.05);
+
+  box-shadow: inset 0 0 8px rgba(0, 200, 255, 0.08);
+  transition: 0.2s;
+}
+
+#modalStats p:hover {
+  background: rgba(0, 200, 255, 0.1);
+  box-shadow:
+    0 0 10px rgba(0, 200, 255, 0.25),
+    inset 0 0 10px rgba(0, 200, 255, 0.1);
 }
 
 #modalStats span,
@@ -667,14 +703,13 @@ td.user-cell {
 <!-- PLAYER MODAL -->
 <div id="playerModal" class="modal">
   <div class="modal-content">
-
+    
     <span id="closeModal">&times;</span>
 
-    <h2 id="modalUsername"></h2>
+    <h2 id="modalUsername">Loading...</h2>
 
     <div class="modal-body">
-      <img id="modalSkin" />
-
+      <img id="modalSkin" src="" />
       <div id="modalStats"></div>
     </div>
 

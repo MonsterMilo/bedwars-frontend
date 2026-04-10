@@ -572,53 +572,49 @@ const starContainer = document.getElementById("starfield");
 
 const STAR_COUNT = 2200;
 
-// ---------- STAR CREATION ----------
-for (let i = 0; i < STAR_COUNT; i++) {
-  const star = document.createElement("div");
-  star.classList.add("star");
+function createStars() {
+  for (let i = 0; i < STAR_COUNT; i++) {
+    const star = document.createElement("div");
+    star.classList.add("star");
 
-  let size = Math.random() * 2.2;
+    let size = Math.random() * 2.2;
 
-  // add faint tiny stars for density
-  if (Math.random() < 0.5) {
-    size = 0.8;
-    star.style.opacity = 0.08 + Math.random() * 0.2;
-  } else {
-    star.style.opacity = 0.3 + Math.random() * 0.7;
+    if (Math.random() < 0.5) {
+      size = 0.8;
+      star.style.opacity = 0.08 + Math.random() * 0.2;
+    } else {
+      star.style.opacity = 0.3 + Math.random() * 0.7;
+    }
+
+    star.style.width = size + "px";
+    star.style.height = size + "px";
+
+    star.style.left = Math.random() * 100 + "vw";
+    star.style.top = Math.random() * (window.innerHeight * 2) + "px";
+
+    star.style.animationDuration = (4 + Math.random() * 4) + "s";
+    star.style.animationDelay = (Math.random() * 5) + "s";
+
+    if (Math.random() < 0.2) {
+      star.classList.add("bright");
+    }
+
+    starContainer.appendChild(star);
   }
-
-  star.style.width = size + "px";
-  star.style.height = size + "px";
-
-  // ONLY fill the first screen
-  star.style.left = Math.random() * 100 + "vw";
-  star.style.top = Math.random() * (window.innerHeight * 2) + "px";
-
-  star.style.animationDuration = (4 + Math.random() * 4) + "s";
-  star.style.animationDelay = (Math.random() * 5) + "s";
-
-  if (Math.random() < 0.2) {
-    star.classList.add("bright");
-  }
-
-  starContainer.appendChild(star);
 }
 
-// ---------- SIMPLE SCROLL ----------
-window.addEventListener("scroll", () => {
-  const scrollY = window.scrollY;
+window.addEventListener("load", () => {
+  createStars();
 
-  // how far the starfield "should" exist
-  const starFieldHeight = window.innerHeight * 2;
+  window.addEventListener("scroll", () => {
+    const scrollY = window.scrollY;
 
-  // move stars only within their real range
-  const progress = Math.min(scrollY / starFieldHeight, 1);
+    const starFieldHeight = window.innerHeight * 2;
+    const progress = Math.min(scrollY / starFieldHeight, 1);
 
-  starContainer.style.transform = `translateY(${-progress * starFieldHeight}px)`;
-
-  // fade out exactly as we reach the end
-  const opacity = 1 - progress;
-  starContainer.style.opacity = opacity;
+    starContainer.style.transform = `translateY(${-progress * starFieldHeight}px)`;
+    starContainer.style.opacity = 1 - progress;
+  });
 });
 
 const backendBaseURL = "https://bedwars-backend.onrender.com";

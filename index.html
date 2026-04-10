@@ -1185,34 +1185,18 @@ document.addEventListener("click", async (e) => {
     modalUsername.textContent = username;
     modalSkin.src = `https://visage.surgeplay.com/full/256/${username}`;
 
-    
-    const saved = sweats
-      .filter(s => s.username.toLowerCase() === username.toLowerCase())
-      .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))[0];
-
-    function diff(current, old, decimals = 2) {
-      if (old == null) return "";
-
-      const change = current - old;
-      const sign = change > 0 ? "+" : "";
-      const color = change > 0 ? "#4caf50" : change < 0 ? "#ff5252" : "#aaa";
-
-      return ` <span style="color:${color}">(${sign}${change.toFixed(decimals)})</span>`;
-    }
-
     modalStats.innerHTML = `
-      <p>Stars: ${saved?.star ?? "-"} → ${data.star}${diff(data.star, saved?.star, 0)}</p>
-      <p>FKDR: ${saved?.fkdr?.toFixed(2) ?? "-"} → ${data.fkdr.toFixed(2)}${diff(data.fkdr, saved?.fkdr)}</p>
-      <p>WLR: ${saved?.wlr?.toFixed(2) ?? "-"} → ${data.wlr.toFixed(2)}${diff(data.wlr, saved?.wlr)}</p>
-      <p>Finals: ${saved?.finals ?? "-"} → ${data.finals}${diff(data.finals, saved?.finals, 0)}</p>
-      <p>Wins: ${saved?.wins ?? "-"} → ${data.wins}${diff(data.wins, saved?.wins, 0)}</p>
+      <p>Stars: ${data.star}</p>
+      <p>FKDR: ${data.fkdr.toFixed(2)}</p>
+      <p>WLR: ${data.wlr.toFixed(2)}</p>
+      <p>Finals: ${data.finals}</p>
+      <p>Wins: ${data.wins}</p>
     `;
-
   } catch (err) {
     modalStats.innerHTML = "Failed to load stats.";
   }
+});
 
-}); // ✅ NOW properly closed
 // close modal
 closeModal.onclick = () => modal.style.display = "none";
 

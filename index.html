@@ -1296,7 +1296,12 @@ document.addEventListener("click", async (e) => {
   if (!row) return;
 
   const username = row.dataset.username;
-  const uuid = row.dataset.uuid;
+    const uuid = row.dataset.uuid;
+
+    if (!uuid) {
+      modalStats.innerHTML = "Missing UUID for this player.";
+      return;
+    }
 
   modal.style.display = "flex";
   modalUsername.textContent = "Loading...";
@@ -1307,7 +1312,7 @@ document.addEventListener("click", async (e) => {
     const data = await res.json();
 
     modalUsername.textContent = username;
-    modalSkin.src = `https://visage.surgeplay.com/full/256/${username}`;
+    modalSkin.src = `https://visage.surgeplay.com/full/256/${uuid}`;
 
     modalStats.innerHTML = `
       <p>Stars: ${data.star}</p>

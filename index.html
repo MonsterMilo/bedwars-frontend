@@ -570,31 +570,39 @@ td.user-cell {
 
 const starContainer = document.getElementById("starfield");
 
-const STAR_COUNT = 7000;
+const STAR_COUNT = 2200; // lowered for performance but still dense
 
 // ---------- STAR CREATION ----------
 for (let i = 0; i < STAR_COUNT; i++) {
   const star = document.createElement("div");
   star.classList.add("star");
 
-  const size = Math.random() * 2.2;
+  // size variation (adds perceived density)
+  let size = Math.random() * 2.2;
+
+  // add lots of tiny faint stars (cheap density boost)
+  if (Math.random() < 0.4) {
+    size = 1;
+    star.style.opacity = 0.1 + Math.random() * 0.2;
+  } else {
+    star.style.opacity = 0.3 + Math.random() * 0.7;
+  }
+
   star.style.width = size + "px";
   star.style.height = size + "px";
 
-  // expanded space so no gaps appear
-  const AREA = 960;
+  const AREA = 800; // enough coverage without spreading too thin
 
   star.style.left = Math.random() * AREA + "vw";
   star.style.top = Math.random() * AREA + "vh";
 
-  star.style.animationDuration = (2 + Math.random() * 3) + "s";
+  // slower animation = smoother performance
+  star.style.animationDuration = (4 + Math.random() * 4) + "s";
   star.style.animationDelay = (Math.random() * 5) + "s";
 
   if (Math.random() < 0.15) {
     star.classList.add("bright");
   }
-
-  star.style.opacity = 0.3 + Math.random() * 0.7;
 
   starContainer.appendChild(star);
 }
@@ -605,8 +613,12 @@ window.addEventListener("scroll", () => {
 
   const progress = scrollY / docHeight;
 
-  // map full page scroll to large movement range
-  starContainer.style.transform = `translateY(${-progress * 6500}px)`;
+  // smooth taper: strong at top, fades out naturally
+  const eased = 1 - Math.pow(1 - progress, 3);
+
+  const maxMove = 6500;
+
+  starContainer.style.transform = `translateY(${-eased * maxMove}px)`;
 });
 
 const backendBaseURL = "https://bedwars-backend.onrender.com";

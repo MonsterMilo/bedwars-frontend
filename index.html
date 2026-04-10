@@ -453,31 +453,86 @@ td.user-cell {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.75);
   z-index: 999;
 
   align-items: center;
   justify-content: center;
+
+  backdrop-filter: blur(6px);
 }
 
 .modal-content {
-  background: #0b111c;
-  padding: 20px;
-  border-radius: 12px;
-  width: 320px;
+  display: flex;
+  gap: 20px;
+
+  background: linear-gradient(145deg, #0b111c, #0f1a2e);
+  padding: 22px;
+  border-radius: 16px;
+
+  width: 520px;
+  max-width: 90vw;
+
   color: white;
-  box-shadow: 0 0 20px rgba(0,200,255,0.4);
+
+  box-shadow:
+    0 0 25px rgba(0, 200, 255, 0.35),
+    inset 0 0 10px rgba(255, 255, 255, 0.03);
+
+  border: 1px solid rgba(0, 200, 255, 0.15);
 }
 
 #modalSkin {
-  border-radius: 10px;
-  box-shadow: 0 0 14px rgba(0, 200, 255, 0.6);
+  width: 140px;
+  height: 140px;
+
+  border-radius: 14px;
+
+  background: radial-gradient(circle at top left, rgba(0, 200, 255, 0.25), transparent 60%),
+              radial-gradient(circle at bottom right, rgba(120, 0, 255, 0.2), transparent 60%);
+
+  padding: 6px;
+
+  box-shadow:
+    0 0 18px rgba(0, 200, 255, 0.6),
+    inset 0 0 10px rgba(255, 255, 255, 0.05);
+
+  border: 1px solid rgba(0, 200, 255, 0.25);
+}
+
+#modalUsername {
+  margin: 0 0 10px 0;
+  font-size: 20px;
+  color: #00c8ff;
+  text-shadow: 0 0 8px rgba(0, 200, 255, 0.5);
+}
+
+#modalStats {
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+#modalStats p {
+  margin: 4px 0;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 #closeModal {
-  float: right;
+  position: absolute;
+  top: 20px;
+  right: 25px;
+
   cursor: pointer;
-  font-size: 20px;
+  font-size: 26px;
+
+  color: #00c8ff;
+  text-shadow: 0 0 8px rgba(0, 200, 255, 0.6);
+}
+
+#closeModal:hover {
+  color: white;
 }
 
 </style>

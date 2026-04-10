@@ -39,7 +39,12 @@ body {
   inset: 0;
   z-index: 0;
   pointer-events: none;
+
+  transform: translateY(0px);
+  will-change: transform;
 }
+
+
 
 /* star animation */
 @keyframes twinkle {
@@ -598,6 +603,34 @@ for (let i = 0; i < STAR_COUNT; i++) {
 
   starContainer.appendChild(star);
 }
+
+let lastScrollY = window.scrollY;
+let velocity = 0;
+let currentOffset = 0;
+
+window.addEventListener("scroll", () => {
+  const currentScrollY = window.scrollY;
+
+  // how fast user is scrolling
+  velocity = currentScrollY - lastScrollY;
+
+  lastScrollY = currentScrollY;
+});
+
+function animateStars() {
+  // dampen velocity (smooth decay)
+  velocity *= 0.9;
+
+  // apply movement
+  currentOffset += velocity * 0.5;
+
+  // move star layer
+  starContainer.style.transform = `translateY(${currentOffset}px)`;
+
+  requestAnimationFrame(animateStars);
+}
+
+animateStars();
 
 const backendBaseURL = "https://bedwars-backend.onrender.com";
 

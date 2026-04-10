@@ -449,6 +449,31 @@ td.user-cell {
   opacity: 1;
 }
 
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 999;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: #0b111c;
+  padding: 20px;
+  border-radius: 12px;
+  width: 320px;
+  color: white;
+  box-shadow: 0 0 20px rgba(0,200,255,0.4);
+}
+
+#closeModal {
+  float: right;
+  cursor: pointer;
+  font-size: 20px;
+}
 
 </style>
 </head>
@@ -567,6 +592,15 @@ td.user-cell {
   </thead>
   <tbody id="sweatTable"></tbody>
 </table>
+
+<!-- PLAYER MODAL -->
+<div id="playerModal" class="modal">
+  <div class="modal-content">
+    <span id="closeModal">&times;</span>
+    <h2 id="modalUsername">Loading...</h2>
+    <div id="modalStats"></div>
+  </div>
+</div>
 
 </body>
 </html>
@@ -1021,6 +1055,7 @@ function updateStatsDisplay(stats) {
 
 		filteredSweats.forEach(s => {
 			const tr = document.createElement("tr");
+      tr.dataset.username = s.username;
 
 			const usernameTd = document.createElement("td");
 			usernameTd.classList.add('user-cell');
@@ -1115,6 +1150,50 @@ function updateStatsDisplay(stats) {
 
   // Load all sweats on startup
   loadSweats();
+
+const modal = document.getElementById("playerModal");
+const modalUsername = document.getElementById("modalUsername");
+const modalStats = document.getElementById("modalStats");
+const closeModal = document.getElementById("closeModal");
+
+// click on player row
+document.addEventListener("click", async (e) => {
+  if (e.target.tagName === "BUTTON") return; // 👈 prevents delete triggering modal
+  
+  const row = e.target.closest("tr[data-username]");
+  if (!row) return;
+
+  const username = row.dataset.username;
+
+  modal.style.display = "flex";
+  modalUsername.textContent = "Loading...";
+  modalStats.innerHTML = "Fetching live stats...";
+
+  try {
+    const res = await fetch(`${backendBaseURL}/stats/${username}`);
+    const data = await res.json();
+
+    modalUsername.textContent = username;
+
+    modalStats.innerHTML = `
+      <p>Stars: ${data.star}</p>
+      <p>FKDR: ${data.fkdr.toFixed(2)}</p>
+      <p>WLR: ${data.wlr.toFixed(2)}</p>
+      <p>Finals: ${data.finals}</p>
+      <p>Wins: ${data.wins}</p>
+    `;
+  } catch (err) {
+    modalStats.innerHTML = "Failed to load stats.";
+  }
+});
+
+// close modal
+closeModal.onclick = () => modal.style.display = "none";
+
+window.onclick = (e) => {
+  if (e.target === modal) modal.style.display = "none";
+};
+
 </script>
 
 </body>

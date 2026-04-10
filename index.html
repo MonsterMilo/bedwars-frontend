@@ -570,20 +570,19 @@ td.user-cell {
 
 const starContainer = document.getElementById("starfield");
 
-const STAR_COUNT = 2200; // lowered for performance but still dense
+const STAR_COUNT = 2200;
 
 // ---------- STAR CREATION ----------
 for (let i = 0; i < STAR_COUNT; i++) {
   const star = document.createElement("div");
   star.classList.add("star");
 
-  // size variation (adds perceived density)
   let size = Math.random() * 2.2;
 
-  // add lots of tiny faint stars (cheap density boost)
-  if (Math.random() < 0.4) {
-    size = 1;
-    star.style.opacity = 0.1 + Math.random() * 0.2;
+  // add faint tiny stars for density
+  if (Math.random() < 0.5) {
+    size = 0.8;
+    star.style.opacity = 0.08 + Math.random() * 0.2;
   } else {
     star.style.opacity = 0.3 + Math.random() * 0.7;
   }
@@ -591,34 +590,26 @@ for (let i = 0; i < STAR_COUNT; i++) {
   star.style.width = size + "px";
   star.style.height = size + "px";
 
-  const AREA = 800; // enough coverage without spreading too thin
+  // ONLY fill the first screen
+  star.style.left = Math.random() * 100 + "vw";
+  star.style.top = Math.random() * 100 + "vh";
 
-  star.style.left = Math.random() * AREA + "vw";
-  star.style.top = Math.random() * AREA + "vh";
-
-  // slower animation = smoother performance
   star.style.animationDuration = (4 + Math.random() * 4) + "s";
   star.style.animationDelay = (Math.random() * 5) + "s";
 
-  if (Math.random() < 0.15) {
+  if (Math.random() < 0.2) {
     star.classList.add("bright");
   }
 
   starContainer.appendChild(star);
 }
 
+// ---------- SIMPLE SCROLL ----------
 window.addEventListener("scroll", () => {
   const scrollY = window.scrollY;
-  const docHeight = document.body.scrollHeight - window.innerHeight;
 
-  const progress = scrollY / docHeight;
-
-  // smooth taper: strong at top, fades out naturally
-  const eased = 1 - Math.pow(1 - progress, 3);
-
-  const maxMove = 1000;
-
-  starContainer.style.transform = `translateY(${-eased * maxMove}px)`;
+  // move stars up with scroll so they disappear
+  starContainer.style.transform = `translateY(${-scrollY}px)`;
 });
 
 const backendBaseURL = "https://bedwars-backend.onrender.com";

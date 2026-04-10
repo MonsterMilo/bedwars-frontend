@@ -600,12 +600,17 @@ for (let i = 0; i < STAR_COUNT; i++) {
 
 // ---------- SCROLL PARALLAX ----------
 let offset = 0;
+let lastScrollY = window.scrollY;
 
 window.addEventListener("scroll", () => {
-  const scrollY = window.scrollY;
+  const currentScrollY = window.scrollY;
 
-  // reverse direction (scroll down → stars move down)
-  offset = scrollY * -0.3;
+  const delta = currentScrollY - lastScrollY;
+
+  // REVERSED direction (scroll down → stars move down)
+  offset -= delta * 1.2;
+
+  lastScrollY = currentScrollY;
 });
 
 function animateStars() {

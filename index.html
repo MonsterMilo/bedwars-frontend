@@ -600,12 +600,9 @@ for (let i = 0; i < STAR_COUNT; i++) {
 
 window.addEventListener("scroll", () => {
   const scrollY = window.scrollY;
-  const docHeight = document.body.scrollHeight - window.innerHeight;
 
-  const progress = scrollY / docHeight;
-
-  // map full page scroll to large movement range
-  starContainer.style.transform = `translateY(${-progress * 5000}px)`;
+  // continuous movement across full page
+  starContainer.style.transform = `translateY(${-scrollY * 0.7}px)`;
 });
 
 const backendBaseURL = "https://bedwars-backend.onrender.com";

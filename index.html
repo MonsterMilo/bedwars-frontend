@@ -1187,6 +1187,7 @@ function updateStatsDisplay(stats) {
 		filteredSweats.forEach(s => {
 			const tr = document.createElement("tr");
       tr.dataset.username = s.username;
+      tr.dataset.uuid = s.uuid;
 
 			const usernameTd = document.createElement("td");
 			usernameTd.classList.add('user-cell');

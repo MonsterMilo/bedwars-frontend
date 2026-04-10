@@ -481,33 +481,43 @@ td.user-cell {
 /* layout under username */
 .modal-body {
   display: flex;
-  gap: 18px;
+  gap: 26px;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-left: 10px;
 }
 
 /* skin styling */
 #modalSkin {
-  width: 110px;
-  height: 110px;
-  border-radius: 12px;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+
+  border-radius: 14px;
   background: radial-gradient(circle, rgba(0,200,255,0.15), transparent);
+
   box-shadow:
     0 0 12px rgba(0,200,255,0.5),
     0 0 25px rgba(0,200,255,0.2);
+
+  flex-shrink: 0;
 }
 
 /* stats block */
 #modalStats {
-  font-size: 14px;
-  line-height: 1.7;
-  min-width: 160px;
+  font-size: 16px;
+  line-height: 1.8;
+  min-width: 180px;
+
   text-shadow: 0 0 8px rgba(0,200,255,0.25);
+
+  margin-left: 10px;
 }
 
 /* glowing labels/numbers */
 #modalStats p {
-  margin: 4px 0;
+  margin: 6px 0;
+  font-weight: 500;
 }
 
 #modalStats span,
@@ -542,7 +552,7 @@ td.user-cell {
       <span style="font-weight:bold; color:#00c8ff; text-shadow: 0 0 6px rgba(0, 200, 255, 0.4);">Beaten By:</span>
       <label><input type="checkbox" id="milo" /> Milo</label>
       <label><input type="checkbox" id="potat" /> Potat</label>
-      <label><input type="checkbox" id="aball" /> Aball</label>
+      <label><input type="checkbox" id="aballs" /> Aballs</label>
       <label><input type="checkbox" id="zoiv" /> Zoiv</label>
       <span style="font-weight:bold; font-size:20px; margin-left:13px; margin-right:23px; color:#00c8ff; text-shadow: 0 0 6px rgba(0, 200, 255, 0.4);">|</span>
       <label><input type="checkbox" id="cheating" /> Cheating</label>
@@ -797,7 +807,7 @@ form.addEventListener('submit', async e => {
   const username = document.getElementById('username').value.trim();
   const milo = document.getElementById('milo').checked;
   const potat = document.getElementById('potat').checked;
-  const aball = document.getElementById('aball').checked;
+  const aballs = document.getElementById('aballs').checked;
   const zoiv = document.getElementById('zoiv').checked;
   const cheating = document.getElementById('cheating').checked;
 
@@ -806,7 +816,7 @@ form.addEventListener('submit', async e => {
     return;
   }
 
-  if (!milo && !potat && !aball && !zoiv) {
+  if (!milo && !potat && !aballs && !zoiv) {
     alert("Please select at least one player who beat them.");
     return;
   }
@@ -835,7 +845,7 @@ form.addEventListener('submit', async e => {
       deaths: currentStats.deaths,
       milo,
       potat,
-      aball,
+      aballs,
       zoiv,
       cheating,
       uuid: currentUUID,
@@ -1166,7 +1176,7 @@ function updateStatsDisplay(stats) {
 			let beatenBy = [];
 			if (s.milo) beatenBy.push("Milo");
 			if (s.potat) beatenBy.push("Potat");
-			if (s.aball) beatenBy.push("Aball");
+			if (s.aballs) beatenBy.push("Aballs");
 			if (s.zoiv) beatenBy.push("Zoiv");
 			beatenByTd.textContent = beatenBy.join(", ");
 			tr.appendChild(beatenByTd);

@@ -16,7 +16,6 @@ body {
   overflow-y: auto;
 }
 
-/* nebula layer */
 #nebula {
   position: fixed;
   inset: 0;
@@ -24,13 +23,33 @@ body {
   pointer-events: none;
 
   background:
-    radial-gradient(circle at 20% 30%, rgba(0, 200, 255, 0.08), transparent 40%),
-    radial-gradient(circle at 80% 60%, rgba(120, 0, 255, 0.06), transparent 45%),
-    radial-gradient(circle at 50% 80%, rgba(0, 255, 180, 0.05), transparent 50%),
-    radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.03), transparent 60%);
+    radial-gradient(circle at 20% 30%, rgba(0, 200, 255, 0.10), transparent 45%),
+    radial-gradient(circle at 80% 60%, rgba(120, 0, 255, 0.08), transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(0, 255, 180, 0.06), transparent 55%),
+    radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.04), transparent 60%);
 
-  filter: blur(40px);
-  opacity: 0.9;
+  filter: blur(55px);
+  opacity: 0.95;
+
+  animation: nebulaShift 18s ease-in-out infinite alternate;
+  transform: scale(1.2);
+}
+
+@keyframes nebulaShift {
+  0% {
+    transform: scale(1.2) translate(0px, 0px);
+    filter: blur(55px) hue-rotate(0deg);
+  }
+
+  50% {
+    transform: scale(1.25) translate(-20px, 15px);
+    filter: blur(60px) hue-rotate(10deg);
+  }
+
+  100% {
+    transform: scale(1.2) translate(15px, -10px);
+    filter: blur(55px) hue-rotate(0deg);
+  }
 }
 
 #starfield {

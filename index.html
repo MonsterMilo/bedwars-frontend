@@ -749,7 +749,7 @@ for (let i = 0; i < STAR_COUNT; i++) {
   star.style.height = size + "px";
 
   star.style.left = Math.random() * 100 + "vw";
-  star.style.top = Math.random() * (window.innerHeight * 4) + "px";
+  star.style.top = Math.random() * (window.innerHeight * 2) + "px";
 
   star.style.animationDuration = (5 + Math.random() * 3) + "s";
   star.style.animationDelay = (Math.random() * 5) + "s";
@@ -772,7 +772,7 @@ window.addEventListener("scroll", () => {
     window.requestAnimationFrame(() => {
       const scrollY = latestScroll;
 
-      const starFieldHeight = window.innerHeight * 4;
+      const starFieldHeight = window.innerHeight * 2;
       const progress = Math.min(scrollY / starFieldHeight, 1);
 
       starContainer.style.transform = `translateY(${-progress * starFieldHeight}px)`;

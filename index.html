@@ -1313,14 +1313,15 @@ document.addEventListener("click", async (e) => {
     const res = await fetch(`${backendBaseURL}/stats/uuid/${uuid}`);
     const data = await res.json();
 
-    const currentName = data.username;
+    const currentName = data.currentName;
+    const originalName = data.originalName;
 
-    if (currentName && currentName.toLowerCase() !== username.toLowerCase()) {
-      modalUsername.textContent = `${username} (now ${currentName})`;
+    if (currentName && currentName.toLowerCase() !== originalName.toLowerCase()) {
+      modalUsername.textContent = `${originalName} (now ${currentName})`;
     } else {
-      modalUsername.textContent = username;
+      modalUsername.textContent = originalName;
     }
-    
+
     modalSkin.src = `https://visage.surgeplay.com/full/256/${uuid}`;
 
     modalStats.innerHTML = `

@@ -749,7 +749,7 @@ for (let i = 0; i < STAR_COUNT; i++) {
   star.style.height = size + "px";
 
   star.style.left = Math.random() * 100 + "vw";
-  star.style.top = Math.random() * (window.innerHeight * 2) + "px";
+  star.style.top = Math.random() * (window.innerHeight * 4) + "px";
 
   star.style.animationDuration = (5 + Math.random() * 3) + "s";
   star.style.animationDelay = (Math.random() * 5) + "s";
@@ -776,7 +776,7 @@ window.addEventListener("scroll", () => {
       const progress = Math.min(scrollY / starFieldHeight, 1);
 
       starContainer.style.transform = `translateY(${-progress * starFieldHeight}px)`;
-      starContainer.style.opacity = 1 - progress;
+      starContainer.style.opacity = (progress < 0.98) ? 1 : (1 - (progress - 0.98) / 0.02);
 
       ticking = false;
     });

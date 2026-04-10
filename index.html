@@ -478,7 +478,7 @@ td.user-cell {
 
 .modal-content {
   background: rgba(11, 17, 28, 0.92);
-  padding: 22px;
+  padding: 18px 22px 20px 22px;
   border-radius: 14px;
   width: 380px;
 
@@ -504,8 +504,19 @@ td.user-cell {
 #modalUsername {
   text-align: center;
   font-size: 26px;
-  margin-bottom: 15px;
+  margin: 0 0 6px 0;
   text-shadow: 0 0 10px rgba(0,200,255,0.6);
+}
+
+#modalTitle {
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 1.2px;
+  color: #7ddfff;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+
+  text-shadow: 0 0 8px rgba(0, 200, 255, 0.4);
 }
 
 /* layout under username */
@@ -707,7 +718,7 @@ td.user-cell {
     <span id="closeModal">&times;</span>
 
     <h2 id="modalUsername">Loading...</h2>
-
+    <div id="modalTitle">Current Stats</div>
     <div class="modal-body">
       <img id="modalSkin" src="" />
       <div id="modalStats"></div>
@@ -723,7 +734,7 @@ td.user-cell {
 
 const starContainer = document.getElementById("starfield");
 
-const STAR_COUNT = 2000;
+const STAR_COUNT = 1800;
 
 // ---------- STAR CREATION ----------
 for (let i = 0; i < STAR_COUNT; i++) {

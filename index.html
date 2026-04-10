@@ -453,13 +453,19 @@ td.user-cell {
 }
 
 .modal-content {
-  background: #0b111c;
+  background: rgba(11, 17, 28, 0.92);
   padding: 22px;
   border-radius: 14px;
-  width: 380px; /* narrower but cleaner */
+  width: 380px;
+
   color: white;
-  box-shadow: 0 0 25px rgba(0,200,255,0.35);
-  position: relative;
+
+  box-shadow:
+    0 0 25px rgba(0, 200, 255, 0.35),
+    0 0 60px rgba(0, 200, 255, 0.15);
+
+  border: 1px solid rgba(0, 200, 255, 0.25);
+  backdrop-filter: blur(10px);
 }
 
 #closeModal {
@@ -494,11 +500,10 @@ td.user-cell {
   object-fit: cover;
 
   border-radius: 14px;
-  background: radial-gradient(circle, rgba(0,200,255,0.15), transparent);
 
   box-shadow:
-    0 0 12px rgba(0,200,255,0.5),
-    0 0 25px rgba(0,200,255,0.2);
+    0 0 15px rgba(0, 200, 255, 0.6),
+    0 0 35px rgba(0, 200, 255, 0.25);
 
   flex-shrink: 0;
 }
@@ -509,15 +514,22 @@ td.user-cell {
   line-height: 1.8;
   min-width: 180px;
 
-  text-shadow: 0 0 8px rgba(0,200,255,0.25);
-
   margin-left: 10px;
+
+  color: #cfefff;
+
+  text-shadow:
+    0 0 6px rgba(0, 200, 255, 0.25),
+    0 0 12px rgba(0, 200, 255, 0.15);
 }
 
 /* glowing labels/numbers */
 #modalStats p {
   margin: 6px 0;
-  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 6px;
+
+  background: rgba(0, 200, 255, 0.04);
 }
 
 #modalStats span,

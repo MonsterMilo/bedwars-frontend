@@ -16,6 +16,15 @@ body {
   overflow-y: auto;
 }
 
+@keyframes nebulaDrift {
+  from {
+    transform: translate(-2%, -2%) scale(1);
+  }
+  to {
+    transform: translate(2%, 2%) scale(1.1);
+  }
+}
+
 /* nebula layer */
 #nebula {
   position: fixed;
@@ -31,6 +40,8 @@ body {
 
   filter: blur(40px);
   opacity: 0.9;
+
+  animation: nebulaDrift 45s ease-in-out infinite alternate;
 }
 
 #starfield {
@@ -594,20 +605,8 @@ for (let i = 0; i < STAR_COUNT; i++) {
   star.style.left = Math.random() * 100 + "vw";
   star.style.top = Math.random() * (window.innerHeight * 2) + "px";
 
-  const twinkleSpeed = 2 + Math.random() * 6;
-  const twinkleDelay = Math.random() * 5;
-
-  star.style.animationDuration = twinkleSpeed + "s";
-  star.style.animationDelay = twinkleDelay + "s";
-
-// some stars don't twinkle at all (more realistic)
-  if (Math.random() < 0.2) {
-    star.style.animation = "none";
-  }
-
-  if (Math.random() < 0.2) {
-    star.classList.add("bright");
-  }
+  star.style.animationDuration = (4 + Math.random() * 4) + "s";
+  star.style.animationDelay = (Math.random() * 5) + "s";
 
   starContainer.appendChild(star);
 }

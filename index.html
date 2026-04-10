@@ -869,7 +869,7 @@ async function fetchAndDisplayStats() {
   const data = await getPlayerStats(currentUUID);
   currentStats = {
     username: mojangData.name,
-    star: calculateStarFromXP(data.exp),
+    star: data.level || 0,
     fkdr: data.fkdr,
     wlr: data.wlr,
     bblr: data.bblr,
@@ -925,25 +925,6 @@ async function getPlayerStats(uuid) {
     deaths,
     player: json.player
   };
-}
-
-function calculateStarFromXP(exp) {
-  if (exp < 0) return 0;
-  let stars = 0;
-  let xpLeft = exp;
-  while (xpLeft >= 0) {
-    let mod100 = stars % 100;
-    let xpNeeded;
-    if (mod100 === 0) xpNeeded = 500;
-    else if (mod100 === 1) xpNeeded = 1000;
-    else if (mod100 === 2) xpNeeded = 2000;
-    else if (mod100 === 3 || mod100 === 4) xpNeeded = 3500;
-    else xpNeeded = 5000;
-    if (xpLeft < xpNeeded) break;
-    xpLeft -= xpNeeded;
-    stars++;
-  }
-  return stars;
 }
 
 function getHypixelRank(player) {

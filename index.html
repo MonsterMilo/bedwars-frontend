@@ -776,7 +776,7 @@ window.addEventListener("scroll", () => {
       const progress = Math.min(scrollY / starFieldHeight, 1);
 
       starContainer.style.transform = `translateY(${-progress * starFieldHeight}px)`;
-      starContainer.style.opacity = (progress < 0.98) ? 1 : (1 - (progress - 0.98) / 0.02);
+      starContainer.style.opacity = 1;
 
       ticking = false;
     });

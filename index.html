@@ -1298,14 +1298,21 @@ document.addEventListener("click", async (e) => {
   const username = row.dataset.username;
   const uuid = row.dataset.uuid;
 
+  modal.style.display = "flex";
+
   if (!uuid) {
+    modalUsername.textContent = username;
     modalStats.innerHTML = "Missing UUID for this player.";
     return;
   }
 
-  modal.style.display = "flex";
-  modalUsername.textContent = "Loading...";
-  modalStats.innerHTML = "Fetching live stats...";
+modalUsername.textContent = "Loading...";
+modalStats.innerHTML = "Fetching live stats...";
+
+  if (!uuid) {
+    modalStats.innerHTML = "Missing UUID for this player.";
+    return;
+  }
 
   try {
     const res = await fetch(`${backendBaseURL}/stats/uuid/${uuid}`);

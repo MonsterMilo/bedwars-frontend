@@ -732,7 +732,7 @@ td.user-cell {
 
 const starContainer = document.getElementById("starfield");
 
-const STAR_COUNT = 1000;
+const STAR_COUNT = 1400;
 
 // ---------- STAR CREATION ----------
 for (let i = 0; i < STAR_COUNT; i++) {
@@ -1296,12 +1296,12 @@ document.addEventListener("click", async (e) => {
   if (!row) return;
 
   const username = row.dataset.username;
-    const uuid = row.dataset.uuid;
+  const uuid = row.dataset.uuid;
 
-    if (!uuid) {
-      modalStats.innerHTML = "Missing UUID for this player.";
-      return;
-    }
+  if (!uuid) {
+    modalStats.innerHTML = "Missing UUID for this player.";
+    return;
+  }
 
   modal.style.display = "flex";
   modalUsername.textContent = "Loading...";

@@ -581,8 +581,10 @@ for (let i = 0; i < STAR_COUNT; i++) {
   star.style.height = size + "px";
 
   // expanded space so no gaps appear
-  star.style.left = Math.random() * 200 + "vw";
-  star.style.top = Math.random() * 200 + "vh";
+  const AREA = 140;
+
+  star.style.left = Math.random() * AREA + "vw";
+  star.style.top = Math.random() * AREA + "vh";
 
   star.style.animationDuration = (2 + Math.random() * 3) + "s";
   star.style.animationDelay = (Math.random() * 5) + "s";
@@ -597,30 +599,17 @@ for (let i = 0; i < STAR_COUNT; i++) {
 }
 
 // ---------- SCROLL PARALLAX ----------
-let lastScrollY = window.scrollY;
 let offset = 0;
-let velocity = 0;
 
 window.addEventListener("scroll", () => {
-  const currentScrollY = window.scrollY;
+  const scrollY = window.scrollY;
 
-  // REVERSED direction (scroll down = stars move down)
-  velocity = lastScrollY - currentScrollY;
-
-  lastScrollY = currentScrollY;
+  // reverse direction (scroll down → stars move down)
+  offset = scrollY * -0.3;
 });
 
-// ---------- ANIMATION LOOP ----------
 function animateStars() {
-  // smooth decay
-  velocity *= 0.9;
-
-  // accumulate movement
-  offset += velocity * 0.5;
-
-  // apply movement
   starContainer.style.transform = `translateY(${offset}px)`;
-
   requestAnimationFrame(animateStars);
 }
 

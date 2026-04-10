@@ -616,7 +616,7 @@ window.addEventListener("scroll", () => {
   // smooth taper: strong at top, fades out naturally
   const eased = 1 - Math.pow(1 - progress, 3);
 
-  const maxMove = 6500;
+  const maxMove = 1000;
 
   starContainer.style.transform = `translateY(${-eased * maxMove}px)`;
 });

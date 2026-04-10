@@ -608,8 +608,21 @@ for (let i = 0; i < STAR_COUNT; i++) {
 window.addEventListener("scroll", () => {
   const scrollY = window.scrollY;
 
-  // move stars up with scroll so they disappear
+  // move stars up
   starContainer.style.transform = `translateY(${-scrollY}px)`;
+
+  // fade out gradually
+  const fadeStart = window.innerHeight * 0.5;
+  const fadeEnd = window.innerHeight * 2;
+
+  let opacity = 1;
+
+  if (scrollY > fadeStart) {
+    opacity = 1 - (scrollY - fadeStart) / (fadeEnd - fadeStart);
+    opacity = Math.max(opacity, 0);
+  }
+
+  starContainer.style.opacity = opacity;
 });
 
 const backendBaseURL = "https://bedwars-backend.onrender.com";

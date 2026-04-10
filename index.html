@@ -1192,10 +1192,32 @@ function updateStatsDisplay(stats) {
 			const usernameTd = document.createElement("td");
 			usernameTd.classList.add('user-cell');
 
-			const avatarImg = document.createElement("img");
-			avatarImg.classList.add('user-avatar');
-			avatarImg.src = `https://visage.surgeplay.com/face/256/${s.uuid}`;
-			avatarImg.alt = `Avatar of ${s.username}`;
+      const avatarImg = document.createElement("img");
+      avatarImg.classList.add('user-avatar');
+
+      const cleanUuid = (s.uuid || "").replace(/-/g, "");
+      const url = `https://visage.surgeplay.com/face/256/${cleanUuid}`;
+
+      let retryCount = 0;
+
+      avatarImg.onerror = () => {
+        if (retryCount < 1) {
+          retryCount++;
+          setTimeout(() => {
+            avatarImg.src = url + "?retry=" + Date.now();
+          }, 200);
+        }
+      };
+
+      avatarImg.onload = () => {
+      avatarImg.style.opacity = 1;
+      };
+
+      avatarImg.style.opacity = 0;
+      avatarImg.style.transition = "opacity 0.2s";
+
+      avatarImg.src = url;
+      avatarImg.alt = `Avatar of ${s.username}`;
 
 			const usernameText = document.createElement("span");
 			let displayName = s.username;

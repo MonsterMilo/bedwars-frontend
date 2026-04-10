@@ -1296,13 +1296,14 @@ document.addEventListener("click", async (e) => {
   if (!row) return;
 
   const username = row.dataset.username;
+  const uuid = row.dataset.uuid;
 
   modal.style.display = "flex";
   modalUsername.textContent = "Loading...";
   modalStats.innerHTML = "Fetching live stats...";
 
   try {
-    const res = await fetch(`${backendBaseURL}/stats/${username}`);
+    const res = await fetch(`${backendBaseURL}/stats/uuid/${uuid}`);
     const data = await res.json();
 
     modalUsername.textContent = username;

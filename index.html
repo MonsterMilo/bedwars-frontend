@@ -390,10 +390,6 @@ th, td {
   vertical-align: middle;
 }
 
-tbody tr:hover {
-  background: #1f2a35;
-}
-
 th.sortable {
   cursor: pointer;
 }
@@ -407,7 +403,11 @@ th.sortable:hover {
 }
 
 tbody tr:hover {
-  background: rgba(0, 200, 255, 0.05);
+  background: rgba(0, 200, 255, 0.06);
+  box-shadow:
+    0 0 10px rgba(0, 200, 255, 0.25),
+    inset 0 0 8px rgba(0, 200, 255, 0.08);
+  transform: scale(1.002);
 }
 
 tbody tr:hover .user-cell span {

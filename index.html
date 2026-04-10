@@ -1208,6 +1208,11 @@ document.addEventListener("click", async (e) => {
       <p>Wins: ${saved?.wins ?? "-"} → ${data.wins}${diff(data.wins, saved?.wins, 0)}</p>
     `;
 
+  } catch (err) {
+    modalStats.innerHTML = "Failed to load stats.";
+  }
+
+}); // ✅ NOW properly closed
 // close modal
 closeModal.onclick = () => modal.style.display = "none";
 

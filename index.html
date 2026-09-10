@@ -599,6 +599,9 @@ td.user-cell {
 <div id="starfield"></div>
 <h1>Bedwars Sweat Tracker</h1>
 <div id="credits">Developed by Milo • Powered by Hypixel API</div>
+<div style="text-align:center; margin-top:-25px; margin-bottom:25px;">
+  <button type="button" id="setAdminKeyBtn" style="padding:4px 12px; font-size:13px; opacity:0.75;">🔑 Set Admin Key</button>
+</div>
 
 <h2 class="section-header">Sweat Lookup</h2>
 <div id="form-container">
@@ -693,6 +696,7 @@ td.user-cell {
   <button id="resetFiltersBtn" type="button" aria-label="Reset filters">Reset</button>
 </div>
 
+<div style="max-width:1200px; margin:0 auto; overflow-x:auto;">
 <table>
   <thead>
     <tr>
@@ -708,6 +712,7 @@ td.user-cell {
   </thead>
   <tbody id="sweatTable"></tbody>
 </table>
+</div>
 
 <!-- PLAYER MODAL -->
 <div id="playerModal" class="modal">
@@ -787,6 +792,25 @@ window.addEventListener("scroll", () => {
 
 const backendBaseURL = "https://bedwars-backend.onrender.com";
 
+// --- Admin key (required by the backend to add/edit/delete sweats) ---
+const ADMIN_KEY_STORAGE = "bedwarsAdminKey";
+function getAdminKey() {
+  try { return localStorage.getItem(ADMIN_KEY_STORAGE) || ""; } catch { return ""; }
+}
+function adminHeaders(extra = {}) {
+  const key = getAdminKey();
+  return key ? { ...extra, "x-admin-key": key } : extra;
+}
+document.getElementById('setAdminKeyBtn').addEventListener('click', () => {
+  const current = getAdminKey();
+  const next = prompt("Enter admin key (only needed to add/edit/remove sweats):", current);
+  if (next === null) return;
+  try {
+    if (next.trim()) localStorage.setItem(ADMIN_KEY_STORAGE, next.trim());
+    else localStorage.removeItem(ADMIN_KEY_STORAGE);
+  } catch {}
+});
+
 const form = document.getElementById('sweatForm');
 const tableBody = document.getElementById('sweatTable');
 const status = document.getElementById('status');
@@ -848,7 +872,14 @@ async function loadSweats() {
 }
 
 fetchBtn.addEventListener('click', async () => {
-  await fetchAndDisplayStats();
+  fetchBtn.disabled = true;
+  try {
+    await fetchAndDisplayStats();
+  } catch (err) {
+    status.textContent = "Error: " + err.message;
+  } finally {
+    fetchBtn.disabled = false;
+  }
 });
 
 function formatUrchinTagType(tagType) {
@@ -882,6 +913,7 @@ form.addEventListener('submit', async e => {
 
   status.textContent = "";
   statsDisplay.style.display = "none";
+  addSweatBtn.disabled = true;
 
   try {
     if (!currentUUID || !currentStats || document.getElementById('username').value.trim().toLowerCase() !== currentStats.username.toLowerCase()) {
@@ -913,9 +945,12 @@ form.addEventListener('submit', async e => {
 
     const res = await fetch(`${backendBaseURL}/sweats`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: adminHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(newSweat)
     });
+    if (res.status === 401 || res.status === 503) {
+      throw new Error("Admin key missing or incorrect — click \"Set Admin Key\" above");
+    }
     if (!res.ok) throw new Error("Failed to add sweat");
 
     await loadSweats();
@@ -925,6 +960,8 @@ form.addEventListener('submit', async e => {
     statsDisplay.style.display = "none";
   } catch (err) {
     status.textContent = "Error: " + err.message;
+  } finally {
+    addSweatBtn.disabled = false;
   }
 });
 
@@ -1277,7 +1314,10 @@ function updateStatsDisplay(stats) {
   async function removeSweat(id) {
     if (!confirm("Are you sure you want to remove this sweat?")) return;
     try {
-      const res = await fetch(`${backendBaseURL}/sweats/${id}`, { method: "DELETE" });
+      const res = await fetch(`${backendBaseURL}/sweats/${id}`, { method: "DELETE", headers: adminHeaders() });
+      if (res.status === 401 || res.status === 503) {
+        throw new Error("Admin key missing or incorrect — click \"Set Admin Key\" above");
+      }
       if (!res.ok) throw new Error("Failed to remove sweat");
       await loadSweats();
     } catch (err) {

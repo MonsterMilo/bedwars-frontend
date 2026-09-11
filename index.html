@@ -687,7 +687,6 @@ td.user-cell {
     <input id="minDate" type="date" aria-label="Minimum Date">
   </label>
 
-  <!-- NEW: Hide duplicates filter -->
   <label for="hideDuplicates">
     <input type="checkbox" id="hideDuplicates" />
     Hide Dupes
@@ -991,7 +990,6 @@ async function fetchUrchinTags(username) {
     if (!res.ok) throw new Error("Urchin fetch failed");
     const data = await res.json();
 
-    // 🔹 Add this check to handle backend fallback
     if (data.error) {
       console.warn("Urchin unavailable for", username, "-", data.error);
       return "None";

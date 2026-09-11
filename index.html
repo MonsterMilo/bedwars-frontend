@@ -654,6 +654,7 @@ input:focus {
   color: var(--text-faint);
 }
 .leaderboard-chip.active .leaderboard-rank { color: var(--accent-2); }
+.leaderboard-rank.medal { font-size: 1.3em; }
 
 .leaderboard-name { font-weight: 700; font-size: 0.95em; }
 
@@ -849,6 +850,15 @@ th:nth-child(6), td:nth-child(6) { width: 10%; }
 th:nth-child(7), td:nth-child(7) { width: 11%; }
 th:nth-child(8), td:nth-child(8) { width: 15%; }
 th:nth-child(9), td:nth-child(9) { width: 6%; }
+
+/* Someone can be beaten by up to 9 people - keep that list to one line
+   (full text on hover) instead of wrapping and inflating just that row's
+   height, which threw off the visual rhythm between rows. */
+.beaten-by-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 thead tr { background: rgba(0,217,255,0.06); }
 
@@ -2049,8 +2059,11 @@ function buildSweatRow(s, { usernameCounts }) {
   tr.appendChild(dateTd);
 
   const beatenByTd = document.createElement("td");
+  beatenByTd.className = "beaten-by-cell";
   const beatenBy = BEATEN_BY_KEYS.filter(k => s[k]).map(k => BEATEN_BY[k].label);
-  beatenByTd.textContent = beatenBy.join(", ");
+  const beatenByText = beatenBy.join(", ");
+  beatenByTd.textContent = beatenByText;
+  beatenByTd.title = beatenByText; // full list on hover when truncated
   tr.appendChild(beatenByTd);
 
   const actionsTd = document.createElement("td");
@@ -2100,9 +2113,10 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   const ranked = [...BEATEN_BY_KEYS].sort((a, b) => counts[b] - counts[a]);
   if (!leaderboardPerson) leaderboardPerson = ranked[0];
 
+  const MEDALS = ["\u{1F947}", "\u{1F948}", "\u{1F949}"]; // gold, silver, bronze - re-evaluated every render, so they always follow whoever currently ranks there
   leaderboardRanking.innerHTML = ranked.map((k, i) => `
     <button type="button" class="leaderboard-chip${k === leaderboardPerson ? " active" : ""}" data-person="${k}">
-      <span class="leaderboard-rank">#${i + 1}</span>
+      <span class="leaderboard-rank${i < 3 ? " medal" : ""}">${MEDALS[i] || ("#" + (i + 1))}</span>
       <span class="leaderboard-name">${BEATEN_BY[k].label}</span>
       <span class="leaderboard-count">${counts[k]}</span>
     </button>

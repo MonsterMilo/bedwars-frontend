@@ -611,17 +611,25 @@ input:focus {
 }
 
 /* Leaderboard view */
+/* Grid instead of flex-wrap so a 9-person roster lands evenly (3x3) instead
+   of ragged rows with a lone chip stranded on the last line - same fix as
+   the beaten-by roster picker in the Sweat Lookup form. */
 .leaderboard-ranking {
   max-width: 1200px;
   margin: 0 auto 20px;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+}
+
+@media (max-width: 620px) {
+  .leaderboard-ranking { grid-template-columns: repeat(2, 1fr); }
 }
 
 .leaderboard-chip {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
   padding: 10px 16px;
   border-radius: var(--radius-m);
@@ -826,7 +834,21 @@ table {
   border-collapse: collapse;
   background: var(--panel);
   color: var(--text);
+  table-layout: fixed;
 }
+
+/* Fixed column widths so the Table view and the Leaderboard drill-down -
+   two separate <table> elements with identical columns - line up exactly
+   instead of each auto-sizing independently based on its own content. */
+th:nth-child(1), td:nth-child(1) { width: 22%; }
+th:nth-child(2), td:nth-child(2) { width: 7%; }
+th:nth-child(3), td:nth-child(3) { width: 9%; }
+th:nth-child(4), td:nth-child(4) { width: 11%; }
+th:nth-child(5), td:nth-child(5) { width: 9%; }
+th:nth-child(6), td:nth-child(6) { width: 10%; }
+th:nth-child(7), td:nth-child(7) { width: 11%; }
+th:nth-child(8), td:nth-child(8) { width: 15%; }
+th:nth-child(9), td:nth-child(9) { width: 6%; }
 
 thead tr { background: rgba(0,217,255,0.06); }
 
@@ -1217,6 +1239,7 @@ tbody tr:hover .user-cell span {
             <th class="sortable" data-sort="cheating">Cheats <span class="sort-icon">&#8645;</span></th>
             <th class="sortable" data-sort="boosting">Boosting <span class="sort-icon">&#8645;</span></th>
             <th class="sortable" data-sort="dateAdded">Date <span class="sort-icon">&#8645;</span></th>
+            <th>Beaten By</th>
             <th></th>
           </tr>
         </thead>
@@ -1971,11 +1994,10 @@ function renderCardGrid(filteredSweats, usernameCounts) {
   });
 }
 
-// Shared row builder for both the Table view and the Leaderboard drill-down,
-// so their columns/behavior (edit, remove, dupe-count suffix) can't drift
-// apart. showBeatenBy is false in the leaderboard since the person is
-// already implied by which leaderboard entry is selected.
-function buildSweatRow(s, { showBeatenBy, usernameCounts }) {
+// Shared row builder for both the Table view and the Leaderboard drill-down -
+// identical columns in both (including Beaten By, useful in the leaderboard
+// too since it shows who ELSE beat this player) so their widths line up.
+function buildSweatRow(s, { usernameCounts }) {
   const tr = document.createElement("tr");
   tr.dataset.username = s.username;
   tr.dataset.uuid = s.uuid;
@@ -2026,12 +2048,10 @@ function buildSweatRow(s, { showBeatenBy, usernameCounts }) {
   dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
   tr.appendChild(dateTd);
 
-  if (showBeatenBy) {
-    const beatenByTd = document.createElement("td");
-    const beatenBy = BEATEN_BY_KEYS.filter(k => s[k]).map(k => BEATEN_BY[k].label);
-    beatenByTd.textContent = beatenBy.join(", ");
-    tr.appendChild(beatenByTd);
-  }
+  const beatenByTd = document.createElement("td");
+  const beatenBy = BEATEN_BY_KEYS.filter(k => s[k]).map(k => BEATEN_BY[k].label);
+  beatenByTd.textContent = beatenBy.join(", ");
+  tr.appendChild(beatenByTd);
 
   const actionsTd = document.createElement("td");
   actionsTd.style.display = "flex";
@@ -2059,7 +2079,7 @@ function buildSweatRow(s, { showBeatenBy, usernameCounts }) {
 function renderTableRows(filteredSweats, usernameCounts) {
   tableBody.innerHTML = "";
   filteredSweats.forEach(s => {
-    tableBody.appendChild(buildSweatRow(s, { showBeatenBy: true, usernameCounts }));
+    tableBody.appendChild(buildSweatRow(s, { usernameCounts }));
   });
 }
 
@@ -2102,7 +2122,7 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
 
   leaderboardTableBody.innerHTML = "";
   personSweats.forEach(s => {
-    leaderboardTableBody.appendChild(buildSweatRow(s, { showBeatenBy: false, usernameCounts }));
+    leaderboardTableBody.appendChild(buildSweatRow(s, { usernameCounts }));
   });
 }
 

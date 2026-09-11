@@ -38,6 +38,12 @@
 
 * { box-sizing: border-box; }
 
+/* Author rules like .card-grid{display:grid} otherwise beat the browser's
+   default [hidden]{display:none}, since author-origin CSS always wins over
+   the UA stylesheet regardless of specificity - so toggling .hidden alone
+   silently fails on any element whose class also sets display. */
+[hidden] { display: none !important; }
+
 body {
   font-family: 'Manrope', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: var(--bg);
@@ -645,7 +651,7 @@ input:focus {
   color: var(--text-dim);
 }
 
-.pill.star { color: var(--gold); border-color: rgba(255,209,102,0.3); background: rgba(255,209,102,0.1); }
+.pill.level { color: var(--gold); border-color: rgba(255,209,102,0.3); background: rgba(255,209,102,0.1); }
 .pill.fkdr { color: var(--neutral); border-color: rgba(79,195,247,0.3); background: var(--neutral-soft); }
 .pill.cheat { color: var(--bad); border-color: rgba(255,92,114,0.4); background: var(--bad-soft); }
 
@@ -1550,7 +1556,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
         <div class="sweat-card-name"><span class="name-text"></span><span class="sweat-card-dupe"></span></div>
       </div>
       <div class="sweat-card-pills">
-        <span class="pill star">★ ${s.star}</span>
+        <span class="pill level">★ ${s.star}</span>
         <span class="pill fkdr">${s.fkdr.toFixed(2)} FKDR</span>
         ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
       </div>

@@ -1551,6 +1551,14 @@ function updateSortHeaders() {
   });
 }
 
+// A player's UUID is their real persistent identity - their username can
+// change between two "add sweat" entries. Fall back to username only for
+// older entries that were saved without a UUID.
+function identityKeyFor(s) {
+  const uuid = (s.uuid || "").replace(/-/g, "").toLowerCase();
+  return uuid ? `uuid:${uuid}` : `name:${s.username.toLowerCase()}`;
+}
+
 // Applies the search box, numeric filters, dedupe toggle, and sort - shared by
 // both the card grid and table views so they always agree on ordering/content.
 function getProcessedSweats() {
@@ -1583,18 +1591,22 @@ function getProcessedSweats() {
     filteredSweats = filteredSweats.filter(s => (cheatersOnly && s.cheating) || (boostersOnly && s.boosting));
   }
 
+  // UUID is the actual persistent identity - a player can change their
+  // Minecraft username between two "add sweat" events and still be the same
+  // person, so dedupe/count by UUID when we have one, falling back to the
+  // username only for older entries that were saved without a UUID.
   const usernameCounts = {};
   filteredSweats.forEach(s => {
-    const uname = s.username.toLowerCase();
-    usernameCounts[uname] = (usernameCounts[uname] || 0) + 1;
+    const key = identityKeyFor(s);
+    usernameCounts[key] = (usernameCounts[key] || 0) + 1;
   });
 
   if (hideDuplicatesCheckbox && hideDuplicatesCheckbox.checked) {
     const uniqueMap = new Map();
     filteredSweats.forEach(s => {
-      const uname = s.username.toLowerCase();
-      if (!uniqueMap.has(uname)) {
-        uniqueMap.set(uname, s);
+      const key = identityKeyFor(s);
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, s);
       }
     });
     filteredSweats = Array.from(uniqueMap.values());
@@ -1704,7 +1716,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
     // this field, so the frontend has to treat it as untrusted.
     withRetryingAvatar(card.querySelector(".sweat-card-avatar"), s.uuid, s.username);
     card.querySelector(".name-text").textContent = s.username;
-    const count = usernameCounts[s.username.toLowerCase()];
+    const count = usernameCounts[identityKeyFor(s)];
     if (hideDuplicatesCheckbox.checked && count > 1) {
       card.querySelector(".sweat-card-dupe").textContent = `x${count}`;
     }
@@ -1737,7 +1749,7 @@ function renderTableRows(filteredSweats, usernameCounts) {
     const usernameText = document.createElement("span");
     let displayName = s.username;
     if (hideDuplicatesCheckbox.checked) {
-      const count = usernameCounts[s.username.toLowerCase()];
+      const count = usernameCounts[identityKeyFor(s)];
       if (count > 1) {
         displayName += ` (x${count})`;
       }

@@ -539,6 +539,22 @@ input:focus {
   flex-wrap: wrap;
 }
 
+.toolbar-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-btn.reset {
+  font-size: 15px;
+}
+.icon-btn.reset:hover {
+  color: var(--accent);
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+  transform: rotate(-45deg);
+}
+
 .view-toggle {
   display: flex;
   gap: 4px;
@@ -1003,11 +1019,15 @@ tbody tr:hover .user-cell span {
     <div class="toolbar-row">
       <div class="toolbar-actions-left">
         <label class="chip"><input type="checkbox" id="hideDuplicates" /><span>Hide Dupes</span></label>
-        <button id="resetFiltersBtn" type="button" class="btn btn-ghost">Reset</button>
+        <label class="chip cheat-chip"><input type="checkbox" id="cheatersOnly" /><span>Cheaters Only</span></label>
+        <label class="chip boost-chip"><input type="checkbox" id="boostersOnly" /><span>Boosters Only</span></label>
       </div>
-      <div class="view-toggle" role="group" aria-label="Result view">
-        <button type="button" id="viewGridBtn" class="view-btn active">Grid</button>
-        <button type="button" id="viewTableBtn" class="view-btn">Table</button>
+      <div class="toolbar-actions-right">
+        <button id="resetFiltersBtn" type="button" class="icon-btn reset" title="Reset filters">&#8635;</button>
+        <div class="view-toggle" role="group" aria-label="Result view">
+          <button type="button" id="viewGridBtn" class="view-btn active">Grid</button>
+          <button type="button" id="viewTableBtn" class="view-btn">Table</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1152,6 +1172,8 @@ const filterIndex = document.getElementById('minIndex');
 const filterStars = document.getElementById('minStars');
 const filterDate = document.getElementById('minDate');
 const hideDuplicatesCheckbox = document.getElementById('hideDuplicates');
+const cheatersOnlyCheckbox = document.getElementById('cheatersOnly');
+const boostersOnlyCheckbox = document.getElementById('boostersOnly');
 const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
 const addSweatBtn = document.getElementById('addSweatBtn');
@@ -1300,7 +1322,13 @@ resetFiltersBtn.addEventListener('click', () => {
   filterIndex.value = "";
   filterStars.value = "";
   filterDate.value = "";
+  cheatersOnlyCheckbox.checked = false;
+  boostersOnlyCheckbox.checked = false;
   renderTable();
+});
+
+[cheatersOnlyCheckbox, boostersOnlyCheckbox].forEach(cb => {
+  cb.addEventListener('change', renderTable);
 });
 
 [filterFkdr, filterIndex, filterStars, filterDate].forEach(inp => {
@@ -1501,6 +1529,12 @@ function getProcessedSweats() {
 
       return true;
     });
+  }
+
+  const cheatersOnly = cheatersOnlyCheckbox && cheatersOnlyCheckbox.checked;
+  const boostersOnly = boostersOnlyCheckbox && boostersOnlyCheckbox.checked;
+  if (cheatersOnly || boostersOnly) {
+    filteredSweats = filteredSweats.filter(s => (cheatersOnly && s.cheating) || (boostersOnly && s.boosting));
   }
 
   const usernameCounts = {};

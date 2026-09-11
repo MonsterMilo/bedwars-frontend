@@ -610,6 +610,67 @@ input:focus {
   box-shadow: 0 4px 14px rgba(0,217,255,0.3);
 }
 
+/* Leaderboard view */
+.leaderboard-ranking {
+  max-width: 1200px;
+  margin: 0 auto 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.leaderboard-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  color: var(--text-dim);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.leaderboard-chip:hover { border-color: var(--border-strong); }
+.leaderboard-chip.active {
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+  color: var(--text);
+  box-shadow: 0 0 14px rgba(0,217,255,0.2);
+}
+
+.leaderboard-rank {
+  font-size: 0.75em;
+  font-weight: 800;
+  color: var(--text-faint);
+}
+.leaderboard-chip.active .leaderboard-rank { color: var(--accent-2); }
+
+.leaderboard-name { font-weight: 700; font-size: 0.95em; }
+
+.leaderboard-count {
+  font-size: 0.78em;
+  font-weight: 800;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  color: var(--text-dim);
+}
+.leaderboard-chip.active .leaderboard-count {
+  background: var(--accent-2-soft);
+  color: var(--accent-2);
+}
+
+.leaderboard-person-title {
+  max-width: 1200px;
+  margin: 0 auto 14px;
+  padding: 0 4px;
+  font-size: 1.05em;
+  font-weight: 800;
+  color: var(--text);
+}
+
 /* Bounty board card grid */
 .card-grid {
   max-width: 1200px;
@@ -1114,6 +1175,7 @@ tbody tr:hover .user-cell span {
         <div class="view-toggle" role="group" aria-label="Result view">
           <button type="button" id="viewGridBtn" class="view-btn active">Grid</button>
           <button type="button" id="viewTableBtn" class="view-btn">Table</button>
+          <button type="button" id="viewLeaderboardBtn" class="view-btn">Leaderboard</button>
         </div>
       </div>
     </div>
@@ -1139,6 +1201,29 @@ tbody tr:hover .user-cell span {
       </thead>
       <tbody id="sweatTable"></tbody>
     </table>
+  </div>
+
+  <div id="leaderboardWrap" hidden>
+    <div id="leaderboardRanking" class="leaderboard-ranking"></div>
+    <h3 id="leaderboardPersonTitle" class="leaderboard-person-title"></h3>
+    <div class="table-wrap card">
+      <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th class="sortable" data-sort="star">Star <span class="sort-icon">&#8645;</span></th>
+            <th class="sortable" data-sort="fkdr">FKDR <span class="sort-icon">&#8645;</span></th>
+            <th class="sortable" data-sort="index">Index <span class="sort-icon">&#8645;</span></th>
+            <th class="sortable" data-sort="cheating">Cheats <span class="sort-icon">&#8645;</span></th>
+            <th class="sortable" data-sort="boosting">Boosting <span class="sort-icon">&#8645;</span></th>
+            <th class="sortable" data-sort="dateAdded">Date <span class="sort-icon">&#8645;</span></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardTableBody"></tbody>
+      </table>
+    </div>
+    <div id="leaderboardEmptyState" class="empty-state" hidden>This person hasn't beaten anyone matching the current filters.</div>
   </div>
 
   <!-- PLAYER MODAL -->
@@ -1255,9 +1340,15 @@ const tableBody = document.getElementById('sweatTable');
 const cardGrid = document.getElementById('cardGrid');
 const emptyState = document.getElementById('emptyState');
 const tableWrap = document.getElementById('tableWrap');
+const leaderboardWrap = document.getElementById('leaderboardWrap');
+const leaderboardRanking = document.getElementById('leaderboardRanking');
+const leaderboardPersonTitle = document.getElementById('leaderboardPersonTitle');
+const leaderboardTableBody = document.getElementById('leaderboardTableBody');
+const leaderboardEmptyState = document.getElementById('leaderboardEmptyState');
 const resultCount = document.getElementById('resultCount');
 const viewGridBtn = document.getElementById('viewGridBtn');
 const viewTableBtn = document.getElementById('viewTableBtn');
+const viewLeaderboardBtn = document.getElementById('viewLeaderboardBtn');
 const status = document.getElementById('status');
 const fetchBtn = document.getElementById('fetchBtn');
 const statsDisplay = document.getElementById('statsDisplay');
@@ -1362,13 +1453,16 @@ initEditModal();
 
 viewGridBtn.addEventListener('click', () => setViewMode('grid'));
 viewTableBtn.addEventListener('click', () => setViewMode('table'));
+viewLeaderboardBtn.addEventListener('click', () => setViewMode('leaderboard'));
 
 function setViewMode(mode) {
   viewMode = mode;
   viewGridBtn.classList.toggle('active', mode === 'grid');
   viewTableBtn.classList.toggle('active', mode === 'table');
+  viewLeaderboardBtn.classList.toggle('active', mode === 'leaderboard');
   cardGrid.hidden = mode !== 'grid';
   tableWrap.hidden = mode !== 'table';
+  leaderboardWrap.hidden = mode !== 'leaderboard';
   renderTable();
 }
 
@@ -1783,8 +1877,10 @@ function renderTable() {
   updateSortHeaders();
   if (viewMode === "grid") {
     renderCardGrid(filteredSweats, usernameCounts);
-  } else {
+  } else if (viewMode === "table") {
     renderTableRows(filteredSweats, usernameCounts);
+  } else {
+    renderLeaderboard(filteredSweats, usernameCounts);
   }
 }
 
@@ -1875,86 +1971,138 @@ function renderCardGrid(filteredSweats, usernameCounts) {
   });
 }
 
-function renderTableRows(filteredSweats, usernameCounts) {
-  tableBody.innerHTML = "";
+// Shared row builder for both the Table view and the Leaderboard drill-down,
+// so their columns/behavior (edit, remove, dupe-count suffix) can't drift
+// apart. showBeatenBy is false in the leaderboard since the person is
+// already implied by which leaderboard entry is selected.
+function buildSweatRow(s, { showBeatenBy, usernameCounts }) {
+  const tr = document.createElement("tr");
+  tr.dataset.username = s.username;
+  tr.dataset.uuid = s.uuid;
 
-  filteredSweats.forEach(s => {
-    const tr = document.createElement("tr");
-    tr.dataset.username = s.username;
-    tr.dataset.uuid = s.uuid;
+  const usernameTd = document.createElement("td");
+  usernameTd.classList.add('user-cell');
 
-    const usernameTd = document.createElement("td");
-    usernameTd.classList.add('user-cell');
+  const avatarImg = document.createElement("img");
+  avatarImg.classList.add('user-avatar');
+  withRetryingAvatar(avatarImg, s.uuid, s.username);
 
-    const avatarImg = document.createElement("img");
-    avatarImg.classList.add('user-avatar');
-    withRetryingAvatar(avatarImg, s.uuid, s.username);
-
-    const usernameText = document.createElement("span");
-    let displayName = s.username;
-    if (hideDuplicatesCheckbox.checked) {
-      const count = usernameCounts[identityKeyFor(s)];
-      if (count > 1) {
-        displayName += ` (x${count})`;
-      }
+  const usernameText = document.createElement("span");
+  let displayName = s.username;
+  if (hideDuplicatesCheckbox.checked) {
+    const count = usernameCounts[identityKeyFor(s)];
+    if (count > 1) {
+      displayName += ` (x${count})`;
     }
-    usernameText.textContent = displayName;
+  }
+  usernameText.textContent = displayName;
 
-    usernameTd.appendChild(avatarImg);
-    usernameTd.appendChild(usernameText);
-    tr.appendChild(usernameTd);
+  usernameTd.appendChild(avatarImg);
+  usernameTd.appendChild(usernameText);
+  tr.appendChild(usernameTd);
 
-    const starTd = document.createElement("td");
-    starTd.textContent = s.star;
-    tr.appendChild(starTd);
+  const starTd = document.createElement("td");
+  starTd.textContent = s.star;
+  tr.appendChild(starTd);
 
-    const fkdrTd = document.createElement("td");
-    fkdrTd.textContent = s.fkdr.toFixed(2);
-    tr.appendChild(fkdrTd);
+  const fkdrTd = document.createElement("td");
+  fkdrTd.textContent = s.fkdr.toFixed(2);
+  tr.appendChild(fkdrTd);
 
-    const indexValue = s.fkdr * s.fkdr * s.star;
-    const indexTd = document.createElement("td");
-    indexTd.textContent = Math.round(indexValue).toLocaleString();
-    tr.appendChild(indexTd);
+  const indexValue = s.fkdr * s.fkdr * s.star;
+  const indexTd = document.createElement("td");
+  indexTd.textContent = Math.round(indexValue).toLocaleString();
+  tr.appendChild(indexTd);
 
-    const cheatingTd = document.createElement("td");
-    cheatingTd.textContent = s.cheating ? "Yes" : "No";
-    tr.appendChild(cheatingTd);
+  const cheatingTd = document.createElement("td");
+  cheatingTd.textContent = s.cheating ? "Yes" : "No";
+  tr.appendChild(cheatingTd);
 
-    const boostingTd = document.createElement("td");
-    boostingTd.textContent = s.boosting ? "Yes" : "No";
-    tr.appendChild(boostingTd);
+  const boostingTd = document.createElement("td");
+  boostingTd.textContent = s.boosting ? "Yes" : "No";
+  tr.appendChild(boostingTd);
 
-    const dateTd = document.createElement("td");
-    dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
-    tr.appendChild(dateTd);
+  const dateTd = document.createElement("td");
+  dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
+  tr.appendChild(dateTd);
 
+  if (showBeatenBy) {
     const beatenByTd = document.createElement("td");
     const beatenBy = BEATEN_BY_KEYS.filter(k => s[k]).map(k => BEATEN_BY[k].label);
     beatenByTd.textContent = beatenBy.join(", ");
     tr.appendChild(beatenByTd);
+  }
 
-    const actionsTd = document.createElement("td");
-    actionsTd.style.display = "flex";
-    actionsTd.style.gap = "6px";
+  const actionsTd = document.createElement("td");
+  actionsTd.style.display = "flex";
+  actionsTd.style.gap = "6px";
 
-    const editBtn = document.createElement("button");
-    editBtn.className = "icon-btn edit";
-    editBtn.title = "Edit";
-    editBtn.textContent = "✎";
-    editBtn.addEventListener("click", (e) => { e.stopPropagation(); openEditModal(s); });
-    actionsTd.appendChild(editBtn);
+  const editBtn = document.createElement("button");
+  editBtn.className = "icon-btn edit";
+  editBtn.title = "Edit";
+  editBtn.textContent = "✎";
+  editBtn.addEventListener("click", (e) => { e.stopPropagation(); openEditModal(s); });
+  actionsTd.appendChild(editBtn);
 
-    const removeBtn = document.createElement("button");
-    removeBtn.className = "icon-btn danger";
-    removeBtn.title = "Remove";
-    removeBtn.textContent = "✖";
-    removeBtn.addEventListener("click", (e) => { e.stopPropagation(); removeSweat(s._id); });
-    actionsTd.appendChild(removeBtn);
+  const removeBtn = document.createElement("button");
+  removeBtn.className = "icon-btn danger";
+  removeBtn.title = "Remove";
+  removeBtn.textContent = "✖";
+  removeBtn.addEventListener("click", (e) => { e.stopPropagation(); removeSweat(s._id); });
+  actionsTd.appendChild(removeBtn);
 
-    tr.appendChild(actionsTd);
+  tr.appendChild(actionsTd);
 
-    tableBody.appendChild(tr);
+  return tr;
+}
+
+function renderTableRows(filteredSweats, usernameCounts) {
+  tableBody.innerHTML = "";
+  filteredSweats.forEach(s => {
+    tableBody.appendChild(buildSweatRow(s, { showBeatenBy: true, usernameCounts }));
+  });
+}
+
+// Ranks the roster by how many sweats they've beaten (within the current
+// filters, same as Grid/Table), then shows a sortable drill-down list for
+// whichever person is selected - reuses the exact same sort state as the
+// Table view, and filteredSweats is already sorted by it before we slice
+// down to one person, so ordering carries over for free.
+let leaderboardPerson = null;
+
+function renderLeaderboard(filteredSweats, usernameCounts) {
+  const counts = {};
+  BEATEN_BY_KEYS.forEach(k => { counts[k] = 0; });
+  filteredSweats.forEach(s => {
+    BEATEN_BY_KEYS.forEach(k => { if (s[k]) counts[k]++; });
+  });
+
+  const ranked = [...BEATEN_BY_KEYS].sort((a, b) => counts[b] - counts[a]);
+  if (!leaderboardPerson) leaderboardPerson = ranked[0];
+
+  leaderboardRanking.innerHTML = ranked.map((k, i) => `
+    <button type="button" class="leaderboard-chip${k === leaderboardPerson ? " active" : ""}" data-person="${k}">
+      <span class="leaderboard-rank">#${i + 1}</span>
+      <span class="leaderboard-name">${BEATEN_BY[k].label}</span>
+      <span class="leaderboard-count">${counts[k]}</span>
+    </button>
+  `).join("");
+
+  leaderboardRanking.querySelectorAll(".leaderboard-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      leaderboardPerson = btn.dataset.person;
+      renderTable();
+    });
+  });
+
+  leaderboardPersonTitle.textContent = `${BEATEN_BY[leaderboardPerson].label}'s Sweats (${counts[leaderboardPerson]})`;
+
+  const personSweats = filteredSweats.filter(s => s[leaderboardPerson]);
+  leaderboardEmptyState.hidden = personSweats.length !== 0;
+
+  leaderboardTableBody.innerHTML = "";
+  personSweats.forEach(s => {
+    leaderboardTableBody.appendChild(buildSweatRow(s, { showBeatenBy: false, usernameCounts }));
   });
 }
 

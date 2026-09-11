@@ -1355,9 +1355,20 @@ form.addEventListener('submit', async e => {
   }
 });
 
+// Debounced so a full re-render isn't triggered on every single keystroke -
+// meaningful once the sweat list runs into the hundreds of entries.
+function debounce(fn, delay) {
+  let timer = null;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+const debouncedRenderTable = debounce(renderTable, 150);
+
 searchInput.addEventListener('input', () => {
   currentFilter = searchInput.value.trim().toLowerCase();
-  renderTable();
+  debouncedRenderTable();
 });
 
 resetFiltersBtn.addEventListener('click', () => {
@@ -1378,9 +1389,7 @@ resetFiltersBtn.addEventListener('click', () => {
 });
 
 [filterFkdr, filterIndex, filterStars, filterDate].forEach(inp => {
-  inp.addEventListener('input', () => {
-    renderTable();
-  });
+  inp.addEventListener('input', debouncedRenderTable);
 });
 
 // Fetch Urchin tags from backend
@@ -1642,13 +1651,20 @@ function getProcessedSweats() {
   return { filteredSweats, usernameCounts };
 }
 
+// Renders only the currently active view - with hundreds of sweats, building
+// both the card grid and the table on every keystroke/filter change roughly
+// doubles the work for a view the user isn't even looking at. setViewMode()
+// re-renders on switch, so the freshly-shown view is never stale.
 function renderTable() {
   const { filteredSweats, usernameCounts } = getProcessedSweats();
 
   resultCount.textContent = filteredSweats.length;
   updateSortHeaders();
-  renderCardGrid(filteredSweats, usernameCounts);
-  renderTableRows(filteredSweats, usernameCounts);
+  if (viewMode === "grid") {
+    renderCardGrid(filteredSweats, usernameCounts);
+  } else {
+    renderTableRows(filteredSweats, usernameCounts);
+  }
 }
 
 function avatarUrlFor(uuid) {
@@ -1659,6 +1675,7 @@ function avatarUrlFor(uuid) {
 function withRetryingAvatar(imgEl, uuid, username) {
   const url = avatarUrlFor(uuid);
   let retryCount = 0;
+  imgEl.loading = "lazy";
   imgEl.onerror = () => {
     if (retryCount < 1) {
       retryCount++;

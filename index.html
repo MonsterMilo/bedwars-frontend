@@ -1027,7 +1027,7 @@ async function fetchAndDisplayStats() {
   const data = await getPlayerStats(currentUUID);
   currentStats = {
     username: mojangData.name,
-    star: calculateStarFromXP(data.exp),
+    star: data.star,
     fkdr: data.fkdr,
     wlr: data.wlr,
     bblr: data.bblr,
@@ -1057,7 +1057,7 @@ async function getPlayerStats(uuid) {
   const json = await res.json();
   const data = json.player.stats?.Bedwars || {};
 
-  const exp = data.Experience || 0;
+  const star = json.player.achievements?.bedwars_level || 0;
   const wins = data.wins_bedwars || 0;
   const losses = data.losses_bedwars || 0;
   const finalKills = data.final_kills_bedwars || 0;
@@ -1068,7 +1068,7 @@ async function getPlayerStats(uuid) {
   const deaths = data.deaths_bedwars || 0;
 
   return {
-    exp,
+    star,
     wlr: wins / (losses === 0 ? 1 : losses),
     fkdr: finalKills / (finalDeaths === 0 ? 1 : finalDeaths),
     kdr: kills / (deaths === 0 ? 1 : deaths),
@@ -1083,25 +1083,6 @@ async function getPlayerStats(uuid) {
     deaths,
     player: json.player
   };
-}
-
-function calculateStarFromXP(exp) {
-  if (exp < 0) return 0;
-  let stars = 0;
-  let xpLeft = exp;
-  while (xpLeft >= 0) {
-    let mod100 = stars % 100;
-    let xpNeeded;
-    if (mod100 === 0) xpNeeded = 500;
-    else if (mod100 === 1) xpNeeded = 1000;
-    else if (mod100 === 2) xpNeeded = 2000;
-    else if (mod100 === 3 || mod100 === 4) xpNeeded = 3500;
-    else xpNeeded = 5000;
-    if (xpLeft < xpNeeded) break;
-    xpLeft -= xpNeeded;
-    stars++;
-  }
-  return stars;
 }
 
 function getHypixelRank(player) {

@@ -1318,10 +1318,13 @@ searchInput.addEventListener('input', () => {
 });
 
 resetFiltersBtn.addEventListener('click', () => {
+  searchInput.value = "";
+  currentFilter = "";
   filterFkdr.value = "";
   filterIndex.value = "";
   filterStars.value = "";
   filterDate.value = "";
+  hideDuplicatesCheckbox.checked = false;
   cheatersOnlyCheckbox.checked = false;
   boostersOnlyCheckbox.checked = false;
   renderTable();

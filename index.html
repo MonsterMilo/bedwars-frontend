@@ -1526,18 +1526,14 @@ fetchBtn.addEventListener('click', async () => {
   }
 });
 
+// Confirmed against Urchin's current official tag list (sniper, blatant_cheater,
+// closet_cheater, confirmed_cheater, replays_needed, caution) - snake_case to
+// Title Case covers all of them, so no per-type mapping is needed.
 function formatUrchinTagType(tagType) {
-  switch(tagType) {
-    case "confirmed_cheater": return "Confirmed Cheater";
-    default:
-      // Urchin's tag types aren't a fixed enum and change over time (their
-      // legacy urchin.ws tag set doesn't match current ones), so auto-format
-      // anything without an explicit mapping instead of showing raw snake_case.
-      return tagType
-        .split('_')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-  }
+  return tagType
+    .split('_')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 }
 
 form.addEventListener('submit', async e => {

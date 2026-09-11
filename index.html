@@ -286,27 +286,30 @@ input:focus {
 }
 
 /* Chips */
-.chip-row {
-  margin-top: 16px;
+.chip-section {
+  margin-top: 14px;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
-.chip-row .chip-heading {
+.chip-section .chip-heading {
   font-weight: 700;
   color: var(--accent);
-  font-size: 0.9em;
+  font-size: 0.85em;
   letter-spacing: 0.5px;
-  margin-right: 4px;
+  flex-shrink: 0;
+  min-width: 76px;
+  padding-top: 8px;
 }
 
-.chip-sep {
-  width: 1px;
-  height: 18px;
-  background: var(--border);
-  margin: 0 6px;
+.chip-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .chip {
@@ -926,15 +929,27 @@ tbody tr:hover .user-cell span {
         <button type="button" id="fetchBtn" class="btn btn-primary">Fetch Stats</button>
       </div>
 
-      <div class="chip-row">
+      <div class="chip-section">
         <span class="chip-heading">Beaten By</span>
-        <label class="chip"><input type="checkbox" id="milo" /><span>Milo</span></label>
-        <label class="chip"><input type="checkbox" id="potat" /><span>Potat</span></label>
-        <label class="chip"><input type="checkbox" id="aballs" /><span>ABoi</span></label>
-        <label class="chip"><input type="checkbox" id="zoiv" /><span>Zoiv</span></label>
-        <span class="chip-sep"></span>
-        <label class="chip cheat-chip"><input type="checkbox" id="cheating" /><span>Cheating</span></label>
-        <label class="chip boost-chip"><input type="checkbox" id="boosting" /><span>Boosting</span></label>
+        <div class="chip-group">
+          <label class="chip"><input type="checkbox" id="milo" /><span>Milo</span></label>
+          <label class="chip"><input type="checkbox" id="potat" /><span>Potat</span></label>
+          <label class="chip"><input type="checkbox" id="aballs" /><span>ABoi</span></label>
+          <label class="chip"><input type="checkbox" id="zoiv" /><span>Zoiv</span></label>
+          <label class="chip"><input type="checkbox" id="max" /><span>Max</span></label>
+          <label class="chip"><input type="checkbox" id="sqoz" /><span>Sqoz</span></label>
+          <label class="chip"><input type="checkbox" id="kermit" /><span>Kermit</span></label>
+          <label class="chip"><input type="checkbox" id="ssent" /><span>Ssent</span></label>
+          <label class="chip"><input type="checkbox" id="key" /><span>Key</span></label>
+        </div>
+      </div>
+
+      <div class="chip-section">
+        <span class="chip-heading">Flags</span>
+        <div class="chip-group">
+          <label class="chip cheat-chip"><input type="checkbox" id="cheating" /><span>Cheating</span></label>
+          <label class="chip boost-chip"><input type="checkbox" id="boosting" /><span>Boosting</span></label>
+        </div>
       </div>
 
       <div id="status" role="alert" aria-live="assertive"></div>
@@ -1190,7 +1205,22 @@ let currentStats = null;
 let currentFilter = "";
 let viewMode = "grid";
 
-const BEATEN_BY_COLORS = { milo: "#00d9ff", potat: "#a855f7", aballs: "#ffb84d", zoiv: "#ff5fa2" };
+// Single source of truth for the "Beaten By" roster: id must match the
+// checkbox id (and the backend's schema field), label is the display name
+// (may differ from id, e.g. aballs displays as "ABoi"), initials must be
+// unique across the roster since several names share a first letter.
+const BEATEN_BY = {
+  milo:   { label: "Milo",   initials: "M",  color: "#00d9ff" },
+  potat:  { label: "Potat",  initials: "P",  color: "#a855f7" },
+  aballs: { label: "ABoi",   initials: "A",  color: "#ffb84d" },
+  zoiv:   { label: "Zoiv",   initials: "Z",  color: "#ff5fa2" },
+  max:    { label: "Max",    initials: "Mx", color: "#4ade80" },
+  sqoz:   { label: "Sqoz",   initials: "Sq", color: "#60a5fa" },
+  kermit: { label: "Kermit", initials: "Kr", color: "#a3e635" },
+  ssent:  { label: "Ssent",  initials: "Sn", color: "#fb923c" },
+  key:    { label: "Key",    initials: "Ky", color: "#facc15" },
+};
+const BEATEN_BY_KEYS = Object.keys(BEATEN_BY);
 
 viewGridBtn.addEventListener('click', () => setViewMode('grid'));
 viewTableBtn.addEventListener('click', () => setViewMode('table'));
@@ -1240,10 +1270,9 @@ function formatUrchinTagType(tagType) {
 form.addEventListener('submit', async e => {
   e.preventDefault();
   const username = document.getElementById('username').value.trim();
-  const milo = document.getElementById('milo').checked;
-  const potat = document.getElementById('potat').checked;
-  const aballs = document.getElementById('aballs').checked;
-  const zoiv = document.getElementById('zoiv').checked;
+  const beatenByValues = {};
+  BEATEN_BY_KEYS.forEach(k => { beatenByValues[k] = document.getElementById(k).checked; });
+  const anyBeatenBySelected = BEATEN_BY_KEYS.some(k => beatenByValues[k]);
   const cheating = document.getElementById('cheating').checked;
   const boosting = document.getElementById('boosting').checked;
 
@@ -1252,7 +1281,7 @@ form.addEventListener('submit', async e => {
     return;
   }
 
-  if (!milo && !potat && !aballs && !zoiv) {
+  if (!anyBeatenBySelected) {
     status.textContent = "Please select at least one player who beat them.";
     return;
   }
@@ -1280,10 +1309,7 @@ form.addEventListener('submit', async e => {
       bedsLost: currentStats.bedsLost,
       kills: currentStats.kills,
       deaths: currentStats.deaths,
-      milo,
-      potat,
-      aballs,
-      zoiv,
+      ...beatenByValues,
       cheating,
       boosting,
       uuid: currentUUID,
@@ -1630,9 +1656,9 @@ function renderCardGrid(filteredSweats, usernameCounts) {
 
     const indexValue = s.fkdr * s.fkdr * s.star;
 
-    const beatenByHtml = ["milo", "potat", "aballs", "zoiv"]
+    const beatenByHtml = BEATEN_BY_KEYS
       .filter(k => s[k])
-      .map(k => `<span class="beaten-avatar" style="background:${BEATEN_BY_COLORS[k]}" title="${k}">${k[0].toUpperCase()}</span>`)
+      .map(k => `<span class="beaten-avatar" style="background:${BEATEN_BY[k].color}" title="${BEATEN_BY[k].label}">${BEATEN_BY[k].initials}</span>`)
       .join("");
 
     card.innerHTML = `
@@ -1731,11 +1757,7 @@ function renderTableRows(filteredSweats, usernameCounts) {
     tr.appendChild(dateTd);
 
     const beatenByTd = document.createElement("td");
-    let beatenBy = [];
-    if (s.milo) beatenBy.push("Milo");
-    if (s.potat) beatenBy.push("Potat");
-    if (s.aballs) beatenBy.push("ABoi");
-    if (s.zoiv) beatenBy.push("Zoiv");
+    const beatenBy = BEATEN_BY_KEYS.filter(k => s[k]).map(k => BEATEN_BY[k].label);
     beatenByTd.textContent = beatenBy.join(", ");
     tr.appendChild(beatenByTd);
 

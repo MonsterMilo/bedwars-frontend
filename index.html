@@ -4,16 +4,46 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Bedwars Sweat Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  
+
+:root {
+  --bg: #05070c;
+  --panel: #12161f;
+  --panel-2: #161b26;
+  --border: rgba(255,255,255,0.07);
+  --border-strong: rgba(0,200,255,0.35);
+  --accent: #00c8ff;
+  --accent-2: #7c5cff;
+  --accent-soft: rgba(0,200,255,0.12);
+  --text: #e9edf4;
+  --text-dim: #8a93a6;
+  --text-faint: #5c6577;
+  --good: #34e0a1;
+  --good-soft: rgba(52,224,161,0.12);
+  --bad: #ff5c72;
+  --bad-soft: rgba(255,92,114,0.12);
+  --neutral: #4fc3f7;
+  --neutral-soft: rgba(79,195,247,0.12);
+  --radius-s: 8px;
+  --radius-m: 14px;
+  --radius-l: 22px;
+  --shadow-card: 0 10px 30px rgba(0,0,0,0.45);
+  --ease: cubic-bezier(.22,.85,.32,1);
+}
+
+* { box-sizing: border-box; }
+
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #05080f;
-  color: #e5e5e5;
-  margin: 20px;
-  line-height: 1.4;
+  font-family: 'Manrope', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 32px 20px 60px;
+  line-height: 1.45;
   overflow-x: hidden;
-  overflow-y: auto;
 }
 
 #nebula {
@@ -21,14 +51,12 @@ body {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-
   background:
-    radial-gradient(circle at 20% 30%, rgba(0, 200, 255, 0.08), transparent 45%),
-    radial-gradient(circle at 80% 60%, rgba(120, 0, 255, 0.06), transparent 50%),
-    radial-gradient(circle at 50% 80%, rgba(0, 255, 180, 0.05), transparent 55%),
-    radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.03), transparent 60%);
-
-  opacity: 0.9;
+    radial-gradient(circle at 15% 20%, rgba(0, 200, 255, 0.10), transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(124, 92, 255, 0.09), transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(0, 255, 190, 0.05), transparent 55%),
+    radial-gradient(circle at 25% 85%, rgba(255, 255, 255, 0.03), transparent 60%);
+  opacity: 0.95;
 }
 
 #starfield {
@@ -36,7 +64,6 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-
   will-change: transform;
   transform: translateZ(0);
 }
@@ -45,275 +72,369 @@ body {
   position: absolute;
   background: white;
   border-radius: 50%;
-
   opacity: 0.8;
-
-  box-shadow:
-    0 0 4px rgba(255, 255, 255, 0.6),
-    0 0 8px rgba(255, 255, 255, 0.4);
-
+  box-shadow: 0 0 4px rgba(255,255,255,0.6), 0 0 8px rgba(255,255,255,0.4);
   animation: twinkle 4s infinite ease-in-out;
   animation-fill-mode: both;
-
   will-change: opacity;
   transform: translateZ(0);
 }
 
 .star.bright {
   opacity: 1;
-  box-shadow:
-    0 0 10px rgba(255, 255, 255, 1),
-    0 0 18px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 10px rgba(255,255,255,1), 0 0 18px rgba(255,255,255,0.6);
 }
 
-/* lighter + smoother animation */
 @keyframes twinkle {
   0%, 100% { opacity: 0.25; }
   50% { opacity: 1; }
 }
 
-/* UI above background */
-body > * {
+.page {
   position: relative;
   z-index: 1;
+  max-width: 1120px;
+  margin: 0 auto;
 }
 
-/* Headings */
+/* Header */
+.site-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.brand { flex: 1; min-width: 220px; }
+
 h1 {
-  text-align: center;
-  font-size: 2.6em; /* bigger = more important */
-  margin-bottom: 10px; /* tighter to subtitle */
-  color: #00c8ff;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-shadow: 0 0 14px rgba(0, 200, 255, 0.7);
+  margin: 0;
+  font-size: 2.4em;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  text-shadow: 0 0 18px rgba(0, 200, 255, 0.55);
 }
 
+#credits {
+  margin: 4px 0 0;
+  color: var(--text-faint);
+  font-size: 0.92em;
+  letter-spacing: 0.4px;
+  opacity: 0.85;
+}
+
+/* Section headers */
 .section-header {
   text-align: center;
-  color: #00c8ff;
-  font-weight: 600;
-  margin: 50px 0 15px;
-  font-size: 1.5em;
-  text-shadow: 0 0 8px rgba(0, 200, 255, 0.5);
-  border-top: 1px solid rgba(255,255,255,0.05);
-  padding-top: 12px;
+  color: var(--accent);
+  font-weight: 700;
+  margin: 56px 0 20px;
+  font-size: 1.3em;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(0, 200, 255, 0.4);
 }
 
-
-/* Form Container */
-#form-container {
-  max-width: 680px;
-  margin: 0 auto 40px;
-  background: #161b22;
-  padding: 20px 25px;
-  border-radius: 12px;
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-form > div {
-  margin-bottom: 15px;
-}
-
-/* Input Fields */
-input[type="text"] {
-  flex: 1;
-  padding: 10px 15px;
-  border: 2px solid #2d333b;
-  border-radius: 6px;
-  font-size: 16px;
-  background: #1c2128;
-  color: #e5e5e5;
-  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
-}
-
-input[type="text"]::placeholder {
-  color: #7a8490;
-}
-
-input[type="text"]:focus {
-  outline: none;
-  border-color: #00c8ff;
-  box-shadow: 0 0 10px rgba(0, 200, 255, 0.6);
-  background: #20262f;
+.section-header::after {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 3px;
+  margin: 10px auto 0;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 10px rgba(0,200,255,0.6);
 }
 
 /* Buttons */
-button {
-  background: linear-gradient(135deg, #00c8ff, #0072ff);
+.btn {
+  font-family: inherit;
   border: none;
-  color: #fff;
-  padding: 10px 18px;
-  font-size: 16px;
-  border-radius: 6px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.3s;
   font-weight: 700;
+  border-radius: var(--radius-s);
+  padding: 11px 20px;
+  font-size: 15px;
+  white-space: nowrap;
+  transition: transform 0.18s var(--ease), box-shadow 0.25s var(--ease), background 0.25s var(--ease), opacity 0.2s;
+}
+.btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #0072ff);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(0,150,255,0.25);
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,180,255,0.4);
+}
+.btn-primary:active:not(:disabled) { transform: translateY(0); }
+
+.btn-ghost {
+  background: rgba(255,255,255,0.03);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+  color: var(--accent);
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
 }
 
-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 14px rgba(0, 200, 255, 0.6);
-}
-
-/* Checkbox Labels */
-.checkbox-group label {
-  margin-right: 20px;
-  font-weight: 600;
-  user-select: none;
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-dim);
   cursor: pointer;
-  color: #cfd6dd;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s var(--ease);
+}
+.icon-btn.danger:hover {
+  color: var(--bad);
+  border-color: var(--bad);
+  background: var(--bad-soft);
+  transform: scale(1.08);
 }
 
-/* Status Message */
-#status {
-  margin-top: 10px;
-  min-height: 22px;
-  color: #00c8ff;
+/* Card base */
+.card {
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-card);
+}
+
+/* Sweat Lookup card */
+#form-container {
+  max-width: 720px;
+  margin: 0 auto 44px;
+  padding: 28px 30px 26px;
+}
+
+.lookup-row { display: flex; gap: 10px; align-items: center; }
+
+input[type="text"], input[type="number"], input[type="date"] {
+  font-family: inherit;
+  padding: 11px 15px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-s);
+  font-size: 15px;
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s var(--ease);
+}
+
+input[type="text"] { flex: 1; }
+
+input::placeholder { color: var(--text-faint); }
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: rgba(0,200,255,0.04);
+}
+
+/* Chips (Beaten By / Hide Dupes) */
+.chip-row {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip-row .chip-heading {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.9em;
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+}
+
+.chip-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 6px;
+}
+
+.chip {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+  user-select: none;
+}
+
+.chip input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.chip span {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-dim);
+  font-size: 0.88em;
   font-weight: 600;
+  transition: all 0.2s var(--ease);
 }
 
-/* Stats Display */
+.chip input:checked + span {
+  color: var(--accent);
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+  box-shadow: 0 0 12px rgba(0,200,255,0.25);
+}
+
+.chip.cheat-chip input:checked + span {
+  color: var(--bad);
+  border-color: rgba(255,92,114,0.5);
+  background: var(--bad-soft);
+  box-shadow: 0 0 12px rgba(255,92,114,0.25);
+}
+
+.chip:hover span { border-color: var(--border-strong); }
+
+/* Status */
+#status {
+  margin-top: 14px;
+  min-height: 20px;
+  text-align: center;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.92em;
+}
+
+/* Stats Display (player card) */
 #statsDisplay {
   display: none;
-  max-width: 880px;
-  margin: 0 auto 40px;
-  background: #161b22;
-  padding: 15px 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.85);
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
-  color: #e5e5e5;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  animation: fadeSlideIn 0.4s var(--ease);
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 #statsContent {
   display: flex;
-  gap: 15px;
+  gap: 20px;
   width: 100%;
-  align-items: center;
+  align-items: flex-start;
 }
 
 #statsAvatar {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  border: 3px solid #00c8ff;
+  width: 96px;
+  height: 96px;
+  border-radius: 22px;
+  border: 2px solid var(--border-strong);
   flex-shrink: 0;
-  background: #20262f;
+  background: rgba(255,255,255,0.03);
+  box-shadow: 0 0 20px rgba(0,200,255,0.18);
 }
 
-/* Stats Right Section */
-#statsRight {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+#statsRight { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
 
-#statsTopRow {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  font-weight: 700;
-  font-size: 1.3em;
-  color: #00c8ff;
-  text-shadow: 0 0 6px rgba(0, 200, 255, 0.5);
+#statsTopRow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+#statsUsername {
+  font-weight: 800;
+  font-size: 1.25em;
+  color: var(--text);
 }
 
 #statsRank {
-  background: #1c2128;
-  border: 1px solid #2d333b;
-  padding: 1px 6px 3px 6px; /* top, right, bottom, left */
+  display: none;
+  align-items: center;
+  padding: 3px 9px;
   border-radius: 6px;
+  border: 1.5px solid currentColor;
+  font-size: 0.72em;
+  font-weight: 800;
+  letter-spacing: 0.5px;
 }
 
 #statsStar {
-  color: #0099ff; /* sleek blue star */
-  font-size: 1.4em;
+  color: #ffd166;
+  font-weight: 800;
+  font-size: 1.05em;
+  margin-left: auto;
 }
 
-/* Stat Columns */
 #statsColumns {
-  display: flex;
-  gap: 30px;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 
-.stat-column {
-  flex: 1;
-  min-width: 140px;
+.stat-tile {
+  padding: 10px 12px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
 }
 
-.stat-label {
-  font-size: 0.85em;
-  color: #4dabf7; /* soft blue accent */
-  margin-top: 6px;
-  font-weight: 600;
-}
-
-.stat-value {
-  font-size: 1.1em;
+.stat-tile .stat-label {
+  font-size: 0.72em;
   font-weight: 700;
-  color: #e5e5e5;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 3px;
 }
 
-.stat-column.good .stat-value {
-  color: #00e676;
-  text-shadow: 0 0 6px rgba(0, 230, 118, 0.6);
-}
+.stat-tile .stat-value { font-size: 1.15em; font-weight: 800; }
 
-.stat-column.bad .stat-value {
-  color: #ff4c4c;
-  text-shadow: 0 0 6px rgba(255, 76, 76, 0.6);
-}
+.stat-tile.good { border-color: rgba(52,224,161,0.25); background: var(--good-soft); }
+.stat-tile.good .stat-value { color: var(--good); }
 
-.stat-column.neutral .stat-value {
-  color: #00bfff;
-  text-shadow: 0 0 6px rgba(0, 191, 255, 0.6);
-}
+.stat-tile.bad { border-color: rgba(255,92,114,0.25); background: var(--bad-soft); }
+.stat-tile.bad .stat-value { color: var(--bad); }
 
-/* Search Box */
-#searchContainer {
-  max-width: 1080px;
-  margin: 0 auto 20px;
+.stat-tile.neutral { border-color: rgba(79,195,247,0.25); background: var(--neutral-soft); }
+.stat-tile.neutral .stat-value { color: var(--neutral); }
+
+#statsUrchin {
+  grid-column: 1 / -1;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
 }
 
-#searchInput {
-  width: 100%;
-  max-width: 400px;
-  padding: 8px 12px;
-  font-size: 16px;
-  border: 2px solid #2d333b;
-  border-radius: 6px;
-  background: #1c2128;
-  color: #e5e5e5;
-  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+/* Toolbar (search + filters) */
+.toolbar {
+  max-width: 1120px;
+  margin: 0 auto 22px;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-#searchInput::placeholder {
-  color: #7a8490;
-}
+#searchContainer { display: flex; justify-content: center; }
+#searchInput { width: 100%; max-width: 420px; }
 
-#searchInput:focus {
-  outline: none;
-  border-color: #00c8ff;
-  box-shadow: 0 0 10px rgba(0, 200, 255, 0.6);
-  background: #20262f;
-}
-
-/* Filter Bar */
 .filter-bar {
-  max-width: 1080px;
-  margin: 0 auto 18px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
@@ -321,274 +442,185 @@ button:hover {
 
 .filter-bar label {
   font-weight: 600;
-  color: #cfd6dd;
+  font-size: 0.85em;
+  color: var(--text-dim);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.filter-bar input[type="number"],
-.filter-bar input[type="date"] {
-  width: 100px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1.5px solid #2d333b;
-  background: #1c2128;
-  color: #e0e0e0;
-}
+.filter-bar input[type="number"], .filter-bar input[type="date"] { padding: 8px 10px; font-size: 14px; }
 
-#minStars, #minFkdr, #minIndex {
-  width: 65px; /* adjust this value as needed */
-}
+#minStars, #minFkdr, #minIndex { width: 70px; }
+#minDate { width: 130px; }
 
-#minDate {
-  width: 110px; /* adjust this value as needed */
+#minStars::-webkit-outer-spin-button, #minStars::-webkit-inner-spin-button,
+#minFkdr::-webkit-outer-spin-button, #minFkdr::-webkit-inner-spin-button,
+#minIndex::-webkit-outer-spin-button, #minIndex::-webkit-inner-spin-button {
+  -webkit-appearance: none; margin: 0;
 }
-
-/* Remove spinner arrows in Chrome, Edge, Safari */
-#minStars::-webkit-outer-spin-button,
-#minStars::-webkit-inner-spin-button,
-#minFkdr::-webkit-outer-spin-button,
-#minFkdr::-webkit-inner-spin-button,
-#minIndex::-webkit-outer-spin-button,
-#minIndex::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* Remove spinner arrows in Firefox */
-#minStars, #minFkdr, #minIndex {
-  -moz-appearance: textfield;
-}
+#minStars, #minFkdr, #minIndex { -moz-appearance: textfield; }
 
 /* Table */
+.table-wrap { max-width: 1120px; margin: 0 auto 40px; overflow-x: auto; border-radius: var(--radius-m); }
+
 table {
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto 40px;
+  min-width: 720px;
   border-collapse: collapse;
-  background: #161b22;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgb(0 0 0 / 0.7);
-  color: #e0e0e0;
+  background: var(--panel);
+  color: var(--text);
 }
 
-thead tr {
-  background: linear-gradient(135deg, #00c8ff, #0072ff);
-  color: #fff;
+thead tr { background: rgba(0,200,255,0.06); }
+
+th, td {
+  padding: 13px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  font-size: 0.92em;
+}
+
+th {
+  color: var(--accent);
   font-weight: 700;
+  font-size: 0.78em;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
   user-select: none;
 }
 
-th, td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #2d333b;
-  vertical-align: middle;
-}
+th.sortable { cursor: pointer; transition: background 0.2s; }
+th.sortable:hover { background: rgba(0,200,255,0.1); }
 
-th.sortable {
-  cursor: pointer;
-}
+.sort-icon { opacity: 0.4; margin-left: 4px; font-size: 0.9em; }
+th.sort-active .sort-icon { opacity: 1; color: var(--accent); }
 
-th.sortable:hover {
-  background: #22303c;
-}
+.user-cell span { transition: color 0.2s ease, text-shadow 0.2s ease; }
 
-.user-cell span {
-  transition: color 0.2s ease, text-shadow 0.2s ease;
-}
+tbody tr { transition: background 0.2s var(--ease); }
 
-tbody tr:hover {
-  background: rgba(0, 200, 255, 0.06);
-  box-shadow:
-    0 0 10px rgba(0, 200, 255, 0.25),
-    inset 0 0 8px rgba(0, 200, 255, 0.08);
-  transform: scale(1.002);
-}
+tbody tr:hover { background: rgba(0, 200, 255, 0.05); }
 
 tbody tr:hover .user-cell span {
-  color: #00c8ff;
-  text-shadow:
-    0 0 6px rgba(0, 200, 255, 0.8),
-    0 0 14px rgba(0, 200, 255, 0.6),
-    0 0 24px rgba(0, 200, 255, 0.3);
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(0,200,255,0.6);
 }
 
-tbody tr {
-  transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
-}
-
-tbody tr:active {
-  transform: scale(0.99);
-}
-
-/* Added avatar in table row */
-.user-cell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  line-height: 1;
-}
+.user-cell { display: flex; align-items: center; gap: 12px; line-height: 1; }
 
 .user-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1.5px solid #00c8ff;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-strong);
   flex-shrink: 0;
 }
 
-td.user-cell {
-  vertical-align: middle;
-  padding: 12px 15px;
-}
+#resetFiltersBtn { margin-left: 6px; }
 
-#resetFiltersBtn {
-  margin-left: 15px;
-}
+#credits { text-align: left; }
 
-#credits {
-  text-align: center;
-  color: #7a8490;
-  font-size: 0.95em;
-  margin-top: -8px;
-  margin-bottom: 35px;
-  opacity: 0.65;
-  letter-spacing: 0.6px;
-  transition: opacity 0.2s ease;
-}
-
-#credits:hover {
-  opacity: 1;
-}
-
+/* Modal */
 .modal {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.75);
+  background: rgba(2,4,9,0.7);
+  backdrop-filter: blur(3px);
   z-index: 999;
   align-items: center;
   justify-content: center;
+  padding: 20px;
 }
 
 .modal-content {
-  background: rgba(11, 17, 28, 0.92);
-  padding: 18px 22px 20px 22px;
-  border-radius: 14px;
+  background: rgba(14,18,28,0.94);
+  padding: 26px 28px;
+  border-radius: var(--radius-l);
   width: 380px;
+  max-width: 100%;
+  color: var(--text);
+  box-shadow: 0 0 30px rgba(0,200,255,0.25), 0 20px 60px rgba(0,0,0,0.6);
+  border: 1px solid var(--border-strong);
+  position: relative;
+  animation: modalPop 0.25s var(--ease);
+}
 
-  color: white;
-
-  box-shadow:
-    0 0 25px rgba(0, 200, 255, 0.35),
-    0 0 60px rgba(0, 200, 255, 0.15);
-
-  border: 1px solid rgba(0, 200, 255, 0.25);
-  backdrop-filter: blur(10px);
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.94) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 #closeModal {
   position: absolute;
-  top: 10px;
-  right: 14px;
+  top: 14px;
+  right: 16px;
   cursor: pointer;
-  font-size: 22px;
-  color: #00c8ff;
+  font-size: 20px;
+  color: var(--text-dim);
+  transition: color 0.2s;
 }
+#closeModal:hover { color: var(--accent); }
 
 #modalUsername {
   text-align: center;
-  font-size: 26px;
-  margin: 0 0 6px 0;
-  text-shadow: 0 0 10px rgba(0,200,255,0.6);
+  font-size: 1.5em;
+  font-weight: 800;
+  margin: 4px 0 2px;
+  text-shadow: 0 0 12px rgba(0,200,255,0.5);
 }
 
 #modalTitle {
   text-align: center;
-  font-size: 14px;
-  letter-spacing: 1.2px;
-  color: #7ddfff;
-  margin: 0 0 12px 0;
+  font-size: 0.75em;
+  letter-spacing: 1.4px;
+  color: var(--text-faint);
+  margin: 0 0 18px;
   text-transform: uppercase;
-
-  text-shadow: 0 0 8px rgba(0, 200, 255, 0.4);
 }
 
-/* layout under username */
-.modal-body {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 4px;
-}
+.modal-body { display: flex; gap: 18px; align-items: center; justify-content: center; }
 
-/* skin styling */
 #modalSkin {
-  width: 140px;
-  height: 210px;
-
+  width: 120px;
+  height: 190px;
   object-fit: contain;
-
-  border-radius: 14px;
-
-  background: radial-gradient(circle, rgba(0,200,255,0.18), transparent);
-
-  box-shadow:
-    0 0 18px rgba(0, 200, 255, 0.7),
-    0 0 45px rgba(0, 200, 255, 0.25);
-
-  border: 1px solid rgba(0, 200, 255, 0.3);
-
+  border-radius: var(--radius-m);
+  background: radial-gradient(circle, rgba(0,200,255,0.14), transparent);
+  border: 1px solid var(--border-strong);
   flex-shrink: 0;
 }
 
-/* stats block */
-#modalStats {
-  font-size: 17px;
-  line-height: 1.7;
-  min-width: 160px;
+#modalStats { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
 
-  margin-left: 12px;
+.modal-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-s);
+  background: rgba(0,200,255,0.05);
+  border: 1px solid var(--border);
+}
+.modal-stat span { color: var(--text-dim); font-size: 0.85em; font-weight: 600; }
+.modal-stat strong { color: var(--accent); font-size: 1.05em; text-shadow: 0 0 8px rgba(0,200,255,0.5); }
 
-  color: #cfefff;
-
-  text-shadow:
-    0 0 8px rgba(0, 200, 255, 0.25),
-    0 0 14px rgba(0, 200, 255, 0.18);
+/* Responsive */
+@media (max-width: 620px) {
+  h1 { font-size: 1.8em; }
+  #statsColumns { grid-template-columns: repeat(2, 1fr); }
+  #statsContent { flex-direction: column; align-items: center; text-align: center; }
+  #statsTopRow { justify-content: center; }
+  #statsStar { margin-left: 0; }
+  .site-header { justify-content: center; text-align: center; }
+  .brand { text-align: center; }
+  #credits { text-align: center; }
 }
 
-/* glowing labels/numbers */
-#modalStats p {
-  margin: 6px 0;
-  padding: 4px 8px;
-  border-radius: 8px;
-
-  background: rgba(0, 200, 255, 0.05);
-
-  box-shadow: inset 0 0 8px rgba(0, 200, 255, 0.08);
-  transition: 0.2s;
-}
-
-#modalStats p:hover {
-  background: rgba(0, 200, 255, 0.1);
-  box-shadow:
-    0 0 10px rgba(0, 200, 255, 0.25),
-    inset 0 0 10px rgba(0, 200, 255, 0.1);
-}
-
-#modalStats span,
-#modalStats {
-  color: #cfefff;
-}
-
-/* optional stronger glow for values */
-#modalStats strong {
-  color: #00c8ff;
-  text-shadow: 0 0 8px rgba(0,200,255,0.8);
+@media (max-width: 480px) {
+  .lookup-row { flex-direction: column; align-items: stretch; }
 }
 
 </style>
@@ -597,140 +629,134 @@ td.user-cell {
 
 <div id="nebula"></div>
 <div id="starfield"></div>
-<h1>Bedwars Sweat Tracker</h1>
-<div id="credits">Developed by Milo • Powered by Hypixel API</div>
-<div style="text-align:center; margin-top:-25px; margin-bottom:25px;">
-  <button type="button" id="setAdminKeyBtn" style="padding:4px 12px; font-size:13px; opacity:0.75;">🔑 Set Admin Key</button>
-</div>
 
-<h2 class="section-header">Sweat Lookup</h2>
-<div id="form-container">
-  <form id="sweatForm" autocomplete="off">
-    <div style="display:flex; gap:10px; align-items:center;">
-      <input type="text" id="username" placeholder="Enter Minecraft username" required />
-      <button type="button" id="fetchBtn">Fetch Stats</button>
+<div class="page">
+
+  <header class="site-header">
+    <div class="brand">
+      <h1>Bedwars Sweat Tracker</h1>
+      <p id="credits">Developed by Milo &middot; Powered by Hypixel API</p>
     </div>
+    <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; Admin Key</button>
+  </header>
 
-    <div class="checkbox-group" style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-      <span style="font-weight:bold; color:#00c8ff; text-shadow: 0 0 6px rgba(0, 200, 255, 0.4);">Beaten By:</span>
-      <label><input type="checkbox" id="milo" /> Milo</label>
-      <label><input type="checkbox" id="potat" /> Potat</label>
-      <label><input type="checkbox" id="aballs" /> Aballs</label>
-      <label><input type="checkbox" id="zoiv" /> Zoiv</label>
-      <span style="font-weight:bold; font-size:20px; margin-left:13px; margin-right:23px; color:#00c8ff; text-shadow: 0 0 6px rgba(0, 200, 255, 0.4);">|</span>
-      <label><input type="checkbox" id="cheating" /> Cheating</label>
-    </div>
+  <h2 class="section-header">Sweat Lookup</h2>
+  <div id="form-container" class="card">
+    <form id="sweatForm" autocomplete="off">
+      <div class="lookup-row">
+        <input type="text" id="username" placeholder="Enter Minecraft username" required />
+        <button type="button" id="fetchBtn" class="btn btn-primary">Fetch Stats</button>
+      </div>
 
+      <div class="chip-row">
+        <span class="chip-heading">Beaten By</span>
+        <label class="chip"><input type="checkbox" id="milo" /><span>Milo</span></label>
+        <label class="chip"><input type="checkbox" id="potat" /><span>Potat</span></label>
+        <label class="chip"><input type="checkbox" id="aballs" /><span>Aballs</span></label>
+        <label class="chip"><input type="checkbox" id="zoiv" /><span>Zoiv</span></label>
+        <span class="chip-sep"></span>
+        <label class="chip cheat-chip"><input type="checkbox" id="cheating" /><span>Cheating</span></label>
+      </div>
 
-    <div id="status" role="alert" aria-live="assertive" style="text-align:center; margin-top:10px; color:#00c8ff; font-weight:600;">
-    </div>
-  </form>
+      <div id="status" role="alert" aria-live="assertive"></div>
+    </form>
 
-  <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
-    <div id="statsContent">
-      <img id="statsAvatar" src="" alt="Player head" />
-      <div id="statsRight">
-        <div id="statsTopRow">
-          <span id="statsRank"></span>
-          <span id="statsUsername"></span>
-          <span id="statsStar">★0</span>
-        </div>
-        <div id="statsColumns">
-          <div class="stat-column good">
-            <div class="stat-label">Wins:</div><div class="stat-value" id="statWins">0</div>
-            <div class="stat-label">Finals:</div><div class="stat-value" id="statFinals">0</div>
-            <div class="stat-label">Kills:</div><div class="stat-value" id="statKills">0</div>
-            <div class="stat-label">Beds Broken:</div><div class="stat-value" id="statBeds">0</div>
+    <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
+      <div id="statsContent">
+        <img id="statsAvatar" src="" alt="Player head" />
+        <div id="statsRight">
+          <div id="statsTopRow">
+            <span id="statsRank"></span>
+            <span id="statsUsername"></span>
+            <span id="statsStar">&#9733;0</span>
           </div>
-          <div class="stat-column bad">
-            <div class="stat-label">Losses:</div><div class="stat-value" id="statLosses">0</div>
-            <div class="stat-label">Final Deaths:</div><div class="stat-value" id="statFinalDeaths">0</div>
-            <div class="stat-label">Deaths:</div><div class="stat-value" id="statDeaths">0</div>
-            <div class="stat-label">Beds Lost:</div><div class="stat-value" id="statBedsLost">0</div>
-          </div>
-          <div class="stat-column neutral">
-            <div class="stat-label">WLR:</div><div class="stat-value" id="statWLR">0</div>
-            <div class="stat-label">FKDR:</div><div class="stat-value" id="statFKDR">0</div>
-            <div class="stat-label">KDR:</div><div class="stat-value" id="statKDR">0</div>
-            <div class="stat-label">BBLR:</div><div class="stat-value" id="statBBLR">0</div>
-          </div>
-          <div id="statsUrchin" class="stat-column neutral">
-            <div class="stat-label">Urchin Tags:</div>
-            <div class="stat-value" id="statUrchin">None</div>
+          <div id="statsColumns">
+            <div class="stat-tile good"><div class="stat-label">Wins</div><div class="stat-value" id="statWins">0</div></div>
+            <div class="stat-tile bad"><div class="stat-label">Losses</div><div class="stat-value" id="statLosses">0</div></div>
+            <div class="stat-tile neutral"><div class="stat-label">WLR</div><div class="stat-value" id="statWLR">0</div></div>
+
+            <div class="stat-tile good"><div class="stat-label">Finals</div><div class="stat-value" id="statFinals">0</div></div>
+            <div class="stat-tile bad"><div class="stat-label">Final Deaths</div><div class="stat-value" id="statFinalDeaths">0</div></div>
+            <div class="stat-tile neutral"><div class="stat-label">FKDR</div><div class="stat-value" id="statFKDR">0</div></div>
+
+            <div class="stat-tile good"><div class="stat-label">Kills</div><div class="stat-value" id="statKills">0</div></div>
+            <div class="stat-tile bad"><div class="stat-label">Deaths</div><div class="stat-value" id="statDeaths">0</div></div>
+            <div class="stat-tile neutral"><div class="stat-label">KDR</div><div class="stat-value" id="statKDR">0</div></div>
+
+            <div class="stat-tile good"><div class="stat-label">Beds Broken</div><div class="stat-value" id="statBeds">0</div></div>
+            <div class="stat-tile bad"><div class="stat-label">Beds Lost</div><div class="stat-value" id="statBedsLost">0</div></div>
+            <div class="stat-tile neutral"><div class="stat-label">BBLR</div><div class="stat-value" id="statBBLR">0</div></div>
+
+            <div id="statsUrchin" class="stat-tile neutral">
+              <div class="stat-label">Urchin Tags</div>
+              <div class="stat-value" id="statUrchin">None</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <div style="display:flex; justify-content:center; margin-top:15px;">
-    <button id="addSweatBtn" style="width:180px; padding:10px 0; font-size:16px;">Add Sweat</button>
-  </div>
-</div>
 
-<h2 class="section-header">Defeated Sweats</h2>
-<div id="searchContainer">
-  <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
-</div>
-
-<!-- FILTER UI -->
-<div class="filter-bar" aria-label="Minimum stat filters">
-  <label for="minStars">Min Stars
-    <input id="minStars" type="number" step="1" placeholder="e.g. 100" aria-label="Minimum Stars">
-  </label>
-  <label for="minFkdr">Min FKDR
-    <input id="minFkdr" type="number" step="0.1" placeholder="e.g. 2.5" aria-label="Minimum FKDR">
-  </label>
-  <label for="minIndex">Min Index
-    <input id="minIndex" type="number" step="1" placeholder="e.g. 300" aria-label="Minimum Index">
-  </label>
-  <label for="minDate">Min Date
-    <input id="minDate" type="date" aria-label="Minimum Date">
-  </label>
-
-  <label for="hideDuplicates">
-    <input type="checkbox" id="hideDuplicates" />
-    Hide Dupes
-  </label>
-
-  <button id="resetFiltersBtn" type="button" aria-label="Reset filters">Reset</button>
-</div>
-
-<div style="max-width:1200px; margin:0 auto; overflow-x:auto;">
-<table>
-  <thead>
-    <tr>
-      <th>Username</th>
-      <th class="sortable" data-sort="star">Star ▲▼</th>
-      <th class="sortable" data-sort="fkdr">FKDR ▲▼</th>
-      <th class="sortable" data-sort="index">Index ▲▼</th>
-      <th class="sortable" data-sort="cheating">Cheats ▲▼</th>
-      <th class="sortable" data-sort="dateAdded">Date ▲▼</th>
-      <th>Beaten By</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody id="sweatTable"></tbody>
-</table>
-</div>
-
-<!-- PLAYER MODAL -->
-<div id="playerModal" class="modal">
-  <div class="modal-content">
-    
-    <span id="closeModal">&times;</span>
-
-    <h2 id="modalUsername">Loading...</h2>
-    <div id="modalTitle">Current Stats</div>
-    <div class="modal-body">
-      <img id="modalSkin" src="" />
-      <div id="modalStats"></div>
+    <div style="display:flex; justify-content:center; margin-top:20px;">
+      <button id="addSweatBtn" class="btn btn-primary" style="width:200px;">Add Sweat</button>
     </div>
-
   </div>
-</div>
 
-</body>
-</html>
+  <h2 class="section-header">Defeated Sweats</h2>
+
+  <div class="toolbar card">
+    <div id="searchContainer">
+      <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
+    </div>
+    <div class="filter-bar" aria-label="Minimum stat filters">
+      <label for="minStars">Min Stars
+        <input id="minStars" type="number" step="1" placeholder="100">
+      </label>
+      <label for="minFkdr">Min FKDR
+        <input id="minFkdr" type="number" step="0.1" placeholder="2.5">
+      </label>
+      <label for="minIndex">Min Index
+        <input id="minIndex" type="number" step="1" placeholder="300">
+      </label>
+      <label for="minDate">Min Date
+        <input id="minDate" type="date">
+      </label>
+      <label class="chip"><input type="checkbox" id="hideDuplicates" /><span>Hide Dupes</span></label>
+      <button id="resetFiltersBtn" type="button" class="btn btn-ghost">Reset</button>
+    </div>
+  </div>
+
+  <div class="table-wrap card">
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th class="sortable" data-sort="star">Star <span class="sort-icon">&#8645;</span></th>
+          <th class="sortable" data-sort="fkdr">FKDR <span class="sort-icon">&#8645;</span></th>
+          <th class="sortable" data-sort="index">Index <span class="sort-icon">&#8645;</span></th>
+          <th class="sortable" data-sort="cheating">Cheats <span class="sort-icon">&#8645;</span></th>
+          <th class="sortable" data-sort="dateAdded">Date <span class="sort-icon">&#8645;</span></th>
+          <th>Beaten By</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="sweatTable"></tbody>
+    </table>
+  </div>
+
+  <!-- PLAYER MODAL -->
+  <div id="playerModal" class="modal">
+    <div class="modal-content">
+      <span id="closeModal">&times;</span>
+      <h2 id="modalUsername">Loading...</h2>
+      <div id="modalTitle">Current Stats</div>
+      <div class="modal-body">
+        <img id="modalSkin" src="" />
+        <div id="modalStats"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
 
 <script>
 
@@ -738,53 +764,39 @@ const starContainer = document.getElementById("starfield");
 
 const STAR_COUNT = 1400;
 
-// ---------- STAR CREATION ----------
 for (let i = 0; i < STAR_COUNT; i++) {
   const star = document.createElement("div");
   star.classList.add("star");
 
   let size = Math.random() * 2.2;
-
-  if (Math.random() < 0.5) {
-    size = 0.8;
-  }
+  if (Math.random() < 0.5) size = 0.8;
 
   star.style.width = size + "px";
   star.style.height = size + "px";
-
   star.style.left = Math.random() * 100 + "vw";
   star.style.top = Math.random() * (window.innerHeight * 2) + "px";
-
   star.style.animationDuration = (5 + Math.random() * 3) + "s";
   star.style.animationDelay = (Math.random() * 5) + "s";
 
-  if (Math.random() < 0.2) {
-    star.classList.add("bright");
-  }
+  if (Math.random() < 0.2) star.classList.add("bright");
 
   starContainer.appendChild(star);
 }
 
-// ---------- SCROLL ----------
 let latestScroll = 0;
 let ticking = false;
 
 window.addEventListener("scroll", () => {
   latestScroll = window.scrollY;
-
   if (!ticking) {
     window.requestAnimationFrame(() => {
       const scrollY = latestScroll;
-
       const starFieldHeight = window.innerHeight * 2;
       const progress = Math.min(scrollY / starFieldHeight, 1);
-
       starContainer.style.transform = `translateY(${-progress * starFieldHeight}px)`;
       starContainer.style.opacity = 1 - progress;
-
       ticking = false;
     });
-
     ticking = true;
   }
 });
@@ -887,7 +899,7 @@ function formatUrchinTagType(tagType) {
     case "blatant_cheater": return "Blatant Cheater";
     case "closet_cheater": return "Closet Cheater";
     case "sniper": return "Sniper";
-    default: return tagType; 
+    default: return tagType;
   }
 }
 
@@ -1086,24 +1098,36 @@ async function getPlayerStats(uuid) {
 }
 
 function getHypixelRank(player) {
-  if (!player) return {name:"[NONE]", color:"#AAA", prefix:""};
-  const rank = player.rank || player.newPackageRank || player.packageRank || "NONE";
-  switch(rank) {
-    case "ADMIN": return {name:"ADMIN", color:"#FF5555", prefix:"[ADMIN] "};
-    case "MODERATOR": return {name:"MOD", color:"#55FF55", prefix:"[MOD] "};
-    case "MVP_PLUS": return {name:"MVP+", color:"#FFB74D", prefix:"[MVP+] "};
-    case "MVP": return {name:"MVP", color:"#FFB74D", prefix:"[MVP] "};
-    case "VIP_PLUS": return {name:"VIP+", color:"#FFB74D", prefix:"[VIP+] "};
-    case "VIP": return {name:"VIP", color:"#FFB74D", prefix:"[VIP] "};
-    default: return {name:"[NONE]", color:"#AAA", prefix:""};
+  if (!player) return { name: "", color: "" };
+
+  const staffRank = player.rank;
+  if (staffRank === "ADMIN" || staffRank === "OWNER") return { name: "ADMIN", color: "#ff5c72" };
+  if (staffRank === "GAME_MASTER" || staffRank === "MODERATOR") return { name: "MOD", color: "#4ce07a" };
+  if (staffRank === "YOUTUBER") return { name: "YOUTUBE", color: "#ff5c72" };
+  if (player.monthlyPackageRank === "SUPERSTAR") return { name: "MVP++", color: "#ffc94d" };
+
+  const rank = player.newPackageRank || player.packageRank || "NONE";
+  switch (rank) {
+    case "MVP_PLUS": return { name: "MVP+", color: "#4dd9e8" };
+    case "MVP": return { name: "MVP", color: "#4dd9e8" };
+    case "VIP_PLUS": return { name: "VIP+", color: "#6ee7a0" };
+    case "VIP": return { name: "VIP", color: "#6ee7a0" };
+    default: return { name: "", color: "" };
   }
 }
 
 function updateStatsDisplay(stats) {
   statsAvatar.src = `https://visage.surgeplay.com/face/256/${currentUUID}`;
   statsUsername.textContent = stats.username;
-  statsRank.textContent = stats.rank.prefix || "";
-  statsRank.style.color = stats.rank.color;
+
+  if (stats.rank.name) {
+    statsRank.textContent = stats.rank.name;
+    statsRank.style.color = stats.rank.color;
+    statsRank.style.display = "inline-flex";
+  } else {
+    statsRank.style.display = "none";
+  }
+
   statsStar.textContent = `★${stats.star}`;
 
   statWins.textContent = stats.wins;
@@ -1124,6 +1148,20 @@ function updateStatsDisplay(stats) {
   statUrchin.textContent = stats.urchinTags || "None";
 
   statsDisplay.style.display = "flex";
+}
+
+function updateSortHeaders() {
+  document.querySelectorAll("th.sortable").forEach(th => {
+    const icon = th.querySelector(".sort-icon");
+    if (!icon) return;
+    if (th.dataset.sort === sortField) {
+      icon.textContent = sortAsc ? "▲" : "▼";
+      th.classList.add("sort-active");
+    } else {
+      icon.textContent = "⇅";
+      th.classList.remove("sort-active");
+    }
+  });
 }
 
 	function renderTable() {
@@ -1196,6 +1234,8 @@ function updateStatsDisplay(stats) {
 				return 0;
 			});
 		}
+
+		updateSortHeaders();
 
 		// --- STEP 4: render table
 		tableBody.innerHTML = "";
@@ -1281,6 +1321,8 @@ function updateStatsDisplay(stats) {
 
 			const removeTd = document.createElement("td");
 			const removeBtn = document.createElement("button");
+			removeBtn.className = "icon-btn danger";
+			removeBtn.title = "Remove";
 			removeBtn.textContent = "✖";
 			removeBtn.addEventListener("click", () => removeSweat(s._id));
 			removeTd.appendChild(removeBtn);
@@ -1360,7 +1402,7 @@ document.addEventListener("click", async (e) => {
     if (currentName && currentName.toLowerCase() !== originalName.toLowerCase()) {
       modalUsername.innerHTML = `
         ${originalName}
-        <div style="font-size:16px; opacity:0.65; margin-top:2px; color:#00c8ff;">
+        <div style="font-size:14px; opacity:0.65; margin-top:4px; color:var(--accent); font-weight:600;">
           Now ${currentName}
         </div>
       `;
@@ -1371,11 +1413,11 @@ document.addEventListener("click", async (e) => {
     modalSkin.src = `https://visage.surgeplay.com/full/256/${uuid}`;
 
     modalStats.innerHTML = `
-      <p>Stars: ${data.star}</p>
-      <p>FKDR: ${data.fkdr.toFixed(2)}</p>
-      <p>WLR: ${data.wlr.toFixed(2)}</p>
-      <p>Finals: ${data.finals}</p>
-      <p>Wins: ${data.wins}</p>
+      <div class="modal-stat"><span>Stars</span><strong>${data.star}</strong></div>
+      <div class="modal-stat"><span>FKDR</span><strong>${data.fkdr.toFixed(2)}</strong></div>
+      <div class="modal-stat"><span>WLR</span><strong>${data.wlr.toFixed(2)}</strong></div>
+      <div class="modal-stat"><span>Finals</span><strong>${data.finals}</strong></div>
+      <div class="modal-stat"><span>Wins</span><strong>${data.wins}</strong></div>
     `;
   } catch (err) {
     modalStats.innerHTML = "Failed to load stats.";

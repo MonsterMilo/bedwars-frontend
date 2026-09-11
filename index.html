@@ -1680,9 +1680,10 @@ async function fetchUrchinTags(username) {
     if (data.tags && data.tags.length > 0) {
       const label = data.tags.map(tag => formatUrchinTagType(tag.type)).join(", ");
       const reason = data.tags.map(tag => tag.reason).filter(Boolean).join(" • ");
-      // "sniper"/"replays_needed"/"caution" are distinct categories, not
-      // confirmation of cheating, so only *_cheater types trigger the flag.
-      const isCheaterTagged = data.tags.some(tag => tag.type.includes("cheater"));
+      // A tagged "sniper" is always a cheater (the untagged "legit sniper"
+      // case is a separate thing with no tag of its own). "replays_needed"/
+      // "caution" are inconclusive staff flags, not confirmation of cheating.
+      const isCheaterTagged = data.tags.some(tag => tag.type.includes("cheater") || tag.type === "sniper");
       return { label, reason, isCheaterTagged };
     }
     return NONE_URCHIN_RESULT;

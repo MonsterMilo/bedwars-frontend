@@ -1529,10 +1529,14 @@ fetchBtn.addEventListener('click', async () => {
 function formatUrchinTagType(tagType) {
   switch(tagType) {
     case "confirmed_cheater": return "Confirmed Cheater";
-    case "blatant_cheater": return "Blatant Cheater";
-    case "closet_cheater": return "Closet Cheater";
-    case "sniper": return "Sniper";
-    default: return tagType;
+    default:
+      // Urchin's tag types aren't a fixed enum and change over time (their
+      // legacy urchin.ws tag set doesn't match current ones), so auto-format
+      // anything without an explicit mapping instead of showing raw snake_case.
+      return tagType
+        .split('_')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
   }
 }
 

@@ -312,6 +312,23 @@ input:focus {
   min-width: 0;
 }
 
+/* A 3-column grid instead of flex-wrap so a 9-person roster lands evenly
+   (3x3) instead of ragged rows with a lone chip stranded on the last line. */
+.chip-group.roster {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.chip-group.roster .chip { display: flex; }
+.chip-group.roster .chip span {
+  width: 100%;
+  text-align: center;
+}
+
+@media (max-width: 420px) {
+  .chip-group.roster { grid-template-columns: repeat(2, 1fr); }
+}
+
 .chip {
   position: relative;
   display: inline-flex;
@@ -931,7 +948,7 @@ tbody tr:hover .user-cell span {
 
       <div class="chip-section">
         <span class="chip-heading">Beaten By</span>
-        <div class="chip-group">
+        <div class="chip-group roster">
           <label class="chip"><input type="checkbox" id="milo" /><span>Milo</span></label>
           <label class="chip"><input type="checkbox" id="potat" /><span>Potat</span></label>
           <label class="chip"><input type="checkbox" id="aballs" /><span>ABoi</span></label>

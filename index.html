@@ -491,13 +491,25 @@ input:focus {
 
 #statsUrchin {
   grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding: 10px 14px;
   border-radius: var(--radius-s);
   border: 1px solid var(--border);
   background: rgba(255,255,255,0.02);
+}
+
+.urchin-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.urchin-reason-text {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 0.82em;
+  line-height: 1.5;
+  color: var(--text-dim);
 }
 
 #statsUrchin .stat-hero-label { margin-bottom: 0; }
@@ -1156,8 +1168,11 @@ tbody tr:hover .user-cell span {
             </div>
 
             <div id="statsUrchin">
-              <div class="stat-hero-label">Urchin Tags</div>
-              <div class="stat-hero-value" id="statUrchin" style="font-size:1em;">None</div>
+              <div class="urchin-summary-row">
+                <div class="stat-hero-label">Urchin Tags</div>
+                <div class="stat-hero-value" id="statUrchin" style="font-size:1em;">None</div>
+              </div>
+              <div id="statUrchinReason" class="urchin-reason-text" hidden></div>
             </div>
           </div>
         </div>
@@ -1411,6 +1426,7 @@ const statFKDR = document.getElementById('statFKDR');
 const statKDR = document.getElementById('statKDR');
 const statBBLR = document.getElementById('statBBLR');
 const statUrchin = document.getElementById('statUrchin');
+const statUrchinReason = document.getElementById('statUrchinReason');
 
 const filterFkdr = document.getElementById('minFkdr');
 const filterIndex = document.getElementById('minIndex');
@@ -1542,8 +1558,6 @@ form.addEventListener('submit', async e => {
   const beatenByValues = {};
   BEATEN_BY_KEYS.forEach(k => { beatenByValues[k] = document.getElementById(k).checked; });
   const anyBeatenBySelected = BEATEN_BY_KEYS.some(k => beatenByValues[k]);
-  const cheating = document.getElementById('cheating').checked;
-  const boosting = document.getElementById('boosting').checked;
 
   if (!username) {
     status.textContent = "Please enter a username first.";
@@ -1563,6 +1577,11 @@ form.addEventListener('submit', async e => {
     if (!currentUUID || !currentStats || document.getElementById('username').value.trim().toLowerCase() !== currentStats.username.toLowerCase()) {
       await fetchAndDisplayStats();
     }
+
+    // Read after fetchAndDisplayStats() so an auto-checked "Cheating" box
+    // (set when a live Urchin cheater tag was found) is actually captured.
+    const cheating = document.getElementById('cheating').checked;
+    const boosting = document.getElementById('boosting').checked;
 
     const todayDate = new Date().toISOString();
     const newSweat = {
@@ -1645,6 +1664,8 @@ resetFiltersBtn.addEventListener('click', () => {
 });
 
 // Fetch Urchin tags from backend
+const NONE_URCHIN_RESULT = { label: "None", reason: "", isCheaterTagged: false };
+
 async function fetchUrchinTags(username) {
   try {
     const res = await fetch(`${backendBaseURL}/urchin/${encodeURIComponent(username)}`);
@@ -1653,16 +1674,21 @@ async function fetchUrchinTags(username) {
 
     if (data.error) {
       console.warn("Urchin unavailable for", username, "-", data.error);
-      return "None";
+      return NONE_URCHIN_RESULT;
     }
 
     if (data.tags && data.tags.length > 0) {
-      return data.tags.map(tag => formatUrchinTagType(tag.type)).join(", ");
+      const label = data.tags.map(tag => formatUrchinTagType(tag.type)).join(", ");
+      const reason = data.tags.map(tag => tag.reason).filter(Boolean).join(" • ");
+      // "sniper"/"replays_needed"/"caution" are distinct categories, not
+      // confirmation of cheating, so only *_cheater types trigger the flag.
+      const isCheaterTagged = data.tags.some(tag => tag.type.includes("cheater"));
+      return { label, reason, isCheaterTagged };
     }
-    return "None";
+    return NONE_URCHIN_RESULT;
   } catch (err) {
     console.warn("Failed to fetch Urchin tags:", err);
-    return "None";
+    return NONE_URCHIN_RESULT;
   }
 }
 
@@ -1704,8 +1730,15 @@ async function fetchAndDisplayStats() {
   };
 
   // Fetch Urchin tags
-  const urTags = await fetchUrchinTags(currentStats.username);
-  currentStats.urchinTags = urTags;
+  const urchinResult = await fetchUrchinTags(currentStats.username);
+  currentStats.urchinTags = urchinResult.label;
+  currentStats.urchinReason = urchinResult.reason;
+
+  // Auto-flag as Cheating when Urchin confirms it - only ever turns it on,
+  // never off, so it doesn't undo a flag someone set manually for other reasons.
+  if (urchinResult.isCheaterTagged) {
+    document.getElementById('cheating').checked = true;
+  }
 
   updateStatsDisplay(currentStats);
   status.textContent = "";
@@ -1794,6 +1827,12 @@ function updateStatsDisplay(stats) {
   statBBLR.textContent = stats.bblr.toFixed(2);
 
   statUrchin.textContent = stats.urchinTags || "None";
+  if (stats.urchinReason) {
+    statUrchinReason.textContent = stats.urchinReason;
+    statUrchinReason.hidden = false;
+  } else {
+    statUrchinReason.hidden = true;
+  }
 
   statsDisplay.style.display = "flex";
 }

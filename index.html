@@ -10,15 +10,16 @@
 <style>
 
 :root {
-  --bg: #05070c;
-  --panel: #12161f;
-  --panel-2: #161b26;
+  --bg: #04050a;
+  --panel: #12151f;
+  --panel-2: #171b28;
   --border: rgba(255,255,255,0.07);
-  --border-strong: rgba(0,200,255,0.35);
-  --accent: #00c8ff;
-  --accent-2: #7c5cff;
-  --accent-soft: rgba(0,200,255,0.12);
-  --text: #e9edf4;
+  --border-strong: rgba(0,217,255,0.35);
+  --accent: #00d9ff;
+  --accent-2: #a855f7;
+  --accent-soft: rgba(0,217,255,0.12);
+  --accent-2-soft: rgba(168,85,247,0.14);
+  --text: #eef0f6;
   --text-dim: #8a93a6;
   --text-faint: #5c6577;
   --good: #34e0a1;
@@ -27,6 +28,7 @@
   --bad-soft: rgba(255,92,114,0.12);
   --neutral: #4fc3f7;
   --neutral-soft: rgba(79,195,247,0.12);
+  --gold: #ffd166;
   --radius-s: 8px;
   --radius-m: 14px;
   --radius-l: 22px;
@@ -41,7 +43,7 @@ body {
   background-color: var(--bg);
   color: var(--text);
   margin: 0;
-  padding: 32px 20px 60px;
+  padding: 32px 20px 70px;
   line-height: 1.45;
   overflow-x: hidden;
 }
@@ -52,11 +54,17 @@ body {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(circle at 15% 20%, rgba(0, 200, 255, 0.10), transparent 45%),
-    radial-gradient(circle at 85% 15%, rgba(124, 92, 255, 0.09), transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(0, 255, 190, 0.05), transparent 55%),
-    radial-gradient(circle at 25% 85%, rgba(255, 255, 255, 0.03), transparent 60%);
+    radial-gradient(circle at 12% 15%, rgba(0, 217, 255, 0.14), transparent 42%),
+    radial-gradient(circle at 88% 12%, rgba(168, 85, 255, 0.14), transparent 48%),
+    radial-gradient(circle at 80% 80%, rgba(255, 95, 162, 0.07), transparent 52%),
+    radial-gradient(circle at 20% 88%, rgba(0, 255, 190, 0.05), transparent 55%);
   opacity: 0.95;
+  animation: nebulaPulse 10s ease-in-out infinite;
+}
+
+@keyframes nebulaPulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
 }
 
 #starfield {
@@ -93,60 +101,85 @@ body {
 .page {
   position: relative;
   z-index: 1;
-  max-width: 1120px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-/* Header */
-.site-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
+/* Hero */
+.hero {
+  position: relative;
+  text-align: center;
+  padding: 18px 0 30px;
 }
 
-.brand { flex: 1; min-width: 220px; }
+.hero-eyebrow {
+  display: inline-block;
+  font-size: 0.78em;
+  font-weight: 800;
+  letter-spacing: 2.4px;
+  color: var(--accent-2);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
 
 h1 {
   margin: 0;
-  font-size: 2.4em;
+  font-size: 3em;
   font-weight: 800;
   letter-spacing: 0.5px;
-  color: var(--accent);
-  text-shadow: 0 0 18px rgba(0, 200, 255, 0.55);
+  background: linear-gradient(120deg, var(--accent) 20%, var(--accent-2) 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 22px rgba(0, 200, 255, 0.35));
 }
 
 #credits {
-  margin: 4px 0 0;
+  margin: 10px 0 0;
   color: var(--text-faint);
   font-size: 0.92em;
   letter-spacing: 0.4px;
   opacity: 0.85;
 }
 
-/* Section headers */
-.section-header {
-  text-align: center;
-  color: var(--accent);
-  font-weight: 700;
-  margin: 56px 0 20px;
-  font-size: 1.3em;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  text-shadow: 0 0 10px rgba(0, 200, 255, 0.4);
+.hero-admin-btn {
+  position: absolute;
+  top: 18px;
+  right: 0;
 }
 
-.section-header::after {
-  content: "";
-  display: block;
-  width: 64px;
-  height: 3px;
-  margin: 10px auto 0;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  box-shadow: 0 0 10px rgba(0,200,255,0.6);
+/* Panel headers (section leads) */
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 52px 0 18px;
+}
+
+.panel-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3em;
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent-2-soft));
+  border: 1px solid var(--border-strong);
+  flex-shrink: 0;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.3em;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.panel-header p {
+  margin: 2px 0 0;
+  font-size: 0.85em;
+  color: var(--text-faint);
 }
 
 /* Buttons */
@@ -165,12 +198,12 @@ h1 {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--accent), #0072ff);
-  color: #fff;
-  box-shadow: 0 4px 18px rgba(0,150,255,0.25);
+  color: #04050a;
+  box-shadow: 0 4px 18px rgba(0,180,255,0.3);
 }
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,180,255,0.4);
+  box-shadow: 0 8px 26px rgba(0,200,255,0.45);
 }
 .btn-primary:active:not(:disabled) { transform: translateY(0); }
 
@@ -186,18 +219,19 @@ h1 {
 }
 
 .icon-btn {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: rgba(255,255,255,0.03);
   color: var(--text-dim);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s var(--ease);
+  flex-shrink: 0;
 }
 .icon-btn.danger:hover {
   color: var(--bad);
@@ -214,11 +248,11 @@ h1 {
   box-shadow: var(--shadow-card);
 }
 
-/* Sweat Lookup card */
+/* Sweat Lookup panel */
 #form-container {
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto 44px;
-  padding: 28px 30px 26px;
+  padding: 26px 30px 28px;
 }
 
 .lookup-row { display: flex; gap: 10px; align-items: center; }
@@ -242,10 +276,10 @@ input:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
-  background: rgba(0,200,255,0.04);
+  background: rgba(0,217,255,0.04);
 }
 
-/* Chips (Beaten By / Hide Dupes) */
+/* Chips */
 .chip-row {
   margin-top: 16px;
   display: flex;
@@ -298,7 +332,7 @@ input:focus {
   color: var(--accent);
   border-color: var(--border-strong);
   background: var(--accent-soft);
-  box-shadow: 0 0 12px rgba(0,200,255,0.25);
+  box-shadow: 0 0 12px rgba(0,217,255,0.25);
 }
 
 .chip.cheat-chip input:checked + span {
@@ -348,7 +382,7 @@ input:focus {
   border: 2px solid var(--border-strong);
   flex-shrink: 0;
   background: rgba(255,255,255,0.03);
-  box-shadow: 0 0 20px rgba(0,200,255,0.18);
+  box-shadow: 0 0 20px rgba(0,217,255,0.18);
 }
 
 #statsRight { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
@@ -373,7 +407,7 @@ input:focus {
 }
 
 #statsStar {
-  color: #ffd166;
+  color: var(--gold);
   font-weight: 800;
   font-size: 1.05em;
   margin-left: auto;
@@ -419,9 +453,9 @@ input:focus {
   justify-content: space-between;
 }
 
-/* Toolbar (search + filters) */
+/* Toolbar (search + filters + view toggle) */
 .toolbar {
-  max-width: 1120px;
+  max-width: 1200px;
   margin: 0 auto 22px;
   padding: 18px 22px;
   display: flex;
@@ -432,12 +466,20 @@ input:focus {
 #searchContainer { display: flex; justify-content: center; }
 #searchInput { width: 100%; max-width: 420px; }
 
+.toolbar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .filter-bar {
   display: flex;
   gap: 10px;
-  justify-content: center;
   align-items: center;
   flex-wrap: wrap;
+  flex: 1;
 }
 
 .filter-bar label {
@@ -461,8 +503,182 @@ input:focus {
 }
 #minStars, #minFkdr, #minIndex { -moz-appearance: textfield; }
 
-/* Table */
-.table-wrap { max-width: 1120px; margin: 0 auto 40px; overflow-x: auto; border-radius: var(--radius-m); }
+.view-toggle {
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.view-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 7px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+
+.view-btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #04050a;
+  box-shadow: 0 4px 14px rgba(0,217,255,0.3);
+}
+
+/* Bounty board card grid */
+.card-grid {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.empty-state {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-faint);
+  font-weight: 600;
+}
+
+.sweat-card {
+  position: relative;
+  background: linear-gradient(160deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  padding: 18px;
+  cursor: pointer;
+  transition: transform 0.22s var(--ease), border-color 0.22s var(--ease), box-shadow 0.22s var(--ease);
+  animation: cardIn 0.4s var(--ease) both;
+}
+
+.sweat-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-strong);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,217,255,0.15);
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sweat-card-index {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 0.68em;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: var(--accent-2);
+  background: var(--accent-2-soft);
+  border: 1px solid rgba(168,85,247,0.3);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.sweat-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-right: 60px;
+}
+
+.sweat-card-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border-strong);
+  background: rgba(255,255,255,0.03);
+  flex-shrink: 0;
+}
+
+.sweat-card-name {
+  font-weight: 800;
+  font-size: 1.02em;
+  color: var(--text);
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sweat-card-name .name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+  max-width: 100%;
+  display: inline-block;
+}
+
+.sweat-card-dupe {
+  font-size: 0.72em;
+  color: var(--text-faint);
+  font-weight: 600;
+  margin-left: 3px;
+}
+
+.sweat-card-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.pill {
+  font-size: 0.75em;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-dim);
+}
+
+.pill.star { color: var(--gold); border-color: rgba(255,209,102,0.3); background: rgba(255,209,102,0.1); }
+.pill.fkdr { color: var(--neutral); border-color: rgba(79,195,247,0.3); background: var(--neutral-soft); }
+.pill.cheat { color: var(--bad); border-color: rgba(255,92,114,0.4); background: var(--bad-soft); }
+
+.sweat-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  gap: 8px;
+}
+
+.beaten-by-avatars { display: flex; gap: 4px; flex-shrink: 0; }
+
+.beaten-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65em;
+  font-weight: 800;
+  color: #04050a;
+  flex-shrink: 0;
+}
+
+.sweat-card-footer-right { display: flex; align-items: center; gap: 8px; }
+
+.sweat-card-date { font-size: 0.75em; color: var(--text-faint); white-space: nowrap; }
+
+/* Table (alternate view) */
+.table-wrap { max-width: 1200px; margin: 0 auto 40px; overflow-x: auto; border-radius: var(--radius-m); }
 
 table {
   width: 100%;
@@ -472,7 +688,7 @@ table {
   color: var(--text);
 }
 
-thead tr { background: rgba(0,200,255,0.06); }
+thead tr { background: rgba(0,217,255,0.06); }
 
 th, td {
   padding: 13px 16px;
@@ -492,20 +708,20 @@ th {
 }
 
 th.sortable { cursor: pointer; transition: background 0.2s; }
-th.sortable:hover { background: rgba(0,200,255,0.1); }
+th.sortable:hover { background: rgba(0,217,255,0.1); }
 
 .sort-icon { opacity: 0.4; margin-left: 4px; font-size: 0.9em; }
 th.sort-active .sort-icon { opacity: 1; color: var(--accent); }
 
 .user-cell span { transition: color 0.2s ease, text-shadow 0.2s ease; }
 
-tbody tr { transition: background 0.2s var(--ease); }
+tbody tr { transition: background 0.2s var(--ease); cursor: pointer; }
 
-tbody tr:hover { background: rgba(0, 200, 255, 0.05); }
+tbody tr:hover { background: rgba(0, 217, 255, 0.05); }
 
 tbody tr:hover .user-cell span {
   color: var(--accent);
-  text-shadow: 0 0 8px rgba(0,200,255,0.6);
+  text-shadow: 0 0 8px rgba(0,217,255,0.6);
 }
 
 .user-cell { display: flex; align-items: center; gap: 12px; line-height: 1; }
@@ -517,10 +733,6 @@ tbody tr:hover .user-cell span {
   border: 1.5px solid var(--border-strong);
   flex-shrink: 0;
 }
-
-#resetFiltersBtn { margin-left: 6px; }
-
-#credits { text-align: left; }
 
 /* Modal */
 .modal {
@@ -542,7 +754,7 @@ tbody tr:hover .user-cell span {
   width: 380px;
   max-width: 100%;
   color: var(--text);
-  box-shadow: 0 0 30px rgba(0,200,255,0.25), 0 20px 60px rgba(0,0,0,0.6);
+  box-shadow: 0 0 30px rgba(0,217,255,0.25), 0 20px 60px rgba(0,0,0,0.6);
   border: 1px solid var(--border-strong);
   position: relative;
   animation: modalPop 0.25s var(--ease);
@@ -569,7 +781,15 @@ tbody tr:hover .user-cell span {
   font-size: 1.5em;
   font-weight: 800;
   margin: 4px 0 2px;
-  text-shadow: 0 0 12px rgba(0,200,255,0.5);
+  text-shadow: 0 0 12px rgba(0,217,255,0.5);
+}
+
+.modal-username-sub {
+  font-size: 14px;
+  opacity: 0.65;
+  margin-top: 4px;
+  color: var(--accent);
+  font-weight: 600;
 }
 
 #modalTitle {
@@ -588,7 +808,7 @@ tbody tr:hover .user-cell span {
   height: 190px;
   object-fit: contain;
   border-radius: var(--radius-m);
-  background: radial-gradient(circle, rgba(0,200,255,0.14), transparent);
+  background: radial-gradient(circle, rgba(0,217,255,0.14), transparent);
   border: 1px solid var(--border-strong);
   flex-shrink: 0;
 }
@@ -601,22 +821,21 @@ tbody tr:hover .user-cell span {
   align-items: center;
   padding: 8px 12px;
   border-radius: var(--radius-s);
-  background: rgba(0,200,255,0.05);
+  background: rgba(0,217,255,0.05);
   border: 1px solid var(--border);
 }
 .modal-stat span { color: var(--text-dim); font-size: 0.85em; font-weight: 600; }
-.modal-stat strong { color: var(--accent); font-size: 1.05em; text-shadow: 0 0 8px rgba(0,200,255,0.5); }
+.modal-stat strong { color: var(--accent); font-size: 1.05em; text-shadow: 0 0 8px rgba(0,217,255,0.5); }
 
 /* Responsive */
 @media (max-width: 620px) {
-  h1 { font-size: 1.8em; }
+  h1 { font-size: 2em; }
   #statsColumns { grid-template-columns: repeat(2, 1fr); }
   #statsContent { flex-direction: column; align-items: center; text-align: center; }
   #statsTopRow { justify-content: center; }
   #statsStar { margin-left: 0; }
-  .site-header { justify-content: center; text-align: center; }
-  .brand { text-align: center; }
-  #credits { text-align: center; }
+  .hero-admin-btn { position: static; margin-top: 16px; }
+  .toolbar-row { justify-content: center; }
 }
 
 @media (max-width: 480px) {
@@ -632,15 +851,21 @@ tbody tr:hover .user-cell span {
 
 <div class="page">
 
-  <header class="site-header">
-    <div class="brand">
-      <h1>Bedwars Sweat Tracker</h1>
-      <p id="credits">Developed by Milo &middot; Powered by Hypixel API</p>
-    </div>
-    <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; Admin Key</button>
+  <header class="hero">
+    <div class="hero-eyebrow">&#9876; Community Leaderboard</div>
+    <h1>Bedwars Sweat Tracker</h1>
+    <p id="credits">Developed by Milo &middot; Powered by Hypixel API</p>
+    <button type="button" id="setAdminKeyBtn" class="btn btn-ghost hero-admin-btn">&#128273; Admin Key</button>
   </header>
 
-  <h2 class="section-header">Sweat Lookup</h2>
+  <div class="panel-header">
+    <div class="panel-icon">&#127919;</div>
+    <div>
+      <h2>Sweat Lookup</h2>
+      <p>Search a player, review their stats, and log the win.</p>
+    </div>
+  </div>
+
   <div id="form-container" class="card">
     <form id="sweatForm" autocomplete="off">
       <div class="lookup-row">
@@ -701,31 +926,46 @@ tbody tr:hover .user-cell span {
     </div>
   </div>
 
-  <h2 class="section-header">Defeated Sweats</h2>
+  <div class="panel-header">
+    <div class="panel-icon">&#127942;</div>
+    <div>
+      <h2>Defeated Sweats</h2>
+      <p><span id="resultCount">0</span> tracked players</p>
+    </div>
+  </div>
 
   <div class="toolbar card">
     <div id="searchContainer">
       <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
     </div>
-    <div class="filter-bar" aria-label="Minimum stat filters">
-      <label for="minStars">Min Stars
-        <input id="minStars" type="number" step="1" placeholder="100">
-      </label>
-      <label for="minFkdr">Min FKDR
-        <input id="minFkdr" type="number" step="0.1" placeholder="2.5">
-      </label>
-      <label for="minIndex">Min Index
-        <input id="minIndex" type="number" step="1" placeholder="300">
-      </label>
-      <label for="minDate">Min Date
-        <input id="minDate" type="date">
-      </label>
-      <label class="chip"><input type="checkbox" id="hideDuplicates" /><span>Hide Dupes</span></label>
-      <button id="resetFiltersBtn" type="button" class="btn btn-ghost">Reset</button>
+    <div class="toolbar-row">
+      <div class="filter-bar" aria-label="Minimum stat filters">
+        <label for="minStars">Min Stars
+          <input id="minStars" type="number" step="1" placeholder="100">
+        </label>
+        <label for="minFkdr">Min FKDR
+          <input id="minFkdr" type="number" step="0.1" placeholder="2.5">
+        </label>
+        <label for="minIndex">Min Index
+          <input id="minIndex" type="number" step="1" placeholder="300">
+        </label>
+        <label for="minDate">Min Date
+          <input id="minDate" type="date">
+        </label>
+        <label class="chip"><input type="checkbox" id="hideDuplicates" /><span>Hide Dupes</span></label>
+        <button id="resetFiltersBtn" type="button" class="btn btn-ghost">Reset</button>
+      </div>
+      <div class="view-toggle" role="group" aria-label="Result view">
+        <button type="button" id="viewGridBtn" class="view-btn active">Grid</button>
+        <button type="button" id="viewTableBtn" class="view-btn">Table</button>
+      </div>
     </div>
   </div>
 
-  <div class="table-wrap card">
+  <div id="cardGrid" class="card-grid"></div>
+  <div id="emptyState" class="empty-state" hidden>No sweats match these filters yet.</div>
+
+  <div class="table-wrap card" id="tableWrap" hidden>
     <table>
       <thead>
         <tr>
@@ -824,6 +1064,12 @@ document.getElementById('setAdminKeyBtn').addEventListener('click', () => {
 
 const form = document.getElementById('sweatForm');
 const tableBody = document.getElementById('sweatTable');
+const cardGrid = document.getElementById('cardGrid');
+const emptyState = document.getElementById('emptyState');
+const tableWrap = document.getElementById('tableWrap');
+const resultCount = document.getElementById('resultCount');
+const viewGridBtn = document.getElementById('viewGridBtn');
+const viewTableBtn = document.getElementById('viewTableBtn');
 const status = document.getElementById('status');
 const fetchBtn = document.getElementById('fetchBtn');
 const statsDisplay = document.getElementById('statsDisplay');
@@ -869,6 +1115,21 @@ let sortAsc = true;
 let currentUUID = null;
 let currentStats = null;
 let currentFilter = "";
+let viewMode = "grid";
+
+const BEATEN_BY_COLORS = { milo: "#00d9ff", potat: "#a855f7", aballs: "#ffb84d", zoiv: "#ff5fa2" };
+
+viewGridBtn.addEventListener('click', () => setViewMode('grid'));
+viewTableBtn.addEventListener('click', () => setViewMode('table'));
+
+function setViewMode(mode) {
+  viewMode = mode;
+  viewGridBtn.classList.toggle('active', mode === 'grid');
+  viewTableBtn.classList.toggle('active', mode === 'table');
+  cardGrid.hidden = mode !== 'grid';
+  tableWrap.hidden = mode !== 'table';
+  renderTable();
+}
 
 // Load sweats
 async function loadSweats() {
@@ -960,7 +1221,7 @@ form.addEventListener('submit', async e => {
       body: JSON.stringify(newSweat)
     });
     if (res.status === 401 || res.status === 503) {
-      throw new Error("Admin key missing or incorrect — click \"Set Admin Key\" above");
+      throw new Error("Admin key missing or incorrect — click \"Admin Key\" above");
     }
     if (!res.ok) throw new Error("Failed to add sweat");
 
@@ -1164,207 +1425,268 @@ function updateSortHeaders() {
   });
 }
 
-	function renderTable() {
-		// basic search filter
-		let filteredSweats = sweats.filter(s => s.username.toLowerCase().includes(currentFilter));
+// Applies the search box, numeric filters, dedupe toggle, and sort - shared by
+// both the card grid and table views so they always agree on ordering/content.
+function getProcessedSweats() {
+  let filteredSweats = sweats.filter(s => s.username.toLowerCase().includes(currentFilter));
 
-		// read filter inputs (treat empty as no filter)
-		const minFkdr = (filterFkdr && filterFkdr.value.trim() !== "") ? parseFloat(filterFkdr.value) : null;
-		const minIndex = (filterIndex && filterIndex.value.trim() !== "") ? parseFloat(filterIndex.value) : null;
-		const minStars = (filterStars && filterStars.value.trim() !== "") ? parseInt(filterStars.value) : null;
-		const minDate = filterDate && filterDate.value ? new Date(filterDate.value + "T00:00:00") : null;
+  const minFkdr = (filterFkdr && filterFkdr.value.trim() !== "") ? parseFloat(filterFkdr.value) : null;
+  const minIndex = (filterIndex && filterIndex.value.trim() !== "") ? parseFloat(filterIndex.value) : null;
+  const minStars = (filterStars && filterStars.value.trim() !== "") ? parseInt(filterStars.value) : null;
+  const minDate = filterDate && filterDate.value ? new Date(filterDate.value + "T00:00:00") : null;
 
-		// apply numeric filters if set
-		if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== null) {
-			filteredSweats = filteredSweats.filter(s => {
-				const sFkdr = Number(s.fkdr) || 0;
-				const sStar = Number(s.star) || 0;
-				const sIndex = sFkdr * sFkdr * sStar;
-				const sDate = new Date(s.dateAdded);
+  if (minFkdr !== null || minIndex !== null || minStars !== null || minDate !== null) {
+    filteredSweats = filteredSweats.filter(s => {
+      const sFkdr = Number(s.fkdr) || 0;
+      const sStar = Number(s.star) || 0;
+      const sIndex = sFkdr * sFkdr * sStar;
+      const sDate = new Date(s.dateAdded);
 
-				if (minFkdr !== null && sFkdr < minFkdr) return false;
-				if (minIndex !== null && sIndex < minIndex) return false;
-				if (minStars !== null && sStar < minStars) return false;
-				if (minDate !== null && sDate < minDate) return false;
+      if (minFkdr !== null && sFkdr < minFkdr) return false;
+      if (minIndex !== null && sIndex < minIndex) return false;
+      if (minStars !== null && sStar < minStars) return false;
+      if (minDate !== null && sDate < minDate) return false;
 
-				return true;
-			});
-		}
-
-		// --- STEP 1: count occurrences BEFORE deduplication
-		const usernameCounts = {};
-		filteredSweats.forEach(s => {
-			const uname = s.username.toLowerCase();
-			usernameCounts[uname] = (usernameCounts[uname] || 0) + 1;
-		});
-
-		// --- STEP 2: remove duplicates if toggle is on
-		if (hideDuplicatesCheckbox && hideDuplicatesCheckbox.checked) {
-			const uniqueMap = new Map();
-			filteredSweats.forEach(s => {
-				const uname = s.username.toLowerCase();
-				if (!uniqueMap.has(uname)) {
-					uniqueMap.set(uname, s);
-				}
-			});
-			filteredSweats = Array.from(uniqueMap.values());
-		}
-
-		// --- STEP 3: sorting
-		if (sortField) {
-			filteredSweats.sort((a, b) => {
-				let valA, valB;
-
-				if (sortField === "index") {
-					valA = a.fkdr * a.fkdr * a.star;
-					valB = b.fkdr * b.fkdr * b.star;
-				} else if (sortField === "dateAdded") {
-					valA = new Date(a.dateAdded);
-					valB = new Date(b.dateAdded);
-				} else if (sortField === "cheating") {
-					valA = a.cheating ? 1 : 0;
-					valB = b.cheating ? 1 : 0;
-				} else {
-					valA = a[sortField];
-					valB = b[sortField];
-				}
-
-				if (valA < valB) return sortAsc ? -1 : 1;
-				if (valA > valB) return sortAsc ? 1 : -1;
-				return 0;
-			});
-		}
-
-		updateSortHeaders();
-
-		// --- STEP 4: render table
-		tableBody.innerHTML = "";
-
-		filteredSweats.forEach(s => {
-			const tr = document.createElement("tr");
-      tr.dataset.username = s.username;
-      tr.dataset.uuid = s.uuid;
-
-			const usernameTd = document.createElement("td");
-			usernameTd.classList.add('user-cell');
-
-      const avatarImg = document.createElement("img");
-      avatarImg.classList.add('user-avatar');
-
-      const cleanUuid = (s.uuid || "").replace(/-/g, "");
-      const url = `https://visage.surgeplay.com/face/256/${cleanUuid}`;
-
-      let retryCount = 0;
-
-      avatarImg.onerror = () => {
-        if (retryCount < 1) {
-          retryCount++;
-          setTimeout(() => {
-            avatarImg.src = url + "?retry=" + Date.now();
-          }, 200);
-        }
-      };
-
-      avatarImg.onload = () => {
-      avatarImg.style.opacity = 1;
-      };
-
-      avatarImg.style.opacity = 0;
-      avatarImg.style.transition = "opacity 0.2s";
-
-      avatarImg.src = url;
-      avatarImg.alt = `Avatar of ${s.username}`;
-
-			const usernameText = document.createElement("span");
-			let displayName = s.username;
-			if (hideDuplicatesCheckbox.checked) {
-				const count = usernameCounts[s.username.toLowerCase()];
-				if (count > 1) {
-					displayName += ` (x${count})`;
-				}
-			}
-			usernameText.textContent = displayName;
-
-			usernameTd.appendChild(avatarImg);
-			usernameTd.appendChild(usernameText);
-			tr.appendChild(usernameTd);
-
-			const starTd = document.createElement("td");
-			starTd.textContent = s.star;
-			tr.appendChild(starTd);
-
-			const fkdrTd = document.createElement("td");
-			fkdrTd.textContent = s.fkdr.toFixed(2);
-			tr.appendChild(fkdrTd);
-
-			const indexValue = s.fkdr * s.fkdr * s.star;
-			const indexTd = document.createElement("td");
-			indexTd.textContent = Math.round(indexValue).toLocaleString();
-			tr.appendChild(indexTd);
-
-			const cheatingTd = document.createElement("td");
-			cheatingTd.textContent = s.cheating ? "Yes" : "No";
-			tr.appendChild(cheatingTd);
-
-			const dateTd = document.createElement("td");
-			dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
-			tr.appendChild(dateTd);
-
-			const beatenByTd = document.createElement("td");
-			let beatenBy = [];
-			if (s.milo) beatenBy.push("Milo");
-			if (s.potat) beatenBy.push("Potat");
-			if (s.aballs) beatenBy.push("Aballs");
-			if (s.zoiv) beatenBy.push("Zoiv");
-			beatenByTd.textContent = beatenBy.join(", ");
-			tr.appendChild(beatenByTd);
-
-			const removeTd = document.createElement("td");
-			const removeBtn = document.createElement("button");
-			removeBtn.className = "icon-btn danger";
-			removeBtn.title = "Remove";
-			removeBtn.textContent = "✖";
-			removeBtn.addEventListener("click", () => removeSweat(s._id));
-			removeTd.appendChild(removeBtn);
-			tr.appendChild(removeTd);
-
-			tableBody.appendChild(tr);
-		});
-	}
-
-  async function removeSweat(id) {
-    if (!confirm("Are you sure you want to remove this sweat?")) return;
-    try {
-      const res = await fetch(`${backendBaseURL}/sweats/${id}`, { method: "DELETE", headers: adminHeaders() });
-      if (res.status === 401 || res.status === 503) {
-        throw new Error("Admin key missing or incorrect — click \"Set Admin Key\" above");
-      }
-      if (!res.ok) throw new Error("Failed to remove sweat");
-      await loadSweats();
-    } catch (err) {
-      alert("Error removing sweat: " + err.message);
-    }
+      return true;
+    });
   }
 
-  document.querySelectorAll("th.sortable").forEach(th => {
-    th.addEventListener("click", () => {
-      const field = th.dataset.sort;
-      if (sortField === field) sortAsc = !sortAsc;
-      else {
-        sortField = field;
-        sortAsc = true;
-      }
-      renderTable();
-    });
+  const usernameCounts = {};
+  filteredSweats.forEach(s => {
+    const uname = s.username.toLowerCase();
+    usernameCounts[uname] = (usernameCounts[uname] || 0) + 1;
   });
 
-
-  if (hideDuplicatesCheckbox) {
-    hideDuplicatesCheckbox.addEventListener('change', renderTable);
+  if (hideDuplicatesCheckbox && hideDuplicatesCheckbox.checked) {
+    const uniqueMap = new Map();
+    filteredSweats.forEach(s => {
+      const uname = s.username.toLowerCase();
+      if (!uniqueMap.has(uname)) {
+        uniqueMap.set(uname, s);
+      }
+    });
+    filteredSweats = Array.from(uniqueMap.values());
   }
 
-  // Load all sweats on startup
-  loadSweats();
+  if (sortField) {
+    filteredSweats.sort((a, b) => {
+      let valA, valB;
+
+      if (sortField === "index") {
+        valA = a.fkdr * a.fkdr * a.star;
+        valB = b.fkdr * b.fkdr * b.star;
+      } else if (sortField === "dateAdded") {
+        valA = new Date(a.dateAdded);
+        valB = new Date(b.dateAdded);
+      } else if (sortField === "cheating") {
+        valA = a.cheating ? 1 : 0;
+        valB = b.cheating ? 1 : 0;
+      } else {
+        valA = a[sortField];
+        valB = b[sortField];
+      }
+
+      if (valA < valB) return sortAsc ? -1 : 1;
+      if (valA > valB) return sortAsc ? 1 : -1;
+      return 0;
+    });
+  }
+
+  return { filteredSweats, usernameCounts };
+}
+
+function renderTable() {
+  const { filteredSweats, usernameCounts } = getProcessedSweats();
+
+  resultCount.textContent = filteredSweats.length;
+  updateSortHeaders();
+  renderCardGrid(filteredSweats, usernameCounts);
+  renderTableRows(filteredSweats, usernameCounts);
+}
+
+function avatarUrlFor(uuid) {
+  const cleanUuid = (uuid || "").replace(/-/g, "");
+  return `https://visage.surgeplay.com/face/256/${cleanUuid}`;
+}
+
+function withRetryingAvatar(imgEl, uuid, username) {
+  const url = avatarUrlFor(uuid);
+  let retryCount = 0;
+  imgEl.onerror = () => {
+    if (retryCount < 1) {
+      retryCount++;
+      setTimeout(() => { imgEl.src = url + "?retry=" + Date.now(); }, 200);
+    }
+  };
+  imgEl.onload = () => { imgEl.style.opacity = 1; };
+  imgEl.style.opacity = 0;
+  imgEl.style.transition = "opacity 0.2s";
+  imgEl.src = url;
+  imgEl.alt = `Avatar of ${username}`;
+}
+
+function renderCardGrid(filteredSweats, usernameCounts) {
+  cardGrid.innerHTML = "";
+  emptyState.hidden = filteredSweats.length !== 0;
+
+  filteredSweats.forEach((s, i) => {
+    const card = document.createElement("div");
+    card.className = "sweat-card";
+    card.dataset.username = s.username;
+    card.dataset.uuid = s.uuid;
+    card.style.animationDelay = Math.min(i * 0.03, 0.6) + "s";
+
+    const indexValue = s.fkdr * s.fkdr * s.star;
+
+    const beatenByHtml = ["milo", "potat", "aballs", "zoiv"]
+      .filter(k => s[k])
+      .map(k => `<span class="beaten-avatar" style="background:${BEATEN_BY_COLORS[k]}" title="${k}">${k[0].toUpperCase()}</span>`)
+      .join("");
+
+    card.innerHTML = `
+      <span class="sweat-card-index">${Math.round(indexValue).toLocaleString()}</span>
+      <div class="sweat-card-top">
+        <img class="sweat-card-avatar" alt="" />
+        <div class="sweat-card-name"><span class="name-text"></span><span class="sweat-card-dupe"></span></div>
+      </div>
+      <div class="sweat-card-pills">
+        <span class="pill star">★ ${s.star}</span>
+        <span class="pill fkdr">${s.fkdr.toFixed(2)} FKDR</span>
+        ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
+      </div>
+      <div class="sweat-card-footer">
+        <div class="beaten-by-avatars">${beatenByHtml}</div>
+        <div class="sweat-card-footer-right">
+          <span class="sweat-card-date"></span>
+          <button type="button" class="icon-btn danger remove-btn" title="Remove">&#10005;</button>
+        </div>
+      </div>
+    `;
+
+    // Set user-controlled text via textContent/property assignment (never innerHTML)
+    // so a malicious username can't inject markup - the backend doesn't validate
+    // this field, so the frontend has to treat it as untrusted.
+    withRetryingAvatar(card.querySelector(".sweat-card-avatar"), s.uuid, s.username);
+    card.querySelector(".name-text").textContent = s.username;
+    const count = usernameCounts[s.username.toLowerCase()];
+    if (hideDuplicatesCheckbox.checked && count > 1) {
+      card.querySelector(".sweat-card-dupe").textContent = `x${count}`;
+    }
+    card.querySelector(".sweat-card-date").textContent = new Date(s.dateAdded).toLocaleDateString();
+
+    card.querySelector(".remove-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      removeSweat(s._id);
+    });
+
+    cardGrid.appendChild(card);
+  });
+}
+
+function renderTableRows(filteredSweats, usernameCounts) {
+  tableBody.innerHTML = "";
+
+  filteredSweats.forEach(s => {
+    const tr = document.createElement("tr");
+    tr.dataset.username = s.username;
+    tr.dataset.uuid = s.uuid;
+
+    const usernameTd = document.createElement("td");
+    usernameTd.classList.add('user-cell');
+
+    const avatarImg = document.createElement("img");
+    avatarImg.classList.add('user-avatar');
+    withRetryingAvatar(avatarImg, s.uuid, s.username);
+
+    const usernameText = document.createElement("span");
+    let displayName = s.username;
+    if (hideDuplicatesCheckbox.checked) {
+      const count = usernameCounts[s.username.toLowerCase()];
+      if (count > 1) {
+        displayName += ` (x${count})`;
+      }
+    }
+    usernameText.textContent = displayName;
+
+    usernameTd.appendChild(avatarImg);
+    usernameTd.appendChild(usernameText);
+    tr.appendChild(usernameTd);
+
+    const starTd = document.createElement("td");
+    starTd.textContent = s.star;
+    tr.appendChild(starTd);
+
+    const fkdrTd = document.createElement("td");
+    fkdrTd.textContent = s.fkdr.toFixed(2);
+    tr.appendChild(fkdrTd);
+
+    const indexValue = s.fkdr * s.fkdr * s.star;
+    const indexTd = document.createElement("td");
+    indexTd.textContent = Math.round(indexValue).toLocaleString();
+    tr.appendChild(indexTd);
+
+    const cheatingTd = document.createElement("td");
+    cheatingTd.textContent = s.cheating ? "Yes" : "No";
+    tr.appendChild(cheatingTd);
+
+    const dateTd = document.createElement("td");
+    dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
+    tr.appendChild(dateTd);
+
+    const beatenByTd = document.createElement("td");
+    let beatenBy = [];
+    if (s.milo) beatenBy.push("Milo");
+    if (s.potat) beatenBy.push("Potat");
+    if (s.aballs) beatenBy.push("Aballs");
+    if (s.zoiv) beatenBy.push("Zoiv");
+    beatenByTd.textContent = beatenBy.join(", ");
+    tr.appendChild(beatenByTd);
+
+    const removeTd = document.createElement("td");
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "icon-btn danger";
+    removeBtn.title = "Remove";
+    removeBtn.textContent = "✖";
+    removeBtn.addEventListener("click", () => removeSweat(s._id));
+    removeTd.appendChild(removeBtn);
+    tr.appendChild(removeTd);
+
+    tableBody.appendChild(tr);
+  });
+}
+
+async function removeSweat(id) {
+  if (!confirm("Are you sure you want to remove this sweat?")) return;
+  try {
+    const res = await fetch(`${backendBaseURL}/sweats/${id}`, { method: "DELETE", headers: adminHeaders() });
+    if (res.status === 401 || res.status === 503) {
+      throw new Error("Admin key missing or incorrect — click \"Admin Key\" above");
+    }
+    if (!res.ok) throw new Error("Failed to remove sweat");
+    await loadSweats();
+  } catch (err) {
+    alert("Error removing sweat: " + err.message);
+  }
+}
+
+document.querySelectorAll("th.sortable").forEach(th => {
+  th.addEventListener("click", () => {
+    const field = th.dataset.sort;
+    if (sortField === field) sortAsc = !sortAsc;
+    else {
+      sortField = field;
+      sortAsc = true;
+    }
+    renderTable();
+  });
+});
+
+if (hideDuplicatesCheckbox) {
+  hideDuplicatesCheckbox.addEventListener('change', renderTable);
+}
+
+// Load all sweats on startup
+loadSweats();
 
 const modal = document.getElementById("playerModal");
 const modalUsername = document.getElementById("modalUsername");
@@ -1372,23 +1694,23 @@ const modalStats = document.getElementById("modalStats");
 const modalSkin = document.getElementById("modalSkin");
 const closeModal = document.getElementById("closeModal");
 
-// click on player row
+// click on a player row/card (table row or bounty card, both carry data-username)
 document.addEventListener("click", async (e) => {
-  if (e.target.tagName === "BUTTON") return;
+  if (e.target.closest("button")) return;
 
-  const row = e.target.closest("tr[data-username]");
-  if (!row) return;
+  const item = e.target.closest("[data-username]");
+  if (!item) return;
 
-  const username = row.dataset.username;
-  const uuid = row.dataset.uuid;
+  const username = item.dataset.username;
+  const uuid = item.dataset.uuid;
 
   modal.style.display = "flex";
   modalUsername.textContent = "Loading...";
-  modalStats.innerHTML = "Fetching live stats...";
+  modalStats.textContent = "Fetching live stats...";
 
   if (!uuid) {
     modalUsername.textContent = username;
-    modalStats.innerHTML = "Missing UUID for this player.";
+    modalStats.textContent = "Missing UUID for this player.";
     return;
   }
 
@@ -1399,13 +1721,15 @@ document.addEventListener("click", async (e) => {
     const currentName = data.currentName;
     const originalName = data.originalName;
 
+    // Build with textContent/DOM nodes, not innerHTML - these names come from
+    // player-submitted data the backend doesn't validate, so treat as untrusted.
+    modalUsername.textContent = "";
     if (currentName && currentName.toLowerCase() !== originalName.toLowerCase()) {
-      modalUsername.innerHTML = `
-        ${originalName}
-        <div style="font-size:14px; opacity:0.65; margin-top:4px; color:var(--accent); font-weight:600;">
-          Now ${currentName}
-        </div>
-      `;
+      modalUsername.append(originalName);
+      const sub = document.createElement("div");
+      sub.className = "modal-username-sub";
+      sub.textContent = `Now ${currentName}`;
+      modalUsername.appendChild(sub);
     } else {
       modalUsername.textContent = originalName;
     }
@@ -1420,7 +1744,7 @@ document.addEventListener("click", async (e) => {
       <div class="modal-stat"><span>Wins</span><strong>${data.wins}</strong></div>
     `;
   } catch (err) {
-    modalStats.innerHTML = "Failed to load stats.";
+    modalStats.textContent = "Failed to load stats.";
   }
 });
 

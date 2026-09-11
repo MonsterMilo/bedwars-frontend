@@ -245,6 +245,12 @@ h1 {
   background: var(--bad-soft);
   transform: scale(1.08);
 }
+.icon-btn.edit:hover {
+  color: var(--accent);
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+  transform: scale(1.08);
+}
 
 /* Card base */
 .card {
@@ -838,7 +844,7 @@ tbody tr:hover .user-cell span {
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-#closeModal {
+.modal-close {
   position: absolute;
   top: 14px;
   right: 16px;
@@ -847,7 +853,56 @@ tbody tr:hover .user-cell span {
   color: var(--text-dim);
   transition: color 0.2s;
 }
-#closeModal:hover { color: var(--accent); }
+.modal-close:hover { color: var(--accent); }
+
+/* Edit sweat modal */
+.edit-modal-content {
+  width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.edit-modal-title {
+  text-align: center;
+  font-size: 1.3em;
+  font-weight: 800;
+  margin: 4px 0 18px;
+  color: var(--text);
+}
+
+.edit-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.edit-field label {
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.edit-field input { width: 100%; }
+
+.edit-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+@media (max-width: 480px) {
+  .edit-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
 
 #modalUsername {
   text-align: center;
@@ -1089,12 +1144,42 @@ tbody tr:hover .user-cell span {
   <!-- PLAYER MODAL -->
   <div id="playerModal" class="modal">
     <div class="modal-content">
-      <span id="closeModal">&times;</span>
+      <span id="closeModal" class="modal-close">&times;</span>
       <h2 id="modalUsername">Loading...</h2>
       <div id="modalTitle">Current Stats</div>
       <div class="modal-body">
         <img id="modalSkin" src="" />
         <div id="modalStats"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT SWEAT MODAL -->
+  <div id="editModal" class="modal">
+    <div class="modal-content edit-modal-content">
+      <span id="closeEditModal" class="modal-close">&times;</span>
+      <h2 class="edit-modal-title">Edit Sweat</h2>
+
+      <div id="editStatsGrid" class="edit-stats-grid"></div>
+
+      <div class="chip-section">
+        <span class="chip-heading">Beaten By</span>
+        <div class="chip-group roster" id="editBeatenByGroup"></div>
+      </div>
+
+      <div class="chip-section">
+        <span class="chip-heading">Flags</span>
+        <div class="chip-group">
+          <label class="chip cheat-chip"><input type="checkbox" id="editCheating" /><span>Cheating</span></label>
+          <label class="chip boost-chip"><input type="checkbox" id="editBoosting" /><span>Boosting</span></label>
+        </div>
+      </div>
+
+      <div id="editStatus" role="alert" aria-live="assertive"></div>
+
+      <div class="edit-modal-actions">
+        <button type="button" id="cancelEditBtn" class="btn btn-ghost">Cancel</button>
+        <button type="button" id="saveEditBtn" class="btn btn-primary">Save Changes</button>
       </div>
     </div>
   </div>
@@ -1238,6 +1323,42 @@ const BEATEN_BY = {
   key:    { label: "Key",    initials: "Ky", color: "#facc15" },
 };
 const BEATEN_BY_KEYS = Object.keys(BEATEN_BY);
+
+// Editable numeric stats for the edit-sweat modal, in display order.
+// Single source of truth so the modal's fields, population, and the PATCH
+// payload can't drift out of sync with each other.
+const EDIT_NUMERIC_FIELDS = [
+  { key: "star", label: "Star", step: "1" },
+  { key: "fkdr", label: "FKDR", step: "0.01" },
+  { key: "wlr", label: "WLR", step: "0.01" },
+  { key: "bblr", label: "BBLR", step: "0.01" },
+  { key: "kdr", label: "KDR", step: "0.01" },
+  { key: "finals", label: "Finals", step: "1" },
+  { key: "finalDeaths", label: "Final Deaths", step: "1" },
+  { key: "kills", label: "Kills", step: "1" },
+  { key: "deaths", label: "Deaths", step: "1" },
+  { key: "beds", label: "Beds Broken", step: "1" },
+  { key: "bedsLost", label: "Beds Lost", step: "1" },
+];
+
+// Build the edit modal's stat inputs and roster chips once at startup -
+// field labels/keys come from the constants above, not user data, so
+// innerHTML here is safe.
+function initEditModal() {
+  const grid = document.getElementById("editStatsGrid");
+  grid.innerHTML = EDIT_NUMERIC_FIELDS.map(f => `
+    <div class="edit-field">
+      <label for="edit_${f.key}">${f.label}</label>
+      <input type="number" id="edit_${f.key}" step="${f.step}" />
+    </div>
+  `).join("");
+
+  const roster = document.getElementById("editBeatenByGroup");
+  roster.innerHTML = BEATEN_BY_KEYS.map(k => `
+    <label class="chip"><input type="checkbox" id="edit_${k}" /><span>${BEATEN_BY[k].label}</span></label>
+  `).join("");
+}
+initEditModal();
 
 viewGridBtn.addEventListener('click', () => setViewMode('grid'));
 viewTableBtn.addEventListener('click', () => setViewMode('table'));
@@ -1723,6 +1844,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
         <div class="beaten-by-avatars">${beatenByHtml}</div>
         <div class="sweat-card-footer-right">
           <span class="sweat-card-date"></span>
+          <button type="button" class="icon-btn edit edit-btn" title="Edit">&#9998;</button>
           <button type="button" class="icon-btn danger remove-btn" title="Remove">&#10005;</button>
         </div>
       </div>
@@ -1738,6 +1860,11 @@ function renderCardGrid(filteredSweats, usernameCounts) {
       card.querySelector(".sweat-card-dupe").textContent = `x${count}`;
     }
     card.querySelector(".sweat-card-date").textContent = new Date(s.dateAdded).toLocaleDateString();
+
+    card.querySelector(".edit-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      openEditModal(s);
+    });
 
     card.querySelector(".remove-btn").addEventListener("click", (e) => {
       e.stopPropagation();
@@ -1807,14 +1934,25 @@ function renderTableRows(filteredSweats, usernameCounts) {
     beatenByTd.textContent = beatenBy.join(", ");
     tr.appendChild(beatenByTd);
 
-    const removeTd = document.createElement("td");
+    const actionsTd = document.createElement("td");
+    actionsTd.style.display = "flex";
+    actionsTd.style.gap = "6px";
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "icon-btn edit";
+    editBtn.title = "Edit";
+    editBtn.textContent = "✎";
+    editBtn.addEventListener("click", (e) => { e.stopPropagation(); openEditModal(s); });
+    actionsTd.appendChild(editBtn);
+
     const removeBtn = document.createElement("button");
     removeBtn.className = "icon-btn danger";
     removeBtn.title = "Remove";
     removeBtn.textContent = "✖";
-    removeBtn.addEventListener("click", () => removeSweat(s._id));
-    removeTd.appendChild(removeBtn);
-    tr.appendChild(removeTd);
+    removeBtn.addEventListener("click", (e) => { e.stopPropagation(); removeSweat(s._id); });
+    actionsTd.appendChild(removeBtn);
+
+    tr.appendChild(actionsTd);
 
     tableBody.appendChild(tr);
   });
@@ -1833,6 +1971,82 @@ async function removeSweat(id) {
     alert("Error removing sweat: " + err.message);
   }
 }
+
+// --- Edit sweat modal ---
+const editModal = document.getElementById("editModal");
+const editStatus = document.getElementById("editStatus");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
+const saveEditBtn = document.getElementById("saveEditBtn");
+const closeEditModal = document.getElementById("closeEditModal");
+let editingSweatId = null;
+
+function openEditModal(s) {
+  editingSweatId = s._id;
+  editStatus.textContent = "";
+
+  EDIT_NUMERIC_FIELDS.forEach(f => {
+    document.getElementById(`edit_${f.key}`).value = s[f.key];
+  });
+  BEATEN_BY_KEYS.forEach(k => {
+    document.getElementById(`edit_${k}`).checked = !!s[k];
+  });
+  document.getElementById("editCheating").checked = !!s.cheating;
+  document.getElementById("editBoosting").checked = !!s.boosting;
+
+  editModal.style.display = "flex";
+}
+
+function closeEditModalFn() {
+  editModal.style.display = "none";
+  editingSweatId = null;
+}
+
+cancelEditBtn.addEventListener("click", closeEditModalFn);
+closeEditModal.addEventListener("click", closeEditModalFn);
+
+saveEditBtn.addEventListener("click", async () => {
+  if (!editingSweatId) return;
+
+  const payload = {};
+  let hasInvalid = false;
+  EDIT_NUMERIC_FIELDS.forEach(f => {
+    const raw = document.getElementById(`edit_${f.key}`).value;
+    const num = parseFloat(raw);
+    if (raw.trim() === "" || Number.isNaN(num)) { hasInvalid = true; return; }
+    payload[f.key] = num;
+  });
+
+  if (hasInvalid) {
+    editStatus.textContent = "Please enter a valid number for every stat.";
+    return;
+  }
+
+  BEATEN_BY_KEYS.forEach(k => { payload[k] = document.getElementById(`edit_${k}`).checked; });
+  payload.cheating = document.getElementById("editCheating").checked;
+  payload.boosting = document.getElementById("editBoosting").checked;
+
+  saveEditBtn.disabled = true;
+  editStatus.textContent = "";
+
+  try {
+    const res = await fetch(`${backendBaseURL}/sweats/${editingSweatId}`, {
+      method: "PATCH",
+      headers: adminHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(payload)
+    });
+    if (res.status === 401 || res.status === 503) {
+      throw new Error("Admin key missing or incorrect — click \"Admin Key\" above");
+    }
+    if (!res.ok) throw new Error("Failed to save changes");
+
+    closeEditModalFn();
+    await loadSweats();
+  } catch (err) {
+    editStatus.textContent = err.message;
+  } finally {
+    saveEditBtn.disabled = false;
+  }
+});
 
 document.querySelectorAll("th.sortable").forEach(th => {
   th.addEventListener("click", () => {
@@ -1917,6 +2131,7 @@ closeModal.onclick = () => modal.style.display = "none";
 
 window.onclick = (e) => {
   if (e.target === modal) modal.style.display = "none";
+  if (e.target === editModal) closeEditModalFn();
 };
 
 </script>

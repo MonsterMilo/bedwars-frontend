@@ -348,6 +348,13 @@ input:focus {
   box-shadow: 0 0 12px rgba(255,92,114,0.25);
 }
 
+.chip.boost-chip input:checked + span {
+  color: var(--gold);
+  border-color: rgba(255,209,102,0.5);
+  background: rgba(255,209,102,0.12);
+  box-shadow: 0 0 12px rgba(255,209,102,0.25);
+}
+
 .chip:hover span { border-color: var(--border-strong); }
 
 /* Status */
@@ -421,43 +428,53 @@ input:focus {
 
 #statsColumns {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
 
-.stat-tile {
-  padding: 10px 12px;
+.stat-hero {
+  padding: 14px 10px;
   border-radius: var(--radius-s);
   border: 1px solid var(--border);
   background: rgba(255,255,255,0.02);
+  text-align: center;
 }
 
-.stat-tile .stat-label {
-  font-size: 0.72em;
+.stat-hero-label {
+  font-size: 0.68em;
   font-weight: 700;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
-.stat-tile .stat-value { font-size: 1.15em; font-weight: 800; }
+.stat-hero-value { font-size: 1.5em; font-weight: 800; line-height: 1.1; }
 
-.stat-tile.good { border-color: rgba(52,224,161,0.25); background: var(--good-soft); }
-.stat-tile.good .stat-value { color: var(--good); }
+.stat-hero-sub {
+  font-size: 0.72em;
+  color: var(--text-dim);
+  font-weight: 600;
+  margin-top: 4px;
+}
 
-.stat-tile.bad { border-color: rgba(255,92,114,0.25); background: var(--bad-soft); }
-.stat-tile.bad .stat-value { color: var(--bad); }
-
-.stat-tile.neutral { border-color: rgba(79,195,247,0.25); background: var(--neutral-soft); }
-.stat-tile.neutral .stat-value { color: var(--neutral); }
+.stat-hero.wlr .stat-hero-value { color: var(--neutral); }
+.stat-hero.fkdr .stat-hero-value { color: var(--accent-2); }
+.stat-hero.kdr .stat-hero-value { color: var(--gold); }
+.stat-hero.bblr .stat-hero-value { color: var(--good); }
 
 #statsUrchin {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
 }
+
+#statsUrchin .stat-hero-label { margin-bottom: 0; }
 
 /* Toolbar (search + filters + view toggle) */
 .toolbar {
@@ -472,35 +489,31 @@ input:focus {
 #searchContainer { display: flex; justify-content: center; }
 #searchInput { width: 100%; max-width: 420px; }
 
-.toolbar-row {
+.filter-fields {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: 16px;
   flex-wrap: wrap;
-  gap: 12px;
+  justify-content: center;
 }
 
-.filter-bar {
+.filter-field {
   display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-  flex: 1;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.filter-bar label {
-  font-weight: 600;
-  font-size: 0.85em;
-  color: var(--text-dim);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.filter-field label {
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
 }
 
-.filter-bar input[type="number"], .filter-bar input[type="date"] { padding: 8px 10px; font-size: 14px; }
+.filter-field input[type="number"], .filter-field input[type="date"] { padding: 8px 10px; font-size: 14px; }
 
-#minStars, #minFkdr, #minIndex { width: 70px; }
-#minDate { width: 130px; }
+#minStars, #minFkdr, #minIndex { width: 100px; }
+#minDate { width: 140px; }
 
 #minStars::-webkit-outer-spin-button, #minStars::-webkit-inner-spin-button,
 #minFkdr::-webkit-outer-spin-button, #minFkdr::-webkit-inner-spin-button,
@@ -508,6 +521,23 @@ input:focus {
   -webkit-appearance: none; margin: 0;
 }
 #minStars, #minFkdr, #minIndex { -moz-appearance: textfield; }
+
+.toolbar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.toolbar-actions-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
 .view-toggle {
   display: flex;
@@ -654,6 +684,7 @@ input:focus {
 .pill.level { color: var(--gold); border-color: rgba(255,209,102,0.3); background: rgba(255,209,102,0.1); }
 .pill.fkdr { color: var(--neutral); border-color: rgba(79,195,247,0.3); background: var(--neutral-soft); }
 .pill.cheat { color: var(--bad); border-color: rgba(255,92,114,0.4); background: var(--bad-soft); }
+.pill.boost { color: var(--gold); border-color: rgba(255,209,102,0.4); background: rgba(255,209,102,0.1); }
 
 .sweat-card-footer {
   display: flex;
@@ -883,10 +914,11 @@ tbody tr:hover .user-cell span {
         <span class="chip-heading">Beaten By</span>
         <label class="chip"><input type="checkbox" id="milo" /><span>Milo</span></label>
         <label class="chip"><input type="checkbox" id="potat" /><span>Potat</span></label>
-        <label class="chip"><input type="checkbox" id="aballs" /><span>Aballs</span></label>
+        <label class="chip"><input type="checkbox" id="aballs" /><span>ABoi</span></label>
         <label class="chip"><input type="checkbox" id="zoiv" /><span>Zoiv</span></label>
         <span class="chip-sep"></span>
         <label class="chip cheat-chip"><input type="checkbox" id="cheating" /><span>Cheating</span></label>
+        <label class="chip boost-chip"><input type="checkbox" id="boosting" /><span>Boosting</span></label>
       </div>
 
       <div id="status" role="alert" aria-live="assertive"></div>
@@ -902,25 +934,30 @@ tbody tr:hover .user-cell span {
             <span id="statsStar">&#9733;0</span>
           </div>
           <div id="statsColumns">
-            <div class="stat-tile good"><div class="stat-label">Wins</div><div class="stat-value" id="statWins">0</div></div>
-            <div class="stat-tile bad"><div class="stat-label">Losses</div><div class="stat-value" id="statLosses">0</div></div>
-            <div class="stat-tile neutral"><div class="stat-label">WLR</div><div class="stat-value" id="statWLR">0</div></div>
+            <div class="stat-hero wlr">
+              <div class="stat-hero-label">WLR</div>
+              <div class="stat-hero-value" id="statWLR">0</div>
+              <div class="stat-hero-sub"><span id="statWins">0</span>W &middot; <span id="statLosses">0</span>L</div>
+            </div>
+            <div class="stat-hero fkdr">
+              <div class="stat-hero-label">FKDR</div>
+              <div class="stat-hero-value" id="statFKDR">0</div>
+              <div class="stat-hero-sub"><span id="statFinals">0</span>F &middot; <span id="statFinalDeaths">0</span>FD</div>
+            </div>
+            <div class="stat-hero kdr">
+              <div class="stat-hero-label">KDR</div>
+              <div class="stat-hero-value" id="statKDR">0</div>
+              <div class="stat-hero-sub"><span id="statKills">0</span>K &middot; <span id="statDeaths">0</span>D</div>
+            </div>
+            <div class="stat-hero bblr">
+              <div class="stat-hero-label">BBLR</div>
+              <div class="stat-hero-value" id="statBBLR">0</div>
+              <div class="stat-hero-sub"><span id="statBeds">0</span>B &middot; <span id="statBedsLost">0</span>BL</div>
+            </div>
 
-            <div class="stat-tile good"><div class="stat-label">Finals</div><div class="stat-value" id="statFinals">0</div></div>
-            <div class="stat-tile bad"><div class="stat-label">Final Deaths</div><div class="stat-value" id="statFinalDeaths">0</div></div>
-            <div class="stat-tile neutral"><div class="stat-label">FKDR</div><div class="stat-value" id="statFKDR">0</div></div>
-
-            <div class="stat-tile good"><div class="stat-label">Kills</div><div class="stat-value" id="statKills">0</div></div>
-            <div class="stat-tile bad"><div class="stat-label">Deaths</div><div class="stat-value" id="statDeaths">0</div></div>
-            <div class="stat-tile neutral"><div class="stat-label">KDR</div><div class="stat-value" id="statKDR">0</div></div>
-
-            <div class="stat-tile good"><div class="stat-label">Beds Broken</div><div class="stat-value" id="statBeds">0</div></div>
-            <div class="stat-tile bad"><div class="stat-label">Beds Lost</div><div class="stat-value" id="statBedsLost">0</div></div>
-            <div class="stat-tile neutral"><div class="stat-label">BBLR</div><div class="stat-value" id="statBBLR">0</div></div>
-
-            <div id="statsUrchin" class="stat-tile neutral">
-              <div class="stat-label">Urchin Tags</div>
-              <div class="stat-value" id="statUrchin">None</div>
+            <div id="statsUrchin">
+              <div class="stat-hero-label">Urchin Tags</div>
+              <div class="stat-hero-value" id="statUrchin" style="font-size:1em;">None</div>
             </div>
           </div>
         </div>
@@ -944,20 +981,27 @@ tbody tr:hover .user-cell span {
     <div id="searchContainer">
       <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
     </div>
+    <div class="filter-fields" aria-label="Minimum stat filters">
+      <div class="filter-field">
+        <label for="minStars">Min Stars</label>
+        <input id="minStars" type="number" step="1" placeholder="e.g. 100">
+      </div>
+      <div class="filter-field">
+        <label for="minFkdr">Min FKDR</label>
+        <input id="minFkdr" type="number" step="0.1" placeholder="e.g. 2.5">
+      </div>
+      <div class="filter-field">
+        <label for="minIndex">Min Index</label>
+        <input id="minIndex" type="number" step="1" placeholder="e.g. 300">
+      </div>
+      <div class="filter-field">
+        <label for="minDate">Min Date</label>
+        <input id="minDate" type="date">
+      </div>
+    </div>
+
     <div class="toolbar-row">
-      <div class="filter-bar" aria-label="Minimum stat filters">
-        <label for="minStars">Min Stars
-          <input id="minStars" type="number" step="1" placeholder="100">
-        </label>
-        <label for="minFkdr">Min FKDR
-          <input id="minFkdr" type="number" step="0.1" placeholder="2.5">
-        </label>
-        <label for="minIndex">Min Index
-          <input id="minIndex" type="number" step="1" placeholder="300">
-        </label>
-        <label for="minDate">Min Date
-          <input id="minDate" type="date">
-        </label>
+      <div class="toolbar-actions-left">
         <label class="chip"><input type="checkbox" id="hideDuplicates" /><span>Hide Dupes</span></label>
         <button id="resetFiltersBtn" type="button" class="btn btn-ghost">Reset</button>
       </div>
@@ -980,6 +1024,7 @@ tbody tr:hover .user-cell span {
           <th class="sortable" data-sort="fkdr">FKDR <span class="sort-icon">&#8645;</span></th>
           <th class="sortable" data-sort="index">Index <span class="sort-icon">&#8645;</span></th>
           <th class="sortable" data-sort="cheating">Cheats <span class="sort-icon">&#8645;</span></th>
+          <th class="sortable" data-sort="boosting">Boosting <span class="sort-icon">&#8645;</span></th>
           <th class="sortable" data-sort="dateAdded">Date <span class="sort-icon">&#8645;</span></th>
           <th>Beaten By</th>
           <th></th>
@@ -1154,7 +1199,7 @@ fetchBtn.addEventListener('click', async () => {
   try {
     await fetchAndDisplayStats();
   } catch (err) {
-    status.textContent = "Error: " + err.message;
+    status.textContent = err.message;
   } finally {
     fetchBtn.disabled = false;
   }
@@ -1178,14 +1223,15 @@ form.addEventListener('submit', async e => {
   const aballs = document.getElementById('aballs').checked;
   const zoiv = document.getElementById('zoiv').checked;
   const cheating = document.getElementById('cheating').checked;
+  const boosting = document.getElementById('boosting').checked;
 
   if (!username) {
-    alert("Please enter a username first.");
+    status.textContent = "Please enter a username first.";
     return;
   }
 
   if (!milo && !potat && !aballs && !zoiv) {
-    alert("Please select at least one player who beat them.");
+    status.textContent = "Please select at least one player who beat them.";
     return;
   }
 
@@ -1217,6 +1263,7 @@ form.addEventListener('submit', async e => {
       aballs,
       zoiv,
       cheating,
+      boosting,
       uuid: currentUUID,
       dateAdded: todayDate
     };
@@ -1237,7 +1284,7 @@ form.addEventListener('submit', async e => {
     currentStats = null;
     statsDisplay.style.display = "none";
   } catch (err) {
-    status.textContent = "Error: " + err.message;
+    status.textContent = err.message;
   } finally {
     addSweatBtn.disabled = false;
   }
@@ -1288,8 +1335,7 @@ async function fetchAndDisplayStats() {
   const usernameInput = document.getElementById('username');
   const usernameRaw = usernameInput.value.trim();
   if (!usernameRaw) {
-    alert("Please enter a username first.");
-    throw new Error("Username missing");
+    throw new Error("Please enter a username first.");
   }
 
   status.textContent = "Fetching stats...";
@@ -1487,6 +1533,9 @@ function getProcessedSweats() {
       } else if (sortField === "cheating") {
         valA = a.cheating ? 1 : 0;
         valB = b.cheating ? 1 : 0;
+      } else if (sortField === "boosting") {
+        valA = a.boosting ? 1 : 0;
+        valB = b.boosting ? 1 : 0;
       } else {
         valA = a[sortField];
         valB = b[sortField];
@@ -1559,6 +1608,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
         <span class="pill level">★ ${s.star}</span>
         <span class="pill fkdr">${s.fkdr.toFixed(2)} FKDR</span>
         ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
+        ${s.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}
       </div>
       <div class="sweat-card-footer">
         <div class="beaten-by-avatars">${beatenByHtml}</div>
@@ -1635,6 +1685,10 @@ function renderTableRows(filteredSweats, usernameCounts) {
     cheatingTd.textContent = s.cheating ? "Yes" : "No";
     tr.appendChild(cheatingTd);
 
+    const boostingTd = document.createElement("td");
+    boostingTd.textContent = s.boosting ? "Yes" : "No";
+    tr.appendChild(boostingTd);
+
     const dateTd = document.createElement("td");
     dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
     tr.appendChild(dateTd);
@@ -1643,7 +1697,7 @@ function renderTableRows(filteredSweats, usernameCounts) {
     let beatenBy = [];
     if (s.milo) beatenBy.push("Milo");
     if (s.potat) beatenBy.push("Potat");
-    if (s.aballs) beatenBy.push("Aballs");
+    if (s.aballs) beatenBy.push("ABoi");
     if (s.zoiv) beatenBy.push("Zoiv");
     beatenByTd.textContent = beatenBy.join(", ");
     tr.appendChild(beatenByTd);

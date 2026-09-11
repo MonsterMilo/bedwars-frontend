@@ -840,16 +840,20 @@ table {
 
 /* Fixed column widths so the Table view and the Leaderboard drill-down -
    two separate <table> elements with identical columns - line up exactly
-   instead of each auto-sizing independently based on its own content. */
-th:nth-child(1), td:nth-child(1) { width: 22%; }
+   instead of each auto-sizing independently based on its own content.
+   Sums to 98%, not 100%, as slack against sub-pixel rounding. Actions (last
+   column) needs ~98px minimum to fit two 30px icon buttons + gap + padding,
+   which 6% (~73px) didn't - that shortfall, not rounding, was what forced a
+   horizontal scrollbar even after the totals were reduced. */
+th:nth-child(1), td:nth-child(1) { width: 19%; }
 th:nth-child(2), td:nth-child(2) { width: 7%; }
 th:nth-child(3), td:nth-child(3) { width: 9%; }
 th:nth-child(4), td:nth-child(4) { width: 11%; }
 th:nth-child(5), td:nth-child(5) { width: 9%; }
 th:nth-child(6), td:nth-child(6) { width: 10%; }
 th:nth-child(7), td:nth-child(7) { width: 11%; }
-th:nth-child(8), td:nth-child(8) { width: 15%; }
-th:nth-child(9), td:nth-child(9) { width: 6%; }
+th:nth-child(8), td:nth-child(8) { width: 13%; }
+th:nth-child(9), td:nth-child(9) { width: 9%; }
 
 /* Someone can be beaten by up to 9 people - keep that list to one line
    (full text on hover) instead of wrapping and inflating just that row's
@@ -2012,8 +2016,13 @@ function buildSweatRow(s, { usernameCounts }) {
   tr.dataset.username = s.username;
   tr.dataset.uuid = s.uuid;
 
+  // .user-cell is a flex row, but it must live on an inner div, not the <td>
+  // itself - a <td> with display:flex stops behaving as a real table cell
+  // for table-layout:fixed's column-width algorithm (it shrank to ~58px
+  // regardless of the 22% width rule, which the <th> above it still honored).
   const usernameTd = document.createElement("td");
-  usernameTd.classList.add('user-cell');
+  const userCellDiv = document.createElement("div");
+  userCellDiv.classList.add('user-cell');
 
   const avatarImg = document.createElement("img");
   avatarImg.classList.add('user-avatar');
@@ -2029,8 +2038,9 @@ function buildSweatRow(s, { usernameCounts }) {
   }
   usernameText.textContent = displayName;
 
-  usernameTd.appendChild(avatarImg);
-  usernameTd.appendChild(usernameText);
+  userCellDiv.appendChild(avatarImg);
+  userCellDiv.appendChild(usernameText);
+  usernameTd.appendChild(userCellDiv);
   tr.appendChild(usernameTd);
 
   const starTd = document.createElement("td");
@@ -2066,24 +2076,27 @@ function buildSweatRow(s, { usernameCounts }) {
   beatenByTd.title = beatenByText; // full list on hover when truncated
   tr.appendChild(beatenByTd);
 
+  // Same reasoning as .user-cell above: flex row lives on an inner div, not the <td>.
   const actionsTd = document.createElement("td");
-  actionsTd.style.display = "flex";
-  actionsTd.style.gap = "6px";
+  const actionsInner = document.createElement("div");
+  actionsInner.style.display = "flex";
+  actionsInner.style.gap = "6px";
 
   const editBtn = document.createElement("button");
   editBtn.className = "icon-btn edit";
   editBtn.title = "Edit";
   editBtn.textContent = "✎";
   editBtn.addEventListener("click", (e) => { e.stopPropagation(); openEditModal(s); });
-  actionsTd.appendChild(editBtn);
+  actionsInner.appendChild(editBtn);
 
   const removeBtn = document.createElement("button");
   removeBtn.className = "icon-btn danger";
   removeBtn.title = "Remove";
   removeBtn.textContent = "✖";
   removeBtn.addEventListener("click", (e) => { e.stopPropagation(); removeSweat(s._id); });
-  actionsTd.appendChild(removeBtn);
+  actionsInner.appendChild(removeBtn);
 
+  actionsTd.appendChild(actionsInner);
   tr.appendChild(actionsTd);
 
   return tr;

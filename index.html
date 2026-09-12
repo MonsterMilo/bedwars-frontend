@@ -501,7 +501,8 @@ input:focus {
 .stat-hero.kdr .stat-hero-value { color: var(--gold); }
 .stat-hero.bblr .stat-hero-value { color: var(--good); }
 
-#statsUrchin {
+/* Shared by the Urchin and Seraph tag panels - same layout, different data source. */
+.stats-tag-panel {
   grid-column: 1 / -1;
   padding: 10px 14px;
   border-radius: var(--radius-s);
@@ -509,14 +510,14 @@ input:focus {
   background: rgba(255,255,255,0.02);
 }
 
-.urchin-summary-row {
+.tag-panel-summary-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-#statUrchin {
+#statUrchin, #statSeraph {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -547,7 +548,7 @@ input:focus {
   color: var(--text-dim);
 }
 
-#statsUrchin .stat-hero-label { margin-bottom: 0; }
+.stats-tag-panel .stat-hero-label { margin-bottom: 0; }
 
 /* Toolbar (search + filters + view toggle) */
 .toolbar {
@@ -1298,12 +1299,20 @@ tbody tr:hover .user-cell span {
               <div class="stat-hero-sub"><span id="statBeds">0</span>B &middot; <span id="statBedsLost">0</span>BL</div>
             </div>
 
-            <div id="statsUrchin">
-              <div class="urchin-summary-row">
+            <div id="statsUrchin" class="stats-tag-panel">
+              <div class="tag-panel-summary-row">
                 <div class="stat-hero-label">Urchin Tags</div>
                 <div class="stat-hero-value" id="statUrchin">None</div>
               </div>
               <div id="statUrchinReason" class="urchin-reason-text" hidden></div>
+            </div>
+
+            <div id="statsSeraph" class="stats-tag-panel">
+              <div class="tag-panel-summary-row">
+                <div class="stat-hero-label">Seraph Tags</div>
+                <div class="stat-hero-value" id="statSeraph">None</div>
+              </div>
+              <div id="statSeraphReason" class="urchin-reason-text" hidden></div>
             </div>
           </div>
         </div>
@@ -1423,6 +1432,11 @@ tbody tr:hover .user-cell span {
         <div class="modal-tags-label">Urchin Tags</div>
         <div id="modalTags" class="modal-tags-row">Checking...</div>
         <div id="modalTagsReason" class="urchin-reason-text" hidden></div>
+      </div>
+      <div class="modal-tags-section">
+        <div class="modal-tags-label">Seraph Tags</div>
+        <div id="modalSeraphTags" class="modal-tags-row">Checking...</div>
+        <div id="modalSeraphTagsReason" class="urchin-reason-text" hidden></div>
       </div>
     </div>
   </div>
@@ -1563,6 +1577,8 @@ const statKDR = document.getElementById('statKDR');
 const statBBLR = document.getElementById('statBBLR');
 const statUrchin = document.getElementById('statUrchin');
 const statUrchinReason = document.getElementById('statUrchinReason');
+const statSeraph = document.getElementById('statSeraph');
+const statSeraphReason = document.getElementById('statSeraphReason');
 
 const usernameInput = document.getElementById('username');
 const cheatingCheckbox = document.getElementById('cheating');
@@ -1704,10 +1720,12 @@ fetchBtn.addEventListener('click', async () => {
   }
 });
 
-// Confirmed against Urchin's current official tag list (sniper, blatant_cheater,
-// closet_cheater, confirmed_cheater, replays_needed, caution) - snake_case to
-// Title Case covers all of them, so no per-type mapping is needed.
-function formatUrchinTagType(tagType) {
+// Shared by Urchin and Seraph tag rendering. Confirmed against Urchin's
+// current official tag list (sniper, blatant_cheater, closet_cheater,
+// confirmed_cheater, replays_needed, caution) - snake_case to Title Case
+// covers all of them, so no per-type mapping is needed. Also fine for
+// Seraph's report_type strings (e.g. cheating_blatant, sniping_potential).
+function formatTagType(tagType) {
   return tagType
     .split('_')
     .map(w => w.charAt(0).toUpperCase() + w.slice(1))
@@ -1842,7 +1860,7 @@ async function fetchUrchinTags(username) {
     if (data.tags && data.tags.length > 0) {
       const tags = data.tags.map(tag => ({
         type: tag.type,
-        label: formatUrchinTagType(tag.type),
+        label: formatTagType(tag.type),
         reason: tag.reason || ""
       }));
       // A tagged "sniper" is always a cheater (the untagged "legit sniper"
@@ -1855,6 +1873,38 @@ async function fetchUrchinTags(username) {
   } catch (err) {
     console.warn("Failed to fetch Urchin tags:", err);
     return NONE_URCHIN_RESULT;
+  }
+}
+
+// Fetch Seraph tags from backend (by UUID, unlike Urchin's by-username lookup).
+// Every tag Seraph returns (blacklist/bot/annoylist alike) is a cheating
+// report regardless of its `verified` flag - verified just means a staff
+// member has personally confirmed it, not that it's a different category.
+const NONE_SERAPH_RESULT = { tags: [], isCheaterTagged: false };
+
+async function fetchSeraphTags(uuid) {
+  try {
+    const res = await fetch(`${backendBaseURL}/seraph/${uuid}`);
+    if (!res.ok) throw new Error("Seraph fetch failed");
+    const data = await res.json();
+
+    if (data.error) {
+      console.warn("Seraph unavailable for", uuid, "-", data.error);
+      return NONE_SERAPH_RESULT;
+    }
+
+    if (data.tags && data.tags.length > 0) {
+      const tags = data.tags.map(tag => ({
+        type: tag.type,
+        label: formatTagType(tag.type) + (tag.verified ? " (Verified)" : ""),
+        reason: tag.reason || ""
+      }));
+      return { tags, isCheaterTagged: true };
+    }
+    return NONE_SERAPH_RESULT;
+  } catch (err) {
+    console.warn("Failed to fetch Seraph tags:", err);
+    return NONE_SERAPH_RESULT;
   }
 }
 
@@ -1894,13 +1944,18 @@ async function fetchAndDisplayStats() {
     losses: data.losses,
   };
 
-  // Fetch Urchin tags
-  const urchinResult = await fetchUrchinTags(currentStats.username);
+  // Fetch Urchin + Seraph tags in parallel - two independent blacklist services
+  const [urchinResult, seraphResult] = await Promise.all([
+    fetchUrchinTags(currentStats.username),
+    fetchSeraphTags(currentUUID)
+  ]);
   currentStats.urchinTagsData = urchinResult.tags;
+  currentStats.seraphTagsData = seraphResult.tags;
 
-  // Auto-flag as Cheating when Urchin confirms it - only ever turns it on,
-  // never off, so it doesn't undo a flag someone set manually for other reasons.
-  if (urchinResult.isCheaterTagged) {
+  // Auto-flag as Cheating when either service confirms it - only ever turns
+  // it on, never off, so it doesn't undo a flag someone set manually for
+  // other reasons.
+  if (urchinResult.isCheaterTagged || seraphResult.isCheaterTagged) {
     cheatingCheckbox.checked = true;
   }
 
@@ -2034,6 +2089,7 @@ function updateStatsDisplay(stats) {
   statBBLR.textContent = stats.bblr.toFixed(2);
 
   renderUrchinTagBadges(statUrchin, statUrchinReason, stats.urchinTagsData || []);
+  renderUrchinTagBadges(statSeraph, statSeraphReason, stats.seraphTagsData || []);
 
   statsDisplay.style.display = "flex";
 }
@@ -2513,6 +2569,8 @@ const modalStats = document.getElementById("modalStats");
 const modalSkin = document.getElementById("modalSkin");
 const modalTags = document.getElementById("modalTags");
 const modalTagsReason = document.getElementById("modalTagsReason");
+const modalSeraphTags = document.getElementById("modalSeraphTags");
+const modalSeraphTagsReason = document.getElementById("modalSeraphTagsReason");
 const closeModal = document.getElementById("closeModal");
 
 // click on a player row/card (table row or bounty card, both carry data-username)
@@ -2534,11 +2592,14 @@ document.addEventListener("click", async (e) => {
   modalStats.textContent = "Fetching live stats...";
   modalTags.textContent = "Checking...";
   modalTagsReason.hidden = true;
+  modalSeraphTags.textContent = "Checking...";
+  modalSeraphTagsReason.hidden = true;
 
   if (!uuid) {
     modalUsername.textContent = username;
     modalStats.textContent = "Missing UUID for this player.";
     modalTags.textContent = "None";
+    modalSeraphTags.textContent = "None";
     return;
   }
 
@@ -2573,15 +2634,20 @@ document.addEventListener("click", async (e) => {
       <div class="modal-stat-tile stat-wins"><div class="modal-stat-label">Wins</div><div class="modal-stat-value">${data.wins}</div></div>
     `;
 
-    // Re-check Urchin tags live on every open instead of using any stored
-    // value, same as the fetch-stats flow always re-fetches current stats.
-    const urchinResult = await fetchUrchinTags(currentName);
+    // Re-check Urchin + Seraph tags live on every open instead of using any
+    // stored value, same as the fetch-stats flow always re-fetches current stats.
+    const [urchinResult, seraphResult] = await Promise.all([
+      fetchUrchinTags(currentName),
+      fetchSeraphTags(uuid)
+    ]);
     if (modal.dataset.activeUuid !== uuid) return;
     renderUrchinTagBadges(modalTags, modalTagsReason, urchinResult.tags);
+    renderUrchinTagBadges(modalSeraphTags, modalSeraphTagsReason, seraphResult.tags);
   } catch (err) {
     if (modal.dataset.activeUuid === uuid) {
       modalStats.textContent = "Failed to load stats.";
       modalTags.textContent = "Unavailable";
+      modalSeraphTags.textContent = "Unavailable";
     }
   }
 });

@@ -961,7 +961,7 @@ tbody tr:hover .user-cell span {
   background: rgba(14,18,28,0.94);
   padding: 26px 28px;
   border-radius: var(--radius-l);
-  width: 380px;
+  width: 440px;
   max-width: 100%;
   color: var(--text);
   box-shadow: 0 0 30px rgba(0,217,255,0.25), 0 20px 60px rgba(0,0,0,0.6);
@@ -1052,12 +1052,31 @@ tbody tr:hover .user-cell span {
 }
 
 #modalTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-size: 0.75em;
   letter-spacing: 1.4px;
   color: var(--text-faint);
   margin: 0 0 18px;
   text-transform: uppercase;
+}
+
+.modal-live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--good);
+  margin-right: 7px;
+  box-shadow: 0 0 6px var(--good);
+  animation: livePulse 1.6s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
 .modal-body { display: flex; gap: 18px; align-items: center; justify-content: center; }
@@ -1072,19 +1091,64 @@ tbody tr:hover .user-cell span {
   flex-shrink: 0;
 }
 
-#modalStats { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
-
-.modal-stat {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: var(--radius-s);
-  background: rgba(0,217,255,0.05);
-  border: 1px solid var(--border);
+.modal-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
-.modal-stat span { color: var(--text-dim); font-size: 0.85em; font-weight: 600; }
-.modal-stat strong { color: var(--accent); font-size: 1.05em; text-shadow: 0 0 8px rgba(0,217,255,0.5); }
+
+.modal-stat-tile {
+  padding: 10px 8px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  text-align: center;
+}
+
+.modal-stat-label {
+  font-size: 0.62em;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 3px;
+}
+
+.modal-stat-value { font-size: 1.3em; font-weight: 800; line-height: 1.1; }
+
+.modal-stat-tile.stat-star .modal-stat-value { color: var(--gold); text-shadow: 0 0 8px rgba(255,209,102,0.5); }
+.modal-stat-tile.stat-fkdr .modal-stat-value { color: var(--accent-2); text-shadow: 0 0 8px rgba(168,85,247,0.5); }
+.modal-stat-tile.stat-wlr .modal-stat-value { color: var(--neutral); text-shadow: 0 0 8px rgba(79,195,247,0.5); }
+.modal-stat-tile.stat-finals .modal-stat-value { color: var(--bad); text-shadow: 0 0 8px rgba(255,92,114,0.5); }
+.modal-stat-tile.stat-wins .modal-stat-value { color: var(--good); text-shadow: 0 0 8px rgba(52,224,161,0.5); }
+
+.modal-tags-section {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+
+.modal-tags-label {
+  font-size: 0.68em;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+
+.modal-tags-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--text-dim);
+  font-size: 0.85em;
+}
 
 /* Responsive */
 @media (max-width: 620px) {
@@ -1305,10 +1369,15 @@ tbody tr:hover .user-cell span {
     <div class="modal-content">
       <span id="closeModal" class="modal-close">&times;</span>
       <h2 id="modalUsername">Loading...</h2>
-      <div id="modalTitle">Current Stats</div>
+      <div id="modalTitle"><span class="modal-live-dot"></span>Live Stats</div>
       <div class="modal-body">
         <img id="modalSkin" src="" />
-        <div id="modalStats"></div>
+        <div id="modalStats" class="modal-stats-grid"></div>
+      </div>
+      <div class="modal-tags-section">
+        <div class="modal-tags-label">Urchin Tags</div>
+        <div id="modalTags" class="modal-tags-row">Checking...</div>
+        <div id="modalTagsReason" class="urchin-reason-text" hidden></div>
       </div>
     </div>
   </div>
@@ -1832,15 +1901,15 @@ function getHypixelRank(player) {
   }
 }
 
-// Renders each Urchin tag as an icon+label badge. Built via DOM APIs rather
-// than innerHTML since tag data comes from a third-party service (Coral),
-// not something we fully control.
-function renderUrchinTags(tagsData) {
-  statUrchin.innerHTML = "";
+// Renders each Urchin tag as an icon+label badge into any container. Built via
+// DOM APIs rather than innerHTML since tag data comes from a third-party
+// service (Coral), not something we fully control.
+function renderUrchinTagBadges(container, reasonEl, tagsData, emptyText = "None") {
+  container.innerHTML = "";
 
   if (!tagsData || tagsData.length === 0) {
-    statUrchin.textContent = "None";
-    statUrchinReason.hidden = true;
+    container.textContent = emptyText;
+    if (reasonEl) reasonEl.hidden = true;
     return;
   }
 
@@ -1861,15 +1930,17 @@ function renderUrchinTags(tagsData) {
     labelSpan.textContent = tag.label;
     badge.appendChild(labelSpan);
 
-    statUrchin.appendChild(badge);
+    container.appendChild(badge);
   });
 
   const reasonText = tagsData.map(t => t.reason).filter(Boolean).join(" • ");
-  if (reasonText) {
-    statUrchinReason.textContent = reasonText;
-    statUrchinReason.hidden = false;
-  } else {
-    statUrchinReason.hidden = true;
+  if (reasonEl) {
+    if (reasonText) {
+      reasonEl.textContent = reasonText;
+      reasonEl.hidden = false;
+    } else {
+      reasonEl.hidden = true;
+    }
   }
 }
 
@@ -1902,7 +1973,7 @@ function updateStatsDisplay(stats) {
   statKDR.textContent = stats.kdr.toFixed(2);
   statBBLR.textContent = stats.bblr.toFixed(2);
 
-  renderUrchinTags(stats.urchinTagsData || []);
+  renderUrchinTagBadges(statUrchin, statUrchinReason, stats.urchinTagsData || []);
 
   statsDisplay.style.display = "flex";
 }
@@ -2375,6 +2446,8 @@ const modal = document.getElementById("playerModal");
 const modalUsername = document.getElementById("modalUsername");
 const modalStats = document.getElementById("modalStats");
 const modalSkin = document.getElementById("modalSkin");
+const modalTags = document.getElementById("modalTags");
+const modalTagsReason = document.getElementById("modalTagsReason");
 const closeModal = document.getElementById("closeModal");
 
 // click on a player row/card (table row or bounty card, both carry data-username)
@@ -2387,19 +2460,27 @@ document.addEventListener("click", async (e) => {
   const username = item.dataset.username;
   const uuid = item.dataset.uuid;
 
+  // Stamp which player this modal open is for, so a slower in-flight request
+  // from a previous click can't clobber a newer one if the user clicks fast.
+  modal.dataset.activeUuid = uuid || "";
+
   modal.style.display = "flex";
   modalUsername.textContent = "Loading...";
   modalStats.textContent = "Fetching live stats...";
+  modalTags.textContent = "Checking...";
+  modalTagsReason.hidden = true;
 
   if (!uuid) {
     modalUsername.textContent = username;
     modalStats.textContent = "Missing UUID for this player.";
+    modalTags.textContent = "None";
     return;
   }
 
   try {
     const res = await fetch(`${backendBaseURL}/stats/uuid/${uuid}`);
     const data = await res.json();
+    if (modal.dataset.activeUuid !== uuid) return;
 
     const currentName = data.currentName;
     const originalName = data.originalName;
@@ -2420,14 +2501,23 @@ document.addEventListener("click", async (e) => {
     modalSkin.src = `https://visage.surgeplay.com/full/256/${uuid}`;
 
     modalStats.innerHTML = `
-      <div class="modal-stat"><span>Stars</span><strong>${data.star}</strong></div>
-      <div class="modal-stat"><span>FKDR</span><strong>${data.fkdr.toFixed(2)}</strong></div>
-      <div class="modal-stat"><span>WLR</span><strong>${data.wlr.toFixed(2)}</strong></div>
-      <div class="modal-stat"><span>Finals</span><strong>${data.finals}</strong></div>
-      <div class="modal-stat"><span>Wins</span><strong>${data.wins}</strong></div>
+      <div class="modal-stat-tile stat-star" style="grid-column:1/-1"><div class="modal-stat-label">Star</div><div class="modal-stat-value">${data.star}</div></div>
+      <div class="modal-stat-tile stat-fkdr"><div class="modal-stat-label">FKDR</div><div class="modal-stat-value">${data.fkdr.toFixed(2)}</div></div>
+      <div class="modal-stat-tile stat-wlr"><div class="modal-stat-label">WLR</div><div class="modal-stat-value">${data.wlr.toFixed(2)}</div></div>
+      <div class="modal-stat-tile stat-finals"><div class="modal-stat-label">Finals</div><div class="modal-stat-value">${data.finals}</div></div>
+      <div class="modal-stat-tile stat-wins"><div class="modal-stat-label">Wins</div><div class="modal-stat-value">${data.wins}</div></div>
     `;
+
+    // Re-check Urchin tags live on every open instead of using any stored
+    // value, same as the fetch-stats flow always re-fetches current stats.
+    const urchinResult = await fetchUrchinTags(currentName);
+    if (modal.dataset.activeUuid !== uuid) return;
+    renderUrchinTagBadges(modalTags, modalTagsReason, urchinResult.tags);
   } catch (err) {
-    modalStats.textContent = "Failed to load stats.";
+    if (modal.dataset.activeUuid === uuid) {
+      modalStats.textContent = "Failed to load stats.";
+      modalTags.textContent = "Unavailable";
+    }
   }
 });
 

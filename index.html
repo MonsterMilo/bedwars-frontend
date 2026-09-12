@@ -52,7 +52,14 @@ body {
   padding: 32px 20px 70px;
   line-height: 1.45;
   overflow-x: hidden;
+  scrollbar-color: var(--border-strong) var(--panel);
+  scrollbar-width: thin;
 }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--panel); }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 #nebula {
   position: fixed;
@@ -213,6 +220,9 @@ h1 {
 }
 .btn-primary:active:not(:disabled) { transform: translateY(0); }
 
+.add-sweat-row { display: flex; justify-content: center; margin-top: 20px; }
+.add-sweat-row .btn { width: 200px; }
+
 .btn-ghost {
   background: rgba(255,255,255,0.03);
   color: var(--text-dim);
@@ -251,6 +261,7 @@ h1 {
   background: var(--accent-soft);
   transform: scale(1.08);
 }
+.icon-btn:active { transform: scale(0.92); }
 
 /* Card base */
 .card {
@@ -382,6 +393,7 @@ input:focus {
 }
 
 .chip:hover span { border-color: var(--border-strong); }
+.chip:active span { transform: scale(0.95); }
 
 /* Status */
 #status {
@@ -510,6 +522,7 @@ input:focus {
   gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  font-size: 1em;
 }
 
 .urchin-tag-badge {
@@ -643,6 +656,7 @@ input:focus {
   color: #04050a;
   box-shadow: 0 4px 14px rgba(0,217,255,0.3);
 }
+.view-btn:active { transform: scale(0.94); }
 
 /* Leaderboard view */
 /* Grid instead of flex-wrap so a 9-person roster lands evenly (3x3) instead
@@ -675,6 +689,7 @@ input:focus {
   transition: all 0.2s var(--ease);
 }
 .leaderboard-chip:hover { border-color: var(--border-strong); }
+.leaderboard-chip:active { transform: scale(0.97); }
 .leaderboard-chip.active {
   border-color: var(--border-strong);
   background: var(--accent-soft);
@@ -723,6 +738,15 @@ input:focus {
   gap: 16px;
 }
 
+/* Switching between Grid/Table/Leaderboard toggles [hidden], which drops the
+   element from rendering entirely - so a plain entrance animation here
+   naturally replays every time a view becomes visible again, with no extra
+   JS needed. Filtering/searching never toggles [hidden] on these containers
+   (only their inner content changes), so it doesn't replay on every keystroke. */
+#cardGrid, #tableWrap, #leaderboardWrap {
+  animation: fadeSlideIn 0.35s var(--ease);
+}
+
 .empty-state {
   max-width: 1200px;
   margin: 0 auto 40px;
@@ -730,7 +754,13 @@ input:focus {
   text-align: center;
   color: var(--text-faint);
   font-weight: 600;
+  grid-column: 1 / -1;
 }
+
+/* Shown briefly while the initial sweat list loads - most visible right after
+   the backend's free-tier host has been idle and needs to spin back up. */
+@keyframes loadingPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
+.loading-state { animation: loadingPulse 1.4s ease-in-out infinite; }
 
 .sweat-card {
   position: relative;
@@ -748,6 +778,7 @@ input:focus {
   border-color: var(--border-strong);
   box-shadow: 0 14px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,217,255,0.15);
 }
+.sweat-card:active { transform: translateY(-1px) scale(0.99); }
 
 @keyframes cardIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -925,7 +956,11 @@ th.sort-active .sort-icon { opacity: 1; color: var(--accent); }
 
 .user-cell span { transition: color 0.2s ease, text-shadow 0.2s ease; }
 
-tbody tr { transition: background 0.2s var(--ease); cursor: pointer; }
+tbody tr {
+  transition: background 0.2s var(--ease);
+  cursor: pointer;
+  animation: fadeSlideIn 0.25s var(--ease) both;
+}
 
 tbody tr:hover { background: rgba(0, 217, 255, 0.05); }
 
@@ -1118,6 +1153,7 @@ tbody tr:hover .user-cell span {
 
 .modal-stat-value { font-size: 1.3em; font-weight: 800; line-height: 1.1; }
 
+.modal-stat-tile.stat-star { grid-column: 1 / -1; }
 .modal-stat-tile.stat-star .modal-stat-value { color: var(--gold); text-shadow: 0 0 8px rgba(255,209,102,0.5); }
 .modal-stat-tile.stat-fkdr .modal-stat-value { color: var(--accent-2); text-shadow: 0 0 8px rgba(168,85,247,0.5); }
 .modal-stat-tile.stat-wlr .modal-stat-value { color: var(--neutral); text-shadow: 0 0 8px rgba(79,195,247,0.5); }
@@ -1163,6 +1199,15 @@ tbody tr:hover .user-cell span {
 
 @media (max-width: 480px) {
   .lookup-row { flex-direction: column; align-items: stretch; }
+}
+
+/* Turns off the perpetual ambient loops (nebula pulse, star twinkle, the modal's
+   "live" dot) for anyone with reduced-motion enabled at the OS/browser level -
+   also cuts a meaningful amount of idle CPU work from the 1400 always-animating
+   star elements. One-shot entrance transitions (fades on view switch, cards,
+   modals) are left alone since they're brief and convey real state changes. */
+@media (prefers-reduced-motion: reduce) {
+  #nebula, .star, .modal-live-dot { animation: none !important; }
 }
 
 </style>
@@ -1256,7 +1301,7 @@ tbody tr:hover .user-cell span {
             <div id="statsUrchin">
               <div class="urchin-summary-row">
                 <div class="stat-hero-label">Urchin Tags</div>
-                <div class="stat-hero-value" id="statUrchin" style="font-size:1em;">None</div>
+                <div class="stat-hero-value" id="statUrchin">None</div>
               </div>
               <div id="statUrchinReason" class="urchin-reason-text" hidden></div>
             </div>
@@ -1265,8 +1310,8 @@ tbody tr:hover .user-cell span {
       </div>
     </div>
 
-    <div style="display:flex; justify-content:center; margin-top:20px;">
-      <button id="addSweatBtn" class="btn btn-primary" style="width:200px;">Add Sweat</button>
+    <div class="add-sweat-row">
+      <button id="addSweatBtn" class="btn btn-primary">Add Sweat</button>
     </div>
   </div>
 
@@ -1519,6 +1564,10 @@ const statBBLR = document.getElementById('statBBLR');
 const statUrchin = document.getElementById('statUrchin');
 const statUrchinReason = document.getElementById('statUrchinReason');
 
+const usernameInput = document.getElementById('username');
+const cheatingCheckbox = document.getElementById('cheating');
+const boostingCheckbox = document.getElementById('boosting');
+
 const filterFkdr = document.getElementById('minFkdr');
 const filterIndex = document.getElementById('minIndex');
 const filterStars = document.getElementById('minStars');
@@ -1558,6 +1607,8 @@ const BEATEN_BY = {
   key:    { label: "Key",    initials: "Ky", color: "#facc15" },
 };
 const BEATEN_BY_KEYS = Object.keys(BEATEN_BY);
+const beatenByCheckboxes = {};
+BEATEN_BY_KEYS.forEach(k => { beatenByCheckboxes[k] = document.getElementById(k); });
 
 // Urchin tag type -> icon (embedded as data URIs, provided by the user).
 const URCHIN_TAG_ICONS = {
@@ -1586,6 +1637,11 @@ const EDIT_NUMERIC_FIELDS = [
   { key: "bedsLost", label: "Beds Lost", step: "1" },
 ];
 
+// Cached once the edit modal's inputs/chips exist, so opening/saving an edit
+// doesn't repeat 20 getElementById lookups every time.
+const editStatInputs = {};
+const editRosterCheckboxes = {};
+
 // Build the edit modal's stat inputs and roster chips once at startup -
 // field labels/keys come from the constants above, not user data, so
 // innerHTML here is safe.
@@ -1597,11 +1653,13 @@ function initEditModal() {
       <input type="number" id="edit_${f.key}" step="${f.step}" />
     </div>
   `).join("");
+  EDIT_NUMERIC_FIELDS.forEach(f => { editStatInputs[f.key] = document.getElementById(`edit_${f.key}`); });
 
   const roster = document.getElementById("editBeatenByGroup");
   roster.innerHTML = BEATEN_BY_KEYS.map(k => `
     <label class="chip"><input type="checkbox" id="edit_${k}" /><span>${BEATEN_BY[k].label}</span></label>
   `).join("");
+  BEATEN_BY_KEYS.forEach(k => { editRosterCheckboxes[k] = document.getElementById(`edit_${k}`); });
 }
 initEditModal();
 
@@ -1620,8 +1678,10 @@ function setViewMode(mode) {
   renderTable();
 }
 
-// Load sweats
+// Load sweats. Shows a loading placeholder first since the backend runs on a
+// free-tier host that can take several seconds to spin back up after being idle.
 async function loadSweats() {
+  cardGrid.innerHTML = '<div class="empty-state loading-state">Loading sweats&hellip;</div>';
   try {
     const res = await fetch(`${backendBaseURL}/sweats?limit=1000`);
     if (!res.ok) throw new Error("Failed to fetch sweats");
@@ -1629,6 +1689,7 @@ async function loadSweats() {
     renderTable();
   } catch (err) {
     status.textContent = "Error loading sweats: " + err.message;
+    cardGrid.innerHTML = '<div class="empty-state">Couldn\'t load sweats - try refreshing.</div>';
   }
 }
 
@@ -1655,9 +1716,9 @@ function formatUrchinTagType(tagType) {
 
 form.addEventListener('submit', async e => {
   e.preventDefault();
-  const username = document.getElementById('username').value.trim();
+  const username = usernameInput.value.trim();
   const beatenByValues = {};
-  BEATEN_BY_KEYS.forEach(k => { beatenByValues[k] = document.getElementById(k).checked; });
+  BEATEN_BY_KEYS.forEach(k => { beatenByValues[k] = beatenByCheckboxes[k].checked; });
   const anyBeatenBySelected = BEATEN_BY_KEYS.some(k => beatenByValues[k]);
 
   if (!username) {
@@ -1675,14 +1736,14 @@ form.addEventListener('submit', async e => {
   addSweatBtn.disabled = true;
 
   try {
-    if (!currentUUID || !currentStats || document.getElementById('username').value.trim().toLowerCase() !== currentStats.username.toLowerCase()) {
+    if (!currentUUID || !currentStats || usernameInput.value.trim().toLowerCase() !== currentStats.username.toLowerCase()) {
       await fetchAndDisplayStats();
     }
 
     // Read after fetchAndDisplayStats() so an auto-checked "Cheating" box
     // (set when a live Urchin cheater tag was found) is actually captured.
-    const cheating = document.getElementById('cheating').checked;
-    const boosting = document.getElementById('boosting').checked;
+    const cheating = cheatingCheckbox.checked;
+    const boosting = boostingCheckbox.checked;
 
     const todayDate = new Date().toISOString();
     const newSweat = {
@@ -1798,7 +1859,6 @@ async function fetchUrchinTags(username) {
 }
 
 async function fetchAndDisplayStats() {
-  const usernameInput = document.getElementById('username');
   const usernameRaw = usernameInput.value.trim();
   if (!usernameRaw) {
     throw new Error("Please enter a username first.");
@@ -1841,7 +1901,7 @@ async function fetchAndDisplayStats() {
   // Auto-flag as Cheating when Urchin confirms it - only ever turns it on,
   // never off, so it doesn't undo a flag someone set manually for other reasons.
   if (urchinResult.isCheaterTagged) {
-    document.getElementById('cheating').checked = true;
+    cheatingCheckbox.checked = true;
   }
 
   updateStatsDisplay(currentStats);
@@ -2036,21 +2096,24 @@ function getProcessedSweats() {
   // Minecraft username between two "add sweat" events and still be the same
   // person, so dedupe/count by UUID when we have one, falling back to the
   // username only for older entries that were saved without a UUID.
+  // Each sweat's identity key is computed once here and reused below for the
+  // dedupe filter, rather than recalculating it in a second pass over the list.
   const usernameCounts = {};
+  const keyFor = new Map();
   filteredSweats.forEach(s => {
     const key = identityKeyFor(s);
+    keyFor.set(s, key);
     usernameCounts[key] = (usernameCounts[key] || 0) + 1;
   });
 
   if (hideDuplicatesCheckbox && hideDuplicatesCheckbox.checked) {
-    const uniqueMap = new Map();
-    filteredSweats.forEach(s => {
-      const key = identityKeyFor(s);
-      if (!uniqueMap.has(key)) {
-        uniqueMap.set(key, s);
-      }
+    const seen = new Set();
+    filteredSweats = filteredSweats.filter(s => {
+      const key = keyFor.get(s);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
     });
-    filteredSweats = Array.from(uniqueMap.values());
   }
 
   if (sortField) {
@@ -2353,6 +2416,8 @@ const editStatus = document.getElementById("editStatus");
 const cancelEditBtn = document.getElementById("cancelEditBtn");
 const saveEditBtn = document.getElementById("saveEditBtn");
 const closeEditModal = document.getElementById("closeEditModal");
+const editCheatingCheckbox = document.getElementById("editCheating");
+const editBoostingCheckbox = document.getElementById("editBoosting");
 let editingSweatId = null;
 
 function openEditModal(s) {
@@ -2360,13 +2425,13 @@ function openEditModal(s) {
   editStatus.textContent = "";
 
   EDIT_NUMERIC_FIELDS.forEach(f => {
-    document.getElementById(`edit_${f.key}`).value = s[f.key];
+    editStatInputs[f.key].value = s[f.key];
   });
   BEATEN_BY_KEYS.forEach(k => {
-    document.getElementById(`edit_${k}`).checked = !!s[k];
+    editRosterCheckboxes[k].checked = !!s[k];
   });
-  document.getElementById("editCheating").checked = !!s.cheating;
-  document.getElementById("editBoosting").checked = !!s.boosting;
+  editCheatingCheckbox.checked = !!s.cheating;
+  editBoostingCheckbox.checked = !!s.boosting;
 
   editModal.style.display = "flex";
 }
@@ -2385,7 +2450,7 @@ saveEditBtn.addEventListener("click", async () => {
   const payload = {};
   let hasInvalid = false;
   EDIT_NUMERIC_FIELDS.forEach(f => {
-    const raw = document.getElementById(`edit_${f.key}`).value;
+    const raw = editStatInputs[f.key].value;
     const num = parseFloat(raw);
     if (raw.trim() === "" || Number.isNaN(num)) { hasInvalid = true; return; }
     payload[f.key] = num;
@@ -2396,9 +2461,9 @@ saveEditBtn.addEventListener("click", async () => {
     return;
   }
 
-  BEATEN_BY_KEYS.forEach(k => { payload[k] = document.getElementById(`edit_${k}`).checked; });
-  payload.cheating = document.getElementById("editCheating").checked;
-  payload.boosting = document.getElementById("editBoosting").checked;
+  BEATEN_BY_KEYS.forEach(k => { payload[k] = editRosterCheckboxes[k].checked; });
+  payload.cheating = editCheatingCheckbox.checked;
+  payload.boosting = editBoostingCheckbox.checked;
 
   saveEditBtn.disabled = true;
   editStatus.textContent = "";
@@ -2501,7 +2566,7 @@ document.addEventListener("click", async (e) => {
     modalSkin.src = `https://visage.surgeplay.com/full/256/${uuid}`;
 
     modalStats.innerHTML = `
-      <div class="modal-stat-tile stat-star" style="grid-column:1/-1"><div class="modal-stat-label">Star</div><div class="modal-stat-value">${data.star}</div></div>
+      <div class="modal-stat-tile stat-star"><div class="modal-stat-label">Star</div><div class="modal-stat-value">${data.star}</div></div>
       <div class="modal-stat-tile stat-fkdr"><div class="modal-stat-label">FKDR</div><div class="modal-stat-value">${data.fkdr.toFixed(2)}</div></div>
       <div class="modal-stat-tile stat-wlr"><div class="modal-stat-label">WLR</div><div class="modal-stat-value">${data.wlr.toFixed(2)}</div></div>
       <div class="modal-stat-tile stat-finals"><div class="modal-stat-label">Finals</div><div class="modal-stat-value">${data.finals}</div></div>

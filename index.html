@@ -758,6 +758,25 @@ input:focus {
   grid-column: 1 / -1;
 }
 
+.pagination {
+  max-width: 1200px;
+  margin: 8px auto 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.pagination-label {
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--text-dim);
+  min-width: 100px;
+  text-align: center;
+}
+
+.icon-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+
 /* Shown briefly while the initial sweat list loads - most visible right after
    the backend's free-tier host has been idle and needs to spin back up. */
 @keyframes loadingPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
@@ -1394,6 +1413,12 @@ tbody tr:hover .user-cell span {
     </table>
   </div>
 
+  <div id="gridTablePagination" class="pagination" hidden>
+    <button type="button" class="icon-btn page-prev" title="Previous page">&#8249;</button>
+    <span class="pagination-label"></span>
+    <button type="button" class="icon-btn page-next" title="Next page">&#8250;</button>
+  </div>
+
   <div id="leaderboardWrap" hidden>
     <div id="leaderboardRanking" class="leaderboard-ranking"></div>
     <h3 id="leaderboardPersonTitle" class="leaderboard-person-title"></h3>
@@ -1416,6 +1441,11 @@ tbody tr:hover .user-cell span {
       </table>
     </div>
     <div id="leaderboardEmptyState" class="empty-state" hidden>This person hasn't beaten anyone matching the current filters.</div>
+    <div id="leaderboardPagination" class="pagination" hidden>
+      <button type="button" class="icon-btn page-prev" title="Previous page">&#8249;</button>
+      <span class="pagination-label"></span>
+      <button type="button" class="icon-btn page-next" title="Next page">&#8250;</button>
+    </div>
   </div>
 
   <!-- PLAYER MODAL -->
@@ -1593,6 +1623,9 @@ const cheatersOnlyCheckbox = document.getElementById('cheatersOnly');
 const boostersOnlyCheckbox = document.getElementById('boostersOnly');
 const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
+const gridTablePagination = document.getElementById('gridTablePagination');
+const leaderboardPagination = document.getElementById('leaderboardPagination');
+
 const addSweatBtn = document.getElementById('addSweatBtn');
 
 addSweatBtn.addEventListener('click', () => {
@@ -1606,6 +1639,13 @@ let currentUUID = null;
 let currentStats = null;
 let currentFilter = "";
 let viewMode = "grid";
+
+// Pagination - with the list now in the hundreds, rendering every matching
+// row/card at once means hundreds of DOM nodes (and avatar image requests)
+// on every render. Shared across Grid/Table/Leaderboard; each view clamps
+// and resets it against its own result count.
+const PAGE_SIZE = 30;
+let currentPage = 1;
 
 // Single source of truth for the "Beaten By" roster: id must match the
 // checkbox id (and the backend's schema field), label is the display name
@@ -1685,6 +1725,7 @@ viewLeaderboardBtn.addEventListener('click', () => setViewMode('leaderboard'));
 
 function setViewMode(mode) {
   viewMode = mode;
+  currentPage = 1;
   viewGridBtn.classList.toggle('active', mode === 'grid');
   viewTableBtn.classList.toggle('active', mode === 'table');
   viewLeaderboardBtn.classList.toggle('active', mode === 'leaderboard');
@@ -1819,6 +1860,7 @@ const debouncedRenderTable = debounce(renderTable, 150);
 
 searchInput.addEventListener('input', () => {
   currentFilter = searchInput.value.trim().toLowerCase();
+  currentPage = 1;
   debouncedRenderTable();
 });
 
@@ -1832,15 +1874,16 @@ resetFiltersBtn.addEventListener('click', () => {
   hideDuplicatesCheckbox.checked = false;
   cheatersOnlyCheckbox.checked = false;
   boostersOnlyCheckbox.checked = false;
+  currentPage = 1;
   renderTable();
 });
 
 [cheatersOnlyCheckbox, boostersOnlyCheckbox].forEach(cb => {
-  cb.addEventListener('change', renderTable);
+  cb.addEventListener('change', () => { currentPage = 1; renderTable(); });
 });
 
 [filterFkdr, filterIndex, filterStars, filterDate].forEach(inp => {
-  inp.addEventListener('input', debouncedRenderTable);
+  inp.addEventListener('input', () => { currentPage = 1; debouncedRenderTable(); });
 });
 
 // Fetch Urchin tags from backend
@@ -2202,6 +2245,31 @@ function getProcessedSweats() {
   return { filteredSweats, usernameCounts };
 }
 
+// Slices a list down to the current page, clamping currentPage first in case
+// a filter/search change just shrank the result set out from under it.
+function paginate(list) {
+  const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  return { pageItems: list.slice(start, start + PAGE_SIZE), totalPages };
+}
+
+function updatePaginationControls(container, totalPages) {
+  container.hidden = totalPages <= 1;
+  container.querySelector('.pagination-label').textContent = `Page ${currentPage} of ${totalPages}`;
+  container.querySelector('.page-prev').disabled = currentPage <= 1;
+  container.querySelector('.page-next').disabled = currentPage >= totalPages;
+}
+
+[gridTablePagination, leaderboardPagination].forEach(container => {
+  container.querySelector('.page-prev').addEventListener('click', () => {
+    if (currentPage > 1) { currentPage--; renderTable(); }
+  });
+  container.querySelector('.page-next').addEventListener('click', () => {
+    currentPage++; renderTable();
+  });
+});
+
 // Renders only the currently active view - with hundreds of sweats, building
 // both the card grid and the table on every keystroke/filter change roughly
 // doubles the work for a view the user isn't even looking at. setViewMode()
@@ -2211,11 +2279,18 @@ function renderTable() {
 
   resultCount.textContent = filteredSweats.length;
   updateSortHeaders();
-  if (viewMode === "grid") {
-    renderCardGrid(filteredSweats, usernameCounts);
-  } else if (viewMode === "table") {
-    renderTableRows(filteredSweats, usernameCounts);
+
+  if (viewMode === "grid" || viewMode === "table") {
+    leaderboardPagination.hidden = true;
+    const { pageItems, totalPages } = paginate(filteredSweats);
+    if (viewMode === "grid") {
+      renderCardGrid(pageItems, usernameCounts);
+    } else {
+      renderTableRows(pageItems, usernameCounts);
+    }
+    updatePaginationControls(gridTablePagination, totalPages);
   } else {
+    gridTablePagination.hidden = true;
     renderLeaderboard(filteredSweats, usernameCounts);
   }
 }
@@ -2437,6 +2512,7 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   leaderboardRanking.querySelectorAll(".leaderboard-chip").forEach(btn => {
     btn.addEventListener("click", () => {
       leaderboardPerson = btn.dataset.person;
+      currentPage = 1; // switching people changes the result set entirely
       renderTable();
     });
   });
@@ -2446,10 +2522,12 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   const personSweats = filteredSweats.filter(s => s[leaderboardPerson]);
   leaderboardEmptyState.hidden = personSweats.length !== 0;
 
+  const { pageItems, totalPages } = paginate(personSweats);
   leaderboardTableBody.innerHTML = "";
-  personSweats.forEach(s => {
+  pageItems.forEach(s => {
     leaderboardTableBody.appendChild(buildSweatRow(s, { usernameCounts }));
   });
+  updatePaginationControls(leaderboardPagination, totalPages);
 }
 
 async function removeSweat(id) {
@@ -2552,12 +2630,13 @@ document.querySelectorAll("th.sortable").forEach(th => {
       sortField = field;
       sortAsc = true;
     }
+    currentPage = 1;
     renderTable();
   });
 });
 
 if (hideDuplicatesCheckbox) {
-  hideDuplicatesCheckbox.addEventListener('change', renderTable);
+  hideDuplicatesCheckbox.addEventListener('change', () => { currentPage = 1; renderTable(); });
 }
 
 // Load all sweats on startup

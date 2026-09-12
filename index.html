@@ -1644,7 +1644,7 @@ let viewMode = "grid";
 // row/card at once means hundreds of DOM nodes (and avatar image requests)
 // on every render. Shared across Grid/Table/Leaderboard; each view clamps
 // and resets it against its own result count.
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 32;
 let currentPage = 1;
 
 // Single source of truth for the "Beaten By" roster: id must match the

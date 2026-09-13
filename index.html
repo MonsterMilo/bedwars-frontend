@@ -1524,28 +1524,33 @@ html[data-theme="casefiles"] .chip span::before {
   position: absolute;
   left: 10px;
   top: 50%;
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   transform: translateY(-50%);
   border: 1.5px solid var(--text-dim);
   background: var(--panel);
-  border-radius: 1px;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 2px rgba(42,36,28,0.18);
   transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
 }
+/* A pen-drawn tick (two rotated border edges) instead of a Unicode glyph -
+   crisper at this size and not dependent on the font's own check glyph.
+   Revealed left-to-right via clip-path, like the stroke itself is being
+   drawn on the checklist, rather than just popping into view. */
 html[data-theme="casefiles"] .chip span::after {
-  content: "\2713";
+  content: "";
   position: absolute;
-  left: 10px;
-  top: 50%;
-  width: 13px;
-  height: 13px;
-  line-height: 13px;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--panel);
-  transform: translateY(-50%) scale(0);
-  transition: transform 0.2s cubic-bezier(.34, 1.56, .64, 1);
+  left: 14.5px;
+  top: 44%;
+  width: 6px;
+  height: 10px;
+  border: solid var(--panel);
+  border-width: 0 2px 2px 0;
+  border-radius: 0 1px 1px 0;
+  transform: translateY(-50%) rotate(43deg);
+  transform-origin: center;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 0.28s ease-out 0.05s;
   pointer-events: none;
 }
 /* The base (Neon) rules also set color/border-color/background on the span
@@ -1565,7 +1570,7 @@ html[data-theme="casefiles"] .chip input:checked + span::before {
   border-color: var(--text);
 }
 html[data-theme="casefiles"] .chip input:checked + span::after {
-  transform: translateY(-50%) scale(1);
+  clip-path: inset(0 0 0 0);
 }
 html[data-theme="casefiles"] .chip.cheat-chip input:checked + span::before {
   background: var(--bad);

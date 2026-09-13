@@ -705,38 +705,32 @@ input:focus {
 }
 .view-btn:active { transform: scale(0.94); }
 
-/* Theme switch - same segmented-control look as the view toggle above, kept
-   separate since it lives in the hero rather than the results toolbar. New
-   themes just need a button here (data-theme-value) and a matching
-   [data-theme="..."] block below; the click handling in the page script
-   reads data-theme-value generically, no JS changes needed per theme. */
-.theme-toggle {
-  display: flex;
-  gap: 4px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 4px;
-}
-
-.theme-btn {
-  border: none;
-  background: transparent;
-  color: var(--text-dim);
+/* Theme switch - a dropdown rather than a segmented control since the list
+   is meant to grow; adding a theme is just one more <option value="..."> in
+   the markup and a matching [data-theme="..."] block below, no CSS or JS
+   changes needed here. Left with the browser's native appearance (so it
+   keeps a real dropdown arrow and native keyboard/touch handling) and only
+   the parts that are safe to restyle cross-browser - color, background,
+   border, padding, font - are touched. */
+.theme-select {
   font-family: inherit;
   font-weight: 700;
   font-size: 0.78em;
-  padding: 6px 12px;
+  color: var(--text-dim);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
   border-radius: 999px;
+  padding: 8px 14px;
   cursor: pointer;
   transition: all 0.2s var(--ease);
 }
-
-.theme-btn.active {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #04050a;
+.theme-select:hover { border-color: var(--border-strong); color: var(--text); }
+.theme-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
-.theme-btn:active { transform: scale(0.94); }
+.theme-select option { background: var(--panel); color: var(--text); }
 
 /* Leaderboard view */
 /* Grid instead of flex-wrap so a 9-person roster lands evenly (3x3) instead
@@ -1320,9 +1314,23 @@ tbody tr:hover .user-cell span {
    fonts. Each rule here mirrors one rule above it in the sheet.
    ============================================================ */
 
-html[data-theme="casefiles"] #nebula,
-html[data-theme="casefiles"] #starfield {
+html[data-theme="casefiles"] #nebula {
   display: none;
+}
+
+/* Reuse the same starfield elements instead of hiding them - same 1400
+   pre-placed dots, same twinkle keyframes (opacity only, so none of the
+   fill-mode/animation-override pitfalls noted on .sweat-card apply here),
+   just recolored to a warm tone and stripped of the neon glow so they read
+   as dust drifting through the light over the board instead of stars. */
+html[data-theme="casefiles"] .star {
+  background: var(--gold);
+  box-shadow: none;
+  opacity: 0.35;
+}
+html[data-theme="casefiles"] .star.bright {
+  opacity: 0.55;
+  box-shadow: none;
 }
 
 html[data-theme="casefiles"] body {
@@ -1374,6 +1382,15 @@ html[data-theme="casefiles"] .hero::before {
   background: radial-gradient(circle at 35% 30%, #e7c467, var(--gold) 60%, #7c6323 100%);
   box-shadow: 0 3px 4px rgba(0,0,0,0.35);
 }
+/* The base .hero-controls sits flush with .hero's own edge (top:18px;
+   right:0), which was invisible in Neon since .hero has no visible
+   background there - now that Case Files gives .hero a real card, that same
+   flush position runs the Admin Key button right up against the card's
+   border instead of sitting inside it. */
+html[data-theme="casefiles"] .hero-controls {
+  top: 22px;
+  right: 24px;
+}
 
 html[data-theme="casefiles"] .btn-primary {
   background: var(--text);
@@ -1405,13 +1422,26 @@ html[data-theme="casefiles"] .chip.boost-chip input:checked + span {
   background: rgba(184,145,47,0.14);
 }
 
-html[data-theme="casefiles"] .view-btn.active,
-html[data-theme="casefiles"] .theme-btn.active {
+html[data-theme="casefiles"] .view-btn.active {
   box-shadow: none;
   color: var(--panel);
 }
 html[data-theme="casefiles"] .leaderboard-chip.active {
   box-shadow: none;
+}
+
+/* File-tag look for the theme dropdown: square instead of pill, uppercase
+   typewriter label. */
+html[data-theme="casefiles"] .theme-select {
+  border-radius: 2px;
+  border: 1.5px solid var(--text-dim);
+  background: var(--panel-2);
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+html[data-theme="casefiles"] .theme-select:hover {
+  border-color: var(--text);
 }
 
 html[data-theme="casefiles"] #statsAvatar,
@@ -1506,10 +1536,10 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
     <h1>Bedwars Sweat Tracker</h1>
     <p id="credits">Developed by Milo &middot; Powered by Hypixel API</p>
     <div class="hero-controls">
-      <div class="theme-toggle" id="themeToggle" role="group" aria-label="Site theme">
-        <button type="button" class="theme-btn" data-theme-value="neon">Neon</button>
-        <button type="button" class="theme-btn" data-theme-value="casefiles">Case Files</button>
-      </div>
+      <select id="themeSelect" class="theme-select" aria-label="Site theme">
+        <option value="neon">Neon</option>
+        <option value="casefiles">Case Files</option>
+      </select>
       <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; Admin Key</button>
     </div>
   </header>
@@ -1773,11 +1803,12 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
 
 <script>
 
-// Site theme switch. Adding a future theme is just: one more button here
-// with a data-theme-value, a matching html[data-theme="..."] block in
-// <style>, and an entry in THEME_IDS below - this code doesn't change.
+// Site theme switch. Adding a future theme is just: one more <option> on
+// #themeSelect and a matching html[data-theme="..."] block in <style> -
+// this code doesn't change.
 const THEME_STORAGE_KEY = "siteTheme";
-const THEME_IDS = Array.from(document.querySelectorAll("#themeToggle .theme-btn")).map(b => b.dataset.themeValue);
+const themeSelect = document.getElementById("themeSelect");
+const THEME_IDS = Array.from(themeSelect.options).map(o => o.value);
 
 function applyTheme(themeId) {
   if (themeId === "neon") {
@@ -1785,9 +1816,7 @@ function applyTheme(themeId) {
   } else {
     document.documentElement.setAttribute("data-theme", themeId);
   }
-  document.querySelectorAll("#themeToggle .theme-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.themeValue === themeId);
-  });
+  themeSelect.value = themeId;
   try { localStorage.setItem(THEME_STORAGE_KEY, themeId); } catch (e) {}
 }
 
@@ -1796,9 +1825,7 @@ try { savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || "neon"; } catch (e
 if (!THEME_IDS.includes(savedTheme)) savedTheme = "neon";
 applyTheme(savedTheme);
 
-document.querySelectorAll("#themeToggle .theme-btn").forEach(btn => {
-  btn.addEventListener("click", () => applyTheme(btn.dataset.themeValue));
-});
+themeSelect.addEventListener("change", () => applyTheme(themeSelect.value));
 
 const starContainer = document.getElementById("starfield");
 

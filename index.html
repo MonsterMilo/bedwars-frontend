@@ -1137,9 +1137,16 @@ tbody tr:hover .user-cell span {
   background: rgba(2,4,9,0.7);
   backdrop-filter: blur(3px);
   z-index: 999;
-  align-items: center;
+  /* Plain "center" centers the flex item even once it's taller than the
+     viewport, clipping it equally off both the top and bottom with no way
+     to scroll to either - "safe center" is the same centering as long as
+     it fits, but falls back to start-alignment instead of overflowing past
+     the container's edge once it doesn't, so a tall modal's top (Case
+     Files' folder tab included) never goes off-screen. */
+  align-items: safe center;
   justify-content: center;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .modal-content {
@@ -1555,6 +1562,19 @@ html[data-theme="casefiles"] .modal-folder-tab {
 }
 html[data-theme="casefiles"] .modal-folder-tab-amend {
   background: var(--bad);
+}
+/* .modal centers its content with plain align-items:center and no overflow
+   handling, so on a short browser window a modal tall enough to overflow
+   the viewport gets clipped equally off both the top and bottom rather
+   than scrolling - the Edit modal is exactly borderline enough for that
+   top clipping to eat the folder tab poking above the card even after
+   trimming it down to just the Stats/Names & Flags sections. Reserving
+   extra top padding guarantees room for the tab regardless of window
+   height, since .edit-modal-content already caps its own height at 85vh -
+   changing it here rather than in the shared .modal rule keeps Neon's
+   layout (no overhanging tab to protect) untouched. */
+html[data-theme="casefiles"] .modal {
+  padding-top: 44px;
 }
 /* The base .hero-controls sits flush with .hero's own edge (top:18px;
    right:0), which was invisible in Neon since .hero has no visible

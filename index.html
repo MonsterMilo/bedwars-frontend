@@ -526,14 +526,15 @@ input:focus {
   font-size: 1em;
 }
 
-.urchin-tag-badge {
+/* Shared by Urchin and Seraph tag badges. */
+.tag-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   white-space: nowrap;
 }
 
-.urchin-tag-icon {
+.tag-icon {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
@@ -1676,6 +1677,20 @@ const URCHIN_TAG_ICONS = {
   caution: "data:image/webp;base64,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",
 };
 
+// Seraph tag category -> icon (embedded as data URIs, provided by the user).
+// Keys are our own canonical categories (see classifySeraphTag below), not
+// Seraph's raw report_type strings, and deliberately distinct from
+// URCHIN_TAG_ICONS's keys - both services use words like "sniper", but the
+// user supplied different icons for each, so a single shared map would have
+// one overwrite the other.
+const SERAPH_TAG_ICONS = {
+  sniper: "data:image/webp;base64,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",
+  legit_sniper: "data:image/webp;base64,UklGRnYHAABXRUJQVlA4WAoAAAAQAAAAXwAAXwAAQUxQSDAEAAABoPX//+G4+oez3rpdY+oGfWX3SdS29QBsu13U1lF1eWxbcWpjUbtNM5M5+P9++c9v/ld7FREOHMltm730erZDUmR+wNqSpah9OamKrKjvJzi9r8pK34TBKdGvjQZb4BzPuRqbhOTXTlj+3iOeRyeWT6jNlwqnb9WPF+5rBiLt/oUfV3odsmSjXnNiuiEkPTq7lyIBZWv+fmMIK/nXOtVqcqb+9NowpeSvU7KtxO17XzdMK/2lz2UZuVPjBomiU3KtirONrWka0i3rbZbcKjqIm081/X1s222epl2nwi0a7mp/kQU3io68RG9FNg0pxfNS9ci6BHrj5eEi+uuD6Pnq3H5K5ryX7Vt0w0D0Yj/1Ve5GLHxvbc0TzasF9Texn/U62g9zT21F+HpwlnjeVgZ+g9AyxUWJPw6/KP1Bld1MXbBXf4R8T8xLmS2+hG6fNXQwW3fab3sKPX6WTcc0He6Muk7m10Wd6uAu1ieTUfmzAfiwPcW6rv2H0OVPFUQoa16DHfFtNY3Pqq/Abk6uVWjo9ZfBc2uwnQb7wJvA6N+9aJiTBNRnMaodvQ3wZjZNEY4ZPNcLCBcFV4HViIMCnw5q+yJGqHkp8EvxULDa4In7KPFEgNmVFPv4B3Bdl02Jsglc/ZBvntoLII+NZKQa0sRzocY8E+/zhKuIVzdBnnsTzAfR8hTPKUas46AALkfrj1jOCZwweHYJ9njuinK3oF8YeicCaG8olDPPPQI0ifV4/U+Egu/5xfzeBjw6h/eGGXK+oBJ98fMjzjp+6hsX9tvPCtzgmL3rlpWKEE+wXFbKg4Ayae+8J/sd5n/0Pw99jAbTH3Rb7PftfzcYfNcn5rfJ9Acpaj9ONScA23gf3TPGdXnmuO7O+9uDxDXvQ1VM56VjjFhnsLxkVhPugxpeSosagXmVri40DaFlVCuoCwG6upbarFCSvU0DdS2PwONKuEbwUOKDUbWCwqMXrivmUbIIXGv9KHBEYTeTR0chXNiFaUYJs5Mw9LKoyGoERpOzaGz2RNalg6jWpUNuA/7qSYOymnpdXf2NzvN6tSJlX9DhE+jyx3JGpSlIu5ixr4lzytTX1EOP+iTCMP0M6csaO5rvy55BPs6mjNNoGnFbTdZXRryMENekZgPq2+HZJvriAWhfPIl2fJOzDkG/01goSn4d2tevyaGeS+xH5xI3FvuyM6N45l9D5xJ7bdbOVbRE3chqnLKhm6Maej5UZMVcaL+BSmsNn97VBJYEdW8Fm1K4q73drJlrrWsmm2utsVk1VJwYpSEyOYdZJZeXYq6of+l1MQuVPfn7V+Z4/dOkbGaxilf9lRQn+efqSinm0rMjuhhaeGZPhckhh2flDxfupTBS9y58v8LjYDIpr2b8ihPY/wLjA3lMPtkC53jOBWxMJgnWnbYUBOeusqKoSE/XhiwGVlA4ICADAAAwFACdASpgAGAAPmkqj0WkIqEarAWoQAaEtgQ4AMYWAVyeZn5vzfKj/bfxryOp3e0zyL5wHsA/NvsAfYh1gPMB/Jv8B+zPuufgB2AH85/2/Wr+gB/APRY/8nsS/vB6TOapfIB+bPUqiAS6Kd99nbwZUpHVB/VLwfcoRm+PBahOWPoimREpOoy1xb/ClL8gLhOt6xd2wkarLIB0Nsh09AZDkQgrEIRPuYC/wAD+5CWkW8c7BDDnfQyzHKBib8i+/+5N9Tz//4jZ/qhgiacxMmRzt+QxP/YFLQUY50oB75gF//aYf/2j3//2r3hqNbFtIO7wX7xUX/yS/WPtVntTw3JbgDnhifT2qB3u3esRLxNAUJva4y2RSDG4JPVEK6Tfwge2oc0WcRH69ZPG5WlH+Y6XoNN+nMyC6vh24+UlNqPSZur7Z0EyRLq7Y1SuZFIqYlRtoWVGPewonwZiLP2r51cuh/Cj1r5KewZYpeE7fkUUytK5nT07FCfC6uZgzMkW71RA3yXDEmfjan/EvhFYrHVUOz6fkkOStj72wBokb0jq/otxehPTeyKbyu2SgYNGbW5MVtgu8d2BvRoOhpcjaeqqbW6FyTCHeFgePjSOAVfqJbMLqHR01dIZ4eT///Ec+nyZWEWVwZhJmElN1wYYLBwZ53i9BhiZ7drsxiKV0L0AP6HDhshYaY//z7HlQcnYVCNe3+cM2ybg+czJtPb3iOUNYY391vmfIxFwfZi4iXuNmb22yN5XxC/ttc6HikSQXoplvDE9NoN/OI5eLuXAZCq3/ZsqUs4t2mxkxuZki06fnVEfOCP6p+sacEGivYkYMoTBN6aUxkOAOOvjzd64/dgCkKxkciACOvX0AFR7fwmPCeIS1mdD9S01rdqikwEUqu0wLaiwsDEA0G/HhAbkhfj1yGVsrLwVl4vckdXPg/j/vyRbEAsN+yRdgWrxp//psSEfB1A2emG3Z53Hrw+6P2h/sYh1Q86VEaEp6FPnkE75//+JsgO54DcvWxff/ciXb2D6VOQ+M16+kB9ZujYaF/7g2UX3xTe5AHwfg8F7AAAAAA==",
+  closet_cheating: "data:image/webp;base64,UklGRrQEAABXRUJQVlA4WAoAAAAQAAAAXwAAXwAAQUxQSEUCAAABkLVteyFJSdf0NNY2M6xa27Ztm7/Atm3btu1te23b2/WdVG8nlaz3ICImAP0X3pqNJCfFZbFgMRkLdpu146zddn7r9D5yjIASlnpegbb61jmvoGgSJryEKL+MI5JISh3/BlF/OVxJHLjyBaAZ9hURRhUPUPZXMogh4zmgHT6QTwh4mEoNPo8SQs07wPCzIoCUM76ygDkx/MlOYOpI5q+jyuZNH0zLRGRNYmK2ANiq0y20yA6X5g7C7Bwj2JqFluwGTbfC7Cmrc3HcfWZlS/rpecTqTH7uLrDanpW7JaxmWrhr/YXNyy6IO8XDxl2Av5RzwkwWGflD5QMsXuZHAogdxeDbBCQClMFO73i8GFCxq2FK50ogQUg1L9PxVkSiQFJRGwX1TGUkDoQyjPSr3/f11pD0SCjIWG6u52sk1T69OkaCQSiV0mrR+YefPj85Pa99ckrEnAe9//4gO9yaO4ioTETRJCZR/ZQaUmbPl19OJvmypcaiwdnq9Zuw+ciZyzab22W3XT57ZMOU3rVyCQGnVeoMOvJEBbqP9o+sIafnSio1cKn3EzD96FzVp1gsL+baqwLvQIdvfRurGzmQsnd0gn6/Xe2T0xCN7AZNt0LJ1Hn3O9B1eE/bVLrKMfM56F19sjqjfqQmbuDSXc+kE6n5feA01EkfuGEQuH1YVRflvMCxvzRmh7cAz9+WpI9Adrg1d5CoSnziCp5WiWAisiYxRYPnAudzI9BPfZo3O7N8Nt5eMZPdvMFfL2SHm3dmJiLzzuw/5gBWUDggSAIAAJAQAJ0BKmAAYAA+ZSyRRaQioZo8LOxABkSzAxQAhT58/ser0ds5YTeCGq/G5Z/13SA/MnoZf3rqAeYD9c/1u95L0RegB/Q/7T1pnoAfrp6Y/7M/BP+5npB///WlsAAYc1hQzf3rvj+iFSWxomVoeGApYoTBwBIi7NId5p0M7vxqrdjF+6n1X0fjA8HwAAD+/W5PT56o//+fJbm+kW69fRwYV4gD8AOuFpPJdq73zn9y2oDH9YW//0HekbcOW+WcP2fmg5zxg3qxKbIn+vkjEWrS8+TduXm/ZYjVZzE7hVjWtMJn6DrufMQOPwPIZbK0+oyrNPrubeuz6zBX0QZZGpcLzvmLHq6zs2TXNZbdDsfaPfphvJ5ja8RH32PycqwihB98SLsdszGLQ/epOq7h4QFF0lfGPNVRGb5XjA5pmutpBIUgtAjQyxEM8VDaCEP1GbG8QOOleiE680F5jBbp14g1F2oHGxQn2knn4q7PECGYw8eQcVzvZb4r2Te3/vJPwCNlbrd+ef//kXeufHi4xIXlQlfHPyFGHxAREfrCFw3npCesJgxdtWPcXXXq9u1qJY1HzZSFX9tGcFrPeWmloyItSx4hWxOwkzYWDnFI3vQ7D1+U8u8oQ4OFhMN5xSKeQFFsSFvhoMoX2sfw8+zAys4Lf60GgcVO3UbVZQsy2XT/xE+aYVJQ99/rllFszajshTKBmmM5txwa3U8zL2F8k3P/yDrV52K3Q5dcCoYO4pfG+CeNhkUh3KMnbj2rMOS+xrd/K8Yv5gAA",
+  blatant_cheating: "data:image/webp;base64,UklGRqgEAABXRUJQVlA4WAoAAAAQAAAAXwAAXwAAQUxQSEUCAAABkLVteyFJSdf0NNY2M6xa27Ztm7/Atm3btu1te23b2/WdVG8nlaz3ICImAP0X3pqNJCfFZbFgMRkLdpu146zddn7r9D5yjIASlnpegbb61jmvoGgSJryEKL+MI5JISh3/BlF/OVxJHLjyBaAZ9hURRhUPUPZXMogh4zmgHT6QTwh4mEoNPo8SQs07wPCzIoCUM76ygDkx/MlOYOpI5q+jyuZNH0zLRGRNYmK2ANiq0y20yA6X5g7C7Bwj2JqFluwGTbfC7Cmrc3HcfWZlS/rpecTqTH7uLrDanpW7JaxmWrhr/YXNyy6IO8XDxl2Av5RzwkwWGflD5QMsXuZHAogdxeDbBCQClMFO73i8GFCxq2FK50ogQUg1L9PxVkSiQFJRGwX1TGUkDoQyjPSr3/f11pD0SCjIWG6u52sk1T69OkaCQSiV0mrR+YefPj85Pa99ckrEnAe9//4gO9yaO4ioTETRJCZR/ZQaUmbPl19OJvmypcaiwdnq9Zuw+ciZyzab22W3XT57ZMOU3rVyCQGnVeoMOvJEBbqP9o+sIafnSio1cKn3EzD96FzVp1gsL+baqwLvQIdvfRurGzmQsnd0gn6/Xe2T0xCN7AZNt0LJ1Hn3O9B1eE/bVLrKMfM56F19sjqjfqQmbuDSXc+kE6n5feA01EkfuGEQuH1YVRflvMCxvzRmh7cAz9+WpI9Adrg1d5CoSnziCp5WiWAisiYxRYPnAudzI9BPfZo3O7N8Nt5eMZPdvMFfL2SHm3dmJiLzzuw/5gBWUDggPAIAADAQAJ0BKmAAYAA+ZSyRRaQioZo8LOxABkSzAGbe/D9r10jt/I58J+FuTAtz0K+gDxK/8B1APMB+u363e8B6IvQA/o39w61L0AP1m9Mr9tPgi/dD0lP//rUnQAL7kggrEIWY+yjyY/GWGpPN4DfnPuAASIuzgHKT3Ice91Didke5rPrTOXhUbAf4KAD+/W5KS9YFf//reubAz7/xYGBn1IyDNIVWErRdKbKw//qMG+QagCi9QEf/1mBMZeMvDHkiE0QAPeXJXPIyOrcgsrf6hrhjg1R0ZQwo8wqU9IYS8V+iFfKUAODvn3BcfGBGnlZF+RHSJ1WPJmuH2NHMsSJdorLp7ER/vsSnUkVDIG9ycuL70KpHUkxQoPiBz9wc3DSRXKSLT2hVBGkoaBFTJBuTdk53JZG0+a+soWLo+DQN97BTpHd9nsWCJTbRMHt43bW8tDnTIQ46NxCQlwVI2nJ3su75OCtJn005hbAfbmbjrvf1yuOLJ8l78q5493vC+BLLBwt7lb//0glhB580diWYgWi1yjZuHNCfvI6c/qzQ36J9Fg6tRbBeuCxsyoL6L+hpNCqM0Fj1V2HaGc/S3nK/k6uuW2DlWx8zmzcMfQXARTCvmj6DiB4xJAGiWMgj4S/vz07DtL8/yy/a/G7AAYHgwRaTH/TZqhDb7OS3DRtkDzqcIf+nbXj7RZlx16YM0IC0z+g6X5nNXf6DeYC2LczXapjIlB+L/xVNvlKZs5HHxuMthPJksJ7v8nQllQAA",
+  alt: "data:image/webp;base64,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",
+};
+
 // Editable numeric stats for the edit-sweat modal, in display order.
 // Single source of truth so the modal's fields, population, and the PATCH
 // payload can't drift out of sync with each other.
@@ -1919,10 +1934,29 @@ async function fetchUrchinTags(username) {
   }
 }
 
+// Maps Seraph's raw report_type strings to the 5 categories we have icons for
+// (sniper, legit_sniper, blatant_cheating, closet_cheating, alt). `verified`
+// is not part of this - it's just a staff-confirmed flag on any tag, not a
+// distinct category, so "legit sniper" only matches on the type text itself.
+// Anything that doesn't match one of these 5 returns null, meaning it's left
+// off the visible tag list (see fetchSeraphTags below) without an icon we
+// don't have and weren't told to show.
+function classifySeraphTagType(rawType) {
+  const t = (rawType || "").toLowerCase();
+  if (t.includes("alt")) return "alt";
+  if ((t.includes("sniper") || t.includes("sniping")) && t.includes("legit")) return "legit_sniper";
+  if (t.includes("sniper") || t.includes("sniping")) return "sniper";
+  if (t.includes("blatant")) return "blatant_cheating";
+  if (t.includes("closet")) return "closet_cheating";
+  return null;
+}
+
 // Fetch Seraph tags from backend (by UUID, unlike Urchin's by-username lookup).
 // Every tag Seraph returns (blacklist/bot/annoylist alike) is a cheating
 // report regardless of its `verified` flag - verified just means a staff
 // member has personally confirmed it, not that it's a different category.
+// That counts for isCheaterTagged even when a tag's type isn't one of the 5
+// we display - only what's shown is filtered, not what triggers the flag.
 const NONE_SERAPH_RESULT = { tags: [], isCheaterTagged: false };
 
 async function fetchSeraphTags(uuid) {
@@ -1937,11 +1971,14 @@ async function fetchSeraphTags(uuid) {
     }
 
     if (data.tags && data.tags.length > 0) {
-      const tags = data.tags.map(tag => ({
-        type: tag.type,
-        label: formatTagType(tag.type) + (tag.verified ? " (Verified)" : ""),
-        reason: tag.reason || ""
-      }));
+      const tags = data.tags
+        .map(tag => ({ ...tag, category: classifySeraphTagType(tag.type) }))
+        .filter(tag => tag.category)
+        .map(tag => ({
+          type: tag.category,
+          label: formatTagType(tag.category) + (tag.verified ? " (Verified)" : ""),
+          reason: tag.reason || ""
+        }));
       return { tags, isCheaterTagged: true };
     }
     return NONE_SERAPH_RESULT;
@@ -2059,10 +2096,10 @@ function getHypixelRank(player) {
   }
 }
 
-// Renders each Urchin tag as an icon+label badge into any container. Built via
-// DOM APIs rather than innerHTML since tag data comes from a third-party
-// service (Coral), not something we fully control.
-function renderUrchinTagBadges(container, reasonEl, tagsData, emptyText = "None") {
+// Renders each tag (Urchin or Seraph) as an icon+label badge into any
+// container. Built via DOM APIs rather than innerHTML since tag data comes
+// from a third-party service (Coral/Seraph), not something we fully control.
+function renderTagBadges(container, reasonEl, tagsData, iconMap, emptyText = "None") {
   container.innerHTML = "";
 
   if (!tagsData || tagsData.length === 0) {
@@ -2073,14 +2110,14 @@ function renderUrchinTagBadges(container, reasonEl, tagsData, emptyText = "None"
 
   tagsData.forEach(tag => {
     const badge = document.createElement("span");
-    badge.className = "urchin-tag-badge";
+    badge.className = "tag-badge";
 
-    const iconSrc = URCHIN_TAG_ICONS[tag.type];
+    const iconSrc = iconMap[tag.type];
     if (iconSrc) {
       const icon = document.createElement("img");
       icon.src = iconSrc;
       icon.alt = "";
-      icon.className = "urchin-tag-icon";
+      icon.className = "tag-icon";
       badge.appendChild(icon);
     }
 
@@ -2131,8 +2168,8 @@ function updateStatsDisplay(stats) {
   statKDR.textContent = stats.kdr.toFixed(2);
   statBBLR.textContent = stats.bblr.toFixed(2);
 
-  renderUrchinTagBadges(statUrchin, statUrchinReason, stats.urchinTagsData || []);
-  renderUrchinTagBadges(statSeraph, statSeraphReason, stats.seraphTagsData || []);
+  renderTagBadges(statUrchin, statUrchinReason, stats.urchinTagsData || [], URCHIN_TAG_ICONS);
+  renderTagBadges(statSeraph, statSeraphReason, stats.seraphTagsData || [], SERAPH_TAG_ICONS);
 
   statsDisplay.style.display = "flex";
 }
@@ -2720,8 +2757,8 @@ document.addEventListener("click", async (e) => {
       fetchSeraphTags(uuid)
     ]);
     if (modal.dataset.activeUuid !== uuid) return;
-    renderUrchinTagBadges(modalTags, modalTagsReason, urchinResult.tags);
-    renderUrchinTagBadges(modalSeraphTags, modalSeraphTagsReason, seraphResult.tags);
+    renderTagBadges(modalTags, modalTagsReason, urchinResult.tags, URCHIN_TAG_ICONS);
+    renderTagBadges(modalSeraphTags, modalSeraphTagsReason, seraphResult.tags, SERAPH_TAG_ICONS);
   } catch (err) {
     if (modal.dataset.activeUuid === uuid) {
       modalStats.textContent = "Failed to load stats.";

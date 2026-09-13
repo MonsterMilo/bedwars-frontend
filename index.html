@@ -16,7 +16,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Anton&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Anton&family=Courier+Prime:wght@400;700&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 
 :root {
@@ -76,6 +76,37 @@ html[data-theme="casefiles"] {
   --radius-m: 4px;
   --radius-l: 6px;
   --shadow-card: 0 10px 18px -8px rgba(42,36,28,0.45);
+}
+
+/* "Private Bank" theme - white letterhead, navy fountain-pen ink, muted gold
+   foil. A light theme like Case Files, so it needs the same kind of glow
+   cleanup (a colored blur that reads as "neon" on dark panels just looks
+   like a smudge on white) - see the component overrides near the end of
+   this stylesheet. */
+html[data-theme="ledger"] {
+  --bg: #ffffff;
+  --panel: #fdfdfc;
+  --panel-2: #f6f4ee;
+  --border: #dcd6c6;
+  --border-strong: #c9bf9e;
+  --accent: #a9822e;
+  --accent-2: #16233a;
+  --accent-soft: rgba(169,130,46,0.12);
+  --accent-2-soft: rgba(22,35,58,0.08);
+  --text: #16233a;
+  --text-dim: #5c6678;
+  --text-faint: #8b93a3;
+  --good: #3a6b4a;
+  --good-soft: rgba(58,107,74,0.1);
+  --bad: #8a1f2b;
+  --bad-soft: rgba(138,31,43,0.1);
+  --neutral: #1c2e4a;
+  --neutral-soft: rgba(28,46,74,0.08);
+  --gold: #a9822e;
+  --radius-s: 2px;
+  --radius-m: 2px;
+  --radius-l: 3px;
+  --shadow-card: 0 14px 30px -18px rgba(22,35,58,0.35);
 }
 
 * { box-sizing: border-box; }
@@ -174,6 +205,10 @@ body {
    poking outside .hero's own box (like a pin at top:-9px) would otherwise
    just vanish. */
 .hero-pin { display: none; }
+
+/* Private-Bank-only ink flourish under the h1 wordmark - present in the
+   markup always, shown only once themed (same pattern as .hero-pin). */
+.hero-flourish { display: none; }
 
 .hero-eyebrow {
   display: inline-block;
@@ -1795,6 +1830,116 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
   text-shadow: none;
 }
 
+/* ============================================================
+   PRIVATE BANK THEME - component overrides
+   A light theme like Case Files, so it needs the same category
+   of fix: neon's hardcoded cyan glows (box-shadow/text-shadow
+   tuned to look like a glow on dark panels) just read as a smudge
+   on white and get neutralized below. No ambient background decor
+   (no starfield, no dust) - a bank's letterhead doesn't sparkle.
+   ============================================================ */
+
+html[data-theme="ledger"] #nebula,
+html[data-theme="ledger"] #starfield {
+  display: none;
+}
+
+html[data-theme="ledger"] body {
+  font-family: 'EB Garamond', Georgia, serif;
+}
+
+html[data-theme="ledger"] .panel-header h2,
+html[data-theme="ledger"] .stat-hero-value,
+html[data-theme="ledger"] .modal-stat-value,
+html[data-theme="ledger"] #statsStar,
+html[data-theme="ledger"] #statsUsername,
+html[data-theme="ledger"] .sweat-card-name,
+html[data-theme="ledger"] .leaderboard-name,
+html[data-theme="ledger"] #modalUsername,
+html[data-theme="ledger"] .edit-modal-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+}
+
+/* Only the static site wordmark gets the cursive treatment - sweat-card-name/
+   #modalUsername/etc above render arbitrary usernames, and a script face
+   makes arbitrary strings (numbers, underscores, mixed case) hard to read,
+   so they stay in Playfair Display instead. The gradient-clip-text effect
+   on h1 was tuned to the neon accent pair and would fight a delicate script
+   face, so it's reset to a solid ink color rather than recolored. */
+html[data-theme="ledger"] h1 {
+  font-family: 'Pinyon Script', cursive;
+  font-weight: 400;
+  font-size: 3.2em;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: var(--text);
+  filter: none;
+}
+html[data-theme="ledger"] #credits {
+  font-style: italic;
+}
+html[data-theme="ledger"] .hero-flourish {
+  display: block;
+  width: 220px;
+  height: 14px;
+  margin: 8px auto 4px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 14'%3E%3Cpath d='M2,7 C40,-3 60,17 90,7 C120,-3 140,17 170,7 C190,0 200,10 218,7' fill='none' stroke='%23a9822e' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+html[data-theme="ledger"] .btn-primary {
+  background: var(--text);
+  color: var(--panel);
+  box-shadow: none;
+}
+html[data-theme="ledger"] .btn-primary:hover:not(:disabled) {
+  box-shadow: var(--shadow-card);
+}
+html[data-theme="ledger"] .btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+}
+
+html[data-theme="ledger"] .chip input:checked + span,
+html[data-theme="ledger"] .leaderboard-chip.active,
+html[data-theme="ledger"] .view-btn.active {
+  box-shadow: none;
+}
+html[data-theme="ledger"] .view-btn.active,
+html[data-theme="ledger"] .theme-btn.active {
+  color: var(--panel);
+}
+
+html[data-theme="ledger"] #statsAvatar,
+html[data-theme="ledger"] .sweat-card:hover {
+  box-shadow: var(--shadow-card);
+}
+html[data-theme="ledger"] .user-cell span,
+html[data-theme="ledger"] tbody tr:hover .user-cell span,
+html[data-theme="ledger"] #modalUsername,
+html[data-theme="ledger"] .modal-stat-tile .modal-stat-value {
+  text-shadow: none;
+}
+html[data-theme="ledger"] thead tr {
+  background: var(--accent-soft);
+}
+
+html[data-theme="ledger"] .modal-content {
+  background: var(--panel);
+  box-shadow: var(--shadow-card);
+}
+html[data-theme="ledger"] #modalSkin {
+  background: var(--panel-2);
+}
+html[data-theme="ledger"] .pill.cheat {
+  border-color: var(--bad);
+}
+html[data-theme="ledger"] .pill.boost {
+  border-color: var(--gold);
+  background: var(--accent-soft);
+}
+
 </style>
 </head>
 <body>
@@ -1829,6 +1974,7 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
   <header class="hero">
     <div class="hero-eyebrow">&#9876; Community Leaderboard</div>
     <h1>Bedwars Sweat Tracker</h1>
+    <div class="hero-flourish" aria-hidden="true"></div>
     <p id="credits">Developed by Milo &middot; Powered by Hypixel API</p>
     <div class="hero-controls">
       <div class="theme-dropdown" id="themeDropdown">
@@ -1839,6 +1985,7 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
         <ul class="theme-dropdown-menu" id="themeDropdownMenu" role="listbox" aria-label="Site theme" hidden>
           <li role="option" data-theme-value="neon" aria-selected="true" tabindex="0">Neon</li>
           <li role="option" data-theme-value="casefiles" aria-selected="false" tabindex="0">Case Files</li>
+          <li role="option" data-theme-value="ledger" aria-selected="false" tabindex="0">Private Bank</li>
         </ul>
       </div>
       <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; Admin Key</button>

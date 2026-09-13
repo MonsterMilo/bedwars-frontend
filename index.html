@@ -1951,12 +1951,13 @@ function classifySeraphTagType(rawType) {
   return null;
 }
 
+// Of the 5 displayed categories, only these three actually mean cheating -
+// "alt" just flags a known alt account, and "legit_sniper" explicitly means
+// NOT cheating (that's the whole point of the "legit" distinction). Anything
+// not shown at all (classifySeraphTagType returned null) never counts either.
+const SERAPH_CHEATING_CATEGORIES = ["sniper", "blatant_cheating", "closet_cheating"];
+
 // Fetch Seraph tags from backend (by UUID, unlike Urchin's by-username lookup).
-// Every tag Seraph returns (blacklist/bot/annoylist alike) is a cheating
-// report regardless of its `verified` flag - verified just means a staff
-// member has personally confirmed it, not that it's a different category.
-// That counts for isCheaterTagged even when a tag's type isn't one of the 5
-// we display - only what's shown is filtered, not what triggers the flag.
 const NONE_SERAPH_RESULT = { tags: [], isCheaterTagged: false };
 
 async function fetchSeraphTags(uuid) {
@@ -1979,7 +1980,8 @@ async function fetchSeraphTags(uuid) {
           label: formatTagType(tag.category) + (tag.verified ? " (Verified)" : ""),
           reason: tag.reason || ""
         }));
-      return { tags, isCheaterTagged: true };
+      const isCheaterTagged = tags.some(tag => SERAPH_CHEATING_CATEGORIES.includes(tag.type));
+      return { tags, isCheaterTagged };
     }
     return NONE_SERAPH_RESULT;
   } catch (err) {

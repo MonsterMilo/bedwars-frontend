@@ -1503,20 +1503,77 @@ html[data-theme="casefiles"] .btn-ghost {
   border: 1.5px solid var(--text-dim);
 }
 
-html[data-theme="casefiles"] .chip input:checked + span {
-  box-shadow: none;
+/* Roster/flag/filter chips (they're all the same .chip markup, so one set of
+   rules covers "Beaten By", Cheating/Boosting, and the toolbar's Hide Dupes/
+   Cheaters Only/Boosters Only toggles) read as checklist slips: a square
+   tick-box drawn with ::before/::after instead of the neon pill's glow, with
+   the checkmark popping in on an overshoot curve when checked. The pill
+   itself stays a neutral paper tone at all times - only the box fills in,
+   tinted red/brass for the cheat/boost flags - closer to how the mockup's
+   suspect list worked (the row never recolored, just the box). */
+html[data-theme="casefiles"] .chip span {
+  position: relative;
+  padding: 7px 14px 7px 30px;
+  border-radius: 2px;
 }
-html[data-theme="casefiles"] .chip.cheat-chip input:checked + span {
-  box-shadow: none;
-  color: var(--bad);
-  border-color: var(--bad);
-  background: var(--bad-soft);
+html[data-theme="casefiles"] .chip-group.roster .chip span {
+  text-align: left;
 }
+html[data-theme="casefiles"] .chip span::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  transform: translateY(-50%);
+  border: 1.5px solid var(--text-dim);
+  background: var(--panel);
+  border-radius: 1px;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+html[data-theme="casefiles"] .chip span::after {
+  content: "\2713";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  line-height: 13px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--panel);
+  transform: translateY(-50%) scale(0);
+  transition: transform 0.2s cubic-bezier(.34, 1.56, .64, 1);
+  pointer-events: none;
+}
+/* The base (Neon) rules also set color/border-color/background on the span
+   itself for :checked, .cheat-chip:checked and .boost-chip:checked - reset
+   all three back to the resting look so, as in the mockup, the pill never
+   recolors and only the box does. */
+html[data-theme="casefiles"] .chip input:checked + span,
+html[data-theme="casefiles"] .chip.cheat-chip input:checked + span,
 html[data-theme="casefiles"] .chip.boost-chip input:checked + span {
   box-shadow: none;
-  color: var(--gold);
+  color: var(--text-dim);
+  border-color: var(--border);
+  background: rgba(255,255,255,0.03);
+}
+html[data-theme="casefiles"] .chip input:checked + span::before {
+  background: var(--text);
+  border-color: var(--text);
+}
+html[data-theme="casefiles"] .chip input:checked + span::after {
+  transform: translateY(-50%) scale(1);
+}
+html[data-theme="casefiles"] .chip.cheat-chip input:checked + span::before {
+  background: var(--bad);
+  border-color: var(--bad);
+}
+html[data-theme="casefiles"] .chip.boost-chip input:checked + span::before {
+  background: var(--gold);
   border-color: var(--gold);
-  background: rgba(184,145,47,0.14);
 }
 
 html[data-theme="casefiles"] .view-btn.active {

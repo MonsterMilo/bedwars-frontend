@@ -1163,6 +1163,10 @@ tbody tr:hover .user-cell span {
 }
 .modal-close:hover { color: var(--accent); }
 
+/* Case-Files-only folder tab poking above the modal card - present in the
+   markup always, shown only once themed (same pattern as .exhibit-tag). */
+.modal-folder-tab { display: none; }
+
 /* Edit sweat modal */
 .edit-modal-content {
   width: 520px;
@@ -1384,22 +1388,22 @@ html[data-theme="casefiles"] #nebula {
    flickering in place - both share the per-star duration/delay the page
    script already randomizes inline for "twinkle", so no JS changes needed. */
 @keyframes dustTwinkle {
-  0%, 100% { opacity: 0.45; }
-  50% { opacity: 0.9; }
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 @keyframes dustDrift {
-  0%   { transform: translate(0, 0); }
-  50%  { transform: translate(7px, -11px); }
-  100% { transform: translate(0, 0); }
+  0%   { transform: translate(0, 0) scale(1.4); }
+  50%  { transform: translate(7px, -11px) scale(1.4); }
+  100% { transform: translate(0, 0) scale(1.4); }
 }
 html[data-theme="casefiles"] .star {
-  background: #7a5a30;
+  background: #5c4322;
   box-shadow: none;
   animation-name: dustTwinkle, dustDrift;
 }
 html[data-theme="casefiles"] .star.bright {
-  background: #5c4322;
-  box-shadow: 0 0 4px rgba(90,66,34,0.45);
+  background: #3f2c14;
+  box-shadow: 0 0 5px rgba(63,44,20,0.55);
 }
 
 html[data-theme="casefiles"] body {
@@ -1478,6 +1482,39 @@ html[data-theme="casefiles"] .hero::before {
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #e7c467, var(--gold) 60%, #7c6323 100%);
   box-shadow: 0 3px 4px rgba(0,0,0,0.35);
+}
+/* A torn/perforated bottom edge, like the card was torn off a pad - a strip
+   of half-circle "bites" cut out of the card in the page's own background
+   color, since the card itself sits directly on that background. */
+html[data-theme="casefiles"] .hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -9px;
+  height: 18px;
+  background: radial-gradient(circle at 9px 0, var(--bg) 9px, transparent 9.5px) repeat-x;
+  background-size: 18px 18px;
+}
+
+/* Folder tab poking above the modal card, echoing the mockup's "Case File"
+   exhibit - red for the edit/amend flow, ink-blue for the read-only one. */
+html[data-theme="casefiles"] .modal-folder-tab {
+  display: block;
+  position: absolute;
+  top: -14px;
+  left: 22px;
+  background: var(--accent);
+  color: var(--panel);
+  font-size: 0.68em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 2px 2px 0 0;
+}
+html[data-theme="casefiles"] .modal-folder-tab-amend {
+  background: var(--bad);
 }
 /* The base .hero-controls sits flush with .hero's own edge (top:18px;
    right:0), which was invisible in Neon since .hero has no visible
@@ -1933,6 +1970,7 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
   <!-- PLAYER MODAL -->
   <div id="playerModal" class="modal">
     <div class="modal-content">
+      <span class="modal-folder-tab">Case File &middot; Open</span>
       <span id="closeModal" class="modal-close">&times;</span>
       <h2 id="modalUsername">Loading...</h2>
       <div id="modalTitle"><span class="modal-live-dot"></span>Live Stats</div>
@@ -1956,6 +1994,7 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
   <!-- EDIT SWEAT MODAL -->
   <div id="editModal" class="modal">
     <div class="modal-content edit-modal-content">
+      <span class="modal-folder-tab modal-folder-tab-amend">Amend Report</span>
       <span id="closeEditModal" class="modal-close">&times;</span>
       <h2 class="edit-modal-title">Edit Sweat</h2>
 

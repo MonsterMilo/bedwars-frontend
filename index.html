@@ -1149,6 +1149,19 @@ tbody tr:hover .user-cell span {
   overflow-y: auto;
 }
 
+/* Wraps .modal-content so the folder tab (below) can sit outside it as a
+   sibling instead of a child - .edit-modal-content sets overflow-y:auto for
+   its own internal scrolling, and overflow clips ANY descendant that
+   visually extends past its box, tab included, regardless of viewport size
+   (this is what was actually clipping the Edit modal's tab - not a
+   too-short-viewport issue, since .modal-content itself, used by the
+   read-only player modal, has no overflow set and never had this problem).
+   The wrapper has no overflow of its own, so the tab poking above via
+   negative positioning renders freely. */
+.modal-card {
+  position: relative;
+}
+
 .modal-content {
   background: rgba(14,18,28,0.94);
   padding: 26px 28px;
@@ -1513,7 +1526,7 @@ html[data-theme="casefiles"] .hero {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-l) var(--radius-l) 0 0;
-  padding: 34px 28px 42px;
+  padding: 34px 28px 48px;
   box-shadow: none;
   filter: drop-shadow(0 10px 12px rgba(42,36,28,0.35));
   clip-path: url(#tornEdge);
@@ -1801,23 +1814,22 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
 
 <!-- Hidden clip-path used by the Case Files hero card's torn bottom edge.
      objectBoundingBox units so the same 0-1 path adapts to the card's
-     actual rendered size instead of needing fixed pixel coordinates.
-     Smooth cubic-bezier lobes (not straight polygon facets, and not a
-     tangent-circle radial-gradient - that rendered as jagged cusps, see
-     the .hero comment in <style>) for a soft, irregular hand-torn look. -->
+     actual rendered size instead of needing fixed pixel coordinates. Sharp
+     straight-line facets at irregular x-spacing and depth (not smooth
+     cubic-bezier lobes - too soft/uniform-looking - and not a tangent-
+     circle radial-gradient, which rendered as jagged cusps for a different,
+     unwanted reason; see the .hero comment in <style>) for a rougher,
+     more hand-torn look, mixing narrow deep spikes with wider shallow
+     stretches rather than one repeating bump size. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <clipPath id="tornEdge" clipPathUnits="objectBoundingBox">
-    <path d="M0,0 L1,0 L1,0.9
-      C0.96,0.94 0.94,1 0.9,0.95
-      C0.87,0.91 0.84,0.99 0.8,0.94
-      C0.77,0.9 0.73,1 0.69,0.96
-      C0.65,0.92 0.61,0.99 0.57,0.94
-      C0.54,0.9 0.5,1 0.46,0.95
-      C0.43,0.91 0.39,0.99 0.35,0.94
-      C0.32,0.9 0.28,1 0.24,0.95
-      C0.21,0.91 0.17,0.99 0.13,0.94
-      C0.1,0.9 0.06,0.98 0.03,0.93
-      C0.02,0.91 0.01,0.95 0,0.92 Z" />
+    <polygon points="0,0 1,0
+      1,0.90 0.97,0.98 0.94,0.93 0.92,1.00 0.89,0.88 0.86,0.96 0.84,0.91
+      0.81,0.99 0.78,0.87 0.75,0.95 0.73,1.00 0.70,0.89 0.67,0.93 0.64,0.98
+      0.62,0.86 0.59,0.94 0.56,1.00 0.54,0.90 0.51,0.96 0.48,0.88 0.45,0.99
+      0.43,0.92 0.40,0.95 0.37,0.87 0.35,1.00 0.32,0.91 0.29,0.97 0.27,0.89
+      0.24,0.94 0.21,1.00 0.19,0.86 0.16,0.93 0.13,0.98 0.11,0.90 0.08,0.96
+      0.06,0.88 0.03,1.00 0,0.92" />
   </clipPath>
 </svg>
 
@@ -2052,8 +2064,9 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
 
   <!-- PLAYER MODAL -->
   <div id="playerModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-card">
       <span class="modal-folder-tab">Case File &middot; Open</span>
+      <div class="modal-content">
       <span id="closeModal" class="modal-close">&times;</span>
       <h2 id="modalUsername">Loading...</h2>
       <div id="modalTitle"><span class="modal-live-dot"></span>Live Stats</div>
@@ -2071,13 +2084,15 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
         <div id="modalSeraphTags" class="modal-tags-row">Checking...</div>
         <div id="modalSeraphTagsReason" class="urchin-reason-text" hidden></div>
       </div>
+      </div>
     </div>
   </div>
 
   <!-- EDIT SWEAT MODAL -->
   <div id="editModal" class="modal">
-    <div class="modal-content edit-modal-content">
+    <div class="modal-card">
       <span class="modal-folder-tab modal-folder-tab-amend">Amend Report</span>
+      <div class="modal-content edit-modal-content">
       <span id="closeEditModal" class="modal-close">&times;</span>
       <h2 class="edit-modal-title">Edit Sweat</h2>
 
@@ -2106,6 +2121,7 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
       <div class="edit-modal-actions">
         <button type="button" id="cancelEditBtn" class="btn btn-ghost">Cancel</button>
         <button type="button" id="saveEditBtn" class="btn btn-primary">Save Changes</button>
+      </div>
       </div>
     </div>
   </div>

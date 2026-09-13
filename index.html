@@ -1892,6 +1892,7 @@ html[data-theme="ledger"] .btn-primary {
   background: var(--text);
   color: var(--panel);
   box-shadow: none;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.12);
 }
 html[data-theme="ledger"] .btn-primary:hover:not(:disabled) {
   box-shadow: var(--shadow-card);
@@ -1901,7 +1902,20 @@ html[data-theme="ledger"] .btn-ghost {
   border: 1px solid var(--border-strong);
 }
 
-html[data-theme="ledger"] .chip input:checked + span,
+/* Every rounded-pill control (999px hardcoded, not the --radius tokens - see
+   .chip span/.view-toggle/.view-btn/.leaderboard-count/.sweat-card-index/
+   .pill) reads as a straight recolor of Neon's shape language otherwise.
+   Squaring them off is most of what makes this feel like its own theme
+   rather than a palette swap. */
+html[data-theme="ledger"] .chip span,
+html[data-theme="ledger"] .view-toggle,
+html[data-theme="ledger"] .view-btn,
+html[data-theme="ledger"] .leaderboard-count,
+html[data-theme="ledger"] .sweat-card-index,
+html[data-theme="ledger"] .pill {
+  border-radius: var(--radius-s);
+}
+
 html[data-theme="ledger"] .leaderboard-chip.active,
 html[data-theme="ledger"] .view-btn.active {
   box-shadow: none;
@@ -1911,8 +1925,33 @@ html[data-theme="ledger"] .theme-btn.active {
   color: var(--panel);
 }
 
-html[data-theme="ledger"] #statsAvatar,
-html[data-theme="ledger"] .sweat-card:hover {
+/* Checked roster/flag chips get a small ink checkmark instead of Neon's
+   glow - reads as "signed off" rather than "lit up". The span itself stays
+   a plain outlined tag at rest and when checked (background tint only),
+   same reasoning Case Files used: only one thing should change state. */
+html[data-theme="ledger"] .chip input:checked + span {
+  box-shadow: none;
+  color: var(--text);
+  border-color: var(--gold);
+  background: var(--accent-soft);
+}
+html[data-theme="ledger"] .chip.cheat-chip input:checked + span {
+  color: var(--bad);
+  border-color: var(--bad);
+  background: var(--bad-soft);
+}
+html[data-theme="ledger"] .chip.boost-chip input:checked + span {
+  color: var(--gold);
+  border-color: var(--gold);
+  background: var(--accent-soft);
+}
+html[data-theme="ledger"] .chip input:checked + span::before {
+  content: "\2713\00A0";
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+}
+
+html[data-theme="ledger"] #statsAvatar {
   box-shadow: var(--shadow-card);
 }
 html[data-theme="ledger"] .user-cell span,
@@ -1923,6 +1962,76 @@ html[data-theme="ledger"] .modal-stat-tile .modal-stat-value {
 }
 html[data-theme="ledger"] thead tr {
   background: var(--accent-soft);
+}
+html[data-theme="ledger"] thead th {
+  border-bottom: 3px double var(--border-strong);
+}
+
+/* Grid cards read as a framed certificate rather than a plain panel: a
+   double-rule border (the box-shadow rings) and a pair of engraved corner
+   brackets in gold, on opposite corners like a museum label. */
+html[data-theme="ledger"] .sweat-card {
+  border-radius: var(--radius-s);
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--border-strong);
+}
+html[data-theme="ledger"] .sweat-card:hover {
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--gold), var(--shadow-card);
+}
+html[data-theme="ledger"] .sweat-card::before,
+html[data-theme="ledger"] .sweat-card::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--gold);
+  pointer-events: none;
+}
+html[data-theme="ledger"] .sweat-card::before {
+  top: 7px;
+  left: 7px;
+  border-right: none;
+  border-bottom: none;
+}
+html[data-theme="ledger"] .sweat-card::after {
+  bottom: 7px;
+  right: 7px;
+  border-left: none;
+  border-top: none;
+}
+
+/* Roster identity colors (the small circular initials on a card/table row's
+   Beaten By list) are bright saturated hues tuned for the neon backdrop -
+   muted here so they read as engraved wax-seal tints instead of clashing
+   with the ink/gold palette. Left alone everywhere else since the colors
+   are shared JS data, not per-theme. */
+html[data-theme="ledger"] .beaten-avatar {
+  filter: saturate(0.55) sepia(0.15);
+}
+
+/* Section headers (Sweat Lookup, Defeated Sweats) get a letterhead rule and
+   an engraved medallion instead of Neon's soft gradient icon badge; the
+   "Exhibit A/B" tag (added for Case Files, harmless here since "Exhibit A"
+   is standard legal/financial-document language too) is restyled to a
+   plain gold-outlined caption instead of a filled stamp. */
+html[data-theme="ledger"] .panel-header {
+  border-bottom: 1px solid var(--border-strong);
+  padding-bottom: 16px;
+}
+html[data-theme="ledger"] .panel-icon {
+  background: var(--panel-2);
+  border: 1px solid var(--gold);
+}
+html[data-theme="ledger"] .exhibit-tag {
+  display: inline-block;
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  border-radius: 0;
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-weight: 600;
+  padding: 3px 10px;
+  margin-bottom: 6px;
 }
 
 html[data-theme="ledger"] .modal-content {

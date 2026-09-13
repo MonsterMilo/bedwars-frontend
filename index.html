@@ -4,9 +4,19 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Bedwars Sweat Tracker</title>
+<script>
+  // Applied here (before the stylesheet paints anything) so a returning
+  // visitor's saved theme takes effect immediately instead of flashing the
+  // default Neon look for a frame - the click-handling half of this lives in
+  // the site's own <script> block further down, near the theme toggle.
+  try {
+    const savedTheme = localStorage.getItem("siteTheme");
+    if (savedTheme && savedTheme !== "neon") document.documentElement.setAttribute("data-theme", savedTheme);
+  } catch (e) {}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Anton&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 <style>
 
 :root {
@@ -34,6 +44,38 @@
   --radius-l: 22px;
   --shadow-card: 0 10px 30px rgba(0,0,0,0.45);
   --ease: cubic-bezier(.22,.85,.32,1);
+}
+
+/* "Case Files" theme - a corkboard/detective-dossier skin, swapped in via
+   data-theme on <html>. Redefining the same token set the Neon theme already
+   uses re-themes almost every component automatically (cards, chips, table,
+   modals all read these vars); the handful of places that hardcode neon-glow
+   box-shadows/text-shadows instead of a var get individually neutralized
+   further down, near the end of this stylesheet. */
+html[data-theme="casefiles"] {
+  --bg: #efe6cc;
+  --panel: #fbf6e6;
+  --panel-2: #f2e9cf;
+  --border: #c9b98a;
+  --border-strong: #a3915c;
+  --accent: #2e4a5c;
+  --accent-2: #a32f1d;
+  --accent-soft: rgba(46,74,92,0.12);
+  --accent-2-soft: rgba(163,47,29,0.12);
+  --text: #2a241c;
+  --text-dim: #5c5340;
+  --text-faint: #8a7f66;
+  --good: #2e6b46;
+  --good-soft: rgba(46,107,70,0.12);
+  --bad: #a32f1d;
+  --bad-soft: rgba(163,47,29,0.12);
+  --neutral: #4a6b7c;
+  --neutral-soft: rgba(74,107,124,0.12);
+  --gold: #b8912f;
+  --radius-s: 3px;
+  --radius-m: 4px;
+  --radius-l: 6px;
+  --shadow-card: 0 10px 18px -8px rgba(42,36,28,0.45);
 }
 
 * { box-sizing: border-box; }
@@ -155,10 +197,13 @@ h1 {
   opacity: 0.85;
 }
 
-.hero-admin-btn {
+.hero-controls {
   position: absolute;
   top: 18px;
   right: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* Panel headers (section leads) */
@@ -659,6 +704,39 @@ input:focus {
   box-shadow: 0 4px 14px rgba(0,217,255,0.3);
 }
 .view-btn:active { transform: scale(0.94); }
+
+/* Theme switch - same segmented-control look as the view toggle above, kept
+   separate since it lives in the hero rather than the results toolbar. New
+   themes just need a button here (data-theme-value) and a matching
+   [data-theme="..."] block below; the click handling in the page script
+   reads data-theme-value generically, no JS changes needed per theme. */
+.theme-toggle {
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.theme-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.78em;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+
+.theme-btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #04050a;
+}
+.theme-btn:active { transform: scale(0.94); }
 
 /* Leaderboard view */
 /* Grid instead of flex-wrap so a 9-person roster lands evenly (3x3) instead
@@ -1214,7 +1292,7 @@ tbody tr:hover .user-cell span {
   #statsContent { flex-direction: column; align-items: center; text-align: center; }
   #statsTopRow { justify-content: center; }
   #statsStar { margin-left: 0; }
-  .hero-admin-btn { position: static; margin-top: 16px; }
+  .hero-controls { position: static; margin-top: 16px; justify-content: center; }
   .toolbar-row { justify-content: center; }
 }
 
@@ -1231,6 +1309,142 @@ tbody tr:hover .user-cell span {
   #nebula, .star, .modal-live-dot { animation: none !important; }
 }
 
+/* ============================================================
+   CASE FILES THEME - component overrides
+   Everything above already re-themes via the redefined tokens
+   near :root. What's left are the spots that hardcode a neon-
+   specific value instead of a var - glow shadows tuned to the
+   cyan accent, the gradient-clip-text headline, the ambient
+   starfield backdrop, and swapping in the display/typewriter
+   fonts. Each rule here mirrors one rule above it in the sheet.
+   ============================================================ */
+
+html[data-theme="casefiles"] #nebula,
+html[data-theme="casefiles"] #starfield {
+  display: none;
+}
+
+html[data-theme="casefiles"] body {
+  font-family: 'Courier Prime', 'Courier New', monospace;
+}
+
+html[data-theme="casefiles"] h1,
+html[data-theme="casefiles"] .panel-header h2,
+html[data-theme="casefiles"] .stat-hero-value,
+html[data-theme="casefiles"] .modal-stat-value,
+html[data-theme="casefiles"] #statsStar,
+html[data-theme="casefiles"] #statsUsername,
+html[data-theme="casefiles"] .sweat-card-name,
+html[data-theme="casefiles"] .leaderboard-name,
+html[data-theme="casefiles"] #modalUsername,
+html[data-theme="casefiles"] .edit-modal-title,
+html[data-theme="casefiles"] .user-cell span {
+  font-family: 'Anton', 'Arial Narrow', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* Headline used gradient-clip-text tuned to the neon accent pair - reset
+   back to a solid ink color instead of retinting the gradient. */
+html[data-theme="casefiles"] h1 {
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: var(--text);
+  filter: none;
+}
+
+html[data-theme="casefiles"] .hero {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-l);
+  padding: 34px 28px 30px;
+}
+html[data-theme="casefiles"] .hero::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e7c467, var(--gold) 60%, #7c6323 100%);
+  box-shadow: 0 3px 4px rgba(0,0,0,0.35);
+}
+
+html[data-theme="casefiles"] .btn-primary {
+  background: var(--text);
+  color: var(--panel);
+  box-shadow: none;
+}
+html[data-theme="casefiles"] .btn-primary:hover:not(:disabled) {
+  box-shadow: var(--shadow-card);
+}
+
+html[data-theme="casefiles"] .btn-ghost {
+  background: transparent;
+  border: 1.5px solid var(--text-dim);
+}
+
+html[data-theme="casefiles"] .chip input:checked + span {
+  box-shadow: none;
+}
+html[data-theme="casefiles"] .chip.cheat-chip input:checked + span {
+  box-shadow: none;
+  color: var(--bad);
+  border-color: var(--bad);
+  background: var(--bad-soft);
+}
+html[data-theme="casefiles"] .chip.boost-chip input:checked + span {
+  box-shadow: none;
+  color: var(--gold);
+  border-color: var(--gold);
+  background: rgba(184,145,47,0.14);
+}
+
+html[data-theme="casefiles"] .view-btn.active,
+html[data-theme="casefiles"] .theme-btn.active {
+  box-shadow: none;
+  color: var(--panel);
+}
+html[data-theme="casefiles"] .leaderboard-chip.active {
+  box-shadow: none;
+}
+
+html[data-theme="casefiles"] #statsAvatar,
+html[data-theme="casefiles"] .sweat-card-avatar,
+html[data-theme="casefiles"] .user-avatar,
+html[data-theme="casefiles"] #modalSkin {
+  filter: sepia(0.35) contrast(1.05) saturate(0.9);
+}
+html[data-theme="casefiles"] #statsAvatar {
+  box-shadow: var(--shadow-card);
+}
+html[data-theme="casefiles"] #modalSkin {
+  background: var(--panel-2);
+}
+
+html[data-theme="casefiles"] .sweat-card:hover {
+  box-shadow: 0 14px 22px -8px rgba(42,36,28,0.55);
+}
+
+html[data-theme="casefiles"] .user-cell span,
+html[data-theme="casefiles"] tbody tr:hover .user-cell span {
+  text-shadow: none;
+}
+
+html[data-theme="casefiles"] .modal-content {
+  background: var(--panel);
+  box-shadow: var(--shadow-card);
+}
+
+html[data-theme="casefiles"] #modalUsername,
+html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
+  text-shadow: none;
+}
+
 </style>
 </head>
 <body>
@@ -1244,7 +1458,13 @@ tbody tr:hover .user-cell span {
     <div class="hero-eyebrow">&#9876; Community Leaderboard</div>
     <h1>Bedwars Sweat Tracker</h1>
     <p id="credits">Developed by Milo &middot; Powered by Hypixel API</p>
-    <button type="button" id="setAdminKeyBtn" class="btn btn-ghost hero-admin-btn">&#128273; Admin Key</button>
+    <div class="hero-controls">
+      <div class="theme-toggle" id="themeToggle" role="group" aria-label="Site theme">
+        <button type="button" class="theme-btn" data-theme-value="neon">Neon</button>
+        <button type="button" class="theme-btn" data-theme-value="casefiles">Case Files</button>
+      </div>
+      <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; Admin Key</button>
+    </div>
   </header>
 
   <div class="panel-header">
@@ -1505,6 +1725,33 @@ tbody tr:hover .user-cell span {
 </div>
 
 <script>
+
+// Site theme switch. Adding a future theme is just: one more button here
+// with a data-theme-value, a matching html[data-theme="..."] block in
+// <style>, and an entry in THEME_IDS below - this code doesn't change.
+const THEME_STORAGE_KEY = "siteTheme";
+const THEME_IDS = Array.from(document.querySelectorAll("#themeToggle .theme-btn")).map(b => b.dataset.themeValue);
+
+function applyTheme(themeId) {
+  if (themeId === "neon") {
+    document.documentElement.removeAttribute("data-theme");
+  } else {
+    document.documentElement.setAttribute("data-theme", themeId);
+  }
+  document.querySelectorAll("#themeToggle .theme-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.themeValue === themeId);
+  });
+  try { localStorage.setItem(THEME_STORAGE_KEY, themeId); } catch (e) {}
+}
+
+let savedTheme = "neon";
+try { savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || "neon"; } catch (e) {}
+if (!THEME_IDS.includes(savedTheme)) savedTheme = "neon";
+applyTheme(savedTheme);
+
+document.querySelectorAll("#themeToggle .theme-btn").forEach(btn => {
+  btn.addEventListener("click", () => applyTheme(btn.dataset.themeValue));
+});
 
 const starContainer = document.getElementById("starfield");
 

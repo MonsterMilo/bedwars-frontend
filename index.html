@@ -2014,13 +2014,33 @@ html[data-theme="ledger"] .beaten-avatar {
    is standard legal/financial-document language too) is restyled to a
    plain gold-outlined caption instead of a filled stamp. */
 html[data-theme="ledger"] .panel-header {
+  align-items: flex-end;
   border-bottom: 1px solid var(--border-strong);
   padding-bottom: 16px;
 }
+/* A round engraved medallion instead of Neon's soft gradient badge - the
+   emoji is hidden (font-size:0, so it takes no visual space) and replaced
+   with a plain serif glyph that actually fits the ink/gold palette. */
 html[data-theme="ledger"] .panel-icon {
   background: var(--panel-2);
   border: 1px solid var(--gold);
+  border-radius: 50%;
+  font-size: 0;
+  position: relative;
 }
+html[data-theme="ledger"] .panel-icon::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'EB Garamond', serif;
+  font-size: 20px;
+  color: var(--gold);
+}
+html[data-theme="ledger"] .panel-icon-lookup::before { content: "\2712"; }
+html[data-theme="ledger"] .panel-icon-results::before { content: "\2756"; }
 html[data-theme="ledger"] .exhibit-tag {
   display: inline-block;
   background: transparent;
@@ -2102,7 +2122,7 @@ html[data-theme="ledger"] .pill.boost {
   </header>
 
   <div class="panel-header">
-    <div class="panel-icon">&#127919;</div>
+    <div class="panel-icon panel-icon-lookup">&#127919;</div>
     <div>
       <span class="exhibit-tag">Exhibit A</span>
       <h2>Sweat Lookup</h2>
@@ -2200,7 +2220,7 @@ html[data-theme="ledger"] .pill.boost {
   </div>
 
   <div class="panel-header">
-    <div class="panel-icon">&#127942;</div>
+    <div class="panel-icon panel-icon-results">&#127942;</div>
     <div>
       <span class="exhibit-tag">Exhibit B</span>
       <h2>Defeated Sweats</h2>

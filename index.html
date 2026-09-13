@@ -1529,12 +1529,31 @@ html[data-theme="casefiles"] .edit-section-label {
   font-family: 'Anton', 'Arial Narrow', sans-serif;
   letter-spacing: 0.08em;
 }
+/* Same trick as Private Bank's medallion: the emoji (dart/trophy) doesn't
+   fit the ink/typewriter palette, so it's hidden and replaced with a plain
+   glyph via ::before - a crosshair-style mark for Sweat Lookup, a stamped-
+   box mark for Defeated Sweats. */
 html[data-theme="casefiles"] .panel-icon {
   background: var(--panel-2);
   border: 1.5px solid var(--text-dim);
   border-radius: 3px;
   box-shadow: 3px 3px 0 var(--border-strong);
+  font-size: 0;
+  position: relative;
 }
+html[data-theme="casefiles"] .panel-icon::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier Prime', monospace;
+  font-size: 20px;
+  color: var(--text-dim);
+}
+html[data-theme="casefiles"] .panel-icon-lookup::before { content: "\2315"; }
+html[data-theme="casefiles"] .panel-icon-results::before { content: "\25A3"; }
 
 /* clip-path clips box-shadow along with everything else, which would cut
    the shadow off hard at the flat pre-tear rectangle rather than letting it

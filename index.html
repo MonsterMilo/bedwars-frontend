@@ -234,6 +234,11 @@ h1 {
   color: var(--text);
 }
 
+/* Case-Files-only eyebrow tag on each section header (Sweat Lookup / Defeated
+   Sweats) - present in the markup always, but only shown once themed so it
+   costs the Neon theme nothing. */
+.exhibit-tag { display: none; }
+
 .panel-header p {
   margin: 2px 0 0;
   font-size: 0.85em;
@@ -711,20 +716,23 @@ input:focus {
    changes needed here. Left with the browser's native appearance (so it
    keeps a real dropdown arrow and native keyboard/touch handling) and only
    the parts that are safe to restyle cross-browser - color, background,
-   border, padding, font - are touched. */
+   border, padding, font - are touched. Sized to match .btn/.btn-ghost
+   exactly (same padding/font-size/border-radius/border) since it sits
+   directly next to the Admin Key button in the hero. */
 .theme-select {
   font-family: inherit;
   font-weight: 700;
-  font-size: 0.78em;
+  font-size: 15px;
+  line-height: 1;
   color: var(--text-dim);
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 8px 14px;
+  border-radius: var(--radius-s);
+  padding: 11px 20px;
   cursor: pointer;
   transition: all 0.2s var(--ease);
 }
-.theme-select:hover { border-color: var(--border-strong); color: var(--text); }
+.theme-select:hover { border-color: var(--border-strong); color: var(--accent); background: var(--accent-soft); }
 .theme-select:focus {
   outline: none;
   border-color: var(--accent);
@@ -1323,14 +1331,34 @@ html[data-theme="casefiles"] #nebula {
    fill-mode/animation-override pitfalls noted on .sweat-card apply here),
    just recolored to a warm tone and stripped of the neon glow so they read
    as dust drifting through the light over the board instead of stars. */
+/* The base .star sets opacity: 0.8 as a static value, but the "twinkle"
+   animation it also runs (infinite, so always active) continuously animates
+   opacity itself and wins that property outright for as long as it's
+   running - a plain "opacity: 0.35" override here would be silently
+   ignored the same way .sweat-card's transform was (see the note up near
+   .sweat-card). dustTwinkle is a Case-Files-specific replacement with a
+   higher floor (0.45 instead of twinkle's 0.25) so the dim half of the
+   cycle still reads against light paper instead of nearly vanishing, and
+   dustDrift adds a small wander so the dust actually moves instead of just
+   flickering in place - both share the per-star duration/delay the page
+   script already randomizes inline for "twinkle", so no JS changes needed. */
+@keyframes dustTwinkle {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.9; }
+}
+@keyframes dustDrift {
+  0%   { transform: translate(0, 0); }
+  50%  { transform: translate(7px, -11px); }
+  100% { transform: translate(0, 0); }
+}
 html[data-theme="casefiles"] .star {
-  background: var(--gold);
+  background: #7a5a30;
   box-shadow: none;
-  opacity: 0.35;
+  animation-name: dustTwinkle, dustDrift;
 }
 html[data-theme="casefiles"] .star.bright {
-  opacity: 0.55;
-  box-shadow: none;
+  background: #5c4322;
+  box-shadow: 0 0 4px rgba(90,66,34,0.45);
 }
 
 html[data-theme="casefiles"] body {
@@ -1361,6 +1389,34 @@ html[data-theme="casefiles"] h1 {
   background-clip: border-box;
   color: var(--text);
   filter: none;
+}
+
+/* Section headers (Sweat Lookup, Defeated Sweats) read as case-file tabs:
+   a small ink-stamped "Exhibit" label above the heading, a squared stamp in
+   place of the soft neon icon badge, and a dashed rule underneath standing
+   in for a folder-tab divider. */
+html[data-theme="casefiles"] .exhibit-tag {
+  display: inline-block;
+  font-size: 0.68em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--panel);
+  background: var(--accent);
+  padding: 3px 8px;
+  border-radius: 2px;
+  margin-bottom: 5px;
+}
+html[data-theme="casefiles"] .panel-header {
+  align-items: flex-end;
+  border-bottom: 1px dashed var(--border-strong);
+  padding-bottom: 16px;
+}
+html[data-theme="casefiles"] .panel-icon {
+  background: var(--panel-2);
+  border: 1.5px solid var(--text-dim);
+  border-radius: 3px;
+  box-shadow: 3px 3px 0 var(--border-strong);
 }
 
 html[data-theme="casefiles"] .hero {
@@ -1547,6 +1603,7 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
   <div class="panel-header">
     <div class="panel-icon">&#127919;</div>
     <div>
+      <span class="exhibit-tag">Exhibit A</span>
       <h2>Sweat Lookup</h2>
       <p>Search a player, review their stats, and log the win.</p>
     </div>
@@ -1644,6 +1701,7 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
   <div class="panel-header">
     <div class="panel-icon">&#127942;</div>
     <div>
+      <span class="exhibit-tag">Exhibit B</span>
       <h2>Defeated Sweats</h2>
       <p><span id="resultCount">0</span> tracked players</p>
     </div>

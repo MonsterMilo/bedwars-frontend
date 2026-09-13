@@ -1307,6 +1307,7 @@ tbody tr:hover .user-cell span {
    modals) are left alone since they're brief and convey real state changes. */
 @media (prefers-reduced-motion: reduce) {
   #nebula, .star, .modal-live-dot { animation: none !important; }
+  html[data-theme="casefiles"] .sweat-card { transition: none !important; }
 }
 
 /* ============================================================
@@ -1426,8 +1427,54 @@ html[data-theme="casefiles"] #modalSkin {
   background: var(--panel-2);
 }
 
+/* Grid cards read as index slips pinned to a board: a slight per-card tilt
+   (cycled via nth-child - there's no per-card seed to randomize off) plus a
+   brass pushpin. The base .sweat-card runs a one-shot entrance animation
+   (cardIn, above) that animates `transform` with fill-mode "both" - while
+   that's in effect, an animation's own end value permanently wins the
+   animated property over any other rule for it, no matter the specificity,
+   so a plain "transform: rotate(...)" override here would be silently
+   ignored forever. cardInCasefiles swaps in a version that only animates
+   opacity, leaving `transform` free for the resting tilt below and for the
+   hover "ruffle" - a single transform transition with an overshoot easing
+   curve (rather than a second @keyframes animation, which would mean
+   swapping animation-name on :hover and restarting the entrance fade every
+   time a card is re-hovered). */
+@keyframes cardInCasefiles {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+html[data-theme="casefiles"] .sweat-card {
+  animation-name: cardInCasefiles;
+  transform: rotate(var(--card-tilt, -1deg));
+  transition: transform 0.4s cubic-bezier(.34, 1.56, .64, 1), border-color 0.22s var(--ease), box-shadow 0.22s var(--ease);
+}
+html[data-theme="casefiles"] .sweat-card::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e7c467, var(--gold) 60%, #7c6323 100%);
+  box-shadow: 0 3px 4px rgba(0,0,0,0.35);
+  z-index: 2;
+}
+html[data-theme="casefiles"] .sweat-card:nth-child(6n+1) { --card-tilt: -1.6deg; }
+html[data-theme="casefiles"] .sweat-card:nth-child(6n+2) { --card-tilt: 1.1deg; }
+html[data-theme="casefiles"] .sweat-card:nth-child(6n+3) { --card-tilt: -0.7deg; }
+html[data-theme="casefiles"] .sweat-card:nth-child(6n+4) { --card-tilt: 1.9deg; }
+html[data-theme="casefiles"] .sweat-card:nth-child(6n+5) { --card-tilt: -2.1deg; }
+html[data-theme="casefiles"] .sweat-card:nth-child(6n+6) { --card-tilt: 1.4deg; }
+
 html[data-theme="casefiles"] .sweat-card:hover {
+  transform: translateY(-4px) rotate(calc(var(--card-tilt, -1deg) * -1.6));
   box-shadow: 0 14px 22px -8px rgba(42,36,28,0.55);
+}
+html[data-theme="casefiles"] .sweat-card:active {
+  transform: translateY(-1px) scale(0.99) rotate(calc(var(--card-tilt, -1deg) * -1.6));
 }
 
 html[data-theme="casefiles"] .user-cell span,

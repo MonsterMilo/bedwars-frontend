@@ -1526,7 +1526,7 @@ html[data-theme="casefiles"] .hero {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-l) var(--radius-l) 0 0;
-  padding: 34px 28px 48px;
+  padding: 34px 28px 62px;
   box-shadow: none;
   filter: drop-shadow(0 10px 12px rgba(42,36,28,0.35));
   clip-path: url(#tornEdge);
@@ -1819,17 +1819,17 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
      cubic-bezier lobes - too soft/uniform-looking - and not a tangent-
      circle radial-gradient, which rendered as jagged cusps for a different,
      unwanted reason; see the .hero comment in <style>) for a rougher,
-     more hand-torn look, mixing narrow deep spikes with wider shallow
-     stretches rather than one repeating bump size. -->
+     more hand-torn look. ~50 points across a shallower 0.90-1.00 band
+     gives smaller, denser teeth than a wider band with fewer points would -
+     .hero's padding-bottom is sized with this band's max depth in mind. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <clipPath id="tornEdge" clipPathUnits="objectBoundingBox">
     <polygon points="0,0 1,0
-      1,0.90 0.97,0.98 0.94,0.93 0.92,1.00 0.89,0.88 0.86,0.96 0.84,0.91
-      0.81,0.99 0.78,0.87 0.75,0.95 0.73,1.00 0.70,0.89 0.67,0.93 0.64,0.98
-      0.62,0.86 0.59,0.94 0.56,1.00 0.54,0.90 0.51,0.96 0.48,0.88 0.45,0.99
-      0.43,0.92 0.40,0.95 0.37,0.87 0.35,1.00 0.32,0.91 0.29,0.97 0.27,0.89
-      0.24,0.94 0.21,1.00 0.19,0.86 0.16,0.93 0.13,0.98 0.11,0.90 0.08,0.96
-      0.06,0.88 0.03,1.00 0,0.92" />
+      1.00,0.95 0.98,0.99 0.96,0.92 0.94,0.97 0.92,1.00 0.90,0.93 0.88,0.96 0.86,0.90 0.84,0.99 0.82,0.94
+      0.80,0.97 0.78,0.91 0.76,1.00 0.74,0.95 0.72,0.92 0.70,0.98 0.68,0.93 0.66,0.96 0.64,1.00 0.62,0.90
+      0.60,0.94 0.58,0.99 0.56,0.92 0.54,0.97 0.52,0.91 0.50,1.00 0.48,0.95 0.46,0.93 0.44,0.98 0.42,0.90
+      0.40,0.96 0.38,0.99 0.36,0.92 0.34,0.94 0.32,1.00 0.30,0.91 0.28,0.97 0.26,0.93 0.24,0.90 0.22,0.98
+      0.20,0.95 0.18,0.99 0.16,0.92 0.14,0.96 0.12,1.00 0.10,0.91 0.08,0.94 0.06,0.97 0.04,0.90 0.02,0.93 0.00,0.99" />
   </clipPath>
 </svg>
 

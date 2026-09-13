@@ -1182,11 +1182,32 @@ tbody tr:hover .user-cell span {
   color: var(--text);
 }
 
+/* Grouped into labeled sections (see EDIT_FIELD_GROUPS in the page script)
+   instead of one flat 11-box grid, which read as an undifferentiated wall
+   of identical inputs with no way to tell the headline ratios apart from
+   the raw counters backing them. */
 .edit-stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.edit-field-group-label {
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.edit-field-group-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  margin-bottom: 16px;
 }
 
 .edit-field {
@@ -1213,7 +1234,7 @@ tbody tr:hover .user-cell span {
 }
 
 @media (max-width: 480px) {
-  .edit-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .edit-field-group-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 #modalUsername {
@@ -1457,6 +1478,12 @@ html[data-theme="casefiles"] .panel-header {
   border-bottom: 1px dashed var(--border-strong);
   padding-bottom: 16px;
 }
+html[data-theme="casefiles"] .edit-field-group-label {
+  border-bottom-style: dashed;
+  border-bottom-color: var(--border-strong);
+  font-family: 'Anton', 'Arial Narrow', sans-serif;
+  letter-spacing: 0.08em;
+}
 html[data-theme="casefiles"] .panel-icon {
   background: var(--panel-2);
   border: 1.5px solid var(--text-dim);
@@ -1467,6 +1494,7 @@ html[data-theme="casefiles"] .panel-icon {
 html[data-theme="casefiles"] .hero {
   background: var(--panel);
   border: 1px solid var(--border);
+  border-bottom: 2px dashed var(--border-strong);
   box-shadow: var(--shadow-card);
   border-radius: var(--radius-l);
   padding: 34px 28px 30px;
@@ -1483,35 +1511,26 @@ html[data-theme="casefiles"] .hero::before {
   background: radial-gradient(circle at 35% 30%, #e7c467, var(--gold) 60%, #7c6323 100%);
   box-shadow: 0 3px 4px rgba(0,0,0,0.35);
 }
-/* A torn/perforated bottom edge, like the card was torn off a pad - a strip
-   of half-circle "bites" cut out of the card in the page's own background
-   color, since the card itself sits directly on that background. */
-html[data-theme="casefiles"] .hero::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -9px;
-  height: 18px;
-  background: radial-gradient(circle at 9px 0, var(--bg) 9px, transparent 9.5px) repeat-x;
-  background-size: 18px 18px;
-}
-
 /* Folder tab poking above the modal card, echoing the mockup's "Case File"
    exhibit - red for the edit/amend flow, ink-blue for the read-only one. */
+/* A letterhead bar in normal flow rather than an absolutely-positioned
+   overhang above the card - the latter got clipped by the viewport on the
+   Edit modal, which is tall enough that its top can land near y:0 (its
+   max-height:85vh only caps the modal-content box itself, not how close to
+   the top of the screen that box gets centered). Negative margins cancel
+   .modal-content's own padding so the bar spans edge-to-edge and sits flush
+   with the card's rounded top corners instead of floating inset. */
 html[data-theme="casefiles"] .modal-folder-tab {
   display: block;
-  position: absolute;
-  top: -14px;
-  left: 22px;
+  margin: -26px -28px 18px;
+  padding: 10px 28px;
   background: var(--accent);
   color: var(--panel);
   font-size: 0.68em;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 6px 14px;
-  border-radius: 2px 2px 0 0;
+  border-radius: var(--radius-l) var(--radius-l) 0 0;
 }
 html[data-theme="casefiles"] .modal-folder-tab-amend {
   background: var(--bad);
@@ -2294,6 +2313,16 @@ const EDIT_NUMERIC_FIELDS = [
   { key: "bedsLost", label: "Beds Lost", step: "1" },
 ];
 
+// Purely a rendering grouping for the edit modal - EDIT_NUMERIC_FIELDS above
+// stays the single source of truth for keys/labels/steps (and the only
+// thing the PATCH payload and value-population code iterate), this just
+// says which section each key's box renders under so the 11 fields don't
+// read as one undifferentiated block.
+const EDIT_FIELD_GROUPS = [
+  { label: "Overall", keys: ["star", "fkdr", "wlr", "bblr", "kdr"] },
+  { label: "Raw Counts", keys: ["finals", "finalDeaths", "kills", "deaths", "beds", "bedsLost"] },
+];
+
 // Cached once the edit modal's inputs/chips exist, so opening/saving an edit
 // doesn't repeat 20 getElementById lookups every time.
 const editStatInputs = {};
@@ -2304,10 +2333,18 @@ const editRosterCheckboxes = {};
 // innerHTML here is safe.
 function initEditModal() {
   const grid = document.getElementById("editStatsGrid");
-  grid.innerHTML = EDIT_NUMERIC_FIELDS.map(f => `
-    <div class="edit-field">
-      <label for="edit_${f.key}">${f.label}</label>
-      <input type="number" id="edit_${f.key}" step="${f.step}" />
+  const fieldsByKey = Object.fromEntries(EDIT_NUMERIC_FIELDS.map(f => [f.key, f]));
+  grid.innerHTML = EDIT_FIELD_GROUPS.map(group => `
+    <div class="edit-field-group">
+      <div class="edit-field-group-label">${group.label}</div>
+      <div class="edit-field-group-grid">
+        ${group.keys.map(k => { const f = fieldsByKey[k]; return `
+          <div class="edit-field">
+            <label for="edit_${f.key}">${f.label}</label>
+            <input type="number" id="edit_${f.key}" step="${f.step}" />
+          </div>
+        `; }).join("")}
+      </div>
     </div>
   `).join("");
   EDIT_NUMERIC_FIELDS.forEach(f => { editStatInputs[f.key] = document.getElementById(`edit_${f.key}`); });

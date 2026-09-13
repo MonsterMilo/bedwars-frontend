@@ -1416,38 +1416,25 @@ html[data-theme="casefiles"] #nebula {
 }
 
 /* Reuse the same starfield elements instead of hiding them - same 1400
-   pre-placed dots, same twinkle keyframes (opacity only, so none of the
-   fill-mode/animation-override pitfalls noted on .sweat-card apply here),
-   just recolored to a warm tone and stripped of the neon glow so they read
-   as dust drifting through the light over the board instead of stars. */
-/* The base .star sets opacity: 0.8 as a static value, but the "twinkle"
-   animation it also runs (infinite, so always active) continuously animates
-   opacity itself and wins that property outright for as long as it's
-   running - a plain "opacity: 0.35" override here would be silently
+   pre-placed dots, just recolored to a warm tone, stripped of the neon
+   glow, and held still, so they read as flecks of grain settled in the
+   paper rather than stars or drifting dust. The base .star runs the
+   "twinkle" animation (infinite, so always active), which continuously
+   animates opacity itself and wins that property outright for as long as
+   it's running - a plain "opacity: 0.75" override would be silently
    ignored the same way .sweat-card's transform was (see the note up near
-   .sweat-card). dustTwinkle is a Case-Files-specific replacement with a
-   higher floor (0.45 instead of twinkle's 0.25) so the dim half of the
-   cycle still reads against light paper instead of nearly vanishing, and
-   dustDrift adds a small wander so the dust actually moves instead of just
-   flickering in place - both share the per-star duration/delay the page
-   script already randomizes inline for "twinkle", so no JS changes needed. */
-@keyframes dustTwinkle {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-@keyframes dustDrift {
-  0%   { transform: translate(0, 0) scale(1.4); }
-  50%  { transform: translate(7px, -11px) scale(1.4); }
-  100% { transform: translate(0, 0) scale(1.4); }
-}
+   .sweat-card) - so the animation is turned off outright here rather than
+   overridden, which is also what actually stops the drifting/glowing. */
 html[data-theme="casefiles"] .star {
   background: #5c4322;
   box-shadow: none;
-  animation-name: dustTwinkle, dustDrift;
+  animation: none;
+  opacity: 0.75;
 }
 html[data-theme="casefiles"] .star.bright {
   background: #3f2c14;
-  box-shadow: 0 0 5px rgba(63,44,20,0.55);
+  box-shadow: none;
+  opacity: 0.9;
 }
 
 html[data-theme="casefiles"] body {

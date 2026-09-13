@@ -710,35 +710,76 @@ input:focus {
 }
 .view-btn:active { transform: scale(0.94); }
 
-/* Theme switch - a dropdown rather than a segmented control since the list
-   is meant to grow; adding a theme is just one more <option value="..."> in
-   the markup and a matching [data-theme="..."] block below, no CSS or JS
-   changes needed here. Left with the browser's native appearance (so it
-   keeps a real dropdown arrow and native keyboard/touch handling) and only
-   the parts that are safe to restyle cross-browser - color, background,
-   border, padding, font - are touched. Sized to match .btn/.btn-ghost
-   exactly (same padding/font-size/border-radius/border) since it sits
-   directly next to the Admin Key button in the hero. */
-.theme-select {
+/* Theme switch - a hand-built dropdown (button + listbox) rather than a
+   native <select>, whose option-list styling the browser won't hand over
+   (that flat blue-highlight list is the OS/browser's own popup, not
+   something CSS can restyle). Adding a future theme is one more <li> here
+   plus a matching [data-theme="..."] block below - the script reads the
+   option list generically. Sized to match .btn/.btn-ghost exactly (same
+   padding/font-size/border-radius/border) since it sits directly next to
+   the Admin Key button in the hero. */
+.theme-dropdown { position: relative; }
+
+.theme-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: inherit;
   font-weight: 700;
   font-size: 15px;
-  line-height: 1;
   color: var(--text-dim);
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--border);
   border-radius: var(--radius-s);
-  padding: 11px 20px;
+  padding: 11px 16px 11px 20px;
   cursor: pointer;
   transition: all 0.2s var(--ease);
 }
-.theme-select:hover { border-color: var(--border-strong); color: var(--accent); background: var(--accent-soft); }
-.theme-select:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+.theme-dropdown-btn:hover,
+.theme-dropdown-btn[aria-expanded="true"] {
+  border-color: var(--border-strong);
+  color: var(--accent);
+  background: var(--accent-soft);
 }
-.theme-select option { background: var(--panel); color: var(--text); }
+.theme-dropdown-arrow {
+  font-size: 0.7em;
+  opacity: 0.7;
+  transition: transform 0.2s var(--ease);
+}
+.theme-dropdown-btn[aria-expanded="true"] .theme-dropdown-arrow { transform: rotate(180deg); }
+
+.theme-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-s);
+  box-shadow: var(--shadow-card);
+  z-index: 20;
+}
+.theme-dropdown-menu[hidden] { display: none; }
+
+.theme-dropdown-menu li {
+  padding: 9px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+.theme-dropdown-menu li:hover { background: var(--accent-soft); color: var(--accent); }
+.theme-dropdown-menu li[aria-selected="true"] {
+  color: var(--text);
+  font-weight: 800;
+  background: var(--accent-soft);
+}
 
 /* Leaderboard view */
 /* Grid instead of flex-wrap so a 9-person roster lands evenly (3x3) instead
@@ -1488,7 +1529,10 @@ html[data-theme="casefiles"] .leaderboard-chip.active {
 
 /* File-tag look for the theme dropdown: square instead of pill, uppercase
    typewriter label. */
-html[data-theme="casefiles"] .theme-select {
+/* File-tag look for the theme dropdown: square instead of rounded, uppercase
+   typewriter labels, a hard-edged "stamped" shadow on the open menu instead
+   of a soft glow. */
+html[data-theme="casefiles"] .theme-dropdown-btn {
   border-radius: 2px;
   border: 1.5px solid var(--text-dim);
   background: var(--panel-2);
@@ -1496,8 +1540,22 @@ html[data-theme="casefiles"] .theme-select {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-html[data-theme="casefiles"] .theme-select:hover {
+html[data-theme="casefiles"] .theme-dropdown-btn:hover,
+html[data-theme="casefiles"] .theme-dropdown-btn[aria-expanded="true"] {
   border-color: var(--text);
+  background: var(--panel-2);
+  color: var(--accent);
+}
+html[data-theme="casefiles"] .theme-dropdown-menu {
+  border-radius: 2px;
+  border: 1.5px solid var(--text-dim);
+  box-shadow: 4px 4px 0 var(--border-strong);
+}
+html[data-theme="casefiles"] .theme-dropdown-menu li {
+  border-radius: 2px;
+  font-family: 'Courier Prime', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 html[data-theme="casefiles"] #statsAvatar,
@@ -1592,10 +1650,16 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
     <h1>Bedwars Sweat Tracker</h1>
     <p id="credits">Developed by Milo &middot; Powered by Hypixel API</p>
     <div class="hero-controls">
-      <select id="themeSelect" class="theme-select" aria-label="Site theme">
-        <option value="neon">Neon</option>
-        <option value="casefiles">Case Files</option>
-      </select>
+      <div class="theme-dropdown" id="themeDropdown">
+        <button type="button" class="theme-dropdown-btn" id="themeDropdownBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="Site theme">
+          <span id="themeDropdownLabel">Neon</span>
+          <span class="theme-dropdown-arrow" aria-hidden="true">&#9662;</span>
+        </button>
+        <ul class="theme-dropdown-menu" id="themeDropdownMenu" role="listbox" aria-label="Site theme" hidden>
+          <li role="option" data-theme-value="neon" aria-selected="true" tabindex="0">Neon</li>
+          <li role="option" data-theme-value="casefiles" aria-selected="false" tabindex="0">Case Files</li>
+        </ul>
+      </div>
       <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; Admin Key</button>
     </div>
   </header>
@@ -1861,12 +1925,29 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
 
 <script>
 
-// Site theme switch. Adding a future theme is just: one more <option> on
-// #themeSelect and a matching html[data-theme="..."] block in <style> -
-// this code doesn't change.
+// Site theme switch - a hand-built dropdown instead of a native <select>,
+// since a native select's open option list is rendered by the OS/browser
+// and can't be restyled to match either theme. Adding a future theme is
+// just one more <li> in #themeDropdownMenu plus a matching
+// html[data-theme="..."] block in <style> - this code doesn't change.
 const THEME_STORAGE_KEY = "siteTheme";
-const themeSelect = document.getElementById("themeSelect");
-const THEME_IDS = Array.from(themeSelect.options).map(o => o.value);
+const themeDropdown = document.getElementById("themeDropdown");
+const themeDropdownBtn = document.getElementById("themeDropdownBtn");
+const themeDropdownMenu = document.getElementById("themeDropdownMenu");
+const themeDropdownLabel = document.getElementById("themeDropdownLabel");
+const themeOptions = Array.from(themeDropdownMenu.querySelectorAll("li"));
+const THEME_IDS = themeOptions.map(li => li.dataset.themeValue);
+const THEME_LABELS = Object.fromEntries(themeOptions.map(li => [li.dataset.themeValue, li.textContent]));
+
+function closeThemeDropdown() {
+  themeDropdownMenu.hidden = true;
+  themeDropdownBtn.setAttribute("aria-expanded", "false");
+}
+
+function openThemeDropdown() {
+  themeDropdownMenu.hidden = false;
+  themeDropdownBtn.setAttribute("aria-expanded", "true");
+}
 
 function applyTheme(themeId) {
   if (themeId === "neon") {
@@ -1874,7 +1955,8 @@ function applyTheme(themeId) {
   } else {
     document.documentElement.setAttribute("data-theme", themeId);
   }
-  themeSelect.value = themeId;
+  themeDropdownLabel.textContent = THEME_LABELS[themeId];
+  themeOptions.forEach(li => li.setAttribute("aria-selected", li.dataset.themeValue === themeId ? "true" : "false"));
   try { localStorage.setItem(THEME_STORAGE_KEY, themeId); } catch (e) {}
 }
 
@@ -1883,7 +1965,31 @@ try { savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || "neon"; } catch (e
 if (!THEME_IDS.includes(savedTheme)) savedTheme = "neon";
 applyTheme(savedTheme);
 
-themeSelect.addEventListener("change", () => applyTheme(themeSelect.value));
+themeDropdownBtn.addEventListener("click", () => {
+  if (themeDropdownMenu.hidden) openThemeDropdown(); else closeThemeDropdown();
+});
+
+themeOptions.forEach(li => {
+  const selectThis = () => {
+    applyTheme(li.dataset.themeValue);
+    closeThemeDropdown();
+    themeDropdownBtn.focus();
+  };
+  li.addEventListener("click", selectThis);
+  li.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectThis(); }
+  });
+});
+
+document.addEventListener("click", (e) => {
+  if (!themeDropdown.contains(e.target)) closeThemeDropdown();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !themeDropdownMenu.hidden) {
+    closeThemeDropdown();
+    themeDropdownBtn.focus();
+  }
+});
 
 const starContainer = document.getElementById("starfield");
 

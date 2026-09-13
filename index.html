@@ -167,6 +167,14 @@ body {
   padding: 18px 0 30px;
 }
 
+/* Case-Files-only pushpin, kept as its own element (a sibling before .hero,
+   positioned relative to .page) rather than a ::before on .hero itself -
+   .hero gets a clip-path for its torn bottom edge, and clip-path clips an
+   element's entire rendered subtree, pseudo-elements included, so anything
+   poking outside .hero's own box (like a pin at top:-9px) would otherwise
+   just vanish. */
+.hero-pin { display: none; }
+
 .hero-eyebrow {
   display: inline-block;
   font-size: 0.78em;
@@ -1182,29 +1190,24 @@ tbody tr:hover .user-cell span {
   color: var(--text);
 }
 
-/* Grouped into labeled sections (see EDIT_FIELD_GROUPS in the page script)
-   instead of one flat 11-box grid, which read as an undifferentiated wall
-   of identical inputs with no way to tell the headline ratios apart from
-   the raw counters backing them. */
-.edit-stats-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  margin-bottom: 16px;
-}
+/* Edit-modal content is split into two labeled sections (Stats, Names &
+   Flags) rather than a flat unlabeled stack, so it's not just one
+   undifferentiated wall of fields. */
+.edit-section { margin-bottom: 20px; }
+.edit-section:last-of-type { margin-bottom: 0; }
 
-.edit-field-group-label {
+.edit-section-label {
   font-size: 0.7em;
   font-weight: 700;
   letter-spacing: 0.6px;
   text-transform: uppercase;
   color: var(--text-faint);
   padding-bottom: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   border-bottom: 1px solid var(--border);
 }
 
-.edit-field-group-grid {
+.edit-stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
@@ -1234,7 +1237,7 @@ tbody tr:hover .user-cell span {
 }
 
 @media (max-width: 480px) {
-  .edit-field-group-grid { grid-template-columns: repeat(2, 1fr); }
+  .edit-stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 #modalUsername {
@@ -1478,7 +1481,7 @@ html[data-theme="casefiles"] .panel-header {
   border-bottom: 1px dashed var(--border-strong);
   padding-bottom: 16px;
 }
-html[data-theme="casefiles"] .edit-field-group-label {
+html[data-theme="casefiles"] .edit-section-label {
   border-bottom-style: dashed;
   border-bottom-color: var(--border-strong);
   font-family: 'Anton', 'Arial Narrow', sans-serif;
@@ -1491,16 +1494,25 @@ html[data-theme="casefiles"] .panel-icon {
   box-shadow: 3px 3px 0 var(--border-strong);
 }
 
+/* clip-path clips box-shadow along with everything else, which would cut
+   the shadow off hard at the flat pre-tear rectangle rather than letting it
+   follow the jagged silhouette - filter: drop-shadow() operates on the
+   already-clipped shape's actual alpha, so it hugs the torn edge correctly
+   instead. Border behaves similarly: it was only ever drawn along the
+   original straight bottom line, so clipping leaves it as bare fragments
+   at the tear's peaks - left alone, since that reads as the raw torn
+   material rather than a clean stroke, which is the point. */
 html[data-theme="casefiles"] .hero {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-bottom: 2px dashed var(--border-strong);
-  box-shadow: var(--shadow-card);
-  border-radius: var(--radius-l);
-  padding: 34px 28px 30px;
+  border-radius: var(--radius-l) var(--radius-l) 0 0;
+  padding: 34px 28px 42px;
+  box-shadow: none;
+  filter: drop-shadow(0 10px 12px rgba(42,36,28,0.35));
+  clip-path: url(#tornEdge);
 }
-html[data-theme="casefiles"] .hero::before {
-  content: "";
+html[data-theme="casefiles"] .hero-pin {
+  display: block;
   position: absolute;
   top: -9px;
   left: 50%;
@@ -1510,6 +1522,7 @@ html[data-theme="casefiles"] .hero::before {
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #e7c467, var(--gold) 60%, #7c6323 100%);
   box-shadow: 0 3px 4px rgba(0,0,0,0.35);
+  z-index: 1;
 }
 /* Folder tab poking above the modal card, echoing the mockup's "Case File"
    exhibit - red for the edit/amend flow, ink-blue for the read-only one. */
@@ -1520,17 +1533,25 @@ html[data-theme="casefiles"] .hero::before {
    the top of the screen that box gets centered). Negative margins cancel
    .modal-content's own padding so the bar spans edge-to-edge and sits flush
    with the card's rounded top corners instead of floating inset. */
+/* A tab poking above the card, like a manila folder tab, rather than a
+   full-width letterhead bar. This previously got clipped by the browser
+   viewport on the Edit modal, which was tall enough to center with its top
+   near y:0 - now that the Edit modal has dropped the Raw Counts section
+   (and is much shorter as a result), that clipping risk is gone, same as
+   it always was fine on the shorter, read-only player modal. */
 html[data-theme="casefiles"] .modal-folder-tab {
   display: block;
-  margin: -26px -28px 18px;
-  padding: 10px 28px;
+  position: absolute;
+  top: -16px;
+  left: 24px;
   background: var(--accent);
   color: var(--panel);
   font-size: 0.68em;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  border-radius: var(--radius-l) var(--radius-l) 0 0;
+  padding: 7px 16px;
+  border-radius: 2px 2px 0 0;
 }
 html[data-theme="casefiles"] .modal-folder-tab-amend {
   background: var(--bad);
@@ -1758,11 +1779,34 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
 </head>
 <body>
 
+<!-- Hidden clip-path used by the Case Files hero card's torn bottom edge.
+     objectBoundingBox units so the same 0-1 path adapts to the card's
+     actual rendered size instead of needing fixed pixel coordinates.
+     Smooth cubic-bezier lobes (not straight polygon facets, and not a
+     tangent-circle radial-gradient - that rendered as jagged cusps, see
+     the .hero comment in <style>) for a soft, irregular hand-torn look. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <clipPath id="tornEdge" clipPathUnits="objectBoundingBox">
+    <path d="M0,0 L1,0 L1,0.9
+      C0.96,0.94 0.94,1 0.9,0.95
+      C0.87,0.91 0.84,0.99 0.8,0.94
+      C0.77,0.9 0.73,1 0.69,0.96
+      C0.65,0.92 0.61,0.99 0.57,0.94
+      C0.54,0.9 0.5,1 0.46,0.95
+      C0.43,0.91 0.39,0.99 0.35,0.94
+      C0.32,0.9 0.28,1 0.24,0.95
+      C0.21,0.91 0.17,0.99 0.13,0.94
+      C0.1,0.9 0.06,0.98 0.03,0.93
+      C0.02,0.91 0.01,0.95 0,0.92 Z" />
+  </clipPath>
+</svg>
+
 <div id="nebula"></div>
 <div id="starfield"></div>
 
 <div class="page">
 
+  <div class="hero-pin" aria-hidden="true"></div>
   <header class="hero">
     <div class="hero-eyebrow">&#9876; Community Leaderboard</div>
     <h1>Bedwars Sweat Tracker</h1>
@@ -2017,18 +2061,23 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
       <span id="closeEditModal" class="modal-close">&times;</span>
       <h2 class="edit-modal-title">Edit Sweat</h2>
 
-      <div id="editStatsGrid" class="edit-stats-grid"></div>
-
-      <div class="chip-section">
-        <span class="chip-heading">Beaten By</span>
-        <div class="chip-group roster" id="editBeatenByGroup"></div>
+      <div class="edit-section">
+        <div class="edit-section-label">Stats</div>
+        <div id="editStatsGrid" class="edit-stats-grid"></div>
       </div>
 
-      <div class="chip-section">
-        <span class="chip-heading">Flags</span>
-        <div class="chip-group">
-          <label class="chip cheat-chip"><input type="checkbox" id="editCheating" /><span>Cheating</span></label>
-          <label class="chip boost-chip"><input type="checkbox" id="editBoosting" /><span>Boosting</span></label>
+      <div class="edit-section">
+        <div class="edit-section-label">Names &amp; Flags</div>
+        <div class="chip-section">
+          <span class="chip-heading">Beaten By</span>
+          <div class="chip-group roster" id="editBeatenByGroup"></div>
+        </div>
+        <div class="chip-section">
+          <span class="chip-heading">Flags</span>
+          <div class="chip-group">
+            <label class="chip cheat-chip"><input type="checkbox" id="editCheating" /><span>Cheating</span></label>
+            <label class="chip boost-chip"><input type="checkbox" id="editBoosting" /><span>Boosting</span></label>
+          </div>
         </div>
       </div>
 
@@ -2296,35 +2345,22 @@ const SERAPH_TAG_ICONS = {
   alt: "data:image/webp;base64,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",
 };
 
-// Editable numeric stats for the edit-sweat modal, in display order.
-// Single source of truth so the modal's fields, population, and the PATCH
-// payload can't drift out of sync with each other.
+// Editable numeric stats for the edit-sweat modal, in display order. Just
+// the headline ratios - the raw counts backing them (finals/finalDeaths/
+// kills/deaths/beds/bedsLost) aren't editable here, so they're simply not
+// in this list; the PATCH payload only ever includes what's iterated below,
+// and the backend merges partial bodies rather than replacing the whole
+// record, so leaving them out doesn't touch their stored values.
 const EDIT_NUMERIC_FIELDS = [
   { key: "star", label: "Star", step: "1" },
   { key: "fkdr", label: "FKDR", step: "0.01" },
   { key: "wlr", label: "WLR", step: "0.01" },
   { key: "bblr", label: "BBLR", step: "0.01" },
   { key: "kdr", label: "KDR", step: "0.01" },
-  { key: "finals", label: "Finals", step: "1" },
-  { key: "finalDeaths", label: "Final Deaths", step: "1" },
-  { key: "kills", label: "Kills", step: "1" },
-  { key: "deaths", label: "Deaths", step: "1" },
-  { key: "beds", label: "Beds Broken", step: "1" },
-  { key: "bedsLost", label: "Beds Lost", step: "1" },
-];
-
-// Purely a rendering grouping for the edit modal - EDIT_NUMERIC_FIELDS above
-// stays the single source of truth for keys/labels/steps (and the only
-// thing the PATCH payload and value-population code iterate), this just
-// says which section each key's box renders under so the 11 fields don't
-// read as one undifferentiated block.
-const EDIT_FIELD_GROUPS = [
-  { label: "Overall", keys: ["star", "fkdr", "wlr", "bblr", "kdr"] },
-  { label: "Raw Counts", keys: ["finals", "finalDeaths", "kills", "deaths", "beds", "bedsLost"] },
 ];
 
 // Cached once the edit modal's inputs/chips exist, so opening/saving an edit
-// doesn't repeat 20 getElementById lookups every time.
+// doesn't repeat lookups every time.
 const editStatInputs = {};
 const editRosterCheckboxes = {};
 
@@ -2333,18 +2369,10 @@ const editRosterCheckboxes = {};
 // innerHTML here is safe.
 function initEditModal() {
   const grid = document.getElementById("editStatsGrid");
-  const fieldsByKey = Object.fromEntries(EDIT_NUMERIC_FIELDS.map(f => [f.key, f]));
-  grid.innerHTML = EDIT_FIELD_GROUPS.map(group => `
-    <div class="edit-field-group">
-      <div class="edit-field-group-label">${group.label}</div>
-      <div class="edit-field-group-grid">
-        ${group.keys.map(k => { const f = fieldsByKey[k]; return `
-          <div class="edit-field">
-            <label for="edit_${f.key}">${f.label}</label>
-            <input type="number" id="edit_${f.key}" step="${f.step}" />
-          </div>
-        `; }).join("")}
-      </div>
+  grid.innerHTML = EDIT_NUMERIC_FIELDS.map(f => `
+    <div class="edit-field">
+      <label for="edit_${f.key}">${f.label}</label>
+      <input type="number" id="edit_${f.key}" step="${f.step}" />
     </div>
   `).join("");
   EDIT_NUMERIC_FIELDS.forEach(f => { editStatInputs[f.key] = document.getElementById(`edit_${f.key}`); });

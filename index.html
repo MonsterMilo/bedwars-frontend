@@ -518,7 +518,13 @@ input[type="text"], input[type="number"], input[type="date"] {
   transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s var(--ease);
 }
 
-input[type="text"] { flex: 1; }
+/* min-width:0 overrides a text input's automatic flex-shrink floor (its
+   own intrinsic content size), which otherwise refuses to shrink below
+   that regardless of flex-shrink - harmless when this row had the whole
+   card's width to work with, but in the dashboard's narrower left column
+   the input+button combined couldn't fit inside it at all, so the button
+   just overflowed the column and sat flush against its right border. */
+input[type="text"] { flex: 1; min-width: 0; }
 
 input::placeholder { color: var(--text-faint); }
 

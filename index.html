@@ -366,6 +366,7 @@ h1 {
 
 /* Sweat Lookup panel */
 #form-container {
+  position: relative;
   max-width: 760px;
   margin: 0 auto 44px;
   padding: 26px 30px 28px;
@@ -930,6 +931,33 @@ input:focus {
   grid-column: 1 / -1;
 }
 
+/* Themed empty-state icon - all three live in the markup always (same
+   "present but hidden" pattern as .exhibit-tag/.corkboard-string
+   elsewhere), one shown per theme via the rules below, so an empty
+   results view reads as a considered state instead of a bare fallback
+   string. Sits above .empty-state-text, which is just the original plain
+   message wrapped in its own element now that the icon needs a sibling. */
+.empty-icon { display: none; width: 56px; height: 56px; margin: 0 auto 14px; }
+html:not([data-theme]) .empty-icon-neon { display: block; color: var(--accent); }
+html[data-theme="casefiles"] .empty-icon-casefiles { display: block; color: var(--text-dim); }
+html[data-theme="ledger"] .empty-icon-ledger { display: block; color: var(--gold); }
+
+/* Neon: a slowly rotating radar sweep, echoing "still scanning, nothing
+   found" rather than a static dead icon - the one empty state in this set
+   that gets an animation, since Neon is the theme built around motion
+   everywhere else. transform-origin matches the icon's own 64x64 viewBox
+   center in user units, which is what a plain "32px 32px" resolves
+   against for an SVG child (its default transform-box is the SVG
+   viewport, not the CSS pixel grid). */
+html:not([data-theme]) .radar-sweep {
+  transform-origin: 32px 32px;
+  animation: radarSweepSpin 2.4s linear infinite;
+}
+@keyframes radarSweepSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .pagination {
   max-width: 1200px;
   margin: 8px auto 40px;
@@ -953,6 +981,53 @@ input:focus {
    the backend's free-tier host has been idle and needs to spin back up. */
 @keyframes loadingPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
 .loading-state { animation: loadingPulse 1.4s ease-in-out infinite; }
+
+/* Success flourish shown over #form-container after a sweat is added -
+   playSuccessFlourish() (near the submit handler) builds the theme-
+   appropriate inner markup and drops it in here, then removes the whole
+   wrapper once its animation finishes. Centered/absolute/non-interactive
+   so it overlays without disturbing the form's own layout underneath. */
+.success-flourish {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 50;
+  overflow: visible;
+}
+
+/* Neon: a ring ping plus a burst of small particles thrown outward from
+   the center, each with its own randomized (JS-set) --dx/--dy/--particle-
+   color. html:not([data-theme]) because Neon is the absence of a data-
+   theme attribute (see applyTheme()), not a value of one. */
+html:not([data-theme]) .flourish-ring {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent-2);
+  animation: neonRingPing 0.8s ease-out forwards;
+}
+@keyframes neonRingPing {
+  0% { transform: scale(0.3); opacity: 1; }
+  100% { transform: scale(4.5); opacity: 0; }
+}
+html:not([data-theme]) .flourish-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--particle-color, var(--accent));
+  box-shadow: 0 0 6px var(--particle-color, var(--accent));
+  animation: neonParticleBurst 0.9s cubic-bezier(.15,.7,.3,1) forwards;
+}
+@keyframes neonParticleBurst {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+}
 
 .sweat-card {
   position: relative;
@@ -1184,11 +1259,49 @@ th {
   user-select: none;
 }
 
-th.sortable { cursor: pointer; transition: background 0.2s; }
+th.sortable { position: relative; cursor: pointer; overflow: hidden; transition: background 0.2s; }
 th.sortable:hover { background: rgba(0,217,255,0.1); }
 
-.sort-icon { opacity: 0.4; margin-left: 4px; font-size: 0.9em; }
+/* One-shot highlight sweep across a header when it's clicked, confirming
+   the click landed - a diagonal light band that crosses the cell once via
+   .sort-flash (added on click, removed after its own animationend so it's
+   ready to replay on the very next click of the same column). Lives on
+   ::after rather than the header's own background so it can layer over
+   the hover tint above without fighting it. overflow:hidden on th.sortable
+   keeps the band from spilling into neighboring cells mid-sweep. */
+th.sortable::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 40%, var(--accent-soft) 50%, transparent 60%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+th.sortable.sort-flash::after {
+  animation: sortSweep 0.5s ease-out;
+}
+@keyframes sortSweep {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(120%); }
+}
+
+/* A single arrow glyph that rotates between asc/desc instead of swapping
+   to a different character - "flipping" reads as one continuous motion
+   this way, rather than one glyph vanishing and a different one popping
+   in. Transitions (not a keyframe animation) drive all of this, since an
+   animation with fill-mode would permanently pin whichever property it
+   touches - see the .sweat-card/.star notes elsewhere on this page for
+   why that matters - and a transition reacts naturally to .sort-active/
+   .sort-desc toggling with no risk of that. */
+.sort-icon {
+  display: inline-block;
+  opacity: 0.4;
+  margin-left: 4px;
+  font-size: 0.9em;
+  transition: transform 0.3s var(--ease), opacity 0.25s var(--ease), color 0.25s var(--ease);
+}
 th.sort-active .sort-icon { opacity: 1; color: var(--accent); }
+th.sort-active.sort-desc .sort-icon { transform: rotate(180deg); }
 
 .user-cell span { transition: color 0.2s ease, text-shadow 0.2s ease; }
 
@@ -1355,6 +1468,33 @@ tbody tr:hover .user-cell span {
 
 @media (max-width: 480px) {
   .edit-stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Admin Key modal - replaces a plain window.prompt(), which is an
+   unstyled browser dialog completely outside any theme's control (same
+   category of problem as the native form-validation tooltip fixed
+   earlier). Reuses .edit-modal-title/.edit-modal-actions instead of
+   defining its own title/button-row styling. */
+.admin-key-modal-content {
+  width: 380px;
+}
+.admin-key-desc {
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 0.85em;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+#adminKeyInput {
+  width: 100%;
+}
+#adminKeyStatus {
+  margin-top: 12px;
+  min-height: 18px;
+  text-align: center;
+  color: var(--good);
+  font-weight: 600;
+  font-size: 0.88em;
 }
 
 #modalUsername {
@@ -2024,21 +2164,24 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
   text-shadow: none;
 }
 
-/* Typewriter reveal on #status/#editStatus - the .typewriter-play class is
-   toggled by a MutationObserver (see armTypewriter() in the script below)
-   every time either element's text changes. clip-path wipes the text in
-   from the left without animating layout width, so it plays correctly
-   under #status's own text-align:center (a width-based reveal would fight
-   the auto margins and grow from the center instead of typing from the
-   left). steps() gives the blocky per-character look instead of a smooth
-   wipe; a fixed step count (not one tied to actual character count) keeps
-   this CSS-only - no measuring needed for typical message lengths. */
+/* Typewriter reveal on #status/#editStatus/#adminKeyStatus - the
+   .typewriter-play class is toggled by a MutationObserver (see
+   armTypewriter() in the script below) every time any of these elements'
+   text changes. clip-path wipes the text in from the left without
+   animating layout width, so it plays correctly under #status's own
+   text-align:center (a width-based reveal would fight the auto margins
+   and grow from the center instead of typing from the left). steps()
+   gives the blocky per-character look instead of a smooth wipe; a fixed
+   step count (not one tied to actual character count) keeps this
+   CSS-only - no measuring needed for typical message lengths. */
 html[data-theme="casefiles"] #status,
-html[data-theme="casefiles"] #editStatus {
+html[data-theme="casefiles"] #editStatus,
+html[data-theme="casefiles"] #adminKeyStatus {
   display: inline-block;
 }
 html[data-theme="casefiles"] #status.typewriter-play,
-html[data-theme="casefiles"] #editStatus.typewriter-play {
+html[data-theme="casefiles"] #editStatus.typewriter-play,
+html[data-theme="casefiles"] #adminKeyStatus.typewriter-play {
   animation: typeReveal 0.5s steps(28, end) both;
 }
 @keyframes typeReveal {
@@ -2080,6 +2223,45 @@ html[data-theme="casefiles"] .btn-primary.stamp-flourish::after {
 @keyframes inkSplash {
   0% { opacity: 0.7; transform: scale(0.3); }
   100% { opacity: 0; transform: scale(1.7); }
+}
+
+/* Case Files success flourish - a big rubber-stamped "FILED" slams down
+   over the form and holds a moment before fading, like a clerk stamping a
+   completed report. Reuses the same worn-ink noise mask as the Cheater/
+   Boosting pills (::before, kept behind the letters via negative z-index)
+   so it matches their texture instead of introducing a third, cleaner-
+   edged stamp style. */
+html[data-theme="casefiles"] .flourish-stamp {
+  position: relative;
+  z-index: 0;
+  font-family: 'Anton', sans-serif;
+  font-size: 2.6em;
+  letter-spacing: 0.08em;
+  color: var(--bad);
+  padding: 8px 28px;
+  transform: rotate(-8deg);
+  animation: stampSlam 1.6s cubic-bezier(.2,1.4,.4,1) forwards;
+}
+html[data-theme="casefiles"] .flourish-stamp::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 10px;
+  border: 3px solid;
+  border-color: var(--bad);
+  background: var(--bad-soft);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='40'%3E%3Cfilter id='fs'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.1 0.16' numOctaves='2' seed='6' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fs)'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='40'%3E%3Cfilter id='fs'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.1 0.16' numOctaves='2' seed='6' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fs)'/%3E%3C/svg%3E");
+  mask-size: 60px 40px;
+  -webkit-mask-size: 60px 40px;
+}
+@keyframes stampSlam {
+  0% { transform: rotate(-8deg) scale(2.4); opacity: 0; }
+  30% { transform: rotate(-8deg) scale(0.94); opacity: 1; }
+  45% { transform: rotate(-8deg) scale(1.04); opacity: 1; }
+  60%, 80% { transform: rotate(-8deg) scale(1); opacity: 1; }
+  100% { transform: rotate(-8deg) scale(1); opacity: 0; }
 }
 
 /* ============================================================
@@ -2473,6 +2655,46 @@ html[data-theme="ledger"] .pill.boost {
   box-shadow: inset 0 1px 1px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(0,0,0,0.25);
 }
 
+/* Private Bank success flourish - a wax seal drops onto the form and
+   settles with a wobble, echoing a document being officially sealed.
+   Same radial-gradient + inset light/dark pair as the wax-seal pills
+   above, just scaled up into a full seal instead of a small badge. Two
+   animations (not one) since the settle-then-hold and the eventual fade
+   need different timing/easing and touch different properties for most
+   of their run - see the comment on them for why running them together
+   here doesn't hit the usual "animation permanently wins" trap. */
+html[data-theme="ledger"] .flourish-seal {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 2px solid #6b4f14;
+  background: radial-gradient(circle at 30% 25%, #dbb75c, #93701f 75%);
+  box-shadow: inset 0 2px 2px rgba(255,255,255,0.4), inset 0 -3px 5px rgba(0,0,0,0.3), 0 8px 18px rgba(22,35,58,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2a1e08;
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  /* sealDrop ends holding opacity:1 (forwards) - sealFade starts after it
+     via animation-delay and only then touches opacity, so the two never
+     actually fight over the property at the same moment; sealFade simply
+     has nothing to contribute (fill-mode:none) until its delay elapses. */
+  animation: sealDrop 0.6s cubic-bezier(.25,1.6,.4,1) forwards,
+             sealFade 0.5s ease-in 1.3s forwards;
+}
+@keyframes sealDrop {
+  0% { transform: scale(2.2) rotate(-20deg); opacity: 0; }
+  55% { transform: scale(0.92) rotate(-20deg); opacity: 1; }
+  75% { transform: scale(1.04) rotate(-20deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-20deg); opacity: 1; }
+}
+@keyframes sealFade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 /* Animated ink-draw underline on player names - a thin gold rule that
    "writes itself" in under the name on hover, instead of Neon's color/glow
    swap. background-size (not width, so truncated/ellipsized names still
@@ -2718,7 +2940,34 @@ html[data-theme="ledger"] .view-btn.active {
   </div>
 
   <div id="cardGrid" class="card-grid"></div>
-  <div id="emptyState" class="empty-state" hidden>No sweats match these filters yet.</div>
+  <div id="emptyState" class="empty-state" hidden>
+    <svg class="empty-icon empty-icon-neon" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.25" />
+      <circle cx="32" cy="32" r="17" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.4" />
+      <circle cx="32" cy="32" r="8" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.55" />
+      <line x1="32" y1="6" x2="32" y2="58" stroke="currentColor" stroke-width="1" opacity="0.15" />
+      <line x1="6" y1="32" x2="58" y2="32" stroke="currentColor" stroke-width="1" opacity="0.15" />
+      <g class="radar-sweep">
+        <path d="M32,32 L32,6 A26,26 0 0,1 54.5,19 Z" fill="currentColor" opacity="0.3" />
+      </g>
+      <circle cx="32" cy="32" r="2.5" fill="currentColor" />
+    </svg>
+    <svg class="empty-icon empty-icon-casefiles" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <path d="M6,20 L6,50 A2,2 0 0 0 8,52 L56,52 A2,2 0 0 0 58,50 L58,24 A2,2 0 0 0 56,22 L30,22 L26,16 L8,16 A2,2 0 0 0 6,18 Z" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="1.4" />
+      <line x1="16" y1="34" x2="48" y2="34" stroke="currentColor" stroke-width="1.1" stroke-dasharray="3 3" opacity="0.55" />
+      <line x1="16" y1="42" x2="40" y2="42" stroke="currentColor" stroke-width="1.1" stroke-dasharray="3 3" opacity="0.55" />
+    </svg>
+    <svg class="empty-icon empty-icon-ledger" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="1.3" />
+      <circle cx="32" cy="32" r="10" fill="none" stroke="currentColor" stroke-width="1.3" />
+      <line x1="32" y1="22" x2="32" y2="16" stroke="currentColor" stroke-width="1.3" />
+      <line x1="32" y1="42" x2="32" y2="48" stroke="currentColor" stroke-width="1.3" />
+      <line x1="22" y1="32" x2="16" y2="32" stroke="currentColor" stroke-width="1.3" />
+      <line x1="42" y1="32" x2="48" y2="32" stroke="currentColor" stroke-width="1.3" />
+      <circle cx="32" cy="32" r="2" fill="currentColor" />
+    </svg>
+    <div class="empty-state-text">No sweats match these filters yet.</div>
+  </div>
 
   <div class="table-wrap card" id="tableWrap" hidden>
     <table>
@@ -2766,7 +3015,34 @@ html[data-theme="ledger"] .view-btn.active {
         <tbody id="leaderboardTableBody"></tbody>
       </table>
     </div>
-    <div id="leaderboardEmptyState" class="empty-state" hidden>This person hasn't beaten anyone matching the current filters.</div>
+    <div id="leaderboardEmptyState" class="empty-state" hidden>
+      <svg class="empty-icon empty-icon-neon" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.25" />
+        <circle cx="32" cy="32" r="17" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.4" />
+        <circle cx="32" cy="32" r="8" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.55" />
+        <line x1="32" y1="6" x2="32" y2="58" stroke="currentColor" stroke-width="1" opacity="0.15" />
+        <line x1="6" y1="32" x2="58" y2="32" stroke="currentColor" stroke-width="1" opacity="0.15" />
+        <g class="radar-sweep">
+          <path d="M32,32 L32,6 A26,26 0 0,1 54.5,19 Z" fill="currentColor" opacity="0.3" />
+        </g>
+        <circle cx="32" cy="32" r="2.5" fill="currentColor" />
+      </svg>
+      <svg class="empty-icon empty-icon-casefiles" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <path d="M6,20 L6,50 A2,2 0 0 0 8,52 L56,52 A2,2 0 0 0 58,50 L58,24 A2,2 0 0 0 56,22 L30,22 L26,16 L8,16 A2,2 0 0 0 6,18 Z" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="1.4" />
+        <line x1="16" y1="34" x2="48" y2="34" stroke="currentColor" stroke-width="1.1" stroke-dasharray="3 3" opacity="0.55" />
+        <line x1="16" y1="42" x2="40" y2="42" stroke="currentColor" stroke-width="1.1" stroke-dasharray="3 3" opacity="0.55" />
+      </svg>
+      <svg class="empty-icon empty-icon-ledger" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="1.3" />
+        <circle cx="32" cy="32" r="10" fill="none" stroke="currentColor" stroke-width="1.3" />
+        <line x1="32" y1="22" x2="32" y2="16" stroke="currentColor" stroke-width="1.3" />
+        <line x1="32" y1="42" x2="32" y2="48" stroke="currentColor" stroke-width="1.3" />
+        <line x1="22" y1="32" x2="16" y2="32" stroke="currentColor" stroke-width="1.3" />
+        <line x1="42" y1="32" x2="48" y2="32" stroke="currentColor" stroke-width="1.3" />
+        <circle cx="32" cy="32" r="2" fill="currentColor" />
+      </svg>
+      <div class="empty-state-text">This person hasn't beaten anyone matching the current filters.</div>
+    </div>
     <div id="leaderboardPagination" class="pagination" hidden>
       <button type="button" class="icon-btn page-prev" title="Previous page">&#8249;</button>
       <span class="pagination-label"></span>
@@ -2833,6 +3109,24 @@ html[data-theme="ledger"] .view-btn.active {
       <div class="edit-modal-actions">
         <button type="button" id="cancelEditBtn" class="btn btn-ghost">Cancel</button>
         <button type="button" id="saveEditBtn" class="btn btn-primary">Save Changes</button>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN KEY MODAL -->
+  <div id="adminKeyModal" class="modal">
+    <div class="modal-card">
+      <span class="modal-folder-tab">Case File &middot; Clearance</span>
+      <div class="modal-content admin-key-modal-content">
+      <span id="closeAdminKeyModal" class="modal-close">&times;</span>
+      <h2 class="edit-modal-title">Admin Key</h2>
+      <p class="admin-key-desc">Only needed to add, edit, or remove sweats. Leave blank to browse read-only.</p>
+      <input type="text" id="adminKeyInput" placeholder="Enter admin key" autocomplete="off" />
+      <div id="adminKeyStatus" role="alert" aria-live="assertive"></div>
+      <div class="edit-modal-actions">
+        <button type="button" id="clearAdminKeyBtn" class="btn btn-ghost">Clear</button>
+        <button type="button" id="saveAdminKeyBtn" class="btn btn-primary">Save</button>
       </div>
       </div>
     </div>
@@ -2960,14 +3254,47 @@ function adminHeaders(extra = {}) {
   const key = getAdminKey();
   return key ? { ...extra, "x-admin-key": key } : extra;
 }
+// A themed modal instead of window.prompt() - a native browser dialog
+// that no CSS can touch, the same category of immersion break as the
+// native form-validation tooltip fixed elsewhere on this page.
+const adminKeyModal = document.getElementById('adminKeyModal');
+const adminKeyInput = document.getElementById('adminKeyInput');
+const adminKeyStatus = document.getElementById('adminKeyStatus');
+const closeAdminKeyModal = document.getElementById('closeAdminKeyModal');
+const clearAdminKeyBtn = document.getElementById('clearAdminKeyBtn');
+const saveAdminKeyBtn = document.getElementById('saveAdminKeyBtn');
+
+function closeAdminKeyModalFn() {
+  adminKeyModal.style.display = "none";
+}
+
 document.getElementById('setAdminKeyBtn').addEventListener('click', () => {
-  const current = getAdminKey();
-  const next = prompt("Enter admin key (only needed to add/edit/remove sweats):", current);
-  if (next === null) return;
+  adminKeyInput.value = getAdminKey();
+  adminKeyStatus.textContent = "";
+  adminKeyModal.style.display = "flex";
+  adminKeyInput.focus();
+});
+
+closeAdminKeyModal.addEventListener('click', closeAdminKeyModalFn);
+
+clearAdminKeyBtn.addEventListener('click', () => {
+  try { localStorage.removeItem(ADMIN_KEY_STORAGE); } catch {}
+  adminKeyInput.value = "";
+  adminKeyStatus.textContent = "Admin key cleared.";
+  adminKeyInput.focus();
+});
+
+function saveAdminKey() {
+  const next = adminKeyInput.value.trim();
   try {
-    if (next.trim()) localStorage.setItem(ADMIN_KEY_STORAGE, next.trim());
+    if (next) localStorage.setItem(ADMIN_KEY_STORAGE, next);
     else localStorage.removeItem(ADMIN_KEY_STORAGE);
   } catch {}
+  adminKeyStatus.textContent = next ? "Admin key saved." : "Admin key cleared.";
+}
+saveAdminKeyBtn.addEventListener('click', saveAdminKey);
+adminKeyInput.addEventListener('keydown', e => {
+  if (e.key === "Enter") saveAdminKey();
 });
 
 const form = document.getElementById('sweatForm');
@@ -3254,6 +3581,8 @@ form.addEventListener('submit', async e => {
     currentUUID = null;
     currentStats = null;
     statsDisplay.style.display = "none";
+    status.textContent = SUCCESS_MESSAGES[document.documentElement.getAttribute("data-theme")] || SUCCESS_MESSAGES.neon;
+    playSuccessFlourish();
   } catch (err) {
     status.textContent = err.message;
   } finally {
@@ -3580,11 +3909,14 @@ function updateSortHeaders() {
     const icon = th.querySelector(".sort-icon");
     if (!icon) return;
     if (th.dataset.sort === sortField) {
-      icon.textContent = sortAsc ? "▲" : "▼";
+      // One glyph, rotated via .sort-desc - see the .sort-icon CSS for why
+      // this reads as a single arrow flipping instead of swapping shapes.
+      icon.textContent = "▲";
       th.classList.add("sort-active");
+      th.classList.toggle("sort-desc", !sortAsc);
     } else {
       icon.textContent = "⇅";
-      th.classList.remove("sort-active");
+      th.classList.remove("sort-active", "sort-desc");
     }
   });
 }
@@ -4075,6 +4407,13 @@ document.querySelectorAll("th.sortable").forEach(th => {
     }
     currentPage = 1;
     renderTable();
+    // One-shot sweep confirming the click landed - removed on its own
+    // animationend (rather than a fixed timeout) so it's always ready to
+    // replay immediately on the next click, even a rapid double-click.
+    th.classList.remove("sort-flash");
+    void th.offsetWidth;
+    th.classList.add("sort-flash");
+    th.addEventListener("animationend", () => th.classList.remove("sort-flash"), { once: true });
   });
 });
 
@@ -4179,6 +4518,7 @@ closeModal.onclick = () => modal.style.display = "none";
 window.onclick = (e) => {
   if (e.target === modal) modal.style.display = "none";
   if (e.target === editModal) closeEditModalFn();
+  if (e.target === adminKeyModal) closeAdminKeyModalFn();
 };
 
 // Case-Files-only typewriter effect on #status/#editStatus (the CSS side
@@ -4202,6 +4542,7 @@ function armTypewriter(el) {
 }
 armTypewriter(status);
 armTypewriter(editStatus);
+armTypewriter(adminKeyStatus);
 
 // Case-Files-only ink-stamp flourish on the primary buttons (Fetch Stats,
 // Add Sweat, Save Changes) - a click-triggered class rather than relying on
@@ -4216,6 +4557,74 @@ document.addEventListener("click", (e) => {
   void btn.offsetWidth;
   btn.classList.add("stamp-flourish");
 });
+
+// Per-theme success flourish played over #form-container after a sweat is
+// added - each theme gets its own small celebration instead of a shared
+// generic one, matching the personality already established elsewhere
+// (the wax-seal pills, the ink-stamp button click, the chasing card
+// border). The wrapper removes itself once its longest animation
+// finishes, so nothing lingers in the DOM between uses.
+const SUCCESS_MESSAGES = {
+  neon: "Sweat added!",
+  casefiles: "Case filed.",
+  ledger: "Entry recorded."
+};
+
+function buildNeonFlourish(container) {
+  const ring = document.createElement("div");
+  ring.className = "flourish-ring";
+  container.appendChild(ring);
+
+  const colors = ["var(--accent)", "var(--accent-2)", "var(--gold)"];
+  const particleCount = 14;
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement("div");
+    particle.className = "flourish-particle";
+    // Spread evenly around the circle with a little jitter per particle,
+    // rather than fully random angles, so a 14-particle burst doesn't
+    // occasionally clump up on one side by chance.
+    const angle = (i / particleCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+    const distance = 55 + Math.random() * 45;
+    particle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+    particle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+    particle.style.setProperty("--particle-color", colors[i % colors.length]);
+    container.appendChild(particle);
+  }
+  return 900; // longest child animation, in ms
+}
+
+function buildCaseFilesFlourish(container) {
+  const stamp = document.createElement("div");
+  stamp.className = "flourish-stamp";
+  stamp.textContent = "FILED";
+  container.appendChild(stamp);
+  return 1600;
+}
+
+function buildLedgerFlourish(container) {
+  const seal = document.createElement("div");
+  seal.className = "flourish-seal";
+  seal.innerHTML = "&#10003;";
+  container.appendChild(seal);
+  return 1800;
+}
+
+function playSuccessFlourish() {
+  const host = document.getElementById("form-container");
+  if (!host) return;
+  const wrap = document.createElement("div");
+  wrap.className = "success-flourish";
+  wrap.setAttribute("aria-hidden", "true");
+
+  const theme = document.documentElement.getAttribute("data-theme");
+  const build = theme === "casefiles" ? buildCaseFilesFlourish
+    : theme === "ledger" ? buildLedgerFlourish
+    : buildNeonFlourish;
+  const duration = build(wrap);
+
+  host.appendChild(wrap);
+  setTimeout(() => wrap.remove(), duration + 100);
+}
 
 </script>
 

@@ -441,25 +441,69 @@ input:focus {
   min-width: 0;
 }
 
-/* A 3-column grid instead of flex-wrap so a 9-person roster lands evenly
-   (3x3) instead of ragged rows with a lone chip stranded on the last line. */
+/* The roster used to be 9 full-width name buttons in a 3x3 grid - three
+   whole rows for what's really just a multi-select of 9 people. Every
+   roster member already has a unique color+initials pair (BEATEN_BY in
+   the script below) built for exactly this, already used for the small
+   circular badges on cards/table rows - reusing that same avatar language
+   here turns the picker into one compact wrapping row instead of a block. */
 .chip-group.roster {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-.chip-group.roster .chip { display: flex; }
-.chip-group.roster .chip span {
-  width: 100%;
-  text-align: center;
+  gap: 10px;
 }
 
-@media (max-width: 420px) {
-  .chip-group.roster { grid-template-columns: repeat(2, 1fr); }
-  /* The roster is always exactly 9 people (BEATEN_BY_KEYS), so 2 columns
-     always strand the last one alone in a half-empty row - give it the
-     full row instead of leaving it stuck against the left edge. */
-  .chip-group.roster .chip:last-child { grid-column: 1 / -1; }
+/* .roster-chip .roster-avatar (two classes), not a bare .roster-avatar -
+   the generic .chip span rule below is one class plus a type selector,
+   which actually outweighs a single class on specificity, so a bare
+   .roster-avatar would quietly lose its background/border/radius to it. */
+.roster-chip .roster-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72em;
+  font-weight: 800;
+  color: #04050a;
+  background: var(--chip-color);
+  border: 2px solid transparent;
+  box-shadow: 0 0 0 1px var(--border);
+  transition: transform 0.2s var(--ease), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+/* Selection is carried entirely by a ring + lift + corner badge, not by
+   dimming the avatar - muting a 38px circle's own color to signal
+   "unselected" also muted the initials inside it into illegibility, and
+   these colors need to stay recognizable at rest for anyone matching a
+   face to a color, not just once picked. */
+.roster-chip:hover .roster-avatar {
+  transform: translateY(-2px);
+  border-color: transparent;
+  box-shadow: 0 0 0 1px var(--border-strong), 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.roster-chip input:checked + .roster-avatar {
+  border-color: var(--panel);
+  box-shadow: 0 0 0 1px var(--panel), 0 0 0 3px var(--chip-color), 0 4px 10px rgba(0,0,0,0.35);
+  transform: translateY(-2px);
+}
+
+/* A small badge on top of the ring, rather than relying on color/ring
+   alone - :has() instead of a JS-toggled class since this is purely
+   decorative chrome with no behavior riding on it. */
+.roster-chip:has(input:checked) {
+  position: relative;
+}
+.roster-chip:has(input:checked)::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--good);
+  border: 2px solid var(--panel);
 }
 
 .chip {
@@ -2015,9 +2059,6 @@ html[data-theme="casefiles"] .chip span {
   padding: 7px 14px 7px 36px;
   border-radius: 2px;
 }
-html[data-theme="casefiles"] .chip-group.roster .chip span {
-  text-align: left;
-}
 html[data-theme="casefiles"] .chip span::before {
   content: "";
   position: absolute;
@@ -2078,6 +2119,31 @@ html[data-theme="casefiles"] .chip.cheat-chip input:checked + span::before {
 html[data-theme="casefiles"] .chip.boost-chip input:checked + span::before {
   background: var(--gold);
   border-color: var(--gold);
+}
+
+/* The roster's avatar circles opt out of the checklist tick-box treatment
+   above entirely - a left-aligned checkbox+label doesn't map onto a small
+   round badge, and the circle already carries its own checked state (a
+   full-opacity ring + corner badge, from the base rules). */
+html[data-theme="casefiles"] .chip-group.roster .roster-avatar {
+  padding: 0;
+  border-radius: 50%;
+}
+/* The "reset the checked pill back to resting" rule above (background/
+   color/border-color/box-shadow on .chip input:checked + span) is more
+   specific than the base ring rule for .roster-avatar - both match on
+   3 classes/pseudo-classes, but that one also carries the [data-theme]
+   attribute selector's extra type-selector weight, so it wins ties. Redeclaring the ring here, scoped under .chip-group.roster for enough
+   extra specificity, restores it for this theme. */
+html[data-theme="casefiles"] .chip-group.roster .chip input:checked + .roster-avatar {
+  background: var(--chip-color);
+  color: #04050a;
+  border-color: var(--panel);
+  box-shadow: 0 0 0 1px var(--panel), 0 0 0 3px var(--chip-color), 0 4px 10px rgba(0,0,0,0.35);
+}
+html[data-theme="casefiles"] .chip-group.roster .roster-avatar::before,
+html[data-theme="casefiles"] .chip-group.roster .roster-avatar::after {
+  content: none;
 }
 
 /* Stat/flag pills (Star, FKDR, Cheater, Boosting) never got a Case Files
@@ -2648,6 +2714,32 @@ html[data-theme="ledger"] .chip input:checked + span::before {
   content: "\2713\00A0";
   font-family: 'Playfair Display', serif;
   font-weight: 700;
+}
+
+/* The roster's avatar circles stay round rather than squaring off with
+   every other control, and skip the ink-checkmark prefix above - a
+   checkmark glyph crowding a single initial in a 38px circle reads as
+   clutter, not "signed off", and the circle already shows its own
+   checked state via the ring + corner badge (base rules), not a color
+   change, so muting the color here doesn't need its own hover/checked
+   variants the way an opacity/saturation-based selection state would. */
+html[data-theme="ledger"] .chip-group.roster .roster-avatar {
+  border-radius: 50%;
+  filter: saturate(0.55) sepia(0.15);
+}
+/* Same specificity tie as Case Files above (both match on 3 classes/
+   pseudo-classes; the theme's rule also carries the [data-theme] attribute
+   selector's extra type-selector weight, so it wins ties) - redeclare
+   the ring, scoped enough to actually win here. */
+html[data-theme="ledger"] .chip-group.roster .chip input:checked + .roster-avatar {
+  background: var(--chip-color);
+  color: #04050a;
+  border-color: var(--panel);
+  box-shadow: 0 0 0 1px var(--panel), 0 0 0 3px var(--chip-color), 0 4px 10px rgba(0,0,0,0.35);
+  filter: saturate(1) sepia(0.05);
+}
+html[data-theme="ledger"] .chip-group.roster .chip input:checked + .roster-avatar::before {
+  content: none;
 }
 
 html[data-theme="ledger"] #statsAvatar {
@@ -3259,17 +3351,7 @@ html[data-theme="ledger"] #customTooltip.tooltip-below::after {
 
       <div class="chip-section">
         <span class="chip-heading">Beaten By</span>
-        <div class="chip-group roster">
-          <label class="chip"><input type="checkbox" id="milo" /><span>Milo</span></label>
-          <label class="chip"><input type="checkbox" id="potat" /><span>Potat</span></label>
-          <label class="chip"><input type="checkbox" id="aballs" /><span>ABoi</span></label>
-          <label class="chip"><input type="checkbox" id="zoiv" /><span>Zoiv</span></label>
-          <label class="chip"><input type="checkbox" id="max" /><span>Max</span></label>
-          <label class="chip"><input type="checkbox" id="sqoz" /><span>Sqoz</span></label>
-          <label class="chip"><input type="checkbox" id="kermit" /><span>Kermit</span></label>
-          <label class="chip"><input type="checkbox" id="ssent" /><span>Ssent</span></label>
-          <label class="chip"><input type="checkbox" id="key" /><span>Key</span></label>
-        </div>
+        <div class="chip-group roster" id="beatenByGroup"></div>
       </div>
 
       <div class="chip-section">
@@ -3970,6 +4052,26 @@ const BEATEN_BY = {
 };
 const BEATEN_BY_KEYS = Object.keys(BEATEN_BY);
 const beatenByCheckboxes = {};
+
+// Shared by the Sweat Lookup form and the Edit modal - a roster picker
+// used to be 9 full-width name buttons (a 3x3 grid eating three whole
+// rows), now a single row of small colored initials, since every roster
+// member already has a unique color+initials pair (BEATEN_BY above) built
+// for exactly this. The full name still exists for anyone not just
+// glancing at colors: aria-label on the checkbox for screen readers,
+// data-tooltip on the label for sighted hover (see the customTooltip
+// system below).
+function buildRosterChipHtml(idPrefix = "") {
+  return BEATEN_BY_KEYS.map(k => {
+    const p = BEATEN_BY[k];
+    return `<label class="chip roster-chip" data-tooltip="${p.label}">
+      <input type="checkbox" id="${idPrefix}${k}" aria-label="${p.label}" />
+      <span class="roster-avatar" style="--chip-color:${p.color}" aria-hidden="true">${p.initials}</span>
+    </label>`;
+  }).join("");
+}
+
+document.getElementById("beatenByGroup").innerHTML = buildRosterChipHtml();
 BEATEN_BY_KEYS.forEach(k => { beatenByCheckboxes[k] = document.getElementById(k); });
 
 // Urchin tag type -> icon (embedded as data URIs, provided by the user).
@@ -4029,9 +4131,7 @@ function initEditModal() {
   EDIT_NUMERIC_FIELDS.forEach(f => { editStatInputs[f.key] = document.getElementById(`edit_${f.key}`); });
 
   const roster = document.getElementById("editBeatenByGroup");
-  roster.innerHTML = BEATEN_BY_KEYS.map(k => `
-    <label class="chip"><input type="checkbox" id="edit_${k}" /><span>${BEATEN_BY[k].label}</span></label>
-  `).join("");
+  roster.innerHTML = buildRosterChipHtml("edit_");
   BEATEN_BY_KEYS.forEach(k => { editRosterCheckboxes[k] = document.getElementById(`edit_${k}`); });
 }
 initEditModal();

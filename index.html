@@ -4243,6 +4243,21 @@ function adminHeaders(extra = {}) {
   const key = getAdminKey();
   return key ? { ...extra, "x-admin-key": key } : extra;
 }
+
+// The backend now has three key tiers (admin/trusted/add - see server.js),
+// and a "trusted" key gets a specific, genuinely useful 403 reason when it
+// tries to touch something older than 7 days ("Trusted key can only edit or
+// remove entries added in the last 7 days"). Surfacing that instead of a
+// generic "Failed to..." is the whole point of the backend bothering to send
+// a real message - falls back to the generic one if the body isn't the
+// { error } shape (or isn't JSON at all).
+async function extractErrorMessage(res, fallback) {
+  try {
+    const data = await res.json();
+    if (data && data.error) return data.error;
+  } catch {}
+  return fallback;
+}
 // A themed modal instead of window.prompt() - a native browser dialog
 // that no CSS can touch, the same category of immersion break as the
 // native form-validation tooltip fixed elsewhere on this page.
@@ -4612,7 +4627,7 @@ form.addEventListener('submit', async e => {
     if (res.status === 401 || res.status === 503) {
       throw new Error("Admin key missing or incorrect — click \"Admin Key\" above");
     }
-    if (!res.ok) throw new Error("Failed to add sweat");
+    if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to add sweat"));
 
     await loadSweats();
     form.reset();
@@ -5433,7 +5448,7 @@ async function removeSweat(id, rowEl) {
     if (res.status === 401 || res.status === 503) {
       throw new Error("Admin key missing or incorrect — click \"Admin Key\" above");
     }
-    if (!res.ok) throw new Error("Failed to remove sweat");
+    if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to remove sweat"));
     await loadSweats();
   } catch (err) {
     // Deletion failed - loadSweats() never ran, so this is still the same
@@ -5516,7 +5531,7 @@ saveEditBtn.addEventListener("click", async () => {
     if (res.status === 401 || res.status === 503) {
       throw new Error("Admin key missing or incorrect — click \"Admin Key\" above");
     }
-    if (!res.ok) throw new Error("Failed to save changes");
+    if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to save changes"));
 
     closeEditModalFn();
     await loadSweats();

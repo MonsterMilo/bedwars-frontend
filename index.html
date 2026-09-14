@@ -1103,6 +1103,63 @@ html:not([data-theme]) .add-sweat-row .btn.success-pulse {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Table/leaderboard row entrance - the grid view's cards have always had
+   an entrance animation (cardIn, above); rows never did. Base fallback is
+   a plain fade+rise (mirrors cardIn); every theme below swaps in its own
+   flavor via animation-name so the shared timing/fill-mode here still
+   applies. .row-exit (added just before removeSweat() actually deletes,
+   removed again if the request fails) plays a themed exit in the other
+   direction - added as a genuinely new capability for both rows AND
+   cards, since neither ever animated out before; deletions used to just
+   vanish the instant the post-delete re-render landed. */
+.sweat-row {
+  animation: rowIn 0.4s var(--ease) both;
+}
+@keyframes rowIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.sweat-row.row-exit, .sweat-card.row-exit {
+  pointer-events: none;
+}
+
+/* Neon entrance/exit for both cards and rows reuse the same clip-path
+   "typewriter" reveal already established for the status message text
+   (see armStatus/typeReveal) - rows literally scan in left-to-right like a
+   HUD redrawing a line, with a brief brightness flare. Exit is the exact
+   same keyframe played in reverse (animation-direction:reverse), the same
+   trick typewriter-dismiss already uses on #status - it "un-reveals" back
+   to nothing rather than needing a whole separate exit keyframe. Cards get
+   a simpler brightness-only companion animation on entrance instead of
+   clip-path (a clipped rounded card would clip its own border-radius
+   oddly mid-reveal), and a dedicated exit since cardIn's translateY(10px)
+   start isn't hidden enough on its own to read as a real dismissal. */
+@keyframes cardGlowNeon {
+  0% { filter: brightness(1.9) saturate(1.4); }
+  100% { filter: brightness(1) saturate(1); }
+}
+@keyframes cardExitNeon {
+  0% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0) brightness(1); }
+  30% { opacity: 1; transform: scale(1.02) translateY(-2px); filter: blur(0.5px) brightness(1.8); }
+  100% { opacity: 0; transform: scale(0.92) translateY(6px); filter: blur(6px) brightness(2.2); }
+}
+html:not([data-theme]) .sweat-card {
+  animation: cardIn 0.4s var(--ease) both, cardGlowNeon 0.45s ease-out both;
+}
+html:not([data-theme]) .sweat-card.row-exit {
+  animation: cardExitNeon 0.45s ease-in forwards;
+}
+@keyframes rowRevealNeon {
+  0% { clip-path: inset(0 100% 0 0); opacity: 0.4; filter: brightness(2.2); }
+  100% { clip-path: inset(0 0 0 0); opacity: 1; filter: brightness(1); }
+}
+html:not([data-theme]) .sweat-row {
+  animation: rowRevealNeon 0.45s var(--ease) both;
+}
+html:not([data-theme]) .sweat-row.row-exit {
+  animation: rowRevealNeon 0.4s ease-in both reverse;
+}
+
 /* Neon-only: a chasing conic-gradient light ring around the card border on
    hover, like RGB peripheral lighting. html:not([data-theme]) rather than
    html[data-theme="neon"] because Neon is the absence of a data-theme
@@ -1685,6 +1742,12 @@ tbody tr:hover .user-cell span {
 @media (prefers-reduced-motion: reduce) {
   #nebula, .star, .modal-live-dot { animation: none !important; }
   html[data-theme="casefiles"] .sweat-card { transition: none !important; }
+  /* Unlike the one-shot fades above, the full-screen theme-switch wipe is
+     a much bigger, brighter, viewport-covering motion - closer to the kind
+     of thing reduced-motion is meant to suppress, so it's cut entirely
+     rather than left alone. The theme still switches instantly underneath;
+     see applyTheme()'s reduced-motion check. */
+  #themeTransitionOverlay { display: none !important; }
 }
 
 /* ============================================================
@@ -2167,9 +2230,49 @@ html[data-theme="casefiles"] #modalSkin {
   to { opacity: 1; }
 }
 html[data-theme="casefiles"] .sweat-card {
-  animation-name: cardInCasefiles;
+  animation: cardInCasefiles 0.4s var(--ease) both, cardFlashCasefiles 0.5s ease-out both;
   transform: rotate(var(--card-tilt, -1deg));
   transition: transform 0.4s cubic-bezier(.34, 1.56, .64, 1), border-color 0.22s var(--ease), box-shadow 0.22s var(--ease);
+}
+/* A quick brightness/contrast flash standing in for a photocopier or
+   flash-photo pop, layered on top of the plain opacity fade above - safe
+   to add a second animation touching `filter` since neither cardInCasefiles
+   nor the resting tilt above ever uses that property. */
+@keyframes cardFlashCasefiles {
+  0% { filter: brightness(1.5) contrast(1.15); }
+  100% { filter: brightness(1) contrast(1); }
+}
+/* Cards never animated OUT before - deletion just vanished them the
+   instant the post-delete re-render landed. Starts from the card's actual
+   resting tilt (not 0deg) so it doesn't visibly snap straight before
+   flopping away, like the paper is being knocked further off-kilter as
+   it's pulled off the board. */
+@keyframes cardExitCasefiles {
+  0% { opacity: 1; transform: rotate(var(--card-tilt, -1deg)) translateY(0) scale(1); }
+  100% { opacity: 0; transform: rotate(calc(var(--card-tilt, -1deg) + 10deg)) translateY(14px) scale(0.92); }
+}
+html[data-theme="casefiles"] .sweat-card.row-exit {
+  animation: cardExitCasefiles 0.4s ease-in forwards;
+}
+/* Table/leaderboard rows read as a paper slip being slid into place from
+   the left, and pulled back out to the right (with a little rotation) on
+   removal - distinct motions rather than one reversed, since a sheet
+   being filed and a sheet being yanked out don't look like the same
+   gesture played backwards. */
+@keyframes rowInCasefiles {
+  0% { opacity: 0; transform: translateX(-18px); }
+  60% { opacity: 1; transform: translateX(2px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes rowOutCasefiles {
+  0% { opacity: 1; transform: translateX(0) rotate(0deg); }
+  100% { opacity: 0; transform: translateX(28px) rotate(2deg); }
+}
+html[data-theme="casefiles"] .sweat-row {
+  animation: rowInCasefiles 0.4s cubic-bezier(.34, 1.2, .64, 1) both;
+}
+html[data-theme="casefiles"] .sweat-row.row-exit {
+  animation: rowOutCasefiles 0.35s ease-in forwards;
 }
 html[data-theme="casefiles"] .sweat-card::before {
   content: "";
@@ -2594,6 +2697,47 @@ html[data-theme="ledger"] .sweat-card::after {
   border-top: none;
 }
 
+/* Entrance reads as ink developing into focus rather than a plain fade -
+   layered on as a second animation alongside the base cardIn (a blur-only
+   keyframe never touches opacity/transform, so no conflict with it). Exit
+   is new - cards never animated out before - and shrinks/blurs away like
+   the entry is being sealed back into the ledger. */
+@keyframes cardFocusLedger {
+  0% { filter: blur(4px); }
+  100% { filter: blur(0); }
+}
+@keyframes cardExitLedger {
+  0% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+  100% { opacity: 0; transform: scale(0.88) translateY(8px); filter: blur(4px); }
+}
+html[data-theme="ledger"] .sweat-card {
+  animation: cardIn 0.4s var(--ease) both, cardFocusLedger 0.5s ease-out both;
+}
+html[data-theme="ledger"] .sweat-card.row-exit {
+  animation: cardExitLedger 0.4s ease-in forwards;
+}
+/* Table/leaderboard rows get the same ink-developing entrance. Exit reads
+   as the line being closed out of the ledger - a brief hold (so a row
+   doesn't start shrinking the instant you click Remove, before the
+   confirm modal even has a chance to matter) then a collapse toward the
+   top edge, rather than a plain fade. */
+@keyframes rowInLedger {
+  0% { opacity: 0; filter: blur(3px); transform: translateY(-3px); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+@keyframes rowOutLedger {
+  0%, 40% { opacity: 1; filter: blur(0); transform: scaleY(1) translateY(0); }
+  100% { opacity: 0; filter: blur(2px); transform: scaleY(0.85) translateY(-2px); }
+}
+html[data-theme="ledger"] .sweat-row {
+  animation: rowInLedger 0.45s ease-out both;
+  transform-origin: top;
+}
+html[data-theme="ledger"] .sweat-row.row-exit {
+  animation: rowOutLedger 0.35s ease-in forwards;
+  transform-origin: top;
+}
+
 /* Roster identity colors (the small circular initials on a card/table row's
    Beaten By list) are bright saturated hues tuned for the neon backdrop -
    muted here so they read as engraved wax-seal tints instead of clashing
@@ -2841,6 +2985,189 @@ html[data-theme="ledger"] .view-btn.active {
   color: var(--panel);
 }
 
+/* ============================================================
+   THEME SWITCH TRANSITION
+   A brief full-screen wipe plays whenever picking a new theme from the
+   dropdown (see applyTheme()/playThemeTransition() - not on the initial
+   page load, which just applies the saved theme with no animation). One
+   shared clip-path keyframe - grow in from the left edge, then shrink out
+   past the right edge - covers the whole screen at the midpoint, which is
+   exactly when JS actually swaps the data-theme attribute, so the instant
+   underneath is always masked by full coverage rather than popping half-
+   old/half-new. Same clip-path-as-reveal technique the status message
+   typewriter effect already uses, just grown to full-viewport scale.
+   ============================================================ */
+#themeTransitionOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  pointer-events: none;
+  visibility: hidden;
+  overflow: hidden;
+}
+#themeTransitionOverlay.active { visibility: visible; }
+.tto-panel {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 100% 0 0);
+}
+@keyframes ttoWipe {
+  0% { clip-path: inset(0 100% 0 0); }
+  50% { clip-path: inset(0 0 0 0); }
+  100% { clip-path: inset(0 0 0 100%); }
+}
+
+/* Colors below are hand-picked per theme rather than read live via var() -
+   the data-theme swap happens mid-animation, so a live var() reference
+   would shift color partway through the sweep instead of reading as one
+   deliberate hue for the theme being switched to. Same reasoning the file
+   already uses elsewhere for tuned glow/gradient effects. */
+#themeTransitionOverlay[data-playing="neon"] .tto-panel {
+  background: linear-gradient(100deg, #00d9ff 0%, #a855f7 50%, #00d9ff 100%);
+  box-shadow: 0 0 90px 10px rgba(0,217,255,0.6) inset;
+  animation: ttoWipe 900ms cubic-bezier(.6,0,.2,1) both;
+}
+#themeTransitionOverlay[data-playing="neon"] .tto-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.12) 0px, rgba(255,255,255,0.12) 1px, transparent 1px, transparent 4px);
+  mix-blend-mode: overlay;
+}
+#themeTransitionOverlay[data-playing="casefiles"] .tto-panel {
+  background: linear-gradient(100deg, #f2e9cf 0%, #a32f1d 45%, #b8912f 55%, #f2e9cf 100%);
+  animation: ttoWipe 950ms cubic-bezier(.6,0,.2,1) both;
+}
+#themeTransitionOverlay[data-playing="casefiles"] .tto-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+#themeTransitionOverlay[data-playing="ledger"] .tto-panel {
+  background: linear-gradient(100deg, #f6f4ee 0%, #16233a 40%, #a9822e 50%, #16233a 60%, #f6f4ee 100%);
+  animation: ttoWipe 950ms cubic-bezier(.6,0,.2,1) both;
+}
+
+/* ============================================================
+   CUSTOM TOOLTIPS
+   Replaces native title="" tooltips (unstyled, un-themeable, and delayed
+   by the browser's own timing) with one shared element positioned by JS
+   (see the tooltip event-delegation block in <script>) above/below
+   whichever [data-tooltip] element is hovered or focused. One instance
+   reused for the whole page rather than per-element, same reasoning as
+   the delete-confirm modal reusing shared structure - a single place to
+   fix positioning/theming for every tooltip at once.
+   ============================================================ */
+#customTooltip {
+  position: fixed;
+  z-index: 6000;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px) scale(0.96);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  max-width: 240px;
+  font-size: 0.78em;
+  line-height: 1.35;
+  padding: 6px 10px;
+}
+#customTooltip.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+#customTooltip::after {
+  content: "";
+  position: absolute;
+  left: var(--tt-arrow-left, 50%);
+  width: 9px;
+  height: 9px;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+/* Neon: a small HUD readout - dark panel, cyan border/glow, faint scanline
+   texture matching the ambient HUD feel elsewhere in this theme. */
+html:not([data-theme]) #customTooltip {
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-s);
+  color: var(--text);
+  box-shadow: 0 0 14px rgba(0,217,255,0.35), 0 4px 14px rgba(0,0,0,0.5);
+  bottom: auto;
+}
+html:not([data-theme]) #customTooltip::after {
+  bottom: -5px;
+  background: var(--panel);
+  border-right: 1px solid var(--accent);
+  border-bottom: 1px solid var(--accent);
+}
+html:not([data-theme]) #customTooltip.tooltip-below::after {
+  top: -5px;
+  bottom: auto;
+  border-right: none;
+  border-bottom: none;
+  border-left: 1px solid var(--accent);
+  border-top: 1px solid var(--accent);
+}
+
+/* Case Files: a small manila index tag, slightly askew, typewriter font -
+   reads like a label sticker rather than a system tooltip. */
+html[data-theme="casefiles"] #customTooltip {
+  background: var(--panel-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  color: var(--text);
+  font-family: 'Courier Prime', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  box-shadow: var(--shadow-card);
+  transform: translateY(4px) rotate(-1.5deg) scale(0.96);
+}
+html[data-theme="casefiles"] #customTooltip.visible {
+  transform: translateY(0) rotate(-1.5deg) scale(1);
+}
+html[data-theme="casefiles"] #customTooltip::after {
+  background: var(--panel-2);
+  border-right: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border-strong);
+  bottom: -5px;
+}
+html[data-theme="casefiles"] #customTooltip.tooltip-below::after {
+  top: -5px;
+  bottom: auto;
+  border-right: none;
+  border-bottom: none;
+  border-left: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border-strong);
+}
+
+/* Private Bank: a small engraved card - cream background, thin gold rule,
+   serif font, no tilt. Understated, like a museum-label caption. */
+html[data-theme="ledger"] #customTooltip {
+  background: var(--panel-2);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-s);
+  color: var(--text);
+  font-family: 'EB Garamond', serif;
+  font-size: 0.85em;
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--gold), var(--shadow-card);
+}
+html[data-theme="ledger"] #customTooltip::after {
+  background: var(--panel-2);
+  border-right: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
+  bottom: -5px;
+}
+html[data-theme="ledger"] #customTooltip.tooltip-below::after {
+  top: -5px;
+  bottom: auto;
+  border-right: none;
+  border-bottom: none;
+  border-left: 1px solid var(--gold);
+  border-top: 1px solid var(--gold);
+}
+
 </style>
 </head>
 <body>
@@ -2880,6 +3207,8 @@ html[data-theme="ledger"] .view-btn.active {
 
 <div id="nebula"></div>
 <div id="starfield"></div>
+<div id="themeTransitionOverlay" aria-hidden="true"><div class="tto-panel"></div></div>
+<div id="customTooltip" role="tooltip" aria-hidden="true"></div>
 
 <div class="page">
 
@@ -3042,7 +3371,7 @@ html[data-theme="ledger"] .view-btn.active {
         <label class="chip boost-chip"><input type="checkbox" id="boostersOnly" /><span>Boosters Only</span></label>
       </div>
       <div class="toolbar-actions-right">
-        <button id="resetFiltersBtn" type="button" class="icon-btn reset" title="Reset filters">&#8635;</button>
+        <button id="resetFiltersBtn" type="button" class="icon-btn reset" data-tooltip="Reset filters">&#8635;</button>
         <div class="view-toggle" role="group" aria-label="Result view">
           <button type="button" id="viewGridBtn" class="view-btn active">Grid</button>
           <button type="button" id="viewTableBtn" class="view-btn">Table</button>
@@ -3102,9 +3431,9 @@ html[data-theme="ledger"] .view-btn.active {
   </div>
 
   <div id="gridTablePagination" class="pagination" hidden>
-    <button type="button" class="icon-btn page-prev" title="Previous page">&#8249;</button>
+    <button type="button" class="icon-btn page-prev" data-tooltip="Previous page">&#8249;</button>
     <span class="pagination-label"></span>
-    <button type="button" class="icon-btn page-next" title="Next page">&#8250;</button>
+    <button type="button" class="icon-btn page-next" data-tooltip="Next page">&#8250;</button>
   </div>
 
   <div id="leaderboardWrap" hidden>
@@ -3157,9 +3486,9 @@ html[data-theme="ledger"] .view-btn.active {
       <div class="empty-state-text">This person hasn't beaten anyone matching the current filters.</div>
     </div>
     <div id="leaderboardPagination" class="pagination" hidden>
-      <button type="button" class="icon-btn page-prev" title="Previous page">&#8249;</button>
+      <button type="button" class="icon-btn page-prev" data-tooltip="Previous page">&#8249;</button>
       <span class="pagination-label"></span>
-      <button type="button" class="icon-btn page-next" title="Next page">&#8250;</button>
+      <button type="button" class="icon-btn page-next" data-tooltip="Next page">&#8250;</button>
     </div>
   </div>
 
@@ -3289,21 +3618,131 @@ function openThemeDropdown() {
   themeDropdownBtn.setAttribute("aria-expanded", "true");
 }
 
-function applyTheme(themeId) {
-  if (themeId === "neon") {
-    document.documentElement.removeAttribute("data-theme");
-  } else {
-    document.documentElement.setAttribute("data-theme", themeId);
+// A brief full-screen wipe (see #themeTransitionOverlay in <style>) plays
+// while switching themes - the actual data-theme swap happens at the
+// wipe's midpoint, when it's covering the whole screen, so the swap
+// itself is always masked rather than popping half-old/half-new.
+const themeTransitionOverlay = document.getElementById("themeTransitionOverlay");
+const THEME_TRANSITION_MS = 950;
+let themeTransitionSwapTimer = null;
+let themeTransitionEndTimer = null;
+
+function playThemeTransition(themeId, swapFn) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    swapFn();
+    return;
   }
-  themeDropdownLabel.textContent = THEME_LABELS[themeId];
-  themeOptions.forEach(li => li.setAttribute("aria-selected", li.dataset.themeValue === themeId ? "true" : "false"));
-  try { localStorage.setItem(THEME_STORAGE_KEY, themeId); } catch (e) {}
+  hideTooltip(); // a tooltip left open would otherwise float above the full-screen wipe
+  clearTimeout(themeTransitionSwapTimer);
+  clearTimeout(themeTransitionEndTimer);
+  themeTransitionOverlay.classList.remove("active");
+  void themeTransitionOverlay.offsetWidth; // restart the animation cleanly if one was already mid-flight
+  themeTransitionOverlay.setAttribute("data-playing", themeId);
+  themeTransitionOverlay.classList.add("active");
+  themeTransitionSwapTimer = setTimeout(swapFn, THEME_TRANSITION_MS / 2);
+  themeTransitionEndTimer = setTimeout(() => {
+    themeTransitionOverlay.classList.remove("active");
+    themeTransitionOverlay.removeAttribute("data-playing");
+  }, THEME_TRANSITION_MS + 30);
+}
+
+function currentThemeId() {
+  return document.documentElement.getAttribute("data-theme") || "neon";
+}
+
+// { animate: false } is used for the initial load only - restoring the
+// saved theme on page load shouldn't play the switch wipe.
+function applyTheme(themeId, opts = {}) {
+  const swap = () => {
+    if (themeId === "neon") {
+      document.documentElement.removeAttribute("data-theme");
+    } else {
+      document.documentElement.setAttribute("data-theme", themeId);
+    }
+    themeDropdownLabel.textContent = THEME_LABELS[themeId];
+    themeOptions.forEach(li => li.setAttribute("aria-selected", li.dataset.themeValue === themeId ? "true" : "false"));
+    try { localStorage.setItem(THEME_STORAGE_KEY, themeId); } catch (e) {}
+  };
+  if (opts.animate === false || themeId === currentThemeId()) {
+    swap();
+    return;
+  }
+  playThemeTransition(themeId, swap);
 }
 
 let savedTheme = "neon";
 try { savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || "neon"; } catch (e) {}
 if (!THEME_IDS.includes(savedTheme)) savedTheme = "neon";
-applyTheme(savedTheme);
+applyTheme(savedTheme, { animate: false });
+
+// Custom tooltips - replaces native title="" (unstyled, un-themeable, and
+// on the browser's own delay) with one shared #customTooltip element
+// positioned above/below whichever [data-tooltip] element is hovered or
+// focused. Delegated on document rather than bound per-element so it
+// automatically covers buttons/avatars/cells created later by
+// renderTable() without needing to be re-wired on every re-render.
+const customTooltip = document.getElementById("customTooltip");
+let tooltipTarget = null;
+let tooltipShowTimer = null;
+
+function positionTooltip(target) {
+  const rect = target.getBoundingClientRect();
+  const ttRect = customTooltip.getBoundingClientRect();
+  let top = rect.top - ttRect.height - 10;
+  let below = false;
+  if (top < 8) {
+    top = rect.bottom + 10;
+    below = true;
+  }
+  let left = rect.left + rect.width / 2 - ttRect.width / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - ttRect.width - 8));
+  customTooltip.style.top = `${top}px`;
+  customTooltip.style.left = `${left}px`;
+  customTooltip.classList.toggle("tooltip-below", below);
+  // Keeps the little arrow pointing at the target's center even when the
+  // tooltip box itself has been shifted sideways to stay on-screen.
+  const arrowLeft = rect.left + rect.width / 2 - left;
+  customTooltip.style.setProperty("--tt-arrow-left", `${arrowLeft}px`);
+}
+
+function showTooltip(target) {
+  const text = target.getAttribute("data-tooltip");
+  if (!text) return;
+  tooltipTarget = target;
+  customTooltip.textContent = text;
+  customTooltip.classList.add("visible");
+  positionTooltip(target);
+}
+
+function hideTooltip() {
+  tooltipTarget = null;
+  tooltipShowTimer = clearTimeout(tooltipShowTimer);
+  customTooltip.classList.remove("visible");
+}
+
+document.addEventListener("mouseover", (e) => {
+  const target = e.target.closest("[data-tooltip]");
+  if (!target || target === tooltipTarget) return;
+  clearTimeout(tooltipShowTimer);
+  tooltipShowTimer = setTimeout(() => showTooltip(target), 350);
+});
+document.addEventListener("mouseout", (e) => {
+  const target = e.target.closest("[data-tooltip]");
+  if (target && target === tooltipTarget) hideTooltip();
+  else if (target) clearTimeout(tooltipShowTimer);
+});
+document.addEventListener("focusin", (e) => {
+  const target = e.target.closest("[data-tooltip]");
+  if (target) { clearTimeout(tooltipShowTimer); showTooltip(target); }
+});
+document.addEventListener("focusout", (e) => {
+  const target = e.target.closest("[data-tooltip]");
+  if (target && target === tooltipTarget) hideTooltip();
+});
+document.addEventListener("click", (e) => {
+  if (e.target.closest("[data-tooltip]")) hideTooltip();
+});
+window.addEventListener("scroll", hideTooltip, true);
 
 themeDropdownBtn.addEventListener("click", () => {
   if (themeDropdownMenu.hidden) openThemeDropdown(); else closeThemeDropdown();
@@ -4175,6 +4614,11 @@ function updatePaginationControls(container, totalPages) {
 // doubles the work for a view the user isn't even looking at. setViewMode()
 // re-renders on switch, so the freshly-shown view is never stale.
 function renderTable() {
+  // A full re-render can remove the element the tooltip is currently
+  // anchored to (e.g. a row that no longer matches the filter) without
+  // ever firing a mouseout on it - hide unconditionally rather than risk
+  // a tooltip left pointing at nothing.
+  hideTooltip();
   const { filteredSweats, usernameCounts } = getProcessedSweats();
 
   resultCount.textContent = filteredSweats.length;
@@ -4232,7 +4676,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
 
     const beatenByHtml = BEATEN_BY_KEYS
       .filter(k => s[k])
-      .map(k => `<span class="beaten-avatar" style="background:${BEATEN_BY[k].color}" title="${BEATEN_BY[k].label}">${BEATEN_BY[k].initials}</span>`)
+      .map(k => `<span class="beaten-avatar" style="background:${BEATEN_BY[k].color}" data-tooltip="${BEATEN_BY[k].label}">${BEATEN_BY[k].initials}</span>`)
       .join("");
 
     card.innerHTML = `
@@ -4251,8 +4695,8 @@ function renderCardGrid(filteredSweats, usernameCounts) {
         <div class="beaten-by-avatars">${beatenByHtml}</div>
         <div class="sweat-card-footer-right">
           <span class="sweat-card-date"></span>
-          <button type="button" class="icon-btn edit edit-btn" title="Edit">&#9998;</button>
-          <button type="button" class="icon-btn danger remove-btn" title="Remove">&#10005;</button>
+          <button type="button" class="icon-btn edit edit-btn" data-tooltip="Edit">&#9998;</button>
+          <button type="button" class="icon-btn danger remove-btn" data-tooltip="Remove">&#10005;</button>
         </div>
       </div>
     `;
@@ -4275,7 +4719,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
 
     card.querySelector(".remove-btn").addEventListener("click", (e) => {
       e.stopPropagation();
-      removeSweat(s._id);
+      removeSweat(s._id, card);
     });
 
     cardGrid.appendChild(card);
@@ -4287,6 +4731,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
 // too since it shows who ELSE beat this player) so their widths line up.
 function buildSweatRow(s, { usernameCounts }) {
   const tr = document.createElement("tr");
+  tr.className = "sweat-row";
   tr.dataset.username = s.username;
   tr.dataset.uuid = s.uuid;
 
@@ -4347,7 +4792,7 @@ function buildSweatRow(s, { usernameCounts }) {
   const beatenBy = BEATEN_BY_KEYS.filter(k => s[k]).map(k => BEATEN_BY[k].label);
   const beatenByText = beatenBy.join(", ");
   beatenByTd.textContent = beatenByText;
-  beatenByTd.title = beatenByText; // full list on hover when truncated
+  if (beatenByText) beatenByTd.setAttribute("data-tooltip", beatenByText); // full list on hover when truncated
   tr.appendChild(beatenByTd);
 
   // Same reasoning as .user-cell above: flex row lives on an inner div, not the <td>.
@@ -4358,16 +4803,16 @@ function buildSweatRow(s, { usernameCounts }) {
 
   const editBtn = document.createElement("button");
   editBtn.className = "icon-btn edit";
-  editBtn.title = "Edit";
+  editBtn.setAttribute("data-tooltip", "Edit");
   editBtn.textContent = "✎";
   editBtn.addEventListener("click", (e) => { e.stopPropagation(); openEditModal(s); });
   actionsInner.appendChild(editBtn);
 
   const removeBtn = document.createElement("button");
   removeBtn.className = "icon-btn danger";
-  removeBtn.title = "Remove";
+  removeBtn.setAttribute("data-tooltip", "Remove");
   removeBtn.textContent = "✖";
-  removeBtn.addEventListener("click", (e) => { e.stopPropagation(); removeSweat(s._id); });
+  removeBtn.addEventListener("click", (e) => { e.stopPropagation(); removeSweat(s._id, tr); });
   actionsInner.appendChild(removeBtn);
 
   actionsTd.appendChild(actionsInner);
@@ -4387,8 +4832,10 @@ function renderTableRows(filteredSweats, usernameCounts) {
   // behaves.
   tableWrap.hidden = filteredSweats.length === 0;
   emptyState.hidden = filteredSweats.length !== 0;
-  filteredSweats.forEach(s => {
-    tableBody.appendChild(buildSweatRow(s, { usernameCounts }));
+  filteredSweats.forEach((s, i) => {
+    const row = buildSweatRow(s, { usernameCounts });
+    row.style.animationDelay = Math.min(i * 0.03, 0.6) + "s";
+    tableBody.appendChild(row);
   });
 }
 
@@ -4438,8 +4885,10 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
 
   const { pageItems, totalPages } = paginate(personSweats);
   leaderboardTableBody.innerHTML = "";
-  pageItems.forEach(s => {
-    leaderboardTableBody.appendChild(buildSweatRow(s, { usernameCounts }));
+  pageItems.forEach((s, i) => {
+    const row = buildSweatRow(s, { usernameCounts });
+    row.style.animationDelay = Math.min(i * 0.03, 0.6) + "s";
+    leaderboardTableBody.appendChild(row);
   });
   updatePaginationControls(leaderboardPagination, totalPages);
 }
@@ -4477,16 +4926,51 @@ closeConfirmDeleteModal.addEventListener("click", () => resolveConfirmDelete(fal
 cancelConfirmDeleteBtn.addEventListener("click", () => resolveConfirmDelete(false));
 confirmDeleteBtn.addEventListener("click", () => resolveConfirmDelete(true));
 
-async function removeSweat(id) {
+// Plays the themed exit animation on the actual card/row DOM node that was
+// clicked, resolving once it's done (or immediately if there's no node -
+// shouldn't happen, but cheap to guard). Clears any leftover
+// animation-delay from that element's own entrance stagger first - without
+// this, a row that entered with e.g. a 0.3s stagger delay would carry that
+// same inline delay into its exit animation (inline style always wins over
+// a stylesheet rule for the same property, shorthand or not), so removal
+// would visibly pause before it started disappearing.
+function playRowExit(el) {
+  if (!el || !el.isConnected) return Promise.resolve();
+  return new Promise(resolve => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      el.removeEventListener("animationend", finish);
+      resolve();
+    };
+    el.addEventListener("animationend", finish);
+    el.style.animationDelay = "0s";
+    el.classList.add("row-exit");
+    setTimeout(finish, 650); // safety net if animationend never fires
+  });
+}
+
+async function removeSweat(id, rowEl) {
   if (!(await confirmDelete())) return;
+  // Animate out and send the DELETE request at the same time, rather than
+  // one after the other - the exit animation plays during the network
+  // round-trip instead of adding to it, so deleting doesn't feel slower
+  // than it did before this was added.
+  const exitAnim = playRowExit(rowEl);
   try {
-    const res = await fetch(`${backendBaseURL}/sweats/${id}`, { method: "DELETE", headers: adminHeaders() });
+    const fetchPromise = fetch(`${backendBaseURL}/sweats/${id}`, { method: "DELETE", headers: adminHeaders() });
+    const [res] = await Promise.all([fetchPromise, exitAnim]);
     if (res.status === 401 || res.status === 503) {
       throw new Error("Admin key missing or incorrect — click \"Admin Key\" above");
     }
     if (!res.ok) throw new Error("Failed to remove sweat");
     await loadSweats();
   } catch (err) {
+    // Deletion failed - loadSweats() never ran, so this is still the same
+    // element representing real, still-present data. Bring it back rather
+    // than leaving it invisible.
+    if (rowEl && rowEl.isConnected) rowEl.classList.remove("row-exit");
     status.textContent = "Error removing sweat: " + err.message;
   }
 }

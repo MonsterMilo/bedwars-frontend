@@ -437,6 +437,10 @@ input:focus {
 
 @media (max-width: 420px) {
   .chip-group.roster { grid-template-columns: repeat(2, 1fr); }
+  /* The roster is always exactly 9 people (BEATEN_BY_KEYS), so 2 columns
+     always strand the last one alone in a half-empty row - give it the
+     full row instead of leaving it stuck against the left edge. */
+  .chip-group.roster .chip:last-child { grid-column: 1 / -1; }
 }
 
 .chip {
@@ -838,6 +842,9 @@ input:focus {
 
 @media (max-width: 620px) {
   .leaderboard-ranking { grid-template-columns: repeat(2, 1fr); }
+  /* Same fix as the roster picker above - always exactly 9 entries, so the
+     last one otherwise strands alone at the start of a half-empty row. */
+  .leaderboard-ranking .leaderboard-chip:last-child { grid-column: 1 / -1; }
 }
 
 .leaderboard-chip {
@@ -949,6 +956,8 @@ input:focus {
 
 .sweat-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(160deg, var(--panel), var(--panel-2));
   border: 1px solid var(--border);
   border-radius: var(--radius-m);
@@ -1052,6 +1061,7 @@ input:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid var(--border);
   gap: 8px;
@@ -1192,9 +1202,20 @@ tbody tr:hover .user-cell span {
    too-short-viewport issue, since .modal-content itself, used by the
    read-only player modal, has no overflow set and never had this problem).
    The wrapper has no overflow of its own, so the tab poking above via
-   negative positioning renders freely. */
+   negative positioning renders freely.
+
+   max-width matters here, not just on .modal-content: .modal-card (not
+   .modal-content) is the actual flex item .modal centers, so it's the one
+   whose containing block is definite (.modal's own content box). A
+   percentage max-width on .modal-content/.edit-modal-content resolves
+   against .modal-card instead - which sizes to fit its content, i.e. to
+   whatever fixed width that child asked for - so it never actually
+   constrained anything and the 520px-wide edit modal silently overflowed
+   off the side of any viewport under ~560px, with no way to scroll to the
+   clipped part (body has overflow-x:hidden). */
 .modal-card {
   position: relative;
+  max-width: 100%;
 }
 
 .modal-content {
@@ -1654,6 +1675,23 @@ html[data-theme="casefiles"] .btn-ghost {
   border: 1.5px solid var(--text-dim);
 }
 
+/* input:focus, the table header/hover states, and the sortable-column hover
+   all hardcode a neon-cyan tint (rgba(0,217,255,...)) instead of a var -
+   invisible on Neon's own dark-cyan palette, but it reads as an odd minty/
+   blue smudge against parchment. Same fix reused below for Private Bank. */
+html[data-theme="casefiles"] input:focus {
+  background: var(--accent-soft);
+}
+html[data-theme="casefiles"] thead tr {
+  background: var(--panel-2);
+}
+html[data-theme="casefiles"] th.sortable:hover {
+  background: var(--accent-soft);
+}
+html[data-theme="casefiles"] tbody tr:hover {
+  background: var(--accent-soft);
+}
+
 /* Roster/flag/filter chips (they're all the same .chip markup, so one set of
    rules covers "Beaten By", Cheating/Boosting, and the toolbar's Hide Dupes/
    Cheaters Only/Boosters Only toggles) read as checklist slips: a square
@@ -1919,6 +1957,20 @@ html[data-theme="ledger"] .btn-primary:hover:not(:disabled) {
 html[data-theme="ledger"] .btn-ghost {
   background: transparent;
   border: 1px solid var(--border-strong);
+}
+
+/* Same neon-cyan-tint cleanup as Case Files: input:focus and the table's
+   sortable-hover/row-hover states hardcode rgba(0,217,255,...) rather than a
+   var, which is far more jarring here than anywhere else in the theme - a
+   bright cyan smudge on an otherwise all-white-and-gold letterhead. */
+html[data-theme="ledger"] input:focus {
+  background: var(--accent-soft);
+}
+html[data-theme="ledger"] th.sortable:hover {
+  background: var(--accent-soft);
+}
+html[data-theme="ledger"] tbody tr:hover {
+  background: var(--accent-soft);
 }
 
 /* Every rounded-pill control (999px hardcoded, not the --radius tokens - see
@@ -3566,8 +3618,13 @@ function openEditModal(s) {
   editingSweatId = s._id;
   editStatus.textContent = "";
 
+  // These stats are stored as raw division results (e.g. wins/losses) with
+  // however many decimal places floating-point math happens to produce, not
+  // rounded until display time elsewhere - assigning that straight into a
+  // number input let long values (16.263678354...) overflow the small box.
   EDIT_NUMERIC_FIELDS.forEach(f => {
-    editStatInputs[f.key].value = s[f.key];
+    const val = Number(s[f.key]) || 0;
+    editStatInputs[f.key].value = f.step === "1" ? Math.round(val) : val.toFixed(2);
   });
   BEATEN_BY_KEYS.forEach(k => {
     editRosterCheckboxes[k].checked = !!s[k];

@@ -1831,44 +1831,94 @@ html[data-theme="casefiles"] .chip.boost-chip input:checked + span::before {
    pass before this - they were still Neon's rounded 999px shape with
    hardcoded neon-hex borders (a bright sky-blue FKDR border, for
    instance), regardless of theme. Squared off to match every other
-   control in this theme (checkboxes, panel-icon, dropdown, buttons), with
-   Star/FKDR reading as small typed index-card labels - flat, no
-   background trick beyond a tinted panel color, letting the text color
-   alone carry the distinction. */
+   control in this theme (checkboxes, panel-icon, dropdown, buttons), and
+   all four now read as distinctly different kinds of marks instead of
+   four differently-colored copies of one shape: Star is a bracketed field
+   code, FKDR a filed/tabbed data label, Cheater and Boosting worn rubber
+   stamps. */
 html[data-theme="casefiles"] .pill {
-  border-radius: var(--radius-s);
+  border-radius: 0;
   border-color: var(--border-strong);
   background: var(--panel-2);
   color: var(--text-dim);
 }
+/* Star reads like a typed field code on an index card - square brackets
+   (real characters, not styled borders) either side of the value and a
+   dashed rule standing in for a fill-in-the-blank line. */
 html[data-theme="casefiles"] .pill.level {
   color: var(--gold);
+  border-style: dashed;
 }
+html[data-theme="casefiles"] .pill.level::before {
+  content: "[";
+  margin-right: 2px;
+  color: var(--text-faint);
+}
+html[data-theme="casefiles"] .pill.level::after {
+  content: "]";
+  margin-left: 2px;
+  color: var(--text-faint);
+}
+/* FKDR reads like a filed/tabbed data label instead - a solid color-coded
+   spine down the left edge (the same visual language as a filing folder's
+   colored tab) rather than brackets, so it's not just "the other bracket
+   pill in blue". */
 html[data-theme="casefiles"] .pill.fkdr {
   color: var(--accent);
+  border-left: 3px solid var(--accent);
 }
-/* Cheater/Boosting read as a hastily inked rubber-stamp warning instead -
-   a slight off-axis tilt and a faint doubled outline (a second, softer
-   ring just outside the pill's own border) standing in for a stamp's
-   uneven ink impression, plus uppercase spaced-out type like a rubber
-   stamp's all-caps face. */
+
+/* Cheater/Boosting read as a rubber stamp that didn't ink evenly - the
+   fill+border live on ::before (kept behind the actual text via a negative
+   z-index) rather than on the pill itself, masked with a coarse turbulence
+   noise so patches of it look like the stamp missed, instead of a clean
+   flat color block. The two get different turbulence seeds and opposite
+   tilt directions so they read as two separate stamp impressions, not one
+   stamp recolored twice. Text stays unmasked/fully legible on top - a real
+   stamp's lettering would wear too, but this is still a data readout
+   first. */
 html[data-theme="casefiles"] .pill.cheat,
 html[data-theme="casefiles"] .pill.boost {
+  position: relative;
+  z-index: 0;
+  background: none;
+  border-color: transparent;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  transform: rotate(-2deg);
+  letter-spacing: 0.05em;
+}
+html[data-theme="casefiles"] .pill.cheat::before,
+html[data-theme="casefiles"] .pill.boost::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 1.5px solid;
+  mask-repeat: repeat;
+  -webkit-mask-repeat: repeat;
 }
 html[data-theme="casefiles"] .pill.cheat {
   color: var(--bad);
-  border-color: var(--bad);
+  transform: rotate(-2.5deg);
+}
+html[data-theme="casefiles"] .pill.cheat::before {
   background: var(--bad-soft);
-  box-shadow: 0 0 0 1.5px var(--bad-soft);
+  border-color: var(--bad);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='20'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.16 0.28' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='20'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.16 0.28' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+  mask-size: 34px 20px;
+  -webkit-mask-size: 34px 20px;
 }
 html[data-theme="casefiles"] .pill.boost {
   color: var(--gold);
-  border-color: var(--gold);
+  transform: rotate(2.5deg);
+}
+html[data-theme="casefiles"] .pill.boost::before {
   background: rgba(184,145,47,0.12);
-  box-shadow: 0 0 0 1.5px rgba(184,145,47,0.18);
+  border-color: var(--gold);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='20'%3E%3Cfilter id='w2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.19 0.24' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w2)'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='20'%3E%3Cfilter id='w2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.19 0.24' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.6 -0.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w2)'/%3E%3C/svg%3E");
+  mask-size: 34px 20px;
+  -webkit-mask-size: 34px 20px;
 }
 
 html[data-theme="casefiles"] .view-btn.active {

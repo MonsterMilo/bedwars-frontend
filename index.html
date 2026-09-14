@@ -282,6 +282,11 @@ h1 {
    costs the Neon theme nothing. */
 .exhibit-tag { display: none; }
 
+/* Case-Files-only red string above the grid - present in the markup always
+   (see the SVG next to #cardGrid), shown only once themed (and only while
+   the grid view is actually visible - see the :has() rule further down). */
+.corkboard-string { display: none; }
+
 .panel-header p {
   margin: 2px 0 0;
   font-size: 0.85em;
@@ -979,6 +984,47 @@ input:focus {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Neon-only: a chasing conic-gradient light ring around the card border on
+   hover, like RGB peripheral lighting. html:not([data-theme]) rather than
+   html[data-theme="neon"] because Neon is the absence of a data-theme
+   attribute (see applyTheme()), not a value of it. A ::after ring (inset
+   negative, padding + mask-composite carving out the middle) rather than
+   just an animated border-color, since a real conic gradient can't be
+   applied via the border-color property - and kept as a separate layer
+   instead of replacing box-shadow, so the existing lift/glow on hover is
+   untouched. The rotation only runs while actually hovered (not
+   unconditionally on all 20+ cards at once) since animating a conic-
+   gradient's angle repaints every frame - cheap for the one card under the
+   cursor, wasteful for a whole page of them. */
+@property --chase-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+html:not([data-theme]) .sweat-card::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(from var(--chase-angle), transparent 0%, var(--accent) 12%, var(--accent-2) 27%, transparent 42%, transparent 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease);
+  z-index: 3;
+}
+html:not([data-theme]) .sweat-card:hover::after {
+  opacity: 1;
+  animation: chaseRotate 2.4s linear infinite;
+}
+@keyframes chaseRotate {
+  from { --chase-angle: 0deg; }
+  to { --chase-angle: 360deg; }
+}
+
 .sweat-card-index {
   position: absolute;
   top: 14px;
@@ -1467,30 +1513,36 @@ tbody tr:hover .user-cell span {
    fonts. Each rule here mirrors one rule above it in the sheet.
    ============================================================ */
 
+/* Corkboard texture - what the pushpins throughout this theme have implied
+   all along but the flat khaki background never delivered on. Reuses
+   #nebula (fixed, full-bleed, z-index:-1, pointer-events:none, already
+   sitting behind .page) rather than adding a new element: an SVG
+   fractalNoise turbulence, recolored to a white-to-mid-gray range via
+   feColorMatrix (not brown directly - letting the gradient underneath
+   supply the hue keeps the color easy to tune without redoing matrix
+   math) and multiply-blended over a brown gradient, so the noise darkens
+   the base color unevenly instead of just sitting on top of it. This
+   replaces the old starfield "dust" entirely (see #starfield below) -
+   both were doing the same "grain on the background" job, and stacking a
+   second independent speckle layer on top of an already-mottled cork
+   texture just muddied it. */
 html[data-theme="casefiles"] #nebula {
-  display: none;
+  display: block;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.045' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0.5 0.5 0 0 0 0.5 0.5 0 0 0 0.5 0.5 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E"),
+    linear-gradient(160deg, #a9824f, #7c5a30 55%, #6b4a26);
+  background-blend-mode: multiply, normal;
+  background-size: 260px 260px, cover;
+  animation: none;
+  opacity: 1;
 }
 
-/* Reuse the same starfield elements instead of hiding them - same 1400
-   pre-placed dots, just recolored to a warm tone, stripped of the neon
-   glow, and held still, so they read as flecks of grain settled in the
-   paper rather than stars or drifting dust. The base .star runs the
-   "twinkle" animation (infinite, so always active), which continuously
-   animates opacity itself and wins that property outright for as long as
-   it's running - a plain "opacity: 0.75" override would be silently
-   ignored the same way .sweat-card's transform was (see the note up near
-   .sweat-card) - so the animation is turned off outright here rather than
-   overridden, which is also what actually stops the drifting/glowing. */
-html[data-theme="casefiles"] .star {
-  background: #5c4322;
-  box-shadow: none;
-  animation: none;
-  opacity: 0.75;
-}
-html[data-theme="casefiles"] .star.bright {
-  background: #3f2c14;
-  box-shadow: none;
-  opacity: 0.9;
+/* Dust specks retired in favor of the corkboard texture above - same 1400
+   pre-placed dots that used to be recolored/frozen in place here now stay
+   fully hidden for this theme, since a second speckle layer on top of an
+   already-mottled cork background just reads as visual noise. */
+html[data-theme="casefiles"] #starfield {
+  display: none;
 }
 
 html[data-theme="casefiles"] body {
@@ -1872,6 +1924,50 @@ html[data-theme="casefiles"] .sweat-card:active {
   transform: translateY(-1px) scale(0.99) rotate(calc(var(--card-tilt, -1deg) * -1.6));
 }
 
+/* Red string across the grid - hidden by default (see the base
+   .corkboard-string rule near the SVG's markup), shown only when this
+   theme is active AND the grid it sits on is the visible view. :has() with
+   a next-sibling combinator reacts to #cardGrid's [hidden] attribute
+   directly, so switching to Table/Leaderboard (or filtering the grid down
+   to zero results, which never touches [hidden] on #cardGrid itself) needs
+   no JS - the existing view-toggle logic already does the only thing this
+   depends on. A small negative margin pulls it down to overlap the top
+   sliver of the first row, so the pins read as pinned into the same board
+   the cards are on rather than floating in the gap above it. */
+html[data-theme="casefiles"] .corkboard-string:has(+ #cardGrid:not([hidden])) {
+  display: block;
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  height: 58px;
+  margin: 0 auto -20px;
+  z-index: 2;
+  overflow: visible;
+}
+html[data-theme="casefiles"] .string-path {
+  fill: none;
+  stroke-linecap: round;
+  filter: drop-shadow(0 2px 2px rgba(42,36,28,0.4));
+}
+html[data-theme="casefiles"] .string-a {
+  stroke: #a3271d;
+  stroke-width: 2.2;
+}
+html[data-theme="casefiles"] .string-b {
+  stroke: #7f1f16;
+  stroke-width: 1.7;
+  opacity: 0.85;
+}
+html[data-theme="casefiles"] .string-pin {
+  fill: #6b160f;
+  stroke: #3a0b07;
+  stroke-width: 0.75;
+  filter: drop-shadow(0 1px 1.5px rgba(42,36,28,0.5));
+}
+html[data-theme="casefiles"] .string-pin-shine {
+  fill: rgba(255,255,255,0.55);
+}
+
 html[data-theme="casefiles"] .user-cell span,
 html[data-theme="casefiles"] tbody tr:hover .user-cell span {
   text-shadow: none;
@@ -1885,6 +1981,64 @@ html[data-theme="casefiles"] .modal-content {
 html[data-theme="casefiles"] #modalUsername,
 html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
   text-shadow: none;
+}
+
+/* Typewriter reveal on #status/#editStatus - the .typewriter-play class is
+   toggled by a MutationObserver (see armTypewriter() in the script below)
+   every time either element's text changes. clip-path wipes the text in
+   from the left without animating layout width, so it plays correctly
+   under #status's own text-align:center (a width-based reveal would fight
+   the auto margins and grow from the center instead of typing from the
+   left). steps() gives the blocky per-character look instead of a smooth
+   wipe; a fixed step count (not one tied to actual character count) keeps
+   this CSS-only - no measuring needed for typical message lengths. */
+html[data-theme="casefiles"] #status,
+html[data-theme="casefiles"] #editStatus {
+  display: inline-block;
+}
+html[data-theme="casefiles"] #status.typewriter-play,
+html[data-theme="casefiles"] #editStatus.typewriter-play {
+  animation: typeReveal 0.5s steps(28, end) both;
+}
+@keyframes typeReveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* Ink-stamp click flourish on the primary buttons - a quick off-axis
+   scale/rotate "thump" plus a radial ink flash that spreads and fades,
+   triggered by the .stamp-flourish class a click listener adds (see the
+   script below) rather than :active, so the full animation always plays
+   out instead of getting cut short by a fast click release. */
+html[data-theme="casefiles"] .btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+html[data-theme="casefiles"] .btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(251,246,230,0.55) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0.3);
+  pointer-events: none;
+}
+html[data-theme="casefiles"] .btn-primary.stamp-flourish {
+  animation: stampThump 0.32s var(--ease);
+}
+html[data-theme="casefiles"] .btn-primary.stamp-flourish::after {
+  animation: inkSplash 0.45s var(--ease);
+}
+@keyframes stampThump {
+  0% { transform: scale(1) rotate(0deg); }
+  40% { transform: scale(0.92) rotate(-2deg); }
+  70% { transform: scale(1.03) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+@keyframes inkSplash {
+  0% { opacity: 0.7; transform: scale(0.3); }
+  100% { opacity: 0; transform: scale(1.7); }
 }
 
 /* ============================================================
@@ -1901,19 +2055,24 @@ html[data-theme="ledger"] #starfield {
   display: none;
 }
 
-/* Guilloche watermark - the fine interlocking-ring engraving used as a
-   security/decorative pattern on currency and stock certificates. Reuses
-   #nebula (already a fixed, full-bleed, pointer-events:none, z-index:-1
-   layer sitting behind .page) rather than adding a new element - two grids
-   of concentric rings offset by half a tile so they interleave, in place
-   of Neon's colored radial glow. Kept faint (0.05 alpha) so it reads as a
+/* Guilloche watermark plus a fine linen/paper grain, layered on the same
+   element - the fine interlocking-ring engraving used as a security/
+   decorative pattern on currency and stock certificates, over a subtle
+   fiber texture so the white background reads as cotton bond paper rather
+   than flat digital white. Reuses #nebula (already a fixed, full-bleed,
+   pointer-events:none, z-index:-1 layer sitting behind .page) rather than
+   adding a new element. The grain is SVG feTurbulence run through a
+   feColorMatrix that zeroes RGB and keeps 5% of the alpha channel - plain
+   black noise at near-zero opacity, stitched so its 140x140 tile repeats
+   seamlessly. Both layers are kept faint (0.05 alpha) so they read as
    texture, not a distraction, under actual page content. */
 html[data-theme="ledger"] #nebula {
   display: block;
   background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
     repeating-radial-gradient(circle at 0 0, transparent 0 7px, rgba(169,130,46,0.05) 8px, transparent 9px),
     repeating-radial-gradient(circle at 45px 45px, transparent 0 7px, rgba(169,130,46,0.05) 8px, transparent 9px);
-  background-size: 90px 90px;
+  background-size: 140px 140px, 90px 90px, 90px 90px;
   animation: none;
   opacity: 1;
 }
@@ -1947,6 +2106,18 @@ html[data-theme="ledger"] .edit-modal-title {
   font-weight: 600;
 }
 
+/* Letterpress heading effect - a light highlight just below the glyphs and
+   a soft dark shadow just above, so headings read as pressed INTO the paper
+   rather than printed on top of it. Kept to the actual section/modal
+   headings, not every Playfair-Display element above (stat values, names,
+   leaderboard entries) - those render live data and a debossed look reads
+   worse on fast-changing numbers/usernames than it does on static titles. */
+html[data-theme="ledger"] .panel-header h2,
+html[data-theme="ledger"] #modalUsername,
+html[data-theme="ledger"] .edit-modal-title {
+  text-shadow: 0 1px 0 rgba(255,255,255,0.85), 0 -1px 1px rgba(22,35,58,0.18);
+}
+
 /* Only the static site wordmark gets the cursive treatment - sweat-card-name/
    #modalUsername/etc above render arbitrary usernames, and a script face
    makes arbitrary strings (numbers, underscores, mixed case) hard to read,
@@ -1975,6 +2146,8 @@ html[data-theme="ledger"] .hero-flourish {
 }
 
 html[data-theme="ledger"] .btn-primary {
+  position: relative;
+  overflow: hidden;
   background: var(--text);
   color: var(--panel);
   box-shadow: none;
@@ -1982,6 +2155,25 @@ html[data-theme="ledger"] .btn-primary {
 }
 html[data-theme="ledger"] .btn-primary:hover:not(:disabled) {
   box-shadow: var(--shadow-card);
+}
+/* Foil shimmer - a bar of light sweeping across the solid-ink button on
+   hover, like a glossy foil-stamped surface catching the light. A skewed
+   ::before rather than a background-position trick so the highlight stays
+   a clean diagonal bar at any button width instead of stretching/squashing. */
+html[data-theme="ledger"] .btn-primary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.45) 45%, rgba(255,224,150,0.55) 50%, rgba(255,255,255,0.45) 55%, transparent);
+  transform: skewX(-22deg);
+  transition: left 0.65s cubic-bezier(.22,.85,.32,1);
+  pointer-events: none;
+}
+html[data-theme="ledger"] .btn-primary:hover:not(:disabled)::before {
+  left: 130%;
 }
 html[data-theme="ledger"] .btn-ghost {
   background: transparent;
@@ -2056,7 +2248,6 @@ html[data-theme="ledger"] #statsAvatar {
 }
 html[data-theme="ledger"] .user-cell span,
 html[data-theme="ledger"] tbody tr:hover .user-cell span,
-html[data-theme="ledger"] #modalUsername,
 html[data-theme="ledger"] .modal-stat-tile .modal-stat-value {
   text-shadow: none;
 }
@@ -2114,9 +2305,29 @@ html[data-theme="ledger"] .beaten-avatar {
    is standard legal/financial-document language too) is restyled to a
    plain gold-outlined caption instead of a filled stamp. */
 html[data-theme="ledger"] .panel-header {
+  position: relative;
   align-items: flex-end;
   border-bottom: 1px solid var(--border-strong);
   padding-bottom: 16px;
+}
+/* A small fleuron sitting on the letterhead rule itself, centered across
+   the header's full width (which runs well past the icon+heading block on
+   the left) rather than centered on the text - the same trick used on
+   printed letterhead, where the rule continues past the sender's name/logo
+   with a lone ornament partway along it. Cut into the line via a page-color
+   background rather than trying to align a glyph's baseline with a 1px
+   rule pixel-perfectly. */
+html[data-theme="ledger"] .panel-header::after {
+  content: "\2766";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 50%);
+  background: var(--bg);
+  padding: 0 14px;
+  color: var(--gold);
+  font-size: 15px;
+  line-height: 1;
 }
 /* A round engraved medallion instead of Neon's soft gradient badge - the
    emoji is hidden (font-size:0, so it takes no visual space) and replaced
@@ -2415,6 +2626,24 @@ html[data-theme="ledger"] .view-btn.active {
     </div>
   </div>
 
+  <!-- Case-Files-only red string across the top of the grid, evoking a
+       detective's conspiracy board. Static markup (not rendered by JS, so
+       it survives every re-render of #cardGrid below it) shown only via
+       CSS - see ".corkboard-string" - so it costs every other theme
+       nothing. preserveAspectRatio="none" lets it stretch to the grid's
+       actual width at any viewport size without redrawing the path. -->
+  <svg class="corkboard-string" viewBox="0 0 1200 70" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <path class="string-path string-a" d="M 20 12 Q 600 58 1180 16" />
+    <path class="string-path string-b" d="M 80 55 Q 550 4 1120 60" />
+    <circle class="string-pin" cx="20" cy="12" r="6" />
+    <circle class="string-pin-shine" cx="17.5" cy="9.5" r="2" />
+    <circle class="string-pin" cx="1180" cy="16" r="6" />
+    <circle class="string-pin-shine" cx="1177.5" cy="13.5" r="2" />
+    <circle class="string-pin" cx="80" cy="55" r="5.5" />
+    <circle class="string-pin-shine" cx="77.8" cy="52.8" r="1.8" />
+    <circle class="string-pin" cx="1120" cy="60" r="5.5" />
+    <circle class="string-pin-shine" cx="1117.8" cy="57.8" r="1.8" />
+  </svg>
   <div id="cardGrid" class="card-grid"></div>
   <div id="emptyState" class="empty-state" hidden>No sweats match these filters yet.</div>
 
@@ -3878,6 +4107,42 @@ window.onclick = (e) => {
   if (e.target === modal) modal.style.display = "none";
   if (e.target === editModal) closeEditModalFn();
 };
+
+// Case-Files-only typewriter effect on #status/#editStatus (the CSS side
+// lives under html[data-theme="casefiles"] - this observer just restarts
+// the reveal animation whenever either element's text changes, so it
+// covers every existing call site that sets .textContent on them (there
+// are many, scattered across the fetch/add/edit/delete flows) without
+// having to touch any of them individually. Harmless no-op in every other
+// theme: the class gets toggled either way, but no rule outside Case Files
+// reads it. clip-path (not a width animation) so it reveals correctly
+// regardless of #status's own text-align:center.
+function armTypewriter(el) {
+  if (!el) return;
+  const observer = new MutationObserver(() => {
+    if (!el.textContent) return;
+    el.classList.remove("typewriter-play");
+    void el.offsetWidth; // force reflow so the animation restarts from 0
+    el.classList.add("typewriter-play");
+  });
+  observer.observe(el, { childList: true, characterData: true, subtree: true });
+}
+armTypewriter(status);
+armTypewriter(editStatus);
+
+// Case-Files-only ink-stamp flourish on the primary buttons (Fetch Stats,
+// Add Sweat, Save Changes) - a click-triggered class rather than relying on
+// :active's animation, since :active only lasts as long as the mouse button
+// is physically down and a fast click would cut the animation off partway
+// through instead of playing the full thump. One delegated listener at the
+// document level instead of one per button.
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".btn-primary");
+  if (!btn) return;
+  btn.classList.remove("stamp-flourish");
+  void btn.offsetWidth;
+  btn.classList.add("stamp-flourish");
+});
 
 </script>
 

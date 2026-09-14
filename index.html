@@ -2918,21 +2918,25 @@ html[data-theme="ledger"] .chip input:checked + span::before {
    checked state via the ring + corner badge (base rules). Colors
    themselves come pre-tuned per theme now (--roster-* custom properties,
    see :root), not a shared bright palette pushed through a filter here. */
-/* Same embossed-medallion technique as the Star/FKDR pills and wax-seal
-   flag badges (radial highlight for candlelight sheen, inset light-over/
-   dark-under pair for relief) - a white-fading-to-transparent radial
-   layered over the flat --roster-* color instead of a hand-picked light
-   stop per color like the pills use, since there are 9 of these and each
-   already has its own tuned hue rather than one shared base to tint. */
+/* Embossed-medallion technique, tuned for genuine metal rather than a
+   soft glossy sticker: a tight, bright specular glint (not a broad soft
+   sheen) opposite a real shadow gradient for volume - both layered over
+   the flat --roster-* color as extra backgrounds, since there are 9 of
+   these and each already has its own tuned hue rather than one shared
+   base to hand-pick a light/dark stop for like the Star/FKDR pills do.
+   A dark rim (not the pale page border) reads as a coin's edge, and the
+   text gets the same engraved-highlight treatment the pills use. */
 html[data-theme="ledger"] .chip-group.roster .roster-avatar {
   border-radius: 50%;
   background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55), rgba(255,255,255,0) 65%),
+    radial-gradient(circle at 32% 24%, rgba(255,255,255,0.95), rgba(255,255,255,0.2) 30%, transparent 48%),
+    radial-gradient(circle at 72% 80%, rgba(0,0,0,0.5), transparent 55%),
     var(--chip-color);
-  box-shadow: 0 0 0 1px var(--border), inset 0 1px 1px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(0,0,0,0.25);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.45);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.45), 0 2px 3px rgba(0,0,0,0.3);
 }
 html[data-theme="ledger"] .chip-group.roster .roster-chip:hover .roster-avatar {
-  box-shadow: 0 0 0 1px var(--border-strong), inset 0 1px 1px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.45), 0 5px 10px rgba(0,0,0,0.4);
 }
 /* Same specificity tie as Case Files above (both match on 3 classes/
    pseudo-classes; the theme's rule also carries the [data-theme] attribute
@@ -2940,11 +2944,12 @@ html[data-theme="ledger"] .chip-group.roster .roster-chip:hover .roster-avatar {
    the ring, scoped enough to actually win here. */
 html[data-theme="ledger"] .chip-group.roster .chip input:checked + .roster-avatar {
   background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55), rgba(255,255,255,0) 65%),
+    radial-gradient(circle at 32% 24%, rgba(255,255,255,0.95), rgba(255,255,255,0.2) 30%, transparent 48%),
+    radial-gradient(circle at 72% 80%, rgba(0,0,0,0.5), transparent 55%),
     var(--chip-color);
   color: #04050a;
   border-color: var(--panel);
-  box-shadow: 0 0 0 1px var(--panel), 0 0 0 3px var(--chip-color), inset 0 1px 1px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.35);
+  box-shadow: 0 0 0 1px var(--panel), 0 0 0 3px var(--chip-color), inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.45), 0 5px 10px rgba(0,0,0,0.4);
 }
 html[data-theme="ledger"] .chip-group.roster .chip input:checked + .roster-avatar::before {
   content: none;
@@ -2959,9 +2964,11 @@ html[data-theme="ledger"] #statsAvatar {
    embossed one. */
 html[data-theme="ledger"] .beaten-avatar {
   background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55), rgba(255,255,255,0) 65%),
+    radial-gradient(circle at 32% 24%, rgba(255,255,255,0.95), rgba(255,255,255,0.2) 30%, transparent 48%),
+    radial-gradient(circle at 72% 80%, rgba(0,0,0,0.5), transparent 55%),
     var(--chip-color);
-  box-shadow: 0 0 0 1px var(--border), inset 0 1px 1px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(0,0,0,0.25);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.45);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
 }
 /* A thin gold rule instead of Neon's plain hairline, matching the double-
    rule/gold-accent language used on cards and the table header. */

@@ -282,11 +282,6 @@ h1 {
    costs the Neon theme nothing. */
 .exhibit-tag { display: none; }
 
-/* Case-Files-only red string above the grid - present in the markup always
-   (see the SVG next to #cardGrid), shown only once themed (and only while
-   the grid view is actually visible - see the :has() rule further down). */
-.corkboard-string { display: none; }
-
 .panel-header p {
   margin: 2px 0 0;
   font-size: 0.85em;
@@ -1513,36 +1508,46 @@ tbody tr:hover .user-cell span {
    fonts. Each rule here mirrors one rule above it in the sheet.
    ============================================================ */
 
-/* Corkboard texture - what the pushpins throughout this theme have implied
-   all along but the flat khaki background never delivered on. Reuses
-   #nebula (fixed, full-bleed, z-index:-1, pointer-events:none, already
-   sitting behind .page) rather than adding a new element: an SVG
-   fractalNoise turbulence, recolored to a white-to-mid-gray range via
-   feColorMatrix (not brown directly - letting the gradient underneath
-   supply the hue keeps the color easy to tune without redoing matrix
-   math) and multiply-blended over a brown gradient, so the noise darkens
-   the base color unevenly instead of just sitting on top of it. This
-   replaces the old starfield "dust" entirely (see #starfield below) -
-   both were doing the same "grain on the background" job, and stacking a
-   second independent speckle layer on top of an already-mottled cork
-   texture just muddied it. */
+/* A dark-brown blotchy "corkboard" texture used to live here (a low-
+   frequency SVG turbulence multiply-blended over a brown gradient). Cut:
+   it read as too heavy/dark against the rest of the theme, and low-
+   frequency turbulence has large, recognizable blob shapes that make a
+   tiled background's seams obvious - your eye can trace one blob right up
+   to the tile edge and see it not quite line up with the next tile, even
+   with stitchTiles="stitch" nominally requesting a seamless wrap.
+   Replaced with a much fainter fine-grain paper fiber texture instead: a
+   high baseFrequency (fine, sand-like speckle rather than big blotches)
+   avoids that problem almost entirely, since there's no large shape for
+   the eye to track across a seam - and it's kept subtle enough to layer
+   under the dust specks below rather than replace them. */
 html[data-theme="casefiles"] #nebula {
   display: block;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.045' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0.5 0.5 0 0 0 0.5 0.5 0 0 0 0.5 0.5 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E"),
-    linear-gradient(160deg, #a9824f, #7c5a30 55%, #6b4a26);
-  background-blend-mode: multiply, normal;
-  background-size: 260px 260px, cover;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
   animation: none;
   opacity: 1;
 }
 
-/* Dust specks retired in favor of the corkboard texture above - same 1400
-   pre-placed dots that used to be recolored/frozen in place here now stay
-   fully hidden for this theme, since a second speckle layer on top of an
-   already-mottled cork background just reads as visual noise. */
-html[data-theme="casefiles"] #starfield {
-  display: none;
+/* Reuse the same starfield elements instead of hiding them - same 1400
+   pre-placed dots, just recolored to a warm tone, stripped of the neon
+   glow, and held still, so they read as flecks of grain settled in the
+   paper rather than stars or drifting dust. The base .star runs the
+   "twinkle" animation (infinite, so always active), which continuously
+   animates opacity itself and wins that property outright for as long as
+   it's running - a plain "opacity: 0.75" override would be silently
+   ignored the same way .sweat-card's transform was (see the note up near
+   .sweat-card) - so the animation is turned off outright here rather than
+   overridden, which is also what actually stops the drifting/glowing. */
+html[data-theme="casefiles"] .star {
+  background: #5c4322;
+  box-shadow: none;
+  animation: none;
+  opacity: 0.75;
+}
+html[data-theme="casefiles"] .star.bright {
+  background: #3f2c14;
+  box-shadow: none;
+  opacity: 0.9;
 }
 
 html[data-theme="casefiles"] body {
@@ -1924,50 +1929,6 @@ html[data-theme="casefiles"] .sweat-card:active {
   transform: translateY(-1px) scale(0.99) rotate(calc(var(--card-tilt, -1deg) * -1.6));
 }
 
-/* Red string across the grid - hidden by default (see the base
-   .corkboard-string rule near the SVG's markup), shown only when this
-   theme is active AND the grid it sits on is the visible view. :has() with
-   a next-sibling combinator reacts to #cardGrid's [hidden] attribute
-   directly, so switching to Table/Leaderboard (or filtering the grid down
-   to zero results, which never touches [hidden] on #cardGrid itself) needs
-   no JS - the existing view-toggle logic already does the only thing this
-   depends on. A small negative margin pulls it down to overlap the top
-   sliver of the first row, so the pins read as pinned into the same board
-   the cards are on rather than floating in the gap above it. */
-html[data-theme="casefiles"] .corkboard-string:has(+ #cardGrid:not([hidden])) {
-  display: block;
-  position: relative;
-  width: 100%;
-  max-width: 1200px;
-  height: 58px;
-  margin: 0 auto -20px;
-  z-index: 2;
-  overflow: visible;
-}
-html[data-theme="casefiles"] .string-path {
-  fill: none;
-  stroke-linecap: round;
-  filter: drop-shadow(0 2px 2px rgba(42,36,28,0.4));
-}
-html[data-theme="casefiles"] .string-a {
-  stroke: #a3271d;
-  stroke-width: 2.2;
-}
-html[data-theme="casefiles"] .string-b {
-  stroke: #7f1f16;
-  stroke-width: 1.7;
-  opacity: 0.85;
-}
-html[data-theme="casefiles"] .string-pin {
-  fill: #6b160f;
-  stroke: #3a0b07;
-  stroke-width: 0.75;
-  filter: drop-shadow(0 1px 1.5px rgba(42,36,28,0.5));
-}
-html[data-theme="casefiles"] .string-pin-shine {
-  fill: rgba(255,255,255,0.55);
-}
-
 html[data-theme="casefiles"] .user-cell span,
 html[data-theme="casefiles"] tbody tr:hover .user-cell span {
   text-shadow: none;
@@ -2314,17 +2275,19 @@ html[data-theme="ledger"] .panel-header {
    the header's full width (which runs well past the icon+heading block on
    the left) rather than centered on the text - the same trick used on
    printed letterhead, where the rule continues past the sender's name/logo
-   with a lone ornament partway along it. Cut into the line via a page-color
-   background rather than trying to align a glyph's baseline with a 1px
-   rule pixel-perfectly. */
+   with a lone ornament partway along it. An earlier version cut into the
+   line with an opaque page-color background behind the glyph (the usual
+   trick for sitting text on top of a rule) - looks fine on a flat page,
+   but reads as a stray white square once the background carries the
+   guilloche watermark/paper grain texture, since the patch blots out a
+   little rectangle of it. Sitting the glyph just above the line instead
+   avoids the collision entirely, no background needed. */
 html[data-theme="ledger"] .panel-header::after {
   content: "\2766";
   position: absolute;
   left: 50%;
-  bottom: 0;
-  transform: translate(-50%, 50%);
-  background: var(--bg);
-  padding: 0 14px;
+  bottom: 4px;
+  transform: translateX(-50%);
   color: var(--gold);
   font-size: 15px;
   line-height: 1;
@@ -2626,24 +2589,6 @@ html[data-theme="ledger"] .view-btn.active {
     </div>
   </div>
 
-  <!-- Case-Files-only red string across the top of the grid, evoking a
-       detective's conspiracy board. Static markup (not rendered by JS, so
-       it survives every re-render of #cardGrid below it) shown only via
-       CSS - see ".corkboard-string" - so it costs every other theme
-       nothing. preserveAspectRatio="none" lets it stretch to the grid's
-       actual width at any viewport size without redrawing the path. -->
-  <svg class="corkboard-string" viewBox="0 0 1200 70" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-    <path class="string-path string-a" d="M 20 12 Q 600 58 1180 16" />
-    <path class="string-path string-b" d="M 80 55 Q 550 4 1120 60" />
-    <circle class="string-pin" cx="20" cy="12" r="6" />
-    <circle class="string-pin-shine" cx="17.5" cy="9.5" r="2" />
-    <circle class="string-pin" cx="1180" cy="16" r="6" />
-    <circle class="string-pin-shine" cx="1177.5" cy="13.5" r="2" />
-    <circle class="string-pin" cx="80" cy="55" r="5.5" />
-    <circle class="string-pin-shine" cx="77.8" cy="52.8" r="1.8" />
-    <circle class="string-pin" cx="1120" cy="60" r="5.5" />
-    <circle class="string-pin-shine" cx="1117.8" cy="57.8" r="1.8" />
-  </svg>
   <div id="cardGrid" class="card-grid"></div>
   <div id="emptyState" class="empty-state" hidden>No sweats match these filters yet.</div>
 

@@ -327,6 +327,24 @@ h1 {
   background: var(--accent-soft);
 }
 
+/* Destructive-action button (the delete confirmation) - deliberately not
+   .btn-primary (var(--bad) instead of var(--accent)), so a "Remove" button
+   never carries the same visual weight as a constructive "Save"/"Add" one,
+   and skips the Case Files ink-stamp click flourish that's scoped to
+   .btn-primary - a "confirmed on record" stamp reads wrong for deleting a
+   record. var(--bad) is already themed per theme, so this needs no
+   per-theme overrides of its own. */
+.btn-danger {
+  background: var(--bad);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255,92,114,0.3);
+}
+.btn-danger:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+.btn-danger:active:not(:disabled) { transform: translateY(0); }
+
 .icon-btn {
   width: 30px;
   height: 30px;
@@ -2198,7 +2216,7 @@ html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
 
 /* Typewriter reveal on #status/#editStatus/#adminKeyStatus - the
    .typewriter-play class is toggled by a MutationObserver (see
-   armTypewriter() in the script below) every time any of these elements'
+   armStatus() in the script below) every time any of these elements'
    text changes. clip-path wipes the text in from the left without
    animating layout width, so it plays correctly under #status's own
    text-align:center (a width-based reveal would fight the auto margins
@@ -2219,6 +2237,37 @@ html[data-theme="casefiles"] #adminKeyStatus.typewriter-play {
 @keyframes typeReveal {
   from { clip-path: inset(0 100% 0 0); }
   to { clip-path: inset(0 0 0 0); }
+}
+/* Case Files dismissal plays the exact same wipe in reverse - steps()
+   reversed reads as backspacing the message away character by character,
+   rather than a generic fade that would look inconsistent with how the
+   message typed itself in a few seconds earlier. */
+html[data-theme="casefiles"] #status.typewriter-dismiss,
+html[data-theme="casefiles"] #editStatus.typewriter-dismiss,
+html[data-theme="casefiles"] #adminKeyStatus.typewriter-dismiss {
+  animation: typeReveal 0.5s steps(28, end) reverse both;
+}
+
+/* Every other theme just fades a status message in and back out - armStatus()
+   (in the script below) toggles .status-enter when text is set and
+   .status-dismissing a few seconds later, right before clearing it, so it
+   disappears the same simple way it appeared instead of just vanishing
+   mid-frame. Harmless alongside the Case Files rules above: opacity and
+   clip-path are different properties, so both can animate at once without
+   the usual "animation permanently wins" conflict. */
+#status.status-enter, #editStatus.status-enter, #adminKeyStatus.status-enter {
+  animation: statusFadeIn 0.25s ease;
+}
+#status.status-dismissing, #editStatus.status-dismissing, #adminKeyStatus.status-dismissing {
+  animation: statusFadeOut 0.4s ease forwards;
+}
+@keyframes statusFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes statusFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 /* Ink-stamp click flourish on the primary buttons - a quick off-axis
@@ -2688,14 +2737,18 @@ html[data-theme="ledger"] .pill.boost {
 }
 
 /* Private Bank success flourish - a wax seal drops onto the form and
-   settles with a wobble, echoing a document being officially sealed.
-   Same radial-gradient + inset light/dark pair as the wax-seal pills
-   above, just scaled up into a full seal instead of a small badge, with a
-   darker border and a stronger drop-shadow than the pills need so it
-   still reads clearly against a plain white/cream background instead of
-   blending into it. A soft ink-impression halo (a flattened, blurred dark
-   ellipse) pulses under the seal as it lands, like pressure spreading
-   into the paper, and a few gold sparkles kick out from underneath it.
+   settles with a wobble, echoing a document being officially sealed. The
+   exact same red radial-gradient + inset light/dark pair as the Cheater
+   pill's wax seal (not the gold Star/FKDR medallion recipe - a proper wax
+   seal is red wax, gold was reading more like a coin), just scaled up
+   into a full seal instead of a small badge, with a darker border and a
+   stronger drop-shadow than the pill needs so it still reads clearly
+   against a plain white/cream background instead of blending into it. A
+   soft ink-impression halo (a flattened, blurred dark ellipse) pulses
+   under the seal as it lands, like pressure spreading into the paper,
+   and a few gold sparkles kick out from underneath it - gold against the
+   red still reads as gilt detailing, same as the gold wax-seal pill's
+   own border/text sitting next to this red one elsewhere on the page.
    Two animations on the seal itself (not one) since the settle-then-hold
    and the eventual fade need different timing/easing and touch different
    properties for most of their run - see the comment on them for why
@@ -2719,17 +2772,17 @@ html[data-theme="ledger"] .flourish-seal {
   width: 84px;
   height: 84px;
   border-radius: 50%;
-  border: 2.5px solid #4a3610;
-  background: radial-gradient(circle at 30% 25%, #e6c877, #8a6a1f 75%);
-  box-shadow: inset 0 2px 2px rgba(255,255,255,0.45), inset 0 -3px 6px rgba(0,0,0,0.35), 0 10px 24px rgba(22,35,58,0.5);
+  border: 2.5px solid #430e17;
+  background: radial-gradient(circle at 30% 25%, #c04559, #6b1b29 75%);
+  box-shadow: inset 0 2px 2px rgba(255,255,255,0.35), inset 0 -3px 6px rgba(0,0,0,0.4), 0 10px 24px rgba(22,35,58,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #2a1e08;
+  color: #f7e9df;
   font-family: 'Playfair Display', serif;
   font-weight: 700;
   font-size: 38px;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.4);
   /* sealDrop ends holding opacity:1 (forwards) - sealFade starts after it
      via animation-delay and only then touches opacity, so the two never
      actually fight over the property at the same moment; sealFade simply
@@ -3195,6 +3248,22 @@ html[data-theme="ledger"] .view-btn.active {
       <div class="edit-modal-actions">
         <button type="button" id="clearAdminKeyBtn" class="btn btn-ghost">Clear</button>
         <button type="button" id="saveAdminKeyBtn" class="btn btn-primary">Save</button>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM DELETE MODAL -->
+  <div id="confirmDeleteModal" class="modal">
+    <div class="modal-card">
+      <span class="modal-folder-tab modal-folder-tab-amend">Case File &middot; Remove</span>
+      <div class="modal-content admin-key-modal-content">
+      <span id="closeConfirmDeleteModal" class="modal-close">&times;</span>
+      <h2 class="edit-modal-title">Remove Sweat?</h2>
+      <p class="admin-key-desc">This can't be undone.</p>
+      <div class="edit-modal-actions">
+        <button type="button" id="cancelConfirmDeleteBtn" class="btn btn-ghost">Cancel</button>
+        <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Remove</button>
       </div>
       </div>
     </div>
@@ -4383,8 +4452,41 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   updatePaginationControls(leaderboardPagination, totalPages);
 }
 
+// Themed modal instead of confirm()/alert() - same reasoning as the Admin
+// Key modal and the dropped form-validation tooltip: native dialogs are
+// unstyled and outside any theme's control. Reuses the exact .modal-card/
+// .modal-folder-tab/.modal-content structure those already use, so it
+// automatically picks up the folder-tab z-index fix (the tab used to only
+// stay above .modal-content by DOM order, not a guaranteed stacking rule)
+// rather than needing that fix reapplied by hand.
+const confirmDeleteModal = document.getElementById("confirmDeleteModal");
+const closeConfirmDeleteModal = document.getElementById("closeConfirmDeleteModal");
+const cancelConfirmDeleteBtn = document.getElementById("cancelConfirmDeleteBtn");
+const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+let pendingDeleteResolve = null;
+
+function resolveConfirmDelete(result) {
+  confirmDeleteModal.style.display = "none";
+  if (pendingDeleteResolve) {
+    const resolve = pendingDeleteResolve;
+    pendingDeleteResolve = null;
+    resolve(result);
+  }
+}
+
+function confirmDelete() {
+  return new Promise(resolve => {
+    pendingDeleteResolve = resolve;
+    confirmDeleteModal.style.display = "flex";
+  });
+}
+
+closeConfirmDeleteModal.addEventListener("click", () => resolveConfirmDelete(false));
+cancelConfirmDeleteBtn.addEventListener("click", () => resolveConfirmDelete(false));
+confirmDeleteBtn.addEventListener("click", () => resolveConfirmDelete(true));
+
 async function removeSweat(id) {
-  if (!confirm("Are you sure you want to remove this sweat?")) return;
+  if (!(await confirmDelete())) return;
   try {
     const res = await fetch(`${backendBaseURL}/sweats/${id}`, { method: "DELETE", headers: adminHeaders() });
     if (res.status === 401 || res.status === 503) {
@@ -4393,7 +4495,7 @@ async function removeSweat(id) {
     if (!res.ok) throw new Error("Failed to remove sweat");
     await loadSweats();
   } catch (err) {
-    alert("Error removing sweat: " + err.message);
+    status.textContent = "Error removing sweat: " + err.message;
   }
 }
 
@@ -4602,30 +4704,49 @@ window.onclick = (e) => {
   if (e.target === modal) modal.style.display = "none";
   if (e.target === editModal) closeEditModalFn();
   if (e.target === adminKeyModal) closeAdminKeyModalFn();
+  if (e.target === confirmDeleteModal) resolveConfirmDelete(false);
 };
 
-// Case-Files-only typewriter effect on #status/#editStatus (the CSS side
-// lives under html[data-theme="casefiles"] - this observer just restarts
-// the reveal animation whenever either element's text changes, so it
-// covers every existing call site that sets .textContent on them (there
-// are many, scattered across the fetch/add/edit/delete flows) without
-// having to touch any of them individually. Harmless no-op in every other
-// theme: the class gets toggled either way, but no rule outside Case Files
-// reads it. clip-path (not a width animation) so it reveals correctly
-// regardless of #status's own text-align:center.
-function armTypewriter(el) {
+// Status message lifecycle for #status/#editStatus/#adminKeyStatus: plays
+// an entrance treatment whenever text is set (the Case-Files-only
+// typewriter reveal, plus a plain fade-in every theme gets), then a few
+// seconds later plays that same treatment in reverse and clears the text -
+// so "Sweat added!" and friends disappear the same way they appeared
+// instead of just sitting there forever or vanishing mid-frame. One
+// observer covers every existing call site that sets .textContent on
+// these elements (there are many, scattered across the fetch/add/edit/
+// delete flows) without having to touch any of them individually.
+const STATUS_DISMISS_MS = 5000;
+
+function armStatus(el) {
   if (!el) return;
+  let dismissTimer = null;
   const observer = new MutationObserver(() => {
-    if (!el.textContent) return;
-    el.classList.remove("typewriter-play");
+    clearTimeout(dismissTimer);
+    el.classList.remove("status-dismissing", "typewriter-dismiss");
+    if (!el.textContent) {
+      el.classList.remove("typewriter-play", "status-enter");
+      return;
+    }
+    el.classList.remove("typewriter-play", "status-enter");
     void el.offsetWidth; // force reflow so the animation restarts from 0
-    el.classList.add("typewriter-play");
+    el.classList.add("typewriter-play", "status-enter");
+
+    dismissTimer = setTimeout(() => {
+      el.classList.add("typewriter-dismiss", "status-dismissing");
+      // A plain timeout rather than an animationend listener - two
+      // animations (the reverse typewriter wipe and the fade) can be
+      // running at once with different durations, and waiting on
+      // whichever's listener fires first would risk clearing the text
+      // before the slower one finishes.
+      setTimeout(() => { el.textContent = ""; }, 500);
+    }, STATUS_DISMISS_MS);
   });
   observer.observe(el, { childList: true, characterData: true, subtree: true });
 }
-armTypewriter(status);
-armTypewriter(editStatus);
-armTypewriter(adminKeyStatus);
+armStatus(status);
+armStatus(editStatus);
+armStatus(adminKeyStatus);
 
 // Case-Files-only ink-stamp flourish on the primary buttons (Fetch Stats,
 // Add Sweat, Save Changes) - a click-triggered class rather than relying on

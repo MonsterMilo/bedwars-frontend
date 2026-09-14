@@ -313,7 +313,7 @@ h1 {
 }
 .btn-primary:active:not(:disabled) { transform: translateY(0); }
 
-.add-sweat-row { display: flex; justify-content: center; margin-top: 20px; }
+.add-sweat-row { position: relative; display: flex; justify-content: center; margin-top: 20px; }
 .add-sweat-row .btn { width: 200px; }
 
 .btn-ghost {
@@ -998,35 +998,66 @@ html:not([data-theme]) .radar-sweep {
   overflow: visible;
 }
 
-/* Neon: a ring ping plus a burst of small particles thrown outward from
-   the center, each with its own randomized (JS-set) --dx/--dy/--particle-
-   color. html:not([data-theme]) because Neon is the absence of a data-
+/* Neon: a bright flash-pop at the core, two rings expanding a beat apart,
+   and a denser burst of particles in mixed sizes thrown outward - each
+   particle has its own randomized (JS-set) --dx/--dy/--particle-color/
+   --size. html:not([data-theme]) because Neon is the absence of a data-
    theme attribute (see applyTheme()), not a value of one. */
+html:not([data-theme]) .flourish-flash {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff, var(--accent) 55%, transparent 75%);
+  animation: neonFlashPop 0.35s ease-out forwards;
+}
+@keyframes neonFlashPop {
+  0% { transform: scale(0.4); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
 html:not([data-theme]) .flourish-ring {
   position: absolute;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid var(--accent);
-  box-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent-2);
-  animation: neonRingPing 0.8s ease-out forwards;
+  border: 3px solid var(--accent);
+  box-shadow: 0 0 12px 2px var(--accent), 0 0 30px var(--accent), 0 0 55px var(--accent-2);
+  animation: neonRingPing 0.85s ease-out forwards;
+}
+html:not([data-theme]) .flourish-ring-2 {
+  border-color: var(--accent-2);
+  box-shadow: 0 0 12px 2px var(--accent-2), 0 0 30px var(--accent-2);
+  animation: neonRingPing 0.85s ease-out 0.12s forwards;
 }
 @keyframes neonRingPing {
   0% { transform: scale(0.3); opacity: 1; }
-  100% { transform: scale(4.5); opacity: 0; }
+  100% { transform: scale(5); opacity: 0; }
 }
 html:not([data-theme]) .flourish-particle {
   position: absolute;
-  width: 6px;
-  height: 6px;
+  width: var(--size, 6px);
+  height: var(--size, 6px);
   border-radius: 50%;
   background: var(--particle-color, var(--accent));
-  box-shadow: 0 0 6px var(--particle-color, var(--accent));
-  animation: neonParticleBurst 0.9s cubic-bezier(.15,.7,.3,1) forwards;
+  box-shadow: 0 0 8px var(--particle-color, var(--accent));
+  animation: neonParticleBurst 1s cubic-bezier(.1,.7,.25,1) forwards;
 }
 @keyframes neonParticleBurst {
   0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  70% { opacity: 1; }
   100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+}
+/* A quick, bright pulse on the button itself, synced with the burst
+   (triggered alongside it in playSuccessFlourish()), so the celebration
+   reads as coming from the thing that was just clicked instead of just
+   appearing next to it. */
+html:not([data-theme]) .add-sweat-row .btn.success-pulse {
+  animation: neonButtonPulse 0.6s ease-out;
+}
+@keyframes neonButtonPulse {
+  0% { box-shadow: 0 0 0 0 var(--accent), 0 4px 18px rgba(0,180,255,0.3); }
+  60% { box-shadow: 0 0 0 14px rgba(0,217,255,0), 0 4px 18px rgba(0,180,255,0.3); }
+  100% { box-shadow: 0 0 0 0 rgba(0,217,255,0), 0 4px 18px rgba(0,180,255,0.3); }
 }
 
 .sweat-card {
@@ -1823,6 +1854,7 @@ html[data-theme="casefiles"] .modal-folder-tab {
   position: absolute;
   top: -16px;
   left: 24px;
+  z-index: 2;
   background: var(--accent);
   color: var(--panel);
   font-size: 0.68em;
@@ -2658,25 +2690,46 @@ html[data-theme="ledger"] .pill.boost {
 /* Private Bank success flourish - a wax seal drops onto the form and
    settles with a wobble, echoing a document being officially sealed.
    Same radial-gradient + inset light/dark pair as the wax-seal pills
-   above, just scaled up into a full seal instead of a small badge. Two
-   animations (not one) since the settle-then-hold and the eventual fade
-   need different timing/easing and touch different properties for most
-   of their run - see the comment on them for why running them together
-   here doesn't hit the usual "animation permanently wins" trap. */
+   above, just scaled up into a full seal instead of a small badge, with a
+   darker border and a stronger drop-shadow than the pills need so it
+   still reads clearly against a plain white/cream background instead of
+   blending into it. A soft ink-impression halo (a flattened, blurred dark
+   ellipse) pulses under the seal as it lands, like pressure spreading
+   into the paper, and a few gold sparkles kick out from underneath it.
+   Two animations on the seal itself (not one) since the settle-then-hold
+   and the eventual fade need different timing/easing and touch different
+   properties for most of their run - see the comment on them for why
+   running them together here doesn't hit the usual "animation
+   permanently wins" trap. */
+html[data-theme="ledger"] .flourish-impression {
+  position: absolute;
+  width: 100px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(22,35,58,0.28), transparent 72%);
+  animation: sealImpression 0.7s ease-out forwards;
+}
+@keyframes sealImpression {
+  0% { transform: scale(0.2); opacity: 0; }
+  50% { opacity: 0.9; }
+  100% { transform: scale(1); opacity: 0; }
+}
 html[data-theme="ledger"] .flourish-seal {
   position: relative;
-  width: 76px;
-  height: 76px;
+  width: 84px;
+  height: 84px;
   border-radius: 50%;
-  border: 2px solid #6b4f14;
-  background: radial-gradient(circle at 30% 25%, #dbb75c, #93701f 75%);
-  box-shadow: inset 0 2px 2px rgba(255,255,255,0.4), inset 0 -3px 5px rgba(0,0,0,0.3), 0 8px 18px rgba(22,35,58,0.35);
+  border: 2.5px solid #4a3610;
+  background: radial-gradient(circle at 30% 25%, #e6c877, #8a6a1f 75%);
+  box-shadow: inset 0 2px 2px rgba(255,255,255,0.45), inset 0 -3px 6px rgba(0,0,0,0.35), 0 10px 24px rgba(22,35,58,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #2a1e08;
   font-family: 'Playfair Display', serif;
-  font-size: 30px;
+  font-weight: 700;
+  font-size: 38px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
   /* sealDrop ends holding opacity:1 (forwards) - sealFade starts after it
      via animation-delay and only then touches opacity, so the two never
      actually fight over the property at the same moment; sealFade simply
@@ -2693,6 +2746,21 @@ html[data-theme="ledger"] .flourish-seal {
 @keyframes sealFade {
   from { opacity: 1; }
   to { opacity: 0; }
+}
+html[data-theme="ledger"] .flourish-sparkle {
+  position: absolute;
+  color: var(--gold);
+  font-size: 15px;
+  line-height: 1;
+  animation: sealSparkle 0.9s ease-out forwards;
+}
+html[data-theme="ledger"] .flourish-sparkle::before {
+  content: "\2726";
+}
+@keyframes sealSparkle {
+  0% { transform: translate(0, 0) scale(0) rotate(0deg); opacity: 0; }
+  35% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1) rotate(80deg); opacity: 0; }
 }
 
 /* Animated ink-draw underline on player names - a thin gold rule that
@@ -2997,7 +3065,7 @@ html[data-theme="ledger"] .view-btn.active {
   <div id="leaderboardWrap" hidden>
     <div id="leaderboardRanking" class="leaderboard-ranking"></div>
     <h3 id="leaderboardPersonTitle" class="leaderboard-person-title"></h3>
-    <div class="table-wrap card">
+    <div class="table-wrap card" id="leaderboardTableWrap">
       <table>
         <thead>
           <tr>
@@ -3306,6 +3374,7 @@ const leaderboardWrap = document.getElementById('leaderboardWrap');
 const leaderboardRanking = document.getElementById('leaderboardRanking');
 const leaderboardPersonTitle = document.getElementById('leaderboardPersonTitle');
 const leaderboardTableBody = document.getElementById('leaderboardTableBody');
+const leaderboardTableWrap = document.getElementById('leaderboardTableWrap');
 const leaderboardEmptyState = document.getElementById('leaderboardEmptyState');
 const resultCount = document.getElementById('resultCount');
 const viewGridBtn = document.getElementById('viewGridBtn');
@@ -4248,6 +4317,15 @@ function buildSweatRow(s, { usernameCounts }) {
 
 function renderTableRows(filteredSweats, usernameCounts) {
   tableBody.innerHTML = "";
+  // Unlike the grid (which just has zero children when there's nothing to
+  // show), a table has persistent chrome - the column headers - that used
+  // to stay visible above an empty body with #emptyState's message floating
+  // above that, reading as a broken half-empty table rather than a single
+  // clear "nothing here" state. Hiding the whole table shell when there are
+  // no rows and relying on #emptyState alone matches how the grid already
+  // behaves.
+  tableWrap.hidden = filteredSweats.length === 0;
+  emptyState.hidden = filteredSweats.length !== 0;
   filteredSweats.forEach(s => {
     tableBody.appendChild(buildSweatRow(s, { usernameCounts }));
   });
@@ -4290,6 +4368,11 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   leaderboardPersonTitle.textContent = `${BEATEN_BY[leaderboardPerson].label}'s Sweats (${counts[leaderboardPerson]})`;
 
   const personSweats = filteredSweats.filter(s => s[leaderboardPerson]);
+  // Same fix as the Table view: hide the drill-down table's own header
+  // chrome instead of leaving it visible above an empty body - the
+  // ranking grid above it stays put either way, since that's showing
+  // counts for every person, not just whichever one has 0 right now.
+  leaderboardTableWrap.hidden = personSweats.length === 0;
   leaderboardEmptyState.hidden = personSweats.length !== 0;
 
   const { pageItems, totalPages } = paginate(personSweats);
@@ -4571,26 +4654,42 @@ const SUCCESS_MESSAGES = {
 };
 
 function buildNeonFlourish(container) {
+  const flash = document.createElement("div");
+  flash.className = "flourish-flash";
+  container.appendChild(flash);
+
   const ring = document.createElement("div");
   ring.className = "flourish-ring";
   container.appendChild(ring);
 
+  const ring2 = document.createElement("div");
+  ring2.className = "flourish-ring flourish-ring-2";
+  container.appendChild(ring2);
+
   const colors = ["var(--accent)", "var(--accent-2)", "var(--gold)"];
-  const particleCount = 14;
+  const particleCount = 20;
   for (let i = 0; i < particleCount; i++) {
     const particle = document.createElement("div");
     particle.className = "flourish-particle";
     // Spread evenly around the circle with a little jitter per particle,
-    // rather than fully random angles, so a 14-particle burst doesn't
+    // rather than fully random angles, so a 20-particle burst doesn't
     // occasionally clump up on one side by chance.
-    const angle = (i / particleCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-    const distance = 55 + Math.random() * 45;
+    const angle = (i / particleCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+    const distance = 60 + Math.random() * 55;
     particle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
     particle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
     particle.style.setProperty("--particle-color", colors[i % colors.length]);
+    particle.style.setProperty("--size", `${4 + Math.random() * 5}px`);
     container.appendChild(particle);
   }
-  return 900; // longest child animation, in ms
+
+  const btn = document.getElementById("addSweatBtn");
+  if (btn) {
+    btn.classList.remove("success-pulse");
+    void btn.offsetWidth;
+    btn.classList.add("success-pulse");
+  }
+  return 1000; // longest child animation, in ms
 }
 
 function buildCaseFilesFlourish(container) {
@@ -4602,15 +4701,36 @@ function buildCaseFilesFlourish(container) {
 }
 
 function buildLedgerFlourish(container) {
+  const impression = document.createElement("div");
+  impression.className = "flourish-impression";
+  container.appendChild(impression);
+
   const seal = document.createElement("div");
   seal.className = "flourish-seal";
   seal.innerHTML = "&#10003;";
   container.appendChild(seal);
+
+  const sparkleCount = 6;
+  for (let i = 0; i < sparkleCount; i++) {
+    const sparkle = document.createElement("div");
+    sparkle.className = "flourish-sparkle";
+    const angle = (i / sparkleCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+    const distance = 44 + Math.random() * 22;
+    sparkle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+    sparkle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+    sparkle.style.animationDelay = `${0.32 + Math.random() * 0.15}s`;
+    container.appendChild(sparkle);
+  }
   return 1800;
 }
 
 function playSuccessFlourish() {
-  const host = document.getElementById("form-container");
+  // Anchored to the Add Sweat button's own row, not the whole (much
+  // taller) #form-container - centering within the full card put the
+  // flourish somewhere in the middle of the roster checkboxes, nowhere
+  // near the button someone just clicked, which read as disconnected
+  // from the action that triggered it.
+  const host = document.querySelector(".add-sweat-row");
   if (!host) return;
   const wrap = document.createElement("div");
   wrap.className = "success-flourish";

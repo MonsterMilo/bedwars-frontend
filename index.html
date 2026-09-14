@@ -385,7 +385,7 @@ h1 {
 /* Sweat Lookup panel */
 #form-container {
   position: relative;
-  max-width: 800px;
+  max-width: 980px;
   margin: 0 auto 44px;
   padding: 26px 30px 28px;
 }
@@ -427,15 +427,40 @@ h1 {
    ============================================================ */
 .dash-grid {
   display: grid;
-  grid-template-columns: 1fr 260px;
+  grid-template-columns: 340px 1fr;
   gap: 28px;
 }
 
+/* A flex column, not just a block, so .add-sweat-row (margin-top:auto)
+   anchors to the bottom of this column instead of sitting right after
+   Flags with the button then floating separately below the whole grid.
+   When the preview column on the right ends up taller (real tag reasons
+   run long), the grid's default stretch makes this column match that
+   height - now that trailing space collects ABOVE the button, pushing
+   it down to align with the preview's bottom, rather than appearing as
+   a dead gap between Flags and a button stranded outside both columns. */
 .dash-left {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   border-right: 1px solid var(--border);
   padding-right: 28px;
 }
+/* .chip-group's flex:1 (further up) was written for its old life as a
+   flex ITEM inside a ROW (.chip-section, label beside chips) - `flex:1`
+   there grows it horizontally to fill leftover width next to the label.
+   Now a direct child of this COLUMN flex container, the same flex-grow
+   instead claims leftover *vertical* space (main axis flips with flex-
+   direction), ballooning the Beaten-By/Flags rows to fill however much
+   the grid stretched this column by - reset back to a normal
+   size-to-content item here. */
+.dash-left .chip-group { flex: none; }
+.dash-left .add-sweat-row {
+  margin-top: auto;
+  padding-top: 20px;
+  justify-content: stretch;
+}
+.dash-left .add-sweat-row .btn { width: 100%; }
 
 .dash-right { min-width: 0; display: flex; flex-direction: column; }
 
@@ -546,13 +571,13 @@ input:focus {
    which actually outweighs a single class on specificity, so a bare
    .roster-avatar would quietly lose its background/border/radius to it. */
 .roster-chip .roster-avatar {
-  width: 38px;
-  height: 38px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.72em;
+  font-size: 0.8em;
   font-weight: 800;
   color: #04050a;
   background: var(--chip-color);
@@ -589,8 +614,8 @@ input:focus {
   position: absolute;
   bottom: -2px;
   right: -2px;
-  width: 13px;
-  height: 13px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   background: var(--good);
   border: 2px solid var(--panel);
@@ -3506,6 +3531,10 @@ html[data-theme="ledger"] #customTooltip.tooltip-below::after {
           </div>
 
           <div id="status" role="alert" aria-live="assertive"></div>
+
+          <div class="add-sweat-row">
+            <button id="addSweatBtn" class="btn btn-primary" type="button">Add Sweat</button>
+          </div>
         </div>
 
         <div class="dash-right">
@@ -3571,10 +3600,6 @@ html[data-theme="ledger"] #customTooltip.tooltip-below::after {
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="add-sweat-row">
-        <button id="addSweatBtn" class="btn btn-primary" type="button">Add Sweat</button>
       </div>
     </form>
   </div>

@@ -385,12 +385,102 @@ h1 {
 /* Sweat Lookup panel */
 #form-container {
   position: relative;
-  max-width: 760px;
+  max-width: 800px;
   margin: 0 auto 44px;
   padding: 26px 30px 28px;
 }
 
 .lookup-row { display: flex; gap: 10px; align-items: center; }
+
+/* Preview button - ghost-styled rather than the primary gradient it used
+   to have as "Fetch Stats", since previewing is optional (Add Sweat
+   fetches on its own if you never click it) and shouldn't visually
+   compete with Add Sweat as the actual thing this form does. The spinner
+   swaps in for the label while a request is in flight instead of just
+   disabling the button silently. */
+#fetchBtn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 96px; }
+.fetch-btn-spinner {
+  display: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.25);
+  border-top-color: var(--text-dim);
+  animation: fetchSpin 0.7s linear infinite;
+}
+#fetchBtn.loading .fetch-btn-label { display: none; }
+#fetchBtn.loading .fetch-btn-spinner { display: inline-block; }
+@keyframes fetchSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .fetch-btn-spinner { animation: none; }
+}
+
+/* ============================================================
+   SWEAT LOOKUP - "split dashboard" layout
+   Inputs (search, roster, flags) live in a left column; a preview of
+   whatever's been fetched lives in a right column that's present from
+   the start (as an empty prompt), rather than the old single stacked
+   form where the whole stats block only existed once something had been
+   fetched. Fetching is optional either way - Add Sweat auto-fetches if
+   you never clicked Preview - so the two columns read as "what you're
+   setting" and "what you're about to log", not "step 1" then "step 2".
+   ============================================================ */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 28px;
+}
+
+.dash-left {
+  min-width: 0;
+  border-right: 1px solid var(--border);
+  padding-right: 28px;
+}
+
+.dash-right { min-width: 0; display: flex; flex-direction: column; }
+
+.dash-label {
+  font-weight: 800;
+  color: var(--accent);
+  font-size: 0.78em;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin: 18px 0 8px;
+}
+.dash-label:first-child { margin-top: 0; }
+
+.dash-preview-frame {
+  flex: 1;
+  min-height: 180px;
+}
+
+/* Not absolutely positioned - the empty prompt and the populated card are
+   very different heights (a handful of stat tiles plus two tag panels is
+   much taller than one line of placeholder text), and pinning the
+   populated card to the empty state's height via inset:0 clipped its
+   bottom off instead of letting the column grow to fit it. Toggled via
+   hidden/display instead, so whichever one is showing sets the height. */
+.dash-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  padding: 18px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-m);
+  color: var(--text-faint);
+}
+.dash-empty-icon { width: 34px; height: 34px; color: var(--text-faint); opacity: 0.7; }
+.dash-empty p { margin: 0; font-size: 0.82em; line-height: 1.5; max-width: 32ch; }
+
+@media (max-width: 700px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .dash-left { border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 22px; }
+  .dash-preview-frame { min-height: 140px; }
+}
 
 input[type="text"], input[type="number"], input[type="date"] {
   font-family: inherit;
@@ -565,44 +655,43 @@ input:focus {
   font-size: 0.92em;
 }
 
-/* Stats Display (player card) */
+/* Stats Display (player card) - lives inside .dash-preview-frame, absolutely
+   positioned over the same spot as #statsEmpty so the two can crossfade
+   into each other instead of the layout jumping when one replaces the
+   other. Column layout (avatar centered above everything else) rather
+   than the old side-by-side row - the dashboard's right column is
+   narrower than the old full-width stats block ever was. */
 #statsDisplay {
   display: none;
-  margin-top: 22px;
-  padding-top: 22px;
-  border-top: 1px solid var(--border);
-  animation: fadeSlideIn 0.4s var(--ease);
-}
-
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  width: 100%;
 }
 
 #statsContent {
   display: flex;
-  gap: 20px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
   width: 100%;
-  align-items: flex-start;
 }
 
 #statsAvatar {
-  width: 96px;
-  height: 96px;
-  border-radius: 22px;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
   border: 2px solid var(--border-strong);
   flex-shrink: 0;
   background: rgba(255,255,255,0.03);
   box-shadow: 0 0 20px rgba(0,217,255,0.18);
 }
 
-#statsRight { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+#statsRight { width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 14px; align-items: center; }
 
-#statsTopRow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+#statsTopRow { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
 
 #statsUsername {
   font-weight: 800;
-  font-size: 1.25em;
+  font-size: 1.15em;
   color: var(--text);
 }
 
@@ -621,13 +710,27 @@ input:focus {
   color: var(--gold);
   font-weight: 800;
   font-size: 1.05em;
-  margin-left: auto;
 }
 
 #statsColumns {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+/* Reveal the fetched card with the same per-theme entrance language used
+   elsewhere on the site (typewriter/flare for Neon, paper-settle for Case
+   Files, ink-focus for Bank) rather than a plain generic fade - see the
+   .stats-pop rules per theme further down. JS (see showStatsCard()) toggles
+   this class fresh on every successful fetch so it replays each time,
+   the same way the card-grid entrance replays on every render. */
+@keyframes statsPopNeon {
+  0% { opacity: 0; clip-path: inset(0 100% 0 0); filter: brightness(2.2); }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); filter: brightness(1); }
+}
+html:not([data-theme]) #statsContent.stats-pop {
+  animation: statsPopNeon 0.5s var(--ease) both;
 }
 
 .stat-hero {
@@ -1766,10 +1869,6 @@ tbody tr:hover .user-cell span {
 /* Responsive */
 @media (max-width: 620px) {
   h1 { font-size: 2em; }
-  #statsColumns { grid-template-columns: repeat(2, 1fr); }
-  #statsContent { flex-direction: column; align-items: center; text-align: center; }
-  #statsTopRow { justify-content: center; }
-  #statsStar { margin-left: 0; }
   .hero-controls { position: static; margin-top: 16px; justify-content: center; }
   .toolbar-row { justify-content: center; }
 }
@@ -2274,6 +2373,28 @@ html[data-theme="casefiles"] #modalSkin {
 html[data-theme="casefiles"] #statsAvatar {
   box-shadow: var(--shadow-card);
 }
+/* The dashboard's column rule and empty-state frame get the same dashed,
+   hand-ruled treatment as everything else paper-themed here, instead of
+   Neon's plain solid hairline/border. */
+html[data-theme="casefiles"] .dash-left {
+  border-right-style: dashed;
+}
+@media (max-width: 700px) {
+  html[data-theme="casefiles"] .dash-left { border-bottom-style: dashed; }
+}
+html[data-theme="casefiles"] .dash-empty {
+  border-style: dashed;
+}
+/* Reveal reads as a paper sliding into place and settling, the same
+   entrance language the grid cards use in this theme. */
+@keyframes statsPopCasefiles {
+  0% { opacity: 0; transform: translateY(-10px) rotate(-1deg); }
+  60% { opacity: 1; transform: translateY(1px) rotate(0.3deg); }
+  100% { opacity: 1; transform: translateY(0) rotate(0deg); }
+}
+html[data-theme="casefiles"] #statsContent.stats-pop {
+  animation: statsPopCasefiles 0.45s cubic-bezier(.34, 1.2, .64, 1) both;
+}
 html[data-theme="casefiles"] #modalSkin {
   background: var(--panel-2);
 }
@@ -2744,6 +2865,26 @@ html[data-theme="ledger"] .chip-group.roster .chip input:checked + .roster-avata
 
 html[data-theme="ledger"] #statsAvatar {
   box-shadow: var(--shadow-card);
+}
+/* A thin gold rule instead of Neon's plain hairline, matching the double-
+   rule/gold-accent language used on cards and the table header. */
+html[data-theme="ledger"] .dash-left {
+  border-right-color: var(--gold);
+}
+@media (max-width: 700px) {
+  html[data-theme="ledger"] .dash-left { border-bottom-color: var(--gold); border-right-color: var(--border); }
+}
+html[data-theme="ledger"] .dash-empty {
+  border-color: var(--gold);
+}
+/* Reveal reads as ink developing into focus, the same entrance language
+   the grid cards and table rows use in this theme. */
+@keyframes statsPopLedger {
+  0% { opacity: 0; filter: blur(4px); transform: translateY(-4px); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+html[data-theme="ledger"] #statsContent.stats-pop {
+  animation: statsPopLedger 0.5s ease-out both;
 }
 html[data-theme="ledger"] .user-cell span,
 html[data-theme="ledger"] tbody tr:hover .user-cell span,
@@ -3342,83 +3483,100 @@ html[data-theme="ledger"] #customTooltip.tooltip-below::after {
     </div>
   </div>
 
-  <div id="form-container" class="card">
+  <div id="form-container" class="card lookup-dashboard">
     <form id="sweatForm" autocomplete="off">
-      <div class="lookup-row">
-        <input type="text" id="username" placeholder="Enter Minecraft username" />
-        <button type="button" id="fetchBtn" class="btn btn-primary">Fetch Stats</button>
-      </div>
+      <div class="dash-grid">
+        <div class="dash-left">
+          <div class="dash-label">Player</div>
+          <div class="lookup-row">
+            <input type="text" id="username" placeholder="Enter Minecraft username" />
+            <button type="button" id="fetchBtn" class="btn btn-ghost">
+              <span class="fetch-btn-label">Preview</span>
+              <span class="fetch-btn-spinner" aria-hidden="true"></span>
+            </button>
+          </div>
 
-      <div class="chip-section">
-        <span class="chip-heading">Beaten By</span>
-        <div class="chip-group roster" id="beatenByGroup"></div>
-      </div>
+          <div class="dash-label">Beaten By</div>
+          <div class="chip-group roster" id="beatenByGroup"></div>
 
-      <div class="chip-section">
-        <span class="chip-heading">Flags</span>
-        <div class="chip-group">
-          <label class="chip cheat-chip"><input type="checkbox" id="cheating" /><span>Cheating</span></label>
-          <label class="chip boost-chip"><input type="checkbox" id="boosting" /><span>Boosting</span></label>
+          <div class="dash-label">Flags</div>
+          <div class="chip-group">
+            <label class="chip cheat-chip"><input type="checkbox" id="cheating" /><span>Cheating</span></label>
+            <label class="chip boost-chip"><input type="checkbox" id="boosting" /><span>Boosting</span></label>
+          </div>
+
+          <div id="status" role="alert" aria-live="assertive"></div>
+        </div>
+
+        <div class="dash-right">
+          <div class="dash-label">Preview</div>
+          <div class="dash-preview-frame">
+            <div id="statsEmpty" class="dash-empty">
+              <svg viewBox="0 0 48 48" class="dash-empty-icon" aria-hidden="true">
+                <circle cx="21" cy="21" r="13" fill="none" stroke="currentColor" stroke-width="2.5" />
+                <line x1="30.5" y1="30.5" x2="41" y2="41" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+              <p>Search a player, then Preview to see their card here before you log it.</p>
+            </div>
+
+            <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
+              <div id="statsContent">
+                <img id="statsAvatar" src="" alt="Player head" />
+                <div id="statsRight">
+                  <div id="statsTopRow">
+                    <span id="statsRank"></span>
+                    <span id="statsUsername"></span>
+                    <span id="statsStar">&#9733;0</span>
+                  </div>
+                  <div id="statsColumns">
+                    <div class="stat-hero wlr">
+                      <div class="stat-hero-label">WLR</div>
+                      <div class="stat-hero-value" id="statWLR">0</div>
+                      <div class="stat-hero-sub"><span id="statWins">0</span>W &middot; <span id="statLosses">0</span>L</div>
+                    </div>
+                    <div class="stat-hero fkdr">
+                      <div class="stat-hero-label">FKDR</div>
+                      <div class="stat-hero-value" id="statFKDR">0</div>
+                      <div class="stat-hero-sub"><span id="statFinals">0</span>F &middot; <span id="statFinalDeaths">0</span>FD</div>
+                    </div>
+                    <div class="stat-hero kdr">
+                      <div class="stat-hero-label">KDR</div>
+                      <div class="stat-hero-value" id="statKDR">0</div>
+                      <div class="stat-hero-sub"><span id="statKills">0</span>K &middot; <span id="statDeaths">0</span>D</div>
+                    </div>
+                    <div class="stat-hero bblr">
+                      <div class="stat-hero-label">BBLR</div>
+                      <div class="stat-hero-value" id="statBBLR">0</div>
+                      <div class="stat-hero-sub"><span id="statBeds">0</span>B &middot; <span id="statBedsLost">0</span>BL</div>
+                    </div>
+
+                    <div id="statsUrchin" class="stats-tag-panel">
+                      <div class="tag-panel-summary-row">
+                        <div class="stat-hero-label">Urchin Tags</div>
+                        <div class="stat-hero-value" id="statUrchin">None</div>
+                      </div>
+                      <div id="statUrchinReason" class="urchin-reason-text" hidden></div>
+                    </div>
+
+                    <div id="statsSeraph" class="stats-tag-panel">
+                      <div class="tag-panel-summary-row">
+                        <div class="stat-hero-label">Seraph Tags</div>
+                        <div class="stat-hero-value" id="statSeraph">None</div>
+                      </div>
+                      <div id="statSeraphReason" class="urchin-reason-text" hidden></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div id="status" role="alert" aria-live="assertive"></div>
+      <div class="add-sweat-row">
+        <button id="addSweatBtn" class="btn btn-primary" type="button">Add Sweat</button>
+      </div>
     </form>
-
-    <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
-      <div id="statsContent">
-        <img id="statsAvatar" src="" alt="Player head" />
-        <div id="statsRight">
-          <div id="statsTopRow">
-            <span id="statsRank"></span>
-            <span id="statsUsername"></span>
-            <span id="statsStar">&#9733;0</span>
-          </div>
-          <div id="statsColumns">
-            <div class="stat-hero wlr">
-              <div class="stat-hero-label">WLR</div>
-              <div class="stat-hero-value" id="statWLR">0</div>
-              <div class="stat-hero-sub"><span id="statWins">0</span>W &middot; <span id="statLosses">0</span>L</div>
-            </div>
-            <div class="stat-hero fkdr">
-              <div class="stat-hero-label">FKDR</div>
-              <div class="stat-hero-value" id="statFKDR">0</div>
-              <div class="stat-hero-sub"><span id="statFinals">0</span>F &middot; <span id="statFinalDeaths">0</span>FD</div>
-            </div>
-            <div class="stat-hero kdr">
-              <div class="stat-hero-label">KDR</div>
-              <div class="stat-hero-value" id="statKDR">0</div>
-              <div class="stat-hero-sub"><span id="statKills">0</span>K &middot; <span id="statDeaths">0</span>D</div>
-            </div>
-            <div class="stat-hero bblr">
-              <div class="stat-hero-label">BBLR</div>
-              <div class="stat-hero-value" id="statBBLR">0</div>
-              <div class="stat-hero-sub"><span id="statBeds">0</span>B &middot; <span id="statBedsLost">0</span>BL</div>
-            </div>
-
-            <div id="statsUrchin" class="stats-tag-panel">
-              <div class="tag-panel-summary-row">
-                <div class="stat-hero-label">Urchin Tags</div>
-                <div class="stat-hero-value" id="statUrchin">None</div>
-              </div>
-              <div id="statUrchinReason" class="urchin-reason-text" hidden></div>
-            </div>
-
-            <div id="statsSeraph" class="stats-tag-panel">
-              <div class="tag-panel-summary-row">
-                <div class="stat-hero-label">Seraph Tags</div>
-                <div class="stat-hero-value" id="statSeraph">None</div>
-              </div>
-              <div id="statSeraphReason" class="urchin-reason-text" hidden></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="add-sweat-row">
-      <button id="addSweatBtn" class="btn btn-primary">Add Sweat</button>
-    </div>
   </div>
 
   <div class="panel-header">
@@ -3972,12 +4130,36 @@ const viewLeaderboardBtn = document.getElementById('viewLeaderboardBtn');
 const status = document.getElementById('status');
 const fetchBtn = document.getElementById('fetchBtn');
 const statsDisplay = document.getElementById('statsDisplay');
+const statsEmpty = document.getElementById('statsEmpty');
 const searchInput = document.getElementById('searchInput');
 
 const statsAvatar = document.getElementById('statsAvatar');
 const statsUsername = document.getElementById('statsUsername');
 const statsRank = document.getElementById('statsRank');
 const statsStar = document.getElementById('statsStar');
+
+// The preview card and its empty-state prompt take turns occupying
+// .dash-preview-frame - not a true crossfade (the two are very different
+// heights, so overlapping them via position:absolute clipped the taller
+// one to the shorter one's box - see the CSS comment on .dash-preview-
+// frame), just a swap. showStatsCard() re-triggers the per-theme
+// .stats-pop entrance fresh on every successful fetch - removing then
+// re-adding the class (with a reflow between) rather than just adding it
+// once, since adding an already-present class doesn't restart a CSS
+// animation - so the reveal still plays as the polish moment even without
+// an overlap fade.
+function showStatsCard() {
+  statsEmpty.hidden = true;
+  statsDisplay.style.display = "flex";
+  const content = document.getElementById("statsContent");
+  content.classList.remove("stats-pop");
+  void content.offsetWidth;
+  content.classList.add("stats-pop");
+}
+function showStatsEmpty() {
+  statsDisplay.style.display = "none";
+  statsEmpty.hidden = false;
+}
 
 const statWins = document.getElementById('statWins');
 const statFinals = document.getElementById('statFinals');
@@ -4169,12 +4351,14 @@ async function loadSweats() {
 
 fetchBtn.addEventListener('click', async () => {
   fetchBtn.disabled = true;
+  fetchBtn.classList.add("loading");
   try {
     await fetchAndDisplayStats();
   } catch (err) {
     status.textContent = err.message;
   } finally {
     fetchBtn.disabled = false;
+    fetchBtn.classList.remove("loading");
   }
 });
 
@@ -4208,7 +4392,6 @@ form.addEventListener('submit', async e => {
   }
 
   status.textContent = "";
-  statsDisplay.style.display = "none";
   addSweatBtn.disabled = true;
 
   try {
@@ -4256,7 +4439,7 @@ form.addEventListener('submit', async e => {
     form.reset();
     currentUUID = null;
     currentStats = null;
-    statsDisplay.style.display = "none";
+    showStatsEmpty();
     status.textContent = SUCCESS_MESSAGES[document.documentElement.getAttribute("data-theme")] || SUCCESS_MESSAGES.neon;
     playSuccessFlourish();
   } catch (err) {
@@ -4401,7 +4584,7 @@ async function fetchAndDisplayStats() {
   }
 
   status.textContent = "Fetching stats...";
-  statsDisplay.style.display = "none";
+  showStatsEmpty();
 
   // Fetch UUID
   const resMojang = await fetch(`${backendBaseURL}/mojang/${usernameRaw}`, { headers: adminHeaders() });
@@ -4577,7 +4760,7 @@ function updateStatsDisplay(stats) {
   renderTagBadges(statUrchin, statUrchinReason, stats.urchinTagsData || [], URCHIN_TAG_ICONS);
   renderTagBadges(statSeraph, statSeraphReason, stats.seraphTagsData || [], SERAPH_TAG_ICONS);
 
-  statsDisplay.style.display = "flex";
+  showStatsCard();
 }
 
 function updateSortHeaders() {
@@ -5331,8 +5514,8 @@ armStatus(status);
 armStatus(editStatus);
 armStatus(adminKeyStatus);
 
-// Case-Files-only ink-stamp flourish on the primary buttons (Fetch Stats,
-// Add Sweat, Save Changes) - a click-triggered class rather than relying on
+// Case-Files-only ink-stamp flourish on the primary buttons (Add Sweat,
+// Save Changes) - a click-triggered class rather than relying on
 // :active's animation, since :active only lasts as long as the mouse button
 // is physically down and a fast click would cut the animation off partway
 // through instead of playing the full thump. One delegated listener at the

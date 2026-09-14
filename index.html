@@ -60,6 +60,19 @@
   --roster-kermit: #a3e635;
   --roster-ssent: #fb923c;
   --roster-key: #facc15;
+
+  /* Hypixel rank badge colors (#statsRank), read the same way as --chip-color
+     above via an inline `color: var(--rank-<key>)` set in updateStatsDisplay() -
+     keeps them theme-reactive instead of the fixed neon hex values that used
+     to get written directly as an inline style. */
+  --rank-admin: #ff5c72;
+  --rank-mod: #4ce07a;
+  --rank-youtube: #ff5c72;
+  --rank-mvpplusplus: #ffc94d;
+  --rank-mvp: #4dd9e8;
+  --rank-mvpplus: #4dd9e8;
+  --rank-vip: #6ee7a0;
+  --rank-vipplus: #6ee7a0;
 }
 
 /* "Case Files" theme - a corkboard/detective-dossier skin, swapped in via
@@ -105,6 +118,17 @@ html[data-theme="casefiles"] {
   --roster-kermit: #a8a35f;
   --roster-ssent: #bd7a51;
   --roster-key: #c7ab5a;
+
+  /* Rank badge colors, reusing this theme's existing ink/stamp tones rather
+     than the neon set - see --rank-* in :root for how these get consumed. */
+  --rank-admin: var(--bad);
+  --rank-mod: var(--good);
+  --rank-youtube: var(--bad);
+  --rank-mvpplusplus: var(--gold);
+  --rank-mvp: var(--accent);
+  --rank-mvpplus: var(--accent);
+  --rank-vip: #6b7a4a;
+  --rank-vipplus: #6b7a4a;
 }
 
 /* "Private Bank" theme - white letterhead, navy fountain-pen ink, muted gold
@@ -149,6 +173,18 @@ html[data-theme="ledger"] {
   --roster-kermit: #a89a55;
   --roster-ssent: #bf7f52;
   --roster-key: #c9b566;
+
+  /* Rank badge colors - see --rank-* in :root for how these get consumed.
+     Distinct hexes for mvp/vip rather than reusing --accent-2 (same navy as
+     --text in this theme, which would read as barely-there next to it). */
+  --rank-admin: var(--bad);
+  --rank-mod: var(--good);
+  --rank-youtube: var(--bad);
+  --rank-mvpplusplus: var(--gold);
+  --rank-mvp: #3f6690;
+  --rank-mvpplus: #3f6690;
+  --rank-vip: #5f7a52;
+  --rank-vipplus: #5f7a52;
 }
 
 * { box-sizing: border-box; }
@@ -2924,8 +2960,7 @@ html[data-theme="ledger"] .leaderboard-chip.active,
 html[data-theme="ledger"] .view-btn.active {
   box-shadow: none;
 }
-html[data-theme="ledger"] .view-btn.active,
-html[data-theme="ledger"] .theme-btn.active {
+html[data-theme="ledger"] .view-btn.active {
   color: var(--panel);
 }
 
@@ -4396,6 +4431,13 @@ let sortField = null;
 let sortAsc = true;
 let currentUUID = null;
 let currentStats = null;
+// Bumped at the start of every fetchAndDisplayStats() call and captured
+// locally - if a second call starts (Preview clicked, then Add Sweat clicked
+// before the first resolves, or vice versa) before this one's chain of
+// awaits finishes, the stale call's token no longer matches and it bails
+// instead of overwriting currentUUID/currentStats with out-of-date data.
+// Same guard pattern already used for the player modal (modal.dataset.activeUuid).
+let statsFetchToken = 0;
 let currentFilter = "";
 let viewMode = "grid";
 
@@ -4777,6 +4819,14 @@ async function fetchAndDisplayStats() {
     throw new Error("Please enter a username first.");
   }
 
+  // Preview and Add Sweat can both end up calling this (Add Sweat auto-fetches
+  // if you haven't clicked Preview yet), so a slower in-flight call can finish
+  // after a newer one - without this guard the slower one would win the race
+  // and overwrite currentUUID/currentStats with out-of-date data. Same pattern
+  // as the player modal's activeUuid guard.
+  const myToken = ++statsFetchToken;
+  const isStale = () => myToken !== statsFetchToken;
+
   status.textContent = "Fetching stats...";
   showStatsEmpty();
 
@@ -4784,11 +4834,13 @@ async function fetchAndDisplayStats() {
   const resMojang = await fetch(`${backendBaseURL}/mojang/${usernameRaw}`, { headers: adminHeaders() });
   if (!resMojang.ok) throw new Error("Username not found");
   const mojangData = await resMojang.json();
+  if (isStale()) return;
   currentUUID = mojangData.id;
   usernameInput.value = mojangData.name;
 
   // Fetch player stats
   const data = await getPlayerStats(currentUUID);
+  if (isStale()) return;
   currentStats = {
     username: mojangData.name,
     star: data.star,
@@ -4812,6 +4864,7 @@ async function fetchAndDisplayStats() {
     fetchUrchinTags(currentStats.username),
     fetchSeraphTags(currentUUID)
   ]);
+  if (isStale()) return;
   currentStats.urchinTagsData = urchinResult.tags;
   currentStats.seraphTagsData = seraphResult.tags;
 
@@ -4860,22 +4913,29 @@ async function getPlayerStats(uuid) {
   };
 }
 
+// `key` names a --rank-<key> custom property (defined per theme near the
+// other identity/roster tokens) rather than returning a literal hex - the
+// literal used to get set directly as an inline style, which meant it was a
+// fixed neon cyan/green/red/gold no matter the theme (the same inline-style-
+// beats-CSS-class trap as the old beaten-by avatar colors, just never caught
+// since this badge is small/occasional). Routing through a var means the
+// color still updates live per theme, same trick as --chip-color elsewhere.
 function getHypixelRank(player) {
-  if (!player) return { name: "", color: "" };
+  if (!player) return { name: "", key: "" };
 
   const staffRank = player.rank;
-  if (staffRank === "ADMIN" || staffRank === "OWNER") return { name: "ADMIN", color: "#ff5c72" };
-  if (staffRank === "GAME_MASTER" || staffRank === "MODERATOR") return { name: "MOD", color: "#4ce07a" };
-  if (staffRank === "YOUTUBER") return { name: "YOUTUBE", color: "#ff5c72" };
-  if (player.monthlyPackageRank === "SUPERSTAR") return { name: "MVP++", color: "#ffc94d" };
+  if (staffRank === "ADMIN" || staffRank === "OWNER") return { name: "ADMIN", key: "admin" };
+  if (staffRank === "GAME_MASTER" || staffRank === "MODERATOR") return { name: "MOD", key: "mod" };
+  if (staffRank === "YOUTUBER") return { name: "YOUTUBE", key: "youtube" };
+  if (player.monthlyPackageRank === "SUPERSTAR") return { name: "MVP++", key: "mvpplusplus" };
 
   const rank = player.newPackageRank || player.packageRank || "NONE";
   switch (rank) {
-    case "MVP_PLUS": return { name: "MVP+", color: "#4dd9e8" };
-    case "MVP": return { name: "MVP", color: "#4dd9e8" };
-    case "VIP_PLUS": return { name: "VIP+", color: "#6ee7a0" };
-    case "VIP": return { name: "VIP", color: "#6ee7a0" };
-    default: return { name: "", color: "" };
+    case "MVP_PLUS": return { name: "MVP+", key: "mvpplus" };
+    case "MVP": return { name: "MVP", key: "mvp" };
+    case "VIP_PLUS": return { name: "VIP+", key: "vipplus" };
+    case "VIP": return { name: "VIP", key: "vip" };
+    default: return { name: "", key: "" };
   }
 }
 
@@ -4928,7 +4988,7 @@ function updateStatsDisplay(stats) {
 
   if (stats.rank.name) {
     statsRank.textContent = stats.rank.name;
-    statsRank.style.color = stats.rank.color;
+    statsRank.style.color = stats.rank.key ? `var(--rank-${stats.rank.key})` : "";
     statsRank.style.display = "inline-flex";
   } else {
     statsRank.style.display = "none";
@@ -5156,7 +5216,14 @@ function renderCardGrid(filteredSweats, usernameCounts) {
     card.dataset.uuid = s.uuid;
     card.style.animationDelay = Math.min(i * 0.03, 0.6) + "s";
 
-    const indexValue = s.fkdr * s.fkdr * s.star;
+    // Coerced, not read raw off s - same defensive treatment getProcessedSweats()
+    // already gives these two fields, needed here too since an older/malformed
+    // record missing them would otherwise throw out of toFixed() (aborting the
+    // whole render) or, for star, splice a non-numeric value straight into
+    // innerHTML unescaped.
+    const starVal = Number(s.star) || 0;
+    const fkdrVal = Number(s.fkdr) || 0;
+    const indexValue = fkdrVal * fkdrVal * starVal;
 
     const beatenByHtml = BEATEN_BY_KEYS
       .filter(k => s[k])
@@ -5170,8 +5237,8 @@ function renderCardGrid(filteredSweats, usernameCounts) {
         <div class="sweat-card-name"><span class="name-text"></span><span class="sweat-card-dupe"></span></div>
       </div>
       <div class="sweat-card-pills">
-        <span class="pill level">★ ${s.star}</span>
-        <span class="pill fkdr">${s.fkdr.toFixed(2)} FKDR</span>
+        <span class="pill level">★ ${starVal}</span>
+        <span class="pill fkdr">${fkdrVal.toFixed(2)} FKDR</span>
         ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
         ${s.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}
       </div>
@@ -5246,15 +5313,21 @@ function buildSweatRow(s, { usernameCounts }) {
   usernameTd.appendChild(userCellDiv);
   tr.appendChild(usernameTd);
 
+  // Coerced for the same reason as renderCardGrid's starVal/fkdrVal - guards
+  // against .toFixed() throwing (and aborting the whole render) on a record
+  // missing either field.
+  const starVal = Number(s.star) || 0;
+  const fkdrVal = Number(s.fkdr) || 0;
+
   const starTd = document.createElement("td");
-  starTd.textContent = s.star;
+  starTd.textContent = starVal;
   tr.appendChild(starTd);
 
   const fkdrTd = document.createElement("td");
-  fkdrTd.textContent = s.fkdr.toFixed(2);
+  fkdrTd.textContent = fkdrVal.toFixed(2);
   tr.appendChild(fkdrTd);
 
-  const indexValue = s.fkdr * s.fkdr * s.star;
+  const indexValue = fkdrVal * fkdrVal * starVal;
   const indexTd = document.createElement("td");
   indexTd.textContent = Math.round(indexValue).toLocaleString();
   tr.appendChild(indexTd);
@@ -5400,6 +5473,11 @@ function resolveConfirmDelete(result) {
 }
 
 function confirmDelete() {
+  // If a prior confirm is somehow still pending (e.g. the same Remove button
+  // double-clicked before the modal's first paint), resolve it as cancelled
+  // rather than silently overwriting pendingDeleteResolve and leaving that
+  // earlier removeSweat() call's await hanging forever.
+  if (pendingDeleteResolve) resolveConfirmDelete(false);
   return new Promise(resolve => {
     pendingDeleteResolve = resolve;
     confirmDeleteModal.style.display = "flex";
@@ -5611,6 +5689,7 @@ document.addEventListener("click", async (e) => {
 
   try {
     const res = await fetch(`${backendBaseURL}/stats/uuid/${uuid}`, { headers: adminHeaders() });
+    if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to load stats."));
     const data = await res.json();
     if (modal.dataset.activeUuid !== uuid) return;
 
@@ -5651,7 +5730,7 @@ document.addEventListener("click", async (e) => {
     renderTagBadges(modalSeraphTags, modalSeraphTagsReason, seraphResult.tags, SERAPH_TAG_ICONS);
   } catch (err) {
     if (modal.dataset.activeUuid === uuid) {
-      modalStats.textContent = "Failed to load stats.";
+      modalStats.textContent = err.message || "Failed to load stats.";
       modalTags.textContent = "Unavailable";
       modalSeraphTags.textContent = "Unavailable";
     }

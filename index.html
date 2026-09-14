@@ -1645,7 +1645,7 @@ html[data-theme="casefiles"] .hero {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-l) var(--radius-l) 0 0;
-  padding: 34px 28px 62px;
+  padding: 34px 28px 82px;
   box-shadow: none;
   filter: drop-shadow(0 10px 12px rgba(42,36,28,0.35));
   clip-path: url(#tornEdge);
@@ -2513,21 +2513,33 @@ html[data-theme="ledger"] .view-btn.active {
 <!-- Hidden clip-path used by the Case Files hero card's torn bottom edge.
      objectBoundingBox units so the same 0-1 path adapts to the card's
      actual rendered size instead of needing fixed pixel coordinates. Sharp
-     straight-line facets at irregular x-spacing and depth (not smooth
-     cubic-bezier lobes - too soft/uniform-looking - and not a tangent-
-     circle radial-gradient, which rendered as jagged cusps for a different,
-     unwanted reason; see the .hero comment in <style>) for a rougher,
-     more hand-torn look. ~50 points across a shallower 0.90-1.00 band
-     gives smaller, denser teeth than a wider band with fewer points would -
-     .hero's padding-bottom is sized with this band's max depth in mind. -->
+     straight-line facets (not smooth cubic-bezier lobes - too soft/uniform-
+     looking - and not a tangent-circle radial-gradient, which rendered as
+     jagged cusps for a different, unwanted reason; see the .hero comment in
+     <style>) for a rough, hand-torn look.
+
+     An earlier version of this path spaced every point evenly (every 0.02
+     of the width) and cycled depth through a narrow, fairly uniform 0.90-
+     1.00 band - technically irregular point-to-point, but the *rhythm* was
+     completely regular, so it read as a repeating decorative zigzag rather
+     than an actual tear. Real torn paper doesn't tear at a constant rate:
+     it has active zones (a flurry of small ragged nicks, tight x-spacing)
+     and calm zones (wider, flatter stretches), plus the occasional bigger
+     asymmetric rip that goes noticeably deeper than the rest. This version
+     is built as six such zones instead of one uniform cycle: two dense
+     flurries of tiny nicks near the ends, two "big rip" zones with a single
+     sharp asymmetric gouge down to as low as 0.85 (was 0.90 - .hero's
+     padding-bottom was increased to match), and two calmer medium-tooth
+     stretches with wider, uneven spacing between them. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <clipPath id="tornEdge" clipPathUnits="objectBoundingBox">
     <polygon points="0,0 1,0
-      1.00,0.95 0.98,0.99 0.96,0.92 0.94,0.97 0.92,1.00 0.90,0.93 0.88,0.96 0.86,0.90 0.84,0.99 0.82,0.94
-      0.80,0.97 0.78,0.91 0.76,1.00 0.74,0.95 0.72,0.92 0.70,0.98 0.68,0.93 0.66,0.96 0.64,1.00 0.62,0.90
-      0.60,0.94 0.58,0.99 0.56,0.92 0.54,0.97 0.52,0.91 0.50,1.00 0.48,0.95 0.46,0.93 0.44,0.98 0.42,0.90
-      0.40,0.96 0.38,0.99 0.36,0.92 0.34,0.94 0.32,1.00 0.30,0.91 0.28,0.97 0.26,0.93 0.24,0.90 0.22,0.98
-      0.20,0.95 0.18,0.99 0.16,0.92 0.14,0.96 0.12,1.00 0.10,0.91 0.08,0.94 0.06,0.97 0.04,0.90 0.02,0.93 0.00,0.99" />
+      1.00,0.97 0.98,0.99 0.97,0.94 0.95,1.00 0.94,0.96 0.92,0.99 0.91,0.93 0.89,1.00 0.88,0.95 0.86,0.98
+      0.85,0.90 0.83,0.86 0.815,0.94 0.80,0.99 0.78,0.96 0.76,1.00 0.74,0.97 0.72,1.00
+      0.68,0.93 0.64,0.98 0.60,0.91 0.565,0.99 0.53,0.94
+      0.50,1.00 0.485,0.97 0.47,0.88 0.455,0.96 0.44,0.99 0.425,0.85 0.41,0.95 0.39,1.00 0.375,0.97
+      0.36,1.00 0.345,0.96 0.33,0.99 0.315,0.94 0.30,1.00 0.285,0.97 0.27,0.99 0.255,0.93 0.24,0.98 0.225,1.00 0.21,0.95
+      0.19,0.99 0.17,0.92 0.15,0.98 0.13,1.00 0.11,0.90 0.09,0.97 0.07,1.00 0.05,0.94 0.03,0.98 0.00,1.00" />
   </clipPath>
 </svg>
 

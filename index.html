@@ -1352,6 +1352,17 @@ html:not([data-theme]) .add-sweat-row .btn.success-pulse {
   border-color: var(--border-strong);
   box-shadow: 0 14px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,217,255,0.15);
 }
+
+/* Cards are keyboard-focusable (tabindex="0", set in renderCardGrid) since
+   they're the only way to open the player modal for a whole row of stats -
+   var(--accent)/var(--border-strong) are already redefined per theme, so
+   this one rule reads correctly everywhere with no theme-specific override
+   needed, unlike most other component states on this page. */
+.sweat-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--border-strong);
+}
 .sweat-card:active { transform: translateY(-1px) scale(0.99); }
 
 @keyframes cardIn {
@@ -1674,6 +1685,19 @@ tbody tr {
   animation: fadeSlideIn 0.25s var(--ease) both;
 }
 
+/* Same reasoning as .sweat-card:focus-visible above - rows are keyboard-
+   focusable (tabindex="0", set in buildSweatRow) for the same reason. An
+   inset outline rather than outline-offset, since a table row has no room
+   to expand a ring outward without overlapping the row above/below it.
+   Outline color alone (var(--accent), already redefined per theme) rather
+   than also touching background - unlike :hover just above, which has its
+   own per-theme override further down, adding a hardcoded background here
+   would leave Case Files/Private Bank with the wrong tint on focus. */
+tbody tr:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
 tbody tr:hover { background: rgba(0, 217, 255, 0.05); }
 
 tbody tr:hover .user-cell span {
@@ -1753,6 +1777,11 @@ tbody tr:hover .user-cell span {
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+/* Now a <button>, not a <span> - it was mouse-only before (no tabindex, no
+   keyboard activation), the one control on the page a keyboard user
+   genuinely could not operate at all. Resets undo the browser's default
+   button chrome (background/border/padding/font) so it still renders
+   exactly like the plain "×" glyph it was. */
 .modal-close {
   position: absolute;
   top: 14px;
@@ -1761,8 +1790,14 @@ tbody tr:hover .user-cell span {
   font-size: 20px;
   color: var(--text-dim);
   transition: color 0.2s;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  line-height: 1;
 }
 .modal-close:hover { color: var(--accent); }
+.modal-close:focus-visible { color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Case-Files-only folder tab poking above the modal card - present in the
    markup always, shown only once themed (same pattern as .exhibit-tag). */
@@ -3691,7 +3726,7 @@ html[data-theme="ledger"] #customTooltip.tooltip-below::after {
         <div class="dash-left">
           <div class="dash-label">Player</div>
           <div class="lookup-row">
-            <input type="text" id="username" placeholder="Enter username" />
+            <input type="text" id="username" placeholder="Enter username" aria-label="Minecraft username" />
             <button type="button" id="fetchBtn" class="btn btn-ghost">
               <span class="fetch-btn-label">Preview</span>
               <span class="fetch-btn-spinner" aria-hidden="true"></span>
@@ -3946,7 +3981,7 @@ html[data-theme="ledger"] #customTooltip.tooltip-below::after {
     <div class="modal-card">
       <span class="modal-folder-tab">Case File &middot; Open</span>
       <div class="modal-content">
-      <span id="closeModal" class="modal-close">&times;</span>
+      <button type="button" id="closeModal" class="modal-close" aria-label="Close">&times;</button>
       <h2 id="modalUsername">Loading...</h2>
       <div id="modalTitle"><span class="modal-live-dot"></span>Live Stats</div>
       <div class="modal-body">
@@ -3972,7 +4007,7 @@ html[data-theme="ledger"] #customTooltip.tooltip-below::after {
     <div class="modal-card">
       <span class="modal-folder-tab modal-folder-tab-amend">Amend Report</span>
       <div class="modal-content edit-modal-content">
-      <span id="closeEditModal" class="modal-close">&times;</span>
+      <button type="button" id="closeEditModal" class="modal-close" aria-label="Close">&times;</button>
       <h2 class="edit-modal-title">Edit Sweat</h2>
 
       <div class="edit-section">
@@ -4010,10 +4045,10 @@ html[data-theme="ledger"] #customTooltip.tooltip-below::after {
     <div class="modal-card">
       <span class="modal-folder-tab">Case File &middot; Clearance</span>
       <div class="modal-content admin-key-modal-content">
-      <span id="closeAdminKeyModal" class="modal-close">&times;</span>
+      <button type="button" id="closeAdminKeyModal" class="modal-close" aria-label="Close">&times;</button>
       <h2 class="edit-modal-title">Admin Key</h2>
       <p class="admin-key-desc">Only needed to add, edit, or remove sweats. Leave blank to browse read-only.</p>
-      <input type="text" id="adminKeyInput" placeholder="Enter admin key" autocomplete="off" />
+      <input type="text" id="adminKeyInput" placeholder="Enter admin key" autocomplete="off" aria-label="Admin key" />
       <div id="adminKeyStatus" role="alert" aria-live="assertive"></div>
       <div class="edit-modal-actions">
         <button type="button" id="clearAdminKeyBtn" class="btn btn-ghost">Clear</button>
@@ -4028,7 +4063,7 @@ html[data-theme="ledger"] #customTooltip.tooltip-below::after {
     <div class="modal-card">
       <span class="modal-folder-tab modal-folder-tab-amend">Case File &middot; Remove</span>
       <div class="modal-content confirm-modal-content">
-      <span id="closeConfirmDeleteModal" class="modal-close">&times;</span>
+      <button type="button" id="closeConfirmDeleteModal" class="modal-close" aria-label="Close">&times;</button>
       <div class="confirm-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 3.5 L21.5 20 H2.5 Z" />
@@ -4305,9 +4340,11 @@ const saveAdminKeyBtn = document.getElementById('saveAdminKeyBtn');
 
 function closeAdminKeyModalFn() {
   adminKeyModal.style.display = "none";
+  restoreFocusAfterModal();
 }
 
 document.getElementById('setAdminKeyBtn').addEventListener('click', () => {
+  rememberFocusBeforeModal();
   adminKeyInput.value = getAdminKey();
   adminKeyStatus.textContent = "";
   adminKeyModal.style.display = "flex";
@@ -4438,6 +4475,24 @@ let currentStats = null;
 // instead of overwriting currentUUID/currentStats with out-of-date data.
 // Same guard pattern already used for the player modal (modal.dataset.activeUuid).
 let statsFetchToken = 0;
+
+// Shared focus management for all four custom modals (player/edit/admin-key/
+// confirm-delete) - none of these are a native <dialog>, so nothing moves
+// focus into them or gives it back to whatever triggered them on close
+// without doing it by hand. rememberFocusBeforeModal() is called right
+// before each one's `style.display = "flex"`; restoreFocusAfterModal()
+// right after each one's `style.display = "none"`.
+let modalReturnFocusEl = null;
+function rememberFocusBeforeModal() {
+  modalReturnFocusEl = document.activeElement;
+}
+function restoreFocusAfterModal() {
+  if (modalReturnFocusEl && document.body.contains(modalReturnFocusEl)) {
+    modalReturnFocusEl.focus();
+  }
+  modalReturnFocusEl = null;
+}
+
 let currentFilter = "";
 let viewMode = "grid";
 
@@ -5214,6 +5269,9 @@ function renderCardGrid(filteredSweats, usernameCounts) {
     card.className = "sweat-card";
     card.dataset.username = s.username;
     card.dataset.uuid = s.uuid;
+    card.tabIndex = 0;
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", `View ${s.username}'s stats`);
     card.style.animationDelay = Math.min(i * 0.03, 0.6) + "s";
 
     // Coerced, not read raw off s - same defensive treatment getProcessedSweats()
@@ -5285,6 +5343,9 @@ function buildSweatRow(s, { usernameCounts }) {
   tr.className = "sweat-row";
   tr.dataset.username = s.username;
   tr.dataset.uuid = s.uuid;
+  tr.tabIndex = 0;
+  tr.setAttribute("role", "button");
+  tr.setAttribute("aria-label", `View ${s.username}'s stats`);
 
   // .user-cell is a flex row, but it must live on an inner div, not the <td>
   // itself - a <td> with display:flex stops behaving as a real table cell
@@ -5465,6 +5526,7 @@ let pendingDeleteResolve = null;
 
 function resolveConfirmDelete(result) {
   confirmDeleteModal.style.display = "none";
+  restoreFocusAfterModal();
   if (pendingDeleteResolve) {
     const resolve = pendingDeleteResolve;
     pendingDeleteResolve = null;
@@ -5478,9 +5540,13 @@ function confirmDelete() {
   // rather than silently overwriting pendingDeleteResolve and leaving that
   // earlier removeSweat() call's await hanging forever.
   if (pendingDeleteResolve) resolveConfirmDelete(false);
+  rememberFocusBeforeModal();
   return new Promise(resolve => {
     pendingDeleteResolve = resolve;
     confirmDeleteModal.style.display = "flex";
+    // Cancel, not Remove - a destructive action shouldn't be the thing
+    // Enter/Space activates by default when focus first lands in the modal.
+    cancelConfirmDeleteBtn.focus();
   });
 }
 
@@ -5548,6 +5614,7 @@ const editBoostingCheckbox = document.getElementById("editBoosting");
 let editingSweatId = null;
 
 function openEditModal(s) {
+  rememberFocusBeforeModal();
   editingSweatId = s._id;
   editStatus.textContent = "";
 
@@ -5566,11 +5633,13 @@ function openEditModal(s) {
   editBoostingCheckbox.checked = !!s.boosting;
 
   editModal.style.display = "flex";
+  closeEditModal.focus();
 }
 
 function closeEditModalFn() {
   editModal.style.display = "none";
   editingSweatId = null;
+  restoreFocusAfterModal();
 }
 
 cancelEditBtn.addEventListener("click", closeEditModalFn);
@@ -5657,13 +5726,13 @@ const modalSeraphTags = document.getElementById("modalSeraphTags");
 const modalSeraphTagsReason = document.getElementById("modalSeraphTagsReason");
 const closeModal = document.getElementById("closeModal");
 
-// click on a player row/card (table row or bounty card, both carry data-username)
-document.addEventListener("click", async (e) => {
-  if (e.target.closest("button")) return;
-
-  const item = e.target.closest("[data-username]");
-  if (!item) return;
-
+// Opens the player modal for a row/card (table row or bounty card, both
+// carry data-username/data-uuid) - shared by the click handler below and by
+// the keydown handler that gives the same cards/rows keyboard access, since
+// neither is a native <button> and a click listener alone leaves them
+// unreachable without a mouse.
+async function openPlayerModal(item) {
+  rememberFocusBeforeModal();
   const username = item.dataset.username;
   const uuid = item.dataset.uuid;
 
@@ -5672,6 +5741,7 @@ document.addEventListener("click", async (e) => {
   modal.dataset.activeUuid = uuid || "";
 
   modal.style.display = "flex";
+  closeModal.focus();
   modalUsername.textContent = "Loading...";
   modalStats.textContent = "Fetching live stats...";
   modalTags.textContent = "Checking...";
@@ -5735,16 +5805,52 @@ document.addEventListener("click", async (e) => {
       modalSeraphTags.textContent = "Unavailable";
     }
   }
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest("button")) return;
+  const item = e.target.closest("[data-username]");
+  if (!item) return;
+  openPlayerModal(item);
 });
 
-closeModal.onclick = () => modal.style.display = "none";
+// Cards/rows are plain div/tr elements (not <button>s), so they need their
+// own Enter/Space handling to be keyboard-reachable at all - see the
+// tabindex="0" role="button" added alongside data-username in
+// renderCardGrid/buildSweatRow.
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  if (e.target.closest("button")) return; // let native buttons (Edit/Remove) handle their own activation
+  const item = e.target.closest("[data-username]");
+  if (!item) return;
+  e.preventDefault();
+  openPlayerModal(item);
+});
+
+function closePlayerModal() {
+  modal.style.display = "none";
+  restoreFocusAfterModal();
+}
+closeModal.onclick = closePlayerModal;
 
 window.onclick = (e) => {
-  if (e.target === modal) modal.style.display = "none";
+  if (e.target === modal) closePlayerModal();
   if (e.target === editModal) closeEditModalFn();
   if (e.target === adminKeyModal) closeAdminKeyModalFn();
   if (e.target === confirmDeleteModal) resolveConfirmDelete(false);
 };
+
+// Escape closes whichever of the four custom modals is currently open - none
+// of these are a native <dialog>, so nothing does this for free. Checked in
+// roughly innermost-first order, though in practice this app never opens
+// more than one at a time.
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (confirmDeleteModal.style.display === "flex") { resolveConfirmDelete(false); return; }
+  if (editModal.style.display === "flex") { closeEditModalFn(); return; }
+  if (adminKeyModal.style.display === "flex") { closeAdminKeyModalFn(); return; }
+  if (modal.style.display === "flex") { closePlayerModal(); return; }
+});
 
 // Status message lifecycle for #status/#editStatus/#adminKeyStatus: plays
 // an entrance treatment whenever text is set (the Case-Files-only

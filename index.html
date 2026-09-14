@@ -2280,6 +2280,20 @@ html[data-theme="casefiles"] .modal-folder-tab {
 html[data-theme="casefiles"] .modal-folder-tab-amend {
   background: var(--bad);
 }
+/* The confirm-delete dialog otherwise just inherits the generic parchment
+   panel look, unlike every other themed component here - a dashed border
+   (the same hand-ruled language as .dash-empty/.edit-section-label) plus a
+   tilted, squared warning icon standing in for an ink stamp gives it the
+   same considered pass the rest of the theme got. */
+html[data-theme="casefiles"] .confirm-modal-content {
+  border: 1.5px dashed var(--border-strong);
+}
+html[data-theme="casefiles"] .confirm-icon {
+  border-radius: 0;
+  border: 1.5px solid var(--bad);
+  background: var(--bad-soft);
+  transform: rotate(-4deg);
+}
 /* .modal centers its content with plain align-items:center and no overflow
    handling, so on a short browser window a modal tall enough to overflow
    the viewport gets clipped equally off both the top and bottom rather

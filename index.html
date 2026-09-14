@@ -1824,6 +1824,50 @@ tbody tr:hover .user-cell span {
   font-size: 0.88em;
 }
 
+/* Confirm-delete modal - its own layout rather than reusing
+   .admin-key-modal-content/.edit-modal-title/.admin-key-desc/
+   .edit-modal-actions, since a short destructive-action confirmation
+   wants different things than an informational form: a warning icon to
+   signal severity at a glance, generous centered spacing instead of a
+   dense stacked form, and equal-width action buttons instead of a
+   right-aligned pair (nothing else it'd need to visually balance
+   against, so flush-right just left the row looking off-center). */
+.confirm-modal-content {
+  width: 360px;
+  text-align: center;
+}
+.confirm-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+.confirm-modal-title {
+  font-size: 1.25em;
+  font-weight: 800;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+.confirm-modal-desc {
+  color: var(--text-faint);
+  font-size: 0.88em;
+  line-height: 1.5;
+  margin: 0 0 26px;
+}
+.confirm-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+.confirm-modal-actions .btn {
+  flex: 1;
+  width: auto;
+}
+
 #modalUsername {
   text-align: center;
   font-size: 1.5em;
@@ -3162,6 +3206,34 @@ html[data-theme="ledger"] .modal-content {
 html[data-theme="ledger"] #modalSkin {
   background: var(--panel-2);
 }
+/* Same "framed certificate" corner brackets the sweat cards use, applied
+   to the confirm-delete dialog specifically - top-left/bottom-right only,
+   the same diagonal the cards use, which conveniently also stays clear of
+   the close button (top-right) and the action row (bottom, full-width). */
+html[data-theme="ledger"] .confirm-modal-content {
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--border-strong), var(--shadow-card);
+}
+html[data-theme="ledger"] .confirm-modal-content::before,
+html[data-theme="ledger"] .confirm-modal-content::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--gold);
+  pointer-events: none;
+}
+html[data-theme="ledger"] .confirm-modal-content::before {
+  top: 10px;
+  left: 10px;
+  border-right: none;
+  border-bottom: none;
+}
+html[data-theme="ledger"] .confirm-modal-content::after {
+  bottom: 10px;
+  right: 10px;
+  border-left: none;
+  border-top: none;
+}
 /* Engraved medallion stat pills (Star, FKDR) - the same embossed-metal
    technique as the wax-seal flag badges below (radial highlight standing
    in for candlelight sheen, inset light-over/dark-under pair standing in
@@ -3920,11 +3992,18 @@ html[data-theme="ledger"] #customTooltip.tooltip-below::after {
   <div id="confirmDeleteModal" class="modal">
     <div class="modal-card">
       <span class="modal-folder-tab modal-folder-tab-amend">Case File &middot; Remove</span>
-      <div class="modal-content admin-key-modal-content">
+      <div class="modal-content confirm-modal-content">
       <span id="closeConfirmDeleteModal" class="modal-close">&times;</span>
-      <h2 class="edit-modal-title">Remove Sweat?</h2>
-      <p class="admin-key-desc">This can't be undone.</p>
-      <div class="edit-modal-actions">
+      <div class="confirm-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3.5 L21.5 20 H2.5 Z" />
+          <line x1="12" y1="9.5" x2="12" y2="14" />
+          <circle cx="12" cy="17" r="0.75" fill="currentColor" stroke="none" />
+        </svg>
+      </div>
+      <h2 class="confirm-modal-title">Remove Sweat?</h2>
+      <p class="confirm-modal-desc">This can't be undone.</p>
+      <div class="confirm-modal-actions">
         <button type="button" id="cancelConfirmDeleteBtn" class="btn btn-ghost">Cancel</button>
         <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Remove</button>
       </div>

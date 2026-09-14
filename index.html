@@ -2737,29 +2737,29 @@ html[data-theme="ledger"] .pill.boost {
 }
 
 /* Private Bank success flourish - a wax seal drops onto the form and
-   settles with a wobble, echoing a document being officially sealed. Its
-   own richer, more saturated recipe rather than reusing the Cheater
-   pill's muted brick-red wax verbatim - a small badge sitting flat on a
-   card can afford to be subdued, but a hero-sized "genuine sealing wax"
-   moment needs the glossy highlight and near-black edge falloff that
-   actually reads as wax catching light, not just a solid red disc.
-   Layered backgrounds: a small bright highlight ellipse (the "shine")
-   painted on top of a much higher-contrast red radial gradient (vivid
-   near the highlight, crushing to near-black at the rim) rather than one
-   gradient doing both jobs. A very slightly uneven border-radius (not a
-   perfect circle) reads as a soft wax drip instead of a stamped coin. A
-   soft ink-impression halo (a flattened, blurred dark ellipse) pulses
-   under the seal as it lands, like pressure spreading into the paper,
-   and a few gold sparkles kick out from underneath it - gold against the
-   red reads as gilt detailing. Two animations on the seal itself (not
-   one) since the settle-then-hold and the eventual fade need different
-   timing/easing and touch different properties for most of their run -
-   see the comment on them for why running them together here doesn't hit
-   the usual "animation permanently wins" trap. */
+   settles with a wobble, echoing a document being officially sealed. The
+   seal itself is a generated SVG (see buildWaxSealMarkup() in the script
+   below), not a styled div, since a real wax seal's silhouette is a
+   scalloped/flower-like edge (a ring of small outward bumps around a
+   circle, not a plain disc or even a slightly-uneven blob), and it needs
+   a raised inner rim plus curved text following that rim - none of which
+   a CSS border-radius/background can produce. The SVG supplies its own
+   gradient, edge, rim, and text; this element just sizes/positions/
+   animates the whole thing and gives it a shape-following drop-shadow
+   (box-shadow can't follow the scalloped silhouette, only the element's
+   own rectangular box - same reasoning as the torn-paper hero elsewhere
+   on this page). A soft ink-impression halo (a flattened, blurred dark
+   ellipse) pulses under the seal as it lands, like pressure spreading
+   into the paper, and a few gold sparkles kick out from underneath it.
+   Two animations on the seal itself (not one) since the settle-then-hold
+   and the eventual fade need different timing/easing and touch different
+   properties for most of their run - see the comment on them for why
+   running them together here doesn't hit the usual "animation
+   permanently wins" trap. */
 html[data-theme="ledger"] .flourish-impression {
   position: absolute;
-  width: 100px;
-  height: 30px;
+  width: 110px;
+  height: 32px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(22,35,58,0.28), transparent 72%);
   animation: sealImpression 0.7s ease-out forwards;
@@ -2771,22 +2771,9 @@ html[data-theme="ledger"] .flourish-impression {
 }
 html[data-theme="ledger"] .flourish-seal {
   position: relative;
-  width: 84px;
-  height: 84px;
-  border-radius: 48% 52% 51% 49% / 53% 48% 52% 47%;
-  border: 2.5px solid #2e030a;
-  background:
-    radial-gradient(circle at 34% 24%, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.75) 4%, transparent 16%),
-    radial-gradient(circle at 34% 28%, #ff3b3b 0%, #e2102f 28%, #a80f26 52%, #63071a 78%, #33040e 100%);
-  box-shadow: inset 0 2px 3px rgba(255,255,255,0.3), inset 0 -5px 9px rgba(0,0,0,0.55), 0 10px 24px rgba(22,35,58,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffe8d8;
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
-  font-size: 38px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.55);
+  width: 104px;
+  height: 104px;
+  filter: drop-shadow(0 10px 16px rgba(22,35,58,0.55));
   /* sealDrop ends holding opacity:1 (forwards) - sealFade starts after it
      via animation-delay and only then touches opacity, so the two never
      actually fight over the property at the same moment; sealFade simply
@@ -2794,6 +2781,7 @@ html[data-theme="ledger"] .flourish-seal {
   animation: sealDrop 0.6s cubic-bezier(.25,1.6,.4,1) forwards,
              sealFade 0.5s ease-in 1.3s forwards;
 }
+html[data-theme="ledger"] .flourish-seal svg { display: block; width: 100%; height: 100%; overflow: visible; }
 @keyframes sealDrop {
   0% { transform: scale(2.2) rotate(-20deg); opacity: 0; }
   55% { transform: scale(0.92) rotate(-20deg); opacity: 1; }
@@ -4825,6 +4813,58 @@ function buildCaseFilesFlourish(container) {
   return 1600;
 }
 
+// Builds a wax-seal SVG: a scalloped (flower/gear-like) outer edge, a
+// raised inner rim, curved text following that rim top and bottom, and a
+// bold word centered between them - the classic envelope-seal layout.
+// Generated rather than hand-drawn since the scalloped edge is really a
+// ring of small circular-arc "bumps" around a base circle, which is much
+// easier to get evenly spaced by computing the points than by eyeballing
+// path coordinates by hand.
+function buildWaxSealMarkup(ringText, centerText) {
+  const cx = 50, cy = 50, baseR = 40, bumps = 18, bumpHeight = 5;
+  const points = [];
+  for (let i = 0; i < bumps; i++) {
+    const angle = (i / bumps) * Math.PI * 2 - Math.PI / 2;
+    points.push([cx + baseR * Math.cos(angle), cy + baseR * Math.sin(angle)]);
+  }
+  // Sagitta formula: the radius of a circular arc whose chord is `chord`
+  // long and whose peak bulges `bumpHeight` past that chord.
+  const segAngle = (Math.PI * 2) / bumps;
+  const chord = 2 * baseR * Math.sin(segAngle / 2);
+  const arcR = (chord * chord / 4 + bumpHeight * bumpHeight) / (2 * bumpHeight);
+  let edgePath = `M ${points[0][0].toFixed(2)} ${points[0][1].toFixed(2)}`;
+  for (let i = 1; i <= bumps; i++) {
+    const pt = points[i % bumps];
+    edgePath += ` A ${arcR.toFixed(2)} ${arcR.toFixed(2)} 0 0 1 ${pt[0].toFixed(2)} ${pt[1].toFixed(2)}`;
+  }
+  edgePath += " Z";
+
+  return `
+    <svg viewBox="0 0 100 100">
+      <defs>
+        <radialGradient id="sealGrad" cx="35%" cy="28%" r="80%">
+          <stop offset="0%" stop-color="#ff7a6b" />
+          <stop offset="28%" stop-color="#e2102f" />
+          <stop offset="60%" stop-color="#9c0e24" />
+          <stop offset="100%" stop-color="#3d0a12" />
+        </radialGradient>
+        <path id="sealTopArc" d="M 21,53 A 29,29 0 0 1 79,53" fill="none" />
+        <path id="sealBottomArc" d="M 24,63 A 27,27 0 0 0 76,63" fill="none" />
+      </defs>
+      <path d="${edgePath}" fill="url(#sealGrad)" stroke="#3d0a12" stroke-width="1" />
+      <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(0,0,0,0.32)" stroke-width="1" />
+      <circle cx="50" cy="50" r="28.3" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.6" />
+      <text font-size="6.4" font-family="'Playfair Display', serif" font-weight="700" letter-spacing="1.1" fill="rgba(0,0,0,0.4)">
+        <textPath href="#sealTopArc" startOffset="50%" text-anchor="middle">${ringText}</textPath>
+      </text>
+      <text x="50" y="59" font-size="16.5" font-family="'Playfair Display', serif" font-weight="700" text-anchor="middle" fill="rgba(0,0,0,0.42)">${centerText}</text>
+      <text font-size="6.4" font-family="'Playfair Display', serif" font-weight="700" letter-spacing="1.1" fill="rgba(0,0,0,0.4)">
+        <textPath href="#sealBottomArc" startOffset="50%" text-anchor="middle">${ringText}</textPath>
+      </text>
+    </svg>
+  `;
+}
+
 function buildLedgerFlourish(container) {
   const impression = document.createElement("div");
   impression.className = "flourish-impression";
@@ -4832,7 +4872,7 @@ function buildLedgerFlourish(container) {
 
   const seal = document.createElement("div");
   seal.className = "flourish-seal";
-  seal.innerHTML = "&#10003;";
+  seal.innerHTML = buildWaxSealMarkup("✦ VERIFIED ✦", "SEALED");
   container.appendChild(seal);
 
   const sparkleCount = 6;

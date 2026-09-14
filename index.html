@@ -1603,13 +1603,32 @@ tbody tr:hover .user-cell span {
   font-size: 0.88em;
 }
 
+#modalUsername {
+  text-align: center;
+  font-size: 1.5em;
+  font-weight: 800;
+  margin: 4px 0 2px;
+  text-shadow: 0 0 12px rgba(0,217,255,0.5);
+}
+
 .modal-username-sub {
-  font-size: 13px;
-  opacity: 0.8;
-  margin-top: 2px;
-  color: var(--text);
+  font-size: 14px;
+  opacity: 0.65;
+  margin-top: 4px;
+  color: var(--accent);
   font-weight: 600;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+}
+
+#modalTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.75em;
+  letter-spacing: 1.4px;
+  color: var(--text-faint);
+  margin: 0 0 18px;
+  text-transform: uppercase;
 }
 
 .modal-live-dot {
@@ -1628,172 +1647,76 @@ tbody tr:hover .user-cell span {
   50% { opacity: 0.3; }
 }
 
-/* ============================================================
-   PLAYER MODAL - "banner deck" layout
-   The skin becomes a small avatar sitting on a header banner (name
-   overlaid below it) instead of a tall portrait floated beside a stat
-   grid; the five stats collapse into one compact strip; both flag
-   sources (Urchin/Seraph) merge into a single panel instead of two
-   near-identical boxes, with one shared "why" toggle instead of always-
-   visible reason text. Same underlying data, roughly half the vertical
-   space the old stacked layout needed.
-   ============================================================ */
-.modal-content-deck {
-  padding: 0 0 24px;
-  overflow: hidden;
-}
-
-.deck-banner {
-  position: relative;
-  height: 130px;
-  border-radius: var(--radius-l) var(--radius-l) 0 0;
-  background: linear-gradient(200deg, var(--accent-2-soft), var(--accent-soft) 75%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding-bottom: 12px;
-}
+.modal-body { display: flex; gap: 18px; align-items: center; justify-content: center; }
 
 #modalSkin {
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
-  border-radius: 14px;
+  width: 120px;
+  height: 190px;
+  object-fit: contain;
+  border-radius: var(--radius-m);
   background: radial-gradient(circle, rgba(0,217,255,0.14), transparent);
   border: 1px solid var(--border-strong);
-  box-shadow: 0 0 20px rgba(0,217,255,0.35);
+  flex-shrink: 0;
 }
 
-.deck-id { text-align: center; padding: 0 16px; max-width: 100%; }
-
-#modalUsername {
-  font-size: 1.15em;
-  font-weight: 800;
-  margin: 0;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 10px rgba(0,217,255,0.4);
-}
-
-#modalTitle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.68em;
-  letter-spacing: 1.2px;
-  color: var(--text-dim);
-  margin: 3px 0 0;
-  text-transform: uppercase;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.7);
-}
-
-.deck-stat-strip {
-  display: flex;
-  padding: 16px 22px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 16px;
-}
-
-.deck-stat-cell {
+.modal-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
   flex: 1;
   min-width: 0;
-  text-align: center;
-  border-right: 1px solid var(--border);
-  padding: 0 4px;
 }
-.deck-stat-cell:last-child { border-right: none; }
 
-.deck-stat-label {
-  font-size: 0.6em;
+.modal-stat-tile {
+  padding: 10px 8px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  text-align: center;
+}
+
+.modal-stat-label {
+  font-size: 0.62em;
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--text-faint);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
-.deck-stat-value { font-size: 1.05em; font-weight: 800; line-height: 1.1; }
+.modal-stat-value { font-size: 1.3em; font-weight: 800; line-height: 1.1; }
 
-.deck-stat-cell.stat-star .deck-stat-value { color: var(--gold); text-shadow: 0 0 8px rgba(255,209,102,0.5); }
-.deck-stat-cell.stat-fkdr .deck-stat-value { color: var(--accent-2); text-shadow: 0 0 8px rgba(168,85,247,0.5); }
-.deck-stat-cell.stat-wlr .deck-stat-value { color: var(--neutral); text-shadow: 0 0 8px rgba(79,195,247,0.5); }
-.deck-stat-cell.stat-finals .deck-stat-value { color: var(--bad); text-shadow: 0 0 8px rgba(255,92,114,0.5); }
-.deck-stat-cell.stat-wins .deck-stat-value { color: var(--good); text-shadow: 0 0 8px rgba(52,224,161,0.5); }
+.modal-stat-tile.stat-star { grid-column: 1 / -1; }
+.modal-stat-tile.stat-star .modal-stat-value { color: var(--gold); text-shadow: 0 0 8px rgba(255,209,102,0.5); }
+.modal-stat-tile.stat-fkdr .modal-stat-value { color: var(--accent-2); text-shadow: 0 0 8px rgba(168,85,247,0.5); }
+.modal-stat-tile.stat-wlr .modal-stat-value { color: var(--neutral); text-shadow: 0 0 8px rgba(79,195,247,0.5); }
+.modal-stat-tile.stat-finals .modal-stat-value { color: var(--bad); text-shadow: 0 0 8px rgba(255,92,114,0.5); }
+.modal-stat-tile.stat-wins .modal-stat-value { color: var(--good); text-shadow: 0 0 8px rgba(52,224,161,0.5); }
 
-.deck-flags { padding: 0 22px; }
-
-.deck-flags-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
+.modal-tags-section {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
 }
 
-.deck-flags-label {
+.modal-tags-label {
   font-size: 0.68em;
   font-weight: 700;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--text-faint);
+  margin-bottom: 8px;
 }
 
-.deck-flags-count {
-  font-size: 0.66em;
-  font-weight: 800;
-  color: var(--bad);
-  background: var(--bad-soft);
-  padding: 2px 9px;
-  border-radius: 20px;
-}
-
-.deck-chip-row {
+.modal-tags-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
   color: var(--text-dim);
   font-size: 0.85em;
-  margin-bottom: 4px;
-}
-
-.deck-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.85em;
-  font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  white-space: nowrap;
-}
-.deck-chip.flagged { background: var(--bad-soft); color: var(--bad); }
-.deck-chip.clean { background: var(--good-soft); color: var(--good); }
-.deck-chip .tag-icon { width: 14px; height: 14px; }
-.deck-chip .chip-src { font-weight: 600; opacity: 0.7; margin-left: 1px; }
-
-.deck-why {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.78em;
-  font-weight: 700;
-  color: var(--accent);
-  cursor: pointer;
-}
-.deck-why .deck-why-caret { display: inline-block; transition: transform 0.2s var(--ease); }
-.deck-why.open .deck-why-caret { transform: rotate(180deg); }
-
-.deck-why-reason {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border);
-  font-size: 0.82em;
-  line-height: 1.5;
-  color: var(--text-dim);
 }
 
 /* Responsive */
@@ -1886,7 +1809,7 @@ html[data-theme="casefiles"] body {
 html[data-theme="casefiles"] h1,
 html[data-theme="casefiles"] .panel-header h2,
 html[data-theme="casefiles"] .stat-hero-value,
-html[data-theme="casefiles"] .deck-stat-value,
+html[data-theme="casefiles"] .modal-stat-value,
 html[data-theme="casefiles"] #statsStar,
 html[data-theme="casefiles"] #statsUsername,
 html[data-theme="casefiles"] .sweat-card-name,
@@ -2390,18 +2313,8 @@ html[data-theme="casefiles"] .modal-content {
 }
 
 html[data-theme="casefiles"] #modalUsername,
-html[data-theme="casefiles"] #modalTitle,
-html[data-theme="casefiles"] .deck-stat-value {
+html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
   text-shadow: none;
-}
-/* The deck banner is a bright glow gradient for Neon (light text needs a
-   real drop-shadow to read against it) but that clashes with Case Files'
-   flat paper language - a plain manila strip instead, which is why the
-   text-shadow:none above is safe here: dark ink text on a light strip
-   doesn't need a shadow to stay legible. */
-html[data-theme="casefiles"] .deck-banner {
-  background: var(--panel-2);
-  border-bottom: 1px dashed var(--border-strong);
 }
 
 /* Typewriter reveal on #status/#editStatus/#adminKeyStatus - the
@@ -2742,16 +2655,8 @@ html[data-theme="ledger"] #statsAvatar {
 }
 html[data-theme="ledger"] .user-cell span,
 html[data-theme="ledger"] tbody tr:hover .user-cell span,
-html[data-theme="ledger"] #modalTitle,
-html[data-theme="ledger"] .deck-stat-value {
+html[data-theme="ledger"] .modal-stat-tile .modal-stat-value {
   text-shadow: none;
-}
-/* Same reasoning as Case Files' banner override above - a plain cream
-   strip with a thin gold rule instead of Neon's glow gradient, so the
-   navy ink username needs no drop-shadow to read against it. */
-html[data-theme="ledger"] .deck-banner {
-  background: var(--panel-2);
-  border-bottom: 1px solid var(--gold);
 }
 html[data-theme="ledger"] thead tr {
   background: var(--accent-soft);
@@ -3598,24 +3503,23 @@ html[data-theme="ledger"] #customTooltip.tooltip-below::after {
   <div id="playerModal" class="modal">
     <div class="modal-card">
       <span class="modal-folder-tab">Case File &middot; Open</span>
-      <div class="modal-content modal-content-deck">
+      <div class="modal-content">
       <span id="closeModal" class="modal-close">&times;</span>
-      <div class="deck-banner">
-        <img id="modalSkin" src="" alt="" />
-        <div class="deck-id">
-          <h2 id="modalUsername">Loading...</h2>
-          <div id="modalTitle"><span class="modal-live-dot"></span>Live Stats</div>
-        </div>
+      <h2 id="modalUsername">Loading...</h2>
+      <div id="modalTitle"><span class="modal-live-dot"></span>Live Stats</div>
+      <div class="modal-body">
+        <img id="modalSkin" src="" />
+        <div id="modalStats" class="modal-stats-grid"></div>
       </div>
-      <div id="modalStatStrip" class="deck-stat-strip"></div>
-      <div class="deck-flags">
-        <div class="deck-flags-head">
-          <span class="deck-flags-label">Flags</span>
-          <span id="modalFlagCount" class="deck-flags-count" hidden></span>
-        </div>
-        <div id="modalFlagChips" class="deck-chip-row">Checking...</div>
-        <div id="modalFlagsWhy" class="deck-why" hidden>Why flagged <span class="deck-why-caret">&#9662;</span></div>
-        <div id="modalFlagsReason" class="deck-why-reason" hidden></div>
+      <div class="modal-tags-section">
+        <div class="modal-tags-label">Urchin Tags</div>
+        <div id="modalTags" class="modal-tags-row">Checking...</div>
+        <div id="modalTagsReason" class="urchin-reason-text" hidden></div>
+      </div>
+      <div class="modal-tags-section">
+        <div class="modal-tags-label">Seraph Tags</div>
+        <div id="modalSeraphTags" class="modal-tags-row">Checking...</div>
+        <div id="modalSeraphTagsReason" class="urchin-reason-text" hidden></div>
       </div>
       </div>
     </div>
@@ -5190,76 +5094,13 @@ loadSweats();
 
 const modal = document.getElementById("playerModal");
 const modalUsername = document.getElementById("modalUsername");
-const modalStatStrip = document.getElementById("modalStatStrip");
+const modalStats = document.getElementById("modalStats");
 const modalSkin = document.getElementById("modalSkin");
-const modalFlagChips = document.getElementById("modalFlagChips");
-const modalFlagCount = document.getElementById("modalFlagCount");
-const modalFlagsWhy = document.getElementById("modalFlagsWhy");
-const modalFlagsReason = document.getElementById("modalFlagsReason");
+const modalTags = document.getElementById("modalTags");
+const modalTagsReason = document.getElementById("modalTagsReason");
+const modalSeraphTags = document.getElementById("modalSeraphTags");
+const modalSeraphTagsReason = document.getElementById("modalSeraphTagsReason");
 const closeModal = document.getElementById("closeModal");
-
-// Urchin and Seraph each get their own row of chips today (one "Clean"
-// chip when a source found nothing, one chip per tag when it didn't),
-// merged into a single panel instead of two near-identical boxes - a
-// clean source used to still cost a whole labeled section for one word.
-// Reasons from every flagged chip (either source) collect into one
-// "why" toggle instead of two always-visible reason blocks.
-function renderMergedFlags(chipsEl, countEl, whyEl, reasonEl, urchinTags, seraphTags) {
-  chipsEl.innerHTML = "";
-  const reasons = [];
-  let flagCount = 0;
-
-  function addSourceChips(tags, iconMap, sourceLabel) {
-    if (!tags || tags.length === 0) {
-      const chip = document.createElement("span");
-      chip.className = "deck-chip clean";
-      chip.append("✓ Clean");
-      const src = document.createElement("span");
-      src.className = "chip-src";
-      src.textContent = `via ${sourceLabel}`;
-      chip.appendChild(src);
-      chipsEl.appendChild(chip);
-      return;
-    }
-    tags.forEach(tag => {
-      flagCount++;
-      const chip = document.createElement("span");
-      chip.className = "deck-chip flagged";
-      const iconSrc = iconMap[tag.type];
-      if (iconSrc) {
-        const icon = document.createElement("img");
-        icon.src = iconSrc;
-        icon.alt = "";
-        icon.className = "tag-icon";
-        chip.appendChild(icon);
-      }
-      chip.append(tag.label);
-      const src = document.createElement("span");
-      src.className = "chip-src";
-      src.textContent = `via ${sourceLabel}`;
-      chip.appendChild(src);
-      chipsEl.appendChild(chip);
-      if (tag.reason) reasons.push(tag.reason);
-    });
-  }
-
-  addSourceChips(urchinTags, URCHIN_TAG_ICONS, "Urchin");
-  addSourceChips(seraphTags, SERAPH_TAG_ICONS, "Seraph");
-
-  countEl.hidden = flagCount === 0;
-  if (flagCount > 0) countEl.textContent = `${flagCount} active`;
-
-  whyEl.classList.remove("open");
-  const reasonText = reasons.join(" • ");
-  reasonEl.textContent = reasonText;
-  whyEl.hidden = !reasonText;
-  reasonEl.hidden = true; // starts collapsed even when there's something to show - the toggle reveals it
-}
-
-modalFlagsWhy.addEventListener("click", () => {
-  const isOpen = modalFlagsWhy.classList.toggle("open");
-  modalFlagsReason.hidden = !isOpen;
-});
 
 // click on a player row/card (table row or bounty card, both carry data-username)
 document.addEventListener("click", async (e) => {
@@ -5277,16 +5118,17 @@ document.addEventListener("click", async (e) => {
 
   modal.style.display = "flex";
   modalUsername.textContent = "Loading...";
-  modalStatStrip.textContent = "Fetching live stats...";
-  modalFlagChips.textContent = "Checking...";
-  modalFlagCount.hidden = true;
-  modalFlagsWhy.hidden = true;
-  modalFlagsReason.hidden = true;
+  modalStats.textContent = "Fetching live stats...";
+  modalTags.textContent = "Checking...";
+  modalTagsReason.hidden = true;
+  modalSeraphTags.textContent = "Checking...";
+  modalSeraphTagsReason.hidden = true;
 
   if (!uuid) {
     modalUsername.textContent = username;
-    modalStatStrip.textContent = "Missing UUID for this player.";
-    modalFlagChips.textContent = "None";
+    modalStats.textContent = "Missing UUID for this player.";
+    modalTags.textContent = "None";
+    modalSeraphTags.textContent = "None";
     return;
   }
 
@@ -5311,16 +5153,14 @@ document.addEventListener("click", async (e) => {
       modalUsername.textContent = originalName;
     }
 
-    // /face/ instead of /full/ - the banner's avatar is a small square bust,
-    // not the tall full-body render the old side-by-side layout used.
-    modalSkin.src = `https://visage.surgeplay.com/face/128/${uuid}`;
+    modalSkin.src = `https://visage.surgeplay.com/full/256/${uuid}`;
 
-    modalStatStrip.innerHTML = `
-      <div class="deck-stat-cell stat-star"><div class="deck-stat-label">Star</div><div class="deck-stat-value">${data.star}</div></div>
-      <div class="deck-stat-cell stat-fkdr"><div class="deck-stat-label">Fkdr</div><div class="deck-stat-value">${data.fkdr.toFixed(2)}</div></div>
-      <div class="deck-stat-cell stat-wlr"><div class="deck-stat-label">Wlr</div><div class="deck-stat-value">${data.wlr.toFixed(2)}</div></div>
-      <div class="deck-stat-cell stat-finals"><div class="deck-stat-label">Finals</div><div class="deck-stat-value">${data.finals}</div></div>
-      <div class="deck-stat-cell stat-wins"><div class="deck-stat-label">Wins</div><div class="deck-stat-value">${data.wins}</div></div>
+    modalStats.innerHTML = `
+      <div class="modal-stat-tile stat-star"><div class="modal-stat-label">Star</div><div class="modal-stat-value">${data.star}</div></div>
+      <div class="modal-stat-tile stat-fkdr"><div class="modal-stat-label">FKDR</div><div class="modal-stat-value">${data.fkdr.toFixed(2)}</div></div>
+      <div class="modal-stat-tile stat-wlr"><div class="modal-stat-label">WLR</div><div class="modal-stat-value">${data.wlr.toFixed(2)}</div></div>
+      <div class="modal-stat-tile stat-finals"><div class="modal-stat-label">Finals</div><div class="modal-stat-value">${data.finals}</div></div>
+      <div class="modal-stat-tile stat-wins"><div class="modal-stat-label">Wins</div><div class="modal-stat-value">${data.wins}</div></div>
     `;
 
     // Re-check Urchin + Seraph tags live on every open instead of using any
@@ -5330,11 +5170,13 @@ document.addEventListener("click", async (e) => {
       fetchSeraphTags(uuid)
     ]);
     if (modal.dataset.activeUuid !== uuid) return;
-    renderMergedFlags(modalFlagChips, modalFlagCount, modalFlagsWhy, modalFlagsReason, urchinResult.tags, seraphResult.tags);
+    renderTagBadges(modalTags, modalTagsReason, urchinResult.tags, URCHIN_TAG_ICONS);
+    renderTagBadges(modalSeraphTags, modalSeraphTagsReason, seraphResult.tags, SERAPH_TAG_ICONS);
   } catch (err) {
     if (modal.dataset.activeUuid === uuid) {
-      modalStatStrip.textContent = "Failed to load stats.";
-      modalFlagChips.textContent = "Unavailable";
+      modalStats.textContent = "Failed to load stats.";
+      modalTags.textContent = "Unavailable";
+      modalSeraphTags.textContent = "Unavailable";
     }
   }
 });

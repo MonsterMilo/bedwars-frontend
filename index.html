@@ -44,6 +44,22 @@
   --radius-l: 22px;
   --shadow-card: 0 10px 30px rgba(0,0,0,0.45);
   --ease: cubic-bezier(.22,.85,.32,1);
+
+  /* "Beaten By" roster identity colors - one per person (BEATEN_BY in the
+     script below), read by both the roster picker and the small avatar
+     badges on cards/table rows. Bright and saturated here to pop against
+     the dark HUD backdrop; each theme below redefines its own set rather
+     than filtering these, so the palette is actually tuned to its own
+     background instead of just dimmed. */
+  --roster-milo: #00d9ff;
+  --roster-potat: #a855f7;
+  --roster-aballs: #ffb84d;
+  --roster-zoiv: #ff5fa2;
+  --roster-max: #4ade80;
+  --roster-sqoz: #60a5fa;
+  --roster-kermit: #a3e635;
+  --roster-ssent: #fb923c;
+  --roster-key: #facc15;
 }
 
 /* "Case Files" theme - a corkboard/detective-dossier skin, swapped in via
@@ -76,6 +92,19 @@ html[data-theme="casefiles"] {
   --radius-m: 4px;
   --radius-l: 6px;
   --shadow-card: 0 10px 18px -8px rgba(42,36,28,0.45);
+
+  /* Same 9 identities, re-tuned as muted vintage/ink tones instead of the
+     neon set filtered down - reads like aged case-file tab colors rather
+     than a dimmed HUD palette. */
+  --roster-milo: #6f9a94;
+  --roster-potat: #9b7aa0;
+  --roster-aballs: #c99a52;
+  --roster-zoiv: #bc7684;
+  --roster-max: #8fa870;
+  --roster-sqoz: #7c93ab;
+  --roster-kermit: #a8a35f;
+  --roster-ssent: #bd7a51;
+  --roster-key: #c7ab5a;
 }
 
 /* "Private Bank" theme - white letterhead, navy fountain-pen ink, muted gold
@@ -107,6 +136,19 @@ html[data-theme="ledger"] {
   --radius-m: 2px;
   --radius-l: 3px;
   --shadow-card: 0 14px 30px -18px rgba(22,35,58,0.35);
+
+  /* Same 9 identities again, this time as refined jewel/metal tones in the
+     same family as the engraved medallion pills elsewhere in this theme
+     (steel, brass, wax-red) rather than the neon set desaturated. */
+  --roster-milo: #6d8fb0;
+  --roster-potat: #9b7fb5;
+  --roster-aballs: #c6a355;
+  --roster-zoiv: #b06b7c;
+  --roster-max: #6ba178;
+  --roster-sqoz: #5f7fa3;
+  --roster-kermit: #a89a55;
+  --roster-ssent: #bf7f52;
+  --roster-key: #c9b566;
 }
 
 * { box-sizing: border-box; }
@@ -2872,12 +2914,11 @@ html[data-theme="ledger"] .chip input:checked + span::before {
    every other control, and skip the ink-checkmark prefix above - a
    checkmark glyph crowding a single initial in a 38px circle reads as
    clutter, not "signed off", and the circle already shows its own
-   checked state via the ring + corner badge (base rules), not a color
-   change, so muting the color here doesn't need its own hover/checked
-   variants the way an opacity/saturation-based selection state would. */
+   checked state via the ring + corner badge (base rules). Colors
+   themselves come pre-tuned per theme now (--roster-* custom properties,
+   see :root), not a shared bright palette pushed through a filter here. */
 html[data-theme="ledger"] .chip-group.roster .roster-avatar {
   border-radius: 50%;
-  filter: saturate(0.55) sepia(0.15);
 }
 /* Same specificity tie as Case Files above (both match on 3 classes/
    pseudo-classes; the theme's rule also carries the [data-theme] attribute
@@ -2888,7 +2929,6 @@ html[data-theme="ledger"] .chip-group.roster .chip input:checked + .roster-avata
   color: #04050a;
   border-color: var(--panel);
   box-shadow: 0 0 0 1px var(--panel), 0 0 0 3px var(--chip-color), 0 4px 10px rgba(0,0,0,0.35);
-  filter: saturate(1) sepia(0.05);
 }
 html[data-theme="ledger"] .chip-group.roster .chip input:checked + .roster-avatar::before {
   content: none;
@@ -3000,15 +3040,6 @@ html[data-theme="ledger"] .sweat-row {
 html[data-theme="ledger"] .sweat-row.row-exit {
   animation: rowOutLedger 0.35s ease-in forwards;
   transform-origin: top;
-}
-
-/* Roster identity colors (the small circular initials on a card/table row's
-   Beaten By list) are bright saturated hues tuned for the neon backdrop -
-   muted here so they read as engraved wax-seal tints instead of clashing
-   with the ink/gold palette. Left alone everywhere else since the colors
-   are shared JS data, not per-theme. */
-html[data-theme="ledger"] .beaten-avatar {
-  filter: saturate(0.55) sepia(0.15);
 }
 
 /* Section headers (Sweat Lookup, Defeated Sweats) get a letterhead rule and
@@ -4252,16 +4283,21 @@ let currentPage = 1;
 // checkbox id (and the backend's schema field), label is the display name
 // (may differ from id, e.g. aballs displays as "ABoi"), initials must be
 // unique across the roster since several names share a first letter.
+// Colors live as --roster-<id> custom properties (see :root and the
+// per-theme blocks below) rather than a flat hex here, so every place
+// that reads one - the roster picker, the small badges on cards/table
+// rows - repaints live on a theme switch instead of needing a re-render
+// to pick up new values baked into JS at render time.
 const BEATEN_BY = {
-  milo:   { label: "Milo",   initials: "M",  color: "#00d9ff" },
-  potat:  { label: "Potat",  initials: "P",  color: "#a855f7" },
-  aballs: { label: "ABoi",   initials: "A",  color: "#ffb84d" },
-  zoiv:   { label: "Zoiv",   initials: "Z",  color: "#ff5fa2" },
-  max:    { label: "Max",    initials: "Mx", color: "#4ade80" },
-  sqoz:   { label: "Sqoz",   initials: "Sq", color: "#60a5fa" },
-  kermit: { label: "Kermit", initials: "Kr", color: "#a3e635" },
-  ssent:  { label: "Ssent",  initials: "Sn", color: "#fb923c" },
-  key:    { label: "Key",    initials: "Ky", color: "#facc15" },
+  milo:   { label: "Milo",   initials: "M" },
+  potat:  { label: "Potat",  initials: "P" },
+  aballs: { label: "ABoi",   initials: "A" },
+  zoiv:   { label: "Zoiv",   initials: "Z" },
+  max:    { label: "Max",    initials: "Mx" },
+  sqoz:   { label: "Sqoz",   initials: "Sq" },
+  kermit: { label: "Kermit", initials: "Kr" },
+  ssent:  { label: "Ssent",  initials: "Sn" },
+  key:    { label: "Key",    initials: "Ky" },
 };
 const BEATEN_BY_KEYS = Object.keys(BEATEN_BY);
 const beatenByCheckboxes = {};
@@ -4279,7 +4315,7 @@ function buildRosterChipHtml(idPrefix = "") {
     const p = BEATEN_BY[k];
     return `<label class="chip roster-chip" data-tooltip="${p.label}">
       <input type="checkbox" id="${idPrefix}${k}" aria-label="${p.label}" />
-      <span class="roster-avatar" style="--chip-color:${p.color}" aria-hidden="true">${p.initials}</span>
+      <span class="roster-avatar" style="--chip-color:var(--roster-${k})" aria-hidden="true">${p.initials}</span>
     </label>`;
   }).join("");
 }
@@ -4997,7 +5033,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
 
     const beatenByHtml = BEATEN_BY_KEYS
       .filter(k => s[k])
-      .map(k => `<span class="beaten-avatar" style="background:${BEATEN_BY[k].color}" data-tooltip="${BEATEN_BY[k].label}">${BEATEN_BY[k].initials}</span>`)
+      .map(k => `<span class="beaten-avatar" style="background:var(--roster-${k})" data-tooltip="${BEATEN_BY[k].label}">${BEATEN_BY[k].initials}</span>`)
       .join("");
 
     card.innerHTML = `

@@ -278,6 +278,12 @@ body {
     radial-gradient(circle at 20% 88%, rgba(0, 255, 190, 0.05), transparent 55%);
   opacity: 0.95;
   animation: nebulaPulse 10s ease-in-out infinite;
+  /* Full-viewport element animating opacity forever - without this hint
+     an un-promoted element can end up repainting its whole (screen-sized)
+     box on the main thread every frame instead of just being composited,
+     which is the difference between "free" and "surprisingly not free"
+     for something this size that never stops running. */
+  will-change: opacity;
 }
 
 @keyframes nebulaPulse {
@@ -343,6 +349,7 @@ body {
   opacity: 0;
   animation: bubbleRise var(--dur) linear infinite;
   animation-delay: var(--delay);
+  will-change: transform, opacity;
 }
 @keyframes bubbleRise {
   0% { transform: translate(0,0); opacity: 0; }
@@ -374,7 +381,10 @@ body {
    .hero gets a clip-path for its torn bottom edge, and clip-path clips an
    element's entire rendered subtree, pseudo-elements included, so anything
    poking outside .hero's own box (like a pin at top:-9px) would otherwise
-   just vanish. */
+   just vanish. .hero-controls (below) is a sibling of .hero for the exact
+   same reason - the theme dropdown's open menu is tall enough to reach
+   past the tear's shallower dips, and a clipped descendant just gets
+   silently cut off there instead of overlapping anything visibly. */
 .hero-pin { display: none; }
 
 /* Private-Bank-only ink flourish under the h1 wordmark - present in the
@@ -2251,7 +2261,7 @@ html[data-theme="casefiles"] #nebula {
   opacity: 1;
 }
 
-/* Reuse the same starfield elements instead of hiding them - same 1400
+/* Reuse the same starfield elements instead of hiding them - same
    pre-placed dots, just recolored to a warm tone, stripped of the neon
    glow, and held still, so they read as flecks of grain settled in the
    paper rather than stars or drifting dust. The base .star runs the
@@ -2260,11 +2270,15 @@ html[data-theme="casefiles"] #nebula {
    it's running - a plain "opacity: 0.75" override would be silently
    ignored the same way .sweat-card's transform was (see the note up near
    .sweat-card) - so the animation is turned off outright here rather than
-   overridden, which is also what actually stops the drifting/glowing. */
+   overridden, which is also what actually stops the drifting/glowing.
+   will-change: auto cancels the base rule's will-change: opacity too -
+   with the animation gone, nothing on these elements changes anymore, so
+   the compositor layer it was reserving per star is pure waste here. */
 html[data-theme="casefiles"] .star {
   background: #5c4322;
   box-shadow: none;
   animation: none;
+  will-change: auto;
   opacity: 0.75;
 }
 html[data-theme="casefiles"] .star.bright {
@@ -2446,11 +2460,12 @@ html[data-theme="casefiles"] .confirm-icon {
 html[data-theme="casefiles"] .modal {
   padding-top: 44px;
 }
-/* The base .hero-controls sits flush with .hero's own edge (top:18px;
-   right:0), which was invisible in Neon since .hero has no visible
-   background there - now that Case Files gives .hero a real card, that same
-   flush position runs the Admin Key button right up against the card's
-   border instead of sitting inside it. */
+/* The base .hero-controls sits flush with .hero's edge (top:18px; right:0,
+   positioned relative to .page since it's a sibling of .hero - see the
+   .hero-pin comment above), which was invisible in Neon since .hero has no
+   visible background there - now that Case Files gives .hero a real card,
+   that same flush position runs the Admin Key button right up against the
+   card's border instead of sitting inside it. */
 html[data-theme="casefiles"] .hero-controls {
   top: 22px;
   right: 24px;
@@ -4827,22 +4842,22 @@ html[data-theme="deepcurrent"] .pill.boost {
     <h1>Bedwars Sweat Tracker</h1>
     <div class="hero-flourish" aria-hidden="true"></div>
     <p id="credits">Developed by Milo &middot; Powered by Hypixel API</p>
-    <div class="hero-controls">
-      <div class="theme-dropdown" id="themeDropdown">
-        <button type="button" class="theme-dropdown-btn" id="themeDropdownBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="Site theme">
-          <span id="themeDropdownLabel">Neon</span>
-          <span class="theme-dropdown-arrow" aria-hidden="true">&#9662;</span>
-        </button>
-        <ul class="theme-dropdown-menu" id="themeDropdownMenu" role="listbox" aria-label="Site theme" hidden>
-          <li role="option" data-theme-value="neon" aria-selected="true" tabindex="0">Neon</li>
-          <li role="option" data-theme-value="casefiles" aria-selected="false" tabindex="0">Case Files</li>
-          <li role="option" data-theme-value="ledger" aria-selected="false" tabindex="0">Private Bank</li>
-          <li role="option" data-theme-value="deepcurrent" aria-selected="false" tabindex="0">Deep Current</li>
-        </ul>
-      </div>
-      <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; Admin Key</button>
-    </div>
   </header>
+  <div class="hero-controls">
+    <div class="theme-dropdown" id="themeDropdown">
+      <button type="button" class="theme-dropdown-btn" id="themeDropdownBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="Site theme">
+        <span id="themeDropdownLabel">Neon</span>
+        <span class="theme-dropdown-arrow" aria-hidden="true">&#9662;</span>
+      </button>
+      <ul class="theme-dropdown-menu" id="themeDropdownMenu" role="listbox" aria-label="Site theme" hidden>
+        <li role="option" data-theme-value="neon" aria-selected="true" tabindex="0">Neon</li>
+        <li role="option" data-theme-value="casefiles" aria-selected="false" tabindex="0">Case Files</li>
+        <li role="option" data-theme-value="ledger" aria-selected="false" tabindex="0">Private Bank</li>
+        <li role="option" data-theme-value="deepcurrent" aria-selected="false" tabindex="0">Deep Current</li>
+      </ul>
+    </div>
+    <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; Admin Key</button>
+  </div>
 
   <div class="panel-header">
     <div class="panel-icon panel-icon-lookup">&#127919;</div>
@@ -5412,7 +5427,7 @@ document.addEventListener("keydown", (e) => {
 
 const starContainer = document.getElementById("starfield");
 
-const STAR_COUNT = 1400;
+const STAR_COUNT = 1000; // increase for denser sky
 
 for (let i = 0; i < STAR_COUNT; i++) {
   const star = document.createElement("div");

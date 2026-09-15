@@ -1871,37 +1871,39 @@ tbody tr:hover .user-cell span {
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* Neon only: clicking a grid card flies+flips the player-stats modal open
-   from the card's own position/size instead of just fading it in at
-   center - see playCardFlipExpand() in the script below for the FLIP
+/* Neon only: clicking a grid card flies+flips the player-stats modal (and,
+   via the same class/keyframes, the Edit modal opened from a card's pencil
+   icon) open from the card's own position/size instead of just fading in
+   at center - see playCardFlipExpand() in the script below for the FLIP
    (First/Last/Invert/Play) math that fills in --flip-dx/--flip-dy/
-   --flip-sx/--flip-sy per click. perspective on .modal (harmless for the
-   other three modals sharing that class - it only does anything to a
-   descendant that's actually got a 3D transform applied) is what makes
-   the rotateY below read as a real flip instead of a flat horizontal
-   squish. animation-fill-mode is deliberately just "forwards", not
-   "both" - see the Deep Current sweat-card comments elsewhere on this
-   page for why "both" would be the wrong call here too if anything else
-   ever needed to set .modal-content's transform afterward (nothing
-   currently does, but forwards costs nothing extra and forwards-only
-   avoids relying on that continuing to be true). */
-html:not([data-theme]) .modal {
-  perspective: 1200px;
-}
-html:not([data-theme]) #playerModal .modal-content.card-flip-expand {
+   --flip-sx/--flip-sy per click. `perspective()` is baked into the
+   transform value itself rather than set as a `perspective` property on
+   .modal - an ancestor's perspective property anchors the vanishing point
+   at that ancestor's own center (the middle of the screen), so a card
+   translated in from off-center (anything not in the middle column) got
+   rotated through a screen-centered vanishing point and visibly skewed
+   toward it, reading as "flying in from a random side" rather than a
+   clean in-place flip; perspective inside the transform list instead
+   travels with the element, anchored to its own center the whole way.
+   animation-fill-mode is deliberately just "forwards", not "both" - see
+   the Deep Current sweat-card comments elsewhere on this page for why
+   "both" would be the wrong call here too if anything ever needed to set
+   .modal-content's transform afterward (nothing currently does, but
+   forwards costs nothing extra and avoids relying on that staying true). */
+html:not([data-theme]) .modal-content.card-flip-expand {
   animation: cardFlipExpandNeon 0.6s cubic-bezier(.2,.8,.2,1) forwards;
 }
 @keyframes cardFlipExpandNeon {
   0% {
-    transform: translate(var(--flip-dx), var(--flip-dy)) scale(var(--flip-sx), var(--flip-sy)) rotateY(0deg);
+    transform: perspective(1200px) translate(var(--flip-dx), var(--flip-dy)) scale(var(--flip-sx), var(--flip-sy)) rotateY(0deg);
     opacity: 0.85;
   }
   50% {
-    transform: translate(calc(var(--flip-dx) * 0.5), calc(var(--flip-dy) * 0.5)) scale(calc((var(--flip-sx) + 1) * 0.5), calc((var(--flip-sy) + 1) * 0.5)) rotateY(90deg);
+    transform: perspective(1200px) translate(calc(var(--flip-dx) * 0.5), calc(var(--flip-dy) * 0.5)) scale(calc((var(--flip-sx) + 1) * 0.5), calc((var(--flip-sy) + 1) * 0.5)) rotateY(90deg);
     opacity: 1;
   }
   100% {
-    transform: translate(0, 0) scale(1, 1) rotateY(0deg);
+    transform: perspective(1200px) translate(0, 0) scale(1, 1) rotateY(0deg);
     opacity: 1;
   }
 }
@@ -6415,7 +6417,14 @@ function renderCardGrid(filteredSweats, usernameCounts) {
 
     card.querySelector(".edit-btn").addEventListener("click", (e) => {
       e.stopPropagation();
+      // Same Neon-only flip-open as the player modal (see the document
+      // click listener/playCardFlipExpand near the bottom of this script)
+      // - captured here instead of there since this button already calls
+      // stopPropagation() to keep its click from also opening the player
+      // modal underneath it.
+      const flipFrom = !document.documentElement.dataset.theme ? card.getBoundingClientRect() : null;
       openEditModal(s);
+      if (flipFrom) requestAnimationFrame(() => playCardFlipExpand(flipFrom, editModal.querySelector(".modal-content")));
     });
 
     card.querySelector(".remove-btn").addEventListener("click", (e) => {
@@ -6988,22 +6997,30 @@ document.addEventListener("click", (e) => {
     ? item.getBoundingClientRect()
     : null;
   openPlayerModal(item);
-  if (flipFrom) requestAnimationFrame(() => playCardFlipExpand(flipFrom));
+  if (flipFrom) requestAnimationFrame(() => playCardFlipExpand(flipFrom, modal.querySelector(".modal-content")));
 });
 
-// See the click listener above for when/why this runs. FLIP technique:
-// the source card's rect is the "First" position, .modal-content's own
+// See the click listener above for when/why this runs, and the Edit-modal
+// button handler in renderCardGrid for the other caller. FLIP technique:
+// the source card's rect is the "First" position, the target modal's own
 // natural (already-laid-out, centered/full-size) rect is the "Last"
 // position - the delta between them becomes a starting transform that's
 // immediately un-done via a CSS animation ("Invert" + "Play"), so the
 // element visually flies from the card to where it was always going to
 // render anyway. rotateY carries it through 90deg at the halfway point
-// (needs .modal's perspective, set only for Neon) purely as a flourish -
-// the content underneath doesn't actually change, so there's no
-// front/back face to swap; it just reads as the card flipping into the
-// stats view.
-function playCardFlipExpand(sourceRect) {
-  const content = modal.querySelector(".modal-content");
+// purely as a flourish - the content underneath doesn't actually change,
+// so there's no front/back face to swap; it just reads as the card
+// flipping into the stats/edit view. `perspective()` is baked into the
+// transform itself (in the CSS below) rather than set as a `perspective`
+// property on an ancestor - an ancestor's perspective anchors its
+// vanishing point at THAT element's center (i.e. the middle of the
+// screen), so a card translated far from center (anything not in the
+// middle column) rotated through a screen-centered vanishing point and
+// visibly skewed toward it - reading as "flying in from a random side"
+// rather than a clean in-place flip. Perspective inside the transform
+// list travels with the element instead, anchored to its own center at
+// every point along the flight.
+function playCardFlipExpand(sourceRect, content) {
   if (!content) return;
   const targetRect = content.getBoundingClientRect();
   const dx = (sourceRect.left + sourceRect.width / 2) - (targetRect.left + targetRect.width / 2);

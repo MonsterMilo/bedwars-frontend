@@ -3961,88 +3961,35 @@ html[data-theme="deepcurrent"] .beaten-avatar {
   box-shadow: 0 0 8px -1px var(--chip-color);
 }
 
-/* Sweat cards redesigned as chamfered steel porthole plates - an eight-
-   sided clip-path (corners cut at an angle) instead of Neon/Case Files/
-   Private Bank's plain rounded rectangle, so the shape itself reads as a
-   riveted hull plate rather than a re-colored copy of the same card. Four
-   brass rivets sit on the cut corners (one background-image on ::before,
-   four small radial-gradient circles at fixed offsets, rather than four
-   real elements - each one now an actual circle with a transparent tail,
-   not the filled square patch the first pass accidentally produced by
-   leaving the last gradient stop opaque), and a glass "glare" spot on
-   ::after tracks the cursor via --mx/--my so hovering one genuinely feels
-   like looking through wet glass. The glare's own opacity fade-out on
-   mouseleave is handled by the transition below; --mx/--my are left alone
-   by that listener specifically so the glare fades out in place instead of
-   jumping to center first (see the mouseout handler's comment). A short
-   --mx/--my transition here also smooths the glare's own tracking motion,
-   catching up over ~0.1s instead of snapping exactly to the raw mouse
-   sample on every frame. overflow:hidden contains the click ripple to the
-   card's own clipped silhouette - safe to add since box-shadow is painted
-   outside an element's own border box and isn't clipped by that same
-   element's overflow, so the lift/glow shadow below is unaffected. */
+/* Sweat cards - plain rounded rectangle with a normal border, same shape
+   language as every other theme. A chamfered clip-path silhouette (cut
+   corners, brass rivets) was tried here, but tracing a colored outline
+   around a clip-path shape isn't possible with `border` or `box-shadow`
+   (both are computed from the rectangular box model, which clip-path
+   doesn't touch) - the only thing that actually worked was stacking eight
+   filter: drop-shadow() layers, and paying that filter cost on every card
+   in the grid simultaneously (not just the hovered one) was what made
+   scrolling/hovering the grid noticeably laggy. Reverted to a plain
+   border; the corner rivets, cursor-tracked glass glare, and sonar-ping
+   click ripple below are unaffected by any of this and are still cheap
+   (a couple of background layers and a few property writes on hover). */
 html[data-theme="deepcurrent"] .sweat-card {
-  --chamfer: 16px;
-  border: none;
-  border-radius: 4px;
-  clip-path: polygon(
-    var(--chamfer) 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer),
-    100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, var(--chamfer) 100%,
-    0 calc(100% - var(--chamfer)), 0 var(--chamfer)
-  );
+  border: 1.5px solid rgba(255,255,255,0.32);
+  border-radius: var(--radius-m);
   background:
     repeating-linear-gradient(125deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 6px),
     radial-gradient(120% 90% at 15% -10%, rgba(53,230,196,0.1), transparent 55%),
     linear-gradient(160deg, var(--panel), var(--panel-2));
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -10px 16px -12px rgba(0,0,0,0.5);
-  /* Neither `border` nor an inset box-shadow can trace a clip-path outline -
-     both are computed from the element's own rectangular box model, which
-     clip-path knows nothing about, so each one just gets sheared off flush
-     with the original straight edges and contributes nothing along the new
-     diagonal cuts. filter: drop-shadow() is different - it reads the
-     ALREADY-CLIPPED alpha shape and draws from that, so stacking small
-     zero-blur drop-shadows nudged ~1px in eight directions (four cardinal,
-     four diagonal - the diagonals matter since the chamfer cuts run at
-     roughly 45°) paints a continuous line that actually follows the
-     chamfered silhouette, corners included (the same technique the Case
-     Files hero's torn-edge shadow uses for the same underlying reason).
-     White rather than the teal --border-strong - this is deliberately
-     restoring the plain light outline the very first (pre-clip-path)
-     version of this card had, just now completed around the chamfered
-     corners instead of dropped in favor of a color change. Held constant
-     on :hover too (the interactive feedback there is the box-shadow glow
-     below, not a recolored outline). Combined with the animation fill-mode
-     fix elsewhere on this card, this also has to be duplicated into the
-     entrance/exit keyframes' own `filter` values instead of just sitting
-     here - an animation's filter keyframes replace the whole property, so
-     without that the outline would vanish for the ~0.5s the card is
-     surfacing in. */
-  filter:
-    drop-shadow(1.2px 0 0 rgba(255,255,255,0.32))
-    drop-shadow(-1.2px 0 0 rgba(255,255,255,0.32))
-    drop-shadow(0 1.2px 0 rgba(255,255,255,0.32))
-    drop-shadow(0 -1.2px 0 rgba(255,255,255,0.32))
-    drop-shadow(0.9px 0.9px 0 rgba(255,255,255,0.32))
-    drop-shadow(-0.9px 0.9px 0 rgba(255,255,255,0.32))
-    drop-shadow(0.9px -0.9px 0 rgba(255,255,255,0.32))
-    drop-shadow(-0.9px -0.9px 0 rgba(255,255,255,0.32));
   overflow: hidden;
   transition: transform 0.15s ease-out, box-shadow 0.25s ease;
 }
 html[data-theme="deepcurrent"] .sweat-card:hover {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -10px 16px -12px rgba(0,0,0,0.5), 0 14px 30px rgba(0,0,0,0.5), 0 0 22px rgba(53,230,196,0.25);
 }
-/* Four rivets, mirrored the same fixed distance in from every corner
-   (10px center, 2.2px radius) - close enough to the chamfer to read as
-   sitting on the cut, but just barely inside the clip line (distance from
-   a circle centered at (10,10) to the line x+y=16 is ~2.83px, a hair more
-   than the radius) so the full circle survives instead of being sliced
-   into a crescent. Sized to this specific (smaller, 16px) chamfer - the
-   previous chamfer was big enough that a safely-unclipped rivet had to sit
-   14-17px in, which put it right on top of the index badge (top-right,
-   inset 14px) and the footer's remove button (bottom-right); shrinking the
-   chamfer let the safe rivet position shrink well inside that 14px zone
-   instead. */
+/* Four rivets, a fixed distance in from every corner - clear of the index
+   badge (top-right, inset 14px) and the footer's remove button
+   (bottom-right). */
 html[data-theme="deepcurrent"] .sweat-card::before {
   content: "";
   position: absolute;
@@ -4123,12 +4070,12 @@ html[data-theme="deepcurrent"] .sweat-card.card-pressed {
    is surfacing or sinking, popping in/out abruptly at the animation's
    boundary instead of just always being there. */
 @keyframes cardSurfaceDeepCurrent {
-  0% { opacity: 0; transform: translateY(14px); filter: blur(3px) drop-shadow(1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(-1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(0 1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0 -1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px -0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px -0.9px 0 rgba(255,255,255,0.32)); }
-  100% { opacity: 1; transform: translateY(0); filter: blur(0) drop-shadow(1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(-1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(0 1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0 -1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px -0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px -0.9px 0 rgba(255,255,255,0.32)); }
+  0% { opacity: 0; transform: translateY(14px); filter: blur(3px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 @keyframes cardSinkDeepCurrent {
-  0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0) drop-shadow(1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(-1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(0 1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0 -1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px -0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px -0.9px 0 rgba(255,255,255,0.32)); }
-  100% { opacity: 0; transform: translateY(14px) scale(0.94); filter: blur(4px) drop-shadow(1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(-1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(0 1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0 -1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px -0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px -0.9px 0 rgba(255,255,255,0.32)); }
+  0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  100% { opacity: 0; transform: translateY(14px) scale(0.94); filter: blur(4px); }
 }
 /* fill-mode: backwards, not both - "both" (forwards+backwards) was the
    actual root cause of the tilt/glare never engaging on hover: a finished

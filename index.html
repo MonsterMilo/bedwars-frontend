@@ -4000,31 +4000,37 @@ html[data-theme="deepcurrent"] .sweat-card {
      clip-path knows nothing about, so each one just gets sheared off flush
      with the original straight edges and contributes nothing along the new
      diagonal cuts. filter: drop-shadow() is different - it reads the
-     ALREADY-CLIPPED alpha shape and draws from that, so stacking a few
-     zero-ish-blur drop-shadows nudged 1px in each direction paints a
-     continuous line that actually follows the chamfered silhouette,
-     corners included (the same technique the Case Files hero's torn-edge
-     shadow uses for the same underlying reason). Combined with the
-     animation fill-mode fix below, this also has to be duplicated into the
+     ALREADY-CLIPPED alpha shape and draws from that, so stacking small
+     zero-blur drop-shadows nudged ~1px in eight directions (four cardinal,
+     four diagonal - the diagonals matter since the chamfer cuts run at
+     roughly 45°) paints a continuous line that actually follows the
+     chamfered silhouette, corners included (the same technique the Case
+     Files hero's torn-edge shadow uses for the same underlying reason).
+     White rather than the teal --border-strong - this is deliberately
+     restoring the plain light outline the very first (pre-clip-path)
+     version of this card had, just now completed around the chamfered
+     corners instead of dropped in favor of a color change. Held constant
+     on :hover too (the interactive feedback there is the box-shadow glow
+     below, not a recolored outline). Combined with the animation fill-mode
+     fix elsewhere on this card, this also has to be duplicated into the
      entrance/exit keyframes' own `filter` values instead of just sitting
      here - an animation's filter keyframes replace the whole property, so
      without that the outline would vanish for the ~0.5s the card is
      surfacing in. */
   filter:
-    drop-shadow(1px 0 0.3px var(--border-strong))
-    drop-shadow(-1px 0 0.3px var(--border-strong))
-    drop-shadow(0 1px 0.3px var(--border-strong))
-    drop-shadow(0 -1px 0.3px var(--border-strong));
+    drop-shadow(1.2px 0 0 rgba(255,255,255,0.32))
+    drop-shadow(-1.2px 0 0 rgba(255,255,255,0.32))
+    drop-shadow(0 1.2px 0 rgba(255,255,255,0.32))
+    drop-shadow(0 -1.2px 0 rgba(255,255,255,0.32))
+    drop-shadow(0.9px 0.9px 0 rgba(255,255,255,0.32))
+    drop-shadow(-0.9px 0.9px 0 rgba(255,255,255,0.32))
+    drop-shadow(0.9px -0.9px 0 rgba(255,255,255,0.32))
+    drop-shadow(-0.9px -0.9px 0 rgba(255,255,255,0.32));
   overflow: hidden;
-  transition: transform 0.15s ease-out, box-shadow 0.25s ease, filter 0.25s ease;
+  transition: transform 0.15s ease-out, box-shadow 0.25s ease;
 }
 html[data-theme="deepcurrent"] .sweat-card:hover {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -10px 16px -12px rgba(0,0,0,0.5), 0 14px 30px rgba(0,0,0,0.5), 0 0 22px rgba(53,230,196,0.25);
-  filter:
-    drop-shadow(1px 0 0.3px var(--accent))
-    drop-shadow(-1px 0 0.3px var(--accent))
-    drop-shadow(0 1px 0.3px var(--accent))
-    drop-shadow(0 -1px 0.3px var(--accent));
 }
 /* Four rivets, mirrored the same fixed distance in from every corner
    (10px center, 2.2px radius) - close enough to the chamfer to read as
@@ -4117,12 +4123,12 @@ html[data-theme="deepcurrent"] .sweat-card.card-pressed {
    is surfacing or sinking, popping in/out abruptly at the animation's
    boundary instead of just always being there. */
 @keyframes cardSurfaceDeepCurrent {
-  0% { opacity: 0; transform: translateY(14px); filter: blur(3px) drop-shadow(1px 0 0.3px var(--border-strong)) drop-shadow(-1px 0 0.3px var(--border-strong)) drop-shadow(0 1px 0.3px var(--border-strong)) drop-shadow(0 -1px 0.3px var(--border-strong)); }
-  100% { opacity: 1; transform: translateY(0); filter: blur(0) drop-shadow(1px 0 0.3px var(--border-strong)) drop-shadow(-1px 0 0.3px var(--border-strong)) drop-shadow(0 1px 0.3px var(--border-strong)) drop-shadow(0 -1px 0.3px var(--border-strong)); }
+  0% { opacity: 0; transform: translateY(14px); filter: blur(3px) drop-shadow(1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(-1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(0 1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0 -1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px -0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px -0.9px 0 rgba(255,255,255,0.32)); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0) drop-shadow(1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(-1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(0 1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0 -1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px -0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px -0.9px 0 rgba(255,255,255,0.32)); }
 }
 @keyframes cardSinkDeepCurrent {
-  0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0) drop-shadow(1px 0 0.3px var(--border-strong)) drop-shadow(-1px 0 0.3px var(--border-strong)) drop-shadow(0 1px 0.3px var(--border-strong)) drop-shadow(0 -1px 0.3px var(--border-strong)); }
-  100% { opacity: 0; transform: translateY(14px) scale(0.94); filter: blur(4px) drop-shadow(1px 0 0.3px var(--border-strong)) drop-shadow(-1px 0 0.3px var(--border-strong)) drop-shadow(0 1px 0.3px var(--border-strong)) drop-shadow(0 -1px 0.3px var(--border-strong)); }
+  0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0) drop-shadow(1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(-1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(0 1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0 -1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px -0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px -0.9px 0 rgba(255,255,255,0.32)); }
+  100% { opacity: 0; transform: translateY(14px) scale(0.94); filter: blur(4px) drop-shadow(1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(-1.2px 0 0 rgba(255,255,255,0.32)) drop-shadow(0 1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0 -1.2px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px 0.9px 0 rgba(255,255,255,0.32)) drop-shadow(0.9px -0.9px 0 rgba(255,255,255,0.32)) drop-shadow(-0.9px -0.9px 0 rgba(255,255,255,0.32)); }
 }
 /* fill-mode: backwards, not both - "both" (forwards+backwards) was the
    actual root cause of the tilt/glare never engaging on hover: a finished

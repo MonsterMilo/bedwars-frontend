@@ -4023,6 +4023,13 @@ html[data-theme="deepcurrent"] .sweat-card {
 }
 html[data-theme="deepcurrent"] .sweat-card:hover {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -10px 16px -12px rgba(0,0,0,0.5), 0 14px 30px rgba(0,0,0,0.5), 0 0 22px rgba(53,230,196,0.25);
+  /* Hints the browser to promote just this card to its own compositor
+     layer while it's actually being tilted, instead of leaving that
+     decision to happen reactively on the first transform write (or,
+     worse, applying it to every card in the grid all the time - blanket
+     will-change is a well-known way to make things slower, not faster,
+     by holding that many layers in GPU memory at once for no reason). */
+  will-change: transform;
 }
 /* Four rivets, a fixed distance in from every corner - clear of the index
    badge (top-right, inset 14px) and the footer's remove button
@@ -6452,11 +6459,26 @@ function updateCardTilt(card, e) {
   card.style.setProperty("--mx", `${(px * 100).toFixed(1)}%`);
   card.style.setProperty("--my", `${(py * 100).toFixed(1)}%`);
 }
+// mousemove can fire far more often than the screen actually repaints
+// (well over 60/s on a high-poll-rate mouse or trackpad) - calling
+// getBoundingClientRect() and writing several styles on every single one
+// was doing multiples-of-necessary layout/paint work per frame, which is
+// exactly the kind of thing that reads as "laggy" on a page that's also
+// juggling a background bubble field and per-card ambient animations.
+// Coalescing to one requestAnimationFrame-scheduled update per frame,
+// always using the latest cursor position by the time it actually runs,
+// gets the same visual result for a fraction of the work.
+let tiltFrame = null;
 cardGrid.addEventListener("mousemove", (e) => {
   if (document.documentElement.dataset.theme !== "deepcurrent") return;
   const card = e.target.closest(".sweat-card");
   if (!card) return;
-  updateCardTilt(card, e);
+  const clientX = e.clientX, clientY = e.clientY;
+  if (tiltFrame !== null) cancelAnimationFrame(tiltFrame);
+  tiltFrame = requestAnimationFrame(() => {
+    tiltFrame = null;
+    updateCardTilt(card, { clientX, clientY });
+  });
 });
 // mouseover mirrors mousemove's own calculation on every bubble - including
 // ones fired moving between two children of the *same* card (avatar to a
@@ -6813,6 +6835,11 @@ function openEditModal(s) {
 
 function closeEditModalFn() {
   editModal.style.display = "none";
+  // Otherwise this class (and the animation it assigns) would still be
+  // sitting on .modal-content, ready to auto-restart itself the instant
+  // display flips back to visible on the next open, mid-flight on stale
+  // --flip-* values before playCardFlipExpand ever gets a chance to run.
+  editModal.querySelector(".modal-content").classList.remove("card-flip-expand");
   editingSweatId = null;
   restoreFocusAfterModal();
 }
@@ -7022,6 +7049,16 @@ document.addEventListener("click", (e) => {
 // every point along the flight.
 function playCardFlipExpand(sourceRect, content) {
   if (!content) return;
+  // Clear (and reflow past) any leftover class from a previous open BEFORE
+  // measuring - a CSS animation left assigned via a class restarts on its
+  // own the instant an element goes from display:none back to displayed,
+  // without waiting for this function to run. So by the second card click,
+  // .modal-content was already mid-flight on the *previous* click's
+  // --flip-* values by the time this got here, and measuring its
+  // displaced rect as "the resting position" poisoned every click after
+  // the first - reading as the animation going random/wrong direction.
+  content.classList.remove("card-flip-expand");
+  void content.offsetWidth;
   const targetRect = content.getBoundingClientRect();
   const dx = (sourceRect.left + sourceRect.width / 2) - (targetRect.left + targetRect.width / 2);
   const dy = (sourceRect.top + sourceRect.height / 2) - (targetRect.top + targetRect.height / 2);
@@ -7031,8 +7068,6 @@ function playCardFlipExpand(sourceRect, content) {
   content.style.setProperty("--flip-dy", `${dy}px`);
   content.style.setProperty("--flip-sx", sx);
   content.style.setProperty("--flip-sy", sy);
-  content.classList.remove("card-flip-expand");
-  void content.offsetWidth;
   content.classList.add("card-flip-expand");
 }
 
@@ -7051,6 +7086,8 @@ document.addEventListener("keydown", (e) => {
 
 function closePlayerModal() {
   modal.style.display = "none";
+  // See the matching comment in closeEditModalFn.
+  modal.querySelector(".modal-content").classList.remove("card-flip-expand");
   restoreFocusAfterModal();
 }
 closeModal.onclick = closePlayerModal;

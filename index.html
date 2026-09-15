@@ -4012,6 +4012,324 @@ html[data-theme="deepcurrent"] .add-sweat-row .btn.success-pulse {
   100% { box-shadow: 0 0 0 0 rgba(53,230,196,0), 0 4px 18px rgba(53,230,196,0.3); }
 }
 
+/* A brass porthole bolt in place of Case Files' pushpin - same sibling-of-
+   .hero positioning trick (see the comment on .hero-pin above), just cast
+   as a running instrument light instead of a flat gold tack. */
+html[data-theme="deepcurrent"] .hero-pin {
+  display: block;
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #cdeee8, var(--accent) 55%, #0d3b34 100%);
+  box-shadow: 0 0 10px rgba(53,230,196,0.55), 0 3px 4px rgba(0,0,0,0.45), inset 0 0 0 2px rgba(3,12,20,0.5);
+  z-index: 1;
+  animation: rivetGlint 3s ease-in-out infinite;
+}
+html[data-theme="deepcurrent"] .hero-pin::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: conic-gradient(from 45deg, rgba(0,0,0,0.35), transparent 30%, transparent 70%, rgba(0,0,0,0.35));
+}
+/* A small drifting bubble cluster under the wordmark in place of Private
+   Bank's static ink flourish - three soft dots nudged by one shared
+   keyframe rather than three separate particles, so they read as one
+   lazy current rather than needing the JS bubble-generator's per-particle
+   randomization for what's just a decorative accent. */
+html[data-theme="deepcurrent"] .hero-flourish {
+  display: block;
+  width: 90px;
+  height: 20px;
+  margin: 10px auto 6px;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.9) 0 1px, transparent 1.6px),
+                     radial-gradient(circle, var(--accent) 0 1.6px, transparent 2px),
+                     radial-gradient(circle, rgba(255,255,255,0.6) 0 1px, transparent 1.4px);
+  background-size: 14px 14px, 18px 18px, 11px 11px;
+  background-position: 6px 4px, 40px 10px, 70px 2px;
+  background-repeat: no-repeat;
+  opacity: 0.85;
+  animation: heroBubbleDrift 3.2s ease-in-out infinite;
+  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+@keyframes heroBubbleDrift {
+  0%, 100% { background-position: 6px 4px, 40px 10px, 70px 2px; }
+  50% { background-position: 8px -1px, 38px 5px, 72px -2px; }
+}
+
+/* Byline restyled as a mono transmission readout, matching the JetBrains
+   Mono font already loaded for this theme's numeric displays. */
+html[data-theme="deepcurrent"] #credits {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78em;
+  letter-spacing: 0.02em;
+}
+html[data-theme="deepcurrent"] #credits::before {
+  content: "> ";
+  color: var(--accent);
+}
+
+/* Section headers (Sweat Lookup, Defeated Sweats) get a circular glowing
+   porthole badge instead of Neon's soft gradient square, a slow "current
+   flow" light traveling along the header rule instead of a static divider,
+   and the Exhibit tag recast as a sonar-console readout label. */
+html[data-theme="deepcurrent"] .panel-header {
+  position: relative;
+  align-items: flex-end;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+html[data-theme="deepcurrent"] .panel-header::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent) 20%, var(--accent-2) 50%, var(--accent) 80%, transparent);
+  background-size: 200% 100%;
+  animation: currentFlow 5s linear infinite;
+  opacity: 0.8;
+}
+@keyframes currentFlow {
+  0% { background-position: 0% 0; }
+  100% { background-position: -200% 0; }
+}
+html[data-theme="deepcurrent"] .panel-header::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent), 0 0 2px #fff;
+  animation: currentMarker 5s linear infinite;
+}
+@keyframes currentMarker {
+  0% { left: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+html[data-theme="deepcurrent"] .panel-icon {
+  background: radial-gradient(circle at 32% 28%, rgba(255,255,255,0.15), var(--panel-2) 65%);
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(53,230,196,0.35), inset 0 0 0 3px rgba(3,12,20,0.6);
+  font-size: 0;
+  position: relative;
+}
+html[data-theme="deepcurrent"] .panel-icon::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(53,230,196,0.6);
+}
+html[data-theme="deepcurrent"] .panel-icon-lookup::before {
+  content: "\25CE";
+  animation: sonarPulseIcon 2.4s ease-in-out infinite;
+}
+html[data-theme="deepcurrent"] .panel-icon-results::before {
+  content: "\2693";
+  color: var(--accent-2);
+  text-shadow: 0 0 8px rgba(155,107,255,0.6);
+}
+@keyframes sonarPulseIcon {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+html[data-theme="deepcurrent"] .exhibit-tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68em;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(53,230,196,0.08);
+  border: 1px solid var(--border-strong);
+  padding: 3px 9px;
+  border-radius: 3px;
+  margin-bottom: 5px;
+  text-shadow: 0 0 6px rgba(53,230,196,0.4);
+}
+
+/* Lookup form's left column gets a faint teal edge-glow instead of a plain
+   border, echoing the porthole-glass light elsewhere in this theme. */
+html[data-theme="deepcurrent"] .dash-left {
+  border-right-color: var(--border-strong);
+  box-shadow: 1px 0 12px -4px rgba(53,230,196,0.25);
+}
+@media (max-width: 700px) {
+  html[data-theme="deepcurrent"] .dash-left {
+    border-right: none;
+    box-shadow: 0 1px 12px -4px rgba(53,230,196,0.25);
+  }
+}
+
+/* Corner rivets on sweat cards and the confirm-delete dialog - a riveted
+   porthole-plate look, placed on the opposite diagonal (top-right/bottom-
+   left) from Private Bank's corner brackets so the two don't read as the
+   same ornament in a different color when switching themes. */
+html[data-theme="deepcurrent"] .sweat-card::before,
+html[data-theme="deepcurrent"] .sweat-card::after,
+html[data-theme="deepcurrent"] .confirm-modal-content::before,
+html[data-theme="deepcurrent"] .confirm-modal-content::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #dff5f0, var(--accent) 55%, #0d3b34 100%);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(3,12,20,0.4);
+  pointer-events: none;
+  z-index: 2;
+  animation: rivetGlint 3s ease-in-out infinite;
+}
+html[data-theme="deepcurrent"] .sweat-card::before { top: 8px; right: 8px; }
+html[data-theme="deepcurrent"] .sweat-card::after { bottom: 8px; left: 8px; }
+html[data-theme="deepcurrent"] .confirm-modal-content::before { top: 10px; right: 10px; }
+html[data-theme="deepcurrent"] .confirm-modal-content::after { bottom: 10px; left: 10px; }
+@keyframes rivetGlint {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+/* Confirm-delete warning icon gets pulsing sonar-alarm rings instead of
+   Case Files' dashed border or Private Bank's plain corner brackets - the
+   icon's own color already comes from --bad via the generic base rule, so
+   only the alarm rings need adding here. */
+html[data-theme="deepcurrent"] .confirm-icon {
+  position: relative;
+}
+html[data-theme="deepcurrent"] .confirm-icon::before,
+html[data-theme="deepcurrent"] .confirm-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--bad);
+  opacity: 0;
+  animation: alarmPing 2.2s ease-out infinite;
+}
+html[data-theme="deepcurrent"] .confirm-icon::after {
+  animation-delay: 1.1s;
+}
+@keyframes alarmPing {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+/* Status messages (#status/#editStatus/#adminKeyStatus) reuse the exact
+   .typewriter-play/.typewriter-dismiss hooks armStatus() already toggles
+   generically for every theme (see the comment on Case Files' version) -
+   no script changes needed, just a different animation: text rises up and
+   comes into focus like it's surfacing through water, instead of typing
+   out character by character. */
+html[data-theme="deepcurrent"] #status,
+html[data-theme="deepcurrent"] #editStatus,
+html[data-theme="deepcurrent"] #adminKeyStatus {
+  display: inline-block;
+}
+html[data-theme="deepcurrent"] #status.typewriter-play,
+html[data-theme="deepcurrent"] #editStatus.typewriter-play,
+html[data-theme="deepcurrent"] #adminKeyStatus.typewriter-play {
+  animation: surfaceReveal 0.6s cubic-bezier(.2,.8,.3,1) both;
+}
+html[data-theme="deepcurrent"] #status.typewriter-dismiss,
+html[data-theme="deepcurrent"] #editStatus.typewriter-dismiss,
+html[data-theme="deepcurrent"] #adminKeyStatus.typewriter-dismiss {
+  animation: surfaceReveal 0.5s ease-in reverse both;
+}
+@keyframes surfaceReveal {
+  0% { opacity: 0; filter: blur(6px); transform: translateY(10px); }
+  60% { opacity: 1; filter: blur(1px); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+/* Primary-button click flourish reuses the exact .stamp-flourish class the
+   generic click listener already adds to any .btn-primary (see Case
+   Files' ink-stamp version above) - here it's a sonar ping expanding
+   outward past the button's own edges into open water, so overflow stays
+   visible rather than hidden/clipped like the ink-splash version. */
+html[data-theme="deepcurrent"] .btn-primary {
+  position: relative;
+}
+html[data-theme="deepcurrent"] .btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.8);
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-theme="deepcurrent"] .btn-primary.stamp-flourish::after {
+  animation: sonarClickPing 0.55s ease-out;
+}
+@keyframes sonarClickPing {
+  0% { opacity: 0.9; transform: scale(0.4); }
+  100% { opacity: 0; transform: scale(7); }
+}
+
+/* Level/FKDR stat pills cast as glossy nacre medallions (a bright pearl
+   highlight over the base hue) instead of Private Bank's embossed metal -
+   same inset-highlight/inset-shadow relief language, warmed up with an
+   outer glow so it reads as bioluminescent rather than gilded. */
+html[data-theme="deepcurrent"] .pill.level {
+  border: 1px solid rgba(255,255,255,0.25);
+  background: radial-gradient(circle at 28% 22%, rgba(255,255,255,0.85), var(--gold) 45%, #8a6a2e 90%);
+  color: #2a1e08;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.5), inset 0 -2px 3px rgba(0,0,0,0.25), 0 0 6px rgba(201,154,74,0.35);
+}
+html[data-theme="deepcurrent"] .pill.fkdr {
+  border: 1px solid rgba(255,255,255,0.25);
+  background: radial-gradient(circle at 28% 22%, rgba(255,255,255,0.9), var(--accent) 45%, #0f6b5c 90%);
+  color: #04211c;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.5), inset 0 -2px 3px rgba(0,0,0,0.25), 0 0 6px rgba(53,230,196,0.35);
+}
+/* Cheater/Boosting pills cast as glowing bioluminescent badges (a soft
+   pulsing brightness) instead of Private Bank's wax seal or Case Files'
+   worn-ink stamp - text stays exactly "Cheater"/"Boosting" either way. */
+html[data-theme="deepcurrent"] .pill.cheat,
+html[data-theme="deepcurrent"] .pill.boost {
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  animation: bioGlowPulse 2.6s ease-in-out infinite;
+}
+html[data-theme="deepcurrent"] .pill.cheat {
+  background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35), var(--bad) 70%);
+  color: #2a0505;
+  box-shadow: 0 0 10px rgba(255,90,90,0.55), inset 0 1px 1px rgba(255,255,255,0.35);
+}
+html[data-theme="deepcurrent"] .pill.boost {
+  background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35), var(--gold) 70%);
+  color: #2a1e08;
+  box-shadow: 0 0 10px rgba(201,154,74,0.55), inset 0 1px 1px rgba(255,255,255,0.35);
+}
+@keyframes bioGlowPulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.18); }
+}
+
 </style>
 </head>
 <body>

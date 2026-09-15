@@ -286,6 +286,15 @@ body {
   will-change: opacity;
 }
 
+/* Deep-Current-only third moving glow layer - present in the markup
+   always (same "hidden unless themed" pattern as .hero-pin/.hero-flourish)
+   but hidden by default. #nebula splits its animated background into three
+   independently-drifting pieces there (see the comment on that theme's
+   #nebula rule) - ::before and ::after cover two of them, and a real
+   element is needed for the third since an element only has two
+   pseudo-elements to spare. */
+#nebulaGlow2 { display: none; }
+
 @keyframes nebulaPulse {
   0%, 100% { opacity: 0.85; }
   50% { opacity: 1; }
@@ -1335,6 +1344,44 @@ html:not([data-theme]) .radar-sweep {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+.empty-state-text { font-size: 1em; }
+
+/* Same "hide the literal text, theme supplies its own via ::before" trick
+   as .exhibit-tag, kept in one place alongside the icon swap above rather
+   than split across each theme's own section further down, since the two
+   together are really one feature (a themed empty state) rather than
+   separate customizations. The real sentence stays in the DOM/
+   accessibility tree, just visually collapsed - #emptyState (grid/table
+   search with no matches) and #leaderboardEmptyState (a player's
+   beaten-by list with no matches) get their own wording since they're
+   different messages, not just a recolor of the same one. ::before's
+   font-size is set to match .empty-state-text's own 1em explicitly,
+   since an em on a pseudo-element resolves against its real parent's
+   font-size - which is 0 here - not the value that parent would
+   otherwise have inherited. */
+html[data-theme="casefiles"] #emptyState .empty-state-text,
+html[data-theme="casefiles"] #leaderboardEmptyState .empty-state-text,
+html[data-theme="ledger"] #emptyState .empty-state-text,
+html[data-theme="ledger"] #leaderboardEmptyState .empty-state-text,
+html[data-theme="deepcurrent"] #emptyState .empty-state-text,
+html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text {
+  font-size: 0;
+}
+html[data-theme="casefiles"] #emptyState .empty-state-text::before,
+html[data-theme="casefiles"] #leaderboardEmptyState .empty-state-text::before,
+html[data-theme="ledger"] #emptyState .empty-state-text::before,
+html[data-theme="ledger"] #leaderboardEmptyState .empty-state-text::before,
+html[data-theme="deepcurrent"] #emptyState .empty-state-text::before,
+html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text::before {
+  font-size: 16px;
+}
+html[data-theme="casefiles"] #emptyState .empty-state-text::before { content: "No exhibits on file match this search."; }
+html[data-theme="ledger"] #emptyState .empty-state-text::before { content: "No matching entries found in this ledger."; }
+html[data-theme="deepcurrent"] #emptyState .empty-state-text::before { content: "Nothing surfaced matching this search."; }
+html[data-theme="casefiles"] #leaderboardEmptyState .empty-state-text::before { content: "No victims on file match these filters."; }
+html[data-theme="ledger"] #leaderboardEmptyState .empty-state-text::before { content: "No matching victims recorded in this ledger."; }
+html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text::before { content: "No catches match these filters."; }
 
 .pagination {
   max-width: 1200px;
@@ -3890,24 +3937,76 @@ html[data-theme="deepcurrent"] #bubblefield {
    pools (teal/violet) standing in for #nebula's neon nebula blobs, with a
    very slow drift instead of a pulse - reads as ambient current motion
    rather than a light source breathing. Faint diagonal light-shaft bands
-   layered on top suggest sunlight filtering down from above. */
+   layered on top suggest sunlight filtering down from above.
+
+   This used to be one element animating background-position on all four
+   layers at once. background-position isn't a property the compositor can
+   animate on its own - every step repaints the whole (screen-sized) box on
+   the main thread, for as long as this theme is open, which is exactly the
+   kind of "technically just a gradient" cost that doesn't show up until
+   it's stacked on everything else the page is already doing. Splitting the
+   three moving layers onto their own elements (#nebula::before for the
+   light shafts, ::after for the teal pool, #nebulaGlow2 for the violet
+   pool - the base wash stays on #nebula itself, and never moves) and
+   driving each with `transform: translate()` instead lets the same drift
+   run on the compositor for free. Each moving element is oversized (200%
+   of the viewport, or +160px past both landscape edges for the repeating
+   shafts) and translated by the exact pixel/vw/vh delta the old
+   background-position percentages worked out to for a 100%-sized box, so
+   the visual path is the same - only how it's painted changed. */
 html[data-theme="deepcurrent"] #nebula {
   display: block;
-  background:
-    repeating-linear-gradient(100deg, transparent 0 70px, rgba(180,230,255,0.025) 70px 74px, transparent 74px 160px),
-    radial-gradient(ellipse at 18% 0%, rgba(53,230,196,0.12), transparent 55%),
-    radial-gradient(ellipse at 85% 12%, rgba(155,107,255,0.10), transparent 50%),
-    linear-gradient(180deg, #0a2a3a 0%, #062031 30%, #041624 60%, #020c15 85%, #01070c 100%);
-  background-size: auto, 200% 200%, 200% 200%, 100% 100%;
-  animation: deepCurrentDrift 24s ease-in-out infinite;
+  background: linear-gradient(180deg, #0a2a3a 0%, #062031 30%, #041624 60%, #020c15 85%, #01070c 100%);
   opacity: 1;
 }
-@keyframes deepCurrentDrift {
-  0%, 100% { background-position: 0 0, 0% 0%, 100% 0%, 0 0; }
-  50% { background-position: -160px 0, 35% 25%, 65% 30%, 0 0; }
+html[data-theme="deepcurrent"] #nebula::before,
+html[data-theme="deepcurrent"] #nebula::after,
+html[data-theme="deepcurrent"] #nebulaGlow2 {
+  content: "";
+  position: absolute;
+  top: 0;
+  will-change: transform;
+}
+html[data-theme="deepcurrent"] #nebula::before {
+  left: 0;
+  right: -160px;
+  bottom: 0;
+  background: repeating-linear-gradient(100deg, transparent 0 70px, rgba(180,230,255,0.025) 70px 74px, transparent 74px 160px);
+  animation: dcShaftDrift 24s ease-in-out infinite;
+}
+html[data-theme="deepcurrent"] #nebula::after {
+  left: 0;
+  width: 200vw;
+  height: 200vh;
+  background: radial-gradient(ellipse at 18% 0%, rgba(53,230,196,0.12), transparent 55%);
+  animation: dcTealPoolDrift 24s ease-in-out infinite;
+}
+html[data-theme="deepcurrent"] #nebulaGlow2 {
+  display: block;
+  left: 0;
+  width: 200vw;
+  height: 200vh;
+  background: radial-gradient(ellipse at 85% 12%, rgba(155,107,255,0.10), transparent 50%);
+  animation: dcVioletPoolDrift 24s ease-in-out infinite;
+}
+@keyframes dcShaftDrift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-160px); }
+}
+@keyframes dcTealPoolDrift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-35vw, -25vh); }
+}
+@keyframes dcVioletPoolDrift {
+  0%, 100% { transform: translate(-100vw, 0); }
+  50% { transform: translate(-65vw, -30vh); }
 }
 @media (prefers-reduced-motion: reduce) {
-  html[data-theme="deepcurrent"] #nebula { animation: none; }
+  html[data-theme="deepcurrent"] #nebula::before,
+  html[data-theme="deepcurrent"] #nebula::after,
+  html[data-theme="deepcurrent"] #nebulaGlow2 {
+    animation: none;
+  }
 }
 
 html[data-theme="deepcurrent"] body {
@@ -4828,7 +4927,7 @@ html[data-theme="deepcurrent"] .pill.boost {
   </clipPath>
 </svg>
 
-<div id="nebula"></div>
+<div id="nebula"><div id="nebulaGlow2" aria-hidden="true"></div></div>
 <div id="starfield"></div>
 <div id="bubblefield"></div>
 <div id="themeTransitionOverlay" aria-hidden="true"><div class="tto-panel"></div></div>
@@ -6087,8 +6186,15 @@ async function fetchAndDisplayStats() {
   currentUUID = mojangData.id;
   usernameInput.value = mojangData.name;
 
-  // Fetch player stats
-  const data = await getPlayerStats(currentUUID);
+  // Player stats and both tag lookups only depend on the UUID/name we just
+  // resolved above, not on each other - they used to run as two sequential
+  // stages (stats, then Urchin+Seraph once stats finished) for no reason,
+  // costing a full extra round trip. Firing all three together instead.
+  const [data, urchinResult, seraphResult] = await Promise.all([
+    getPlayerStats(currentUUID),
+    fetchUrchinTags(mojangData.name),
+    fetchSeraphTags(currentUUID)
+  ]);
   if (isStale()) return;
   currentStats = {
     username: mojangData.name,
@@ -6106,16 +6212,9 @@ async function fetchAndDisplayStats() {
     rank: getHypixelRank(data.player),
     wins: data.wins,
     losses: data.losses,
+    urchinTagsData: urchinResult.tags,
+    seraphTagsData: seraphResult.tags,
   };
-
-  // Fetch Urchin + Seraph tags in parallel - two independent blacklist services
-  const [urchinResult, seraphResult] = await Promise.all([
-    fetchUrchinTags(currentStats.username),
-    fetchSeraphTags(currentUUID)
-  ]);
-  if (isStale()) return;
-  currentStats.urchinTagsData = urchinResult.tags;
-  currentStats.seraphTagsData = seraphResult.tags;
 
   // Auto-flag as Cheating when either service confirms it - only ever turns
   // it on, never off, so it doesn't undo a flag someone set manually for
@@ -7055,6 +7154,13 @@ async function openPlayerModal(item) {
     return;
   }
 
+  // Seraph only needs the uuid we already have, not anything from the stats
+  // response, so it's fired here rather than after the stats fetch resolves -
+  // it then runs concurrently with that request instead of queued behind it.
+  // Urchin can't join it yet since it needs the resolved currentName, which
+  // only exists once the stats response comes back below.
+  const seraphPromise = fetchSeraphTags(uuid);
+
   try {
     const res = await fetch(`${backendBaseURL}/stats/uuid/${uuid}`, { headers: adminHeaders() });
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to load stats."));
@@ -7088,10 +7194,12 @@ async function openPlayerModal(item) {
     `;
 
     // Re-check Urchin + Seraph tags live on every open instead of using any
-    // stored value, same as the fetch-stats flow always re-fetches current stats.
+    // stored value, same as the fetch-stats flow always re-fetches current
+    // stats. Seraph was already kicked off above; only Urchin still needs
+    // to be started here now that currentName exists.
     const [urchinResult, seraphResult] = await Promise.all([
       fetchUrchinTags(currentName),
-      fetchSeraphTags(uuid)
+      seraphPromise
     ]);
     if (modal.dataset.activeUuid !== uuid) return;
     renderTagBadges(modalTags, modalTagsReason, urchinResult.tags, URCHIN_TAG_ICONS);

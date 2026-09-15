@@ -1871,25 +1871,33 @@ tbody tr:hover .user-cell span {
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* Neon only: clicking a grid card flies+flips the player-stats modal (and,
-   via the same class/keyframes, the Edit modal opened from a card's pencil
-   icon) open from the card's own position/size instead of just fading in
-   at center - see playCardFlipExpand() in the script below for the FLIP
-   (First/Last/Invert/Play) math that fills in --flip-dx/--flip-dy/
-   --flip-sx/--flip-sy per click. `perspective()` is baked into the
-   transform value itself rather than set as a `perspective` property on
-   .modal - an ancestor's perspective property anchors the vanishing point
-   at that ancestor's own center (the middle of the screen), so a card
-   translated in from off-center (anything not in the middle column) got
-   rotated through a screen-centered vanishing point and visibly skewed
-   toward it, reading as "flying in from a random side" rather than a
-   clean in-place flip; perspective inside the transform list instead
-   travels with the element, anchored to its own center the whole way.
-   animation-fill-mode is deliberately just "forwards", not "both" - see
-   the Deep Current sweat-card comments elsewhere on this page for why
-   "both" would be the wrong call here too if anything ever needed to set
-   .modal-content's transform afterward (nothing currently does, but
-   forwards costs nothing extra and avoids relying on that staying true). */
+/* Clicking a grid card flies the player-stats modal (and, via the same
+   class, the Edit modal opened from a card's pencil icon) open from the
+   card's own position/size instead of just fading in at center - see
+   playCardFlipExpand() in the script below for the FLIP (First/Last/
+   Invert/Play) math that fills in --flip-dx/--flip-dy/--flip-sx/--flip-sy
+   per click. That math is identical for every theme; only the animation
+   actually assigned to .modal-content.card-flip-expand differs, each one
+   declared next to its own theme's .modal-content rule instead of all
+   here - this Neon version is a straightforward 3D flip, Case Files
+   tosses/lands the modal like a photo, Private Bank turns it like a
+   ledger page, and Deep Current rises it up out of a blur with no
+   rotation at all. Neon's own rotateY needs `perspective()` baked into
+   the transform value itself rather than set as a `perspective` property
+   on .modal - an ancestor's perspective property anchors the vanishing
+   point at that ancestor's own center (the middle of the screen), so a
+   card translated in from off-center (anything not in the middle column)
+   got rotated through a screen-centered vanishing point and visibly
+   skewed toward it, reading as "flying in from a random side" rather than
+   a clean in-place flip; perspective inside the transform list instead
+   travels with the element, anchored to its own center the whole way
+   (Private Bank's flip needs the identical fix, see its own rule).
+   animation-fill-mode is deliberately just "forwards", not "both" on all
+   four - see the Deep Current sweat-card comments elsewhere on this page
+   for why "both" would be the wrong call here too if anything ever needed
+   to set .modal-content's transform afterward (nothing currently does,
+   but forwards costs nothing extra and avoids relying on that staying
+   true). */
 html:not([data-theme]) .modal-content.card-flip-expand {
   animation: cardFlipExpandNeon 0.6s cubic-bezier(.2,.8,.2,1) forwards;
 }
@@ -2832,6 +2840,28 @@ html[data-theme="casefiles"] .modal-content {
   background: var(--panel);
   box-shadow: var(--shadow-card);
 }
+/* The Neon flip-open (see playCardFlipExpand() in the script - the FLIP
+   math filling in --flip-dx/--flip-dy/--flip-sx/--flip-sy is identical
+   across all four themes, only the animation each one plays differs) gets
+   reimagined here as a photo being lifted off a corkboard rather than a
+   screen flipping in 3D - no rotateY/perspective at all, just a plain
+   in-plane rotate() starting at a "just picked up" tilt and an overshoot
+   easing that lets it swing slightly past level before settling flat,
+   like a physical photo being tossed down rather than a digital pane
+   turning over. */
+html[data-theme="casefiles"] .modal-content.card-flip-expand {
+  animation: cardFlipExpandCaseFiles 0.55s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes cardFlipExpandCaseFiles {
+  0% {
+    transform: translate(var(--flip-dx), var(--flip-dy)) scale(var(--flip-sx), var(--flip-sy)) rotate(-7deg);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(0, 0) scale(1, 1) rotate(0deg);
+    opacity: 1;
+  }
+}
 
 html[data-theme="casefiles"] #modalUsername,
 html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
@@ -3431,6 +3461,28 @@ html[data-theme="ledger"] .modal-content {
   background: var(--panel);
   box-shadow: var(--shadow-card);
 }
+/* Unlike Case Files/Deep Current, the rotateY flip itself is kept here
+   rather than replaced - "a page turning open" is already exactly the
+   right metaphor for a ledger. Just slowed down and eased more smoothly
+   (no overshoot) for a stately page-turn instead of Neon's snappier
+   flip. */
+html[data-theme="ledger"] .modal-content.card-flip-expand {
+  animation: cardFlipExpandLedger 0.75s cubic-bezier(.45,.05,.15,1) forwards;
+}
+@keyframes cardFlipExpandLedger {
+  0% {
+    transform: perspective(1400px) translate(var(--flip-dx), var(--flip-dy)) scale(var(--flip-sx), var(--flip-sy)) rotateY(0deg);
+    opacity: 0.9;
+  }
+  50% {
+    transform: perspective(1400px) translate(calc(var(--flip-dx) * 0.5), calc(var(--flip-dy) * 0.5)) scale(calc((var(--flip-sx) + 1) * 0.5), calc((var(--flip-sy) + 1) * 0.5)) rotateY(90deg);
+    opacity: 1;
+  }
+  100% {
+    transform: perspective(1400px) translate(0, 0) scale(1, 1) rotateY(0deg);
+    opacity: 1;
+  }
+}
 html[data-theme="ledger"] #modalSkin {
   background: var(--panel-2);
 }
@@ -3953,6 +4005,32 @@ html[data-theme="deepcurrent"] .table-wrap::before { top: 8px; left: 8px; }
 html[data-theme="deepcurrent"] .table-wrap::after { bottom: 8px; right: 8px; }
 html[data-theme="deepcurrent"] .modal-content {
   box-shadow: 0 0 30px rgba(53,230,196,0.2), 0 20px 60px rgba(0,0,0,0.6);
+}
+/* No flip here at all - a 3D-rotating pane doesn't fit a water theme the
+   way it does a page turning (Ledger) or a photo landing (Case Files).
+   Instead this rises from the card's position while coming into focus out
+   of a blur, the exact same "surfacing" language the sweat-card entrance
+   (cardSurfaceDeepCurrent, elsewhere on this page) already uses - reads as
+   the stats view drifting up out of murky water into view rather than
+   flipping open. */
+html[data-theme="deepcurrent"] .modal-content.card-flip-expand {
+  animation: cardFlipExpandDeepCurrent 0.65s cubic-bezier(.2,.8,.2,1) forwards;
+}
+@keyframes cardFlipExpandDeepCurrent {
+  0% {
+    transform: translate(var(--flip-dx), calc(var(--flip-dy) + 16px)) scale(var(--flip-sx), var(--flip-sy));
+    filter: blur(8px);
+    opacity: 0.6;
+  }
+  60% {
+    filter: blur(1px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0) scale(1, 1);
+    filter: blur(0);
+    opacity: 1;
+  }
 }
 html[data-theme="deepcurrent"] #modalUsername {
   text-shadow: 0 0 12px rgba(53,230,196,0.5);
@@ -6428,10 +6506,13 @@ function renderCardGrid(filteredSweats, usernameCounts) {
       // click listener/playCardFlipExpand near the bottom of this script)
       // - captured here instead of there since this button already calls
       // stopPropagation() to keep its click from also opening the player
-      // modal underneath it.
-      const flipFrom = !document.documentElement.dataset.theme ? card.getBoundingClientRect() : null;
+      // modal underneath it. Runs for all four themes now - which
+      // animation actually plays is chosen entirely by CSS, keyed off the
+      // current html[data-theme] (see the .card-flip-expand rules next to
+      // each theme's own .modal-content block).
+      const flipFrom = card.getBoundingClientRect();
       openEditModal(s);
-      if (flipFrom) requestAnimationFrame(() => playCardFlipExpand(flipFrom, editModal.querySelector(".modal-content")));
+      requestAnimationFrame(() => playCardFlipExpand(flipFrom, editModal.querySelector(".modal-content")));
     });
 
     card.querySelector(".remove-btn").addEventListener("click", (e) => {
@@ -7020,9 +7101,9 @@ document.addEventListener("click", (e) => {
   if (e.target.closest("button")) return;
   const item = e.target.closest("[data-username]");
   if (!item) return;
-  const flipFrom = (!document.documentElement.dataset.theme && item.classList.contains("sweat-card"))
-    ? item.getBoundingClientRect()
-    : null;
+  // Grid cards only (table rows keep the plain instant fade), all four
+  // themes now - see the comment on the Edit-modal button handler above.
+  const flipFrom = item.classList.contains("sweat-card") ? item.getBoundingClientRect() : null;
   openPlayerModal(item);
   if (flipFrom) requestAnimationFrame(() => playCardFlipExpand(flipFrom, modal.querySelector(".modal-content")));
 });

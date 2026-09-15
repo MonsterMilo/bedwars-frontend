@@ -355,14 +355,6 @@ body {
   .bubble { animation: none; opacity: var(--op); }
 }
 
-/* Deep Current-only distant submarine, drifting slowly across the very
-   back of the scene - the one ambient element on this page depicting the
-   theme's namesake vehicle rather than just its water/bubbles, so the
-   "submarine" idea reads as more than a color palette. Present in the
-   markup always (same pattern as #bubblefield/#starfield) but hidden by
-   default. */
-#submarineSilhouette { display: none; }
-
 .page {
   position: relative;
   z-index: 1;
@@ -3790,34 +3782,6 @@ html[data-theme="deepcurrent"] #starfield {
 html[data-theme="deepcurrent"] #bubblefield {
   display: block;
 }
-html[data-theme="deepcurrent"] #submarineSilhouette {
-  display: block;
-  position: fixed;
-  top: 63%;
-  left: 0;
-  width: 260px;
-  height: 78px;
-  z-index: 0;
-  color: #24647a;
-  pointer-events: none;
-  opacity: 0.55;
-  filter: blur(0.3px) drop-shadow(0 0 16px rgba(53,230,196,0.12));
-  animation: submarineDrift 75s linear infinite;
-}
-html[data-theme="deepcurrent"] #submarineSilhouette svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-@keyframes submarineDrift {
-  0% { transform: translate(-300px, 0); }
-  48% { transform: translate(calc(50vw), -24px); }
-  52% { transform: translate(calc(50vw + 20px), -24px); }
-  100% { transform: translate(calc(100vw + 300px), 0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  html[data-theme="deepcurrent"] #submarineSilhouette { display: none; }
-}
 /* Open water: a dark teal-to-black vertical gradient plus two soft glow
    pools (teal/violet) standing in for #nebula's neon nebula blobs, with a
    very slow drift instead of a pulse - reads as ambient current motion
@@ -4028,8 +3992,8 @@ html[data-theme="deepcurrent"] .beaten-avatar {
    outside an element's own border box and isn't clipped by that same
    element's overflow, so the lift/glow shadow below is unaffected. */
 html[data-theme="deepcurrent"] .sweat-card {
-  --chamfer: 20px;
-  border: 1.5px solid var(--border-strong);
+  --chamfer: 22px;
+  border: none;
   border-radius: 4px;
   clip-path: polygon(
     var(--chamfer) 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer),
@@ -4040,14 +4004,29 @@ html[data-theme="deepcurrent"] .sweat-card {
     repeating-linear-gradient(125deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 6px),
     radial-gradient(120% 90% at 15% -10%, rgba(53,230,196,0.1), transparent 55%),
     linear-gradient(160deg, var(--panel), var(--panel-2));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -10px 16px -12px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.25);
+  /* A plain `border` can't follow clip-path at all - it's drawn on the
+     rectangular border-box, so clip-path just chops it off flush with each
+     straight edge and leaves nothing along the diagonal cuts themselves
+     (this was the "incomplete outline"). An inset box-shadow instead paints
+     a solid band following the full rectangle's interior; clip-path still
+     cuts it at the same diagonal, but the remaining sliver of that band
+     right at the cut reads as a continuous stroke instead of vanishing
+     outright, so the outline actually wraps the chamfered corners. */
+  box-shadow: inset 0 0 0 1.5px var(--border-strong), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -10px 16px -12px rgba(0,0,0,0.5);
   overflow: hidden;
-  transition: transform 0.15s ease-out, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: transform 0.15s ease-out, box-shadow 0.25s ease;
 }
 html[data-theme="deepcurrent"] .sweat-card:hover {
-  border-color: var(--accent);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -10px 16px -12px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.25), 0 14px 30px rgba(0,0,0,0.5), 0 0 22px rgba(53,230,196,0.25);
+  box-shadow: inset 0 0 0 1.5px var(--accent), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -10px 16px -12px rgba(0,0,0,0.5), 0 14px 30px rgba(0,0,0,0.5), 0 0 22px rgba(53,230,196,0.25);
 }
+/* Four rivets, one per chamfered corner - centered along each diagonal cut
+   far enough in that the full circle (radius 3.5px) clears the clip line
+   instead of being sliced into an odd crescent (distance from a circle
+   centered at (14,14) to the line x+y=22 works out to ~4.2px, comfortably
+   more than the radius). The first pass placed these too close to the true
+   corner, so most of each circle fell in the clipped-away triangle and only
+   a thin sliver survived - reading as a stray square smear rather than a
+   bolt. */
 html[data-theme="deepcurrent"] .sweat-card::before {
   content: "";
   position: absolute;
@@ -4055,13 +4034,13 @@ html[data-theme="deepcurrent"] .sweat-card::before {
   pointer-events: none;
   z-index: 2;
   background-image:
-    radial-gradient(circle 4px at 40% 35%, #f3fffc 0%, var(--accent) 45%, #0a2f28 80%, transparent 100%),
-    radial-gradient(circle 4px at 40% 35%, #f3fffc 0%, var(--accent) 45%, #0a2f28 80%, transparent 100%),
-    radial-gradient(circle 4px at 40% 35%, #f3fffc 0%, var(--accent) 45%, #0a2f28 80%, transparent 100%),
-    radial-gradient(circle 4px at 40% 35%, #f3fffc 0%, var(--accent) 45%, #0a2f28 80%, transparent 100%);
-  background-size: 13px 13px;
+    radial-gradient(circle 3.5px at 50% 50%, #f3fffc 0%, var(--accent) 45%, #0a2f28 80%, transparent 100%),
+    radial-gradient(circle 3.5px at 50% 50%, #f3fffc 0%, var(--accent) 45%, #0a2f28 80%, transparent 100%),
+    radial-gradient(circle 3.5px at 50% 50%, #f3fffc 0%, var(--accent) 45%, #0a2f28 80%, transparent 100%),
+    radial-gradient(circle 3.5px at 50% 50%, #f3fffc 0%, var(--accent) 45%, #0a2f28 80%, transparent 100%);
+  background-size: 10px 10px;
   background-repeat: no-repeat;
-  background-position: 4px 4px, calc(100% - 17px) 4px, 4px calc(100% - 17px), calc(100% - 17px) calc(100% - 17px);
+  background-position: 9px 9px, calc(100% - 19px) 9px, 9px calc(100% - 19px), calc(100% - 19px) calc(100% - 19px);
   animation: rivetGlint 3s ease-in-out infinite;
 }
 html[data-theme="deepcurrent"] .sweat-card::after {
@@ -4410,12 +4389,11 @@ html[data-theme="deepcurrent"] .dash-left {
    this theme are already speaking. */
 html[data-theme="deepcurrent"] #form-container {
   position: relative;
-  border: 1.5px solid var(--border-strong);
   background:
     repeating-linear-gradient(180deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px),
     radial-gradient(140% 100% at 50% -20%, rgba(53,230,196,0.09), transparent 60%),
     linear-gradient(180deg, var(--panel), var(--panel-2));
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06), var(--shadow-card);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), var(--shadow-card);
   overflow: hidden;
 }
 html[data-theme="deepcurrent"] #form-container::before {
@@ -4454,29 +4432,44 @@ html[data-theme="deepcurrent"] .dash-empty {
   background: radial-gradient(circle at 50% 35%, rgba(53,230,196,0.07), transparent 70%);
 }
 
-/* Stat tiles (WLR/FKDR/KDR/BBLR in the live preview, and the same markup
-   reused in the player modal) read as depth-sounder dials instead of
-   Neon's flat bordered box - a faint concentric-ring texture standing in
-   for a sonar display, and the digits themselves in the glowing mono
-   readout font used for every other numeric display in this theme. */
+/* Stat tiles read as depth-sounder dials instead of Neon's flat bordered
+   box - a faint concentric-ring texture standing in for a sonar display,
+   and the digits themselves in the glowing mono readout font used for
+   every other numeric display in this theme. Applied to all three places
+   stats get displayed in tiles: the live lookup preview (.stat-hero), the
+   read-only player detail modal (.modal-stat-tile - genuinely different
+   markup/classes from the preview, not just a reuse), and the tag panels. */
 html[data-theme="deepcurrent"] .stat-hero,
-html[data-theme="deepcurrent"] .stats-tag-panel {
+html[data-theme="deepcurrent"] .stats-tag-panel,
+html[data-theme="deepcurrent"] .modal-stat-tile {
   position: relative;
   background: radial-gradient(circle at 50% 30%, rgba(53,230,196,0.09), var(--panel-2) 72%);
   border-color: var(--border-strong);
   border-radius: 12px;
   overflow: hidden;
 }
-html[data-theme="deepcurrent"] .stat-hero::before {
+html[data-theme="deepcurrent"] .stat-hero::before,
+html[data-theme="deepcurrent"] .modal-stat-tile::before {
   content: "";
   position: absolute;
   inset: 0;
   background-image: repeating-radial-gradient(circle at 50% 115%, transparent 0px, transparent 7px, rgba(53,230,196,0.07) 8px);
   pointer-events: none;
 }
-html[data-theme="deepcurrent"] .stat-hero-value {
+html[data-theme="deepcurrent"] .stat-hero-value,
+html[data-theme="deepcurrent"] .modal-stat-value {
   font-family: 'JetBrains Mono', monospace;
   text-shadow: 0 0 10px currentColor;
+}
+
+/* Edit Sweat modal's stat fields get the same gauge-tile framing around
+   each input, so editing an entry matches the look of viewing one instead
+   of dropping back to a plain labeled box. */
+html[data-theme="deepcurrent"] .edit-stats-grid .edit-field {
+  background: radial-gradient(circle at 50% 15%, rgba(53,230,196,0.08), var(--panel-2) 78%);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 8px 9px 9px;
 }
 
 /* The live-preview avatar is the centerpiece of this whole panel, so it
@@ -4707,17 +4700,6 @@ html[data-theme="deepcurrent"] .pill.boost {
 <div id="nebula"></div>
 <div id="starfield"></div>
 <div id="bubblefield"></div>
-<div id="submarineSilhouette" aria-hidden="true">
-  <svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
-    <path d="M10,40 Q10,24 42,21 L148,21 Q182,21 193,34 Q182,47 148,47 L30,47 Q12,47 10,40 Z" fill="currentColor" />
-    <rect x="82" y="4" width="26" height="19" rx="4" fill="currentColor" />
-    <line x1="95" y1="4" x2="95" y2="-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-    <path d="M148,47 L172,58 L149,51 Z" fill="currentColor" />
-    <circle cx="45" cy="34" r="2.2" fill="var(--bg)" opacity="0.5" />
-    <circle cx="65" cy="32" r="2.2" fill="var(--bg)" opacity="0.5" />
-    <circle cx="85" cy="34" r="2.2" fill="var(--bg)" opacity="0.5" />
-  </svg>
-</div>
 <div id="themeTransitionOverlay" aria-hidden="true"><div class="tto-panel"></div></div>
 <div id="customTooltip" role="tooltip" aria-hidden="true"></div>
 
@@ -6422,10 +6404,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
 // rather than bound per-card, since renderCardGrid tears down and rebuilds
 // every card on each re-render - a delegated listener only needs wiring up
 // once instead of being reattached on every render.
-cardGrid.addEventListener("mousemove", (e) => {
-  if (document.documentElement.dataset.theme !== "deepcurrent") return;
-  const card = e.target.closest(".sweat-card");
-  if (!card) return;
+function updateCardTilt(card, e) {
   const rect = card.getBoundingClientRect();
   const px = (e.clientX - rect.left) / rect.width;
   const py = (e.clientY - rect.top) / rect.height;
@@ -6434,6 +6413,30 @@ cardGrid.addEventListener("mousemove", (e) => {
   card.style.transform = `perspective(700px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-4px)`;
   card.style.setProperty("--mx", `${(px * 100).toFixed(1)}%`);
   card.style.setProperty("--my", `${(py * 100).toFixed(1)}%`);
+}
+cardGrid.addEventListener("mousemove", (e) => {
+  if (document.documentElement.dataset.theme !== "deepcurrent") return;
+  const card = e.target.closest(".sweat-card");
+  if (!card) return;
+  updateCardTilt(card, e);
+});
+// mouseover mirrors mousemove's own calculation on every bubble - including
+// ones fired moving between two children of the *same* card (avatar to a
+// pill, say), deliberately not filtered out the way mouseout's relatedTarget
+// check filters those. That same-card hop still fires a real mouseout on
+// the element being left, and on at least some pointer/browser/driver
+// combinations relatedTarget comes back null for it rather than the
+// element actually being entered - which made mouseout's guard fail open
+// and reset the tilt, with nothing left to put it back until some other
+// interaction (e.g. opening/closing a card's modal) forced a fresh
+// mousemove sample. Recomputing unconditionally here is cheap and
+// idempotent, so it corrects that reset immediately instead of leaving the
+// tilt/glare stuck until movement happens to register again.
+cardGrid.addEventListener("mouseover", (e) => {
+  if (document.documentElement.dataset.theme !== "deepcurrent") return;
+  const card = e.target.closest(".sweat-card");
+  if (!card) return;
+  updateCardTilt(card, e);
 });
 // mouseout (bubbles, unlike mouseleave) plus a relatedTarget check standing
 // in for delegated mouseleave - fires once when the pointer genuinely

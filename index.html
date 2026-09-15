@@ -3364,18 +3364,31 @@ html[data-theme="ledger"] .panel-icon::before {
 }
 html[data-theme="ledger"] .panel-icon-lookup::before { content: "\2712"; }
 html[data-theme="ledger"] .panel-icon-results::before { content: "\2756"; }
+/* Own wording instead of reusing Case Files' literal "Exhibit A/B" text -
+   "Schedule" is the equivalent real financial/legal-document term, so it
+   fits the theme's tone without being the same label recolored. The real
+   text is zeroed out (kept in the DOM/accessibility tree) and the visible
+   label comes from ::before instead, keyed off the exhibit-tag-lookup/
+   -results class added in the markup so the two sections can read
+   differently despite sharing one .exhibit-tag rule otherwise. */
 html[data-theme="ledger"] .exhibit-tag {
   display: inline-block;
   background: transparent;
   color: var(--gold);
   border: 1px solid var(--gold);
   border-radius: 0;
-  font-family: 'EB Garamond', serif;
-  font-style: italic;
-  font-weight: 600;
+  font-size: 0;
   padding: 3px 10px;
   margin-bottom: 6px;
 }
+html[data-theme="ledger"] .exhibit-tag::before {
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 11px;
+}
+html[data-theme="ledger"] .exhibit-tag-lookup::before { content: "Schedule A"; }
+html[data-theme="ledger"] .exhibit-tag-results::before { content: "Schedule B"; }
 
 html[data-theme="ledger"] .modal-content {
   background: var(--panel);
@@ -3834,9 +3847,6 @@ html[data-theme="deepcurrent"] .view-btn.active {
 html[data-theme="deepcurrent"] .leaderboard-chip.active {
   box-shadow: 0 0 14px rgba(53,230,196,0.2);
 }
-html[data-theme="deepcurrent"] .sweat-card:hover {
-  box-shadow: 0 14px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(53,230,196,0.18);
-}
 html[data-theme="deepcurrent"] thead tr {
   background: rgba(53,230,196,0.07);
 }
@@ -3894,6 +3904,91 @@ html[data-theme="deepcurrent"] .chip-group.roster .chip input:checked + .roster-
 html[data-theme="deepcurrent"] .beaten-avatar {
   background: radial-gradient(circle at 36% 30%, rgba(255,255,255,0.8), var(--chip-color) 55%);
   box-shadow: 0 0 8px -1px var(--chip-color);
+}
+
+/* Sweat cards redesigned as riveted porthole plates - four brass rivets
+   (one background-image on ::before, four radial-gradient dots positioned
+   at fixed corner offsets, rather than actual four elements) instead of
+   Neon's plain panel or Private Bank's two corner brackets, plus a glass
+   "glare" spot on ::after that tracks the cursor via --mx/--my (set by the
+   mousemove listener near renderCardGrid below) so hovering one genuinely
+   feels like looking through wet glass rather than just re-tinting a flat
+   hover state. overflow:hidden contains the click ripple (added by the
+   same script) to the card's own bounds - safe to add here since box-shadow
+   is painted outside an element's own border box and isn't clipped by that
+   same element's overflow, so the lift/glow shadow below is unaffected. */
+html[data-theme="deepcurrent"] .sweat-card {
+  border: 1.5px solid var(--border-strong);
+  border-radius: 20px;
+  background: radial-gradient(120% 90% at 15% -10%, rgba(53,230,196,0.09), transparent 55%), linear-gradient(160deg, var(--panel), var(--panel-2));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 2px 10px rgba(0,0,0,0.35);
+  overflow: hidden;
+  transition: transform 0.15s ease-out, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+html[data-theme="deepcurrent"] .sweat-card:hover {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 2px 10px rgba(0,0,0,0.35), 0 14px 30px rgba(0,0,0,0.5), 0 0 22px rgba(53,230,196,0.25);
+}
+html[data-theme="deepcurrent"] .sweat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background-image:
+    radial-gradient(circle at 35% 30%, #dff5f0, var(--accent) 55%, #0d3b34 100%),
+    radial-gradient(circle at 35% 30%, #dff5f0, var(--accent) 55%, #0d3b34 100%),
+    radial-gradient(circle at 35% 30%, #dff5f0, var(--accent) 55%, #0d3b34 100%),
+    radial-gradient(circle at 35% 30%, #dff5f0, var(--accent) 55%, #0d3b34 100%);
+  background-size: 7px 7px;
+  background-repeat: no-repeat;
+  background-position: 8px 8px, calc(100% - 8px) 8px, 8px calc(100% - 8px), calc(100% - 8px) calc(100% - 8px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  animation: rivetGlint 3s ease-in-out infinite;
+}
+html[data-theme="deepcurrent"] .sweat-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.25), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+html[data-theme="deepcurrent"] .sweat-card:hover::after {
+  opacity: 1;
+}
+/* Sonar-ping click ripple, appended/removed by the click listener near
+   renderCardGrid - a real element rather than a third pseudo-element,
+   since ::before/::after are both already spoken for above. */
+html[data-theme="deepcurrent"] .card-sonar-ripple {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: radial-gradient(circle, rgba(53,230,196,0.35), transparent 70%);
+  pointer-events: none;
+  z-index: 4;
+  animation: cardSonarRipple 0.6s ease-out forwards;
+}
+@keyframes cardSonarRipple {
+  0% { opacity: 0.9; transform: scale(0.3); }
+  100% { opacity: 0; transform: scale(11); }
+}
+/* Click "press" pulse - a CSS animation on transform briefly outranks the
+   mousemove tilt's inline transform (running animations sit above normal
+   author styles, inline included, in the cascade) so this plays correctly
+   even mid-tilt, then hands control back to the inline style once it ends. */
+@keyframes cardPressPulse {
+  0% { transform: scale(1); }
+  45% { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+html[data-theme="deepcurrent"] .sweat-card.card-pressed {
+  animation: cardPressPulse 0.28s ease-out;
 }
 
 /* Cards/rows "surface" into view (rise + defocus into sharpness) rather
@@ -4149,21 +4244,31 @@ html[data-theme="deepcurrent"] .panel-icon-results::before {
   0%, 100% { opacity: 0.75; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.12); }
 }
+/* Own wording instead of reusing Case Files/Private Bank's tag text - a
+   dive-log entry stamp instead of a legal "Exhibit" or financial
+   "Schedule". Same real-text-zeroed/::before-injected technique as Private
+   Bank's version above, keyed off the same exhibit-tag-lookup/-results
+   classes. */
 html[data-theme="deepcurrent"] .exhibit-tag {
   display: inline-block;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68em;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent);
+  font-size: 0;
   background: rgba(53,230,196,0.08);
   border: 1px solid var(--border-strong);
   padding: 3px 9px;
   border-radius: 3px;
   margin-bottom: 5px;
+}
+html[data-theme="deepcurrent"] .exhibit-tag::before {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
   text-shadow: 0 0 6px rgba(53,230,196,0.4);
 }
+html[data-theme="deepcurrent"] .exhibit-tag-lookup::before { content: "Dive Log A"; }
+html[data-theme="deepcurrent"] .exhibit-tag-results::before { content: "Dive Log B"; }
 
 /* Lookup form's left column gets a faint teal edge-glow instead of a plain
    border, echoing the porthole-glass light elsewhere in this theme. */
@@ -4178,12 +4283,13 @@ html[data-theme="deepcurrent"] .dash-left {
   }
 }
 
-/* Corner rivets on sweat cards and the confirm-delete dialog - a riveted
-   porthole-plate look, placed on the opposite diagonal (top-right/bottom-
-   left) from Private Bank's corner brackets so the two don't read as the
-   same ornament in a different color when switching themes. */
-html[data-theme="deepcurrent"] .sweat-card::before,
-html[data-theme="deepcurrent"] .sweat-card::after,
+/* Corner rivets on the confirm-delete dialog - a riveted porthole-plate
+   look, placed on the opposite diagonal (top-right/bottom-left) from
+   Private Bank's corner brackets so the two don't read as the same
+   ornament in a different color when switching themes. Sweat cards get
+   their own, much bigger treatment further down (four rivets plus a
+   cursor-tracked glass glare) - see the "Sweat cards redesigned as
+   riveted porthole plates" block below. */
 html[data-theme="deepcurrent"] .confirm-modal-content::before,
 html[data-theme="deepcurrent"] .confirm-modal-content::after {
   content: "";
@@ -4197,8 +4303,6 @@ html[data-theme="deepcurrent"] .confirm-modal-content::after {
   z-index: 2;
   animation: rivetGlint 3s ease-in-out infinite;
 }
-html[data-theme="deepcurrent"] .sweat-card::before { top: 8px; right: 8px; }
-html[data-theme="deepcurrent"] .sweat-card::after { bottom: 8px; left: 8px; }
 html[data-theme="deepcurrent"] .confirm-modal-content::before { top: 10px; right: 10px; }
 html[data-theme="deepcurrent"] .confirm-modal-content::after { bottom: 10px; left: 10px; }
 @keyframes rivetGlint {
@@ -4401,7 +4505,7 @@ html[data-theme="deepcurrent"] .pill.boost {
   <div class="panel-header">
     <div class="panel-icon panel-icon-lookup">&#127919;</div>
     <div>
-      <span class="exhibit-tag">Exhibit A</span>
+      <span class="exhibit-tag exhibit-tag-lookup">Exhibit A</span>
       <h2>Sweat Lookup</h2>
       <p>Search a player, review their stats, and log the win.</p>
     </div>
@@ -4506,7 +4610,7 @@ html[data-theme="deepcurrent"] .pill.boost {
   <div class="panel-header">
     <div class="panel-icon panel-icon-results">&#127942;</div>
     <div>
-      <span class="exhibit-tag">Exhibit B</span>
+      <span class="exhibit-tag exhibit-tag-results">Exhibit B</span>
       <h2>Defeated Sweats</h2>
       <p><span id="resultCount">0</span> tracked players</p>
     </div>
@@ -6064,6 +6168,56 @@ function renderCardGrid(filteredSweats, usernameCounts) {
     cardGrid.appendChild(card);
   });
 }
+
+// Deep Current only - cursor-tracked porthole tilt + glass glare on the
+// sweat cards, echoing the "wet glass" look from this theme's own concept
+// mockup. Delegated on #cardGrid (a container that's never itself replaced)
+// rather than bound per-card, since renderCardGrid tears down and rebuilds
+// every card on each re-render - a delegated listener only needs wiring up
+// once instead of being reattached on every render.
+cardGrid.addEventListener("mousemove", (e) => {
+  if (document.documentElement.dataset.theme !== "deepcurrent") return;
+  const card = e.target.closest(".sweat-card");
+  if (!card) return;
+  const rect = card.getBoundingClientRect();
+  const px = (e.clientX - rect.left) / rect.width;
+  const py = (e.clientY - rect.top) / rect.height;
+  const rotateY = (px - 0.5) * 10;
+  const rotateX = (0.5 - py) * 10;
+  card.style.transform = `perspective(700px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-4px)`;
+  card.style.setProperty("--mx", `${(px * 100).toFixed(1)}%`);
+  card.style.setProperty("--my", `${(py * 100).toFixed(1)}%`);
+});
+// mouseout (bubbles, unlike mouseleave) plus a relatedTarget check standing
+// in for delegated mouseleave - fires once when the pointer genuinely
+// leaves a card, not on every hop between its child elements.
+cardGrid.addEventListener("mouseout", (e) => {
+  const card = e.target.closest(".sweat-card");
+  if (!card || (e.relatedTarget && card.contains(e.relatedTarget))) return;
+  card.style.transform = "";
+  card.style.removeProperty("--mx");
+  card.style.removeProperty("--my");
+});
+// Sonar-ping ripple at the click point plus a quick press-pulse, layered on
+// top of the click-to-open-modal handler below (this only adds a class/
+// appends a decorative element, never stops propagation) - other themes
+// are untouched, keeping their plain :active scale from the base rule.
+cardGrid.addEventListener("click", (e) => {
+  if (document.documentElement.dataset.theme !== "deepcurrent") return;
+  if (e.target.closest("button")) return;
+  const card = e.target.closest(".sweat-card");
+  if (!card) return;
+  const rect = card.getBoundingClientRect();
+  const ripple = document.createElement("span");
+  ripple.className = "card-sonar-ripple";
+  ripple.style.left = `${e.clientX - rect.left}px`;
+  ripple.style.top = `${e.clientY - rect.top}px`;
+  ripple.addEventListener("animationend", () => ripple.remove());
+  card.appendChild(ripple);
+  card.classList.remove("card-pressed");
+  void card.offsetWidth;
+  card.classList.add("card-pressed");
+});
 
 // Shared row builder for both the Table view and the Leaderboard drill-down -
 // identical columns in both (including Beaten By, useful in the leaderboard

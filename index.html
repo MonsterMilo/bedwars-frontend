@@ -3846,6 +3846,34 @@ html[data-theme="ledger"] .view-btn.active {
   inset: 0;
   clip-path: inset(0 100% 0 0);
 }
+/* Deep Current's own transition (below) rises a field of bubbles instead
+   of sweeping a banded-gradient panel across the screen, so it needs
+   somewhere to put them - a plain absolutely-positioned layer on top of
+   .tto-panel, empty (and harmless) for every other theme since bubbles
+   are only ever generated into it right before playing that one
+   transition (see playThemeTransition/spawnTtoBubbles in the script) and
+   cleared again once it ends. */
+.tto-bubbles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.tto-bubble {
+  position: absolute;
+  bottom: -10%;
+  left: var(--x);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 26%, rgba(255,255,255,0.8), rgba(255,255,255,0.12) 55%, transparent 76%);
+  border: 1px solid rgba(255,255,255,0.28);
+  opacity: var(--op);
+  animation: ttoBubbleRise var(--dur) linear var(--delay);
+}
+@keyframes ttoBubbleRise {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(var(--wobble, 0), -130vh); }
+}
 @keyframes ttoWipe {
   0% { clip-path: inset(0 100% 0 0); }
   50% { clip-path: inset(0 0 0 0); }
@@ -4485,12 +4513,27 @@ html[data-theme="deepcurrent"] #customTooltip.tooltip-below::after {
   border-top: 1px solid var(--accent);
 }
 
-/* Theme-switch wipe - same hard-banded-gradient technique as the other
-   three, colors hand-picked (not read live via var()) since the data-theme
-   swap happens mid-animation. */
+/* Theme-switch transition - unlike the other three (a banded-gradient
+   panel wiped across the screen), this rises a field of bubbles up
+   through a dark open-water wash instead - see spawnTtoBubbles() in the
+   script, called right before this plays. .tto-panel drops the shared
+   left-to-right clip-path wipe entirely (clip-path: none overrides the
+   base rule's permanent inset(0 100% 0 0), which would otherwise clip
+   this panel to nothing forever, wipe or no wipe) in favor of a plain
+   opacity fade - solid enough at its peak (20%-80% of the duration, which
+   comfortably straddles the swap firing at 50%) to mask the swap the same
+   as the other themes' full wipe coverage does, while the bubbles rising
+   through it are the actual visual. */
 #themeTransitionOverlay[data-playing="deepcurrent"] .tto-panel {
-  background: linear-gradient(100deg, #0a2130 0%, #0a2130 40%, #35e6c4 44%, #35e6c4 50%, #9b6bff 52%, #9b6bff 58%, #0a2130 60%, #0a2130 100%);
-  animation: ttoWipe 950ms cubic-bezier(.6,0,.2,1) both;
+  clip-path: none;
+  background: linear-gradient(180deg, #0a2a3a 0%, #062031 40%, #041624 70%, #01070c 100%);
+  animation: ttoFadeDeepCurrent 950ms ease-in-out both;
+}
+@keyframes ttoFadeDeepCurrent {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 /* Success flourish - a burst of bubbles rising from the Add Sweat button
@@ -5038,7 +5081,7 @@ html[data-theme="deepcurrent"] .pill.boost {
 <div id="nebula"><div id="nebulaGlow2" aria-hidden="true"></div></div>
 <div id="starfield"></div>
 <div id="bubblefield"></div>
-<div id="themeTransitionOverlay" aria-hidden="true"><div class="tto-panel"></div></div>
+<div id="themeTransitionOverlay" aria-hidden="true"><div class="tto-panel"></div><div class="tto-bubbles" id="ttoBubbles"></div></div>
 <div id="customTooltip" role="tooltip" aria-hidden="true"></div>
 
 <div class="page">
@@ -5485,9 +5528,44 @@ function openThemeDropdown() {
 // wipe's midpoint, when it's covering the whole screen, so the swap
 // itself is always masked rather than popping half-old/half-new.
 const themeTransitionOverlay = document.getElementById("themeTransitionOverlay");
+const ttoBubbles = document.getElementById("ttoBubbles");
 const THEME_TRANSITION_MS = 950;
 let themeTransitionSwapTimer = null;
 let themeTransitionEndTimer = null;
+
+// Deep Current's transition only - a dense burst of bubbles rising from
+// the bottom of the screen to the top, generated fresh right before each
+// play (same "randomize a handful of CSS custom properties per element"
+// approach as the ambient #bubblefield/success-flourish bubbles
+// elsewhere) rather than one repeating background pattern, so they don't
+// all rise in visible lockstep. Durations/delays are kept well inside
+// THEME_TRANSITION_MS so bubbles finish rising (and naturally read as
+// gone) before clearTtoBubbles() below removes them, rather than getting
+// visibly cut off mid-flight.
+function spawnTtoBubbles(count) {
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < count; i++) {
+    const bubble = document.createElement("div");
+    bubble.className = "tto-bubble";
+    const size = (Math.random() * 34 + 10).toFixed(1);
+    const dur = (Math.random() * 0.3 + 0.6).toFixed(2);
+    const delay = (Math.random() * 0.15).toFixed(2);
+    const x = (Math.random() * 100).toFixed(1);
+    const wobble = (Math.random() * 36 - 18).toFixed(1) + "px";
+    const op = (Math.random() * 0.4 + 0.45).toFixed(2);
+    bubble.style.setProperty("--size", `${size}px`);
+    bubble.style.setProperty("--dur", `${dur}s`);
+    bubble.style.setProperty("--delay", `${delay}s`);
+    bubble.style.setProperty("--x", `${x}%`);
+    bubble.style.setProperty("--wobble", wobble);
+    bubble.style.setProperty("--op", op);
+    frag.appendChild(bubble);
+  }
+  ttoBubbles.appendChild(frag);
+}
+function clearTtoBubbles() {
+  ttoBubbles.innerHTML = "";
+}
 
 function playThemeTransition(themeId, swapFn) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -5500,11 +5578,14 @@ function playThemeTransition(themeId, swapFn) {
   themeTransitionOverlay.classList.remove("active");
   void themeTransitionOverlay.offsetWidth; // restart the animation cleanly if one was already mid-flight
   themeTransitionOverlay.setAttribute("data-playing", themeId);
+  clearTtoBubbles();
+  if (themeId === "deepcurrent") spawnTtoBubbles(70);
   themeTransitionOverlay.classList.add("active");
   themeTransitionSwapTimer = setTimeout(swapFn, THEME_TRANSITION_MS / 2);
   themeTransitionEndTimer = setTimeout(() => {
     themeTransitionOverlay.classList.remove("active");
     themeTransitionOverlay.removeAttribute("data-playing");
+    clearTtoBubbles();
   }, THEME_TRANSITION_MS + 30);
 }
 

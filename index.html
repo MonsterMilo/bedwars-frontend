@@ -3858,9 +3858,19 @@ html[data-theme="ledger"] .view-btn.active {
   inset: 0;
   overflow: hidden;
 }
+/* --start-y staggers where each bubble's rise *begins* (0 = just below
+   the screen, up toward 115vh = already past the top) via `bottom`
+   rather than the animated transform - so at any single instant during
+   the transition, bubbles are scattered across the whole vertical span
+   instead of all traveling together as one band that has to sweep
+   upward before it reads as covering top-to-bottom. The transform itself
+   (in the keyframe below) is the same fixed -140vh climb for every
+   bubble regardless of --start-y, which is what actually makes early
+   testing read as "a short line" - every bubble starting from
+   essentially the same place and moving in near lockstep. */
 .tto-bubble {
   position: absolute;
-  bottom: -10%;
+  bottom: calc(-10% + var(--start-y, 0px));
   left: var(--x);
   width: var(--size);
   height: var(--size);
@@ -3872,7 +3882,7 @@ html[data-theme="ledger"] .view-btn.active {
 }
 @keyframes ttoBubbleRise {
   0% { transform: translate(0, 0); }
-  100% { transform: translate(var(--wobble, 0), -130vh); }
+  100% { transform: translate(var(--wobble, 0), -140vh); }
 }
 @keyframes ttoWipe {
   0% { clip-path: inset(0 100% 0 0); }
@@ -5538,7 +5548,10 @@ let themeTransitionEndTimer = null;
 // play (same "randomize a handful of CSS custom properties per element"
 // approach as the ambient #bubblefield/success-flourish bubbles
 // elsewhere) rather than one repeating background pattern, so they don't
-// all rise in visible lockstep. Durations/delays are kept well inside
+// all rise in visible lockstep. --start-y (see the .tto-bubble comment)
+// spreads out where each one *starts*, so the column reads as spanning
+// top-to-bottom immediately instead of one short band that has to travel
+// up before it looks that tall. Durations/delays are kept well inside
 // THEME_TRANSITION_MS so bubbles finish rising (and naturally read as
 // gone) before clearTtoBubbles() below removes them, rather than getting
 // visibly cut off mid-flight.
@@ -5547,15 +5560,17 @@ function spawnTtoBubbles(count) {
   for (let i = 0; i < count; i++) {
     const bubble = document.createElement("div");
     bubble.className = "tto-bubble";
-    const size = (Math.random() * 34 + 10).toFixed(1);
-    const dur = (Math.random() * 0.3 + 0.6).toFixed(2);
+    const size = (Math.random() * 46 + 20).toFixed(1);
+    const dur = (Math.random() * 0.35 + 0.65).toFixed(2);
     const delay = (Math.random() * 0.15).toFixed(2);
     const x = (Math.random() * 100).toFixed(1);
+    const startY = (Math.random() * 115).toFixed(1);
     const wobble = (Math.random() * 36 - 18).toFixed(1) + "px";
     const op = (Math.random() * 0.4 + 0.45).toFixed(2);
     bubble.style.setProperty("--size", `${size}px`);
     bubble.style.setProperty("--dur", `${dur}s`);
     bubble.style.setProperty("--delay", `${delay}s`);
+    bubble.style.setProperty("--start-y", `${startY}vh`);
     bubble.style.setProperty("--x", `${x}%`);
     bubble.style.setProperty("--wobble", wobble);
     bubble.style.setProperty("--op", op);
@@ -5579,7 +5594,7 @@ function playThemeTransition(themeId, swapFn) {
   void themeTransitionOverlay.offsetWidth; // restart the animation cleanly if one was already mid-flight
   themeTransitionOverlay.setAttribute("data-playing", themeId);
   clearTtoBubbles();
-  if (themeId === "deepcurrent") spawnTtoBubbles(70);
+  if (themeId === "deepcurrent") spawnTtoBubbles(85);
   themeTransitionOverlay.classList.add("active");
   themeTransitionSwapTimer = setTimeout(swapFn, THEME_TRANSITION_MS / 2);
   themeTransitionEndTimer = setTimeout(() => {

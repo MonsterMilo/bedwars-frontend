@@ -2928,28 +2928,59 @@ html[data-theme="casefiles"] .modal-content {
 /* The Neon flip-open (see playCardFlipExpand() in the script - the FLIP
    math filling in --flip-dx/--flip-dy/--flip-sx/--flip-sy is identical
    across all four themes, only the animation each one plays differs) gets
-   reimagined here as a photo being lifted off a corkboard rather than a
-   screen flipping in 3D - no rotateY/perspective at all, just a plain
-   in-plane rotate() starting at a "just picked up" tilt and an overshoot
-   easing that lets it swing past level before settling flat, like a
-   physical photo being tossed down rather than a digital pane turning
-   over. Animates .modal-card (see the shared comment on the Neon rule
-   above) rather than .modal-content alone specifically so the "Case File
-   · Open"/etc folder tab - a sibling of .modal-content, not a descendant -
-   actually rides along with the toss instead of sitting frozen in place
-   while the card flies in under it. Tilt/overshoot/fade pushed
-   considerably further than a first pass at this (-7deg and a mild
-   cubic-bezier bounce) landed - reads as barely-there on a modal this
-   size, where Neon's actual 3D flip and Private Bank's page-turn are both
-   much more visually assertive. */
+   reimagined here as a photo pinned to a corkboard rather than a screen
+   flipping in 3D: it flies in and grows a bit larger as if approaching the
+   viewer, gets yanked back down as if caught by a pin at the top, then
+   swings on that pin for a moment before settling flat - a first pass at
+   this (a flat translate+scale to a small -7deg tilt) read as barely-there
+   next to Neon's actual 3D flip and Private Bank's page-turn.
+   transform-origin sits near the top edge, not the element's center
+   (the default), so rotate() actually pivots like the card is hanging
+   from something up there instead of spinning in place - which is also
+   why this uses --flip-dy-top (a top-edge-to-top-edge position delta)
+   instead of the --flip-dy every other theme's keyframes use: scaling
+   around a non-center origin moves the box differently than scaling
+   around its center, so the translate distance needed to still land
+   exactly on the clicked card at 0% has to account for that, using the
+   same top edge the rotation pivots around as its reference point.
+   Animates .modal-card (see the shared comment on the Neon rule above)
+   rather than .modal-content alone specifically so the "Case File ·
+   Open"/etc folder tab - a sibling of .modal-content, not a descendant -
+   actually rides along with the whole thing instead of sitting frozen in
+   place while the card flies/swings under it. */
 html[data-theme="casefiles"] .modal-card.card-flip-expand {
-  animation: cardFlipExpandCaseFiles 0.65s cubic-bezier(.32,1.7,.5,1) forwards;
+  transform-origin: 50% -16px;
+  animation: cardFlipExpandCaseFiles 1.3s cubic-bezier(.22,.61,.36,1) forwards;
 }
 @keyframes cardFlipExpandCaseFiles {
   0% {
-    transform: translate(var(--flip-dx), var(--flip-dy)) scale(var(--flip-sx), var(--flip-sy)) rotate(-26deg);
+    transform: translate(var(--flip-dx), var(--flip-dy-top)) scale(var(--flip-sx), var(--flip-sy)) rotate(-26deg);
     opacity: 0.7;
   }
+  28% {
+    /* Approaching and growing past its resting size (1.16x), like it's
+       closing in on the viewer before the pin catches it. */
+    transform: translate(calc(var(--flip-dx) * 0.15), calc(var(--flip-dy-top) * 0.15)) scale(1.16, 1.16) rotate(-15deg);
+    opacity: 1;
+  }
+  46% {
+    /* The instant before impact - already nearly in place, a slight
+       squash anticipating the catch. */
+    transform: translate(calc(var(--flip-dx) * 0.02), calc(var(--flip-dy-top) * 0.02)) scale(1.06, 0.95) rotate(-6deg);
+    opacity: 1;
+  }
+  54% {
+    /* The slam - snaps the rest of the way to resting position/size with
+       a small stretch rebound, and the impact itself is what kicks off
+       the pendulum swing (rotate jumps to +7deg here, then decays back
+       toward 0 below). */
+    transform: translate(0, 0) scale(0.97, 1.04) rotate(7deg);
+    opacity: 1;
+  }
+  64% { transform: translate(0, 0) scale(1, 1) rotate(-4.5deg); opacity: 1; }
+  74% { transform: translate(0, 0) scale(1, 1) rotate(2.6deg); opacity: 1; }
+  84% { transform: translate(0, 0) scale(1, 1) rotate(-1.3deg); opacity: 1; }
+  92% { transform: translate(0, 0) scale(1, 1) rotate(0.5deg); opacity: 1; }
   100% {
     transform: translate(0, 0) scale(1, 1) rotate(0deg);
     opacity: 1;
@@ -7339,6 +7370,18 @@ function playCardFlipExpand(sourceRect, content) {
   content.style.setProperty("--flip-dy", `${dy}px`);
   content.style.setProperty("--flip-sx", sx);
   content.style.setProperty("--flip-sy", sy);
+  // Case Files only - a top-edge-to-top-edge delta instead of the
+  // center-to-center one above. Its animation pivots (transform-origin)
+  // from a point near the top instead of the element's center, to swing
+  // like it's actually hanging from a pin there - translate()'s own
+  // offset doesn't care where the origin is, but getting the card to
+  // still correctly overlay the source card's rect at 0% does, since
+  // scale() grows/shrinks around whatever point transform-origin names.
+  // Scale-around-center needs the center-to-center delta (--flip-dy
+  // above) to land correctly; scale-around-top needs this top-to-top one
+  // instead, or the two would fight and the card would render offset
+  // from the actual source card at the start of the animation.
+  content.style.setProperty("--flip-dy-top", `${sourceRect.top - targetRect.top}px`);
   content.classList.add("card-flip-expand");
 }
 

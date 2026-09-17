@@ -2929,11 +2929,23 @@ html[data-theme="casefiles"] .modal-content {
    math filling in --flip-dx/--flip-dy/--flip-sx/--flip-sy is identical
    across all four themes, only the animation each one plays differs) gets
    reimagined here as a photo pinned to a corkboard rather than a screen
-   flipping in 3D: it flies in and grows a bit larger as if approaching the
-   viewer, gets yanked back down as if caught by a pin at the top, then
-   swings on that pin for a moment before settling flat - a first pass at
-   this (a flat translate+scale to a small -7deg tilt) read as barely-there
+   flipping in 3D: it rises in dead straight and grows a bit larger as if
+   approaching the viewer, slams to a stop as if caught by a pin at the
+   top, and the impact itself immediately kicks off a swing on that pin -
+   decaying back to flat over a few progressively smaller arcs - rather
+   than a flat translate+scale to a small tilt, which read as barely-there
    next to Neon's actual 3D flip and Private Bank's page-turn.
+   No rotation at all until the slam (a first pass tilted the whole rise,
+   which just looked like it was heading in crooked rather than being
+   caught by something at the top once it arrived) - rotate() only enters
+   the picture at 48%, and every keyframe up to then holds it at 0deg.
+   The 30%->48% run into the slam uses its own steep ease-in
+   (animation-timing-function set on the 30% keyframe) instead of the
+   overall ease-out every other segment gets - without it, the growth
+   phase coasts to a gentle stop right as it reaches the slam point (the
+   overall curve decelerating into every keyframe by default), which read
+   as arriving, pausing, and only then starting to shake rather than one
+   continuous motion straight into the impact.
    transform-origin sits near the top edge, not the element's center
    (the default), so rotate() actually pivots like the card is hanging
    from something up there instead of spinning in place - which is also
@@ -2950,37 +2962,33 @@ html[data-theme="casefiles"] .modal-content {
    place while the card flies/swings under it. */
 html[data-theme="casefiles"] .modal-card.card-flip-expand {
   transform-origin: 50% -16px;
-  animation: cardFlipExpandCaseFiles 1.3s cubic-bezier(.22,.61,.36,1) forwards;
+  animation: cardFlipExpandCaseFiles 1.6s ease-out forwards;
 }
 @keyframes cardFlipExpandCaseFiles {
   0% {
-    transform: translate(var(--flip-dx), var(--flip-dy-top)) scale(var(--flip-sx), var(--flip-sy)) rotate(-26deg);
+    transform: translate(var(--flip-dx), var(--flip-dy-top)) scale(var(--flip-sx), var(--flip-sy)) rotate(0deg);
     opacity: 0.7;
   }
-  28% {
-    /* Approaching and growing past its resting size (1.16x), like it's
-       closing in on the viewer before the pin catches it. */
-    transform: translate(calc(var(--flip-dx) * 0.15), calc(var(--flip-dy-top) * 0.15)) scale(1.16, 1.16) rotate(-15deg);
+  30% {
+    /* Approaching and growing past its resting size (1.18x), like it's
+       closing in on the viewer before the pin catches it - still
+       perfectly upright, no tilt yet. */
+    transform: translate(calc(var(--flip-dx) * 0.15), calc(var(--flip-dy-top) * 0.15)) scale(1.18, 1.18) rotate(0deg);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(.55, 0, 1, .45);
+  }
+  48% {
+    /* The slam - snaps straight to resting position/size with a small
+       stretch rebound, and the impact itself is what kicks off the
+       pendulum swing (rotate jumps to +10deg here, then decays back
+       toward 0 below) - no gap between landing and swinging. */
+    transform: translate(0, 0) scale(0.96, 1.05) rotate(10deg);
     opacity: 1;
   }
-  46% {
-    /* The instant before impact - already nearly in place, a slight
-       squash anticipating the catch. */
-    transform: translate(calc(var(--flip-dx) * 0.02), calc(var(--flip-dy-top) * 0.02)) scale(1.06, 0.95) rotate(-6deg);
-    opacity: 1;
-  }
-  54% {
-    /* The slam - snaps the rest of the way to resting position/size with
-       a small stretch rebound, and the impact itself is what kicks off
-       the pendulum swing (rotate jumps to +7deg here, then decays back
-       toward 0 below). */
-    transform: translate(0, 0) scale(0.97, 1.04) rotate(7deg);
-    opacity: 1;
-  }
-  64% { transform: translate(0, 0) scale(1, 1) rotate(-4.5deg); opacity: 1; }
-  74% { transform: translate(0, 0) scale(1, 1) rotate(2.6deg); opacity: 1; }
-  84% { transform: translate(0, 0) scale(1, 1) rotate(-1.3deg); opacity: 1; }
-  92% { transform: translate(0, 0) scale(1, 1) rotate(0.5deg); opacity: 1; }
+  62% { transform: translate(0, 0) scale(1, 1) rotate(-7deg); opacity: 1; }
+  76% { transform: translate(0, 0) scale(1, 1) rotate(4deg); opacity: 1; }
+  88% { transform: translate(0, 0) scale(1, 1) rotate(-2deg); opacity: 1; }
+  96% { transform: translate(0, 0) scale(1, 1) rotate(0.8deg); opacity: 1; }
   100% {
     transform: translate(0, 0) scale(1, 1) rotate(0deg);
     opacity: 1;

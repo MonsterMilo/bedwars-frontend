@@ -3858,16 +3858,22 @@ html[data-theme="ledger"] .view-btn.active {
   inset: 0;
   overflow: hidden;
 }
-/* --start-y staggers where each bubble's rise *begins* (0 = just below
-   the screen, up toward 115vh = already past the top) via `bottom`
-   rather than the animated transform - so at any single instant during
-   the transition, bubbles are scattered across the whole vertical span
-   instead of all traveling together as one band that has to sweep
-   upward before it reads as covering top-to-bottom. The transform itself
-   (in the keyframe below) is the same fixed -140vh climb for every
-   bubble regardless of --start-y, which is what actually makes early
-   testing read as "a short line" - every bubble starting from
-   essentially the same place and moving in near lockstep. */
+/* --start-y staggers where each bubble's rise *begins* (roughly -20vh,
+   a bit deeper below the screen than just out of view, up to 70vh, a bit
+   over two-thirds up) via `bottom` rather than the animated transform -
+   so at any single instant during the transition, bubbles are scattered
+   across the whole vertical span instead of all traveling together as
+   one band that has to sweep upward before it reads as covering
+   top-to-bottom. The transform itself (in the keyframe below) is the
+   same fixed -140vh climb for every bubble regardless of --start-y,
+   which is what actually made an early version read as "a short line" -
+   every bubble starting from essentially the same place and moving in
+   near lockstep. The range tops out well short of the screen's actual
+   top edge (100vh) - a first pass let it go up to 115vh, so by the time
+   the panel was even opaque enough to see anything against, the
+   highest-starting bubbles had already risen past the top and the
+   lowest-starting ones had already climbed high enough to leave the
+   bottom of the screen empty. */
 .tto-bubble {
   position: absolute;
   bottom: calc(-10% + var(--start-y, 0px));
@@ -5564,7 +5570,7 @@ function spawnTtoBubbles(count) {
     const dur = (Math.random() * 0.35 + 0.65).toFixed(2);
     const delay = (Math.random() * 0.15).toFixed(2);
     const x = (Math.random() * 100).toFixed(1);
-    const startY = (Math.random() * 115).toFixed(1);
+    const startY = (Math.random() * 90 - 20).toFixed(1);
     const wobble = (Math.random() * 36 - 18).toFixed(1) + "px";
     const op = (Math.random() * 0.4 + 0.45).toFixed(2);
     bubble.style.setProperty("--size", `${size}px`);

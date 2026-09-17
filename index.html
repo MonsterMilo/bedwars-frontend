@@ -3858,9 +3858,9 @@ html[data-theme="ledger"] .view-btn.active {
   inset: 0;
   overflow: hidden;
 }
-/* --start-y staggers where each bubble's rise *begins* (roughly -20vh,
-   a bit deeper below the screen than just out of view, up to 70vh, a bit
-   over two-thirds up) via `bottom` rather than the animated transform -
+/* --start-y staggers where each bubble's rise *begins* (roughly -35vh,
+   noticeably deeper below the screen than just out of view, up to 55vh,
+   a bit over halfway up) via `bottom` rather than the animated transform -
    so at any single instant during the transition, bubbles are scattered
    across the whole vertical span instead of all traveling together as
    one band that has to sweep upward before it reads as covering
@@ -3884,7 +3884,16 @@ html[data-theme="ledger"] .view-btn.active {
   background: radial-gradient(circle at 32% 26%, rgba(255,255,255,0.8), rgba(255,255,255,0.12) 55%, transparent 76%);
   border: 1px solid rgba(255,255,255,0.28);
   opacity: var(--op);
-  animation: ttoBubbleRise var(--dur) linear var(--delay);
+  /* forwards matters here, not just cosmetic - each bubble's own
+     delay+duration adds up to less than the transition's own total
+     length, so without it, the instant an individual bubble's animation
+     finished it would snap back to its unanimated resting position
+     (sitting at --start-y, fully visible) instead of staying up past the
+     top where it rose to. Since most bubbles have similar durations,
+     they finished in a cluster - reading as a bunch of bubbles flashing
+     back into view together, on whatever part of the screen --start-y
+     happened to place them, right as the transition was wrapping up. */
+  animation: ttoBubbleRise var(--dur) linear var(--delay) forwards;
 }
 @keyframes ttoBubbleRise {
   0% { transform: translate(0, 0); }
@@ -3894,6 +3903,48 @@ html[data-theme="ledger"] .view-btn.active {
   0% { clip-path: inset(0 100% 0 0); }
   50% { clip-path: inset(0 0 0 0); }
   100% { clip-path: inset(0 0 0 100%); }
+}
+/* Shared by any theme whose transition isn't the left-to-right wipe
+   above - a plain fade that's fully opaque across the middle 60% of the
+   duration, comfortably straddling the swap firing at the midpoint, so
+   it masks the swap exactly as reliably as the wipe's full coverage
+   does regardless of what decorative effect (Deep Current's bubbles,
+   Neon's pixel grid) is layered on top of it. */
+@keyframes ttoFade {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+/* Neon's dissolve - a grid of small blocks each popping independently
+   in and out (spawnTtoPixels() in the script generates them fresh per
+   play, same pattern as the bubbles above), rather than one continuous
+   shape - reads as the screen glitching apart into digital noise and
+   reassembling into the new theme instead of a clean wipe. Sits on top
+   of .tto-panel's own plain dark fade (see that theme's rule), which is
+   the layer actually guaranteeing the swap stays masked. */
+.tto-pixels {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(18, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+}
+.tto-pixel {
+  opacity: 0;
+  background: var(--pixel-color, #00d9ff);
+  /* forwards as cheap insurance against the same class of bug fixed on
+     .tto-bubble above - here the animation's own end state (opacity:0)
+     already matches the element's plain un-animated style, so a pixel
+     finishing early wouldn't visibly snap to anything different, but
+     there's no reason to depend on that coincidence holding forever. */
+  animation: ttoPixelFlicker 950ms var(--delay) forwards;
+}
+@keyframes ttoPixelFlicker {
+  0% { opacity: 0; transform: scale(0.4); }
+  12% { opacity: var(--pixel-op, 0.85); transform: scale(1) translate(var(--jx, 0), var(--jy, 0)); }
+  78% { opacity: var(--pixel-op, 0.85); transform: scale(1) translate(var(--jx, 0), var(--jy, 0)); }
+  100% { opacity: 0; transform: scale(0.5); }
 }
 
 /* Colors below are hand-picked per theme rather than read live via var() -
@@ -3908,21 +3959,47 @@ html[data-theme="ledger"] .view-btn.active {
    (dull pink, mustard) that don't belong to any theme's real palette.
    Hard bands keep every visible pixel one of the theme's actual token
    colors, just arranged as solid stripes instead of a wash. */
+/* Neon dissolves into a field of glitchy digital blocks (see
+   spawnTtoPixels() in the script) instead of sweeping a gradient across.
+   .tto-panel keeps its role as the actual masking layer underneath - a
+   plain dark fade (ttoFade, shared with Deep Current's wash - see that
+   theme's comment) rather than the shared wipe, since a grid of
+   individually-popping pixels can't be trusted to have zero gaps between
+   them at any single instant the way one continuous panel reliably can.
+   .tto-pixels (styled further down, near its own spawn function) is the
+   actual flashy visual sitting on top of this safety net. */
 #themeTransitionOverlay[data-playing="neon"] .tto-panel {
-  background: linear-gradient(100deg, #00d9ff 0%, #00d9ff 40%, #a855f7 48%, #a855f7 52%, #00d9ff 60%, #00d9ff 100%);
-  box-shadow: 0 0 90px 10px rgba(0,217,255,0.6) inset;
-  animation: ttoWipe 900ms cubic-bezier(.6,0,.2,1) both;
+  background: #050912;
+  animation: ttoFade 950ms ease-in-out both;
 }
-#themeTransitionOverlay[data-playing="neon"] .tto-panel::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.12) 0px, rgba(255,255,255,0.12) 1px, transparent 1px, transparent 4px);
-  mix-blend-mode: overlay;
-}
+/* Case Files - a manila folder cover falls from above and slams flat
+   over the screen (a quick squash/rebound on impact instead of landing
+   dead-still), holds there covering the swap, then keeps rotating open
+   around a top hinge - like a lid being lifted - fading out as it goes
+   past edge-on so it's fully gone by the time this ends regardless of
+   exactly when the overlay's own cleanup timer cuts it off. .tto-panel
+   *is* the folder cover here (no separate element needed) - its ::before
+   is the folder tab poking off the top edge, ::after is the same paper
+   grain the wipe version already used. */
 #themeTransitionOverlay[data-playing="casefiles"] .tto-panel {
-  background: linear-gradient(100deg, #f2e9cf 0%, #f2e9cf 40%, #a32f1d 44%, #a32f1d 50%, #b8912f 52%, #b8912f 58%, #f2e9cf 60%, #f2e9cf 100%);
-  animation: ttoWipe 950ms cubic-bezier(.6,0,.2,1) both;
+  clip-path: none;
+  transform-origin: 50% 0%;
+  background: #f2e9cf;
+  box-shadow: 0 30px 70px rgba(20,15,5,0.5);
+  animation: ttoFolderSlamCaseFiles 950ms cubic-bezier(.5,0,.7,1) both;
+}
+#themeTransitionOverlay[data-playing="casefiles"] .tto-panel::before {
+  content: "CASE FILE";
+  position: absolute;
+  top: -30px;
+  left: 64px;
+  background: #2e4a5c;
+  color: #fbf6e6;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 8px 20px;
+  border-radius: 3px 3px 0 0;
 }
 #themeTransitionOverlay[data-playing="casefiles"] .tto-panel::after {
   content: "";
@@ -3932,9 +4009,31 @@ html[data-theme="ledger"] .view-btn.active {
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
 }
+@keyframes ttoFolderSlamCaseFiles {
+  0%   { transform: perspective(1800px) translateY(-120vh) scale(1, 1) rotateX(0deg); opacity: 1; }
+  22%  { transform: perspective(1800px) translateY(1.5vh) scale(1.02, 0.94) rotateX(0deg); opacity: 1; }
+  32%  { transform: perspective(1800px) translateY(0) scale(1, 1) rotateX(0deg); opacity: 1; }
+  60%  { transform: perspective(1800px) translateY(0) scale(1, 1) rotateX(0deg); opacity: 1; }
+  100% { transform: perspective(1800px) translateY(0) scale(1, 1) rotateX(-110deg); opacity: 0; }
+}
+/* Private Bank - the panel *is* a page, turning in around a hinge on the
+   left edge (like the spine of a book) rather than a wipe - it swings in
+   from edge-on, lands flat covering the swap, then keeps turning the
+   same direction it arrived in rather than reversing, fading out as it
+   goes past edge-on again on the far side. The dark gradient near the
+   hinge edge is a fixed spine shadow, not part of the turn itself, for a
+   bit of page depth. */
 #themeTransitionOverlay[data-playing="ledger"] .tto-panel {
-  background: linear-gradient(100deg, #f6f4ee 0%, #f6f4ee 40%, #16233a 42%, #16233a 48%, #a9822e 49%, #a9822e 51%, #16233a 52%, #16233a 58%, #f6f4ee 60%, #f6f4ee 100%);
-  animation: ttoWipe 950ms cubic-bezier(.6,0,.2,1) both;
+  clip-path: none;
+  transform-origin: 0% 50%;
+  background: linear-gradient(90deg, rgba(0,0,0,0.32) 0%, transparent 10%), #f6f4ee;
+  animation: ttoPageTurnLedger 950ms cubic-bezier(.45,.05,.15,1) both;
+}
+@keyframes ttoPageTurnLedger {
+  0%   { transform: perspective(2000px) rotateY(90deg); opacity: 0.85; }
+  35%  { transform: perspective(2000px) rotateY(0deg); opacity: 1; }
+  65%  { transform: perspective(2000px) rotateY(0deg); opacity: 1; }
+  100% { transform: perspective(2000px) rotateY(-100deg); opacity: 0; }
 }
 
 /* ============================================================
@@ -4530,26 +4629,22 @@ html[data-theme="deepcurrent"] #customTooltip.tooltip-below::after {
 }
 
 /* Theme-switch transition - unlike the other three (a banded-gradient
-   panel wiped across the screen), this rises a field of bubbles up
-   through a dark open-water wash instead - see spawnTtoBubbles() in the
-   script, called right before this plays. .tto-panel drops the shared
-   left-to-right clip-path wipe entirely (clip-path: none overrides the
-   base rule's permanent inset(0 100% 0 0), which would otherwise clip
-   this panel to nothing forever, wipe or no wipe) in favor of a plain
-   opacity fade - solid enough at its peak (20%-80% of the duration, which
-   comfortably straddles the swap firing at 50%) to mask the swap the same
-   as the other themes' full wipe coverage does, while the bubbles rising
-   through it are the actual visual. */
+   panel wiped across the screen, or Neon's grid of glitchy pixels), this
+   rises a field of bubbles up through a dark open-water wash instead -
+   see spawnTtoBubbles() in the script, called right before this plays.
+   .tto-panel drops the shared left-to-right clip-path wipe entirely
+   (clip-path: none overrides the base rule's permanent
+   inset(0 100% 0 0), which would otherwise clip this panel to nothing
+   forever, wipe or no wipe) in favor of the same plain opacity fade
+   (ttoFade, shared with Neon's wash) Neon uses - solid enough at its
+   peak (20%-80% of the duration, which comfortably straddles the swap
+   firing at 50%) to mask the swap the same as the wipe themes' full
+   coverage does, while the bubbles rising through it are the actual
+   visual. */
 #themeTransitionOverlay[data-playing="deepcurrent"] .tto-panel {
   clip-path: none;
   background: linear-gradient(180deg, #0a2a3a 0%, #062031 40%, #041624 70%, #01070c 100%);
-  animation: ttoFadeDeepCurrent 950ms ease-in-out both;
-}
-@keyframes ttoFadeDeepCurrent {
-  0% { opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { opacity: 0; }
+  animation: ttoFade 950ms ease-in-out both;
 }
 
 /* Success flourish - a burst of bubbles rising from the Add Sweat button
@@ -5097,7 +5192,7 @@ html[data-theme="deepcurrent"] .pill.boost {
 <div id="nebula"><div id="nebulaGlow2" aria-hidden="true"></div></div>
 <div id="starfield"></div>
 <div id="bubblefield"></div>
-<div id="themeTransitionOverlay" aria-hidden="true"><div class="tto-panel"></div><div class="tto-bubbles" id="ttoBubbles"></div></div>
+<div id="themeTransitionOverlay" aria-hidden="true"><div class="tto-panel"></div><div class="tto-pixels" id="ttoPixels"></div><div class="tto-bubbles" id="ttoBubbles"></div></div>
 <div id="customTooltip" role="tooltip" aria-hidden="true"></div>
 
 <div class="page">
@@ -5570,7 +5665,7 @@ function spawnTtoBubbles(count) {
     const dur = (Math.random() * 0.35 + 0.65).toFixed(2);
     const delay = (Math.random() * 0.15).toFixed(2);
     const x = (Math.random() * 100).toFixed(1);
-    const startY = (Math.random() * 90 - 20).toFixed(1);
+    const startY = (Math.random() * 90 - 35).toFixed(1);
     const wobble = (Math.random() * 36 - 18).toFixed(1) + "px";
     const op = (Math.random() * 0.4 + 0.45).toFixed(2);
     bubble.style.setProperty("--size", `${size}px`);
@@ -5588,6 +5683,36 @@ function clearTtoBubbles() {
   ttoBubbles.innerHTML = "";
 }
 
+// Neon's transition only - fills the fixed 18x10 CSS grid (.tto-pixels)
+// with one block per cell, each popping in/out on its own random delay
+// and picking its own color from the theme's palette, so the grid reads
+// as glitchy digital noise assembling and scattering rather than a flat
+// pattern turning on and off in unison.
+const ttoPixels = document.getElementById("ttoPixels");
+const TTO_PIXEL_COLORS = ["#00d9ff", "#a855f7", "#35e6ff", "#c084fc", "#ffffff"];
+function spawnTtoPixels(cols, rows) {
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < cols * rows; i++) {
+    const pixel = document.createElement("div");
+    pixel.className = "tto-pixel";
+    const delay = (Math.random() * 0.1).toFixed(2);
+    const color = TTO_PIXEL_COLORS[Math.floor(Math.random() * TTO_PIXEL_COLORS.length)];
+    const op = (Math.random() * 0.3 + 0.7).toFixed(2);
+    const jx = (Math.random() * 6 - 3).toFixed(1) + "px";
+    const jy = (Math.random() * 6 - 3).toFixed(1) + "px";
+    pixel.style.setProperty("--delay", `${delay}s`);
+    pixel.style.setProperty("--pixel-color", color);
+    pixel.style.setProperty("--pixel-op", op);
+    pixel.style.setProperty("--jx", jx);
+    pixel.style.setProperty("--jy", jy);
+    frag.appendChild(pixel);
+  }
+  ttoPixels.appendChild(frag);
+}
+function clearTtoPixels() {
+  ttoPixels.innerHTML = "";
+}
+
 function playThemeTransition(themeId, swapFn) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     swapFn();
@@ -5600,13 +5725,16 @@ function playThemeTransition(themeId, swapFn) {
   void themeTransitionOverlay.offsetWidth; // restart the animation cleanly if one was already mid-flight
   themeTransitionOverlay.setAttribute("data-playing", themeId);
   clearTtoBubbles();
+  clearTtoPixels();
   if (themeId === "deepcurrent") spawnTtoBubbles(85);
+  if (themeId === "neon") spawnTtoPixels(18, 10);
   themeTransitionOverlay.classList.add("active");
   themeTransitionSwapTimer = setTimeout(swapFn, THEME_TRANSITION_MS / 2);
   themeTransitionEndTimer = setTimeout(() => {
     themeTransitionOverlay.classList.remove("active");
     themeTransitionOverlay.removeAttribute("data-playing");
     clearTtoBubbles();
+    clearTtoPixels();
   }, THEME_TRANSITION_MS + 30);
 }
 

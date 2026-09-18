@@ -3833,6 +3833,7 @@ html[data-theme="ledger"] .view-btn.active {
    typewriter effect already uses, just grown to full-viewport scale.
    ============================================================ */
 #themeTransitionOverlay {
+  --tto-dur: 950ms; /* overridden inline per-theme by playThemeTransition() - see script */
   position: fixed;
   inset: 0;
   z-index: 5000;
@@ -3922,28 +3923,37 @@ html[data-theme="ledger"] .view-btn.active {
    shape - reads as the screen glitching apart into digital noise and
    reassembling into the new theme instead of a clean wipe. Sits on top
    of .tto-panel's own plain dark fade (see that theme's rule), which is
-   the layer actually guaranteeing the swap stays masked. */
+   the layer actually guaranteeing the swap stays masked. A gap between
+   cells (showing the dark panel through it) is what makes this read as
+   distinct chunky pixels instead of a blotchy color field, and each
+   pixel holds fully opaque (no partial-opacity dip) so the colors stay
+   solid, saturated neon rather than looking washed-out/translucent. */
 .tto-pixels {
   position: absolute;
   inset: 0;
   display: grid;
-  grid-template-columns: repeat(18, 1fr);
-  grid-template-rows: repeat(10, 1fr);
+  grid-template-columns: repeat(20, 1fr);
+  grid-template-rows: repeat(12, 1fr);
+  gap: 3px;
 }
 .tto-pixel {
   opacity: 0;
   background: var(--pixel-color, #00d9ff);
+  /* the glow is what sells "neon" - it bleeds a soft halo of the pixel's
+     own color across the dark gaps into its neighbors, rather than each
+     block reading as a flat, isolated colored square. */
+  box-shadow: 0 0 12px 3px var(--pixel-color, #00d9ff);
   /* forwards as cheap insurance against the same class of bug fixed on
      .tto-bubble above - here the animation's own end state (opacity:0)
      already matches the element's plain un-animated style, so a pixel
      finishing early wouldn't visibly snap to anything different, but
      there's no reason to depend on that coincidence holding forever. */
-  animation: ttoPixelFlicker 950ms var(--delay) forwards;
+  animation: ttoPixelFlicker var(--tto-dur) var(--delay) forwards;
 }
 @keyframes ttoPixelFlicker {
   0% { opacity: 0; transform: scale(0.4); }
-  12% { opacity: var(--pixel-op, 0.85); transform: scale(1) translate(var(--jx, 0), var(--jy, 0)); }
-  78% { opacity: var(--pixel-op, 0.85); transform: scale(1) translate(var(--jx, 0), var(--jy, 0)); }
+  12% { opacity: 1; transform: scale(1) translate(var(--jx, 0), var(--jy, 0)); }
+  78% { opacity: 1; transform: scale(1) translate(var(--jx, 0), var(--jy, 0)); }
   100% { opacity: 0; transform: scale(0.5); }
 }
 
@@ -3970,36 +3980,49 @@ html[data-theme="ledger"] .view-btn.active {
    actual flashy visual sitting on top of this safety net. */
 #themeTransitionOverlay[data-playing="neon"] .tto-panel {
   background: #050912;
-  animation: ttoFade 950ms ease-in-out both;
+  animation: ttoFade var(--tto-dur) ease-in-out both;
 }
 /* Case Files - a manila folder cover falls from above and slams flat
    over the screen (a quick squash/rebound on impact instead of landing
    dead-still), holds there covering the swap, then keeps rotating open
-   around a top hinge - like a lid being lifted - fading out as it goes
-   past edge-on so it's fully gone by the time this ends regardless of
-   exactly when the overlay's own cleanup timer cuts it off. .tto-panel
-   *is* the folder cover here (no separate element needed) - its ::before
-   is the folder tab poking off the top edge, ::after is the same paper
-   grain the wipe version already used. */
+   around a top hinge - lifting up and away from the viewer like an
+   actual folder cover being opened, rather than folding down toward the
+   camera - fading out as it goes past edge-on so it's fully gone by the
+   time this ends regardless of exactly when the overlay's own cleanup
+   timer cuts it off. .tto-panel *is* the folder cover here (no separate
+   element needed) - its own background is a shaded manila gradient
+   (rather than a flat cream) so it reads as a real folder surface, its
+   ::before is an actual tab shape (clipped into a trapezoid, not just a
+   floating rectangle) bearing the case label in red, ::after is the same
+   paper-grain texture the wipe version already used. The tab sits fully
+   inside the viewport (top: 0, not poking above it) - a fixed/absolute
+   element can never render above its fixed ancestor's own top edge (that
+   edge already *is* the top of the browser viewport), so an earlier
+   version's negative top offset put the tab permanently off-screen. */
 #themeTransitionOverlay[data-playing="casefiles"] .tto-panel {
   clip-path: none;
   transform-origin: 50% 0%;
-  background: #f2e9cf;
-  box-shadow: 0 30px 70px rgba(20,15,5,0.5);
-  animation: ttoFolderSlamCaseFiles 950ms cubic-bezier(.5,0,.7,1) both;
+  background: linear-gradient(155deg, #ecd08f 0%, #d9a860 45%, #c08a45 100%);
+  box-shadow: inset 0 0 0 10px rgba(120,74,20,0.25), 0 30px 70px rgba(20,15,5,0.5);
+  animation: ttoFolderSlamCaseFiles var(--tto-dur) cubic-bezier(.5,0,.7,1) both;
 }
 #themeTransitionOverlay[data-playing="casefiles"] .tto-panel::before {
-  content: "CASE FILE";
+  content: "CASE FILES";
   position: absolute;
-  top: -30px;
-  left: 64px;
-  background: #2e4a5c;
-  color: #fbf6e6;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  padding: 8px 20px;
-  border-radius: 3px 3px 0 0;
+  top: 0;
+  left: 9%;
+  width: 230px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(155deg, #f0d89c 0%, #dcae6c 100%);
+  clip-path: polygon(4% 100%, 0 24%, 9% 0, 91% 0, 100% 24%, 96% 100%);
+  box-shadow: 0 8px 12px rgba(20,15,5,0.35);
+  color: #a3231f;
+  font: 800 15px 'Courier New', monospace;
+  letter-spacing: 0.14em;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
 }
 #themeTransitionOverlay[data-playing="casefiles"] .tto-panel::after {
   content: "";
@@ -4013,27 +4036,182 @@ html[data-theme="ledger"] .view-btn.active {
   0%   { transform: perspective(1800px) translateY(-120vh) scale(1, 1) rotateX(0deg); opacity: 1; }
   22%  { transform: perspective(1800px) translateY(1.5vh) scale(1.02, 0.94) rotateX(0deg); opacity: 1; }
   32%  { transform: perspective(1800px) translateY(0) scale(1, 1) rotateX(0deg); opacity: 1; }
-  60%  { transform: perspective(1800px) translateY(0) scale(1, 1) rotateX(0deg); opacity: 1; }
-  100% { transform: perspective(1800px) translateY(0) scale(1, 1) rotateX(-110deg); opacity: 0; }
+  62%  { transform: perspective(1800px) translateY(0) scale(1, 1) rotateX(0deg); opacity: 1; }
+  100% { transform: perspective(1800px) translateY(0) scale(1, 1) rotateX(120deg); opacity: 0; }
 }
-/* Private Bank - the panel *is* a page, turning in around a hinge on the
-   left edge (like the spine of a book) rather than a wipe - it swings in
-   from edge-on, lands flat covering the swap, then keeps turning the
-   same direction it arrived in rather than reversing, fading out as it
-   goes past edge-on again on the far side. The dark gradient near the
-   hinge edge is a fixed spine shadow, not part of the turn itself, for a
-   bit of page depth. */
+/* Private Bank - a sealed, addressed envelope drops in, its wax seal
+   cracks and the flap opens, and a paper slides up out of it - rather
+   than the panel itself carrying the whole visual, .tto-panel here is
+   reduced to a plain dark wash (ttoFade, the same shared fade Deep
+   Current/Neon use underneath their own decorative layers) which is the
+   actual guarantee the swap stays masked, while .tto-envelope (a single
+   fixed graphic - there's only ever one envelope, so unlike the bubbles/
+   pixels it doesn't need to be spawned per-play) is the decorative
+   animation layered on top of it. */
 #themeTransitionOverlay[data-playing="ledger"] .tto-panel {
   clip-path: none;
-  transform-origin: 0% 50%;
-  background: linear-gradient(90deg, rgba(0,0,0,0.32) 0%, transparent 10%), #f6f4ee;
-  animation: ttoPageTurnLedger 950ms cubic-bezier(.45,.05,.15,1) both;
+  background: #14110c;
+  animation: ttoFade var(--tto-dur) ease-in-out both;
 }
-@keyframes ttoPageTurnLedger {
-  0%   { transform: perspective(2000px) rotateY(90deg); opacity: 0.85; }
-  35%  { transform: perspective(2000px) rotateY(0deg); opacity: 1; }
-  65%  { transform: perspective(2000px) rotateY(0deg); opacity: 1; }
-  100% { transform: perspective(2000px) rotateY(-100deg); opacity: 0; }
+.tto-envelope {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+}
+#themeTransitionOverlay[data-playing="ledger"] .tto-envelope {
+  display: flex;
+}
+.tto-envelope-body {
+  position: relative;
+  width: min(62vw, 560px);
+  height: min(40vw, 360px);
+  background: linear-gradient(155deg, #f6efdc 0%, #ece0c4 100%);
+  box-shadow: 0 30px 70px rgba(20,15,5,0.5);
+  border: 1px solid rgba(120,90,40,0.35);
+  perspective: 1400px;
+  animation: ttoEnvelopeFall var(--tto-dur) cubic-bezier(.4,0,.2,1) both;
+}
+/* the "professional writing" - a small addressed block in the lower-left
+   third of the envelope face, like a typed recipient address. */
+.tto-envelope-address {
+  position: absolute;
+  left: 12%;
+  bottom: 16%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: #3a2f1c;
+}
+/* a postal cancellation mark - two parallel arcs over a plain ring,
+   rotated off-axis like a real postmark stamped slightly crooked. Sits
+   low enough (past the flap's own halfway point) that it's clear of the
+   flap's triangular clip-path rather than getting sliced by it - the
+   flap only ever fills that narrowing wedge shape, so anything near the
+   edges higher up would render half-covered by it. */
+.tto-envelope-postmark {
+  position: absolute;
+  top: 38%;
+  right: 6%;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid rgba(30,60,90,0.55);
+  opacity: 0.7;
+  transform: rotate(-12deg);
+}
+.tto-envelope-postmark::before,
+.tto-envelope-postmark::after {
+  content: "";
+  position: absolute;
+  left: -20px;
+  right: -20px;
+  height: 0;
+  border-top: 2px solid rgba(30,60,90,0.5);
+}
+.tto-envelope-postmark::before { top: 14px; }
+.tto-envelope-postmark::after { bottom: 14px; }
+/* the ink stamp - a rubber-stamped rectangle, printed slightly crooked
+   and with mix-blend-mode so it reads as ink pressed into paper rather
+   than a flat sticker sitting on top of it. Same reasoning on vertical
+   placement as the postmark above - low enough to clear the flap's
+   triangular clip-path instead of being sliced by it. */
+.tto-envelope-stampmark {
+  position: absolute;
+  left: 6%;
+  top: 40%;
+  padding: 5px 12px;
+  border: 3px solid rgba(163,35,31,0.8);
+  border-radius: 4px;
+  color: rgba(163,35,31,0.8);
+  font: 800 13px 'Courier New', monospace;
+  letter-spacing: 0.12em;
+  transform: rotate(-9deg);
+  mix-blend-mode: multiply;
+  opacity: 0.85;
+}
+/* the flap - a triangle clipped from a rectangle spanning the top half
+   of the envelope, hinged along its own top edge (shared with the
+   envelope body's top edge) so opening it rotates it up and away from
+   the viewer, the same direction a real envelope flap lifts. */
+.tto-envelope-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 56%;
+  transform-origin: 50% 0%;
+  transform-style: preserve-3d;
+  background: linear-gradient(200deg, #f2e6c9 0%, #dfc890 100%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  box-shadow: inset 0 -14px 18px -14px rgba(80,55,20,0.35);
+  animation: ttoEnvelopeFlapOpen var(--tto-dur) cubic-bezier(.5,0,.3,1) both;
+}
+/* the wax seal - an irregular blob (mismatched border-radius corners
+   rather than a perfect circle) rather than a clean circle, sitting on
+   the flap's point, cracking away once the flap starts lifting. */
+.tto-envelope-seal {
+  position: absolute;
+  top: calc(56% - 23px);
+  left: calc(50% - 23px);
+  width: 46px;
+  height: 46px;
+  border-radius: 44% 56% 58% 42% / 46% 44% 56% 54%;
+  background: radial-gradient(circle at 34% 28%, #c9403a, #7c1712 70%, #5c0f0c 100%);
+  box-shadow: 0 3px 6px rgba(20,10,5,0.5);
+  animation: ttoSealCrack var(--tto-dur) linear both;
+}
+.tto-envelope-seal::after {
+  content: "PB";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 13px Georgia, serif;
+  color: rgba(255,220,200,0.55);
+}
+/* the paper - hidden (opacity 0) until the flap is well into opening,
+   then rises up out from behind it and past the top of the envelope,
+   reading as the letter being pulled out rather than just appearing. */
+.tto-envelope-paper {
+  position: absolute;
+  left: 7%;
+  bottom: 20%;
+  width: 86%;
+  height: 62%;
+  background: linear-gradient(180deg, #fffdf6, #f4efe0);
+  box-shadow: 0 12px 30px rgba(20,15,5,0.35);
+  animation: ttoPaperRise var(--tto-dur) cubic-bezier(.3,0,.2,1) both;
+}
+@keyframes ttoEnvelopeFall {
+  0%   { transform: translateY(-140vh) rotate(-6deg) scale(0.92); opacity: 1; }
+  40%  { transform: translateY(2%) rotate(1.5deg) scale(1.03); opacity: 1; }
+  50%  { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  86%  { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translateY(-4%) rotate(0deg) scale(1.01); opacity: 0; }
+}
+@keyframes ttoEnvelopeFlapOpen {
+  0%   { transform: rotateX(0deg); }
+  52%  { transform: rotateX(0deg); }
+  78%  { transform: rotateX(-155deg); }
+  100% { transform: rotateX(-155deg); }
+}
+@keyframes ttoSealCrack {
+  0%   { opacity: 1; transform: scale(1) rotate(0deg); }
+  54%  { opacity: 1; transform: scale(1) rotate(0deg); }
+  63%  { opacity: 0; transform: scale(1.3) rotate(16deg); }
+  100% { opacity: 0; transform: scale(1.3) rotate(16deg); }
+}
+@keyframes ttoPaperRise {
+  0%   { transform: translateY(6%) scale(0.94); opacity: 0; }
+  58%  { transform: translateY(6%) scale(0.94); opacity: 0; }
+  84%  { transform: translateY(-40%) scale(1); opacity: 1; }
+  100% { transform: translateY(-48%) scale(1); opacity: 1; }
 }
 
 /* ============================================================
@@ -4644,7 +4822,7 @@ html[data-theme="deepcurrent"] #customTooltip.tooltip-below::after {
 #themeTransitionOverlay[data-playing="deepcurrent"] .tto-panel {
   clip-path: none;
   background: linear-gradient(180deg, #0a2a3a 0%, #062031 40%, #041624 70%, #01070c 100%);
-  animation: ttoFade 950ms ease-in-out both;
+  animation: ttoFade var(--tto-dur) ease-in-out both;
 }
 
 /* Success flourish - a burst of bubbles rising from the Add Sweat button
@@ -5192,7 +5370,16 @@ html[data-theme="deepcurrent"] .pill.boost {
 <div id="nebula"><div id="nebulaGlow2" aria-hidden="true"></div></div>
 <div id="starfield"></div>
 <div id="bubblefield"></div>
-<div id="themeTransitionOverlay" aria-hidden="true"><div class="tto-panel"></div><div class="tto-pixels" id="ttoPixels"></div><div class="tto-bubbles" id="ttoBubbles"></div></div>
+<div id="themeTransitionOverlay" aria-hidden="true"><div class="tto-panel"></div><div class="tto-pixels" id="ttoPixels"></div><div class="tto-bubbles" id="ttoBubbles"></div><div class="tto-envelope">
+  <div class="tto-envelope-body">
+    <div class="tto-envelope-address"><span>Mr. J. Holdersworth</span><span>Vault Access Division</span><span>The Private Bank &mdash; Main Branch</span></div>
+    <div class="tto-envelope-postmark"></div>
+    <div class="tto-envelope-stampmark">APPROVED</div>
+    <div class="tto-envelope-paper"></div>
+    <div class="tto-envelope-flap"></div>
+    <div class="tto-envelope-seal"></div>
+  </div>
+</div></div>
 <div id="customTooltip" role="tooltip" aria-hidden="true"></div>
 
 <div class="page">
@@ -5683,13 +5870,15 @@ function clearTtoBubbles() {
   ttoBubbles.innerHTML = "";
 }
 
-// Neon's transition only - fills the fixed 18x10 CSS grid (.tto-pixels)
+// Neon's transition only - fills the fixed 20x12 CSS grid (.tto-pixels)
 // with one block per cell, each popping in/out on its own random delay
 // and picking its own color from the theme's palette, so the grid reads
 // as glitchy digital noise assembling and scattering rather than a flat
-// pattern turning on and off in unison.
+// pattern turning on and off in unison. Every pixel holds at full opacity
+// (see .tto-pixel/ttoPixelFlicker in the CSS) so there's no per-pixel
+// transparency left to randomize here.
 const ttoPixels = document.getElementById("ttoPixels");
-const TTO_PIXEL_COLORS = ["#00d9ff", "#a855f7", "#35e6ff", "#c084fc", "#ffffff"];
+const TTO_PIXEL_COLORS = ["#00d9ff", "#a855f7", "#35e6ff", "#c084fc", "#ff3ec8", "#ffffff"];
 function spawnTtoPixels(cols, rows) {
   const frag = document.createDocumentFragment();
   for (let i = 0; i < cols * rows; i++) {
@@ -5697,12 +5886,10 @@ function spawnTtoPixels(cols, rows) {
     pixel.className = "tto-pixel";
     const delay = (Math.random() * 0.1).toFixed(2);
     const color = TTO_PIXEL_COLORS[Math.floor(Math.random() * TTO_PIXEL_COLORS.length)];
-    const op = (Math.random() * 0.3 + 0.7).toFixed(2);
     const jx = (Math.random() * 6 - 3).toFixed(1) + "px";
     const jy = (Math.random() * 6 - 3).toFixed(1) + "px";
     pixel.style.setProperty("--delay", `${delay}s`);
     pixel.style.setProperty("--pixel-color", color);
-    pixel.style.setProperty("--pixel-op", op);
     pixel.style.setProperty("--jx", jx);
     pixel.style.setProperty("--jy", jy);
     frag.appendChild(pixel);
@@ -5713,29 +5900,40 @@ function clearTtoPixels() {
   ttoPixels.innerHTML = "";
 }
 
+// Case Files and Private Bank both play longer, more elaborate sequences
+// (a folder needs time to fall/slam/swing open; an envelope needs to
+// fall, crack its seal, open its flap AND let a paper rise out of it) so
+// they get a longer total duration than the shared default - every
+// theme's transition still scales its own keyframe percentages against
+// whatever --tto-dur ends up set to (see the CSS), so this is the single
+// place that duration is chosen.
+const TTO_DURATIONS = { casefiles: 1500, ledger: 1900 };
+
 function playThemeTransition(themeId, swapFn) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     swapFn();
     return;
   }
+  const duration = TTO_DURATIONS[themeId] || THEME_TRANSITION_MS;
   hideTooltip(); // a tooltip left open would otherwise float above the full-screen wipe
   clearTimeout(themeTransitionSwapTimer);
   clearTimeout(themeTransitionEndTimer);
   themeTransitionOverlay.classList.remove("active");
   void themeTransitionOverlay.offsetWidth; // restart the animation cleanly if one was already mid-flight
+  themeTransitionOverlay.style.setProperty("--tto-dur", `${duration}ms`);
   themeTransitionOverlay.setAttribute("data-playing", themeId);
   clearTtoBubbles();
   clearTtoPixels();
   if (themeId === "deepcurrent") spawnTtoBubbles(85);
-  if (themeId === "neon") spawnTtoPixels(18, 10);
+  if (themeId === "neon") spawnTtoPixels(20, 12);
   themeTransitionOverlay.classList.add("active");
-  themeTransitionSwapTimer = setTimeout(swapFn, THEME_TRANSITION_MS / 2);
+  themeTransitionSwapTimer = setTimeout(swapFn, duration / 2);
   themeTransitionEndTimer = setTimeout(() => {
     themeTransitionOverlay.classList.remove("active");
     themeTransitionOverlay.removeAttribute("data-playing");
     clearTtoBubbles();
     clearTtoPixels();
-  }, THEME_TRANSITION_MS + 30);
+  }, duration + 30);
 }
 
 function currentThemeId() {

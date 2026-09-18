@@ -3994,13 +3994,19 @@ html[data-theme="ledger"] .view-btn.active {
    (rather than a flat cream) so it reads as a real folder surface, its
    ::before is an actual tab shape (clipped into a trapezoid, not just a
    floating rectangle) bearing the case label in red, ::after is the same
-   paper-grain texture the wipe version already used. The tab sits fully
-   inside the viewport (top: 0, not poking above it) - a fixed/absolute
-   element can never render above its fixed ancestor's own top edge (that
-   edge already *is* the top of the browser viewport), so an earlier
-   version's negative top offset put the tab permanently off-screen. */
+   paper-grain texture the wipe version already used, and its child
+   .tto-folder-stamp is a second, much bigger "CASE FILES" stamped
+   directly on the front. The tab sits fully inside the viewport (top: 0,
+   not poking above it) - a fixed/absolute element can never render above
+   its fixed ancestor's own top edge (that edge already *is* the top of
+   the browser viewport), so an earlier version's negative top offset put
+   the tab permanently off-screen. The folder itself is inset slightly
+   from the right/bottom edges (see .tto-folder-paper below) rather than
+   covering true edge-to-edge, so a sliver of the paper stack underneath
+   peeks out - reading as an overstuffed folder rather than a flat cover. */
 #themeTransitionOverlay[data-playing="casefiles"] .tto-panel {
   clip-path: none;
+  inset: 0 3% 3% 0;
   transform-origin: 50% 0%;
   background: linear-gradient(155deg, #ecd08f 0%, #d9a860 45%, #c08a45 100%);
   box-shadow: inset 0 0 0 10px rgba(120,74,20,0.25), 0 30px 70px rgba(20,15,5,0.5);
@@ -4010,19 +4016,19 @@ html[data-theme="ledger"] .view-btn.active {
   content: "CASE FILES";
   position: absolute;
   top: 0;
-  left: 9%;
-  width: 230px;
-  height: 50px;
+  left: 8%;
+  width: 300px;
+  height: 68px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(155deg, #f0d89c 0%, #dcae6c 100%);
-  clip-path: polygon(4% 100%, 0 24%, 9% 0, 91% 0, 100% 24%, 96% 100%);
-  box-shadow: 0 8px 12px rgba(20,15,5,0.35);
+  background: linear-gradient(155deg, #faf3df 0%, #eeddb3 100%);
+  clip-path: polygon(3% 100%, 0 18%, 6% 0, 94% 0, 100% 18%, 97% 100%);
+  box-shadow: 0 10px 18px rgba(20,15,5,0.45), inset 0 0 0 3px rgba(163,35,31,0.75);
   color: #a3231f;
-  font: 800 15px 'Courier New', monospace;
-  letter-spacing: 0.14em;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+  font: 800 21px 'Courier New', monospace;
+  letter-spacing: 0.1em;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
 }
 #themeTransitionOverlay[data-playing="casefiles"] .tto-panel::after {
   content: "";
@@ -4031,6 +4037,54 @@ html[data-theme="ledger"] .view-btn.active {
   opacity: 0.5;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+/* the big front stamp - a second, much larger "CASE FILES" pressed
+   diagonally across the folder's face like an ink stamp, on top of
+   (and moving together with, since it's a real child rather than a
+   fixed sibling) .tto-panel's own fall/slam/open animation. */
+.tto-folder-stamp {
+  display: none;
+}
+#themeTransitionOverlay[data-playing="casefiles"] .tto-folder-stamp {
+  display: block;
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  padding: 16px 32px;
+  border: 6px double rgba(163,35,31,0.62);
+  border-radius: 6px;
+  color: rgba(163,35,31,0.62);
+  font: 800 clamp(28px, 5vw, 54px) 'Courier New', monospace;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  mix-blend-mode: multiply;
+}
+/* the peeking paper - a plain full-bleed sheet sitting behind .tto-panel
+   and always covering the full screen (so it's just as safe a mask for
+   the swap as the folder itself), with the folder inset a few percent
+   from the right/bottom edges so a margin of it shows there. The two
+   thin diagonal-adjacent lines hint at a couple more sheets stacked
+   underneath rather than one flat rectangle. Fades out in step with the
+   folder's own opacity so it never lingers and blocks the reveal once
+   the folder has rotated away. */
+.tto-folder-paper {
+  display: none;
+}
+#themeTransitionOverlay[data-playing="casefiles"] .tto-folder-paper {
+  display: block;
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent calc(100% - 3.6%), rgba(60,40,10,0.12) calc(100% - 3.6%), rgba(60,40,10,0.12) calc(100% - 3.4%), transparent calc(100% - 3.4%)),
+    linear-gradient(0deg, transparent calc(100% - 3.6%), rgba(60,40,10,0.12) calc(100% - 3.6%), rgba(60,40,10,0.12) calc(100% - 3.4%), transparent calc(100% - 3.4%)),
+    #f7f2e0;
+  animation: ttoFolderPaperFade var(--tto-dur) cubic-bezier(.5,0,.7,1) both;
+}
+@keyframes ttoFolderPaperFade {
+  0%   { opacity: 1; }
+  62%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 @keyframes ttoFolderSlamCaseFiles {
   0%   { transform: perspective(1800px) translateY(-120vh) scale(1, 1) rotateX(0deg); opacity: 1; }
@@ -4065,8 +4119,8 @@ html[data-theme="ledger"] .view-btn.active {
 }
 .tto-envelope-body {
   position: relative;
-  width: min(62vw, 560px);
-  height: min(40vw, 360px);
+  width: min(80vw, 760px);
+  height: min(52vw, 490px);
   background: linear-gradient(155deg, #f6efdc 0%, #ece0c4 100%);
   box-shadow: 0 30px 70px rgba(20,15,5,0.5);
   border: 1px solid rgba(120,90,40,0.35);
@@ -4084,7 +4138,7 @@ html[data-theme="ledger"] .view-btn.active {
   gap: 6px;
   font-family: Georgia, 'Times New Roman', serif;
   font-style: italic;
-  font-size: 15px;
+  font-size: 18px;
   color: #3a2f1c;
 }
 /* a postal cancellation mark - two parallel arcs over a plain ring,
@@ -4097,8 +4151,8 @@ html[data-theme="ledger"] .view-btn.active {
   position: absolute;
   top: 38%;
   right: 6%;
-  width: 72px;
-  height: 72px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   border: 2px solid rgba(30,60,90,0.55);
   opacity: 0.7;
@@ -4108,13 +4162,13 @@ html[data-theme="ledger"] .view-btn.active {
 .tto-envelope-postmark::after {
   content: "";
   position: absolute;
-  left: -20px;
-  right: -20px;
+  left: -24px;
+  right: -24px;
   height: 0;
   border-top: 2px solid rgba(30,60,90,0.5);
 }
-.tto-envelope-postmark::before { top: 14px; }
-.tto-envelope-postmark::after { bottom: 14px; }
+.tto-envelope-postmark::before { top: 18px; }
+.tto-envelope-postmark::after { bottom: 18px; }
 /* the ink stamp - a rubber-stamped rectangle, printed slightly crooked
    and with mix-blend-mode so it reads as ink pressed into paper rather
    than a flat sticker sitting on top of it. Same reasoning on vertical
@@ -4124,11 +4178,11 @@ html[data-theme="ledger"] .view-btn.active {
   position: absolute;
   left: 6%;
   top: 40%;
-  padding: 5px 12px;
+  padding: 6px 14px;
   border: 3px solid rgba(163,35,31,0.8);
   border-radius: 4px;
   color: rgba(163,35,31,0.8);
-  font: 800 13px 'Courier New', monospace;
+  font: 800 16px 'Courier New', monospace;
   letter-spacing: 0.12em;
   transform: rotate(-9deg);
   mix-blend-mode: multiply;
@@ -4156,10 +4210,10 @@ html[data-theme="ledger"] .view-btn.active {
    the flap's point, cracking away once the flap starts lifting. */
 .tto-envelope-seal {
   position: absolute;
-  top: calc(56% - 23px);
-  left: calc(50% - 23px);
-  width: 46px;
-  height: 46px;
+  top: calc(56% - 29px);
+  left: calc(50% - 29px);
+  width: 58px;
+  height: 58px;
   border-radius: 44% 56% 58% 42% / 46% 44% 56% 54%;
   background: radial-gradient(circle at 34% 28%, #c9403a, #7c1712 70%, #5c0f0c 100%);
   box-shadow: 0 3px 6px rgba(20,10,5,0.5);
@@ -4172,7 +4226,7 @@ html[data-theme="ledger"] .view-btn.active {
   display: flex;
   align-items: center;
   justify-content: center;
-  font: 700 13px Georgia, serif;
+  font: 700 16px Georgia, serif;
   color: rgba(255,220,200,0.55);
 }
 /* the paper - hidden (opacity 0) until the flap is well into opening,
@@ -5370,7 +5424,7 @@ html[data-theme="deepcurrent"] .pill.boost {
 <div id="nebula"><div id="nebulaGlow2" aria-hidden="true"></div></div>
 <div id="starfield"></div>
 <div id="bubblefield"></div>
-<div id="themeTransitionOverlay" aria-hidden="true"><div class="tto-panel"></div><div class="tto-pixels" id="ttoPixels"></div><div class="tto-bubbles" id="ttoBubbles"></div><div class="tto-envelope">
+<div id="themeTransitionOverlay" aria-hidden="true"><div class="tto-folder-paper"></div><div class="tto-panel"><div class="tto-folder-stamp">CASE FILES</div></div><div class="tto-pixels" id="ttoPixels"></div><div class="tto-bubbles" id="ttoBubbles"></div><div class="tto-envelope">
   <div class="tto-envelope-body">
     <div class="tto-envelope-address"><span>Mr. J. Holdersworth</span><span>Vault Access Division</span><span>The Private Bank &mdash; Main Branch</span></div>
     <div class="tto-envelope-postmark"></div>

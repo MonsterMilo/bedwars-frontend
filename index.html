@@ -639,12 +639,28 @@ h1 {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 6px 10px;
-  padding: 10px 14px;
+  padding: 8px 14px;
   border-radius: var(--radius-s);
   background: var(--panel-2);
   border: 1px solid var(--border);
 }
-.denick-row-name { font-weight: 600; color: var(--text); }
+.denick-row-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+/* Minecraft head renders are natively 8x8 px per face - scaling that up
+   with the browser's default smoothing turns it to mush, so it's pinned to
+   the same crisp-pixel rendering the rest of the site already uses for
+   in-game art (see .beaten-avatar/skin images elsewhere). */
+.denick-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+.denick-row-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.denick-row-name { font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.denick-row-sub { font-size: 0.78em; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 @media (max-width: 480px) {
   .denick-mode-toggle { flex-direction: column; }
@@ -1742,20 +1758,18 @@ html:not([data-theme]) .sweat-card:hover::after {
 .pill.cheat { color: var(--bad); border-color: rgba(255,92,114,0.4); background: var(--bad-soft); }
 .pill.boost { color: var(--gold); border-color: rgba(255,209,102,0.4); background: rgba(255,209,102,0.1); }
 
-/* Denick accuracy badges - built from color-mix() off the same --good/
-   --gold/--bad tokens the theme already redefines everywhere else, rather
-   than hardcoded rgba() like the pills above, so these four read correctly
-   in every theme's palette with one rule each instead of needing a
-   per-theme override block the way .pill.cheat/.boost do. Scoped under
-   #denickResults (rather than plain .pill.acc-high etc) purely for
-   specificity - every theme's blanket `html[data-theme=X] .pill {...}`
-   override (recoloring level/fkdr/cheat/boost for that theme) outranks a
-   same-depth .pill.acc-high selector since it has an extra type selector,
-   and would otherwise win over these regardless of theme. */
-#denickResults .pill.acc-high { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); background: color-mix(in srgb, var(--good) 12%, transparent); }
-#denickResults .pill.acc-medium { color: var(--gold); border-color: color-mix(in srgb, var(--gold) 40%, transparent); background: color-mix(in srgb, var(--gold) 12%, transparent); }
-#denickResults .pill.acc-low { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); background: color-mix(in srgb, var(--bad) 12%, transparent); }
-#denickResults .pill.acc-unknown { color: var(--text-dim); border-color: var(--border); background: rgba(255,255,255,0.03); }
+/* The one denick badge left - "Current", marking whichever row is the most
+   recent match (the nick's present owner, or the nick a player is using
+   now) - everything else is just plain time-ago text, not a categorized
+   tier, so it doesn't need its own pill color. Built from color-mix() off
+   --good rather than a hardcoded rgba() so it reads correctly in every
+   theme's palette with one rule. Scoped under #denickResults (rather than
+   plain .pill.acc-current) purely for specificity - every theme's blanket
+   `html[data-theme=X] .pill {...}` override (recoloring level/fkdr/cheat/
+   boost for that theme) outranks a same-depth .pill.acc-current selector
+   since it has an extra type selector, and would otherwise win over this
+   regardless of theme. */
+#denickResults .pill.acc-current { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); background: color-mix(in srgb, var(--good) 12%, transparent); }
 
 .sweat-card-footer {
   display: flex;
@@ -2499,7 +2513,7 @@ html[data-theme="casefiles"] .panel-icon::before {
 }
 html[data-theme="casefiles"] .panel-icon-lookup::before { content: "\2315"; }
 html[data-theme="casefiles"] .panel-icon-results::before { content: "\25A3"; }
-html[data-theme="casefiles"] .panel-icon-denick::before { content: "?"; }
+html[data-theme="casefiles"] .panel-icon-denick::before { content: "\26BF"; }
 
 /* clip-path clips box-shadow along with everything else, which would cut
    the shadow off hard at the flat pre-tear rectangle rather than letting it
@@ -3246,16 +3260,21 @@ html[data-theme="ledger"] body {
    There's no real border/padding-box gap here (box-shadow paints outside
    .page's own edge, and .hero-controls' right:0 sits AT that same edge),
    so the frame used to start right where the Admin Key button ends,
-   touching it with zero breathing room. Added a 10px var(--bg) buffer
-   layer on top of the whole stack, then pushed the other three layers'
-   spread out by that same 10px, so the two rule-lines and the gap between
-   them keep their original widths, just moved further from the page -
-   the button stays exactly where it was. 18px of total reach still clears
-   body's own 20px side padding on narrow viewports. */
+   touching it with zero breathing room. Added a var(--bg) buffer layer on
+   top of the whole stack, then pushed the other three layers' spread out
+   by that same amount, so the two rule-lines and the gap between them
+   keep their original widths, just moved further from the page - the
+   button stays exactly where it was. First widened to a 10px buffer
+   (18px total reach), which per a screenshot still read as touching -
+   widened again to 14px (22px total). Kept at-or-under body's own 20px
+   side padding wasn't possible without shrinking the buffer back down, so
+   this trades a few px of clipping risk on very narrow phone screens
+   (where .page has no side margin left to bleed into) for a buffer that
+   actually reads as clear space on normal window sizes. */
 html[data-theme="ledger"] .page {
   padding: 20px 24px 32px;
   border-radius: 6px;
-  box-shadow: 0 0 0 10px var(--bg), 0 0 0 11px var(--border-strong), 0 0 0 17px var(--bg), 0 0 0 18px var(--border-strong);
+  box-shadow: 0 0 0 14px var(--bg), 0 0 0 15px var(--border-strong), 0 0 0 21px var(--bg), 0 0 0 22px var(--border-strong);
 }
 
 html[data-theme="ledger"] .panel-header h2,
@@ -3638,7 +3657,7 @@ html[data-theme="ledger"] .panel-icon::before {
 }
 html[data-theme="ledger"] .panel-icon-lookup::before { content: "\2712"; }
 html[data-theme="ledger"] .panel-icon-results::before { content: "\2756"; }
-html[data-theme="ledger"] .panel-icon-denick::before { content: "?"; }
+html[data-theme="ledger"] .panel-icon-denick::before { content: "\2611"; }
 /* Own wording instead of reusing Case Files' literal "Exhibit A/B" text -
    "Schedule" is the equivalent real financial/legal-document term, so it
    fits the theme's tone without being the same label recolored. The real
@@ -5122,7 +5141,7 @@ html[data-theme="deepcurrent"] .panel-icon-lookup::before {
   content: "\25CE";
   animation: sonarPulseIcon 2.4s ease-in-out infinite;
 }
-html[data-theme="deepcurrent"] .panel-icon-denick::before { content: "?"; }
+html[data-theme="deepcurrent"] .panel-icon-denick::before { content: "\25D1"; }
 html[data-theme="deepcurrent"] .panel-icon-results::before {
   content: "\2693";
   color: var(--accent-2);
@@ -5836,6 +5855,11 @@ html[data-theme="deepcurrent"] .pill.boost {
     </div>
     <div id="denickStatus" class="denick-status" role="status" aria-live="polite"></div>
     <div id="denickResults" class="denick-results"></div>
+    <div id="denickPagination" class="pagination" hidden>
+      <button type="button" class="icon-btn page-prev" data-tooltip="Previous page">&#8249;</button>
+      <span class="pagination-label"></span>
+      <button type="button" class="icon-btn page-next" data-tooltip="Next page">&#8250;</button>
+    </div>
     <div id="denickEmpty" class="dash-empty">
       <svg viewBox="0 0 48 48" class="dash-empty-icon" aria-hidden="true">
         <circle cx="21" cy="21" r="13" fill="none" stroke="currentColor" stroke-width="2.5" />
@@ -6356,14 +6380,6 @@ function loadDiamondDome() {
   return diamondDomeLoadPromise;
 }
 
-function denickAccuracyTier(updatedAt) {
-  if (!updatedAt) return { tier: "unknown", label: "Unknown" };
-  const days = (Date.now() - updatedAt) / 86400000;
-  if (days <= 7) return { tier: "high", label: "High" };
-  if (days <= 30) return { tier: "medium", label: "Medium" };
-  return { tier: "low", label: "Low" };
-}
-
 function denickTimeAgo(ms) {
   const diff = Math.max(0, Date.now() - ms);
   const mins = Math.floor(diff / 60000);
@@ -6377,10 +6393,6 @@ function denickTimeAgo(ms) {
   if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
   if (mins > 0) return `${mins} minute${mins > 1 ? "s" : ""} ago`;
   return "just now";
-}
-
-function denickDate(ms) {
-  return new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 // Never throws - a Denicker outage or missing key still leaves Diamond
@@ -6430,19 +6442,27 @@ function mergeDenickEntries(entries, keyField) {
   return [...byKey.values()].sort((a, b) => b.updated - a.updated);
 }
 
-function denickTooltip(entry) {
-  const lines = [];
+// Shown under the name instead of hidden behind a hover, per feedback that
+// the source/detail should just be visible - "Denicker API" or "Diamond
+// Dome" plus, for a Diamond Dome sighting, how many times and in what game,
+// plus a note when the other source also has this same pair.
+function denickSubtitle(entry) {
+  const parts = [entry.source];
   if (entry.sighting) {
     const s = entry.sighting;
-    lines.push(`Seen ${s.count > 1 ? `${s.count}x, last` : "once,"} ${denickTimeAgo(s.last)} in ${s.game}.`);
-    if (s.count > 1) lines.push(`First seen ${denickDate(s.first)}.`);
-  } else {
-    lines.push(`Denicked ${denickTimeAgo(entry.updated)}.`);
+    parts.push(`Seen ${s.count > 1 ? `${s.count}x` : "once"} in ${s.game}`);
   }
-  lines.push(`Source: ${entry.source}`);
   const also = [...(entry.alsoIn || [])].filter(s => s !== entry.source);
-  if (also.length) lines.push(`Also in: ${also.join(", ")}`);
-  return lines.join("\n");
+  if (also.length) parts.push(`also in ${also.join(", ")}`);
+  return parts.join(" · ");
+}
+
+// mc-heads renders an 8x8 Minecraft skin face and (like crafatar/minotar)
+// resolves a plain username itself, so this needs no separate uuid lookup -
+// it just falls back to the default Steve skin for a name that isn't a real
+// account, which covers most "nick" strings in player mode gracefully.
+function denickAvatarUrl(username) {
+  return `https://mc-heads.net/avatar/${encodeURIComponent(username)}/32`;
 }
 
 const denickModeBtns = document.querySelectorAll(".denick-mode-btn");
@@ -6451,28 +6471,77 @@ const denickSearchBtn = document.getElementById("denickSearchBtn");
 const denickStatus = document.getElementById("denickStatus");
 const denickResults = document.getElementById("denickResults");
 const denickEmpty = document.getElementById("denickEmpty");
+const denickPagination = document.getElementById("denickPagination");
+const DENICK_PAGE_SIZE = 8;
 let denickMode = "nick"; // "nick" -> who's used this nick; "player" -> what nicks this player has used
 let denickToken = 0; // guards against a slow, stale search overwriting a newer one
+let denickAllResults = []; // the full merged list from the last search - renderDenickPage() slices it
+let denickNameOf = null;
+let denickPage = 1;
 
-function renderDenickResults(entries, nameOf) {
+// entry.username is always the real player - even in player mode, where
+// nameOf(entry) shows entry.nick instead - so the avatar is a plain
+// function of the entry, not of which mode is active.
+function renderDenickResults(entries, nameOf, startIndex) {
   denickResults.innerHTML = "";
   const frag = document.createDocumentFragment();
-  entries.forEach(entry => {
-    const tier = denickAccuracyTier(entry.updated);
+  entries.forEach((entry, i) => {
+    const isCurrent = startIndex + i === 0 && denickAllResults.length > 1;
+
     const row = document.createElement("div");
     row.className = "denick-row";
+
+    const who = document.createElement("div");
+    who.className = "denick-row-who";
+
+    const avatar = document.createElement("img");
+    avatar.className = "denick-avatar";
+    avatar.src = denickAvatarUrl(entry.username);
+    avatar.alt = "";
+    avatar.loading = "lazy";
+    avatar.addEventListener("error", () => { avatar.style.visibility = "hidden"; }, { once: true });
+
+    const info = document.createElement("div");
+    info.className = "denick-row-info";
     const name = document.createElement("span");
     name.className = "denick-row-name";
     name.textContent = nameOf(entry);
+    const sub = document.createElement("span");
+    sub.className = "denick-row-sub";
+    sub.textContent = denickSubtitle(entry);
+    info.append(name, sub);
+
+    who.append(avatar, info);
+
     const badge = document.createElement("span");
-    badge.className = `pill acc-${tier.tier}`;
-    badge.textContent = tier.label;
-    badge.setAttribute("data-tooltip", denickTooltip(entry));
-    row.append(name, badge);
+    badge.className = isCurrent ? "pill acc-current" : "pill";
+    badge.textContent = isCurrent ? "Current" : denickTimeAgo(entry.updated);
+
+    row.append(who, badge);
     frag.appendChild(row);
   });
   denickResults.appendChild(frag);
 }
+
+// Slices denickAllResults down to the current page - same pattern as the
+// leaderboard's own paginate()/updatePaginationControls(), just a separate
+// state variable since the two lists are independent.
+function renderDenickPage() {
+  const totalPages = Math.max(1, Math.ceil(denickAllResults.length / DENICK_PAGE_SIZE));
+  if (denickPage > totalPages) denickPage = totalPages;
+  const start = (denickPage - 1) * DENICK_PAGE_SIZE;
+  renderDenickResults(denickAllResults.slice(start, start + DENICK_PAGE_SIZE), denickNameOf, start);
+  denickPagination.hidden = totalPages <= 1;
+  denickPagination.querySelector(".pagination-label").textContent = `Page ${denickPage} of ${totalPages}`;
+  denickPagination.querySelector(".page-prev").disabled = denickPage <= 1;
+  denickPagination.querySelector(".page-next").disabled = denickPage >= totalPages;
+}
+denickPagination.querySelector(".page-prev").addEventListener("click", () => {
+  if (denickPage > 1) { denickPage--; renderDenickPage(); }
+});
+denickPagination.querySelector(".page-next").addEventListener("click", () => {
+  denickPage++; renderDenickPage();
+});
 
 denickModeBtns.forEach(btn => {
   btn.addEventListener("click", () => {
@@ -6486,6 +6555,8 @@ denickModeBtns.forEach(btn => {
     denickInput.placeholder = denickMode === "nick" ? "Enter a nick" : "Enter a player's username";
     denickInput.value = "";
     denickResults.innerHTML = "";
+    denickAllResults = [];
+    denickPagination.hidden = true;
     denickStatus.textContent = "";
     denickEmpty.hidden = false;
   });
@@ -6502,6 +6573,7 @@ async function runDenickSearch() {
   denickSearchBtn.classList.add("loading");
   denickStatus.textContent = "";
   denickResults.innerHTML = "";
+  denickPagination.hidden = true;
   denickEmpty.hidden = true;
 
   try {
@@ -6530,7 +6602,11 @@ async function runDenickSearch() {
     if (isStale()) return;
 
     const merged = mergeDenickEntries([...apiResult.entries, ...domeEntries], keyField);
+    denickAllResults = merged;
+    denickNameOf = nameOf;
+    denickPage = 1;
     if (merged.length === 0) {
+      denickPagination.hidden = true;
       denickEmpty.hidden = false;
       if (apiResult.noKey) denickStatus.textContent = "Showing Diamond Dome only, and nothing matched.";
       else if (apiResult.error) denickStatus.textContent = `Denicker API didn't respond (${apiResult.error}) - showing Diamond Dome only, and nothing matched.`;
@@ -6538,11 +6614,13 @@ async function runDenickSearch() {
       return;
     }
 
-    renderDenickResults(merged, nameOf);
+    renderDenickPage();
     if (apiResult.noKey) denickStatus.textContent = "Showing Diamond Dome results only.";
     else if (apiResult.error) denickStatus.textContent = "Denicker API didn't respond - showing Diamond Dome results only.";
   } catch (err) {
     if (isStale()) return;
+    denickAllResults = [];
+    denickPagination.hidden = true;
     denickEmpty.hidden = false;
     denickStatus.textContent = `Error: ${err.message}`;
   } finally {
@@ -6556,10 +6634,10 @@ async function runDenickSearch() {
 denickSearchBtn.addEventListener("click", runDenickSearch);
 denickInput.addEventListener("keydown", (e) => { if (e.key === "Enter") runDenickSearch(); });
 
-// The backend now has three key tiers (admin/trusted/add - see server.js),
-// and a "trusted" key gets a specific, genuinely useful 403 reason when it
-// tries to touch something older than 7 days ("Trusted key can only edit or
-// remove entries added in the last 7 days"). Surfacing that instead of a
+// The backend has three key tiers (tier1/tier2/tier3 - see server.js), and
+// a tier2 key gets a specific, genuinely useful 403 reason when it tries to
+// touch something older than 7 days ("Trusted key can only edit or remove
+// entries added in the last 7 days"). Surfacing that instead of a
 // generic "Failed to..." is the whole point of the backend bothering to send
 // a real message - falls back to the generic one if the body isn't the
 // { error } shape (or isn't JSON at all).

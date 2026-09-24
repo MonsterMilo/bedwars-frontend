@@ -6532,14 +6532,14 @@ async function runDenickSearch() {
     const merged = mergeDenickEntries([...apiResult.entries, ...domeEntries], keyField);
     if (merged.length === 0) {
       denickEmpty.hidden = false;
-      if (apiResult.noKey) denickStatus.textContent = "Denicker API isn't set up yet - showing Diamond Dome only, and nothing matched.";
+      if (apiResult.noKey) denickStatus.textContent = "Showing Diamond Dome only, and nothing matched.";
       else if (apiResult.error) denickStatus.textContent = `Denicker API didn't respond (${apiResult.error}) - showing Diamond Dome only, and nothing matched.`;
       else denickStatus.textContent = "No results.";
       return;
     }
 
     renderDenickResults(merged, nameOf);
-    if (apiResult.noKey) denickStatus.textContent = "Denicker API isn't set up yet - showing Diamond Dome results only.";
+    if (apiResult.noKey) denickStatus.textContent = "Showing Diamond Dome results only.";
     else if (apiResult.error) denickStatus.textContent = "Denicker API didn't respond - showing Diamond Dome results only.";
   } catch (err) {
     if (isStale()) return;

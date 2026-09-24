@@ -3247,35 +3247,37 @@ html[data-theme="ledger"] body {
 }
 
 /* A certificate-style double-rule frame around the whole page, like the
-   engraved border on a stock certificate or banknote. box-shadow rings
-   instead of a real border so they don't disturb .page's own max-width/
-   margin:auto centering math or need extra wrapper markup - each ring is
-   really a solid disc out to its own spread radius, with a smaller/later
-   disc painted on top hiding everything but the outer sliver of the one
-   behind it, which is what actually reads as "two concentric lines" (the
-   var(--bg) layers are the gaps between/around those lines, not empty
-   space - a box-shadow layer can only add opaque paint, never punch a
-   hole, so anywhere meant to look empty has to be explicitly painted to
-   match the surrounding background instead).
-   There's no real border/padding-box gap here (box-shadow paints outside
-   .page's own edge, and .hero-controls' right:0 sits AT that same edge),
-   so the frame used to start right where the Admin Key button ends,
-   touching it with zero breathing room. Added a var(--bg) buffer layer on
-   top of the whole stack, then pushed the other three layers' spread out
-   by that same amount, so the two rule-lines and the gap between them
-   keep their original widths, just moved further from the page - the
-   button stays exactly where it was. First widened to a 10px buffer
-   (18px total reach), which per a screenshot still read as touching -
-   widened again to 14px (22px total). Kept at-or-under body's own 20px
-   side padding wasn't possible without shrinking the buffer back down, so
-   this trades a few px of clipping risk on very narrow phone screens
-   (where .page has no side margin left to bleed into) for a buffer that
-   actually reads as clear space on normal window sizes. */
+   engraved border on a stock certificate or banknote.
+   This used to be box-shadow rings (spread-only discs, each one erasing
+   everything but a thin sliver of the one behind it) rather than a real
+   border, specifically so the "gap" between the frame and the page - and
+   between the frame's own two lines - could be pushed further from the
+   page without disturbing .page's max-width/margin:auto centering math.
+   But erasing only works by painting a *flat* var(--bg) rectangle over
+   whatever was there - which looks fine against a flat background, but
+   this theme's real background is white PLUS a layered guilloche
+   watermark/paper-grain texture on top (see html:not([data-theme]) and
+   this theme's own body-texture rules elsewhere), so the erased areas
+   showed up as visibly flatter, plainer white than the textured page
+   around them once the gap got wide enough to notice (a screenshot from
+   testing the widened buffer caught this directly).
+   Two ::before/::after rings instead - genuinely transparent everywhere
+   but their own 1px stroke, so the real (textured) background shows
+   through the gaps naturally instead of needing to be faked. */
 html[data-theme="ledger"] .page {
   padding: 20px 24px 32px;
   border-radius: 6px;
-  box-shadow: 0 0 0 14px var(--bg), 0 0 0 15px var(--border-strong), 0 0 0 21px var(--bg), 0 0 0 22px var(--border-strong);
 }
+html[data-theme="ledger"] .page::before,
+html[data-theme="ledger"] .page::after {
+  content: "";
+  position: absolute;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  pointer-events: none;
+}
+html[data-theme="ledger"] .page::before { inset: -14px; }
+html[data-theme="ledger"] .page::after { inset: -20px; }
 
 html[data-theme="ledger"] .panel-header h2,
 html[data-theme="ledger"] .stat-hero-value,

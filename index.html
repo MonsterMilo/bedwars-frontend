@@ -600,9 +600,54 @@ h1 {
 }
 #fetchBtn.loading .fetch-btn-label { display: none; }
 #fetchBtn.loading .fetch-btn-spinner { display: inline-block; }
+/* Same loading-state swap, generalized for any ghost button with the same
+   label+spinner markup (currently just the denicking section's search
+   button) instead of copy-pasting another #id-specific pair per button. */
+.btn.loading .fetch-btn-label { display: none; }
+.btn.loading .fetch-btn-spinner { display: inline-block; }
 @keyframes fetchSpin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
   .fetch-btn-spinner { animation: none; }
+}
+
+/* ============================================================
+   DENICKING panel
+   ============================================================ */
+#denickContainer { max-width: 980px; margin: 0 auto 44px; padding: 26px 30px 28px; }
+
+.denick-mode-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
+.denick-mode-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text-dim);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.denick-mode-btn.active { background: var(--panel); border-color: var(--accent); color: var(--accent); }
+
+.denick-status { min-height: 1.2em; margin-top: 10px; font-size: 0.85em; color: var(--text-dim); }
+
+.denick-results { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.denick-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-s);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+}
+.denick-row-name { font-weight: 600; color: var(--text); }
+
+@media (max-width: 480px) {
+  .denick-mode-toggle { flex-direction: column; }
 }
 
 /* ============================================================
@@ -1697,6 +1742,21 @@ html:not([data-theme]) .sweat-card:hover::after {
 .pill.cheat { color: var(--bad); border-color: rgba(255,92,114,0.4); background: var(--bad-soft); }
 .pill.boost { color: var(--gold); border-color: rgba(255,209,102,0.4); background: rgba(255,209,102,0.1); }
 
+/* Denick accuracy badges - built from color-mix() off the same --good/
+   --gold/--bad tokens the theme already redefines everywhere else, rather
+   than hardcoded rgba() like the pills above, so these four read correctly
+   in every theme's palette with one rule each instead of needing a
+   per-theme override block the way .pill.cheat/.boost do. Scoped under
+   #denickResults (rather than plain .pill.acc-high etc) purely for
+   specificity - every theme's blanket `html[data-theme=X] .pill {...}`
+   override (recoloring level/fkdr/cheat/boost for that theme) outranks a
+   same-depth .pill.acc-high selector since it has an extra type selector,
+   and would otherwise win over these regardless of theme. */
+#denickResults .pill.acc-high { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); background: color-mix(in srgb, var(--good) 12%, transparent); }
+#denickResults .pill.acc-medium { color: var(--gold); border-color: color-mix(in srgb, var(--gold) 40%, transparent); background: color-mix(in srgb, var(--gold) 12%, transparent); }
+#denickResults .pill.acc-low { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+#denickResults .pill.acc-unknown { color: var(--text-dim); border-color: var(--border); background: rgba(255,255,255,0.03); }
+
 .sweat-card-footer {
   display: flex;
   align-items: center;
@@ -2439,6 +2499,7 @@ html[data-theme="casefiles"] .panel-icon::before {
 }
 html[data-theme="casefiles"] .panel-icon-lookup::before { content: "\2315"; }
 html[data-theme="casefiles"] .panel-icon-results::before { content: "\25A3"; }
+html[data-theme="casefiles"] .panel-icon-denick::before { content: "?"; }
 
 /* clip-path clips box-shadow along with everything else, which would cut
    the shadow off hard at the flat pre-tear rectangle rather than letting it
@@ -3577,6 +3638,7 @@ html[data-theme="ledger"] .panel-icon::before {
 }
 html[data-theme="ledger"] .panel-icon-lookup::before { content: "\2712"; }
 html[data-theme="ledger"] .panel-icon-results::before { content: "\2756"; }
+html[data-theme="ledger"] .panel-icon-denick::before { content: "?"; }
 /* Own wording instead of reusing Case Files' literal "Exhibit A/B" text -
    "Schedule" is the equivalent real financial/legal-document term, so it
    fits the theme's tone without being the same label recolored. The real
@@ -3602,6 +3664,7 @@ html[data-theme="ledger"] .exhibit-tag::before {
 }
 html[data-theme="ledger"] .exhibit-tag-lookup::before { content: "Schedule A"; }
 html[data-theme="ledger"] .exhibit-tag-results::before { content: "Schedule B"; }
+html[data-theme="ledger"] .exhibit-tag-denick::before { content: "Schedule C"; }
 
 html[data-theme="ledger"] .modal-content {
   background: var(--panel);
@@ -4292,6 +4355,9 @@ html[data-theme="ledger"] .view-btn.active {
   font-size: 0.78em;
   line-height: 1.35;
   padding: 6px 10px;
+  /* Only the denick accuracy badges pass multi-line text (\n-joined); every
+     other .data-tooltip caller is one line, where pre-line is a no-op. */
+  white-space: pre-line;
 }
 #customTooltip.visible {
   opacity: 1;
@@ -5056,6 +5122,7 @@ html[data-theme="deepcurrent"] .panel-icon-lookup::before {
   content: "\25CE";
   animation: sonarPulseIcon 2.4s ease-in-out infinite;
 }
+html[data-theme="deepcurrent"] .panel-icon-denick::before { content: "?"; }
 html[data-theme="deepcurrent"] .panel-icon-results::before {
   content: "\2693";
   color: var(--accent-2);
@@ -5090,6 +5157,7 @@ html[data-theme="deepcurrent"] .exhibit-tag::before {
 }
 html[data-theme="deepcurrent"] .exhibit-tag-lookup::before { content: "Dive Log A"; }
 html[data-theme="deepcurrent"] .exhibit-tag-results::before { content: "Dive Log B"; }
+html[data-theme="deepcurrent"] .exhibit-tag-denick::before { content: "Dive Log C"; }
 
 /* Lookup form's left column gets a faint teal edge-glow instead of a plain
    border, echoing the porthole-glass light elsewhere in this theme. */
@@ -5745,6 +5813,38 @@ html[data-theme="deepcurrent"] .pill.boost {
     </div>
   </div>
 
+  <div class="panel-header">
+    <div class="panel-icon panel-icon-denick">&#127917;</div>
+    <div>
+      <span class="exhibit-tag exhibit-tag-denick">Exhibit C</span>
+      <h2>Denicking</h2>
+      <p>Look up a nick or a player across the Denicker DB and Diamond Dome.</p>
+    </div>
+  </div>
+
+  <div id="denickContainer" class="card">
+    <div class="denick-mode-toggle" role="tablist" aria-label="Denick lookup mode">
+      <button type="button" class="denick-mode-btn active" data-mode="nick" role="tab" aria-selected="true">Nick &rarr; Owners</button>
+      <button type="button" class="denick-mode-btn" data-mode="player" role="tab" aria-selected="false">Player &rarr; Nicks Used</button>
+    </div>
+    <div class="lookup-row">
+      <input type="text" id="denickInput" placeholder="Enter a nick" aria-label="Nick or player to search" />
+      <button type="button" id="denickSearchBtn" class="btn btn-ghost">
+        <span class="fetch-btn-label">Search</span>
+        <span class="fetch-btn-spinner" aria-hidden="true"></span>
+      </button>
+    </div>
+    <div id="denickStatus" class="denick-status" role="status" aria-live="polite"></div>
+    <div id="denickResults" class="denick-results"></div>
+    <div id="denickEmpty" class="dash-empty">
+      <svg viewBox="0 0 48 48" class="dash-empty-icon" aria-hidden="true">
+        <circle cx="21" cy="21" r="13" fill="none" stroke="currentColor" stroke-width="2.5" />
+        <line x1="30.5" y1="30.5" x2="41" y2="41" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+      </svg>
+      <p>Search a nick to see who's used it, or a player to see their nick history.</p>
+    </div>
+  </div>
+
   <!-- PLAYER MODAL -->
   <div id="playerModal" class="modal">
     <div class="modal-card">
@@ -6199,6 +6299,262 @@ function adminHeaders(extra = {}) {
   const key = getAdminKey();
   return key ? { ...extra, "x-admin-key": key } : extra;
 }
+
+// ============================================================
+// DENICKING
+// Looks up a nick or player across two sources and merges them the same
+// way the /denicker Starfish plugin command does (see denicker-1.5.0.js):
+// most recent match wins, and if both sources agree the other is noted in
+// the hover rather than shown as a separate row.
+//   - Denicker API: proxied through our own backend (/denicker/*) so its
+//     private key never reaches the browser - see server.js.
+//   - Diamond Dome: a public, keyless gist of scraped nicks, fetched
+//     directly from the browser and parsed into the same two lookup maps
+//     the plugin builds (byNick/byPlayer).
+// ============================================================
+const DIAMOND_DOME_URL = "https://gist.githubusercontent.com/MonsterMilo/169045d75d17d68a41d051bae056106d/raw/diamond-dome-nicks.json";
+let diamondDome = null;
+let diamondDomeLoadPromise = null;
+
+function loadDiamondDome() {
+  if (diamondDome) return Promise.resolve(diamondDome);
+  if (diamondDomeLoadPromise) return diamondDomeLoadPromise;
+  diamondDomeLoadPromise = fetch(DIAMOND_DOME_URL)
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      const byNick = new Map();
+      const byPlayer = new Map();
+      for (const item of (Array.isArray(data.nicks) ? data.nicks : [])) {
+        if (!Array.isArray(item)) continue;
+        const [nick, rawOwners] = item;
+        if (typeof nick !== "string" || !Array.isArray(rawOwners) || rawOwners.length === 0) continue;
+        const owners = rawOwners
+          .filter(o => Array.isArray(o) && typeof o[0] === "string")
+          .map(([player, count, first, last, game]) => ({
+            player, count: count || 1, first: (first || 0) * 1000, last: (last || 0) * 1000, game: game || "Unknown"
+          }))
+          .sort((a, b) => b.last - a.last);
+        if (owners.length === 0) continue;
+        byNick.set(nick.toLowerCase(), { nick, owners });
+        for (const o of owners) {
+          const key = o.player.toLowerCase();
+          if (!byPlayer.has(key)) byPlayer.set(key, []);
+          byPlayer.get(key).push({ nick, player: o.player, count: o.count, first: o.first, last: o.last, game: o.game });
+        }
+      }
+      for (const list of byPlayer.values()) list.sort((a, b) => b.last - a.last);
+      diamondDome = { byNick, byPlayer };
+      return diamondDome;
+    })
+    .catch(err => {
+      diamondDomeLoadPromise = null; // let the next search try again instead of caching a failure forever
+      throw err;
+    });
+  return diamondDomeLoadPromise;
+}
+
+function denickAccuracyTier(updatedAt) {
+  if (!updatedAt) return { tier: "unknown", label: "Unknown" };
+  const days = (Date.now() - updatedAt) / 86400000;
+  if (days <= 7) return { tier: "high", label: "High" };
+  if (days <= 30) return { tier: "medium", label: "Medium" };
+  return { tier: "low", label: "Low" };
+}
+
+function denickTimeAgo(ms) {
+  const diff = Math.max(0, Date.now() - ms);
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(mins / 60);
+  const days = Math.floor(hours / 24);
+  const months = Math.floor(days / 30);
+  const years = Math.floor(days / 365);
+  if (years > 0) return `${years} year${years > 1 ? "s" : ""} ago`;
+  if (months > 0) return `${months} month${months > 1 ? "s" : ""} ago`;
+  if (days > 0) return `${days} day${days > 1 ? "s" : ""} ago`;
+  if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  if (mins > 0) return `${mins} minute${mins > 1 ? "s" : ""} ago`;
+  return "just now";
+}
+
+function denickDate(ms) {
+  return new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+// Never throws - a Denicker outage or missing key still leaves Diamond
+// Dome able to answer on its own (see runDenickSearch).
+async function queryDenickerNicks(path, params) {
+  try {
+    const res = await fetch(`${backendBaseURL}${path}?${params}`, { headers: adminHeaders() });
+    const data = await res.json();
+    if (data.noKey) return { entries: [], noKey: true };
+    const entries = (data.success && data.nicks ? data.nicks : []).map(n => ({
+      username: n.username,
+      nick: n.nick,
+      updated: typeof n.updated === "number" ? n.updated : (Date.parse(n.updated) || 0),
+      source: "Denicker API"
+    }));
+    return { entries };
+  } catch (err) {
+    return { entries: [], error: err.message };
+  }
+}
+
+function domeEntriesForNick(nick) {
+  const result = diamondDome?.byNick.get(String(nick).toLowerCase());
+  if (!result) return [];
+  return result.owners.map(o => ({ username: o.player, nick: result.nick, updated: o.last, source: "Diamond Dome", sighting: o }));
+}
+
+function domeEntriesForPlayer(username) {
+  const list = diamondDome?.byPlayer.get(String(username).toLowerCase());
+  if (!list) return [];
+  return list.map(n => ({ username: n.player, nick: n.nick, updated: n.last, source: "Diamond Dome", sighting: n }));
+}
+
+// One row per distinct username (nick mode) or nick (player mode) - when
+// both sources know the same pair, the more recent one is kept and the
+// other noted in its hover via alsoIn.
+function mergeDenickEntries(entries, keyField) {
+  const byKey = new Map();
+  for (const e of entries) {
+    const key = String(e[keyField]).toLowerCase();
+    const existing = byKey.get(key);
+    if (!existing) { byKey.set(key, { ...e, alsoIn: new Set() }); continue; }
+    const [keep, other] = e.updated > existing.updated ? [{ ...e, alsoIn: existing.alsoIn }, existing] : [existing, e];
+    if (other.source !== keep.source) keep.alsoIn.add(other.source);
+    byKey.set(key, keep);
+  }
+  return [...byKey.values()].sort((a, b) => b.updated - a.updated);
+}
+
+function denickTooltip(entry) {
+  const lines = [];
+  if (entry.sighting) {
+    const s = entry.sighting;
+    lines.push(`Seen ${s.count > 1 ? `${s.count}x, last` : "once,"} ${denickTimeAgo(s.last)} in ${s.game}.`);
+    if (s.count > 1) lines.push(`First seen ${denickDate(s.first)}.`);
+  } else {
+    lines.push(`Denicked ${denickTimeAgo(entry.updated)}.`);
+  }
+  lines.push(`Source: ${entry.source}`);
+  const also = [...(entry.alsoIn || [])].filter(s => s !== entry.source);
+  if (also.length) lines.push(`Also in: ${also.join(", ")}`);
+  return lines.join("\n");
+}
+
+const denickModeBtns = document.querySelectorAll(".denick-mode-btn");
+const denickInput = document.getElementById("denickInput");
+const denickSearchBtn = document.getElementById("denickSearchBtn");
+const denickStatus = document.getElementById("denickStatus");
+const denickResults = document.getElementById("denickResults");
+const denickEmpty = document.getElementById("denickEmpty");
+let denickMode = "nick"; // "nick" -> who's used this nick; "player" -> what nicks this player has used
+let denickToken = 0; // guards against a slow, stale search overwriting a newer one
+
+function renderDenickResults(entries, nameOf) {
+  denickResults.innerHTML = "";
+  const frag = document.createDocumentFragment();
+  entries.forEach(entry => {
+    const tier = denickAccuracyTier(entry.updated);
+    const row = document.createElement("div");
+    row.className = "denick-row";
+    const name = document.createElement("span");
+    name.className = "denick-row-name";
+    name.textContent = nameOf(entry);
+    const badge = document.createElement("span");
+    badge.className = `pill acc-${tier.tier}`;
+    badge.textContent = tier.label;
+    badge.setAttribute("data-tooltip", denickTooltip(entry));
+    row.append(name, badge);
+    frag.appendChild(row);
+  });
+  denickResults.appendChild(frag);
+}
+
+denickModeBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (btn.dataset.mode === denickMode) return;
+    denickMode = btn.dataset.mode;
+    denickModeBtns.forEach(b => {
+      const active = b === btn;
+      b.classList.toggle("active", active);
+      b.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    denickInput.placeholder = denickMode === "nick" ? "Enter a nick" : "Enter a player's username";
+    denickInput.value = "";
+    denickResults.innerHTML = "";
+    denickStatus.textContent = "";
+    denickEmpty.hidden = false;
+  });
+});
+
+async function runDenickSearch() {
+  const query = denickInput.value.trim();
+  if (!query) return;
+
+  const myToken = ++denickToken;
+  const isStale = () => myToken !== denickToken;
+
+  denickSearchBtn.disabled = true;
+  denickSearchBtn.classList.add("loading");
+  denickStatus.textContent = "";
+  denickResults.innerHTML = "";
+  denickEmpty.hidden = true;
+
+  try {
+    await loadDiamondDome().catch(() => {}); // a Diamond Dome hiccup shouldn't block the Denicker half from showing
+    if (isStale()) return;
+
+    let apiResult, domeEntries, keyField, nameOf;
+    if (denickMode === "nick") {
+      apiResult = await queryDenickerNicks("/denicker/nick/" + encodeURIComponent(query), "");
+      domeEntries = domeEntriesForNick(query);
+      keyField = "username";
+      nameOf = e => e.username;
+    } else {
+      let uuid = null;
+      try {
+        const resMojang = await fetch(`${backendBaseURL}/mojang/${encodeURIComponent(query)}`, { headers: adminHeaders() });
+        if (resMojang.ok) uuid = (await resMojang.json()).id;
+      } catch {}
+      apiResult = uuid
+        ? await queryDenickerNicks(`/denicker/history/${uuid}`, `username=${encodeURIComponent(query)}`)
+        : { entries: [] };
+      domeEntries = domeEntriesForPlayer(query);
+      keyField = "nick";
+      nameOf = e => e.nick;
+    }
+    if (isStale()) return;
+
+    const merged = mergeDenickEntries([...apiResult.entries, ...domeEntries], keyField);
+    if (merged.length === 0) {
+      denickEmpty.hidden = false;
+      if (apiResult.noKey) denickStatus.textContent = "Denicker API isn't set up yet - showing Diamond Dome only, and nothing matched.";
+      else if (apiResult.error) denickStatus.textContent = `Denicker API didn't respond (${apiResult.error}) - showing Diamond Dome only, and nothing matched.`;
+      else denickStatus.textContent = "No results.";
+      return;
+    }
+
+    renderDenickResults(merged, nameOf);
+    if (apiResult.noKey) denickStatus.textContent = "Denicker API isn't set up yet - showing Diamond Dome results only.";
+    else if (apiResult.error) denickStatus.textContent = "Denicker API didn't respond - showing Diamond Dome results only.";
+  } catch (err) {
+    if (isStale()) return;
+    denickEmpty.hidden = false;
+    denickStatus.textContent = `Error: ${err.message}`;
+  } finally {
+    if (!isStale()) {
+      denickSearchBtn.disabled = false;
+      denickSearchBtn.classList.remove("loading");
+    }
+  }
+}
+
+denickSearchBtn.addEventListener("click", runDenickSearch);
+denickInput.addEventListener("keydown", (e) => { if (e.key === "Enter") runDenickSearch(); });
 
 // The backend now has three key tiers (admin/trusted/add - see server.js),
 // and a "trusted" key gets a specific, genuinely useful 403 reason when it

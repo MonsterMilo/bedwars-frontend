@@ -2573,6 +2573,20 @@ html[data-theme="casefiles"] .hero {
   filter: drop-shadow(0 10px 12px rgba(42,36,28,0.35));
   clip-path: url(#tornEdge);
 }
+/* The tear's deepest gouges (y=1.00 in #tornEdge's coordinates) reach all
+   the way down to .hero's own true bottom edge regardless of screen size -
+   clip-path only changes what's painted, not .hero's box/layout, so the
+   next element in flow always starts exactly there with zero built-in
+   gap. That was never a problem before the quick-nav existed: whatever
+   came next (.panel-header, 52px top margin) only became visible well
+   past that point, so the trailing scrap of "paper" always hung over
+   plain empty background rather than touching anything. The quick-nav's
+   own visible box starts immediately though (no margin of its own), so it
+   needs the same kind of clearance reintroduced here, scoped to this
+   theme only since the other three have no tear to clear. */
+html[data-theme="casefiles"] .quick-nav {
+  margin-top: 44px;
+}
 html[data-theme="casefiles"] .hero-pin {
   display: block;
   position: absolute;
@@ -6320,6 +6334,20 @@ const quickNavObserver = new IntersectionObserver((entries) => {
   const target = document.getElementById(link.dataset.target);
   if (target) quickNavObserver.observe(target);
 });
+// The band approach above can't ever mark the last section (Denicking)
+// active if it's short enough that the page runs out of room to scroll
+// its heading up into that band in the first place - once you're
+// scrolled to the very bottom, force its link active regardless of where
+// its heading actually landed. Checked from the same rAF-throttled
+// scroll handler as the starfield parallax below rather than adding a
+// second scroll listener.
+function updateQuickNavAtBottom() {
+  const lastLink = quickNavLinks[quickNavLinks.length - 1];
+  if (!lastLink) return;
+  if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+    setActiveQuickNavLink(lastLink.dataset.target);
+  }
+}
 
 const starContainer = document.getElementById("starfield");
 
@@ -6386,6 +6414,7 @@ window.addEventListener("scroll", () => {
       const progress = Math.min(scrollY / starFieldHeight, 1);
       starContainer.style.transform = `translateY(${-progress * starFieldHeight}px)`;
       starContainer.style.opacity = 1 - progress;
+      updateQuickNavAtBottom();
       ticking = false;
     });
     ticking = true;

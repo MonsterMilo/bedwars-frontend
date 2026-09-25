@@ -439,12 +439,53 @@ h1 {
   gap: 10px;
 }
 
+/* Quick-nav - jump links to the three sections below, sticky so it stays
+   reachable once Defeated Sweats' up-to-32-card grid has pushed Denicking
+   (and Sweat Lookup, scrolling the other way) well out of view. z-index
+   sits below the theme dropdown menu (20) so an opened dropdown - which
+   can visually overlap this bar right underneath it before either has
+   scrolled - still draws on top, but above plain page content (0/1) so
+   cards scrolling underneath it don't show through. */
+.quick-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 1200px;
+  margin: 0 auto 32px;
+  padding: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-s);
+  box-shadow: var(--shadow-card);
+}
+.quick-nav-link {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.quick-nav-link:hover { color: var(--text); }
+.quick-nav-link.active { color: var(--accent); border-color: var(--accent); background: var(--panel-2); }
+
 /* Panel headers (section leads) */
 .panel-header {
   display: flex;
   align-items: center;
   gap: 14px;
   margin: 52px 0 18px;
+  /* Lands the heading below the sticky quick-nav instead of right
+     underneath/behind it - scrollIntoView() (and a plain #hash anchor
+     jump) both respect this automatically. */
+  scroll-margin-top: 66px;
 }
 
 .panel-icon {
@@ -5553,7 +5594,13 @@ html[data-theme="deepcurrent"] .pill.boost {
     <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; Admin Key</button>
   </div>
 
-  <div class="panel-header">
+  <nav id="quickNav" class="quick-nav" aria-label="Jump to section">
+    <a href="#sweatLookupSection" class="quick-nav-link active" data-target="sweatLookupSection">Sweat Lookup</a>
+    <a href="#defeatedSweatsSection" class="quick-nav-link" data-target="defeatedSweatsSection">Defeated Sweats</a>
+    <a href="#denickingSection" class="quick-nav-link" data-target="denickingSection">Denicking</a>
+  </nav>
+
+  <div class="panel-header" id="sweatLookupSection">
     <div class="panel-icon panel-icon-lookup">&#127919;</div>
     <div>
       <span class="exhibit-tag exhibit-tag-lookup">Exhibit A</span>
@@ -5658,7 +5705,7 @@ html[data-theme="deepcurrent"] .pill.boost {
     </form>
   </div>
 
-  <div class="panel-header">
+  <div class="panel-header" id="defeatedSweatsSection">
     <div class="panel-icon panel-icon-results">&#127942;</div>
     <div>
       <span class="exhibit-tag exhibit-tag-results">Exhibit B</span>
@@ -5834,7 +5881,7 @@ html[data-theme="deepcurrent"] .pill.boost {
     </div>
   </div>
 
-  <div class="panel-header">
+  <div class="panel-header" id="denickingSection">
     <div class="panel-icon panel-icon-denick">&#127917;</div>
     <div>
       <span class="exhibit-tag exhibit-tag-denick">Exhibit C</span>
@@ -6241,6 +6288,37 @@ document.addEventListener("keydown", (e) => {
     closeThemeDropdown();
     themeDropdownBtn.focus();
   }
+});
+
+// --- Quick-nav: jump links to the three sections below, sticky so it's
+// still reachable once Defeated Sweats' up-to-32-card grid has scrolled
+// Sweat Lookup/Denicking well out of view. ---
+const quickNavLinks = document.querySelectorAll(".quick-nav-link");
+function setActiveQuickNavLink(id) {
+  quickNavLinks.forEach(link => link.classList.toggle("active", link.dataset.target === id));
+}
+quickNavLinks.forEach(link => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    const target = document.getElementById(link.dataset.target);
+    if (!target) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  });
+});
+// Marks a section's link active as its heading crosses a thin band just
+// below the sticky nav (rootMargin shrinks the observed viewport to that
+// band) - only reacting to entries scrolling IN, not out, so a link stays
+// active for the rest of a long section (Defeated Sweats) rather than
+// going "unset" the moment its heading scrolls past the top.
+const quickNavObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) setActiveQuickNavLink(entry.target.id);
+  });
+}, { rootMargin: "-66px 0px -70% 0px", threshold: 0 });
+[...quickNavLinks].forEach(link => {
+  const target = document.getElementById(link.dataset.target);
+  if (target) quickNavObserver.observe(target);
 });
 
 const starContainer = document.getElementById("starfield");

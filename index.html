@@ -2024,6 +2024,63 @@ html[data-theme="deepcurrent"] .toolbar #searchInput { background: rgba(3,12,20,
   background: var(--accent-soft);
 }
 
+/* Sound control - sits beside the theme dropdown and borrows its button
+   and menu styling, so every theme's dropdown look carries over. */
+.audio-btn { padding: 11px 12px; }
+.audio-icon { width: 20px; height: 20px; display: block; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.audio-icon .audio-spk { fill: currentColor; fill-opacity: 0.18; }
+.audio-icon .audio-x { display: none; }
+.audio-ctl.is-muted .audio-x { display: inline; }
+.audio-ctl.is-muted .audio-w1,
+.audio-ctl.is-muted .audio-w2,
+.audio-ctl.is-low .audio-w2 { display: none; }
+.audio-panel { min-width: 210px; padding: 8px 12px; }
+.audio-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 2px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.audio-row + .audio-row { border-top: 1px solid var(--border); }
+.audio-ctl.is-muted .audio-vol-row { opacity: 0.45; }
+.audio-vol-row input { flex: 1; max-width: 110px; accent-color: var(--accent); cursor: pointer; }
+.audio-switch {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  width: 36px;
+  height: 20px;
+  margin: 0;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: rgba(127,127,127,0.18);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.audio-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: transform 0.2s var(--ease), background 0.2s var(--ease);
+}
+.audio-switch:checked { background: var(--accent-soft); border-color: var(--accent); }
+.audio-switch:checked::after { transform: translateX(16px); background: var(--accent); }
+.audio-switch:focus-visible, .audio-vol-row input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+html[data-theme="casefiles"] .audio-row { font-family: 'Courier Prime', monospace; text-transform: uppercase; letter-spacing: 0.03em; }
+html[data-theme="casefiles"] .audio-switch,
+html[data-theme="casefiles"] .audio-switch::after { border-radius: 2px; }
+
 /* Leaderboard view - a podium for the top three and a ranked list with a
    progress bar for everyone else, instead of nine identical chips. Every
    entry is still a .leaderboard-chip button (click to drill into that
@@ -7318,6 +7375,16 @@ html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monos
     <p id="credits">Developed by Milo &middot; Powered by Hypixel API</p>
   </header>
   <div class="hero-controls">
+    <div class="theme-dropdown audio-ctl" id="audioCtl">
+      <button type="button" class="theme-dropdown-btn audio-btn" id="audioBtn" aria-haspopup="true" aria-expanded="false" aria-controls="audioPanel" aria-label="Sound settings">
+        <svg class="audio-icon" viewBox="0 0 24 24" aria-hidden="true"><path class="audio-spk" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="audio-w1" d="M15.5 9.5a3.6 3.6 0 0 1 0 5"/><path class="audio-w2" d="M18 7a7.2 7.2 0 0 1 0 10"/><path class="audio-x" d="M16 9.8l4.4 4.4m0-4.4L16 14.2"/></svg>
+      </button>
+      <div class="theme-dropdown-menu audio-panel" id="audioPanel" role="group" aria-label="Sound settings" hidden>
+        <label class="audio-row"><span>Sound</span><input type="checkbox" id="audioOn" class="audio-switch"></label>
+        <label class="audio-row audio-vol-row"><span>Volume</span><input type="range" id="audioVol" min="0" max="100" step="1"></label>
+        <label class="audio-row"><span>Ambience</span><input type="checkbox" id="audioAmb" class="audio-switch"></label>
+      </div>
+    </div>
     <div class="theme-dropdown" id="themeDropdown">
       <button type="button" class="theme-dropdown-btn" id="themeDropdownBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="Site theme">
         <span id="themeDropdownLabel">Neon</span>
@@ -7894,6 +7961,859 @@ html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monos
 </div>
 
 <script>
+// ---------- Site audio ----------
+// Every sound on the site is synthesized with the Web Audio API (no audio
+// files to load or license). Each theme has its own palette: Neon is
+// synth blips and lasers, Case Files is camera shutters, typewriters and
+// rubber stamps over rain, Private Bank is coins, vault steel and a
+// grandfather clock, Deep Current is bubbles, sonar and whale song.
+// Browsers won't start audio before the first click/key, so the context
+// is created on that first gesture. Settings (sound on, volume, ambience)
+// persist in localStorage under "siteAudio".
+window.siteAudio = (function () {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  const STORE = "siteAudio";
+  const settings = { muted: false, volume: 0.55, ambience: true };
+  try { Object.assign(settings, JSON.parse(localStorage.getItem(STORE)) || {}); } catch (e) {}
+  const save = () => { try { localStorage.setItem(STORE, JSON.stringify(settings)); } catch (e) {} };
+
+  const AMBIENCE_LEVEL = 0.32;
+  let ctx = null, live = null, master = null, sfxBus = null, ambBus = null, noiseBuf = null, ambNoise = null;
+  let curOut = null;
+  let voices = 0;
+  const MAX_VOICES = 160;
+
+  const themeNow = () => document.documentElement.getAttribute("data-theme") || "neon";
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const choose = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
+  const masterLevel = () => (settings.muted ? 0 : Math.pow(settings.volume, 1.4));
+
+  function makeNoise(c, secs = 2) {
+    const len = c.sampleRate * secs;
+    const buf = c.createBuffer(1, len, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+
+  // Builds the master chain on a context. The live site uses one real
+  // AudioContext; renderOffline() below builds the same chain on an
+  // OfflineAudioContext so sounds can be exported and checked.
+  function wire(c, level) {
+    const comp = c.createDynamicsCompressor();
+    comp.threshold.value = -16; comp.knee.value = 14; comp.ratio.value = 5;
+    comp.attack.value = 0.003; comp.release.value = 0.25;
+    // A fast brickwall-ish limiter last, so stacked sounds at full volume
+    // squash instead of clipping.
+    const lim = c.createDynamicsCompressor();
+    lim.threshold.value = -4; lim.knee.value = 0; lim.ratio.value = 20;
+    lim.attack.value = 0.001; lim.release.value = 0.1;
+    const m = c.createGain(); m.gain.value = level;
+    const s = c.createGain(); s.gain.value = 1;
+    const a = c.createGain(); a.gain.value = 0;
+    s.connect(m); a.connect(m); m.connect(comp); comp.connect(lim); lim.connect(c.destination);
+    return { m, s, a };
+  }
+
+  function init() {
+    if (ctx || !AC) return !!ctx;
+    try { ctx = live = new AC({ latencyHint: "interactive" }); } catch (e) { return false; }
+    const w = wire(ctx, masterLevel());
+    master = w.m; sfxBus = w.s; ambBus = w.a;
+    noiseBuf = makeNoise(ctx);
+    // Ambience beds loop a long buffer (25s+ at their slowed rates) so the
+    // noise never audibly repeats.
+    ambNoise = makeNoise(ctx, 10);
+    return true;
+  }
+
+  const ready = () => ctx && ctx.state !== "closed" && !settings.muted && voices < MAX_VOICES;
+  const T = () => ctx.currentTime + 0.005;
+
+  // ---- Primitives ----
+  function gainNode(v, dest) {
+    const n = ctx.createGain();
+    n.gain.value = v;
+    if (dest) n.connect(dest);
+    return n;
+  }
+  function panNode(pan, dest) {
+    if (!pan || !ctx.createStereoPanner) return dest;
+    const p = ctx.createStereoPanner();
+    p.pan.value = Math.max(-1, Math.min(1, pan));
+    p.connect(dest);
+    return p;
+  }
+  function track(src, until) {
+    if (ctx === live) {
+      voices++;
+      src.onended = () => { voices--; };
+    }
+    src.stop(until);
+  }
+  // A plucked/struck envelope: fast attack, exponential fall to silence.
+  function envelope(param, t, peak, a, d) {
+    param.setValueAtTime(0.0001, t);
+    param.linearRampToValueAtTime(peak, t + a);
+    param.exponentialRampToValueAtTime(0.0001, t + a + d);
+  }
+
+  // tone(t, { type, f, f2, dur, gain, a, curve, q, lp, hp, bp, pan, dest, vib })
+  function tone(t, o) {
+    const dur = o.dur || 0.2;
+    const a = o.a != null ? o.a : 0.005;
+    const out = panNode(o.pan, o.dest || curOut);
+    const g = gainNode(0, out);
+    let head = g;
+    if (o.lp || o.bp || o.hp) {
+      const f = ctx.createBiquadFilter();
+      f.type = o.lp ? "lowpass" : o.bp ? "bandpass" : "highpass";
+      const base = o.lp || o.bp || o.hp;
+      f.frequency.setValueAtTime(base, t);
+      if (o.fEnd) f.frequency.exponentialRampToValueAtTime(o.fEnd, t + (o.fDur || dur));
+      f.Q.value = o.q != null ? o.q : 0.8;
+      f.connect(g);
+      head = f;
+    }
+    const osc = ctx.createOscillator();
+    osc.type = o.type || "sine";
+    osc.frequency.setValueAtTime(o.f, t);
+    if (o.f2) {
+      const glide = o.glide || dur;
+      if (o.linear) osc.frequency.linearRampToValueAtTime(o.f2, t + glide);
+      else osc.frequency.exponentialRampToValueAtTime(o.f2, t + glide);
+    }
+    if (o.detune) osc.detune.value = o.detune;
+    if (o.vib) {
+      const lfo = ctx.createOscillator();
+      const depth = gainNode(o.vib[1], osc.frequency);
+      lfo.frequency.value = o.vib[0];
+      lfo.connect(depth);
+      lfo.start(t);
+      lfo.stop(t + a + dur + 0.05);
+    }
+    osc.connect(head);
+    if (o.hold) {
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(o.gain, t + a);
+      g.gain.setValueAtTime(o.gain, t + a + o.hold);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + a + o.hold + dur);
+    } else {
+      envelope(g.gain, t, o.gain != null ? o.gain : 0.2, a, dur);
+    }
+    osc.start(t);
+    track(osc, t + a + (o.hold || 0) + dur + 0.05);
+  }
+
+  // noise(t, { dur, gain, a, type, f, f2, q, pan, dest, swell })
+  // swell: [peakAt 0..1] - rises to the peak partway through then falls,
+  // for whooshes and waves instead of hits.
+  function noise(t, o) {
+    const dur = o.dur || 0.2;
+    const out = panNode(o.pan, o.dest || curOut);
+    const g = gainNode(0, out);
+    const f = ctx.createBiquadFilter();
+    f.type = o.type || "bandpass";
+    f.frequency.setValueAtTime(o.f || 1200, t);
+    if (o.f2) f.frequency.exponentialRampToValueAtTime(o.f2, t + (o.fDur || dur));
+    f.Q.value = o.q != null ? o.q : 1;
+    f.connect(g);
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf;
+    src.loop = true;
+    src.playbackRate.value = o.rate || 1;
+    src.connect(f);
+    const peak = o.gain != null ? o.gain : 0.2;
+    if (o.swell != null) {
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + dur * o.swell);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    } else {
+      envelope(g.gain, t, peak, o.a != null ? o.a : 0.002, dur);
+    }
+    src.start(t, Math.random() * 1.5);
+    track(src, t + dur + 0.05);
+  }
+
+  // A struck metal object: a stack of inharmonic partials.
+  function metal(t, f, o = {}) {
+    const ratios = o.ratios || [1, 2.76, 5.40, 8.93];
+    ratios.forEach((r, i) => tone(t, {
+      f: f * r, dur: (o.dur || 0.28) / (1 + i * 0.5), gain: (o.gain || 0.08) / (1 + i * 0.9),
+      a: 0.001, pan: o.pan, dest: o.dest,
+    }));
+  }
+  const coin = (t, o = {}) => metal(t, o.f || rnd(1900, 2700), { gain: o.gain || 0.07, dur: o.dur || 0.32, pan: o.pan });
+
+  // A dull impact: a pitch-dropping sine body plus a short burst of noise.
+  function thud(t, o = {}) {
+    tone(t, { f: o.f || 130, f2: o.f2 || 45, dur: o.dur || 0.22, gain: o.gain || 0.5, a: 0.002, pan: o.pan });
+    noise(t, { type: "lowpass", f: o.nf || 900, dur: o.ndur || 0.08, gain: (o.gain || 0.5) * 0.5, pan: o.pan });
+  }
+
+  function bubble(t, o = {}) {
+    const f = o.f || rnd(380, 900);
+    tone(t, { f, f2: f * (o.rise || 2.6), dur: o.dur || 0.07, gain: o.gain || 0.12, a: 0.004, glide: o.dur || 0.07, pan: o.pan, dest: o.dest });
+  }
+
+  const ping = (t, o = {}) => {
+    // Sonar: a pure tone with a long tail and two fading echoes.
+    const f = o.f || 1480;
+    [0, 0.32, 0.64].forEach((d, i) => tone(t + d, {
+      f, dur: (o.dur || 1.1) * (1 - i * 0.25), gain: (o.gain || 0.16) * Math.pow(0.38, i), a: 0.004,
+      lp: 2600, pan: o.pan, dest: o.dest,
+    }));
+  };
+
+  function typeKey(t, o = {}) {
+    noise(t, { type: "bandpass", f: o.f || rnd(2400, 3600), q: 2.5, dur: 0.035, gain: o.gain || 0.18, pan: o.pan });
+    tone(t, { f: rnd(170, 230), f2: 90, dur: 0.04, gain: (o.gain || 0.18) * 0.7, a: 0.001, pan: o.pan });
+  }
+
+  function paper(t, dur, o = {}) {
+    noise(t, { type: "bandpass", f: o.f || 1600, f2: o.f2 || 3200, q: 0.7, dur, gain: o.gain || 0.12, swell: o.swell || 0.4, pan: o.pan });
+  }
+
+  // Distortion curve for the dragon growl.
+  let growlCurve = null;
+  function shaper() {
+    if (!growlCurve) {
+      growlCurve = new Float32Array(1024);
+      for (let i = 0; i < 1024; i++) {
+        const x = (i / 1023) * 2 - 1;
+        growlCurve[i] = Math.tanh(x * 6);
+      }
+    }
+    const s = ctx.createWaveShaper();
+    s.curve = growlCurve;
+    return s;
+  }
+
+  // ---- Per-theme sound sets ----
+  // Pentatonic steps so random and climbing notes always sound musical.
+  const PENTA = [0, 3, 5, 7, 10];
+  const pentaNote = (root, i) => root + 12 * Math.floor(i / 5) + PENTA[((i % 5) + 5) % 5];
+
+  const SETS = {
+    neon: {
+      click(t, pan, step) {
+        const n = pentaNote(69, step != null ? step : Math.floor(rnd(0, 7)));
+        tone(t, { type: "square", f: midi(n), dur: 0.07, gain: 0.13, lp: 3200, pan });
+        tone(t + 0.04, { type: "triangle", f: midi(n + 12), dur: 0.09, gain: 0.09, pan });
+      },
+      rare(t, pan) {
+        [45, 52, 57, 64].forEach(n => tone(t, { type: "sawtooth", f: midi(n), dur: 0.55, gain: 0.09, lp: 5000, fEnd: 500, fDur: 0.45, a: 0.004, detune: rnd(-8, 8), pan }));
+        tone(t, { type: "square", f: 2200, f2: 180, dur: 0.3, gain: 0.08, lp: 4000, pan });
+        noise(t, { type: "highpass", f: 3000, dur: 0.12, gain: 0.12, pan });
+      },
+      tier(t, tier) {
+        for (let i = 0; i < 3 + tier; i++) tone(t + i * 0.055, { type: "square", f: midi(pentaNote(69 + tier * 2, i * 2)), dur: 0.1, gain: 0.07, lp: 4000 });
+      },
+      ui(t) { tone(t, { type: "square", f: 1760, dur: 0.018, gain: 0.045, lp: 5000 }); },
+      switchTo(t) {
+        const d = 1.6;
+        // CRT glitch stutters over the old page.
+        [0, 0.04, 0.08, 0.12, 0.21].forEach(k => {
+          noise(t + k * d, { type: "highpass", f: rnd(1500, 4000), dur: 0.05, gain: 0.14 });
+          tone(t + k * d, { type: "square", f: rnd(90, 900), dur: 0.05, gain: 0.05, lp: 3000 });
+        });
+        tone(t, { type: "sawtooth", f: 60, dur: 0.5, hold: 0.3, gain: 0.05, lp: 300, a: 0.02 });
+        // The portal ring charging up...
+        tone(t + 0.18 * d, { type: "sawtooth", f: 110, f2: 880, glide: 0.25 * d, dur: 0.12, hold: 0.25 * d, gain: 0.07, a: 0.08, lp: 600, fEnd: 5000, fDur: 0.25 * d });
+        tone(t + 0.18 * d, { type: "sine", f: 220, f2: 1760, glide: 0.25 * d, dur: 0.1, hold: 0.25 * d, gain: 0.05, a: 0.08 });
+        // ...igniting with a flash...
+        const ig = t + 0.43 * d;
+        noise(ig, { type: "lowpass", f: 8000, f2: 400, dur: 0.6, gain: 0.3 });
+        tone(ig, { type: "sine", f: 160, f2: 38, dur: 0.6, gain: 0.5, a: 0.002 });
+        [57, 64, 69, 73].forEach(n => tone(ig, { type: "sawtooth", f: midi(n), dur: 0.9, gain: 0.05, lp: 4000, fEnd: 700, detune: rnd(-10, 10) }));
+        // ...and blowing open.
+        noise(t + 0.52 * d, { type: "bandpass", f: 400, f2: 6000, q: 0.6, dur: 0.48 * d, gain: 0.18, swell: 0.3 });
+        for (let i = 0; i < 6; i++) tone(t + 0.62 * d + i * 0.05, { type: "triangle", f: midi(pentaNote(81, i)), dur: 0.14, gain: 0.04 });
+      },
+      flipOpen(t, dur) {
+        tone(t, { type: "sine", f: 260, f2: 1500, glide: dur * 0.45, dur: dur * 0.5, gain: 0.08, a: 0.05 });
+        noise(t, { type: "bandpass", f: 900, f2: 4000, fDur: dur * 0.45, dur: dur * 0.7, gain: 0.11, swell: 0.45 });
+        tone(t + dur * 0.8, { type: "square", f: 1320, dur: 0.06, gain: 0.07, lp: 4000 });
+      },
+      flipClose(t) { tone(t, { type: "sine", f: 1200, f2: 240, dur: 0.2, gain: 0.08 }); },
+      scanStart(t) { [0, 0.09].forEach((k, i) => tone(t + k, { type: "square", f: [880, 1320][i], dur: 0.06, gain: 0.05, lp: 4000 })); },
+      scanTick(t) { tone(t, { type: "triangle", f: choose([1760, 2093]), dur: 0.05, gain: 0.04 }); },
+      scanEvery: 0.42,
+      found(t) { [69, 73, 76, 81].forEach((n, i) => tone(t + i * 0.07, { type: "square", f: midi(n), dur: 0.12, gain: 0.06, lp: 4200 })); },
+      error(t) { tone(t, { type: "sawtooth", f: 220, f2: 110, dur: 0.35, gain: 0.08, lp: 1200 }); },
+      success(t) {
+        [69, 76, 81, 88].forEach((n, i) => tone(t + i * 0.06, { type: "square", f: midi(n), dur: 0.16, gain: 0.06, lp: 4500 }));
+        noise(t + 0.2, { type: "highpass", f: 5000, dur: 0.3, gain: 0.05 });
+      },
+      stunt(t) {
+        for (let i = 0; i < 14; i++) {
+          const k = t + i * 0.062;
+          tone(k, { type: "square", f: rnd(80, 1800), dur: 0.04, gain: 0.05, lp: 5000 });
+          if (i % 3 === 0) noise(k, { type: "highpass", f: 2500, dur: 0.04, gain: 0.08 });
+        }
+      },
+    },
+
+    casefiles: {
+      click(t, pan) {
+        // Camera shutter (two leaf clicks), then the evidence marker set down.
+        noise(t, { type: "bandpass", f: 3200, q: 0.9, dur: 0.014, gain: 0.16, pan });
+        noise(t + 0.05, { type: "bandpass", f: 2400, q: 0.9, dur: 0.018, gain: 0.13, pan });
+        tone(t, { f: 200, f2: 110, dur: 0.045, gain: 0.12, pan });
+        tone(t + 0.2, { type: "triangle", f: 720, f2: 480, dur: 0.05, gain: 0.07, pan });
+      },
+      rare(t, pan) {
+        // Old flashbulb charge whine, pop, then the CLUE stamp.
+        tone(t, { f: 1800, f2: 7000, glide: 0.28, dur: 0.1, hold: 0.22, gain: 0.025, a: 0.05, pan });
+        noise(t + 0.3, { type: "highpass", f: 1500, dur: 0.08, gain: 0.25, pan });
+        thud(t + 0.34, { f: 150, f2: 55, gain: 0.45, pan });
+        paper(t + 0.34, 0.08, { gain: 0.1, pan });
+      },
+      tier(t, tier) {
+        for (let i = 0; i < 2 + tier; i++) typeKey(t + i * 0.07, { gain: 0.14 });
+        metal(t + (2 + tier) * 0.07, 2100, { ratios: [1, 2.1, 3.9], gain: 0.07, dur: 1.2 });
+      },
+      ui(t) { typeKey(t, { gain: 0.06 }); },
+      switchTo(t) {
+        const d = 1.8;
+        paper(t, 0.2 * d, { f: 1200, f2: 3500, gain: 0.16, swell: 0.6 });
+        const slam = t + 0.325 * d;
+        thud(slam, { f: 160, f2: 42, dur: 0.3, gain: 0.7, nf: 1200 });
+        noise(slam, { type: "highpass", f: 2000, dur: 0.05, gain: 0.2 });
+        [0.39, 0.4, 0.41].forEach(k => typeKey(t + k * d, { gain: 0.07 }));
+        paper(t + 0.41 * d, 0.17 * d, { f: 600, f2: 2400, gain: 0.2, swell: 0.55 });
+        noise(t + 0.56 * d, { type: "lowpass", f: 3000, f2: 500, dur: 0.44 * d, gain: 0.1, swell: 0.3 });
+      },
+      flipOpen(t, dur) {
+        paper(t, dur * 0.3, { gain: 0.2 });
+        tone(t + dur * 0.28, { type: "triangle", f: 1400, dur: 0.05, gain: 0.08 });
+        noise(t + dur * 0.4, { type: "bandpass", f: 900, q: 0.8, dur: dur * 0.5, gain: 0.04, swell: 0.3 });
+      },
+      flipClose(t) { paper(t, 0.22, { f: 2600, f2: 1200, gain: 0.13 }); },
+      scanStart(t) { typeKey(t, { gain: 0.1 }); typeKey(t + 0.08, { gain: 0.1 }); },
+      scanTick(t) { typeKey(t, { gain: 0.07 }); if (Math.random() < 0.5) typeKey(t + rnd(0.08, 0.14), { gain: 0.06 }); },
+      scanEvery: 0.24,
+      found(t) {
+        noise(t, { type: "bandpass", f: 1800, f2: 900, q: 1.2, dur: 0.22, gain: 0.08, swell: 0.4 });
+        metal(t + 0.22, 2100, { ratios: [1, 2.1, 3.9], gain: 0.08, dur: 1.1 });
+      },
+      error(t) { thud(t, { f: 90, f2: 40, gain: 0.35 }); noise(t + 0.02, { type: "lowpass", f: 400, dur: 0.25, gain: 0.12 }); },
+      success(t) {
+        thud(t, { f: 160, f2: 45, gain: 0.55 });
+        paper(t, 0.08, { gain: 0.08 });
+        metal(t + 0.25, 2100, { ratios: [1, 2.1, 3.9], gain: 0.08, dur: 1.1 });
+      },
+      stunt(t) {
+        // Marker scribbling out the title, line by line.
+        for (let i = 0; i < 16; i++) noise(t + i * 0.021 + rnd(0, 0.01), { type: "bandpass", f: rnd(2200, 3400), q: 3, dur: 0.05, gain: 0.2 });
+        noise(t + 1.5, { type: "bandpass", f: 3000, f2: 1800, q: 2, dur: 0.3, gain: 0.14, swell: 0.3 });
+      },
+    },
+
+    ledger: {
+      click(t, pan) {
+        for (let i = 0; i < 2; i++) coin(t + i * rnd(0.05, 0.09), { pan, gain: 0.06 });
+        coin(t + 0.55, { pan, gain: 0.035, f: rnd(1600, 2000) });
+      },
+      rare(t, pan) {
+        for (let i = 0; i < 12; i++) coin(t + i * 0.045 + rnd(0, 0.02), { pan: (pan || 0) + rnd(-0.3, 0.3), gain: 0.05 });
+        metal(t + 0.05, 2637, { ratios: [1, 1.26, 2.52], gain: 0.07, dur: 0.9 });
+      },
+      tier(t, tier) {
+        noise(t, { type: "bandpass", f: 900, q: 1, dur: 0.12, gain: 0.08 });
+        metal(t + 0.06, 2349 + tier * 120, { ratios: [1, 1.26, 2.52], gain: 0.08, dur: 0.9 });
+      },
+      ui(t) { tone(t, { type: "triangle", f: 2400, f2: 1800, dur: 0.02, gain: 0.05 }); },
+      switchTo(t) {
+        const d = 1.5;
+        noise(t, { type: "lowpass", f: 200, f2: 700, dur: 0.2 * d, gain: 0.2, swell: 0.8 });
+        thud(t + 0.2 * d, { f: 70, f2: 35, dur: 0.35, gain: 0.55, nf: 500 });
+        metal(t + 0.2 * d, 310, { gain: 0.06, dur: 0.6 });
+        // Dial ratchet, fast then slowing as it settles.
+        for (let i = 0; i < 16; i++) {
+          const k = 0.05 + 0.23 * Math.pow(i / 15, 0.8);
+          noise(t + k * d, { type: "bandpass", f: 3400, q: 6, dur: 0.012, gain: 0.14 });
+        }
+        noise(t + 0.06 * d, { type: "bandpass", f: 500, q: 2, dur: 0.27 * d, gain: 0.05, swell: 0.5 });
+        [0.27, 0.3, 0.33].forEach(k => {
+          thud(t + k * d, { f: 110, f2: 55, dur: 0.12, gain: 0.35, nf: 1400, ndur: 0.04 });
+          metal(t + k * d, 560, { gain: 0.03, dur: 0.2 });
+        });
+        // The door groaning open on its hinge.
+        tone(t + 0.37 * d, { type: "sawtooth", f: 72, f2: 58, dur: 0.18, hold: 0.2 * d, gain: 0.06, a: 0.05, bp: 420, q: 3, vib: [7, 3] });
+        for (let i = 0; i < 18; i++) coin(t + 0.4 * d + rnd(0, 0.55), { pan: rnd(-0.6, 0.6), gain: 0.045 });
+      },
+      flipOpen(t, dur) {
+        noise(t, { type: "bandpass", f: 2400, f2: 1200, q: 0.9, dur: dur * 0.5, gain: 0.11, swell: 0.4 });
+        tone(t + dur * 0.9, { f: 1568, dur: 0.5, gain: 0.03 });
+        tone(t + dur * 0.9, { f: 2349, dur: 0.4, gain: 0.02 });
+      },
+      flipClose(t) { noise(t, { type: "bandpass", f: 1400, f2: 2600, q: 0.9, dur: 0.2, gain: 0.1, swell: 0.4 }); },
+      scanStart(t) { thud(t, { f: 180, f2: 90, dur: 0.06, gain: 0.15, nf: 2500, ndur: 0.02 }); },
+      scanTick(t) { noise(t, { type: "bandpass", f: rnd(3000, 3600), q: 7, dur: 0.012, gain: 0.1 }); },
+      scanEvery: 0.13,
+      found(t) {
+        thud(t, { f: 120, f2: 55, dur: 0.14, gain: 0.3, nf: 1500, ndur: 0.04 });
+        metal(t + 0.12, 2637, { ratios: [1, 1.26, 2.52], gain: 0.06, dur: 0.8 });
+      },
+      error(t) { [0, 0.18].forEach(k => tone(t + k, { type: "square", f: 196, dur: 0.12, hold: 0.04, gain: 0.05, lp: 900 })); },
+      success(t) {
+        noise(t, { type: "bandpass", f: 700, q: 1, dur: 0.1, gain: 0.08 });
+        metal(t + 0.07, 2637, { ratios: [1, 1.26, 2.52], gain: 0.09, dur: 1 });
+        for (let i = 0; i < 6; i++) coin(t + 0.12 + i * 0.05, { gain: 0.04 });
+      },
+      stunt(t) {
+        noise(t, { type: "bandpass", f: 500, f2: 2500, q: 0.7, dur: 0.6, gain: 0.1, swell: 0.5 });
+        for (let i = 0; i < 6; i++) for (let j = 0; j < 2; j++) coin(t + i * 0.11 + j * 0.06, { gain: 0.045, pan: rnd(-0.5, 0.5) });
+      },
+    },
+
+    deepcurrent: {
+      click(t, pan) {
+        const n = 2 + Math.floor(rnd(0, 2));
+        for (let i = 0; i < n; i++) bubble(t + i * rnd(0.04, 0.09), { pan, gain: 0.1 });
+        noise(t, { type: "lowpass", f: 700, dur: 0.12, gain: 0.05, pan });
+      },
+      rare(t, pan) {
+        noise(t, { type: "lowpass", f: 1800, f2: 300, dur: 0.5, gain: 0.18, pan });
+        for (let i = 0; i < 3; i++) noise(t + 0.1 + i * 0.11, { type: "bandpass", f: 500, f2: 1800, q: 2, dur: 0.35, gain: 0.08, swell: 0.5, pan: (pan || 0) + (i - 1) * 0.3 });
+        for (let i = 0; i < 8; i++) bubble(t + rnd(0, 0.5), { gain: 0.07, pan });
+      },
+      tier(t, tier) {
+        // Each combo tier goes one step deeper.
+        tone(t, { f: 420 - tier * 55, f2: 150 - tier * 18, dur: 0.35, gain: 0.14 });
+        for (let i = 0; i < 3; i++) bubble(t + 0.05 + i * 0.05, { gain: 0.06 });
+      },
+      ui(t) { bubble(t, { f: 700, gain: 0.04, dur: 0.04 }); },
+      switchTo(t) {
+        const d = 1.9;
+        // Sinking into dark water...
+        noise(t, { type: "lowpass", f: 1200, f2: 180, dur: 0.6 * d, gain: 0.22, swell: 0.3 });
+        tone(t, { f: 90, f2: 45, dur: 0.6 * d, gain: 0.15, a: 0.1 });
+        [0.08, 0.25, 0.42].forEach((k, i) => ping(t + k, { f: 1480 - i * 40, gain: 0.12 }));
+        // ...then the wave crest floods up with the new theme.
+        noise(t + 0.22 * d, { type: "bandpass", f: 200, f2: 2600, fDur: 0.5 * d, q: 0.5, dur: 0.75 * d, gain: 0.28, swell: 0.55 });
+        noise(t + 0.3 * d, { type: "highpass", f: 3000, dur: 0.5 * d, gain: 0.05, swell: 0.6 });
+        for (let i = 0; i < 22; i++) bubble(t + 0.35 * d + rnd(0, 0.55 * d), { gain: 0.05, pan: rnd(-0.7, 0.7) });
+      },
+      flipOpen(t, dur) {
+        noise(t, { type: "lowpass", f: 300, f2: 1100, dur: dur * 0.8, gain: 0.18, swell: 0.55 });
+        for (let i = 0; i < 4; i++) bubble(t + dur * 0.2 + i * 0.06, { gain: 0.05 });
+      },
+      flipClose(t) { noise(t, { type: "lowpass", f: 1000, f2: 250, dur: 0.28, gain: 0.08, swell: 0.3 }); bubble(t, { gain: 0.04 }); },
+      scanStart(t) { ping(t, { gain: 0.1 }); },
+      scanTick(t) { ping(t, { gain: 0.07, dur: 0.8 }); },
+      scanEvery: 1.15,
+      found(t) {
+        ping(t, { f: 1760, gain: 0.1 });
+        for (let i = 0; i < 5; i++) bubble(t + 0.05 + i * 0.05, { gain: 0.05, f: 500 + i * 120 });
+      },
+      error(t) { tone(t, { f: 180, f2: 120, dur: 0.7, gain: 0.1, lp: 500, vib: [5, 6], a: 0.08 }); },
+      success(t) {
+        for (let i = 0; i < 6; i++) bubble(t + i * 0.05, { gain: 0.06, f: 450 + i * 110 });
+        ping(t + 0.25, { f: 1760, gain: 0.08 });
+      },
+      stunt(t) {
+        noise(t, { type: "lowpass", f: 900, f2: 200, dur: 0.8, gain: 0.14, swell: 0.4 });
+        for (let i = 0; i < 16; i++) bubble(t + 0.3 + rnd(0, 1.2), { gain: 0.05, f: rnd(250, 600) });
+        noise(t + 1.1, { type: "lowpass", f: 300, f2: 1400, dur: 0.6, gain: 0.1, swell: 0.5 });
+      },
+    },
+  };
+
+  const set = (id) => SETS[id] || SETS.neon;
+
+  // ---- Shared (theme-independent) moments ----
+  // Minecraft note-block "pling" for chat toasts.
+  function pling(t, notes) {
+    notes.forEach((n, i) => {
+      tone(t + i * 0.09, { type: "triangle", f: midi(n), dur: 0.35, gain: 0.08 });
+      tone(t + i * 0.09, { f: midi(n + 12), dur: 0.2, gain: 0.03 });
+    });
+  }
+  function fanfare(t) {
+    [[67, 0], [72, 0.16], [76, 0.32], [79, 0.5]].forEach(([n, k], i) => {
+      const hold = i === 3 ? 0.6 : 0.08;
+      tone(t + k, { type: "sawtooth", f: midi(n), dur: 0.35, hold, gain: 0.05, a: 0.03, lp: 700, fEnd: 2600, fDur: 0.12 });
+      tone(t + k, { type: "sawtooth", f: midi(n - 12), dur: 0.35, hold, gain: 0.03, a: 0.03, lp: 600 });
+    });
+  }
+  // BED DESTROYED: the bed drops and lands, then the dragon-growl smash,
+  // debris and a low stinger. Timed to playBedDestroyed()'s 0.7s break.
+  function bedDestroyed(t) {
+    noise(t, { type: "bandpass", f: 2500, f2: 300, q: 0.7, dur: 0.42, gain: 0.12, swell: 0.8 });
+    thud(t + 0.42, { f: 140, f2: 50, gain: 0.5 });
+    const b = t + 0.7;
+    const out = gainNode(0, curOut);
+    out.gain.setValueAtTime(0.0001, b);
+    out.gain.linearRampToValueAtTime(0.16, b + 0.06);
+    out.gain.setValueAtTime(0.16, b + 0.7);
+    out.gain.exponentialRampToValueAtTime(0.0001, b + 1.6);
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass"; bp.frequency.value = 700; bp.Q.value = 1.2;
+    const ws = shaper();
+    ws.connect(bp); bp.connect(out);
+    [55, 58, 82].forEach(f => {
+      const o = ctx.createOscillator();
+      o.type = "sawtooth";
+      o.frequency.setValueAtTime(f * 1.3, b);
+      o.frequency.exponentialRampToValueAtTime(f, b + 0.4);
+      o.frequency.exponentialRampToValueAtTime(f * 0.7, b + 1.6);
+      const lfo = ctx.createOscillator();
+      lfo.frequency.value = 18;
+      lfo.connect(gainNode(f * 0.08, o.frequency));
+      lfo.start(b); lfo.stop(b + 1.7);
+      o.connect(ws);
+      o.start(b);
+      track(o, b + 1.7);
+    });
+    tone(b, { f: 90, f2: 28, dur: 0.9, gain: 0.7, a: 0.002 });
+    noise(b, { type: "lowpass", f: 5000, f2: 300, dur: 0.9, gain: 0.3 });
+    for (let i = 0; i < 18; i++) noise(b + 0.1 + rnd(0, 0.9), { type: "bandpass", f: rnd(800, 2600), q: 3, dur: 0.03, gain: 0.08, pan: rnd(-0.8, 0.8) });
+    [45, 48, 52].forEach(n => tone(b + 0.1, { type: "sawtooth", f: midi(n), dur: 1.4, hold: 0.6, gain: 0.03, a: 0.1, lp: 900 }));
+  }
+
+  // ---- Ambience ----
+  // One looping bed per theme, crossfaded on theme change. Continuous
+  // layers are plain nodes; the occasional events (raindrops, clock ticks,
+  // arpeggio glints, whale calls) are scheduled by a timer that looks a
+  // little ahead so they stay sample-accurate.
+  const AMBIENCES = {
+    neon(bus, add) {
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass"; lp.frequency.value = 520; lp.Q.value = 4;
+      lp.connect(gainNode(0.8, bus));
+      [[55, -7], [55, 7], [82.4, 0], [110, 4]].forEach(([f, dt]) => {
+        const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = dt;
+        o.connect(gainNode(0.07, lp)); add(o);
+      });
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.06;
+      lfo.connect(gainNode(280, lp.frequency)); add(lfo);
+      return (t) => {
+        // A soft pentatonic glint now and then, echoing.
+        if (Math.random() < 0.12) {
+          const root = choose([69, 72, 76]);
+          for (let i = 0; i < 4; i++) {
+            const n = pentaNote(root, Math.floor(rnd(0, 7)));
+            [0, 0.28].forEach((e, j) => tone(t + i * 0.18 + e, { type: "triangle", f: midi(n), dur: 0.5, gain: 0.05 * (j ? 0.35 : 1), dest: bus }));
+          }
+        }
+        return rnd(1.5, 3);
+      };
+    },
+    casefiles(bus, add) {
+      // Rain against the office window, with the odd roll of thunder.
+      const rain = ctx.createBufferSource(); rain.buffer = ambNoise; rain.loop = true;
+      const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 500;
+      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 3200;
+      rain.connect(hp); hp.connect(lp); lp.connect(gainNode(0.22, bus)); add(rain);
+      return (t) => {
+        for (let i = 0; i < 6; i++) tone(t + rnd(0, 0.5), { f: rnd(2500, 5500), dur: 0.02, gain: rnd(0.01, 0.03), a: 0.001, pan: rnd(-0.8, 0.8), dest: bus });
+        if (Math.random() < 0.006) noise(t, { type: "lowpass", f: 180, f2: 60, dur: 4, gain: 0.6, swell: 0.25, dest: bus });
+        return 0.5;
+      };
+    },
+    ledger(bus, add) {
+      // A hushed bank hall: warm low room tone and a grandfather clock.
+      const room = ctx.createBufferSource(); room.buffer = ambNoise; room.loop = true; room.playbackRate.value = 0.5;
+      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 260;
+      room.connect(lp); lp.connect(gainNode(0.35, bus)); add(room);
+      const hum = ctx.createOscillator(); hum.frequency.value = 55; hum.connect(gainNode(0.03, bus)); add(hum);
+      let tick = true;
+      return (t) => {
+        noise(t, { type: "bandpass", f: tick ? 2600 : 1900, q: 9, dur: 0.03, gain: 0.12, dest: bus });
+        tone(t, { f: tick ? 880 : 660, dur: 0.05, gain: 0.02, dest: bus });
+        tick = !tick;
+        return 1.2;
+      };
+    },
+    deepcurrent(bus, add) {
+      // Deep water swell, stray bubbles, and a whale somewhere far off.
+      const sea = ctx.createBufferSource(); sea.buffer = ambNoise; sea.loop = true; sea.playbackRate.value = 0.4;
+      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 280; lp.Q.value = 2;
+      const g = gainNode(0.36, bus);
+      sea.connect(lp); lp.connect(g); add(sea);
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.08;
+      lfo.connect(gainNode(140, lp.frequency)); lfo.connect(gainNode(0.2, g.gain)); add(lfo);
+      return (t) => {
+        if (Math.random() < 0.35) for (let i = 0; i < 1 + Math.floor(rnd(0, 3)); i++) bubble(t + i * rnd(0.05, 0.12), { gain: 0.04, f: rnd(300, 700), pan: rnd(-0.8, 0.8), dest: bus });
+        if (Math.random() < 0.025) {
+          tone(t, { f: 190, f2: 290, glide: 1.4, dur: 1.4, hold: 1, gain: 0.08, a: 0.6, lp: 700, vib: [4, 8], dest: bus });
+          tone(t + 2.6, { f: 260, f2: 150, glide: 1.8, dur: 1.2, hold: 0.8, gain: 0.06, a: 0.4, lp: 600, vib: [3, 6], dest: bus });
+        }
+        return rnd(0.8, 1.8);
+      };
+    },
+  };
+
+  const ambienceTrim = (id) => Math.pow(10, ((TRIM[id] || {}).ambience || 0) / 20);
+  let amb = null;
+  function stopAmbience(fade = 1.2) {
+    if (!amb) return;
+    const a = amb;
+    amb = null;
+    clearTimeout(a.timer);
+    const t = ctx.currentTime;
+    a.bus.gain.cancelScheduledValues(t);
+    a.bus.gain.setValueAtTime(a.bus.gain.value, t);
+    a.bus.gain.linearRampToValueAtTime(0, t + fade);
+    setTimeout(() => {
+      a.nodes.forEach(n => { try { n.stop(); } catch (e) {} });
+      a.bus.disconnect();
+    }, fade * 1000 + 100);
+  }
+  function startAmbience(themeId) {
+    if (!ctx || !settings.ambience || settings.muted) return;
+    if (amb && amb.theme === themeId) return;
+    stopAmbience();
+    const bus = gainNode(0, ambBus);
+    const nodes = [];
+    const add = (n) => { n.start(); nodes.push(n); };
+    const next = (AMBIENCES[themeId] || AMBIENCES.neon)(bus, add);
+    const t = ctx.currentTime;
+    bus.gain.setValueAtTime(0, t);
+    bus.gain.linearRampToValueAtTime(ambienceTrim(themeId), t + 2.5);
+    const a = { theme: themeId, bus, nodes, timer: 0, at: t + 1 };
+    // Look-ahead scheduler: events are queued up to 1s ahead so a
+    // throttled background-tab timer can't make them stutter.
+    const pump = () => {
+      if (amb !== a) return;
+      while (a.at < ctx.currentTime + 1) {
+        if (a.at > ctx.currentTime && voices < MAX_VOICES - 10) a.at += next(a.at);
+        else a.at = ctx.currentTime + 0.1 + next(ctx.currentTime + 0.1);
+      }
+      a.timer = setTimeout(pump, 400);
+    };
+    amb = a;
+    pump();
+  }
+
+  function applyLevels(fade = 0.15) {
+    if (!ctx) return;
+    const t = ctx.currentTime;
+    master.gain.cancelScheduledValues(t);
+    master.gain.setValueAtTime(master.gain.value, t);
+    master.gain.linearRampToValueAtTime(masterLevel(), t + fade);
+    ambBus.gain.cancelScheduledValues(t);
+    ambBus.gain.setValueAtTime(ambBus.gain.value, t);
+    ambBus.gain.linearRampToValueAtTime(settings.ambience ? AMBIENCE_LEVEL : 0, t + fade * 4);
+    if (settings.ambience && !settings.muted) startAmbience(themeNow());
+    else setTimeout(() => { if (!settings.ambience || settings.muted) stopAmbience(0.3); }, fade * 4000);
+  }
+
+  // ---- Unlock on first gesture ----
+  let unlocked = false;
+  function unlock() {
+    if (!init()) return;
+    const go = () => {
+      if (unlocked) return;
+      unlocked = true;
+      applyLevels(0.01);
+    };
+    if (ctx.state === "suspended") ctx.resume().then(go, () => {});
+    else go();
+  }
+  ["pointerdown", "keydown", "touchstart"].forEach(ev => document.addEventListener(ev, unlock, { capture: true, passive: true }));
+
+  // Pause everything while the tab is hidden, pick back up on return.
+  document.addEventListener("visibilitychange", () => {
+    if (!ctx || !unlocked) return;
+    if (document.hidden) ctx.suspend().catch(() => {});
+    else ctx.resume().catch(() => {});
+  });
+
+  // Theme changes crossfade the ambience (the switch scene itself is
+  // played from playThemeTransition so it lines up with the visuals).
+  new MutationObserver(() => {
+    if (ctx && unlocked && settings.ambience && !settings.muted) startAmbience(themeNow());
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  // ---- Scanning loop ----
+  let scanTimer = 0, scanAt = 0, scanTheme = null;
+  function scan(on) {
+    clearTimeout(scanTimer);
+    if (!on) { scanTheme = null; return; }
+    if (!ready()) return;
+    scanTheme = themeNow();
+    schedule("scanStart", scanTheme, T(), { trim: (TRIM[scanTheme] || {}).scan || 0 });
+    scanAt = T() + set(scanTheme).scanEvery;
+    const pump = () => {
+      if (!scanTheme || !ctx) return;
+      const every = set(scanTheme).scanEvery;
+      while (scanAt < ctx.currentTime + 0.3) {
+        if (ready()) schedule("scanTick", scanTheme, Math.max(scanAt, T()), { trim: (TRIM[scanTheme] || {}).scan || 0 });
+        scanAt += every;
+      }
+      scanTimer = setTimeout(pump, 120);
+    };
+    pump();
+  }
+
+  // ---- Public API ----
+  // x is the screen x of the thing that made the sound, used to pan it.
+  const panFor = (x) => (x == null ? 0 : ((x / window.innerWidth) * 2 - 1) * 0.6);
+  // Per-sound level trims in dB, set by measuring every sound's short-term
+  // loudness so each kind of moment sits at the same level in every theme
+  // (clicks ~-28dB, rare clicks ~-22, flips ~-27, switch scenes ~-14...).
+  const TRIM = {
+    neon: { combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -2 },
+    casefiles: { click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
+    ledger: { rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
+    deepcurrent: { rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -4 },
+    shared: { bed: -5, chat: -2 },
+  };
+  const SHARED = { chat: (t) => pling(t, [78, 85]), techno: fanfare, bed: bedDestroyed };
+
+  // Runs one sound with its trim applied. Everything a sound set makes
+  // lands on curOut unless it names its own destination.
+  function schedule(name, theme, t, opts = {}) {
+    const s = set(theme);
+    const key = name === "click" && opts.rare ? "rare" : name;
+    const db = (SHARED[name] ? TRIM.shared[key] : (TRIM[theme] || TRIM.neon)[key]) || 0;
+    const prev = curOut;
+    curOut = gainNode(Math.pow(10, (db + (opts.trim || 0)) / 20), sfxBus);
+    try {
+      if (SHARED[name]) SHARED[name](t);
+      else ({
+        click: () => (opts.rare ? s.rare(t, opts.pan || 0) : s.click(t, opts.pan || 0, opts.step)),
+        combo: () => s.tier(t, opts.tier || 0),
+        switch: () => s.switchTo(t),
+        flipOpen: () => s.flipOpen(t, (opts.duration || 600) / 1000),
+        flipClose: () => s.flipClose(t),
+        found: () => s.found(t), error: () => s.error(t), success: () => s.success(t),
+        stunt: () => s.stunt(t), ui: () => s.ui(t),
+        scanStart: () => s.scanStart(t), scanTick: () => s.scanTick(t),
+      })[name]();
+    } finally {
+      curOut = prev;
+    }
+  }
+
+  // Big scenes pull the ambience down under them, then let it back up.
+  function duck(t, secs) {
+    if (!ambBus || !settings.ambience) return;
+    const g = ambBus.gain;
+    g.cancelScheduledValues(t);
+    g.setValueAtTime(g.value, t);
+    g.linearRampToValueAtTime(AMBIENCE_LEVEL * 0.3, t + 0.15);
+    g.setValueAtTime(AMBIENCE_LEVEL * 0.3, t + secs);
+    g.linearRampToValueAtTime(AMBIENCE_LEVEL, t + secs + 1.2);
+  }
+  const DUCK = { switch: 2, bed: 3.2, techno: 1.2 };
+
+  let lastClick = 0;
+  function play(name, opts = {}) {
+    if (!ready()) return;
+    const theme = opts.theme || themeNow();
+    const t = T() + (opts.delay || 0);
+    let trim = 0;
+    if (name === "click") {
+      if (t - lastClick < 0.03) return;
+      // A fast flurry of clicks gets a little quieter so it doesn't pile up.
+      if (t - lastClick < 0.18) trim = -4;
+      lastClick = t;
+    }
+    if (DUCK[name]) duck(t, DUCK[name]);
+    try { schedule(name, theme, t, { ...opts, trim, pan: panFor(opts.x) }); } catch (e) {}
+  }
+
+  // Renders one sound into a WAV-ready AudioBuffer without touching the
+  // live output - used to preview/export the palette.
+  async function renderOffline(name, opts = {}, seconds = 3) {
+    const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    const off = new OAC(2, Math.ceil(44100 * seconds), 44100);
+    const saved = { ctx, master, sfxBus, ambBus, noiseBuf, ambNoise, muted: settings.muted };
+    ctx = off;
+    const w = wire(off, opts.level != null ? opts.level : 0.5);
+    master = w.m; sfxBus = w.s; ambBus = w.a;
+    noiseBuf = makeNoise(off);
+    ambNoise = makeNoise(off, 10);
+    settings.muted = false;
+    try {
+      if (name === "ambience") {
+        ambBus.gain.value = AMBIENCE_LEVEL;
+        const bus = gainNode(ambienceTrim(opts.theme || "neon"), ambBus);
+        const nodes = [];
+        const next = AMBIENCES[opts.theme || "neon"](bus, (n) => { n.start(); nodes.push(n); });
+        for (let at = 0.2; at < seconds;) at += next(at);
+      } else {
+        const theme = opts.theme || "neon";
+        const t = 0.05;
+        if (name === "scan") {
+          const trim = (TRIM[theme] || {}).scan || 0;
+          schedule("scanStart", theme, t, { trim });
+          for (let k = t + set(theme).scanEvery; k < seconds - 0.5; k += set(theme).scanEvery) schedule("scanTick", theme, k, { trim });
+        } else {
+          schedule(name, theme, t, opts);
+        }
+      }
+    } finally {
+      ctx = saved.ctx; master = saved.master; sfxBus = saved.sfxBus; ambBus = saved.ambBus;
+      noiseBuf = saved.noiseBuf; ambNoise = saved.ambNoise; settings.muted = saved.muted;
+    }
+    return off.startRendering();
+  }
+
+  return {
+    play,
+    scan,
+    renderOffline,
+    get settings() { return { ...settings }; },
+    set(patch) {
+      Object.assign(settings, patch);
+      settings.volume = Math.max(0, Math.min(1, +settings.volume || 0));
+      save();
+      applyLevels();
+    },
+  };
+})();
+
+// Sound control in the header: the speaker button opens a small panel with
+// Sound on/off, Volume and Ambience. The icon shows muted/low/loud.
+(function () {
+  const ctl = document.getElementById("audioCtl");
+  if (!ctl) return;
+  const btn = document.getElementById("audioBtn");
+  const panel = document.getElementById("audioPanel");
+  const on = document.getElementById("audioOn");
+  const vol = document.getElementById("audioVol");
+  const amb = document.getElementById("audioAmb");
+  if (!window.AudioContext && !window.webkitAudioContext) { ctl.hidden = true; return; }
+  const sync = () => {
+    const s = siteAudio.settings;
+    on.checked = !s.muted;
+    vol.value = Math.round(s.volume * 100);
+    amb.checked = s.ambience;
+    ctl.classList.toggle("is-muted", s.muted || s.volume === 0);
+    ctl.classList.toggle("is-low", s.volume < 0.4);
+    btn.setAttribute("aria-label", s.muted ? "Sound settings (muted)" : "Sound settings");
+  };
+  const open = (show) => {
+    panel.hidden = !show;
+    btn.setAttribute("aria-expanded", show ? "true" : "false");
+  };
+  btn.addEventListener("click", () => open(panel.hidden));
+  on.addEventListener("change", () => {
+    siteAudio.set({ muted: !on.checked });
+    sync();
+    if (on.checked) siteAudio.play("ui");
+  });
+  vol.addEventListener("input", () => {
+    siteAudio.set({ volume: vol.value / 100, muted: vol.value === "0" ? siteAudio.settings.muted : false });
+    sync();
+  });
+  vol.addEventListener("change", () => siteAudio.play("click", { step: Math.round(vol.value / 12) }));
+  amb.addEventListener("change", () => { siteAudio.set({ ambience: amb.checked }); sync(); });
+  document.addEventListener("click", (e) => { if (!ctl.contains(e.target)) open(false); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !panel.hidden) { open(false); btn.focus(); }
+  });
+  sync();
+})();
+</script>
+
+<script>
 
 // Site theme switch - a hand-built dropdown instead of a native <select>,
 // since a native select's open option list is rendered by the OS/browser
@@ -8329,6 +9249,7 @@ function playThemeTransition(themeId, swapFn, origin) {
       themeTransitionOverlay.classList.add("active");
       reveal.fx();
     }
+    siteAudio.play("switch", { theme: themeId });
   });
   themeTransition = vt;
   vt.ready.then(() => {
@@ -9126,6 +10047,7 @@ const statsStar = document.getElementById('statsStar');
 // animation - so the reveal still plays as the polish moment even without
 // an overlap fade.
 function showStatsCard() {
+  siteAudio.play("found");
   statsEmpty.hidden = true;
   statsDisplay.style.display = "flex";
   const content = document.getElementById("statsContent");
@@ -9168,6 +10090,7 @@ function setStatsScanning(name) {
   const scanning = !!name;
   const wasScanning = statsEmpty.classList.contains("is-scanning");
   statsEmpty.classList.toggle("is-scanning", scanning);
+  if (scanning !== wasScanning) siteAudio.scan(scanning);
   rampIdleScene(scanning ? (IDLE_SCAN_RATE[document.documentElement.dataset.theme] || 3.5) : 1);
   if (!text) return;
   const next = scanning ? `Scanning Hypixel for ${name}…` : STATS_EMPTY_TEXT;
@@ -9458,6 +10381,7 @@ fetchBtn.addEventListener('click', async () => {
   } catch (err) {
     status.textContent = err.message;
     setStatsScanning(null);
+    siteAudio.play("error");
   } finally {
     fetchBtn.disabled = false;
     fetchBtn.classList.remove("loading");
@@ -11711,6 +12635,13 @@ function animateModalIn(modalEl, sourceRect, sourceEl) {
   stopModalAnimations(modalEl);
   modalEl._flipSource = sourceEl || null;
   modalEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
+  // The player popup is opened plain and then re-animated as a flip a
+  // frame later, so the sound waits a beat and only the last call plays.
+  clearTimeout(modalEl._sfxTimer);
+  const flipping = !!(sourceRect && isCardShaped(sourceRect) && !reducedMotion.matches);
+  modalEl._sfxTimer = setTimeout(() => {
+    siteAudio.play("flipOpen", { duration: flipping ? cardFlipOpen(themeKey(), { dx: 0, dy: 0, dyTop: 0, sx: 1, sy: 1 }).duration : 420 });
+  }, 30);
   if (!card || reducedMotion.matches) return;
 
   const target = card.getBoundingClientRect();
@@ -11741,6 +12672,8 @@ function animateModalOut(modalEl) {
   const source = modalEl._flipSource;
   modalEl._flipSource = null;
   stopModalAnimations(modalEl);
+  clearTimeout(modalEl._sfxTimer);
+  siteAudio.play("flipClose");
   modalEl.dataset.closing = "1";
   if (reducedMotion.matches) {
     modalEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: "forwards" }).onfinish = hide;
@@ -12058,6 +12991,7 @@ function playSuccessFlourish() {
   // from the action that triggered it.
   const host = document.querySelector(".add-sweat-row");
   if (!host) return;
+  siteAudio.play("success");
   const wrap = document.createElement("div");
   wrap.className = "success-flourish";
   wrap.setAttribute("aria-hidden", "true");
@@ -12672,7 +13606,10 @@ function bumpCombo(x, y) {
   const text = currentThemeId() === "ledger" ? `&times;${comboCount}` : `x${comboCount}`;
   comboEl = fxWord(x, y - 40, `${text}<small>${label}</small>`);
   comboEl.style.fontSize = `${Math.min(20 + tier * 5, 42)}px`;
-  if (COMBO_TIERS.includes(comboCount)) themedBurst(x, y, true, true);
+  if (COMBO_TIERS.includes(comboCount)) {
+    themedBurst(x, y, true, true);
+    siteAudio.play("combo", { tier });
+  }
 }
 
 // ---------- Click listener ----------
@@ -12705,8 +13642,20 @@ document.addEventListener("pointerdown", (e) => {
   const midCombo = performance.now() - comboLast < 420 && comboCount >= COMBO_TIERS[0] - 1;
   const rare = !midCombo && Math.random() < RARE_CHANCE;
   themedBurst(e.clientX, e.clientY, rare);
+  // Mid-combo, Neon's blips climb the scale with the count.
+  const step = performance.now() - comboLast < 420 ? Math.min(comboCount, 14) : undefined;
+  siteAudio.play("click", { x: e.clientX, rare, step });
   // Title taps have their own counter (see titleStunt) - no combo on top.
   if (!e.target.closest(".hero h1")) bumpCombo(e.clientX, e.clientY);
+}, { passive: true });
+
+// A quiet themed tick on buttons, links and chips. Cards and rows open the
+// popup, which has its own flip sound, so they're left out.
+document.addEventListener("pointerdown", (e) => {
+  if (e.button !== 0) return;
+  const el = e.target.closest && e.target.closest("button, a, summary, [role='button'], [role='option'], [role='tab']");
+  if (!el || el.closest("[data-username]") || el.disabled) return;
+  siteAudio.play("ui");
 }, { passive: true });
 
 // ---------- Toasts ----------
@@ -12732,6 +13681,7 @@ const CHAT_RANKS = [
 function chatLine(msg) {
   const name = pick(Object.values(BEATEN_BY)).label;
   const [rank, color] = pick(CHAT_RANKS);
+  siteAudio.play("chat");
   eggToast(`<b style="color:${color}">${rank} ${name}</b>: ${msg}`);
 }
 
@@ -12762,6 +13712,7 @@ let eggSceneBusy = false;
 function playBedDestroyed() {
   if (eggSceneBusy) return;
   eggSceneBusy = true;
+  siteAudio.play("bed");
   const reduce = reducedMotionQuery.matches;
   const scene = document.createElement("div");
   scene.id = "eggScene";
@@ -12836,6 +13787,7 @@ let titleStuntBusy = false;
 function titleStunt() {
   if (titleStuntBusy || reducedMotionQuery.matches) return;
   titleStuntBusy = true;
+  siteAudio.play("stunt");
   const release = () => { titleStuntBusy = false; };
   const r = heroTitle.getBoundingClientRect();
   const theme = currentThemeId();
@@ -12921,6 +13873,7 @@ let technoShown = false;
 usernameField.addEventListener("input", () => {
   const isTechno = usernameField.value.trim().toLowerCase() === "technoblade";
   if (isTechno && !technoShown) {
+    siteAudio.play("techno");
     eggToast(`&#128081; <b>Technoblade never dies.</b> Blood for the Blood God.`, 5500);
     const r = usernameField.getBoundingClientRect();
     if (!reducedMotionQuery.matches) themedBurst(r.left + r.width * 0.7, r.top + r.height / 2, true);

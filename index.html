@@ -6715,6 +6715,7 @@ let denickToken = 0; // guards against a slow, stale search overwriting a newer 
 let denickAllResults = []; // the full merged list from the last search - renderDenickPage() slices it
 let denickNameOf = null;
 let denickPage = 1;
+let denickQuery = ""; // last query actually searched - what the URL shares, not whatever is half-typed in the box
 
 // entry.username is always the real player - even in player mode, where
 // nameOf(entry) shows entry.nick instead - so the avatar is a plain
@@ -6796,6 +6797,8 @@ denickModeBtns.forEach(btn => {
     denickPagination.hidden = true;
     denickStatus.textContent = "";
     denickEmpty.hidden = false;
+    denickQuery = "";
+    syncUrl();
   });
 });
 
@@ -6805,6 +6808,8 @@ async function runDenickSearch() {
 
   const myToken = ++denickToken;
   const isStale = () => myToken !== denickToken;
+  denickQuery = query;
+  syncUrl();
 
   denickSearchBtn.disabled = true;
   denickSearchBtn.classList.add("loading");
@@ -7171,15 +7176,19 @@ viewTableBtn.addEventListener('click', () => setViewMode('table'));
 viewLeaderboardBtn.addEventListener('click', () => setViewMode('leaderboard'));
 
 function setViewMode(mode) {
-  viewMode = mode;
+  applyViewMode(mode);
   currentPage = 1;
+  renderTable();
+}
+
+function applyViewMode(mode) {
+  viewMode = mode;
   viewGridBtn.classList.toggle('active', mode === 'grid');
   viewTableBtn.classList.toggle('active', mode === 'table');
   viewLeaderboardBtn.classList.toggle('active', mode === 'leaderboard');
   cardGrid.hidden = mode !== 'grid';
   tableWrap.hidden = mode !== 'table';
   leaderboardWrap.hidden = mode !== 'leaderboard';
-  renderTable();
 }
 
 // Load sweats. Shows skeleton cards first since the backend runs on a
@@ -7822,6 +7831,7 @@ function renderTable() {
     gridTablePagination.hidden = true;
     renderLeaderboard(filteredSweats, usernameCounts);
   }
+  syncUrl();
 }
 
 function avatarUrlFor(uuid) {
@@ -8405,8 +8415,9 @@ if (hideDuplicatesCheckbox) {
   hideDuplicatesCheckbox.addEventListener('change', () => { currentPage = 1; renderTable(); });
 }
 
-// Load all sweats on startup
-loadSweats();
+// Load all sweats on startup - kept as a promise so restoreStateFromUrl()
+// (end of script) can open a linked player once their entry exists.
+const initialSweatsLoad = loadSweats();
 
 const modal = document.getElementById("playerModal");
 const modalUsername = document.getElementById("modalUsername");
@@ -8456,6 +8467,8 @@ async function openPlayerModal(item) {
   rememberFocusBeforeModal();
   const username = item.dataset.username;
   const uuid = item.dataset.uuid;
+  openPlayerName = username;
+  syncUrl();
 
   // Stamp which player this modal open is for, so a slower in-flight request
   // from a previous click can't clobber a newer one if the user clicks fast.
@@ -8632,6 +8645,8 @@ function closePlayerModal() {
   // See the matching comment in closeEditModalFn.
   modal.querySelector(".modal-card").classList.remove("card-flip-expand");
   restoreFocusAfterModal();
+  openPlayerName = null;
+  syncUrl();
 }
 closeModal.onclick = closePlayerModal;
 
@@ -8910,6 +8925,105 @@ function playSuccessFlourish() {
   host.appendChild(wrap);
   setTimeout(() => wrap.remove(), duration + 100);
 }
+
+
+// --- Shareable URLs: the Defeated Sweats filters/view/sort/page, the
+// leaderboard person, an open player card, and the last denick search are
+// mirrored into the query string, so copying the address bar shares exactly
+// what's on screen. replaceState rather than pushState - every keystroke in
+// a filter would otherwise pile up a Back-button entry. Defaults are left
+// out so a plain visit keeps a clean URL. ---
+let openPlayerName = null;
+const SORT_FIELDS = [...new Set([...document.querySelectorAll("th.sortable")].map(th => th.dataset.sort))];
+const URL_FILTER_INPUTS = { q: searchInput, stars: filterStars, fkdr: filterFkdr, index: filterIndex, date: filterDate };
+const URL_FILTER_CHECKBOXES = { dupes: hideDuplicatesCheckbox, cheaters: cheatersOnlyCheckbox, boosters: boostersOnlyCheckbox };
+
+function syncUrl() {
+  const params = new URLSearchParams();
+  for (const [key, inp] of Object.entries(URL_FILTER_INPUTS)) {
+    const v = inp.value.trim();
+    if (v) params.set(key, v);
+  }
+  for (const [key, cb] of Object.entries(URL_FILTER_CHECKBOXES)) {
+    if (cb.checked) params.set(key, "1");
+  }
+  if (sortField) {
+    params.set("sort", sortField);
+    if (!sortAsc) params.set("dir", "desc");
+  }
+  if (viewMode !== "grid") params.set("view", viewMode);
+  if (viewMode === "leaderboard" && leaderboardPerson) params.set("lb", leaderboardPerson);
+  if (currentPage > 1) params.set("page", String(currentPage));
+  if (openPlayerName) params.set("player", openPlayerName);
+  if (denickQuery) {
+    params.set("denick", denickQuery);
+    if (denickMode !== "nick") params.set("denickMode", denickMode);
+  }
+  const qs = params.toString();
+  const url = location.pathname + (qs ? "?" + qs : "") + location.hash;
+  if (url !== location.pathname + location.search + location.hash) {
+    history.replaceState(history.state, "", url);
+  }
+}
+
+// Opens a linked player: their tracked entry if there is one (for the
+// stored UUID), otherwise a Mojang lookup so a link to any player works.
+async function openPlayerFromUrl(name) {
+  const lower = name.toLowerCase();
+  const tracked = sweats.find(s => s.username.toLowerCase() === lower);
+  let uuid = tracked ? tracked.uuid : "";
+  if (!uuid) {
+    try {
+      const res = await fetch(`${backendBaseURL}/mojang/${encodeURIComponent(name)}`, { headers: adminHeaders() });
+      if (res.ok) uuid = (await res.json()).id || "";
+    } catch {}
+  }
+  openPlayerModal({ dataset: { username: tracked ? tracked.username : name, uuid } });
+}
+
+function restoreStateFromUrl() {
+  const params = new URLSearchParams(location.search);
+  if (![...params.keys()].length) return;
+
+  for (const [key, inp] of Object.entries(URL_FILTER_INPUTS)) {
+    if (params.has(key)) inp.value = params.get(key);
+  }
+  currentFilter = searchInput.value.trim().toLowerCase();
+  for (const [key, cb] of Object.entries(URL_FILTER_CHECKBOXES)) {
+    cb.checked = params.get(key) === "1";
+  }
+  if (SORT_FIELDS.includes(params.get("sort"))) {
+    sortField = params.get("sort");
+    sortAsc = params.get("dir") !== "desc";
+  }
+  const view = params.get("view");
+  if (view === "table" || view === "leaderboard") applyViewMode(view);
+  if (BEATEN_BY_KEYS.includes(params.get("lb"))) leaderboardPerson = params.get("lb");
+  const page = parseInt(params.get("page"), 10);
+  if (page > 1) currentPage = page;
+  // Held from the start so URL writes made before the player's card
+  // actually opens (the first sweats render, a denick search) keep it.
+  const player = (params.get("player") || "").trim();
+  if (player) openPlayerName = player;
+
+  const denick = (params.get("denick") || "").trim();
+  if (denick) {
+    const modeBtn = [...denickModeBtns].find(b => b.dataset.mode === params.get("denickMode"));
+    if (modeBtn) modeBtn.click();
+    denickInput.value = denick;
+    runDenickSearch();
+  }
+
+  const hasSweatsState = [...params.keys()].some(k => !["player", "denick", "denickMode"].includes(k));
+  const scrollTarget = denick ? "denickingSection" : hasSweatsState ? "defeatedSweatsSection" : null;
+  // Sweats render async and push everything below them down, so scroll
+  // once they're in rather than to a spot that's about to move.
+  initialSweatsLoad.then(() => {
+    if (scrollTarget) document.getElementById(scrollTarget).scrollIntoView({ block: "start" });
+    if (player) openPlayerFromUrl(player);
+  });
+}
+restoreStateFromUrl();
 
 </script>
 

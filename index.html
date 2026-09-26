@@ -1106,14 +1106,26 @@ input:focus {
   width: 100%;
 }
 
+/* Full-body skin render (not just the face) standing on a lit floor, to
+   the left of the stats - same look as the player popup's skin. Stacks
+   back above the stats on narrow screens. */
 #statsAvatar {
-  width: 72px;
-  height: 72px;
-  border-radius: 18px;
-  border: 2px solid var(--border-strong);
+  width: 120px;
+  height: 220px;
+  object-fit: contain;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--border-strong);
   flex-shrink: 0;
-  background: rgba(255,255,255,0.03);
+  background:
+    radial-gradient(ellipse 60% 9% at 50% 94%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 70%),
+    radial-gradient(circle at 50% 40%, var(--accent-soft), transparent 70%);
   box-shadow: 0 0 20px rgba(0,217,255,0.18);
+}
+@media (min-width: 621px) {
+  #statsContent { flex-direction: row; align-items: center; text-align: left; gap: 18px; }
+}
+@media (max-width: 620px) {
+  #statsAvatar { width: 100%; height: 170px; }
 }
 
 #statsRight { width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 14px; align-items: center; }
@@ -6764,7 +6776,7 @@ html[data-theme="deepcurrent"] .pill.boost {
 
             <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
               <div id="statsContent">
-                <img id="statsAvatar" src="" alt="Player head" />
+                <img id="statsAvatar" src="" alt="Player skin" />
                 <div id="statsRight">
                   <div id="statsTopRow">
                     <span id="statsRank"></span>
@@ -8657,7 +8669,7 @@ function renderTagBadges(container, reasonEl, tagsData, iconMap, emptyText = "No
 }
 
 function updateStatsDisplay(stats) {
-  statsAvatar.src = `https://visage.surgeplay.com/face/256/${currentUUID}`;
+  statsAvatar.src = `https://visage.surgeplay.com/full/256/${currentUUID}`;
   statsUsername.textContent = stats.username;
 
   if (stats.rank.name) {

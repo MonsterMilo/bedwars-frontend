@@ -3959,36 +3959,38 @@ html[data-theme="casefiles"] .panel-icon-lookup::before { content: "\2315"; }
 html[data-theme="casefiles"] .panel-icon-results::before { content: "\25A3"; }
 html[data-theme="casefiles"] .panel-icon-denick::before { content: "\26BF"; }
 
-/* clip-path clips box-shadow along with everything else, which would cut
-   the shadow off hard at the flat pre-tear rectangle rather than letting it
-   follow the jagged silhouette - filter: drop-shadow() operates on the
-   already-clipped shape's actual alpha, so it hugs the torn edge correctly
-   instead. Border behaves similarly: it was only ever drawn along the
-   original straight bottom line, so clipping leaves it as bare fragments
-   at the tear's peaks - left alone, since that reads as the raw torn
-   material rather than a clean stroke, which is the point. */
+/* Torn bottom edge. The paper is drawn in three layers that repeat along
+   a 600x40px band at the bottom of the card: the printed paper face ends
+   on a ragged line, a thin strip of paler exposed fibre shows below it
+   (with a few loose strands), and a soft shadow falls under the tear. The
+   mask cuts the card off along the fibre edge and keeps the shadow half
+   transparent. Unlike the old stretched clip-path, the tear keeps the same
+   size at every screen width. The images are generated, tile seamlessly,
+   and live in the custom properties below. */
 html[data-theme="casefiles"] .hero {
-  background: var(--panel);
+  --tear-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='40'%3E%3Cpolygon fill='%23fbf6e6' points='0,0 0,19.67 3,20.89 6,20.86 9,19.57 12,20.06 15,19.64 18,19.72 21,19.53 24,17.10 27,16.31 30,17.82 33,16.27 36,16.75 39,14.55 42,15.64 45,16.45 48,15.39 51,17.57 54,17.82 57,15.94 60,16.27 63,17.88 66,19.09 69,17.71 72,17.25 75,17.66 78,16.46 81,16.76 84,17.13 87,17.14 90,16.38 93,16.40 96,16.47 99,17.28 102,17.07 105,16.61 108,18.94 111,18.33 114,18.56 117,17.23 120,19.01 123,18.17 126,15.59 129,15.35 132,15.48 135,14.53 138,14.23 141,12.09 144,12.53 147,11.75 150,10.79 153,11.93 156,13.53 159,14.62 162,15.08 165,16.52 168,15.90 171,16.65 174,17.63 177,15.62 180,13.66 183,13.27 186,12.48 189,11.49 192,10.13 195,10.02 198,10.18 201,11.08 204,10.80 207,11.01 210,11.91 213,11.43 216,12.20 219,14.61 222,15.96 225,15.44 228,15.25 231,14.84 234,15.70 237,16.78 240,15.95 243,14.98 246,15.42 249,13.41 252,13.82 255,14.74 258,13.66 261,13.37 264,13.01 267,13.97 270,15.33 273,13.19 276,15.53 279,15.90 282,16.27 285,16.02 288,16.23 291,15.45 294,15.49 297,15.07 300,14.07 303,16.22 306,15.59 309,14.91 312,16.13 315,16.64 318,16.99 321,17.73 324,19.03 327,20.04 330,20.73 333,20.93 336,20.25 339,21.04 342,20.98 345,21.93 348,22.38 351,21.82 354,21.34 357,20.87 360,18.90 363,19.96 366,19.13 369,17.28 372,16.87 375,16.69 378,18.48 381,17.02 384,16.49 387,17.59 390,16.53 393,15.39 396,15.09 399,15.42 402,13.81 405,13.38 408,13.85 411,12.58 414,11.76 417,11.82 420,10.49 423,11.45 426,11.73 429,11.46 432,11.70 435,14.30 438,13.95 441,14.03 444,16.19 447,18.10 450,17.36 453,18.20 456,18.48 459,18.99 462,15.98 465,15.79 468,14.44 471,13.24 474,11.92 477,13.64 480,13.10 483,12.38 486,11.68 489,12.87 492,12.26 495,12.73 498,11.98 501,12.58 504,10.78 507,10.99 510,12.24 513,11.48 516,9.49 519,10.47 522,8.70 525,10.13 528,9.61 531,8.93 534,8.87 537,8.78 540,11.72 543,10.31 546,13.17 549,14.36 552,14.11 555,13.76 558,16.14 561,16.87 564,16.51 567,16.24 570,16.08 573,16.15 576,15.93 579,17.34 582,16.97 585,16.67 588,16.84 591,18.75 594,18.26 597,19.26 600,19.67 600,0'/%3E%3C/svg%3E");
+  --tear-fiber: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='40'%3E%3Crect width='600' height='40' fill='%232a241c'/%3E%3Cpolygon fill='%23fffdf6' points='0,0 0,22.58 2,24.66 4,25.57 6,23.95 8,22.85 10,23.34 12,23.51 14,23.65 16,23.93 18,24.18 20,22.58 22,21.87 24,19.99 26,19.63 28,20.05 30,22.83 32,21.15 34,20.44 36,19.91 38,18.43 40,18.86 42,18.69 44,20.07 46,18.95 48,20.25 50,20.85 52,22.55 54,23.27 56,21.19 58,21.03 60,19.24 62,20.88 64,21.17 66,22.28 68,22.65 70,21.40 72,20.56 74,23.73 76,20.31 78,19.48 80,21.72 82,21.78 84,20.09 86,21.94 88,20.05 90,20.25 92,21.33 94,19.80 96,20.12 98,20.46 100,20.92 102,21.03 104,20.78 106,20.66 108,21.81 110,22.26 112,21.37 114,21.41 116,21.98 118,22.41 120,22.67 122,22.13 124,22.19 126,21.72 128,19.50 130,20.72 132,19.09 134,18.18 136,18.24 138,18.11 140,15.64 142,15.29 144,15.62 146,15.54 148,14.68 150,16.27 152,14.78 154,16.16 156,16.74 158,17.58 160,18.48 162,18.67 164,19.55 166,19.25 168,19.06 170,20.01 172,20.13 174,21.38 176,19.32 178,18.61 180,17.45 182,16.75 184,18.44 186,15.35 188,17.09 190,14.92 192,12.99 194,14.95 196,13.11 198,15.55 200,14.35 202,15.87 204,14.99 206,14.70 208,16.87 210,15.56 212,14.82 214,15.30 216,17.23 218,17.95 220,17.90 222,20.95 224,18.85 226,18.76 228,18.98 230,19.49 232,17.99 234,18.62 236,20.05 238,19.58 240,19.85 242,20.29 244,18.47 246,20.02 248,20.61 250,16.69 252,17.01 254,18.11 256,18.07 258,17.00 260,17.26 262,17.03 264,16.42 266,16.78 268,17.44 270,19.19 272,17.67 274,17.21 276,19.81 278,19.39 280,22.08 282,19.45 284,20.92 286,19.91 288,20.59 290,19.68 292,19.71 294,19.70 296,18.44 298,19.11 300,19.64 302,19.19 304,20.46 306,20.32 308,20.04 310,18.59 312,20.46 314,20.74 316,20.94 318,21.82 320,20.43 322,23.87 324,23.45 326,25.07 328,24.97 330,24.33 332,23.66 334,25.02 336,23.80 338,24.39 340,24.94 342,24.42 344,24.42 346,25.53 348,25.79 350,25.98 352,26.56 354,24.51 356,24.97 358,23.68 360,22.04 362,23.21 364,22.80 366,22.66 368,21.18 370,21.59 372,20.42 374,21.59 376,21.16 378,21.41 380,21.14 382,21.35 384,20.76 386,20.21 388,20.65 390,20.60 392,19.26 394,18.96 396,18.67 398,18.27 400,18.94 402,19.09 404,16.64 406,17.13 408,18.14 410,17.64 412,15.55 414,17.22 416,16.34 418,15.32 420,16.34 422,14.73 424,15.51 426,15.03 428,15.40 430,16.24 432,16.35 434,17.84 436,17.40 438,17.02 440,17.06 442,19.38 444,20.12 446,21.90 448,22.25 450,22.16 452,21.74 454,21.13 456,21.92 458,21.90 460,21.78 462,20.86 464,19.20 466,18.39 468,18.38 470,17.25 472,17.46 474,15.35 476,15.90 478,17.64 480,16.00 482,18.09 484,15.77 486,14.51 488,15.83 490,16.44 492,17.95 494,17.08 496,15.72 498,15.09 500,15.46 502,15.43 504,14.31 506,15.40 508,14.79 510,15.47 512,14.78 514,16.01 516,13.05 518,15.13 520,14.05 522,11.97 524,12.81 526,13.61 528,15.43 530,13.01 532,12.39 534,12.76 536,13.68 538,13.83 540,15.25 542,14.53 544,14.53 546,16.34 548,17.75 550,19.00 552,19.37 554,17.29 556,17.56 558,19.50 560,20.99 562,20.32 564,20.20 566,21.52 568,20.64 570,21.75 572,19.57 574,19.22 576,19.16 578,20.97 580,20.43 582,20.93 584,20.57 586,21.67 588,20.57 590,21.89 592,22.14 594,21.08 596,22.43 598,22.38 600,22.58 600,0'/%3E%3Cg stroke='%23d9cba6' stroke-opacity='0.55' stroke-width='0.6' stroke-linecap='round'%3E%3Cline x1='0.4' y1='19.4' x2='0.4' y2='21.3'/%3E%3Cline x1='5.2' y1='20.4' x2='5.1' y2='21.9'/%3E%3Cline x1='11.6' y1='19.5' x2='10.6' y2='22.8'/%3E%3Cline x1='16.6' y1='19.2' x2='15.5' y2='21.7'/%3E%3Cline x1='23.9' y1='16.7' x2='22.9' y2='18.8'/%3E%3Cline x1='26.9' y1='15.8' x2='27.2' y2='17.7'/%3E%3Cline x1='31.4' y1='16.6' x2='30.3' y2='18.4'/%3E%3Cline x1='37.9' y1='14.9' x2='38.6' y2='17.0'/%3E%3Cline x1='41.9' y1='15.1' x2='41.4' y2='18.9'/%3E%3Cline x1='46.0' y1='15.6' x2='46.8' y2='17.8'/%3E%3Cline x1='52.5' y1='17.2' x2='51.5' y2='19.6'/%3E%3Cline x1='57.7' y1='15.5' x2='58.0' y2='19.4'/%3E%3Cline x1='60.0' y1='15.8' x2='59.0' y2='17.4'/%3E%3Cline x1='65.7' y1='18.5' x2='64.6' y2='20.1'/%3E%3Cline x1='72.6' y1='16.8' x2='71.9' y2='20.6'/%3E%3Cline x1='78.9' y1='16.0' x2='79.6' y2='18.7'/%3E%3Cline x1='83.7' y1='16.6' x2='82.6' y2='20.4'/%3E%3Cline x1='86.2' y1='16.6' x2='87.3' y2='19.7'/%3E%3Cline x1='90.4' y1='15.9' x2='91.2' y2='18.1'/%3E%3Cline x1='95.5' y1='16.0' x2='95.1' y2='18.4'/%3E%3Cline x1='102.7' y1='16.5' x2='101.9' y2='20.3'/%3E%3Cline x1='108.0' y1='18.4' x2='108.8' y2='21.7'/%3E%3Cline x1='112.2' y1='17.9' x2='111.9' y2='21.7'/%3E%3Cline x1='116.7' y1='16.9' x2='117.3' y2='19.0'/%3E%3Cline x1='121.9' y1='18.0' x2='121.1' y2='20.1'/%3E%3Cline x1='127.9' y1='14.9' x2='128.4' y2='18.0'/%3E%3Cline x1='131.5' y1='15.0' x2='130.7' y2='17.7'/%3E%3Cline x1='137.8' y1='13.7' x2='137.8' y2='15.3'/%3E%3Cline x1='143.0' y1='11.9' x2='142.1' y2='15.1'/%3E%3Cline x1='145.9' y1='11.5' x2='146.3' y2='15.1'/%3E%3Cline x1='153.5' y1='11.7' x2='153.4' y2='15.4'/%3E%3Cline x1='158.6' y1='14.0' x2='158.2' y2='17.3'/%3E%3Cline x1='161.5' y1='14.5' x2='161.2' y2='16.2'/%3E%3Cline x1='168.8' y1='15.6' x2='169.0' y2='17.4'/%3E%3Cline x1='170.4' y1='16.0' x2='170.8' y2='17.7'/%3E%3Cline x1='176.0' y1='15.8' x2='175.1' y2='17.4'/%3E%3Cline x1='182.6' y1='12.8' x2='181.4' y2='15.8'/%3E%3Cline x1='185.9' y1='12.0' x2='185.2' y2='15.9'/%3E%3Cline x1='192.2' y1='9.6' x2='192.9' y2='12.2'/%3E%3Cline x1='197.4' y1='9.6' x2='197.5' y2='13.1'/%3E%3Cline x1='200.8' y1='10.5' x2='199.7' y2='12.5'/%3E%3Cline x1='208.3' y1='10.9' x2='207.2' y2='12.7'/%3E%3Cline x1='213.9' y1='11.1' x2='214.8' y2='13.1'/%3E%3Cline x1='215.3' y1='11.5' x2='214.7' y2='14.2'/%3E%3Cline x1='223.3' y1='15.2' x2='223.7' y2='18.3'/%3E%3Cline x1='228.0' y1='14.7' x2='227.7' y2='18.4'/%3E%3Cline x1='232.4' y1='14.7' x2='231.5' y2='17.4'/%3E%3Cline x1='238.3' y1='15.9' x2='239.1' y2='18.9'/%3E%3Cline x1='240.8' y1='15.2' x2='240.7' y2='18.0'/%3E%3Cline x1='247.9' y1='13.6' x2='247.5' y2='15.3'/%3E%3Cline x1='251.9' y1='13.3' x2='252.1' y2='15.0'/%3E%3Cline x1='257.9' y1='13.2' x2='258.3' y2='15.7'/%3E%3Cline x1='262.4' y1='12.7' x2='262.1' y2='14.7'/%3E%3Cline x1='269.0' y1='14.4' x2='268.8' y2='16.7'/%3E%3Cline x1='270.3' y1='14.6' x2='269.5' y2='16.6'/%3E%3Cline x1='278.7' y1='15.4' x2='279.6' y2='18.7'/%3E%3Cline x1='283.9' y1='15.6' x2='285.0' y2='18.6'/%3E%3Cline x1='287.1' y1='15.7' x2='288.2' y2='18.2'/%3E%3Cline x1='293.6' y1='15.0' x2='293.6' y2='18.9'/%3E%3Cline x1='298.1' y1='14.2' x2='299.3' y2='16.7'/%3E%3Cline x1='303.7' y1='15.6' x2='304.7' y2='17.8'/%3E%3Cline x1='305.7' y1='15.1' x2='306.3' y2='16.9'/%3E%3Cline x1='311.2' y1='15.3' x2='311.5' y2='18.1'/%3E%3Cline x1='315.2' y1='16.2' x2='314.6' y2='19.5'/%3E%3Cline x1='321.7' y1='17.5' x2='322.3' y2='19.9'/%3E%3Cline x1='328.0' y1='19.8' x2='327.0' y2='22.0'/%3E%3Cline x1='331.2' y1='20.3' x2='330.2' y2='22.8'/%3E%3Cline x1='335.6' y1='19.8' x2='336.1' y2='23.2'/%3E%3Cline x1='343.9' y1='21.1' x2='344.8' y2='25.0'/%3E%3Cline x1='346.5' y1='21.6' x2='346.0' y2='23.6'/%3E%3Cline x1='351.9' y1='21.2' x2='352.0' y2='24.0'/%3E%3Cline x1='356.4' y1='20.5' x2='355.9' y2='24.1'/%3E%3Cline x1='361.9' y1='19.1' x2='362.6' y2='22.8'/%3E%3Cline x1='366.2' y1='18.5' x2='366.9' y2='20.6'/%3E%3Cline x1='370.0' y1='16.6' x2='370.1' y2='18.5'/%3E%3Cline x1='377.1' y1='17.5' x2='376.1' y2='19.4'/%3E%3Cline x1='380.8' y1='16.6' x2='380.7' y2='20.0'/%3E%3Cline x1='388.9' y1='16.4' x2='390.1' y2='19.9'/%3E%3Cline x1='390.1' y1='16.0' x2='389.0' y2='17.9'/%3E%3Cline x1='396.7' y1='14.7' x2='395.7' y2='17.0'/%3E%3Cline x1='402.2' y1='13.3' x2='401.7' y2='15.0'/%3E%3Cline x1='406.0' y1='13.0' x2='405.8' y2='16.5'/%3E%3Cline x1='411.0' y1='12.1' x2='410.9' y2='13.7'/%3E%3Cline x1='417.5' y1='11.1' x2='418.5' y2='14.3'/%3E%3Cline x1='423.2' y1='11.0' x2='422.4' y2='13.1'/%3E%3Cline x1='428.0' y1='11.0' x2='428.1' y2='14.5'/%3E%3Cline x1='433.3' y1='12.3' x2='432.8' y2='15.2'/%3E%3Cline x1='435.7' y1='13.7' x2='436.0' y2='15.3'/%3E%3Cline x1='443.6' y1='15.4' x2='443.5' y2='19.2'/%3E%3Cline x1='447.7' y1='17.4' x2='448.4' y2='21.3'/%3E%3Cline x1='452.4' y1='17.5' x2='452.5' y2='20.1'/%3E%3Cline x1='455.7' y1='18.0' x2='456.1' y2='19.9'/%3E%3Cline x1='464.0' y1='15.4' x2='463.7' y2='18.2'/%3E%3Cline x1='466.4' y1='14.7' x2='467.1' y2='17.3'/%3E%3Cline x1='471.8' y1='12.4' x2='471.0' y2='16.3'/%3E%3Cline x1='476.3' y1='12.7' x2='476.0' y2='15.5'/%3E%3Cline x1='483.4' y1='11.8' x2='484.4' y2='15.4'/%3E%3Cline x1='487.4' y1='11.8' x2='487.6' y2='13.3'/%3E%3Cline x1='492.2' y1='11.8' x2='491.7' y2='14.5'/%3E%3Cline x1='497.8' y1='11.5' x2='496.9' y2='15.3'/%3E%3Cline x1='502.7' y1='11.1' x2='502.7' y2='13.5'/%3E%3Cline x1='508.6' y1='11.2' x2='508.9' y2='15.1'/%3E%3Cline x1='510.8' y1='11.5' x2='510.0' y2='15.3'/%3E%3Cline x1='516.5' y1='9.2' x2='516.1' y2='12.7'/%3E%3Cline x1='521.1' y1='8.7' x2='522.1' y2='12.6'/%3E%3Cline x1='526.3' y1='9.4' x2='525.7' y2='11.9'/%3E%3Cline x1='530.5' y1='8.5' x2='531.7' y2='10.7'/%3E%3Cline x1='535.3' y1='8.3' x2='534.6' y2='10.4'/%3E%3Cline x1='540.3' y1='11.1' x2='540.9' y2='13.9'/%3E%3Cline x1='548.4' y1='13.6' x2='549.1' y2='16.7'/%3E%3Cline x1='550.0' y1='13.8' x2='551.1' y2='16.0'/%3E%3Cline x1='555.3' y1='13.5' x2='555.2' y2='15.6'/%3E%3Cline x1='561.1' y1='16.4' x2='560.0' y2='19.2'/%3E%3Cline x1='565.9' y1='15.8' x2='565.1' y2='19.7'/%3E%3Cline x1='573.6' y1='15.6' x2='574.8' y2='17.5'/%3E%3Cline x1='577.7' y1='16.2' x2='576.8' y2='19.3'/%3E%3Cline x1='580.2' y1='16.7' x2='579.4' y2='20.1'/%3E%3Cline x1='585.8' y1='16.2' x2='586.7' y2='19.8'/%3E%3Cline x1='590.2' y1='17.7' x2='590.3' y2='21.6'/%3E%3Cline x1='596.5' y1='18.6' x2='596.3' y2='20.4'/%3E%3C/g%3E%3C/svg%3E");
+  --tear-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='40'%3E%3Cfilter id='b' x='-5%25' y='-50%25' width='110%25' height='200%25'%3E%3CfeGaussianBlur stdDeviation='2.4'/%3E%3C/filter%3E%3Cpolygon fill='%23000' fill-opacity='0.26' filter='url%28%23b%29' points='0,0 0,26.08 2,28.16 4,29.07 6,27.45 8,26.35 10,26.84 12,27.01 14,27.15 16,27.43 18,27.68 20,26.08 22,25.37 24,23.49 26,23.13 28,23.55 30,26.33 32,24.65 34,23.94 36,23.41 38,21.93 40,22.36 42,22.19 44,23.57 46,22.45 48,23.75 50,24.35 52,26.05 54,26.77 56,24.69 58,24.53 60,22.74 62,24.38 64,24.67 66,25.78 68,26.15 70,24.90 72,24.06 74,27.23 76,23.81 78,22.98 80,25.22 82,25.28 84,23.59 86,25.44 88,23.55 90,23.75 92,24.83 94,23.30 96,23.62 98,23.96 100,24.42 102,24.53 104,24.28 106,24.16 108,25.31 110,25.76 112,24.87 114,24.91 116,25.48 118,25.91 120,26.17 122,25.63 124,25.69 126,25.22 128,23.00 130,24.22 132,22.59 134,21.68 136,21.74 138,21.61 140,19.14 142,18.79 144,19.12 146,19.04 148,18.18 150,19.77 152,18.28 154,19.66 156,20.24 158,21.08 160,21.98 162,22.17 164,23.05 166,22.75 168,22.56 170,23.51 172,23.63 174,24.88 176,22.82 178,22.11 180,20.95 182,20.25 184,21.94 186,18.85 188,20.59 190,18.42 192,16.49 194,18.45 196,16.61 198,19.05 200,17.85 202,19.37 204,18.49 206,18.20 208,20.37 210,19.06 212,18.32 214,18.80 216,20.73 218,21.45 220,21.40 222,24.45 224,22.35 226,22.26 228,22.48 230,22.99 232,21.49 234,22.12 236,23.55 238,23.08 240,23.35 242,23.79 244,21.97 246,23.52 248,24.11 250,20.19 252,20.51 254,21.61 256,21.57 258,20.50 260,20.76 262,20.53 264,19.92 266,20.28 268,20.94 270,22.69 272,21.17 274,20.71 276,23.31 278,22.89 280,25.58 282,22.95 284,24.42 286,23.41 288,24.09 290,23.18 292,23.21 294,23.20 296,21.94 298,22.61 300,23.14 302,22.69 304,23.96 306,23.82 308,23.54 310,22.09 312,23.96 314,24.24 316,24.44 318,25.32 320,23.93 322,27.37 324,26.95 326,28.57 328,28.47 330,27.83 332,27.16 334,28.52 336,27.30 338,27.89 340,28.44 342,27.92 344,27.92 346,29.03 348,29.29 350,29.48 352,30.06 354,28.01 356,28.47 358,27.18 360,25.54 362,26.71 364,26.30 366,26.16 368,24.68 370,25.09 372,23.92 374,25.09 376,24.66 378,24.91 380,24.64 382,24.85 384,24.26 386,23.71 388,24.15 390,24.10 392,22.76 394,22.46 396,22.17 398,21.77 400,22.44 402,22.59 404,20.14 406,20.63 408,21.64 410,21.14 412,19.05 414,20.72 416,19.84 418,18.82 420,19.84 422,18.23 424,19.01 426,18.53 428,18.90 430,19.74 432,19.85 434,21.34 436,20.90 438,20.52 440,20.56 442,22.88 444,23.62 446,25.40 448,25.75 450,25.66 452,25.24 454,24.63 456,25.42 458,25.40 460,25.28 462,24.36 464,22.70 466,21.89 468,21.88 470,20.75 472,20.96 474,18.85 476,19.40 478,21.14 480,19.50 482,21.59 484,19.27 486,18.01 488,19.33 490,19.94 492,21.45 494,20.58 496,19.22 498,18.59 500,18.96 502,18.93 504,17.81 506,18.90 508,18.29 510,18.97 512,18.28 514,19.51 516,16.55 518,18.63 520,17.55 522,15.47 524,16.31 526,17.11 528,18.93 530,16.51 532,15.89 534,16.26 536,17.18 538,17.33 540,18.75 542,18.03 544,18.03 546,19.84 548,21.25 550,22.50 552,22.87 554,20.79 556,21.06 558,23.00 560,24.49 562,23.82 564,23.70 566,25.02 568,24.14 570,25.25 572,23.07 574,22.72 576,22.66 578,24.47 580,23.93 582,24.43 584,24.07 586,25.17 588,24.07 590,25.39 592,25.64 594,24.58 596,25.93 598,25.88 600,26.08 600,0'/%3E%3Cpolygon fill='%23000' points='0,0 0,22.58 2,24.66 4,25.57 6,23.95 8,22.85 10,23.34 12,23.51 14,23.65 16,23.93 18,24.18 20,22.58 22,21.87 24,19.99 26,19.63 28,20.05 30,22.83 32,21.15 34,20.44 36,19.91 38,18.43 40,18.86 42,18.69 44,20.07 46,18.95 48,20.25 50,20.85 52,22.55 54,23.27 56,21.19 58,21.03 60,19.24 62,20.88 64,21.17 66,22.28 68,22.65 70,21.40 72,20.56 74,23.73 76,20.31 78,19.48 80,21.72 82,21.78 84,20.09 86,21.94 88,20.05 90,20.25 92,21.33 94,19.80 96,20.12 98,20.46 100,20.92 102,21.03 104,20.78 106,20.66 108,21.81 110,22.26 112,21.37 114,21.41 116,21.98 118,22.41 120,22.67 122,22.13 124,22.19 126,21.72 128,19.50 130,20.72 132,19.09 134,18.18 136,18.24 138,18.11 140,15.64 142,15.29 144,15.62 146,15.54 148,14.68 150,16.27 152,14.78 154,16.16 156,16.74 158,17.58 160,18.48 162,18.67 164,19.55 166,19.25 168,19.06 170,20.01 172,20.13 174,21.38 176,19.32 178,18.61 180,17.45 182,16.75 184,18.44 186,15.35 188,17.09 190,14.92 192,12.99 194,14.95 196,13.11 198,15.55 200,14.35 202,15.87 204,14.99 206,14.70 208,16.87 210,15.56 212,14.82 214,15.30 216,17.23 218,17.95 220,17.90 222,20.95 224,18.85 226,18.76 228,18.98 230,19.49 232,17.99 234,18.62 236,20.05 238,19.58 240,19.85 242,20.29 244,18.47 246,20.02 248,20.61 250,16.69 252,17.01 254,18.11 256,18.07 258,17.00 260,17.26 262,17.03 264,16.42 266,16.78 268,17.44 270,19.19 272,17.67 274,17.21 276,19.81 278,19.39 280,22.08 282,19.45 284,20.92 286,19.91 288,20.59 290,19.68 292,19.71 294,19.70 296,18.44 298,19.11 300,19.64 302,19.19 304,20.46 306,20.32 308,20.04 310,18.59 312,20.46 314,20.74 316,20.94 318,21.82 320,20.43 322,23.87 324,23.45 326,25.07 328,24.97 330,24.33 332,23.66 334,25.02 336,23.80 338,24.39 340,24.94 342,24.42 344,24.42 346,25.53 348,25.79 350,25.98 352,26.56 354,24.51 356,24.97 358,23.68 360,22.04 362,23.21 364,22.80 366,22.66 368,21.18 370,21.59 372,20.42 374,21.59 376,21.16 378,21.41 380,21.14 382,21.35 384,20.76 386,20.21 388,20.65 390,20.60 392,19.26 394,18.96 396,18.67 398,18.27 400,18.94 402,19.09 404,16.64 406,17.13 408,18.14 410,17.64 412,15.55 414,17.22 416,16.34 418,15.32 420,16.34 422,14.73 424,15.51 426,15.03 428,15.40 430,16.24 432,16.35 434,17.84 436,17.40 438,17.02 440,17.06 442,19.38 444,20.12 446,21.90 448,22.25 450,22.16 452,21.74 454,21.13 456,21.92 458,21.90 460,21.78 462,20.86 464,19.20 466,18.39 468,18.38 470,17.25 472,17.46 474,15.35 476,15.90 478,17.64 480,16.00 482,18.09 484,15.77 486,14.51 488,15.83 490,16.44 492,17.95 494,17.08 496,15.72 498,15.09 500,15.46 502,15.43 504,14.31 506,15.40 508,14.79 510,15.47 512,14.78 514,16.01 516,13.05 518,15.13 520,14.05 522,11.97 524,12.81 526,13.61 528,15.43 530,13.01 532,12.39 534,12.76 536,13.68 538,13.83 540,15.25 542,14.53 544,14.53 546,16.34 548,17.75 550,19.00 552,19.37 554,17.29 556,17.56 558,19.50 560,20.99 562,20.32 564,20.20 566,21.52 568,20.64 570,21.75 572,19.57 574,19.22 576,19.16 578,20.97 580,20.43 582,20.93 584,20.57 586,21.67 588,20.57 590,21.89 592,22.14 594,21.08 596,22.43 598,22.38 600,22.58 600,0'/%3E%3C/svg%3E");
+  background:
+    var(--tear-paper) left bottom / 600px 40px repeat-x,
+    linear-gradient(var(--panel), var(--panel)) left top / 100% calc(100% - 39px) no-repeat,
+    var(--tear-fiber) left bottom / 600px 40px repeat-x;
   border: 1px solid var(--border);
+  border-bottom: 0;
   border-radius: var(--radius-l) var(--radius-l) 0 0;
-  padding: 34px 28px 82px;
+  padding: 34px 28px 74px;
   box-shadow: none;
-  filter: drop-shadow(0 10px 12px rgba(42,36,28,0.35));
-  clip-path: url(#tornEdge);
+  -webkit-mask:
+    linear-gradient(#000, #000) left top / 100% calc(100% - 39px) no-repeat,
+    var(--tear-mask) left bottom / 600px 40px repeat-x;
+  mask:
+    linear-gradient(#000, #000) left top / 100% calc(100% - 39px) no-repeat,
+    var(--tear-mask) left bottom / 600px 40px repeat-x;
 }
-/* The tear's deepest gouges (y=1.00 in #tornEdge's coordinates) reach all
-   the way down to .hero's own true bottom edge regardless of screen size -
-   clip-path only changes what's painted, not .hero's box/layout, so the
-   next element in flow always starts exactly there with zero built-in
-   gap. That was never a problem before the quick-nav existed: whatever
-   came next (.panel-header, 52px top margin) only became visible well
-   past that point, so the trailing scrap of "paper" always hung over
-   plain empty background rather than touching anything. The quick-nav's
-   own visible box starts immediately though (no margin of its own), so it
-   needs the same kind of clearance reintroduced here, scoped to this
-   theme only since the other three have no tear to clear. */
+/* The tear sits in the card's last 40px, so the quick-nav below needs a
+   little clearance in this theme only. */
 html[data-theme="casefiles"] .quick-nav {
-  margin-top: 44px;
+  margin-top: 22px;
 }
 html[data-theme="casefiles"] .hero-pin {
   display: block;
@@ -7590,42 +7592,55 @@ html[data-theme="deepcurrent"] .shortcuts-list kbd { border-radius: 50px; }
 .credits-shortcuts-btn:hover { color: var(--text); }
 .credits-shortcuts-btn kbd { font: 700 0.9em ui-monospace, "Consolas", monospace; padding: 0 5px; border: 1px solid currentColor; border-radius: 4px; }
 @media (hover: none) { .credits-shortcuts { display: none; } }
+
+/* ============================================================
+   LIVE-ARRIVED SWEATS
+   ============================================================ */
+.pill.live-pill {
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  font-size: 0.72em;
+  color: #04050a;
+  background: var(--good);
+  border-color: var(--good);
+}
+.sweat-card.live-new { animation: cardIn 0.4s var(--ease) both, liveArrive 1.4s ease-out 0.3s 2; }
+.sweat-row.live-new { animation: liveArriveRow 1.6s ease-out 2; }
+@keyframes liveArrive {
+  0% { box-shadow: 0 0 0 0 rgba(52,224,161,0.7); }
+  100% { box-shadow: 0 0 0 16px rgba(52,224,161,0); }
+}
+@keyframes liveArriveRow {
+  0% { background: rgba(52,224,161,0.22); }
+  100% { background: transparent; }
+}
+html[data-theme="casefiles"] .pill.live-pill { color: #fff; background: #a32f1d; border-color: #a32f1d; border-radius: 2px; transform: rotate(-3deg); font-family: 'Courier Prime', monospace; }
+html[data-theme="casefiles"] .sweat-card.live-new { animation: cardInCasefiles 0.4s var(--ease) both, liveArriveCase 0.9s ease-out 0.3s 1 both; }
+@keyframes liveArriveCase {
+  0% { filter: brightness(2.2) contrast(0.8); }
+  30% { filter: brightness(1.3); }
+  100% { filter: none; }
+}
+html[data-theme="ledger"] .pill.live-pill { color: #16233a; background: linear-gradient(180deg, #f6e7b8, #e2c77d); border-color: #a9822e; border-radius: 2px; }
+html[data-theme="ledger"] .sweat-card.live-new { animation: cardIn 0.4s var(--ease) both, liveArriveLedger 1.6s ease-out 0.3s 2; }
+@keyframes liveArriveLedger {
+  0% { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--gold), 0 0 24px rgba(169,130,46,0.7); }
+  100% { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--border-strong), 0 0 0 rgba(169,130,46,0); }
+}
+html[data-theme="deepcurrent"] .pill.live-pill { color: #04141c; background: #35e6c4; border-color: #35e6c4; }
+html[data-theme="deepcurrent"] .sweat-card.live-new { animation: cardIn 0.4s var(--ease) backwards, liveArriveDeep 1.8s ease-out 0.3s 2; }
+@keyframes liveArriveDeep {
+  0% { box-shadow: inset 0 0 30px rgba(53,230,196,0.5), 0 0 0 0 rgba(53,230,196,0.6); }
+  100% { box-shadow: inset 0 0 0 rgba(53,230,196,0), 0 0 0 22px rgba(53,230,196,0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sweat-card.live-new, .sweat-row.live-new { animation: none !important; }
+}
 </style>
 </head>
 <body>
 
-<!-- Hidden clip-path used by the Case Files hero card's torn bottom edge.
-     objectBoundingBox units so the same 0-1 path adapts to the card's
-     actual rendered size instead of needing fixed pixel coordinates. Sharp
-     straight-line facets (not smooth cubic-bezier lobes - too soft/uniform-
-     looking - and not a tangent-circle radial-gradient, which rendered as
-     jagged cusps for a different, unwanted reason; see the .hero comment in
-     <style>) for a rough, hand-torn look.
-
-     An earlier version of this path spaced every point evenly (every 0.02
-     of the width) and cycled depth through a narrow, fairly uniform 0.90-
-     1.00 band - technically irregular point-to-point, but the *rhythm* was
-     completely regular, so it read as a repeating decorative zigzag rather
-     than an actual tear. Real torn paper doesn't tear at a constant rate:
-     it has active zones (a flurry of small ragged nicks, tight x-spacing)
-     and calm zones (wider, flatter stretches), plus the occasional bigger
-     asymmetric rip that goes noticeably deeper than the rest. This version
-     is built as six such zones instead of one uniform cycle: two dense
-     flurries of tiny nicks near the ends, two "big rip" zones with a single
-     sharp asymmetric gouge down to as low as 0.85 (was 0.90 - .hero's
-     padding-bottom was increased to match), and two calmer medium-tooth
-     stretches with wider, uneven spacing between them. -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <clipPath id="tornEdge" clipPathUnits="objectBoundingBox">
-    <polygon points="0,0 1,0
-      1.00,0.97 0.98,0.99 0.97,0.94 0.95,1.00 0.94,0.96 0.92,0.99 0.91,0.93 0.89,1.00 0.88,0.95 0.86,0.98
-      0.85,0.90 0.83,0.86 0.815,0.94 0.80,0.99 0.78,0.96 0.76,1.00 0.74,0.97 0.72,1.00
-      0.68,0.93 0.64,0.98 0.60,0.91 0.565,0.99 0.53,0.94
-      0.50,1.00 0.485,0.97 0.47,0.88 0.455,0.96 0.44,0.99 0.425,0.85 0.41,0.95 0.39,1.00 0.375,0.97
-      0.36,1.00 0.345,0.96 0.33,0.99 0.315,0.94 0.30,1.00 0.285,0.97 0.27,0.99 0.255,0.93 0.24,0.98 0.225,1.00 0.21,0.95
-      0.19,0.99 0.17,0.92 0.15,0.98 0.13,1.00 0.11,0.90 0.09,0.97 0.07,1.00 0.05,0.94 0.03,0.98 0.00,1.00" />
-  </clipPath>
-</svg>
 
 <div id="nebula"><div id="nebulaGlow2" aria-hidden="true"></div></div>
 <div id="starfield"></div>
@@ -8250,6 +8265,9 @@ window.siteAudio = (function () {
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(settings)); } catch (e) {} };
 
   const AMBIENCE_LEVEL = 0.32;
+  // What the page is doing, read by the ambience beds: depth is how far
+  // down the page you've scrolled (0-1), busy is true while a lookup scans.
+  const mood = { depth: 0, busy: false };
   let ctx = null, live = null, master = null, sfxBus = null, ambBus = null, noiseBuf = null, ambNoise = null;
   let curOut = null;
   let voices = 0;
@@ -8774,6 +8792,63 @@ window.siteAudio = (function () {
 
   const set = (id) => SETS[id] || SETS.neon;
 
+  // Podium hover chimes (place 1-3, brightest for 1st) and the alert for a
+  // sweat someone else just added, arriving live.
+  const EXTRA = {
+    neon: {
+      chime(t, place) {
+        const root = [84, 79, 76][place - 1];
+        [0, 4, 7, 12].slice(0, 5 - place).forEach((iv, i) => {
+          tone(t + i * 0.045, { type: "triangle", f: midi(root + iv), dur: 0.35, gain: 0.05 });
+          tone(t + i * 0.045, { type: "sawtooth", f: midi(root + iv), dur: 0.2, gain: 0.012, lp: 2400, detune: 8 });
+        });
+      },
+      arrive(t) {
+        tone(t, { type: "sawtooth", f: 220, f2: 880, dur: 0.35, gain: 0.03, lp: 900, fEnd: 4000, fDur: 0.3 });
+        [76, 83, 76, 83].forEach((n, i) => tone(t + 0.3 + i * 0.11, { type: "square", f: midi(n), dur: 0.09, gain: 0.025, lp: 3000 }));
+        tone(t + 0.76, { type: "triangle", f: midi(88), dur: 0.6, gain: 0.05 });
+      },
+    },
+    casefiles: {
+      chime(t, place) {
+        // Soft vibraphone, in the same key as the office jazz.
+        [[74, 78, 81], [69, 72, 76], [65, 69, 72]][place - 1].forEach((n, i) => {
+          tone(t + i * 0.06, { f: midi(n), dur: 0.9, gain: 0.04, a: 0.004, vib: [5.5, 1.5] });
+          tone(t + i * 0.06, { f: midi(n) * 4, dur: 0.15, gain: 0.006, a: 0.002 });
+        });
+      },
+      arrive(t) {
+        // A teletype chattering out a new report, then the carriage bell.
+        for (let i = 0; i < 7; i++) typeKey(t + i * 0.065 + rnd(0, 0.02), { gain: 0.09 });
+        metal(t + 0.55, 2400, { ratios: [1, 2.4, 3.9], gain: 0.05, dur: 0.9 });
+      },
+    },
+    ledger: {
+      chime(t, place) {
+        metal(t, midi([88, 84, 79][place - 1]), { ratios: [1, 2, 3.01, 4.16], gain: 0.045, dur: 1.1 });
+        if (place === 1) coin(t + 0.08, { gain: 0.03 });
+      },
+      arrive(t) {
+        // The counter bell, then a deposit landing.
+        metal(t, 1760, { ratios: [1, 2.71, 5.1], gain: 0.07, dur: 1.4 });
+        for (let i = 0; i < 3; i++) coin(t + 0.35 + i * 0.09, { gain: 0.04, pan: rnd(-0.4, 0.4) });
+      },
+    },
+    deepcurrent: {
+      chime(t, place) {
+        const n = [81, 76, 72][place - 1];
+        tone(t, { f: midi(n), dur: 1.1, gain: 0.05, lp: 2200 });
+        tone(t + 0.28, { f: midi(n), dur: 0.8, gain: 0.015, lp: 1800 });
+        bubble(t + 0.05, { gain: 0.03, f: rnd(500, 800) });
+      },
+      arrive(t) {
+        ping(t, { f: 1250, gain: 0.12 });
+        for (let i = 0; i < 5; i++) bubble(t + 0.15 + i * rnd(0.05, 0.1), { gain: 0.05 });
+      },
+    },
+  };
+  const extra = (id) => EXTRA[id] || EXTRA.neon;
+
   // ---- Shared (theme-independent) moments ----
   // Minecraft note-block "pling" for chat toasts.
   function pling(t, notes) {
@@ -8841,15 +8916,17 @@ window.siteAudio = (function () {
       const lfo = ctx.createOscillator(); lfo.frequency.value = 0.06;
       lfo.connect(gainNode(280, lp.frequency)); add(lfo);
       return (t) => {
+        // Brighter the further down the page, and busier during a lookup.
+        lp.frequency.setTargetAtTime(520 + mood.depth * 650 + (mood.busy ? 400 : 0), t, 1.2);
         // A soft pentatonic glint now and then, echoing.
-        if (Math.random() < 0.12) {
+        if (Math.random() < 0.12 + mood.depth * 0.1 + (mood.busy ? 0.35 : 0)) {
           const root = choose([69, 72, 76]);
           for (let i = 0; i < 4; i++) {
             const n = pentaNote(root, Math.floor(rnd(0, 7)));
             [0, 0.28].forEach((e, j) => tone(t + i * 0.18 + e, { type: "triangle", f: midi(n), dur: 0.5, gain: 0.05 * (j ? 0.35 : 1), dest: bus }));
           }
         }
-        return rnd(1.5, 3);
+        return mood.busy ? rnd(0.8, 1.4) : rnd(1.5, 3);
       };
     },
     casefiles(bus, add) {
@@ -8860,6 +8937,11 @@ window.siteAudio = (function () {
       const room = ctx.createBufferSource(); room.buffer = ambNoise; room.loop = true; room.playbackRate.value = 0.3;
       const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 160;
       room.connect(lp); lp.connect(gainNode(0.18, bus)); add(room);
+      // Rain on the office window, heavier the further down the page you go.
+      const rain = ctx.createBufferSource(); rain.buffer = ambNoise; rain.loop = true; rain.playbackRate.value = 0.9;
+      const rainBp = ctx.createBiquadFilter(); rainBp.type = "bandpass"; rainBp.frequency.value = 2200; rainBp.Q.value = 0.5;
+      const rainG = gainNode(0.0001, bus);
+      rain.connect(rainBp); rainBp.connect(rainG); add(rain);
       // Dm9 - Bbmaj7 - Gm9 - A7sus, voiced low and close.
       const CHORDS = [
         { bass: [38, 41, 45, 43], keys: [53, 57, 60, 64] },
@@ -8881,8 +8963,12 @@ window.siteAudio = (function () {
         if (bar % 2 === 1) epiano(t + beat * 2.5, choose(c.keys) + 12, 0.02, beat * 2);
         // Upright bass: soft plucked walk, one note a beat.
         c.bass.forEach((n, i) => tone(t + i * beat, { type: "triangle", f: midi(n), dur: beat * 0.95, gain: 0.11, a: 0.012, lp: 420, dest: bus }));
-        // Now and then a page turns somewhere in the room.
-        if (Math.random() < 0.18) noise(t + rnd(0.5, beat * 3), { type: "lowpass", f: 900, f2: 1600, q: 0.5, dur: 0.45, gain: 0.05, swell: 0.45, dest: bus });
+        rainG.gain.setTargetAtTime(0.01 + mood.depth * 0.08, t, 2);
+        if (mood.depth > 0.35) for (let i = 0; i < Math.round(mood.depth * 8); i++) {
+          noise(t + rnd(0, beat * 4), { type: "highpass", f: 4500, dur: 0.015, gain: 0.012 * mood.depth, pan: rnd(-0.9, 0.9), dest: bus });
+        }
+        // Now and then a page turns somewhere in the room - often, while a lookup digs through the files.
+        if (Math.random() < (mood.busy ? 0.6 : 0.18)) noise(t + rnd(0.5, beat * 3), { type: "lowpass", f: 900, f2: 1600, q: 0.5, dur: 0.45, gain: 0.05, swell: 0.45, dest: bus });
         bar++;
         return beat * 4;
       };
@@ -8892,13 +8978,16 @@ window.siteAudio = (function () {
       const room = ctx.createBufferSource(); room.buffer = ambNoise; room.loop = true; room.playbackRate.value = 0.5;
       const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 260;
       room.connect(lp); lp.connect(gainNode(0.35, bus)); add(room);
-      const hum = ctx.createOscillator(); hum.frequency.value = 55; hum.connect(gainNode(0.03, bus)); add(hum);
+      const humG = gainNode(0.03, bus);
+      const hum = ctx.createOscillator(); hum.frequency.value = 55; hum.connect(humG); add(hum);
       let tick = true;
       return (t) => {
+        // The vault hum grows the further down you go; the clock races while a lookup runs.
+        humG.gain.setTargetAtTime(0.03 + mood.depth * 0.05, t, 2);
         noise(t, { type: "bandpass", f: tick ? 2600 : 1900, q: 9, dur: 0.03, gain: 0.12, dest: bus });
         tone(t, { f: tick ? 880 : 660, dur: 0.05, gain: 0.02, dest: bus });
         tick = !tick;
-        return 1.2;
+        return mood.busy ? 0.5 : 1.2;
       };
     },
     deepcurrent(bus, add) {
@@ -8910,10 +8999,13 @@ window.siteAudio = (function () {
       const lfo = ctx.createOscillator(); lfo.frequency.value = 0.08;
       lfo.connect(gainNode(140, lp.frequency)); lfo.connect(gainNode(0.2, g.gain)); add(lfo);
       return (t) => {
-        if (Math.random() < 0.35) for (let i = 0; i < 1 + Math.floor(rnd(0, 3)); i++) bubble(t + i * rnd(0.05, 0.12), { gain: 0.04, f: rnd(300, 700), pan: rnd(-0.8, 0.8), dest: bus });
-        if (Math.random() < 0.025) {
-          tone(t, { f: 190, f2: 290, glide: 1.4, dur: 1.4, hold: 1, gain: 0.08, a: 0.6, lp: 700, vib: [4, 8], dest: bus });
-          tone(t + 2.6, { f: 260, f2: 150, glide: 1.8, dur: 1.2, hold: 0.8, gain: 0.06, a: 0.4, lp: 600, vib: [3, 6], dest: bus });
+        // Scrolling down is diving deeper: darker water, fewer bubbles, more whales.
+        lp.frequency.setTargetAtTime(300 - mood.depth * 140, t, 2);
+        if (Math.random() < 0.35 - mood.depth * 0.2) for (let i = 0; i < 1 + Math.floor(rnd(0, 3)); i++) bubble(t + i * rnd(0.05, 0.12), { gain: 0.04, f: rnd(300, 700), pan: rnd(-0.8, 0.8), dest: bus });
+        if (Math.random() < 0.025 + mood.depth * 0.05) {
+          const k = 1 - mood.depth * 0.25;
+          tone(t, { f: 190 * k, f2: 290 * k, glide: 1.4, dur: 1.4, hold: 1, gain: 0.08, a: 0.6, lp: 700, vib: [4, 8], dest: bus });
+          tone(t + 2.6, { f: 260 * k, f2: 150 * k, glide: 1.8, dur: 1.2, hold: 0.8, gain: 0.06, a: 0.4, lp: 600, vib: [3, 6], dest: bus });
         }
         return rnd(0.8, 1.8);
       };
@@ -9006,6 +9098,7 @@ window.siteAudio = (function () {
   let scanTimer = 0, scanAt = 0, scanTheme = null;
   function scan(on) {
     clearTimeout(scanTimer);
+    mood.busy = !!on;
     if (!on) { scanTheme = null; return; }
     if (!ready()) return;
     scanTheme = themeNow();
@@ -9058,6 +9151,8 @@ window.siteAudio = (function () {
         stunt: () => s.stunt(t), ui: () => s.ui(t), type: () => s.type(t, opts.kind || "key"),
         toggle: () => s.toggle(t, !!opts.on), save: () => s.save(t), delete: () => s.del(t), slide: () => s.slide(t, !!opts.open),
         page: () => s.page(t, !!opts.next), view: () => s.view(t),
+        chime: () => extra(theme).chime(t, Math.min(3, Math.max(1, opts.place || 1))),
+        arrive: () => extra(theme).arrive(t),
         scanStart: () => s.scanStart(t), scanTick: () => s.scanTick(t),
       })[name]();
     } finally {
@@ -9139,6 +9234,7 @@ window.siteAudio = (function () {
     scan,
     renderOffline,
     get settings() { return { ...settings }; },
+    setMood(patch) { Object.assign(mood, patch); },
     set(patch) {
       Object.assign(settings, patch);
       settings.volume = Math.max(0, Math.min(1, +settings.volume || 0));
@@ -10552,6 +10648,11 @@ addSweatBtn.addEventListener('click', () => {
 });
 
 let sweats = [];
+// Sweats that just arrived through a live update, highlighted on the next render.
+let liveNewIds = new Set();
+// When this browser last added or restored a sweat, so the live check
+// doesn't announce your own entry back to you.
+let localWriteAt = 0;
 let sortField = null;
 let sortAsc = true;
 let currentUUID = null;
@@ -10778,7 +10879,19 @@ function skeletonCardsMarkup() {
   return card.repeat(SKELETON_CARD_COUNT);
 }
 
-async function loadSweats() {
+async function loadSweats({ quiet = false } = {}) {
+  // After an add/edit/delete/restore the server is already awake, so the
+  // current grid stays up until the fresh list lands instead of flashing
+  // skeleton cards.
+  if (quiet && sweats.length) {
+    try {
+      sweats = await fetchAllSweats();
+      renderTable();
+    } catch (err) {
+      status.textContent = "Couldn't refresh the list: " + err.message;
+    }
+    return;
+  }
   cardGrid.setAttribute("aria-busy", "true");
   cardGrid.innerHTML = `
     <div class="server-waking-note" role="status" hidden>Waking up the server&hellip; this can take up to a minute after it's been idle. <span class="server-waking-elapsed"></span></div>
@@ -10799,6 +10912,7 @@ async function loadSweats() {
     renderTable();
   } catch (err) {
     status.textContent = "Error loading sweats: " + err.message;
+    resultCount.textContent = "Couldn't load players";
     cardGrid.innerHTML = '<div class="empty-state load-error"><span>Couldn\'t load sweats. The server may still be waking up.</span><button type="button" class="load-retry-btn">Try again</button></div>';
     cardGrid.querySelector(".load-retry-btn").addEventListener("click", () => loadSweats());
     siteAudio.play("error");
@@ -10939,6 +11053,7 @@ form.addEventListener('submit', async e => {
     const noteText = sweatNoteInput.value.trim();
     if (noteText) newSweat.note = noteText;
 
+    localWriteAt = Date.now();
     const res = await fetch(`${backendBaseURL}/sweats`, {
       method: "POST",
       headers: adminHeaders({ "Content-Type": "application/json" }),
@@ -10949,7 +11064,7 @@ form.addEventListener('submit', async e => {
     }
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to add sweat"));
 
-    await loadSweats();
+    await loadSweats({ quiet: true });
     form.reset();
     updateNoteCount(sweatNoteInput, sweatNoteCount);
     currentUUID = null;
@@ -11148,7 +11263,7 @@ async function fetchAndDisplayStats() {
   clearPreviewBtn.hidden = false;
 
   // Fetch UUID
-  const resMojang = await fetch(`${backendBaseURL}/mojang/${usernameRaw}`, { headers: adminHeaders() });
+  const resMojang = await fetch(`${backendBaseURL}/mojang/${encodeURIComponent(usernameRaw)}`, { headers: adminHeaders() });
   if (!resMojang.ok) throw new Error("Username not found");
   const mojangData = await resMojang.json();
   if (isStale()) return;
@@ -11805,6 +11920,8 @@ function renderCardGrid(filteredSweats, usernameCounts) {
     const tier = SWEAT_TIERS.find(t => indexValue < t.max);
     const standout = tier.key === "t4" || tier.key === "t5";
     if (standout) card.classList.add(`tier-${tier.key}`);
+    const isLiveNew = liveNewIds.has(s._id);
+    if (isLiveNew) card.classList.add("live-new");
 
     const beatenByHtml = BEATEN_BY_KEYS
       .filter(k => s[k])
@@ -11822,6 +11939,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
         <span class="pill prestige-tag" aria-label="${starVal} stars">${prestigeTagHtml(starVal)}</span>
         <span class="pill fkdr">${fkdrVal.toFixed(2)} FKDR</span>
         ${standout ? `<span class="pill tier-pill ${tier.key}">${tier.name}</span>` : ""}
+        ${isLiveNew ? '<span class="pill live-pill">New</span>' : ""}
         ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
         ${s.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}
       </div>
@@ -11962,7 +12080,7 @@ cardGrid.addEventListener("click", (e) => {
 // too since it shows who ELSE beat this player) so their widths line up.
 function buildSweatRow(s, { usernameCounts }) {
   const tr = document.createElement("tr");
-  tr.className = "sweat-row";
+  tr.className = "sweat-row" + (liveNewIds.has(s._id) ? " live-new" : "");
   tr.dataset.username = s.username;
   tr.dataset.sweatId = s._id || "";
   tr.dataset.uuid = s.uuid;
@@ -12251,7 +12369,7 @@ async function removeSweat(id, rowEl) {
       throw new Error("Your key is missing or wrong. Click \"Your Key\" at the top.");
     }
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to remove sweat"));
-    await loadSweats();
+    await loadSweats({ quiet: true });
   } catch (err) {
     // Deletion failed - loadSweats() never ran, so this is still the same
     // element representing real, still-present data. Bring it back rather
@@ -12344,7 +12462,7 @@ saveEditBtn.addEventListener("click", async () => {
 
     siteAudio.play("save");
     closeEditModalFn();
-    await loadSweats();
+    await loadSweats({ quiet: true });
   } catch (err) {
     editStatus.textContent = err.message;
     siteAudio.play("error");
@@ -13878,6 +13996,7 @@ async function restoreSweat(entry, btn) {
   btn.disabled = true;
   activityStatus.textContent = "";
   try {
+    localWriteAt = Date.now();
     const res = await fetch(`${backendBaseURL}/sweats/${encodeURIComponent(entry.sweatId)}/restore`, {
       method: "POST",
       headers: adminHeaders()
@@ -13885,7 +14004,7 @@ async function restoreSweat(entry, btn) {
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Couldn't restore that sweat."));
     activityStatus.textContent = `${entry.username || "Sweat"} is back, with all its stats and notes.`;
     siteAudio.play("save");
-    await loadSweats();
+    await loadSweats({ quiet: true });
     loadActivity(0);
   } catch (err) {
     activityStatus.textContent = err.message;
@@ -14653,6 +14772,82 @@ document.addEventListener("keydown", (e) => {
   }
   if (key === "e") exportCsv();
 });
+
+
+// ============================================================
+// LIVE UPDATES
+// While the page is open and visible, checks for sweats added by anyone
+// else every LIVE_POLL_MS. New ones drop into the list with a themed
+// highlight, a toast and the theme's "arrive" sound. Only the newest page
+// is fetched each time, which is cheap; if the total no longer matches
+// (someone deleted or restored an entry) the full list is quietly
+// re-synced instead.
+// ============================================================
+const LIVE_POLL_MS = 40000;
+const LIVE_PAGE = 25;
+let livePollBusy = false;
+let lastLivePoll = Date.now();
+function sweatBrief(s) {
+  const esc = v => String(v).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  return `<b>${esc(s.username)}</b> (${Number(s.star) || 0}&#9733;, ${(Number(s.fkdr) || 0).toFixed(2)} FKDR)`;
+}
+async function pollLiveSweats() {
+  if (document.hidden || livePollBusy || !sweats.length) return;
+  livePollBusy = true;
+  lastLivePoll = Date.now();
+  try {
+    const res = await fetch(`${backendBaseURL}/sweats?paged=1&limit=${LIVE_PAGE}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data || !Array.isArray(data.sweats)) return;
+    const known = new Set(sweats.map(s => s._id));
+    const fresh = data.sweats.filter(s => s && s._id && !known.has(s._id));
+    let changed = fresh.length > 0;
+    if (changed) sweats = [...fresh, ...sweats];
+    if (typeof data.total === "number" && data.total !== sweats.length) {
+      sweats = await fetchAllSweats();
+      changed = true;
+    }
+    // Nothing new: leave the page alone rather than re-rendering it.
+    if (!changed) return;
+    if (fresh.length && Date.now() - localWriteAt > 20000) {
+      liveNewIds = new Set(fresh.map(s => s._id));
+      siteAudio.play("arrive");
+      eggToast(fresh.length === 1
+        ? `New sweat just added: ${sweatBrief(fresh[0])}`
+        : `<b>${fresh.length}</b> new sweats just added: ${fresh.slice(0, 3).map(sweatBrief).join(", ")}${fresh.length > 3 ? "&hellip;" : ""}`, 6000);
+    }
+    renderTable();
+    liveNewIds = new Set();
+  } catch {
+    // A missed poll is harmless; the next one tries again.
+  } finally {
+    livePollBusy = false;
+  }
+}
+initialSweatsLoad.then(() => setInterval(pollLiveSweats, LIVE_POLL_MS));
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && Date.now() - lastLivePoll > LIVE_POLL_MS / 2) pollLiveSweats();
+});
+
+// Podium hover chimes: 1st place rings brightest.
+leaderboardRanking.addEventListener("pointerover", (e) => {
+  if (e.pointerType !== "mouse") return;
+  const step = e.target.closest(".lb-step");
+  if (!step || step.contains(e.relatedTarget)) return;
+  const place = [1, 2, 3].find(n => step.classList.contains(`lb-place-${n}`));
+  if (place) siteAudio.play("chime", { place });
+});
+
+// Reactive ambience: tells the audio how far down the page you are.
+let moodFrame = 0;
+function updateAudioMood() {
+  moodFrame = 0;
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  siteAudio.setMood({ depth: max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0 });
+}
+window.addEventListener("scroll", () => { if (!moodFrame) moodFrame = requestAnimationFrame(updateAudioMood); }, { passive: true });
+updateAudioMood();
 
 console.log(
   "%cBedwars Sweat Tracker%c\nLooking for secrets? Try the Konami code, or tap the title a few times.",

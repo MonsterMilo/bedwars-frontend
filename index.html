@@ -8535,15 +8535,38 @@ window.siteAudio = (function () {
       };
     },
     casefiles(bus, add) {
-      // Rain against the office window, with the odd roll of thunder.
-      const rain = ctx.createBufferSource(); rain.buffer = ambNoise; rain.loop = true;
-      const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 500;
-      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 3200;
-      rain.connect(hp); hp.connect(lp); lp.connect(gainNode(0.22, bus)); add(rain);
+      // A late-night detective's office: a warm, muffled room tone, a slow
+      // minor-key electric-piano progression and a muted upright bass
+      // walking under it, with the odd page turning. Everything is kept
+      // soft and low-passed - no hiss or sharp edges.
+      const room = ctx.createBufferSource(); room.buffer = ambNoise; room.loop = true; room.playbackRate.value = 0.3;
+      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 160;
+      room.connect(lp); lp.connect(gainNode(0.18, bus)); add(room);
+      // Dm9 - Bbmaj7 - Gm9 - A7sus, voiced low and close.
+      const CHORDS = [
+        { bass: [38, 41, 45, 43], keys: [53, 57, 60, 64] },
+        { bass: [34, 38, 41, 40], keys: [50, 53, 57, 62] },
+        { bass: [31, 34, 38, 36], keys: [50, 53, 57, 58] },
+        { bass: [33, 37, 40, 38], keys: [50, 55, 57, 61] },
+      ];
+      const beat = 0.75;
+      let bar = 0;
+      const epiano = (t, n, g, dur) => {
+        tone(t, { type: "sine", f: midi(n), dur, gain: g, a: 0.02, dest: bus });
+        tone(t, { type: "triangle", f: midi(n), dur: dur * 0.5, gain: g * 0.25, a: 0.01, lp: 1400, dest: bus });
+        tone(t, { f: midi(n + 12), dur: dur * 0.35, gain: g * 0.12, a: 0.01, dest: bus });
+      };
       return (t) => {
-        for (let i = 0; i < 6; i++) tone(t + rnd(0, 0.5), { f: rnd(2500, 5500), dur: 0.02, gain: rnd(0.01, 0.03), a: 0.001, pan: rnd(-0.8, 0.8), dest: bus });
-        if (Math.random() < 0.006) noise(t, { type: "lowpass", f: 180, f2: 60, dur: 4, gain: 0.6, swell: 0.25, dest: bus });
-        return 0.5;
+        const c = CHORDS[bar % CHORDS.length];
+        // Electric piano: the chord rolled gently from the bottom.
+        c.keys.forEach((n, i) => epiano(t + i * 0.035, n, 0.035, beat * 3.6));
+        if (bar % 2 === 1) epiano(t + beat * 2.5, choose(c.keys) + 12, 0.02, beat * 2);
+        // Upright bass: soft plucked walk, one note a beat.
+        c.bass.forEach((n, i) => tone(t + i * beat, { type: "triangle", f: midi(n), dur: beat * 0.95, gain: 0.11, a: 0.012, lp: 420, dest: bus }));
+        // Now and then a page turns somewhere in the room.
+        if (Math.random() < 0.18) noise(t + rnd(0.5, beat * 3), { type: "lowpass", f: 900, f2: 1600, q: 0.5, dur: 0.45, gain: 0.05, swell: 0.45, dest: bus });
+        bar++;
+        return beat * 4;
       };
     },
     ledger(bus, add) {
@@ -8690,7 +8713,7 @@ window.siteAudio = (function () {
   // (clicks ~-28dB, rare clicks ~-22, flips ~-27, switch scenes ~-14...).
   const TRIM = {
     neon: { type: 4, combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -2 },
-    casefiles: { click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
+    casefiles: { ambience: 2.5, click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
     ledger: { type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
     deepcurrent: { type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -4 },
     shared: { bed: -5, chat: -2 },

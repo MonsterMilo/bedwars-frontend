@@ -13,10 +13,33 @@
     const savedTheme = localStorage.getItem("siteTheme");
     if (savedTheme && savedTheme !== "neon") document.documentElement.setAttribute("data-theme", savedTheme);
   } catch (e) {}
+
+  // Each theme only pulls in the Google Fonts it actually uses, instead of
+  // every family for all four themes on every visit. The active theme's
+  // stylesheet is requested right here in <head>; applyTheme() calls this
+  // again when the visitor switches, and each theme's sheet loads once.
+  // Adding a theme means adding its families here too.
+  window.THEME_FONT_FAMILIES = {
+    neon: "family=Manrope:wght@400;500;600;700;800",
+    casefiles: "family=Courier+Prime:wght@400;700&family=Anton",
+    ledger: "family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Pinyon+Script",
+    deepcurrent: "family=Sora:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700"
+  };
+  window.loadThemeFonts = function (themeId) {
+    const families = window.THEME_FONT_FAMILIES[themeId] || window.THEME_FONT_FAMILIES.neon;
+    const id = "theme-fonts-" + (window.THEME_FONT_FAMILIES[themeId] ? themeId : "neon");
+    if (document.getElementById(id)) return;
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?" + families + "&display=swap";
+    document.head.appendChild(link);
+  };
+  window.loadThemeFonts(document.documentElement.getAttribute("data-theme") || "neon");
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Anton&family=Courier+Prime:wght@400;700&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Chakra+Petch:wght@500;600;700&family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <style>
 
 :root {
@@ -1509,6 +1532,49 @@ html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text::before 
 @keyframes loadingPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
 .loading-state { animation: loadingPulse 1.4s ease-in-out infinite; }
 
+/* Placeholder cards shaped like .sweat-card, drawn while the sweat list
+   loads so the grid doesn't jump from one line of text to a full page. Built
+   only from theme tokens, so every theme gets matching skeletons for free. */
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: linear-gradient(160deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  padding: 18px;
+  animation: loadingPulse 1.4s ease-in-out infinite;
+}
+.skeleton-card:nth-child(3n) { animation-delay: 0.2s; }
+.skeleton-card:nth-child(3n+1) { animation-delay: 0.4s; }
+.skeleton-row { display: flex; align-items: center; gap: 12px; }
+.skeleton-block {
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--border);
+  background: color-mix(in srgb, var(--text-faint) 28%, transparent);
+}
+.skeleton-avatar { width: 50px; height: 50px; border-radius: var(--radius-m); flex-shrink: 0; }
+.skeleton-name { width: 55%; height: 16px; }
+.skeleton-pill { width: 64px; height: 22px; border-radius: 999px; }
+.skeleton-footer { width: 40%; }
+
+/* Only revealed once loading has dragged on - see loadSweats(). */
+.server-waking-note {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.9em;
+  font-weight: 600;
+  padding: 4px 20px 0;
+}
+.server-waking-note[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-state, .skeleton-card { animation: none; opacity: 0.7; }
+}
+
 /* Success flourish shown over #form-container after a sweat is added -
    playSuccessFlourish() (near the submit handler) builds the theme-
    appropriate inner markup and drops it in here, then removes the whole
@@ -2363,6 +2429,33 @@ html:not([data-theme]) .modal-card.card-flip-expand {
 .modal-stat-tile.stat-finals .modal-stat-value { color: var(--bad); text-shadow: 0 0 8px rgba(255,92,114,0.5); }
 .modal-stat-tile.stat-wins .modal-stat-value { color: var(--good); text-shadow: 0 0 8px rgba(52,224,161,0.5); }
 
+/* "+40★ since you beat them" line under the Star/FKDR values - compares the
+   live number against what was saved when the sweat was logged. Colors come
+   from --good/--bad/--text-faint, which every theme already redefines, so
+   the base rule reads correctly everywhere; the per-theme blocks further
+   down only restyle the pill itself to match each theme's look. */
+.modal-stat-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.66em;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-dim);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  cursor: help;
+}
+.modal-stat-delta .delta-value { font-weight: 800; }
+.modal-stat-delta.delta-up { background: var(--good-soft); border-color: color-mix(in srgb, var(--good) 35%, transparent); }
+.modal-stat-delta.delta-up .delta-value { color: var(--good); }
+.modal-stat-delta.delta-down { background: var(--bad-soft); border-color: color-mix(in srgb, var(--bad) 35%, transparent); }
+.modal-stat-delta.delta-down .delta-value { color: var(--bad); }
+.modal-stat-delta.delta-flat .delta-value { color: var(--text-faint); }
+
 .modal-tags-section {
   margin-top: 16px;
   padding: 12px 14px;
@@ -3129,6 +3222,18 @@ html[data-theme="casefiles"] #modalUsername,
 html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
   text-shadow: none;
 }
+/* Case Files: the delta reads as a rubber-stamped annotation on the file
+   rather than a glowing pill - squared off, typewriter face, slight tilt. */
+html[data-theme="casefiles"] .modal-stat-delta {
+  font-family: 'Courier Prime', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-radius: 2px;
+  border-width: 1.5px;
+  border-style: dashed;
+  background: transparent;
+  transform: rotate(-1.2deg);
+}
 
 /* Typewriter reveal on #status/#editStatus/#adminKeyStatus - the
    .typewriter-play class is toggled by a MutationObserver (see
@@ -3566,6 +3671,18 @@ html[data-theme="ledger"] .user-cell span,
 html[data-theme="ledger"] tbody tr:hover .user-cell span,
 html[data-theme="ledger"] .modal-stat-tile .modal-stat-value {
   text-shadow: none;
+}
+/* Ledger: a pencilled margin note - italic serif, no pill, just a hairline
+   rule underneath like an entry added after the fact. */
+html[data-theme="ledger"] .modal-stat-delta {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 0.78em;
+  border: none;
+  border-bottom: 1px solid var(--border-strong);
+  border-radius: 0;
+  background: transparent;
+  padding: 0 2px 1px;
 }
 html[data-theme="ledger"] thead tr {
   background: var(--accent-soft);
@@ -5331,6 +5448,16 @@ html[data-theme="deepcurrent"] .modal-stat-value {
   font-family: 'JetBrains Mono', monospace;
   text-shadow: 0 0 10px currentColor;
 }
+/* Deep Current: a sonar readout - mono digits with the same glow as the
+   value above it. position/z-index keep it above the tile's ring texture. */
+html[data-theme="deepcurrent"] .modal-stat-delta {
+  position: relative;
+  z-index: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62em;
+  border-radius: 6px;
+}
+html[data-theme="deepcurrent"] .modal-stat-delta .delta-value { text-shadow: 0 0 8px currentColor; }
 
 /* Edit Sweat modal's stat fields get the same gauge-tile framing around
    each input, so editing an entry matches the look of viewing one instead
@@ -6187,6 +6314,7 @@ function currentThemeId() {
 // { animate: false } is used for the initial load only - restoring the
 // saved theme on page load shouldn't play the switch wipe.
 function applyTheme(themeId, opts = {}) {
+  window.loadThemeFonts(themeId);
   const swap = () => {
     if (themeId === "neon") {
       document.documentElement.removeAttribute("data-theme");
@@ -6587,6 +6715,7 @@ let denickToken = 0; // guards against a slow, stale search overwriting a newer 
 let denickAllResults = []; // the full merged list from the last search - renderDenickPage() slices it
 let denickNameOf = null;
 let denickPage = 1;
+let denickQuery = ""; // last query actually searched - what the URL shares, not whatever is half-typed in the box
 
 // entry.username is always the real player - even in player mode, where
 // nameOf(entry) shows entry.nick instead - so the avatar is a plain
@@ -6668,6 +6797,8 @@ denickModeBtns.forEach(btn => {
     denickPagination.hidden = true;
     denickStatus.textContent = "";
     denickEmpty.hidden = false;
+    denickQuery = "";
+    syncUrl();
   });
 });
 
@@ -6677,6 +6808,8 @@ async function runDenickSearch() {
 
   const myToken = ++denickToken;
   const isStale = () => myToken !== denickToken;
+  denickQuery = query;
+  syncUrl();
 
   denickSearchBtn.disabled = true;
   denickSearchBtn.classList.add("loading");
@@ -7043,15 +7176,19 @@ viewTableBtn.addEventListener('click', () => setViewMode('table'));
 viewLeaderboardBtn.addEventListener('click', () => setViewMode('leaderboard'));
 
 function setViewMode(mode) {
-  viewMode = mode;
+  applyViewMode(mode);
   currentPage = 1;
+  renderTable();
+}
+
+function applyViewMode(mode) {
+  viewMode = mode;
   viewGridBtn.classList.toggle('active', mode === 'grid');
   viewTableBtn.classList.toggle('active', mode === 'table');
   viewLeaderboardBtn.classList.toggle('active', mode === 'leaderboard');
   cardGrid.hidden = mode !== 'grid';
   tableWrap.hidden = mode !== 'table';
   leaderboardWrap.hidden = mode !== 'leaderboard';
-  renderTable();
 }
 
 // The backend serves sweats a page (up to 1000) at a time, newest first, so
@@ -7077,16 +7214,45 @@ async function fetchAllSweats() {
   return all;
 }
 
-// Load sweats. Shows a loading placeholder first since the backend runs on a
-// free-tier host that can take several seconds to spin back up after being idle.
+// Load sweats. Shows skeleton cards first since the backend runs on a
+// free-tier host that can take several seconds to spin back up after being
+// idle; if the request is still going after SERVER_WAKING_DELAY_MS, a note
+// explains the wait so a cold start doesn't read as a broken page.
+const SKELETON_CARD_COUNT = 6;
+const SERVER_WAKING_DELAY_MS = 2500;
+
+function skeletonCardsMarkup() {
+  const card = `
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="skeleton-row">
+        <span class="skeleton-block skeleton-avatar"></span>
+        <span class="skeleton-block skeleton-name"></span>
+      </div>
+      <div class="skeleton-row">
+        <span class="skeleton-block skeleton-pill"></span>
+        <span class="skeleton-block skeleton-pill"></span>
+      </div>
+      <span class="skeleton-block skeleton-footer"></span>
+    </div>`;
+  return card.repeat(SKELETON_CARD_COUNT);
+}
+
 async function loadSweats() {
-  cardGrid.innerHTML = '<div class="empty-state loading-state">Loading sweats&hellip;</div>';
+  cardGrid.setAttribute("aria-busy", "true");
+  cardGrid.innerHTML = `
+    <div class="server-waking-note" role="status" hidden>Waking up the server&hellip; this can take up to a minute after it's been idle.</div>
+    ${skeletonCardsMarkup()}`;
+  const wakingNote = cardGrid.querySelector(".server-waking-note");
+  const wakingTimer = setTimeout(() => { wakingNote.hidden = false; }, SERVER_WAKING_DELAY_MS);
   try {
     sweats = await fetchAllSweats();
     renderTable();
   } catch (err) {
     status.textContent = "Error loading sweats: " + err.message;
     cardGrid.innerHTML = '<div class="empty-state">Couldn\'t load sweats - try refreshing.</div>';
+  } finally {
+    clearTimeout(wakingTimer);
+    cardGrid.removeAttribute("aria-busy");
   }
 }
 
@@ -7686,6 +7852,7 @@ function renderTable() {
     gridTablePagination.hidden = true;
     renderLeaderboard(filteredSweats, usernameCounts);
   }
+  syncUrl();
 }
 
 function avatarUrlFor(uuid) {
@@ -7719,6 +7886,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
     card.className = "sweat-card";
     card.dataset.username = s.username;
     card.dataset.uuid = s.uuid;
+    setLoggedStatsDataset(card, s);
     card.tabIndex = 0;
     card.setAttribute("role", "button");
     card.setAttribute("aria-label", `View ${s.username}'s stats`);
@@ -7892,6 +8060,7 @@ function buildSweatRow(s, { usernameCounts }) {
   tr.className = "sweat-row";
   tr.dataset.username = s.username;
   tr.dataset.uuid = s.uuid;
+  setLoggedStatsDataset(tr, s);
   tr.tabIndex = 0;
   tr.setAttribute("role", "button");
   tr.setAttribute("aria-label", `View ${s.username}'s stats`);
@@ -8267,8 +8436,9 @@ if (hideDuplicatesCheckbox) {
   hideDuplicatesCheckbox.addEventListener('change', () => { currentPage = 1; renderTable(); });
 }
 
-// Load all sweats on startup
-loadSweats();
+// Load all sweats on startup - kept as a promise so restoreStateFromUrl()
+// (end of script) can open a linked player once their entry exists.
+const initialSweatsLoad = loadSweats();
 
 const modal = document.getElementById("playerModal");
 const modalUsername = document.getElementById("modalUsername");
@@ -8285,10 +8455,41 @@ const closeModal = document.getElementById("closeModal");
 // the keydown handler that gives the same cards/rows keyboard access, since
 // neither is a native <button> and a click listener alone leaves them
 // unreachable without a mouse.
+// Stamps the star/FKDR a sweat had when it was logged onto its card/row, so
+// the player modal can show how far they've come since you beat them. Taken
+// from this specific record (not looked up by uuid) since the same player
+// can be logged more than once - each card compares against its own entry.
+function setLoggedStatsDataset(el, s) {
+  if (s.star != null && Number.isFinite(Number(s.star))) el.dataset.loggedStar = Number(s.star);
+  if (s.fkdr != null && Number.isFinite(Number(s.fkdr))) el.dataset.loggedFkdr = Number(s.fkdr);
+  if (s.dateAdded) el.dataset.loggedDate = s.dateAdded;
+}
+
+// Small "+40★ since you beat them" line under a modal stat value. Returns ""
+// when there's no logged value to compare against (e.g. an older record).
+// Built as a string for modalStats' innerHTML - every interpolated value is
+// a number formatted here or a fixed label, never raw record text.
+function sinceBeatDeltaHtml(liveValue, loggedRaw, { decimals = 0, suffix = "", label, when }) {
+  if (loggedRaw === undefined || loggedRaw === "") return "";
+  const logged = Number(loggedRaw);
+  const live = Number(liveValue);
+  if (!Number.isFinite(logged) || !Number.isFinite(live)) return "";
+  const factor = 10 ** decimals;
+  const delta = Math.round((live - logged) * factor) / factor;
+  const tone = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
+  const shown = delta === 0
+    ? "No change"
+    : `${delta > 0 ? "+" : "\u2212"}${Math.abs(delta).toFixed(decimals)}${suffix}`;
+  const tip = `${logged.toFixed(decimals)}${suffix} when logged${when ? ` on ${when}` : ""}`;
+  return `<div class="modal-stat-delta delta-${tone}" title="${tip}"><span class="delta-value">${shown}</span> ${label}</div>`;
+}
+
 async function openPlayerModal(item) {
   rememberFocusBeforeModal();
   const username = item.dataset.username;
   const uuid = item.dataset.uuid;
+  openPlayerName = username;
+  syncUrl();
 
   // Stamp which player this modal open is for, so a slower in-flight request
   // from a previous click can't clobber a newer one if the user clicks fast.
@@ -8342,9 +8543,14 @@ async function openPlayerModal(item) {
 
     modalSkin.src = `https://visage.surgeplay.com/full/256/${uuid}`;
 
+    const loggedDate = item.dataset.loggedDate ? new Date(item.dataset.loggedDate) : null;
+    const when = loggedDate && !isNaN(loggedDate) ? loggedDate.toLocaleDateString() : "";
+    const starDelta = sinceBeatDeltaHtml(data.star, item.dataset.loggedStar, { suffix: "\u2605", label: "since you beat them", when });
+    const fkdrDelta = sinceBeatDeltaHtml(data.fkdr, item.dataset.loggedFkdr, { decimals: 2, label: "since", when });
+
     modalStats.innerHTML = `
-      <div class="modal-stat-tile stat-star"><div class="modal-stat-label">Star</div><div class="modal-stat-value">${data.star}</div></div>
-      <div class="modal-stat-tile stat-fkdr"><div class="modal-stat-label">FKDR</div><div class="modal-stat-value">${data.fkdr.toFixed(2)}</div></div>
+      <div class="modal-stat-tile stat-star"><div class="modal-stat-label">Star</div><div class="modal-stat-value">${data.star}</div>${starDelta}</div>
+      <div class="modal-stat-tile stat-fkdr"><div class="modal-stat-label">FKDR</div><div class="modal-stat-value">${data.fkdr.toFixed(2)}</div>${fkdrDelta}</div>
       <div class="modal-stat-tile stat-wlr"><div class="modal-stat-label">WLR</div><div class="modal-stat-value">${data.wlr.toFixed(2)}</div></div>
       <div class="modal-stat-tile stat-finals"><div class="modal-stat-label">Finals</div><div class="modal-stat-value">${data.finals}</div></div>
       <div class="modal-stat-tile stat-wins"><div class="modal-stat-label">Wins</div><div class="modal-stat-value">${data.wins}</div></div>
@@ -8460,6 +8666,8 @@ function closePlayerModal() {
   // See the matching comment in closeEditModalFn.
   modal.querySelector(".modal-card").classList.remove("card-flip-expand");
   restoreFocusAfterModal();
+  openPlayerName = null;
+  syncUrl();
 }
 closeModal.onclick = closePlayerModal;
 
@@ -8738,6 +8946,105 @@ function playSuccessFlourish() {
   host.appendChild(wrap);
   setTimeout(() => wrap.remove(), duration + 100);
 }
+
+
+// --- Shareable URLs: the Defeated Sweats filters/view/sort/page, the
+// leaderboard person, an open player card, and the last denick search are
+// mirrored into the query string, so copying the address bar shares exactly
+// what's on screen. replaceState rather than pushState - every keystroke in
+// a filter would otherwise pile up a Back-button entry. Defaults are left
+// out so a plain visit keeps a clean URL. ---
+let openPlayerName = null;
+const SORT_FIELDS = [...new Set([...document.querySelectorAll("th.sortable")].map(th => th.dataset.sort))];
+const URL_FILTER_INPUTS = { q: searchInput, stars: filterStars, fkdr: filterFkdr, index: filterIndex, date: filterDate };
+const URL_FILTER_CHECKBOXES = { dupes: hideDuplicatesCheckbox, cheaters: cheatersOnlyCheckbox, boosters: boostersOnlyCheckbox };
+
+function syncUrl() {
+  const params = new URLSearchParams();
+  for (const [key, inp] of Object.entries(URL_FILTER_INPUTS)) {
+    const v = inp.value.trim();
+    if (v) params.set(key, v);
+  }
+  for (const [key, cb] of Object.entries(URL_FILTER_CHECKBOXES)) {
+    if (cb.checked) params.set(key, "1");
+  }
+  if (sortField) {
+    params.set("sort", sortField);
+    if (!sortAsc) params.set("dir", "desc");
+  }
+  if (viewMode !== "grid") params.set("view", viewMode);
+  if (viewMode === "leaderboard" && leaderboardPerson) params.set("lb", leaderboardPerson);
+  if (currentPage > 1) params.set("page", String(currentPage));
+  if (openPlayerName) params.set("player", openPlayerName);
+  if (denickQuery) {
+    params.set("denick", denickQuery);
+    if (denickMode !== "nick") params.set("denickMode", denickMode);
+  }
+  const qs = params.toString();
+  const url = location.pathname + (qs ? "?" + qs : "") + location.hash;
+  if (url !== location.pathname + location.search + location.hash) {
+    history.replaceState(history.state, "", url);
+  }
+}
+
+// Opens a linked player: their tracked entry if there is one (for the
+// stored UUID), otherwise a Mojang lookup so a link to any player works.
+async function openPlayerFromUrl(name) {
+  const lower = name.toLowerCase();
+  const tracked = sweats.find(s => s.username.toLowerCase() === lower);
+  let uuid = tracked ? tracked.uuid : "";
+  if (!uuid) {
+    try {
+      const res = await fetch(`${backendBaseURL}/mojang/${encodeURIComponent(name)}`, { headers: adminHeaders() });
+      if (res.ok) uuid = (await res.json()).id || "";
+    } catch {}
+  }
+  openPlayerModal({ dataset: { username: tracked ? tracked.username : name, uuid } });
+}
+
+function restoreStateFromUrl() {
+  const params = new URLSearchParams(location.search);
+  if (![...params.keys()].length) return;
+
+  for (const [key, inp] of Object.entries(URL_FILTER_INPUTS)) {
+    if (params.has(key)) inp.value = params.get(key);
+  }
+  currentFilter = searchInput.value.trim().toLowerCase();
+  for (const [key, cb] of Object.entries(URL_FILTER_CHECKBOXES)) {
+    cb.checked = params.get(key) === "1";
+  }
+  if (SORT_FIELDS.includes(params.get("sort"))) {
+    sortField = params.get("sort");
+    sortAsc = params.get("dir") !== "desc";
+  }
+  const view = params.get("view");
+  if (view === "table" || view === "leaderboard") applyViewMode(view);
+  if (BEATEN_BY_KEYS.includes(params.get("lb"))) leaderboardPerson = params.get("lb");
+  const page = parseInt(params.get("page"), 10);
+  if (page > 1) currentPage = page;
+  // Held from the start so URL writes made before the player's card
+  // actually opens (the first sweats render, a denick search) keep it.
+  const player = (params.get("player") || "").trim();
+  if (player) openPlayerName = player;
+
+  const denick = (params.get("denick") || "").trim();
+  if (denick) {
+    const modeBtn = [...denickModeBtns].find(b => b.dataset.mode === params.get("denickMode"));
+    if (modeBtn) modeBtn.click();
+    denickInput.value = denick;
+    runDenickSearch();
+  }
+
+  const hasSweatsState = [...params.keys()].some(k => !["player", "denick", "denickMode"].includes(k));
+  const scrollTarget = denick ? "denickingSection" : hasSweatsState ? "defeatedSweatsSection" : null;
+  // Sweats render async and push everything below them down, so scroll
+  // once they're in rather than to a spot that's about to move.
+  initialSweatsLoad.then(() => {
+    if (scrollTarget) document.getElementById(scrollTarget).scrollIntoView({ block: "start" });
+    if (player) openPlayerFromUrl(player);
+  });
+}
+restoreStateFromUrl();
 
 </script>
 

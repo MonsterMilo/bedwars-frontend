@@ -1271,6 +1271,13 @@ html:not([data-theme]) #statsContent.stats-pop {
   gap: 12px;
 }
 .sweat-stats:empty { display: none; }
+.sweat-stats.ss-switch .ss-tile { animation: ssTileIn 0.45s var(--ease) both; }
+.sweat-stats.ss-switch .ss-tile:nth-child(2) { animation-delay: 0.04s; }
+.sweat-stats.ss-switch .ss-tile:nth-child(3) { animation-delay: 0.08s; }
+.sweat-stats.ss-switch .ss-tile:nth-child(4) { animation-delay: 0.12s; }
+.sweat-stats.ss-switch .ss-tile:nth-child(5) { animation-delay: 0.16s; }
+@keyframes ssTileIn { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) { .sweat-stats.ss-switch .ss-tile { animation: none; } }
 .ss-tile {
   position: relative;
   display: flex;
@@ -2960,80 +2967,6 @@ tbody tr:hover .user-cell span {
   box-shadow: 0 0 30px rgba(0,217,255,0.25), 0 20px 60px rgba(0,0,0,0.6);
   border: 1px solid var(--border-strong);
   position: relative;
-  animation: modalPop 0.25s var(--ease);
-}
-
-@keyframes modalPop {
-  from { opacity: 0; transform: scale(0.94) translateY(6px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* Clicking a grid card flies the player-stats modal (and, via the same
-   class, the Edit modal opened from a card's pencil icon) open from the
-   card's own position/size instead of just fading in at center - see
-   playCardFlipExpand() in the script below for the FLIP (First/Last/
-   Invert/Play) math that fills in --flip-dx/--flip-dy/--flip-sx/--flip-sy
-   per click. That math is identical for every theme; only the animation
-   actually assigned to .modal-card.card-flip-expand differs, each one
-   declared next to its own theme's .modal-content rule instead of all
-   here - this Neon version is a straightforward 3D flip, Case Files
-   tosses/lands the modal like a photo, Private Bank turns it like a
-   ledger page, and Deep Current bursts it up through the surface. The
-   animated element is .modal-card (the wrapper around both
-   .modal-folder-tab and .modal-content), not .modal-content alone - it's
-   sized identically since the tab is absolutely positioned and doesn't
-   affect .modal-card's own layout size, but animating the wrapper carries
-   the tab along with the flip on Case Files instead of leaving it sitting
-   still while the card underneath it flies in.
-   Neon's own rotateY needs `perspective()` baked into the transform value
-   itself rather than set as a `perspective` property on .modal - an
-   ancestor's perspective property anchors the vanishing point at that
-   ancestor's own center (the middle of the screen), so a card translated
-   in from off-center (anything not in the middle column) got rotated
-   through a screen-centered vanishing point and visibly skewed toward it,
-   reading as "flying in from a random side" rather than a clean in-place
-   flip; perspective inside the transform list instead travels with the
-   element, anchored to its own center the whole way (Private Bank's flip
-   needs the identical fix, see its own rule).
-   The 0->90->0 rotateY used here originally read as flipping halfway open
-   and then swinging back shut the same way it came, rather than one
-   continuous spin - because it genuinely was that: reversing from 90deg
-   back to 0deg rotates the *short* way back, undoing the first half
-   instead of continuing it. Going to 90deg, holding there completely
-   still and invisible (rotateY(90deg) is edge-on - effectively zero
-   width) via a step-end timing function on the 45% keyframe, then
-   resuming from -90deg (visually identical edge-on orientation, just
-   approached from the other side) continues rotating in the same
-   direction the whole way to a full stop - the classic "never render the
-   mirrored backface, jump across the invisible instant instead" flip
-   trick, since there's no separate back-face content here to justify
-   ever actually showing one.
-   animation-fill-mode is deliberately just "forwards", not "both" on all
-   four - see the Deep Current sweat-card comments elsewhere on this page
-   for why "both" would be the wrong call here too if anything ever needed
-   to set .modal-card's transform afterward (nothing currently does, but
-   forwards costs nothing extra and avoids relying on that staying true). */
-html:not([data-theme]) .modal-card.card-flip-expand {
-  animation: cardFlipExpandNeon 0.6s cubic-bezier(.2,.8,.2,1) forwards;
-}
-@keyframes cardFlipExpandNeon {
-  0% {
-    transform: perspective(1200px) translate(var(--flip-dx), var(--flip-dy)) scale(var(--flip-sx), var(--flip-sy)) rotateY(0deg);
-    opacity: 0.85;
-  }
-  45% {
-    transform: perspective(1200px) translate(calc(var(--flip-dx) * 0.5), calc(var(--flip-dy) * 0.5)) scale(calc((var(--flip-sx) + 1) * 0.5), calc((var(--flip-sy) + 1) * 0.5)) rotateY(90deg);
-    opacity: 1;
-    animation-timing-function: step-end;
-  }
-  55% {
-    transform: perspective(1200px) translate(calc(var(--flip-dx) * 0.5), calc(var(--flip-dy) * 0.5)) scale(calc((var(--flip-sx) + 1) * 0.5), calc((var(--flip-sy) + 1) * 0.5)) rotateY(-90deg);
-    opacity: 1;
-  }
-  100% {
-    transform: perspective(1200px) translate(0, 0) scale(1, 1) rotateY(0deg);
-    opacity: 1;
-  }
 }
 
 /* Now a <button>, not a <span> - it was mouse-only before (no tabindex, no
@@ -3043,20 +2976,31 @@ html:not([data-theme]) .modal-card.card-flip-expand {
    exactly like the plain "×" glyph it was. */
 .modal-close {
   position: absolute;
-  top: 14px;
-  right: 16px;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
   cursor: pointer;
   font-size: 20px;
   color: var(--text-dim);
-  transition: color 0.2s;
-  background: none;
-  border: none;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
   padding: 0;
   font-family: inherit;
   line-height: 1;
+  transition: color 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.25s var(--ease);
 }
-.modal-close:hover { color: var(--accent); }
-.modal-close:focus-visible { color: var(--accent); outline: 2px solid var(--accent); outline-offset: 2px; }
+.modal-close:hover { color: var(--text); background: var(--accent-soft); border-color: var(--border-strong); transform: rotate(90deg); }
+.modal-close:active { transform: rotate(90deg) scale(0.9); }
+/* The popup focuses its close button on open (so Escape/Enter work from the
+   keyboard straight away); a ring there only makes sense for keyboard users,
+   and :focus-visible alone still drew it after a mouse click in Chrome. */
+.modal-close:focus { outline: none; }
+.modal-close:focus-visible { color: var(--text); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 
 /* Case-Files-only folder tab poking above the modal card - present in the
    markup always, shown only once themed (same pattern as .exhibit-tag). */
@@ -3306,7 +3250,6 @@ html:not([data-theme]) .modal-card.card-flip-expand {
   color: var(--text-dim);
   background: rgba(255,255,255,0.04);
   border: 1px solid var(--border);
-  cursor: help;
 }
 .modal-stat-delta .delta-value { font-weight: 800; }
 .modal-stat-delta.delta-up { background: var(--good-soft); border-color: color-mix(in srgb, var(--good) 35%, transparent); }
@@ -3314,6 +3257,30 @@ html:not([data-theme]) .modal-card.card-flip-expand {
 .modal-stat-delta.delta-down { background: var(--bad-soft); border-color: color-mix(in srgb, var(--bad) 35%, transparent); }
 .modal-stat-delta.delta-down .delta-value { color: var(--bad); }
 .modal-stat-delta.delta-flat .delta-value { color: var(--text-faint); }
+
+/* Popup stat tiles: skeletons while live stats load, then the real tiles
+   rise in one after another. */
+.modal-stat-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 78px;
+}
+.modal-stat-skeleton .skeleton-block { animation: loadingPulse 1.3s ease-in-out infinite; }
+.modal-stat-skeleton .skeleton-block:first-child { width: 36%; height: 9px; }
+.modal-stat-skeleton .skeleton-block:last-child { width: 58%; height: 22px; }
+.modal-stats-grid .modal-stat-tile:not(.modal-stat-skeleton) { animation: modalTileIn 0.45s var(--ease) both; }
+.modal-stats-grid .modal-stat-tile:nth-child(2) { animation-delay: 0.05s; }
+.modal-stats-grid .modal-stat-tile:nth-child(3) { animation-delay: 0.1s; }
+.modal-stats-grid .modal-stat-tile:nth-child(4) { animation-delay: 0.15s; }
+.modal-stats-grid .modal-stat-tile:nth-child(5) { animation-delay: 0.2s; }
+@keyframes modalTileIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } }
+.modal-record:not([hidden]) { animation: modalTileIn 0.45s 0.22s var(--ease) both; }
+@media (prefers-reduced-motion: reduce) {
+  .modal-stats-grid .modal-stat-tile, .modal-record { animation: none !important; }
+}
 
 /* Player popup - where the live number stands among every tracked sweat
    (a thin meter under each stat), and a strip with the saved record: when
@@ -3327,7 +3294,6 @@ html:not([data-theme]) .modal-card.card-flip-expand {
   align-items: center;
   gap: 6px;
   margin-top: 7px;
-  cursor: help;
 }
 .modal-standing-bar {
   flex: 1;
@@ -3422,7 +3388,7 @@ html:not([data-theme]) .modal-card.card-flip-expand {
   #playerModal #modalUsername { grid-area: name; }
   #playerModal #modalTitle { grid-area: live; }
   #playerModal .modal-body { display: contents; }
-  #playerModal #modalSkin { grid-area: skin; width: 100%; height: 100%; min-height: 250px; }
+  #playerModal #modalSkin { grid-area: skin; width: 100%; height: 100%; min-height: 250px; max-height: 380px; }
   #playerModal #modalStats { grid-area: stats; }
   #playerModal .modal-record { grid-area: record; flex-direction: column; align-items: stretch; gap: 12px; }
   #playerModal .modal-record-beaten { margin-left: 0; align-items: flex-start; }
@@ -4161,76 +4127,6 @@ html[data-theme="casefiles"] .modal-content {
   background: var(--panel);
   box-shadow: var(--shadow-card);
 }
-/* The Neon flip-open (see playCardFlipExpand() in the script - the FLIP
-   math filling in --flip-dx/--flip-dy/--flip-sx/--flip-sy is identical
-   across all four themes, only the animation each one plays differs) gets
-   reimagined here as a photo pinned to a corkboard rather than a screen
-   flipping in 3D: it rises in dead straight and grows a bit larger as if
-   approaching the viewer, slams to a stop as if caught by a pin at the
-   top, and the impact itself immediately kicks off a swing on that pin -
-   decaying back to flat over a few progressively smaller arcs - rather
-   than a flat translate+scale to a small tilt, which read as barely-there
-   next to Neon's actual 3D flip and Private Bank's page-turn.
-   No rotation at all until the slam (a first pass tilted the whole rise,
-   which just looked like it was heading in crooked rather than being
-   caught by something at the top once it arrived) - rotate() only enters
-   the picture at 48%, and every keyframe up to then holds it at 0deg.
-   The 30%->48% run into the slam uses its own steep ease-in
-   (animation-timing-function set on the 30% keyframe) instead of the
-   overall ease-out every other segment gets - without it, the growth
-   phase coasts to a gentle stop right as it reaches the slam point (the
-   overall curve decelerating into every keyframe by default), which read
-   as arriving, pausing, and only then starting to shake rather than one
-   continuous motion straight into the impact.
-   transform-origin sits near the top edge, not the element's center
-   (the default), so rotate() actually pivots like the card is hanging
-   from something up there instead of spinning in place - which is also
-   why this uses --flip-dy-top (a top-edge-to-top-edge position delta)
-   instead of the --flip-dy every other theme's keyframes use: scaling
-   around a non-center origin moves the box differently than scaling
-   around its center, so the translate distance needed to still land
-   exactly on the clicked card at 0% has to account for that, using the
-   same top edge the rotation pivots around as its reference point.
-   Animates .modal-card (see the shared comment on the Neon rule above)
-   rather than .modal-content alone specifically so the "Case File ·
-   Open"/etc folder tab - a sibling of .modal-content, not a descendant -
-   actually rides along with the whole thing instead of sitting frozen in
-   place while the card flies/swings under it. */
-html[data-theme="casefiles"] .modal-card.card-flip-expand {
-  transform-origin: 50% -16px;
-  animation: cardFlipExpandCaseFiles 1.6s ease-out forwards;
-}
-@keyframes cardFlipExpandCaseFiles {
-  0% {
-    transform: translate(var(--flip-dx), var(--flip-dy-top)) scale(var(--flip-sx), var(--flip-sy)) rotate(0deg);
-    opacity: 0.7;
-  }
-  30% {
-    /* Approaching and growing past its resting size (1.18x), like it's
-       closing in on the viewer before the pin catches it - still
-       perfectly upright, no tilt yet. */
-    transform: translate(calc(var(--flip-dx) * 0.15), calc(var(--flip-dy-top) * 0.15)) scale(1.18, 1.18) rotate(0deg);
-    opacity: 1;
-    animation-timing-function: cubic-bezier(.55, 0, 1, .45);
-  }
-  48% {
-    /* The slam - snaps straight to resting position/size with a small
-       stretch rebound, and the impact itself is what kicks off the
-       pendulum swing (rotate jumps to +10deg here, then decays back
-       toward 0 below) - no gap between landing and swinging. */
-    transform: translate(0, 0) scale(0.96, 1.05) rotate(10deg);
-    opacity: 1;
-  }
-  62% { transform: translate(0, 0) scale(1, 1) rotate(-7deg); opacity: 1; }
-  76% { transform: translate(0, 0) scale(1, 1) rotate(4deg); opacity: 1; }
-  88% { transform: translate(0, 0) scale(1, 1) rotate(-2deg); opacity: 1; }
-  96% { transform: translate(0, 0) scale(1, 1) rotate(0.8deg); opacity: 1; }
-  100% {
-    transform: translate(0, 0) scale(1, 1) rotate(0deg);
-    opacity: 1;
-  }
-}
-
 html[data-theme="casefiles"] #modalUsername,
 html[data-theme="casefiles"] .modal-stat-tile .modal-stat-value {
   text-shadow: none;
@@ -4874,37 +4770,6 @@ html[data-theme="ledger"] .exhibit-tag-denick::before { content: "Schedule C"; }
 html[data-theme="ledger"] .modal-content {
   background: var(--panel);
   box-shadow: var(--shadow-card);
-}
-/* Unlike Case Files/Deep Current, the rotateY flip itself is kept here
-   rather than replaced - "a page turning open" is already exactly the
-   right metaphor for a ledger. Just slowed down and eased more smoothly
-   (no overshoot) for a stately page-turn instead of Neon's snappier
-   flip. Animates .modal-card, not .modal-content - see the shared comment
-   on Neon's rule for why. Same 90deg-then-step-back-to-90deg-the-other-way
-   fix as Neon's keyframes too (see that comment for the full explanation)
-   - a plain 0->90->0 rotateY reads as opening halfway and swinging back
-   shut the way it came, not one continuous turn. */
-html[data-theme="ledger"] .modal-card.card-flip-expand {
-  animation: cardFlipExpandLedger 0.75s cubic-bezier(.45,.05,.15,1) forwards;
-}
-@keyframes cardFlipExpandLedger {
-  0% {
-    transform: perspective(1400px) translate(var(--flip-dx), var(--flip-dy)) scale(var(--flip-sx), var(--flip-sy)) rotateY(0deg);
-    opacity: 0.9;
-  }
-  45% {
-    transform: perspective(1400px) translate(calc(var(--flip-dx) * 0.5), calc(var(--flip-dy) * 0.5)) scale(calc((var(--flip-sx) + 1) * 0.5), calc((var(--flip-sy) + 1) * 0.5)) rotateY(90deg);
-    opacity: 1;
-    animation-timing-function: step-end;
-  }
-  55% {
-    transform: perspective(1400px) translate(calc(var(--flip-dx) * 0.5), calc(var(--flip-dy) * 0.5)) scale(calc((var(--flip-sx) + 1) * 0.5), calc((var(--flip-sy) + 1) * 0.5)) rotateY(-90deg);
-    opacity: 1;
-  }
-  100% {
-    transform: perspective(1400px) translate(0, 0) scale(1, 1) rotateY(0deg);
-    opacity: 1;
-  }
 }
 html[data-theme="ledger"] #modalSkin {
   background: var(--panel-2);
@@ -5833,47 +5698,6 @@ html[data-theme="deepcurrent"] .table-wrap::before { top: 8px; left: 8px; }
 html[data-theme="deepcurrent"] .table-wrap::after { bottom: 8px; right: 8px; }
 html[data-theme="deepcurrent"] .modal-content {
   box-shadow: 0 0 30px rgba(53,230,196,0.2), 0 20px 60px rgba(0,0,0,0.6);
-}
-/* No flip here at all - a 3D-rotating pane doesn't fit a water theme the
-   way it does a page turning (Ledger) or a photo landing (Case Files).
-   Instead this bursts up through the surface from the card's position,
-   the same "surfacing" language the sweat-card entrance
-   (cardSurfaceDeepCurrent, elsewhere on this page) uses, just with real
-   momentum behind it - a first pass at this only translated+blurred in
-   smoothly, which read as barely-there next to Neon's actual 3D flip and
-   Private Bank's page-turn. Now it starts much further down and much more
-   out-of-focus, overshoots past its resting size and position as it
-   breaks the surface (mirroring the overshoot the other three themes get
-   from rotation/tilt, just expressed as scale/position here since there's
-   no rotation), then settles down through a small bob rather than landing
-   dead-still. Animates .modal-card, not .modal-content - see the shared
-   comment on Neon's rule for why (moot for this theme today since Deep
-   Current's modal has no folder tab, but keeps all four themes animating
-   the same element for one less thing to remember). */
-html[data-theme="deepcurrent"] .modal-card.card-flip-expand {
-  animation: cardFlipExpandDeepCurrent 0.85s cubic-bezier(.2,.8,.2,1) forwards;
-}
-@keyframes cardFlipExpandDeepCurrent {
-  0% {
-    transform: translate(var(--flip-dx), calc(var(--flip-dy) + 70px)) scale(calc(var(--flip-sx) * 0.8), calc(var(--flip-sy) * 0.8));
-    filter: blur(28px);
-    opacity: 0.1;
-  }
-  55% {
-    transform: translate(calc(var(--flip-dx) * 0.06), calc(var(--flip-dy) * 0.06 - 16px)) scale(1.06, 1.06);
-    filter: blur(2px);
-    opacity: 1;
-  }
-  78% {
-    transform: translate(0, 5px) scale(0.98, 0.98);
-    filter: blur(0.5px);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(0, 0) scale(1, 1);
-    filter: blur(0);
-    opacity: 1;
-  }
 }
 html[data-theme="deepcurrent"] #modalUsername {
   text-shadow: 0 0 12px rgba(53,230,196,0.5);
@@ -7177,7 +7001,7 @@ function openThemeDropdown() {
 // itself is always masked rather than popping half-old/half-new.
 const themeTransitionOverlay = document.getElementById("themeTransitionOverlay");
 const ttoBubbles = document.getElementById("ttoBubbles");
-const THEME_TRANSITION_MS = 950;
+const THEME_TRANSITION_MS = 800;
 let themeTransitionSwapTimer = null;
 let themeTransitionEndTimer = null;
 
@@ -7257,7 +7081,7 @@ function clearTtoPixels() {
 // theme's transition still scales its own keyframe percentages against
 // whatever --tto-dur ends up set to (see the CSS), so this is the single
 // place that duration is chosen.
-const TTO_DURATIONS = { casefiles: 1500, ledger: 1900 };
+const TTO_DURATIONS = { casefiles: 1150, ledger: 1450 };
 
 function playThemeTransition(themeId, swapFn) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -7881,7 +7705,7 @@ const clearAdminKeyBtn = document.getElementById('clearAdminKeyBtn');
 const saveAdminKeyBtn = document.getElementById('saveAdminKeyBtn');
 
 function closeAdminKeyModalFn() {
-  adminKeyModal.style.display = "none";
+  animateModalOut(adminKeyModal);
   restoreFocusAfterModal();
 }
 
@@ -7890,6 +7714,7 @@ document.getElementById('setAdminKeyBtn').addEventListener('click', () => {
   adminKeyInput.value = getAdminKey();
   adminKeyStatus.textContent = "";
   adminKeyModal.style.display = "flex";
+  animateModalIn(adminKeyModal);
   adminKeyInput.focus();
 });
 
@@ -8851,9 +8676,19 @@ function updatePaginationControls(container, totalPages) {
 // Names go in via textContent, never markup, same as the cards.
 const sweatStatsEl = document.getElementById("sweatStats");
 
-function renderSweatStats(list) {
+let lastSweatStatsPerson;
+function renderSweatStats(list, person) {
   sweatStatsEl.innerHTML = "";
-  if (!list.length) return;
+  // Tiles only animate in when the strip switches whose numbers it shows
+  // (all sweats <-> a leaderboard person), not on every filter keystroke.
+  const switched = lastSweatStatsPerson !== undefined && lastSweatStatsPerson !== (person || null);
+  lastSweatStatsPerson = person || null;
+  sweatStatsEl.classList.remove("ss-switch");
+  if (switched) { void sweatStatsEl.offsetWidth; sweatStatsEl.classList.add("ss-switch"); }
+  if (!list.length) {
+    if (person) sweatStatsEl.innerHTML = `<div class="card ss-tile ss-tile-total"><span class="ss-label">Beaten by ${person}</span><div class="ss-value">0</div><div class="ss-sub">Nobody matching these filters yet</div></div>`;
+    return;
+  }
 
   const num = v => Number(v) || 0;
   const indexOf = s => num(s.fkdr) * num(s.fkdr) * num(s.star);
@@ -8885,7 +8720,7 @@ function renderSweatStats(list) {
     return el;
   };
 
-  const total = tile("ss-tile-total", "Sweats beaten");
+  const total = tile("ss-tile-total", person ? `Beaten by ${person}` : "Sweats beaten");
   total.insertAdjacentHTML("beforeend", `
     <div class="ss-total-row">
       <div>
@@ -8941,7 +8776,6 @@ function renderTable() {
   resultCount.textContent = filteredSweats.length === total
     ? `${total.toLocaleString()} tracked ${plural(total)}`
     : `${filteredSweats.length.toLocaleString()} of ${total.toLocaleString()} ${plural(total)} match`;
-  renderSweatStats(filteredSweats);
   updateFilterIndicators();
   updateSortHeaders();
 
@@ -8957,6 +8791,13 @@ function renderTable() {
   } else {
     gridTablePagination.hidden = true;
     renderLeaderboard(filteredSweats, usernameCounts);
+  }
+  // In the Leaderboard view the strip follows whoever is selected there,
+  // showing only the sweats that person beat (their own best of each).
+  if (viewMode === "leaderboard" && leaderboardPerson) {
+    renderSweatStats(filteredSweats.filter(s => s[leaderboardPerson]), BEATEN_BY[leaderboardPerson].label);
+  } else {
+    renderSweatStats(filteredSweats);
   }
   syncUrl();
 }
@@ -9084,14 +8925,10 @@ function renderCardGrid(filteredSweats, usernameCounts) {
 
     card.querySelector(".edit-btn").addEventListener("click", (e) => {
       e.stopPropagation();
-      // Same Neon-only flip-open as the player modal (see the document
-      // click listener/playCardFlipExpand near the bottom of this script)
-      // - captured here instead of there since this button already calls
-      // stopPropagation() to keep its click from also opening the player
-      // modal underneath it. Runs for all four themes now - which
-      // animation actually plays is chosen entirely by CSS, keyed off the
-      // current html[data-theme] (see the .card-flip-expand rules next to
-      // each theme's own .modal-content block).
+      // Same grow-out-of-the-card open as the player modal (see
+      // animateModalIn near the bottom of this script) - captured here
+      // since this button stops propagation to keep its click from also
+      // opening the player modal underneath it.
       const flipFrom = card.getBoundingClientRect();
       openEditModal(s);
       requestAnimationFrame(() => playCardFlipExpand(flipFrom, editModal.querySelector(".modal-card")));
@@ -9406,7 +9243,7 @@ const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 let pendingDeleteResolve = null;
 
 function resolveConfirmDelete(result) {
-  confirmDeleteModal.style.display = "none";
+  animateModalOut(confirmDeleteModal);
   restoreFocusAfterModal();
   if (pendingDeleteResolve) {
     const resolve = pendingDeleteResolve;
@@ -9425,6 +9262,7 @@ function confirmDelete() {
   return new Promise(resolve => {
     pendingDeleteResolve = resolve;
     confirmDeleteModal.style.display = "flex";
+    animateModalIn(confirmDeleteModal);
     // Cancel, not Remove - a destructive action shouldn't be the thing
     // Enter/Space activates by default when focus first lands in the modal.
     cancelConfirmDeleteBtn.focus();
@@ -9514,16 +9352,12 @@ function openEditModal(s) {
   editBoostingCheckbox.checked = !!s.boosting;
 
   editModal.style.display = "flex";
+  animateModalIn(editModal);
   closeEditModal.focus();
 }
 
 function closeEditModalFn() {
-  editModal.style.display = "none";
-  // Otherwise this class (and the animation it assigns) would still be
-  // sitting on .modal-card, ready to auto-restart itself the instant
-  // display flips back to visible on the next open, mid-flight on stale
-  // --flip-* values before playCardFlipExpand ever gets a chance to run.
-  editModal.querySelector(".modal-card").classList.remove("card-flip-expand");
+  animateModalOut(editModal);
   editingSweatId = null;
   restoreFocusAfterModal();
 }
@@ -9625,6 +9459,7 @@ const closeModal = document.getElementById("closeModal");
 function setLoggedStatsDataset(el, s) {
   if (s.star != null && Number.isFinite(Number(s.star))) el.dataset.loggedStar = Number(s.star);
   if (s.fkdr != null && Number.isFinite(Number(s.fkdr))) el.dataset.loggedFkdr = Number(s.fkdr);
+  if (s.wlr != null && Number.isFinite(Number(s.wlr))) el.dataset.loggedWlr = Number(s.wlr);
   if (s.dateAdded) el.dataset.loggedDate = s.dateAdded;
 }
 
@@ -9644,7 +9479,33 @@ function sinceBeatDeltaHtml(liveValue, loggedRaw, { decimals = 0, suffix = "", l
     ? "No change"
     : `${delta > 0 ? "+" : "\u2212"}${Math.abs(delta).toFixed(decimals)}${suffix}`;
   const tip = `${logged.toFixed(decimals)}${suffix} when logged${when ? ` on ${when}` : ""}`;
-  return `<div class="modal-stat-delta delta-${tone}" title="${tip}"><span class="delta-value">${shown}</span> ${label}</div>`;
+  return `<div class="modal-stat-delta delta-${tone}" data-tooltip="${tip}"><span class="delta-value">${shown}</span> ${label}</div>`;
+}
+
+// Stat values count up from zero when the popup's numbers land, keeping
+// each value's own formatting (decimals, thousands separators). The star
+// tile is a prestige tag, not a plain number, so it's left alone.
+function countUpModalStats() {
+  if (reducedMotion.matches) return;
+  modalStats.querySelectorAll(".modal-stat-tile:not(.stat-star) .modal-stat-value").forEach(el => {
+    const text = el.textContent.trim();
+    const target = Number(text.replace(/,/g, ""));
+    if (!Number.isFinite(target) || target === 0) return;
+    const decimals = (text.split(".")[1] || "").length;
+    const grouped = text.includes(",");
+    const fmt = v => grouped ? Math.round(v).toLocaleString() : v.toFixed(decimals);
+    const start = performance.now();
+    const duration = 700;
+    const step = now => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = fmt(target * eased);
+      if (t < 1 && el.isConnected) requestAnimationFrame(step);
+      else el.textContent = text;
+    };
+    el.textContent = fmt(0);
+    requestAnimationFrame(step);
+  });
 }
 
 // "Beats 82% of tracked" meter under a player-popup stat: the share of
@@ -9698,9 +9559,13 @@ async function openPlayerModal(item) {
   modal.dataset.activeUuid = uuid || "";
 
   modal.style.display = "flex";
+  animateModalIn(modal);
   closeModal.focus();
   modalUsername.textContent = "Loading...";
-  modalStats.textContent = "Fetching live stats...";
+  // Skeleton tiles in the same grid shape as the real stats, instead of a
+  // line of text that jumps to a full grid when the data lands.
+  modalStats.innerHTML = ["stat-star", "stat-fkdr", "stat-wlr", "stat-finals", "stat-wins"]
+    .map(c => `<div class="modal-stat-tile ${c} modal-stat-skeleton" aria-hidden="true"><span class="skeleton-block"></span><span class="skeleton-block"></span></div>`).join("");
   modalRecord.hidden = true;
   modalTags.textContent = "Checking...";
   modalTagsReason.hidden = true;
@@ -9750,6 +9615,7 @@ async function openPlayerModal(item) {
     const when = loggedDate && !isNaN(loggedDate) ? loggedDate.toLocaleDateString() : "";
     const starDelta = sinceBeatDeltaHtml(data.star, item.dataset.loggedStar, { suffix: "\u2605", label: "since you beat them", when });
     const fkdrDelta = sinceBeatDeltaHtml(data.fkdr, item.dataset.loggedFkdr, { decimals: 2, label: "since", when });
+    const wlrDelta = sinceBeatDeltaHtml(data.wlr, item.dataset.loggedWlr, { decimals: 2, label: "since", when });
 
     // Each tile also shows where this player's live number would land among
     // every tracked sweat (see trackedStanding), and big counts get
@@ -9760,10 +9626,11 @@ async function openPlayerModal(item) {
     modalStats.innerHTML =
       statTile("stat-star", "Star", `<span class="pill prestige-tag">${prestigeTagHtml(Number(data.star) || 0)}</span>`, "star", data.star, starDelta) +
       statTile("stat-fkdr", "FKDR", data.fkdr.toFixed(2), "fkdr", data.fkdr, fkdrDelta) +
-      statTile("stat-wlr", "WLR", data.wlr.toFixed(2), "wlr", data.wlr) +
+      statTile("stat-wlr", "WLR", data.wlr.toFixed(2), "wlr", data.wlr, wlrDelta) +
       statTile("stat-finals", "Finals", Number(data.finals).toLocaleString(), "finals", data.finals) +
       statTile("stat-wins", "Wins", Number(data.wins).toLocaleString(), null, null);
     renderModalRecord(uuid, item);
+    countUpModalStats();
 
     // Re-check Urchin + Seraph tags live on every open instead of using any
     // stored value, same as the fetch-stats flow always re-fetches current
@@ -9785,76 +9652,102 @@ async function openPlayerModal(item) {
   }
 }
 
-// Grid cards only (table rows keep the plain instant fade), all four
-// themes - the clicked card's own rect is captured before openPlayerModal()
+// Any clicked card, stats tile, podium entry or table row, all four
+// themes - the clicked element's own rect is captured before openPlayerModal()
 // runs (it flips modal.style.display to "flex" synchronously, before its
 // first await, so the modal's natural centered/full-size layout already
 // exists one animation frame later) and handed to playCardFlipExpand,
-// which flies+flips .modal-card from that rect to its resting
-// position/size instead of the plain modalPop fade.
+// which grows .modal-card out of that rect into its resting position.
 document.addEventListener("click", (e) => {
   if (e.target.closest("button")) return;
   const item = e.target.closest("[data-username]");
   if (!item) return;
-  const flipFrom = item.classList.contains("sweat-card") ? item.getBoundingClientRect() : null;
+  const flipFrom = item.getBoundingClientRect();
   openPlayerModal(item);
   if (flipFrom) requestAnimationFrame(() => playCardFlipExpand(flipFrom, modal.querySelector(".modal-card")));
 });
 
-// See the click listener above for when/why this runs, and the Edit-modal
-// button handler in renderCardGrid for the other caller. FLIP technique:
-// the source card's rect is the "First" position, the target modal's own
-// natural (already-laid-out, centered/full-size) rect is the "Last"
-// position - the delta between them becomes a starting transform that's
-// immediately un-done via a CSS animation ("Invert" + "Play"), so the
-// element visually flies from the card to where it was always going to
-// render anyway. rotateY carries it through 90deg at the halfway point
-// purely as a flourish - the content underneath doesn't actually change,
-// so there's no front/back face to swap; it just reads as the card
-// flipping into the stats/edit view. `perspective()` is baked into the
-// transform itself (in the CSS below) rather than set as a `perspective`
-// property on an ancestor - an ancestor's perspective anchors its
-// vanishing point at THAT element's center (i.e. the middle of the
-// screen), so a card translated far from center (anything not in the
-// middle column) rotated through a screen-centered vanishing point and
-// visibly skewed toward it - reading as "flying in from a random side"
-// rather than a clean in-place flip. Perspective inside the transform
-// list travels with the element instead, anchored to its own center at
-// every point along the flight.
+// Modal open/close transitions, shared by all four modals and all four
+// themes. Replaces the old per-theme CSS "flip" keyframes, which stretched
+// the card non-uniformly (text squashed mid-flight), ran a second pop
+// animation on top of the flip, and snapped shut with no close animation.
+//
+// Open: the backdrop fades in and the card grows out of whatever was
+// clicked (a card, tile or row) with a uniform scale, so its contents
+// never distort. Without a source it rises in from slightly below. Each
+// theme only changes the character of that one motion: Neon tilts in on
+// a slight 3D angle, Case Files lands with a small rotation and a bounce
+// like a photo dropped on a desk, Private Bank settles slowly with no
+// overshoot, and Deep Current comes up out of a blur like surfacing.
+// Close: a quick fade and drop, then display:none once it's finished.
+// Reduced-motion users get a plain fade both ways.
+const MODAL_MOTION = {
+  neon:        { extra: "perspective(1000px) rotateX(8deg)", easing: "cubic-bezier(.16,1,.3,1)", duration: 440 },
+  casefiles:   { extra: "rotate(-3.5deg)", easing: "cubic-bezier(.34,1.4,.64,1)", duration: 520 },
+  ledger:      { extra: "", easing: "cubic-bezier(.25,.9,.3,1)", duration: 520 },
+  deepcurrent: { extra: "", easing: "cubic-bezier(.16,1,.3,1)", duration: 560, blur: true },
+};
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+function stopModalAnimations(modalEl) {
+  const card = modalEl.querySelector(".modal-card");
+  [modalEl, card].forEach(el => el && el.getAnimations().forEach(a => a.cancel()));
+  delete modalEl.dataset.closing;
+}
+
+function animateModalIn(modalEl, sourceRect) {
+  const card = modalEl.querySelector(".modal-card");
+  stopModalAnimations(modalEl);
+  modalEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
+  if (!card || reducedMotion.matches) return;
+
+  const motion = MODAL_MOTION[document.documentElement.getAttribute("data-theme")] || MODAL_MOTION.neon;
+  const target = card.getBoundingClientRect();
+  let from;
+  if (sourceRect && target.width && target.height) {
+    const dx = (sourceRect.left + sourceRect.width / 2) - (target.left + target.width / 2);
+    const dy = (sourceRect.top + sourceRect.height / 2) - (target.top + target.height / 2);
+    const scale = Math.min(1, Math.max(0.25, Math.min(sourceRect.width / target.width, sourceRect.height / target.height)));
+    from = `translate(${dx}px, ${dy}px) scale(${scale}) ${motion.extra}`;
+  } else {
+    from = `translateY(18px) scale(0.96) ${motion.extra}`;
+  }
+  card.animate([
+    { transform: from, opacity: 0, filter: motion.blur ? "blur(8px)" : "none" },
+    { opacity: 1, offset: 0.35 },
+    { transform: "none", opacity: 1, filter: "none" },
+  ], { duration: motion.duration, easing: motion.easing });
+}
+
+function animateModalOut(modalEl) {
+  if (modalEl.dataset.closing) return;
+  const hide = () => {
+    stopModalAnimations(modalEl);
+    modalEl.style.display = "none";
+  };
+  if (reducedMotion.matches) {
+    modalEl.dataset.closing = "1";
+    modalEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: "forwards" }).onfinish = hide;
+    return;
+  }
+  const card = modalEl.querySelector(".modal-card");
+  stopModalAnimations(modalEl);
+  modalEl.dataset.closing = "1";
+  if (card) {
+    card.animate([
+      { transform: "none", opacity: 1 },
+      { transform: "translateY(12px) scale(0.965)", opacity: 0 },
+    ], { duration: 180, easing: "cubic-bezier(.4,0,1,1)", fill: "forwards" });
+  }
+  modalEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 210, easing: "ease-in", fill: "forwards" }).onfinish = hide;
+}
+
+// Kept under its old name since both the grid click handler and the Edit
+// button call it one frame after the modal is shown (so the modal's own
+// resting rect exists to measure against).
 function playCardFlipExpand(sourceRect, content) {
   if (!content) return;
-  // Clear (and reflow past) any leftover class from a previous open BEFORE
-  // measuring - a CSS animation left assigned via a class restarts on its
-  // own the instant an element goes from display:none back to displayed,
-  // without waiting for this function to run. So by the second card click,
-  // .modal-card was already mid-flight on the *previous* click's
-  // --flip-* values by the time this got here, and measuring its
-  // displaced rect as "the resting position" poisoned every click after
-  // the first - reading as the animation going random/wrong direction.
-  content.classList.remove("card-flip-expand");
-  void content.offsetWidth;
-  const targetRect = content.getBoundingClientRect();
-  const dx = (sourceRect.left + sourceRect.width / 2) - (targetRect.left + targetRect.width / 2);
-  const dy = (sourceRect.top + sourceRect.height / 2) - (targetRect.top + targetRect.height / 2);
-  const sx = sourceRect.width / targetRect.width;
-  const sy = sourceRect.height / targetRect.height;
-  content.style.setProperty("--flip-dx", `${dx}px`);
-  content.style.setProperty("--flip-dy", `${dy}px`);
-  content.style.setProperty("--flip-sx", sx);
-  content.style.setProperty("--flip-sy", sy);
-  // Case Files only - a top-edge-to-top-edge delta instead of the
-  // center-to-center one above. Its animation pivots (transform-origin)
-  // from a point near the top instead of the element's center, to swing
-  // like it's actually hanging from a pin there - translate()'s own
-  // offset doesn't care where the origin is, but getting the card to
-  // still correctly overlay the source card's rect at 0% does, since
-  // scale() grows/shrinks around whatever point transform-origin names.
-  // Scale-around-center needs the center-to-center delta (--flip-dy
-  // above) to land correctly; scale-around-top needs this top-to-top one
-  // instead, or the two would fight and the card would render offset
-  // from the actual source card at the start of the animation.
-  content.style.setProperty("--flip-dy-top", `${sourceRect.top - targetRect.top}px`);
-  content.classList.add("card-flip-expand");
+  animateModalIn(content.closest(".modal"), sourceRect);
 }
 
 // Cards/rows are plain div/tr elements (not <button>s), so they need their
@@ -9871,9 +9764,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 function closePlayerModal() {
-  modal.style.display = "none";
-  // See the matching comment in closeEditModalFn.
-  modal.querySelector(".modal-card").classList.remove("card-flip-expand");
+  animateModalOut(modal);
   restoreFocusAfterModal();
   openPlayerName = null;
   syncUrl();

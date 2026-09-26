@@ -8199,6 +8199,10 @@ window.siteAudio = (function () {
         for (let i = 0; i < 3 + tier; i++) tone(t + i * 0.055, { type: "square", f: midi(pentaNote(69 + tier * 2, i * 2)), dur: 0.1, gain: 0.07, lp: 4000 });
       },
       ui(t) { tone(t, { type: "square", f: 1760, dur: 0.018, gain: 0.045, lp: 5000 }); },
+      toggle(t, on) { tone(t, { type: "square", f: on ? 988 : 1319, f2: on ? 1319 : 988, glide: 0.05, dur: 0.06, gain: 0.05, lp: 3500 }); },
+      save(t) { [76, 83].forEach((n, i) => tone(t + i * 0.07, { type: "square", f: midi(n), dur: 0.1, gain: 0.06, lp: 4000 })); },
+      del(t) { tone(t, { type: "sawtooth", f: 1400, f2: 120, dur: 0.28, gain: 0.06, lp: 2500 }); noise(t, { type: "highpass", f: 3000, dur: 0.1, gain: 0.05 }); },
+      slide(t, open) { tone(t, { f: open ? 300 : 1100, f2: open ? 1100 : 300, dur: 0.18, gain: 0.05 }); noise(t, { type: "bandpass", f: open ? 800 : 3000, f2: open ? 3000 : 800, dur: 0.2, gain: 0.04, swell: 0.5 }); },
       // Soft digital keypresses; Enter confirms with a two-note blip.
       type(t, kind) {
         if (kind === "enter") { [81, 88].forEach((n, i) => tone(t + i * 0.05, { type: "square", f: midi(n), dur: 0.05, gain: 0.04, lp: 4000 })); return; }
@@ -8270,6 +8274,15 @@ window.siteAudio = (function () {
         metal(t + (2 + tier) * 0.07, 2100, { ratios: [1, 2.1, 3.9], gain: 0.07, dur: 1.2 });
       },
       ui(t) { typeKey(t, { gain: 0.06 }); },
+      // Ticking a box is a pencil check mark; unticking rubs it out.
+      toggle(t, on) {
+        if (on) { noise(t, { type: "bandpass", f: 3200, q: 2, dur: 0.04, gain: 0.08 }); noise(t + 0.045, { type: "bandpass", f: 2600, q: 2, dur: 0.07, gain: 0.07 }); }
+        else for (let i = 0; i < 3; i++) noise(t + i * 0.05, { type: "bandpass", f: 1400, q: 1, dur: 0.045, gain: 0.05 });
+      },
+      save(t) { thud(t, { f: 150, f2: 55, dur: 0.14, gain: 0.3 }); paper(t, 0.06, { gain: 0.05 }); },
+      // Deleting crumples the page up.
+      del(t) { for (let i = 0; i < 7; i++) noise(t + i * 0.035 + rnd(0, 0.02), { type: "bandpass", f: rnd(900, 3000), q: 1.4, dur: 0.05, gain: 0.08 }); },
+      slide(t, open) { paper(t, 0.22, { f: open ? 900 : 2400, f2: open ? 2400 : 900, gain: 0.1 }); },
       // A typewriter: key strikes, a heavier space bar, and Enter rings the
       // carriage bell and zips the carriage back.
       type(t, kind) {
@@ -8330,6 +8343,12 @@ window.siteAudio = (function () {
         metal(t + 0.06, 2349 + tier * 120, { ratios: [1, 1.26, 2.52], gain: 0.08, dur: 0.9 });
       },
       ui(t) { tone(t, { type: "triangle", f: 2400, f2: 1800, dur: 0.02, gain: 0.05 }); },
+      // A small brass switch.
+      toggle(t, on) { noise(t, { type: "bandpass", f: on ? 3400 : 2600, q: 5, dur: 0.015, gain: 0.12 }); tone(t, { f: on ? 520 : 400, dur: 0.03, gain: 0.04 }); },
+      save(t) { metal(t, 2637, { ratios: [1, 1.26, 2.52], gain: 0.05, dur: 0.6 }); },
+      // A drawer of files sliding shut with a heavy clunk.
+      del(t) { noise(t, { type: "lowpass", f: 500, f2: 1200, dur: 0.18, gain: 0.08, swell: 0.6 }); thud(t + 0.18, { f: 110, f2: 50, dur: 0.14, gain: 0.3, nf: 1200, ndur: 0.03 }); },
+      slide(t, open) { noise(t, { type: "bandpass", f: open ? 700 : 1600, f2: open ? 1600 : 700, q: 0.8, dur: 0.2, gain: 0.07, swell: 0.5 }); },
       // An old adding machine: firm clicky keys, and Enter pulls the
       // handle with a ratchet and a soft bell.
       type(t, kind) {
@@ -8411,6 +8430,11 @@ window.siteAudio = (function () {
         for (let i = 0; i < 3; i++) bubble(t + 0.05 + i * 0.05, { gain: 0.06 });
       },
       ui(t) { bubble(t, { f: 700, gain: 0.04, dur: 0.04 }); },
+      toggle(t, on) { bubble(t, { f: on ? 600 : 900, rise: on ? 2 : 0.55, gain: 0.07, dur: 0.06 }); },
+      save(t) { ping(t, { f: 1760, gain: 0.05, dur: 0.6 }); },
+      // Something sinking away into the deep.
+      del(t) { tone(t, { f: 500, f2: 90, dur: 0.45, gain: 0.1 }); for (let i = 0; i < 3; i++) bubble(t + 0.05 + i * 0.07, { gain: 0.04, f: 400 - i * 60 }); },
+      slide(t, open) { noise(t, { type: "lowpass", f: open ? 250 : 900, f2: open ? 900 : 250, dur: 0.3, gain: 0.1, swell: 0.5 }); },
       // Each keypress is a small droplet; Enter lets out a little rush of
       // bubbles.
       type(t, kind) {
@@ -8712,10 +8736,10 @@ window.siteAudio = (function () {
   // loudness so each kind of moment sits at the same level in every theme
   // (clicks ~-28dB, rare clicks ~-22, flips ~-27, switch scenes ~-14...).
   const TRIM = {
-    neon: { type: 4, combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -2 },
-    casefiles: { ambience: 2.5, click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
-    ledger: { type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
-    deepcurrent: { type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -4 },
+    neon: { save: 3, delete: 5, type: 4, combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -2 },
+    casefiles: { toggle: 6, save: -5, delete: 11, slide: 2, ambience: 2.5, click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
+    ledger: { toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
+    deepcurrent: { toggle: -2, save: 2, delete: -2, slide: 3, type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -4 },
     shared: { bed: -5, chat: -2 },
   };
   const SHARED = { chat: (t) => pling(t, [78, 85]), techno: fanfare, bed: bedDestroyed };
@@ -8738,6 +8762,7 @@ window.siteAudio = (function () {
         flipClose: () => s.flipClose(t),
         found: () => s.found(t), error: () => s.error(t), success: () => s.success(t),
         stunt: () => s.stunt(t), ui: () => s.ui(t), type: () => s.type(t, opts.kind || "key"),
+        toggle: () => s.toggle(t, !!opts.on), save: () => s.save(t), delete: () => s.del(t), slide: () => s.slide(t, !!opts.open),
         scanStart: () => s.scanStart(t), scanTick: () => s.scanTick(t),
       })[name]();
     } finally {
@@ -8871,10 +8896,19 @@ window.siteAudio = (function () {
   sync();
 })();
 
+// Checkbox chips and filters get an on/off toggle sound, dropdown
+// selects a tick.
+document.addEventListener("change", (e) => {
+  const el = e.target;
+  if (!el || !el.matches) return;
+  if (el.matches("input[type='checkbox']")) siteAudio.play("toggle", { on: el.checked });
+  else if (el.matches("select, input[type='radio']")) siteAudio.play("ui");
+});
+
 // Themed typing sounds in every text box and textarea on the site.
 document.addEventListener("keydown", (e) => {
   const el = e.target;
-  if (!el || !el.matches || !el.matches("input[type='text'], input[type='search'], input[type='password'], input:not([type]), textarea")) return;
+  if (!el || !el.matches || !el.matches("input[type='text'], input[type='search'], input[type='password'], input[type='number'], input:not([type]), textarea")) return;
   if (e.ctrlKey || e.metaKey || e.altKey || e.repeat && e.key !== "Backspace") return;
   const kind = e.key === "Enter" ? "enter" : e.key === "Backspace" || e.key === "Delete" ? "back" : e.key === " " ? "space" : e.key.length === 1 ? "key" : null;
   if (kind) siteAudio.play("type", { kind });
@@ -9988,10 +10022,12 @@ async function runDenickSearch() {
       if (apiResult.noKey) denickStatus.textContent = "Showing Diamond Dome only, and nothing matched.";
       else if (apiResult.error) denickStatus.textContent = `Denicker API didn't respond (${apiResult.error}) - showing Diamond Dome only, and nothing matched.`;
       else denickStatus.textContent = "No results.";
+      siteAudio.play("error");
       return;
     }
 
     renderDenickPage();
+    siteAudio.play("found");
     if (apiResult.noKey) denickStatus.textContent = "Showing Diamond Dome results only.";
     else if (apiResult.error) denickStatus.textContent = "Denicker API didn't respond - showing Diamond Dome results only.";
   } catch (err) {
@@ -10000,6 +10036,7 @@ async function runDenickSearch() {
     denickPagination.hidden = true;
     denickEmpty.hidden = false;
     denickStatus.textContent = `Error: ${err.message}`;
+    siteAudio.play("error");
   } finally {
     if (!isStale()) {
       denickSearchBtn.disabled = false;
@@ -10064,13 +10101,15 @@ async function saveAdminKey() {
     if (next) localStorage.setItem(ADMIN_KEY_STORAGE, next);
     else localStorage.removeItem(ADMIN_KEY_STORAGE);
   } catch {}
-  if (!next) { adminKeyStatus.textContent = "Key cleared."; refreshKeyOwner(); return; }
+  if (!next) { adminKeyStatus.textContent = "Key cleared."; siteAudio.play("delete"); refreshKeyOwner(); return; }
   adminKeyStatus.textContent = "Checking key...";
   const who = await refreshKeyOwner();
   if (who) {
     adminKeyStatus.textContent = `Key saved. You're signed in as ${noteAuthorLabel(who)}.`;
+    siteAudio.play("save");
   } else {
     adminKeyStatus.textContent = "Key saved, but the server didn't recognise it. Check it's typed right.";
+    siteAudio.play("error");
   }
 }
 saveAdminKeyBtn.addEventListener('click', saveAdminKey);
@@ -10547,11 +10586,13 @@ form.addEventListener('submit', async e => {
 
   if (!username) {
     status.textContent = "Please enter a username first.";
+    siteAudio.play("error");
     return;
   }
 
   if (!anyBeatenBySelected) {
     status.textContent = "Please select at least one player who beat them.";
+    siteAudio.play("error");
     return;
   }
 
@@ -10611,6 +10652,7 @@ form.addEventListener('submit', async e => {
     playSuccessFlourish();
   } catch (err) {
     status.textContent = err.message;
+    siteAudio.play("error");
   } finally {
     addSweatBtn.disabled = false;
   }
@@ -11882,6 +11924,7 @@ function playRowExit(el) {
 
 async function removeSweat(id, rowEl) {
   if (!(await confirmDelete())) return;
+  siteAudio.play("delete");
   // Animate out and send the DELETE request at the same time, rather than
   // one after the other - the exit animation plays during the network
   // round-trip instead of adding to it, so deleting doesn't feel slower
@@ -11901,6 +11944,7 @@ async function removeSweat(id, rowEl) {
     // than leaving it invisible.
     if (rowEl && rowEl.isConnected) rowEl.classList.remove("row-exit");
     status.textContent = "Error removing sweat: " + err.message;
+    siteAudio.play("error");
   }
 }
 
@@ -11962,6 +12006,7 @@ saveEditBtn.addEventListener("click", async () => {
 
   if (hasInvalid) {
     editStatus.textContent = "Please enter a valid number for every stat.";
+    siteAudio.play("error");
     return;
   }
 
@@ -11983,10 +12028,12 @@ saveEditBtn.addEventListener("click", async () => {
     }
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to save changes"));
 
+    siteAudio.play("save");
     closeEditModalFn();
     await loadSweats();
   } catch (err) {
     editStatus.textContent = err.message;
+    siteAudio.play("error");
   } finally {
     saveEditBtn.disabled = false;
   }
@@ -12345,7 +12392,7 @@ modalNoteForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const target = modalNoteSweats[0];
   const text = modalNoteText.value.trim();
-  if (!target || !text) { modalNoteStatus.textContent = "Write something first."; return; }
+  if (!target || !text) { modalNoteStatus.textContent = "Write something first."; siteAudio.play("error"); return; }
   modalNoteSave.disabled = true;
   modalNoteStatus.textContent = "";
   try {
@@ -12363,8 +12410,10 @@ modalNoteForm.addEventListener("submit", async (e) => {
     replaceSweat(updated);
     const last = modalNotesList.lastElementChild;
     if (last) last.classList.add("note-item-new");
+    siteAudio.play("save");
   } catch (err) {
     modalNoteStatus.textContent = err.message;
+    siteAudio.play("error");
   } finally {
     modalNoteSave.disabled = !modalNoteText.value.trim();
   }
@@ -12414,8 +12463,10 @@ function startEditNote(li, note, sweat) {
       });
       if (!res.ok) throw new Error(await noteErrorMessage(res, "Failed to edit note"));
       replaceSweat(await res.json());
+      siteAudio.play("save");
     } catch (err) {
       modalNoteStatus.textContent = err.message;
+      siteAudio.play("error");
       saveBtn.disabled = false;
     }
   });
@@ -12444,6 +12495,7 @@ async function deleteNote(btn, note, sweat) {
     });
     if (!res.ok) throw new Error(await noteErrorMessage(res, "Failed to delete note"));
     const updated = await res.json();
+    siteAudio.play("delete");
     const li = btn.closest(".note-item");
     if (li && li.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       await li.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateX(16px)" }], { duration: 220, easing: "ease-in" }).finished.catch(() => {});
@@ -12451,6 +12503,7 @@ async function deleteNote(btn, note, sweat) {
     replaceSweat(updated);
   } catch (err) {
     modalNoteStatus.textContent = err.message;
+    siteAudio.play("error");
     btn.disabled = false;
   }
 }
@@ -13354,6 +13407,7 @@ document.querySelectorAll(".section-toggle").forEach(toggle => {
     hiddenSections = isSectionHidden(key) ? hiddenSections.filter(k => k !== key) : [...hiddenSections, key];
     try { localStorage.setItem(HIDDEN_SECTIONS_STORAGE, JSON.stringify(hiddenSections)); } catch {}
     applySectionState(key);
+    siteAudio.play("slide", { open: !isSectionHidden(key) });
     document.dispatchEvent(new CustomEvent("sectiontoggle", { detail: { key, hidden: isSectionHidden(key) } }));
     updateQuickNavActive();
   });
@@ -13516,10 +13570,12 @@ async function restoreSweat(entry, btn) {
     });
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Couldn't restore that sweat."));
     activityStatus.textContent = `${entry.username || "Sweat"} is back, with all its stats and notes.`;
+    siteAudio.play("save");
     await loadSweats();
     loadActivity(0);
   } catch (err) {
     activityStatus.textContent = err.message;
+    siteAudio.play("error");
     btn.disabled = false;
   }
 }
@@ -13870,8 +13926,9 @@ document.addEventListener("pointerdown", (e) => {
 // popup, which has its own flip sound, so they're left out.
 document.addEventListener("pointerdown", (e) => {
   if (e.button !== 0) return;
-  const el = e.target.closest && e.target.closest("button, a, summary, [role='button'], [role='option'], [role='tab']");
-  if (!el || el.closest("[data-username]") || el.disabled) return;
+  const el = e.target.closest && e.target.closest("button, a, summary, th.sortable, [role='button'], [role='option'], [role='tab']");
+  // Cards/rows have their flip sound, and section toggles their own slide.
+  if (!el || el.closest("[data-username]") || el.disabled || el.classList.contains("section-toggle")) return;
   siteAudio.play("ui");
 }, { passive: true });
 

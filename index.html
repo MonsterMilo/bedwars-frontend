@@ -6993,27 +6993,46 @@ html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Lo
   box-shadow: 0 0 12px rgba(0,217,255,0.8), inset 0 0 8px rgba(168,85,247,0.7);
 }
 
-/* Case Files - a red-pen circle scribbled around the click, plus ink flecks. */
-.fx-pen {
-  width: 64px;
-  height: 46px;
-  margin: -23px 0 0 -32px;
-  overflow: visible;
+/* Case Files - camera viewfinder corners, a flash, and a numbered yellow
+   crime-scene evidence marker left at the click. */
+.fx-viewfinder {
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
 }
-.fx-pen path {
-  fill: none;
-  stroke: #a32f1d;
-  stroke-width: 2.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.9;
+.fx-viewfinder i {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border: 0 solid #2a241c;
 }
-.fx-ink {
-  width: var(--s);
-  height: var(--s);
-  border-radius: 46% 54% 60% 40% / 50% 42% 58% 50%;
-  background: #2a241c;
-  opacity: 0.8;
+.fx-viewfinder i:nth-child(1) { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
+.fx-viewfinder i:nth-child(2) { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
+.fx-viewfinder i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
+.fx-viewfinder i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
+.fx-flash {
+  width: 90px;
+  height: 90px;
+  margin: -45px 0 0 -45px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.95) 0 18%, rgba(255,248,214,0.6) 40%, transparent 70%);
+}
+.fx-marker {
+  width: 26px;
+  height: 30px;
+  transform-origin: 50% 100%;
+  background: linear-gradient(90deg, #d9a91c 0 12%, #f5c93a 12% 88%, #d9a91c 88%);
+  clip-path: polygon(22% 0, 78% 0, 100% 100%, 0 100%);
+  filter: drop-shadow(0 2px 0 rgba(42,36,28,0.35));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 5px;
+  box-sizing: border-box;
+  font-family: 'Anton', 'Arial Narrow', sans-serif;
+  font-size: 13px;
+  line-height: 1;
+  color: #16120c;
 }
 
 /* Private Bank - minted gold coins with a milled rim, plus glints. */
@@ -7245,8 +7264,6 @@ html[data-theme="ledger"] .egg-toast { font-family: 'EB Garamond', serif; font-s
 html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: rgba(10,33,48,0.88); }
 .egg-toast b { font-weight: 700; }
 
-/* The click-effects on/off switch next to Admin Key. */
-#clickFxBtn[aria-pressed="false"] { opacity: 0.55; }
 </style>
 </head>
 <body>
@@ -7433,17 +7450,17 @@ html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monos
                     </div>
                   </div>
                   <div id="statsColumns">
-                    <div class="stat-hero wlr">
-                      <div class="stat-hero-label">WLR</div>
-                      <div class="stat-hero-value" id="statWLR">0</div>
-                      <div class="stat-hero-sub"><span id="statWins">0</span>W &middot; <span id="statLosses">0</span>L</div>
-                      <div class="stat-standing" data-field="wlr"></div>
-                    </div>
                     <div class="stat-hero fkdr">
                       <div class="stat-hero-label">FKDR</div>
                       <div class="stat-hero-value" id="statFKDR">0</div>
                       <div class="stat-hero-sub"><span id="statFinals">0</span>F &middot; <span id="statFinalDeaths">0</span>FD</div>
                       <div class="stat-standing" data-field="fkdr"></div>
+                    </div>
+                    <div class="stat-hero wlr">
+                      <div class="stat-hero-label">WLR</div>
+                      <div class="stat-hero-value" id="statWLR">0</div>
+                      <div class="stat-hero-sub"><span id="statWins">0</span>W &middot; <span id="statLosses">0</span>L</div>
+                      <div class="stat-standing" data-field="wlr"></div>
                     </div>
                     <div class="stat-hero kdr">
                       <div class="stat-hero-label">KDR</div>
@@ -12396,10 +12413,11 @@ refreshActivityIfStale();
 // ============================================================
 // Click effects + easter eggs. See the #fxLayer block in <style>.
 //
-//  - Every click/tap bursts a themed effect at the pointer (Neon pixels,
-//    Case Files red-pen circle, Private Bank coins, Deep Current bubbles),
-//    with a ~1 in 18 chance of a rarer version. Clicking fast builds a
-//    combo counter. #clickFxBtn turns the bursts off (remembered).
+//  - Every click/tap on the page background (never on buttons, links,
+//    cards...) bursts a themed effect at the pointer (Neon pixels, Case
+//    Files evidence marker, Private Bank coins, Deep Current bubbles),
+//    with a ~1 in 12 chance of a rarer version. Clicking fast builds a
+//    combo counter.
 //  - Konami code, typing "bedwars", or tapping the title 10 times plays
 //    the BED DESTROYED! scene. 5 title taps plays a smaller title stunt.
 //  - Typing "gg" or "ez" (outside a text box) pops a Hypixel-style chat
@@ -12417,10 +12435,7 @@ eggToasts.setAttribute("role", "status");
 eggToasts.setAttribute("aria-live", "polite");
 document.body.appendChild(eggToasts);
 
-const CLICK_FX_STORAGE = "clickFx";
 const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-let clickFxOn = true;
-try { clickFxOn = localStorage.getItem(CLICK_FX_STORAGE) !== "off"; } catch (e) {}
 
 const rand = (min, max) => Math.random() * (max - min) + min;
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -12483,42 +12498,36 @@ function burstNeon(x, y, big, quiet) {
   if (big && !quiet) fxWord(x, y, "CRIT!");
 }
 
-// A wobbly hand-drawn loop that overshoots its start, like circling
-// something on a photo with a red pen.
-function penLoopPath() {
-  const cx = 32, cy = 23, rx = rand(24, 29), ry = rand(15, 19);
-  const start = rand(0, Math.PI * 2);
-  const pts = [];
-  const steps = 26;
-  for (let i = 0; i <= steps; i++) {
-    const t = start + (Math.PI * 2.25 * i) / steps;
-    const wob = 1 + Math.sin(i * 1.7) * 0.05 + (i / steps) * 0.12;
-    pts.push(`${(cx + Math.cos(t) * rx * wob).toFixed(1)},${(cy + Math.sin(t) * ry * wob).toFixed(1)}`);
-  }
-  return `M${pts.join(" L")}`;
-}
+// Case Files: the click gets "photographed as evidence" - camera
+// viewfinder corners snap in around it, a flash goes off, and a numbered
+// yellow crime-scene marker is left standing there. The number counts up
+// through the visit like a real scene's markers do.
+let evidenceMarkerNo = 0;
 
 function burstCaseFiles(x, y, big, quiet) {
-  const wrap = fxEl("", x, y);
-  wrap.innerHTML = `<svg class="fx-pen" viewBox="0 0 64 46"><path d="${penLoopPath()}"/></svg>`;
-  const svg = wrap.firstChild;
-  svg.style.transform = `rotate(${rand(-18, 18)}deg)`;
-  const path = svg.firstChild;
-  const len = path.getTotalLength();
-  path.style.strokeDasharray = len;
-  path.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: 320, easing: "cubic-bezier(.4,.1,.3,1)", fill: "forwards" });
-  fxPlay(wrap, [{ opacity: 1 }, { opacity: 1, offset: 0.65 }, { opacity: 0 }], { duration: 900 });
-  for (let i = 0; i < (big ? 9 : 4); i++) {
-    const s = rand(2, 5);
-    const el = fxEl("fx-ink", x + rand(-26, 26), y + rand(-18, 18));
-    el.style.setProperty("--s", `${s}px`);
-    fxPlay(el, [
-      { transform: "scale(0)", opacity: 0.85 },
-      { transform: "scale(1.3)", opacity: 0.85, offset: 0.2 },
-      { transform: "scale(1)", opacity: 0 },
-    ], { duration: rand(700, 1000), delay: rand(80, 260) });
-  }
-  if (big && !quiet) fxWord(x, y - 34, "CLUE", { stamp: true });
+  const frame = fxEl("fx-viewfinder", x, y, "<i></i><i></i><i></i><i></i>");
+  fxPlay(frame, [
+    { transform: "scale(1.9)", opacity: 0 },
+    { transform: "scale(1)", opacity: 1, offset: 0.3 },
+    { transform: "scale(1)", opacity: 1, offset: 0.55 },
+    { transform: "scale(1.08)", opacity: 0 },
+  ], { duration: 620, easing: "cubic-bezier(.2,.8,.3,1)" });
+  const flash = fxEl("fx-flash", x, y);
+  fxPlay(flash, [
+    { transform: "scale(0.3)", opacity: 0 },
+    { transform: "scale(1)", opacity: 1, offset: 0.35 },
+    { transform: "scale(1.4)", opacity: 0 },
+  ], { duration: 360, delay: 170, easing: "ease-out" });
+  evidenceMarkerNo = evidenceMarkerNo % 99 + 1;
+  const marker = fxEl("fx-marker", x, y, `<span>${evidenceMarkerNo}</span>`);
+  fxPlay(marker, [
+    { transform: "translate(-50%, -100%) scale(0, 0)", opacity: 1 },
+    { transform: "translate(-50%, -100%) scale(1.15, 0.9)", opacity: 1, offset: 0.14 },
+    { transform: "translate(-50%, -100%) scale(1)", opacity: 1, offset: 0.24 },
+    { transform: "translate(-50%, -100%) scale(1)", opacity: 1, offset: 0.78 },
+    { transform: "translate(-50%, -100%) scale(1)", opacity: 0 },
+  ], { duration: 1300, delay: 200, easing: "ease-out", fill: "both" });
+  if (big && !quiet) fxWord(x, y - 58, "CLUE", { stamp: true });
 }
 
 function burstLedger(x, y, big, quiet) {
@@ -12565,11 +12574,13 @@ function burstDeepCurrent(x, y, big, quiet) {
     { transform: "scale(0.4, 0.14)", opacity: 0.9 },
     { transform: "scale(3.4, 1.1)", opacity: 0 },
   ], { duration: 700, easing: "ease-out" });
-  if (big && !quiet) spawnFish(x, y);
+  if (big && !quiet) {
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    for (let i = 0; i < 3; i++) setTimeout(() => spawnFish(x + rand(-10, 10), y + (i - 1) * 16, dir), i * 110);
+  }
 }
 
-function spawnFish(x, y) {
-  const dir = Math.random() < 0.5 ? -1 : 1;
+function spawnFish(x, y, dir = Math.random() < 0.5 ? -1 : 1) {
   const el = fxEl("", x, y);
   el.innerHTML = `<svg class="fx-fish" viewBox="0 0 38 20" style="transform:scaleX(${-dir})">
     <path d="M4 10 C10 1, 24 1, 30 10 C24 19, 10 19, 4 10 Z" fill="#35e6c4" opacity="0.85"/>
@@ -12644,38 +12655,34 @@ function isTypingTarget(el) {
   return !!(el && el.closest && el.closest("input, textarea, select, [contenteditable='true']"));
 }
 
+// Bursts are for clicks on the page itself, not on anything that does
+// something (buttons, links, chips, cards, table rows, dropdowns...). The
+// selector catches the markup-level ones; the pointer-cursor check catches
+// anything else the page styles as clickable.
+const INTERACTIVE_SELECTOR = "a, button, input, textarea, select, label, summary, [role='button'], [role='option'], [role='tab'], [role='link'], [role='checkbox'], [data-username], [tabindex]:not([tabindex='-1']), [contenteditable='true']";
+function isInteractiveTarget(el) {
+  if (!el || !el.closest) return false;
+  if (el.closest(INTERACTIVE_SELECTOR)) return true;
+  for (let n = el; n && n !== document.body; n = n.parentElement) {
+    if (getComputedStyle(n).cursor === "pointer") return true;
+  }
+  return false;
+}
+
+const RARE_CHANCE = 1 / 12;
+
 document.addEventListener("pointerdown", (e) => {
-  if (!clickFxOn || reducedMotionQuery.matches) return;
-  if (e.button !== 0 || isTypingTarget(e.target)) return;
-  // No rare rolls mid-combo - the counter is already the show.
-  const rare = comboCount < COMBO_TIERS[0] - 1 && Math.random() < 1 / 18;
+  if (reducedMotionQuery.matches) return;
+  if (e.button !== 0 || isInteractiveTarget(e.target)) return;
+  // No rare rolls mid-combo - the counter is already the show. Judged
+  // from this click's own timing, so a stale count left over from an
+  // earlier flurry never blocks the next single click's roll.
+  const midCombo = performance.now() - comboLast < 420 && comboCount >= COMBO_TIERS[0] - 1;
+  const rare = !midCombo && Math.random() < RARE_CHANCE;
   themedBurst(e.clientX, e.clientY, rare);
   // Title taps have their own counter (see titleStunt) - no combo on top.
   if (!e.target.closest(".hero h1")) bumpCombo(e.clientX, e.clientY);
 }, { passive: true });
-
-// On/off switch lives next to Admin Key.
-const clickFxBtn = document.createElement("button");
-clickFxBtn.type = "button";
-clickFxBtn.id = "clickFxBtn";
-clickFxBtn.className = "btn btn-ghost";
-clickFxBtn.innerHTML = "&#10024; FX";
-clickFxBtn.setAttribute("aria-label", "Click effects");
-function syncClickFxBtn() {
-  clickFxBtn.setAttribute("aria-pressed", clickFxOn ? "true" : "false");
-  clickFxBtn.setAttribute("data-tooltip", clickFxOn ? "Click effects on" : "Click effects off");
-}
-syncClickFxBtn();
-clickFxBtn.addEventListener("click", () => {
-  clickFxOn = !clickFxOn;
-  try { localStorage.setItem(CLICK_FX_STORAGE, clickFxOn ? "on" : "off"); } catch (e) {}
-  syncClickFxBtn();
-  if (clickFxOn) {
-    const r = clickFxBtn.getBoundingClientRect();
-    themedBurst(r.left + r.width / 2, r.top + r.height / 2, false);
-  }
-});
-document.getElementById("setAdminKeyBtn").before(clickFxBtn);
 
 // ---------- Toasts ----------
 function eggToast(html, ms = 4200) {

@@ -2731,6 +2731,11 @@ html[data-theme="deepcurrent"] .pill.prestige-tag span { text-shadow: 0 0 5px; }
 }
 
 .beaten-by-avatars { display: flex; gap: 4px; flex-shrink: 0; }
+/* Four or more beaters overlap into a stack instead of pushing the card's
+   Edit/Remove buttons past its edge. */
+.sweat-card .beaten-by-avatars:has(> :nth-child(4)) { gap: 0; }
+.sweat-card .beaten-by-avatars:has(> :nth-child(4)) > .beaten-avatar { box-shadow: 0 0 0 2px var(--panel); }
+.sweat-card .beaten-by-avatars:has(> :nth-child(4)) > .beaten-avatar + .beaten-avatar { margin-left: -4px; }
 
 .beaten-avatar {
   width: 22px;

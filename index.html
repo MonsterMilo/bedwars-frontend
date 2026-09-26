@@ -1208,26 +1208,11 @@ html:not([data-theme]) #statsContent.stats-pop {
 .stat-hero.bblr .stat-hero-value { color: var(--good); }
 
 /* ---- Sweat Lookup upgrades ---------------------------------------- */
-/* Search field with an icon and an Enter hint. */
+/* Search field with a magnifier icon. */
 .lookup-input { position: relative; flex: 1; display: flex; align-items: center; min-width: 0; }
 .lookup-input svg { position: absolute; left: 13px; width: 17px; height: 17px; color: var(--text-faint); pointer-events: none; transition: color .2s; }
-.lookup-input input { width: 100%; padding-left: 40px !important; padding-right: 64px !important; }
+.lookup-input input { width: 100%; padding-left: 40px !important; }
 .lookup-input:focus-within svg { color: var(--accent); }
-.lookup-kbd {
-  position: absolute;
-  right: 10px;
-  padding: 2px 7px;
-  font: 700 0.66em/1.4 inherit;
-  letter-spacing: .04em;
-  color: var(--text-faint);
-  border: 1px solid var(--border);
-  border-bottom-width: 2px;
-  border-radius: 5px;
-  pointer-events: none;
-  opacity: .8;
-}
-
-@media (hover: none) { .lookup-kbd { display: none; } .lookup-input input { padding-right: 14px !important; } }
 .recent-lookups { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
 .recent-label { font-size: .66em; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-faint); margin-right: 2px; }
 .recent-chip {
@@ -1249,37 +1234,91 @@ html:not([data-theme]) #statsContent.stats-pop {
 .recent-chip:hover { color: var(--text); border-color: var(--accent); background: var(--accent-soft); transform: translateY(-1px); }
 .recent-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* Empty preview: a slow radar sweep that speeds up while scanning. */
-.dash-empty { position: relative; overflow: hidden; min-height: 240px; }
-.dash-radar {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 260px;
-  height: 260px;
-  margin: -130px 0 0 -130px;
+/* Empty preview: a small idle scene per theme that speeds up while a
+   lookup is in flight. It sits above the text in normal flow so the two
+   never overlap. Neon gets a HUD reticle, Case Files a magnifier over a
+   fingerprint, Private Bank a steel combination dial, Deep Current sonar. */
+#statsEmpty { min-height: 250px; gap: 14px; }
+.dash-idle { position: relative; width: 140px; height: 140px; flex: none; }
+.dash-idle > div { position: absolute; inset: 0; display: none; }
+.dash-empty > p { position: relative; }
+#statsEmpty.is-scanning { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+
+/* Neon (default): rotating HUD rings, corner brackets and a scan beam. */
+html:not([data-theme]) .idle-reticle,
+html[data-theme="neon"] .idle-reticle { display: block; }
+.idle-reticle i { position: absolute; border-radius: 50%; }
+.idle-reticle .r1 { inset: 4px; border: 2px dashed color-mix(in srgb, var(--accent) 55%, transparent); animation: radarSpin 14s linear infinite; }
+.idle-reticle .r2 { inset: 22px; border: 2px solid transparent; border-top-color: var(--accent-2); border-bottom-color: var(--accent-2); filter: drop-shadow(0 0 6px var(--accent-2)); animation: radarSpin 3.2s linear infinite reverse; }
+.idle-reticle .r3 { inset: 44px; border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); box-shadow: 0 0 18px -2px var(--accent-soft) inset; animation: reticleBreathe 2.4s ease-in-out infinite; }
+.idle-reticle .br { position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(var(--accent), var(--accent)) 0 0 / 16px 2px, linear-gradient(var(--accent), var(--accent)) 0 0 / 2px 16px,
+    linear-gradient(var(--accent), var(--accent)) 100% 0 / 16px 2px, linear-gradient(var(--accent), var(--accent)) 100% 0 / 2px 16px,
+    linear-gradient(var(--accent), var(--accent)) 0 100% / 16px 2px, linear-gradient(var(--accent), var(--accent)) 0 100% / 2px 16px,
+    linear-gradient(var(--accent), var(--accent)) 100% 100% / 16px 2px, linear-gradient(var(--accent), var(--accent)) 100% 100% / 2px 16px;
+  background-repeat: no-repeat; filter: drop-shadow(0 0 4px var(--accent)); opacity: .8; }
+.idle-reticle .beam { position: absolute; left: 6px; right: 6px; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); box-shadow: 0 0 12px 2px var(--accent-soft), 0 0 4px var(--accent); animation: reticleBeam 2.6s ease-in-out infinite; }
+.idle-reticle .dot { position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 10px 2px var(--accent-2); animation: reticleBreathe 1.2s ease-in-out infinite; }
+@keyframes reticleBeam { 0%, 100% { transform: translateY(8px); opacity: 0; } 12%, 88% { opacity: 1; } 50% { transform: translateY(130px); } }
+@keyframes reticleBreathe { 50% { transform: scale(.82); opacity: .55; } }
+#statsEmpty.is-scanning .idle-reticle .r1 { animation-duration: 3s; }
+#statsEmpty.is-scanning .idle-reticle .r2 { animation-duration: .9s; }
+#statsEmpty.is-scanning .idle-reticle .beam { animation-duration: .8s; }
+
+/* Case Files: a magnifying glass drifting over a latent fingerprint. */
+html[data-theme="casefiles"] .idle-print { display: block; }
+.idle-print .print { position: absolute; left: 12px; top: 4px; width: 116px; height: 128px; fill: none; stroke: var(--text-dim); stroke-width: 1.6; stroke-linecap: round; opacity: .6; }
+.idle-print .glass { position: absolute; left: 0; top: 0; width: 76px; height: 76px; fill: color-mix(in srgb, var(--panel) 45%, transparent); stroke: var(--accent); stroke-width: 3.5; stroke-linecap: round; filter: drop-shadow(2px 3px 2px rgba(42,36,28,.25)); animation: glassDrift 6s ease-in-out infinite; }
+.idle-print .glass line { stroke-width: 6; stroke: var(--text); }
+@keyframes glassDrift {
+  0%, 100% { transform: translate(18px, 14px) rotate(0deg); }
+  25% { transform: translate(62px, 26px) rotate(8deg); }
+  50% { transform: translate(52px, 62px) rotate(2deg); }
+  75% { transform: translate(14px, 52px) rotate(-6deg); }
+}
+#statsEmpty.is-scanning .idle-print .glass { animation-duration: 1.8s; stroke: var(--accent-2); }
+#statsEmpty.is-scanning .idle-print .print { stroke: var(--accent-2); opacity: .8; animation: printDevelop 1s ease-in-out infinite; }
+@keyframes printDevelop { 50% { opacity: .35; } }
+
+/* Private Bank: a brushed-steel combination dial working through a code. */
+html[data-theme="ledger"] .idle-dial { display: block; }
+.idle-dial svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 6px 10px rgba(22,35,58,.18)); }
+.idle-dial .bezel { fill: #eef0f3; stroke: #b9c0c9; stroke-width: 2; }
+.idle-dial .face { stroke: #8e97a3; stroke-width: 1; }
+.idle-dial .ticks line { stroke: #7a8390; stroke-width: 1; }
+.idle-dial .ticks .mj { stroke: #16233a; stroke-width: 1.8; }
+.idle-dial .nums text { font-size: 9px; font-weight: 700; font-family: inherit; fill: #16233a; text-anchor: middle; }
+.idle-dial .knob { fill: #c9cfd6; stroke: #8e97a3; stroke-width: 1; }
+.idle-dial .grip { fill: #9aa3ae; }
+.idle-dial .index { fill: var(--gold); }
+.idle-dial .spin { transform-origin: 60px 60px; animation: dialCombo 7s cubic-bezier(.6, 0, .3, 1) infinite; }
+@keyframes dialCombo {
+  0% { transform: rotate(0deg); }
+  22%, 30% { transform: rotate(-396deg); }
+  52%, 60% { transform: rotate(-150deg); }
+  82%, 100% { transform: rotate(-240deg); }
+}
+#statsEmpty.is-scanning .idle-dial .spin { animation: radarSpin 1.1s linear infinite; }
+#statsEmpty.is-scanning .idle-dial .index { filter: drop-shadow(0 0 4px var(--gold)); }
+
+/* Deep Current: sonar sweep with a contact blip. */
+html[data-theme="deepcurrent"] .idle-sonar { display: block; }
+.idle-sonar {
   border-radius: 50%;
-  pointer-events: none;
-  opacity: .5;
-  background: conic-gradient(from 0deg, transparent 0 300deg, color-mix(in srgb, var(--accent) 35%, transparent) 355deg, transparent 360deg);
+  background: conic-gradient(from 0deg, transparent 0 290deg, color-mix(in srgb, var(--accent) 55%, transparent) 355deg, transparent 360deg);
   -webkit-mask: radial-gradient(closest-side, #000 99%, transparent 100%);
   mask: radial-gradient(closest-side, #000 99%, transparent 100%);
   animation: radarSpin 4s linear infinite;
 }
-.dash-radar i {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-}
-.dash-radar i:nth-child(2) { inset: 20%; }
-.dash-radar i:nth-child(3) { inset: 40%; }
-.dash-empty > :not(.dash-radar) { position: relative; }
-.dash-empty.is-scanning { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
-.dash-empty.is-scanning .dash-radar { opacity: 1; animation-duration: 1.1s; }
-.dash-empty.is-scanning .dash-empty-icon { color: var(--accent); animation: scanPulse 1s ease-in-out infinite; }
+.idle-sonar i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); }
+.idle-sonar i:nth-child(2) { inset: 20%; }
+.idle-sonar i:nth-child(3) { inset: 40%; }
+.idle-sonar b { position: absolute; left: 72%; top: 24%; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: sonarBlip 4s linear infinite; }
+@keyframes sonarBlip { 0%, 9% { opacity: 0; } 11% { opacity: 1; } 60%, 100% { opacity: 0; } }
+#statsEmpty.is-scanning .idle-sonar,
+#statsEmpty.is-scanning .idle-sonar b { animation-duration: 1.1s; }
 @keyframes radarSpin { to { transform: rotate(360deg); } }
-@keyframes scanPulse { 50% { transform: scale(1.15); opacity: 1; } }
 
 /* Skin on a glowing stage that tilts toward the cursor. */
 #statsContent { --tier: var(--gold); }
@@ -1380,7 +1419,7 @@ html:not([data-theme]) #statsContent.stats-pop {
 #statsContent.stats-pop .stats-tag-panel { animation-delay: .36s; }
 @keyframes previewTileIn { from { opacity: 0; transform: translateY(12px) scale(.97); } }
 @media (prefers-reduced-motion: reduce) {
-  .dash-radar, .skin-aura { animation: none; }
+  .dash-idle *, .skin-aura { animation: none !important; }
   #statsContent.stats-pop .stat-hero,
   #statsContent.stats-pop .stats-tag-panel,
   #statsContent.stats-pop .sweat-meter { animation: none; }
@@ -6602,7 +6641,6 @@ html[data-theme="deepcurrent"] .pill.boost {
             <div class="lookup-input">
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2" /><line x1="15.5" y1="15.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
               <input type="text" id="username" placeholder="Enter username" aria-label="Minecraft username" />
-              <kbd class="lookup-kbd">Enter</kbd>
             </div>
             <button type="button" id="fetchBtn" class="btn btn-ghost">
               <span class="fetch-btn-label">Preview</span>
@@ -6631,11 +6669,22 @@ html[data-theme="deepcurrent"] .pill.boost {
           <div class="dash-label">Preview</div>
           <div class="dash-preview-frame">
             <div id="statsEmpty" class="dash-empty">
-              <div class="dash-radar" aria-hidden="true"><i></i><i></i><i></i></div>
-              <svg viewBox="0 0 48 48" class="dash-empty-icon" aria-hidden="true">
-                <circle cx="21" cy="21" r="13" fill="none" stroke="currentColor" stroke-width="2.5" />
-                <line x1="30.5" y1="30.5" x2="41" y2="41" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
-              </svg>
+              <div class="dash-idle" aria-hidden="true">
+                <div class="idle-sonar"><i></i><i></i><i></i><b></b></div>
+                <div class="idle-reticle"><i class="r1"></i><i class="r2"></i><i class="r3"></i><span class="br"></span><span class="beam"></span><span class="dot"></span></div>
+                <div class="idle-print">
+                  <svg viewBox="0 0 100 110" class="print"><ellipse cx="50" cy="56" rx="4.0" ry="6.0" stroke-dasharray="16 5 9 7" stroke-dashoffset="0" transform="rotate(-10.0 50 56)"/><ellipse cx="50" cy="56" rx="8.2" ry="11.1" stroke-dasharray="31 8 17 7" stroke-dashoffset="23" transform="rotate(-8.4 50 56)"/><ellipse cx="50" cy="56" rx="12.4" ry="16.2" stroke-dasharray="45 11 25 7" stroke-dashoffset="46" transform="rotate(-6.8 50 56)"/><ellipse cx="50" cy="56" rx="16.6" ry="21.3" stroke-dasharray="60 5 34 7" stroke-dashoffset="19" transform="rotate(-5.2 50 56)"/><ellipse cx="50" cy="56" rx="20.8" ry="26.4" stroke-dasharray="75 8 42 7" stroke-dashoffset="42" transform="rotate(-3.6 50 56)"/><ellipse cx="50" cy="56" rx="25.0" ry="31.5" stroke-dasharray="89 11 50 7" stroke-dashoffset="15" transform="rotate(-2.0 50 56)"/><ellipse cx="50" cy="56" rx="29.2" ry="36.6" stroke-dasharray="104 5 58 7" stroke-dashoffset="38" transform="rotate(-0.4 50 56)"/><ellipse cx="50" cy="56" rx="33.4" ry="41.7" stroke-dasharray="119 8 66 7" stroke-dashoffset="11" transform="rotate(1.2 50 56)"/><ellipse cx="50" cy="56" rx="37.6" ry="46.8" stroke-dasharray="133 11 75 7" stroke-dashoffset="34" transform="rotate(2.8 50 56)"/></svg>
+                  <svg viewBox="0 0 60 60" class="glass"><circle cx="24" cy="24" r="16" /><line x1="36" y1="36" x2="54" y2="54" /></svg>
+                </div>
+                <div class="idle-dial">
+                  <svg viewBox="0 0 120 120">
+                    <defs><radialGradient id="idleDialFace" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#dfe3e8"/><stop offset="1" stop-color="#a9b0ba"/></radialGradient></defs>
+                    <circle cx="60" cy="60" r="57" class="bezel" />
+                    <g class="spin"><circle cx="60" cy="60" r="50" fill="url(#idleDialFace)" class="face" /><g class="ticks"><line x1="60" y1="13" x2="60" y2="19" transform="rotate(0 60 60)" class="mj"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(6 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(12 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(18 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(24 60 60)"/><line x1="60" y1="13" x2="60" y2="19" transform="rotate(30 60 60)" class="mj"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(36 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(42 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(48 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(54 60 60)"/><line x1="60" y1="13" x2="60" y2="19" transform="rotate(60 60 60)" class="mj"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(66 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(72 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(78 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(84 60 60)"/><line x1="60" y1="13" x2="60" y2="19" transform="rotate(90 60 60)" class="mj"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(96 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(102 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(108 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(114 60 60)"/><line x1="60" y1="13" x2="60" y2="19" transform="rotate(120 60 60)" class="mj"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(126 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(132 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(138 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(144 60 60)"/><line x1="60" y1="13" x2="60" y2="19" transform="rotate(150 60 60)" class="mj"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(156 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(162 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(168 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(174 60 60)"/><line x1="60" y1="13" x2="60" y2="19" transform="rotate(180 60 60)" class="mj"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(186 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(192 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(198 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(204 60 60)"/><line x1="60" y1="13" x2="60" y2="19" transform="rotate(210 60 60)" class="mj"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(216 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(222 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(228 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(234 60 60)"/><line x1="60" y1="13" x2="60" y2="19" transform="rotate(240 60 60)" class="mj"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(246 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(252 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(258 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(264 60 60)"/><line x1="60" y1="13" x2="60" y2="19" transform="rotate(270 60 60)" class="mj"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(276 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(282 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(288 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(294 60 60)"/><line x1="60" y1="13" x2="60" y2="19" transform="rotate(300 60 60)" class="mj"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(306 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(312 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(318 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(324 60 60)"/><line x1="60" y1="13" x2="60" y2="19" transform="rotate(330 60 60)" class="mj"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(336 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(342 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(348 60 60)"/><line x1="60" y1="15.5" x2="60" y2="19" transform="rotate(354 60 60)"/></g><g class="nums"><text x="60.0" y="31.0">0</text><text x="87.7" y="47.0">10</text><text x="87.7" y="79.0">20</text><text x="60.0" y="95.0">30</text><text x="32.3" y="79.0">40</text><text x="32.3" y="47.0">50</text></g><circle cx="60" cy="60" r="15" class="knob" /><rect x="57.5" y="45" width="5" height="11" rx="2" class="grip" /></g>
+                    <path d="M60 3 L55 -5 L65 -5 Z" transform="translate(0 6)" class="index" />
+                  </svg>
+                </div>
+              </div>
               <p id="statsEmptyText">Search a player, then Preview to see their card here before you log it.</p>
             </div>
 
@@ -8171,8 +8220,8 @@ function showStatsEmpty() {
   statsEmpty.hidden = false;
   setStatsScanning(null);
 }
-// While a lookup is in flight the empty preview becomes a radar sweep
-// naming who it's looking for.
+// While a lookup is in flight the empty preview speeds up its idle scene
+// and names who it is looking for.
 const STATS_EMPTY_TEXT = "Search a player, then Preview to see their card here before you log it.";
 function setStatsScanning(name) {
   const text = document.getElementById("statsEmptyText");

@@ -6630,7 +6630,7 @@ html[data-theme="deepcurrent"] .pill.boost {
   font-size: 0.78em;
   color: var(--accent);
   background: var(--accent-soft);
-  cursor: help;
+  cursor: default;
   flex-shrink: 0;
 }
 .row-note-icon b { font-size: 0.9em; }
@@ -6806,7 +6806,6 @@ html[data-theme="deepcurrent"] .note-input { background: rgba(3,12,20,0.5); bord
 /* Notes polish: author chips, hover touches, bigger tap targets on phones */
 .note-item-avatar { width: 20px; height: 20px; font-size: 9px; flex-shrink: 0; }
 .note-item-avatar.anon { --chip-color: var(--text-faint); }
-.note-item-date[title] { cursor: help; }
 .note-hint { font-size: 0.92em; opacity: 0.8; }
 @media (hover: none), (max-width: 560px) { .note-hint { display: none; } }
 .sweat-card-note { transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s var(--ease); }
@@ -6832,6 +6831,8 @@ html[data-theme="ledger"] .note-signer { font-family: 'EB Garamond', serif; font
 html[data-theme="ledger"] .note-signer::before { box-shadow: none; }
 html[data-theme="deepcurrent"] .note-signer { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; }
 .key-admin-badge { color: var(--gold); font-size: 0.85em; margin-left: -2px; text-shadow: 0 0 8px color-mix(in srgb, var(--gold) 60%, transparent); }
+/* Tooltips holding a full note get more room than the default 240px. */
+#customTooltip.note-tip { max-width: 340px; text-align: left; }
 </style>
 </head>
 <body>
@@ -7916,6 +7917,7 @@ function showTooltip(target) {
   if (!text) return;
   tooltipTarget = target;
   customTooltip.textContent = text;
+  customTooltip.classList.toggle("note-tip", !!target.closest(".sweat-card-note, .row-note-icon"));
   customTooltip.classList.add("visible");
   positionTooltip(target);
 }
@@ -10088,7 +10090,9 @@ function buildSweatRow(s, { usernameCounts }) {
     const noteIcon = document.createElement("span");
     noteIcon.className = "row-note-icon";
     const latest = rowNotes[rowNotes.length - 1];
-    noteIcon.setAttribute("data-tooltip", (rowNotes.length > 1 ? `(${rowNotes.length} notes) ` : "") + latest.text);
+    noteIcon.setAttribute("data-tooltip", rowNotes.length > 1
+      ? rowNotes.map(n => (noteAuthorLabel(n.author) ? `${noteAuthorLabel(n.author)}: ` : "") + n.text).join("\n\n")
+      : (noteAuthorLabel(latest.author) ? `${noteAuthorLabel(latest.author)}: ` : "") + latest.text);
     noteIcon.setAttribute("aria-label", `${rowNotes.length} ${rowNotes.length === 1 ? "note" : "notes"}`);
     noteIcon.innerHTML = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1.5h7v9h-7z M4.2 4h3.6 M4.2 6h3.6 M4.2 8h2.2" /></svg>${rowNotes.length > 1 ? `<b>${rowNotes.length}</b>` : ""}`;
     userCellDiv.appendChild(noteIcon);
@@ -10628,6 +10632,17 @@ function fillCardNote(el, s) {
     (who ? `— ${who}` : "") + (notes.length > 1 ? `${who ? " · " : ""}+${notes.length - 1} more` : "");
   el.style.setProperty("--note-author-color", noteAuthorColor(latest.author));
 }
+
+// A card's note is clamped to two lines; hovering it shows the whole note in
+// the shared tooltip, but only when something was actually cut off. Capture
+// phase so data-tooltip is set before the tooltip's own mouseover handler runs.
+document.addEventListener("mouseover", (e) => {
+  const noteEl = e.target.closest && e.target.closest(".sweat-card-note");
+  if (!noteEl) return;
+  const textEl = noteEl.querySelector(".note-text");
+  if (textEl.scrollHeight > textEl.clientHeight + 1) noteEl.setAttribute("data-tooltip", textEl.textContent);
+  else noteEl.removeAttribute("data-tooltip");
+}, true);
 
 const modalNotes = document.getElementById("modalNotes");
 const modalNotesList = document.getElementById("modalNotesList");

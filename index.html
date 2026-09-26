@@ -6256,17 +6256,13 @@ html[data-theme="deepcurrent"] .exhibit-tag-lookup::before { content: "Dive Log 
 html[data-theme="deepcurrent"] .exhibit-tag-results::before { content: "Dive Log B"; }
 html[data-theme="deepcurrent"] .exhibit-tag-denick::before { content: "Dive Log C"; }
 
-/* Lookup form's left column gets a faint teal edge-glow instead of a plain
-   border, echoing the porthole-glass light elsewhere in this theme. */
+/* Lookup form's left column divider in the stronger teal border. No glow:
+   a box-shadow here haloed the whole column, not just the divider. */
 html[data-theme="deepcurrent"] .dash-left {
   border-right-color: var(--border-strong);
-  box-shadow: 1px 0 12px -4px rgba(53,230,196,0.25);
 }
 @media (max-width: 700px) {
-  html[data-theme="deepcurrent"] .dash-left {
-    border-right: none;
-    box-shadow: 0 1px 12px -4px rgba(53,230,196,0.25);
-  }
+  html[data-theme="deepcurrent"] .dash-left { border-right: none; border-bottom-color: var(--border-strong); }
 }
 
 /* Sweat Lookup panel recast as a submarine instrument console instead of

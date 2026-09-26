@@ -1340,70 +1340,370 @@ html:not([data-theme]) #statsContent.stats-pop {
   background: var(--accent-soft);
 }
 
-/* Leaderboard view */
-/* Grid instead of flex-wrap so a 9-person roster lands evenly (3x3) instead
-   of ragged rows with a lone chip stranded on the last line - same fix as
-   the beaten-by roster picker in the Sweat Lookup form. */
+/* Leaderboard view - a podium for the top three and a ranked list with a
+   progress bar for everyone else, instead of nine identical chips. Every
+   entry is still a .leaderboard-chip button (click to drill into that
+   person's sweats), so the themes' name/hover treatments keep applying.
+   Medal colors are tokens so each theme can tune gold/silver/bronze to its
+   own palette the same way it tunes the roster colors. */
+:root {
+  --medal-1: #ffd166;
+  --medal-2: #c9d4e6;
+  --medal-3: #e39a62;
+}
+html[data-theme="casefiles"] { --medal-1: #b8912f; --medal-2: #7b776b; --medal-3: #9a5a33; }
+html[data-theme="ledger"] { --medal-1: #a9822e; --medal-2: #8a8e96; --medal-3: #9c6238; }
+html[data-theme="deepcurrent"] { --medal-1: #ffe066; --medal-2: #bfe3ea; --medal-3: #ff9f6b; }
+
 .leaderboard-ranking {
   max-width: 1200px;
-  margin: 0 auto 20px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  margin: 0 auto 26px;
 }
 
-@media (max-width: 620px) {
-  .leaderboard-ranking { grid-template-columns: repeat(2, 1fr); }
-  /* Same fix as the roster picker above - always exactly 9 entries, so the
-     last one otherwise strands alone at the start of a half-empty row. */
-  .leaderboard-ranking .leaderboard-chip:last-child { grid-column: 1 / -1; }
+.lb-podium {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 14px;
+  max-width: 760px;
+  margin: 8px auto 22px;
 }
 
 .leaderboard-chip {
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+  transition: transform 0.2s var(--ease), filter 0.2s var(--ease);
+}
+.leaderboard-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+.lb-step {
+  --medal: var(--medal-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.lb-step.lb-place-1 { --medal: var(--medal-1); }
+.lb-step.lb-place-2 { --medal: var(--medal-2); }
+.lb-step:hover { transform: translateY(-3px); }
+.lb-step:active { transform: translateY(0) scale(0.98); }
+
+.lb-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--chip-color);
+  color: #0b0d14;
+  font-weight: 800;
+  font-size: 0.8em;
+}
+.lb-step .lb-avatar {
+  width: 64px;
+  height: 64px;
+  font-size: 1.25em;
+  box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px var(--medal);
+}
+.lb-step.lb-place-1 .lb-avatar {
+  width: 80px;
+  height: 80px;
+  font-size: 1.5em;
+}
+.lb-crown {
+  height: 22px;
+  color: var(--medal-1);
+  font-size: 1.3em;
+  line-height: 22px;
+}
+.lb-step:not(.lb-place-1) .lb-crown { visibility: hidden; }
+
+.lb-step .leaderboard-name {
+  max-width: 100%;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 800;
+  font-size: 1.02em;
+}
+.lb-step-count {
+  color: var(--text-dim);
+  font-size: 0.8em;
+  font-weight: 600;
+}
+.lb-step-count b {
+  color: var(--text);
+  font-size: 1.15em;
+}
+
+.lb-block {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 70px;
+  margin-top: 6px;
+  border-radius: var(--radius-m) var(--radius-m) 0 0;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--medal);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--medal) 22%, transparent), transparent 90%), var(--panel);
+}
+.lb-place-1 .lb-block { height: 112px; }
+.lb-place-2 .lb-block { height: 88px; }
+.lb-place {
+  color: var(--medal);
+  font-size: 2.3em;
+  font-weight: 800;
+  line-height: 1;
+}
+.lb-place-1 .lb-place { font-size: 3em; }
+.lb-place-roman { display: none; }
+
+/* The selected person - a lit plinth and a "viewing" label, since the
+   drill-down table below it otherwise only says whose it is in its title. */
+.lb-step.active .lb-block {
+  border-color: var(--border-strong);
+  border-top-color: var(--medal);
+  box-shadow: 0 0 0 1px var(--border-strong), 0 12px 28px -12px color-mix(in srgb, var(--medal) 60%, transparent);
+}
+.lb-step.active .lb-block::after,
+.lb-row.active::after {
+  content: "Viewing";
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.62em;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.lb-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+.lb-row {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 16px;
+  gap: 12px;
+  padding: 9px 14px;
   border-radius: var(--radius-m);
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.02);
-  color: var(--text-dim);
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s var(--ease);
+  background: var(--panel);
+  text-align: left;
 }
-.leaderboard-chip:hover { border-color: var(--border-strong); }
-.leaderboard-chip:active { transform: scale(0.97); }
-.leaderboard-chip.active {
+.lb-row:hover { border-color: var(--border-strong); }
+.lb-row:active { transform: scale(0.99); }
+.lb-row.active {
   border-color: var(--border-strong);
-  background: var(--accent-soft);
-  color: var(--text);
-  box-shadow: 0 0 14px rgba(0,217,255,0.2);
+  background: linear-gradient(90deg, var(--accent-soft), transparent 70%), var(--panel);
 }
-
-.leaderboard-rank {
-  font-size: 0.75em;
-  font-weight: 800;
+.lb-row.active::after {
+  position: static;
+  transform: none;
+  order: 3;
+}
+.lb-row .leaderboard-rank {
+  width: 26px;
+  flex: none;
   color: var(--text-faint);
-}
-.leaderboard-chip.active .leaderboard-rank { color: var(--accent-2); }
-.leaderboard-rank.medal { font-size: 1.3em; }
-
-.leaderboard-name { font-weight: 700; font-size: 0.95em; }
-
-.leaderboard-count {
-  font-size: 0.78em;
+  font-size: 0.82em;
   font-weight: 800;
-  padding: 2px 9px;
+}
+.lb-row .leaderboard-name {
+  width: 76px;
+  flex: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 0.95em;
+}
+.lb-bar {
+  flex: 1;
+  height: 6px;
+  min-width: 30px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.06);
-  color: var(--text-dim);
+  background: var(--border);
+  overflow: hidden;
 }
-.leaderboard-chip.active .leaderboard-count {
-  background: var(--accent-2-soft);
+.lb-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--chip-color);
+  transition: width 0.5s var(--ease);
+}
+.lb-row .leaderboard-count {
+  order: 4;
+  min-width: 26px;
+  text-align: right;
+  font-weight: 800;
+  font-size: 0.95em;
+  color: var(--text);
+}
+
+@media (max-width: 620px) {
+  .lb-podium { gap: 8px; }
+  .lb-step .lb-avatar { width: 50px; height: 50px; font-size: 1.05em; }
+  .lb-step.lb-place-1 .lb-avatar { width: 62px; height: 62px; font-size: 1.25em; }
+  .lb-block { height: 56px; }
+  .lb-place-1 .lb-block { height: 90px; }
+  .lb-place-2 .lb-block { height: 70px; }
+  .lb-place { font-size: 1.8em; }
+  .lb-place-1 .lb-place { font-size: 2.3em; }
+  .lb-list { grid-template-columns: 1fr; }
+  .lb-step.active .lb-block::after { bottom: 5px; font-size: 0.55em; }
+}
+
+/* Neon - lit-up plinths: the medal color glows through the block and the
+   top-three avatars get a halo, like stage lights on a podium. */
+html:not([data-theme]) .lb-step .lb-avatar {
+  box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px var(--medal), 0 0 22px color-mix(in srgb, var(--medal) 55%, transparent);
+}
+html:not([data-theme]) .lb-place {
+  text-shadow: 0 0 18px color-mix(in srgb, var(--medal) 70%, transparent);
+}
+html:not([data-theme]) .lb-bar > span {
+  box-shadow: 0 0 10px var(--chip-color);
+}
+
+/* Case Files - the podium is three stacked manila folders with the rank
+   stamped on in red ink, avatars pinned up as square mugshot tabs. */
+html[data-theme="casefiles"] .lb-avatar,
+html[data-theme="casefiles"] .lb-step .lb-avatar {
+  border-radius: 2px;
+  color: #2a241c;
+  box-shadow: 0 0 0 4px #fbf6e6, 0 0 0 5px var(--border), 3px 5px 8px rgba(42,36,28,0.3);
+}
+html[data-theme="casefiles"] .lb-avatar { box-shadow: 0 0 0 2px #fbf6e6, 0 0 0 3px var(--border); }
+html[data-theme="casefiles"] .lb-step.lb-place-2 .lb-avatar { transform: rotate(-3deg); }
+html[data-theme="casefiles"] .lb-step.lb-place-3 .lb-avatar { transform: rotate(2.5deg); }
+html[data-theme="casefiles"] .lb-crown { color: var(--accent-2); font-family: 'Anton', sans-serif; font-size: 0.8em; letter-spacing: 0.12em; }
+html[data-theme="casefiles"] .lb-crown::before { content: "MOST WANTED"; }
+html[data-theme="casefiles"] .lb-crown > span { display: none; }
+html[data-theme="casefiles"] .lb-block {
+  border: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border-strong);
+  border-radius: 3px 3px 0 0;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 17px, rgba(163,145,92,0.18) 17px 18px),
+    #e9d9a8;
+  box-shadow: inset 0 -6px 0 rgba(0,0,0,0.05), 4px 4px 0 -1px #dcc88f;
+}
+html[data-theme="casefiles"] .lb-place {
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
   color: var(--accent-2);
+  padding: 0 10px;
+  border: 3px solid var(--accent-2);
+  border-radius: 4px;
+  transform: rotate(-6deg);
+  opacity: 0.85;
+  font-size: 1.7em;
+  line-height: 1.15;
 }
+html[data-theme="casefiles"] .lb-place-1 .lb-place { font-size: 2.2em; }
+html[data-theme="casefiles"] .lb-step-count,
+html[data-theme="casefiles"] .lb-row .leaderboard-rank { font-family: 'Courier Prime', monospace; }
+html[data-theme="casefiles"] .lb-row {
+  background: var(--panel);
+  border-style: dashed;
+}
+html[data-theme="casefiles"] .lb-row.active { border-style: solid; background: #f2e3b3; }
+html[data-theme="casefiles"] .lb-bar {
+  height: 8px;
+  border-radius: 0;
+  background: repeating-linear-gradient(90deg, var(--border) 0 1px, transparent 1px 8px);
+}
+html[data-theme="casefiles"] .lb-bar > span { border-radius: 0; background: var(--text-dim); opacity: 0.75; }
+html[data-theme="casefiles"] .lb-step.active .lb-block::after,
+html[data-theme="casefiles"] .lb-row.active::after { color: var(--accent-2); font-family: 'Courier Prime', monospace; content: "OPEN FILE"; }
+
+/* Private Bank - engraved medallions on white stone, Roman numerals set in
+   Playfair, thin double gold rules instead of a filled block. */
+html[data-theme="ledger"] .lb-avatar {
+  color: #fff;
+  font-family: 'Playfair Display', serif;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--chip-color) 55%, #fff), var(--chip-color) 60%, color-mix(in srgb, var(--chip-color) 70%, #000));
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+html[data-theme="ledger"] .lb-step .lb-avatar {
+  box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--medal), 0 0 0 7px #fff, 0 0 0 8px color-mix(in srgb, var(--medal) 50%, transparent), 0 10px 20px -8px rgba(22,35,58,0.4);
+}
+html[data-theme="ledger"] .lb-crown > span { display: none; }
+html[data-theme="ledger"] .lb-crown::before { content: "\2766"; }
+html[data-theme="ledger"] .lb-block {
+  border: 0;
+  border-top: 1px solid var(--medal);
+  border-radius: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--medal) 10%, #fff), #fff);
+  box-shadow: inset 0 3px 0 #fff, inset 0 4px 0 var(--medal), 0 14px 26px -20px rgba(22,35,58,0.5);
+  outline: 1px solid var(--border);
+}
+html[data-theme="ledger"] .lb-place-num { display: none; }
+html[data-theme="ledger"] .lb-place-roman {
+  display: inline;
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-style: italic;
+}
+html[data-theme="ledger"] .lb-step .leaderboard-name { font-weight: 600; }
+html[data-theme="ledger"] .lb-step-count { font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.95em; }
+html[data-theme="ledger"] .lb-row { border-radius: 0; border-color: var(--border); }
+html[data-theme="ledger"] .lb-row.active { border-color: var(--gold); background: linear-gradient(90deg, var(--accent-soft), transparent 70%), #fff; }
+html[data-theme="ledger"] .lb-row .leaderboard-rank { font-family: 'Playfair Display', serif; font-style: italic; }
+html[data-theme="ledger"] .lb-bar { height: 3px; background: var(--border); border-radius: 0; }
+html[data-theme="ledger"] .lb-bar > span { border-radius: 0; background: var(--gold); }
+html[data-theme="ledger"] .lb-step.active .lb-block::after,
+html[data-theme="ledger"] .lb-row.active::after { color: var(--gold); font-family: 'EB Garamond', serif; letter-spacing: 0.2em; }
+
+/* Deep Current - depth soundings: the plinths are columns of water that get
+   darker toward the bottom, ranks read out in the mono gauge font, and the
+   leader gets the same slow sonar ping the rest of this theme uses. */
+html[data-theme="deepcurrent"] .lb-avatar { color: #031018; }
+html[data-theme="deepcurrent"] .lb-step .lb-avatar {
+  position: relative;
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--medal), 0 0 20px color-mix(in srgb, var(--medal) 40%, transparent);
+}
+html[data-theme="deepcurrent"] .lb-step.lb-place-1 .lb-avatar::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid var(--medal);
+  opacity: 0;
+  animation: alarmPing 2.6s ease-out infinite;
+}
+html[data-theme="deepcurrent"] .lb-block {
+  border-radius: 14px 14px 0 0;
+  border-color: rgba(53,230,196,0.18);
+  border-top: 2px solid var(--medal);
+  background:
+    repeating-linear-gradient(180deg, transparent 0 13px, rgba(53,230,196,0.08) 13px 14px),
+    linear-gradient(180deg, color-mix(in srgb, var(--medal) 20%, #0e2a3c), #04121c);
+}
+html[data-theme="deepcurrent"] .lb-place,
+html[data-theme="deepcurrent"] .lb-row .leaderboard-rank,
+html[data-theme="deepcurrent"] .lb-row .leaderboard-count,
+html[data-theme="deepcurrent"] .lb-step-count {
+  font-family: 'JetBrains Mono', monospace;
+}
+html[data-theme="deepcurrent"] .lb-place { text-shadow: 0 0 14px color-mix(in srgb, var(--medal) 60%, transparent); }
+html[data-theme="deepcurrent"] .lb-row { background: linear-gradient(160deg, var(--panel), var(--panel-2)); }
+html[data-theme="deepcurrent"] .lb-row.active { box-shadow: 0 0 14px rgba(53,230,196,0.2); }
+html[data-theme="deepcurrent"] .lb-bar > span { box-shadow: 0 0 8px var(--chip-color); }
 
 .leaderboard-person-title {
   max-width: 1200px;
@@ -3103,10 +3403,6 @@ html[data-theme="casefiles"] .view-btn.active {
   box-shadow: none;
   color: var(--panel);
 }
-html[data-theme="casefiles"] .leaderboard-chip.active {
-  box-shadow: none;
-}
-
 /* File-tag look for the theme dropdown: square instead of pill, uppercase
    typewriter label. */
 /* File-tag look for the theme dropdown: square instead of rounded, uppercase
@@ -3678,7 +3974,6 @@ html[data-theme="ledger"] .pill {
   border-radius: var(--radius-s);
 }
 
-html[data-theme="ledger"] .leaderboard-chip.active,
 html[data-theme="ledger"] .view-btn.active {
   box-shadow: none;
 }
@@ -4900,34 +5195,6 @@ html[data-theme="deepcurrent"] .chip input:checked + span {
 }
 html[data-theme="deepcurrent"] .view-btn.active {
   box-shadow: 0 4px 14px rgba(53,230,196,0.3);
-}
-/* Leaderboard chips read as sonar contacts on a scope - the selected one
-   gets a slow ping ring (the same alarmPing keyframe the confirm-delete
-   icon uses, repurposed here at low opacity) instead of just a static glow,
-   and ranks/counts move to the mono readout font already used for other
-   numeric displays in this theme. */
-html[data-theme="deepcurrent"] .leaderboard-chip {
-  border-radius: 12px;
-  background: linear-gradient(160deg, var(--panel), var(--panel-2));
-}
-html[data-theme="deepcurrent"] .leaderboard-chip:hover {
-  border-color: var(--border-strong);
-  box-shadow: 0 0 12px rgba(53,230,196,0.18);
-}
-html[data-theme="deepcurrent"] .leaderboard-chip.active {
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 14px rgba(53,230,196,0.2);
-}
-html[data-theme="deepcurrent"] .leaderboard-chip.active::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border: 1px solid var(--accent);
-  opacity: 0;
-  animation: alarmPing 2.4s ease-out infinite;
-  pointer-events: none;
 }
 html[data-theme="deepcurrent"] .leaderboard-rank,
 html[data-theme="deepcurrent"] .leaderboard-count {
@@ -8354,14 +8621,34 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   const ranked = [...BEATEN_BY_KEYS].sort((a, b) => counts[b] - counts[a]);
   if (!leaderboardPerson) leaderboardPerson = ranked[0];
 
-  const MEDALS = ["\u{1F947}", "\u{1F948}", "\u{1F949}"]; // gold, silver, bronze - re-evaluated every render, so they always follow whoever currently ranks there
-  leaderboardRanking.innerHTML = ranked.map((k, i) => `
-    <button type="button" class="leaderboard-chip${k === leaderboardPerson ? " active" : ""}" data-person="${k}">
-      <span class="leaderboard-rank${i < 3 ? " medal" : ""}">${MEDALS[i] || ("#" + (i + 1))}</span>
+  // Podium for the top three (laid out 2nd, 1st, 3rd so the winner stands
+  // in the middle), then a ranked list with a bar scaled to the leader's
+  // count for everyone else. Places are re-evaluated every render, so they
+  // always follow whoever currently ranks there under the active filters.
+  const ROMAN = ["I", "II", "III"];
+  const topCount = Math.max(1, counts[ranked[0]]);
+  const avatar = k => `<span class="lb-avatar" style="--chip-color:var(--roster-${k})">${BEATEN_BY[k].initials}</span>`;
+  const activeClass = k => (k === leaderboardPerson ? " active" : "");
+  const podium = [1, 0, 2].map(i => {
+    const k = ranked[i];
+    return `
+    <button type="button" class="leaderboard-chip lb-step lb-place-${i + 1}${activeClass(k)}" data-person="${k}" aria-label="${["1st", "2nd", "3rd"][i]} place: ${BEATEN_BY[k].label}, ${counts[k]} sweats">
+      <span class="lb-crown" aria-hidden="true"><span>&#9819;</span></span>
+      ${avatar(k)}
       <span class="leaderboard-name">${BEATEN_BY[k].label}</span>
+      <span class="lb-step-count"><b>${counts[k]}</b> ${counts[k] === 1 ? "sweat" : "sweats"}</span>
+      <span class="lb-block" aria-hidden="true"><span class="lb-place"><span class="lb-place-num">${i + 1}</span><span class="lb-place-roman">${ROMAN[i]}</span></span></span>
+    </button>`;
+  }).join("");
+  const rest = ranked.slice(3).map((k, i) => `
+    <button type="button" class="leaderboard-chip lb-row${activeClass(k)}" data-person="${k}" style="--chip-color:var(--roster-${k})">
+      <span class="leaderboard-rank">#${i + 4}</span>
+      ${avatar(k)}
+      <span class="leaderboard-name">${BEATEN_BY[k].label}</span>
+      <span class="lb-bar" aria-hidden="true"><span style="width:${Math.round(counts[k] / topCount * 100)}%"></span></span>
       <span class="leaderboard-count">${counts[k]}</span>
-    </button>
-  `).join("");
+    </button>`).join("");
+  leaderboardRanking.innerHTML = `<div class="lb-podium">${podium}</div><div class="lb-list">${rest}</div>`;
 
   leaderboardRanking.querySelectorAll(".leaderboard-chip").forEach(btn => {
     btn.addEventListener("click", () => {

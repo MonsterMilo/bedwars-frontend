@@ -14410,7 +14410,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
       <div class="sweat-card-pills">
         <span class="pill prestige-tag" aria-label="${starVal} stars">${prestigeTagHtml(starVal)}</span>
         <span class="pill fkdr">${fkdrVal.toFixed(2)} FKDR</span>
-        ${standout ? `<span class="pill tier-pill ${tier.key}">${tier.name}</span>` : ""}
+        ${tier.key === "t5" ? `<span class="pill tier-pill ${tier.key}">${tier.name}</span>` : ""}
         ${isLiveNew ? '<span class="pill live-pill">New</span>' : ""}
         ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
         ${s.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}

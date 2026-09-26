@@ -24,7 +24,8 @@
     neon: "family=Manrope:wght@400;500;600;700;800",
     casefiles: "family=Courier+Prime:wght@400;700&family=Anton&family=Caveat:wght@500;700",
     ledger: "family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Pinyon+Script",
-    deepcurrent: "family=Sora:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700"
+    deepcurrent: "family=Sora:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700",
+    skyisles: "family=Jersey+10&family=Press+Start+2P&family=Silkscreen:wght@400;700"
   };
   window.loadThemeFonts = function (themeId) {
     const families = window.THEME_FONT_FAMILIES[themeId] || window.THEME_FONT_FAMILIES.neon;
@@ -263,6 +264,72 @@ html[data-theme="deepcurrent"] {
   --rank-mvpplus: #4fc3f7;
   --rank-vip: #4ade9f;
   --rank-vipplus: #4ade9f;
+}
+
+/* "Sky Isles" theme - a retro 8-bit daytime sky. Every card is a floating
+   island (grass top, stepped dirt underside), every panel a chunky pixel
+   window with notched corners, and everything moves in hard steps() rather
+   than smooth easing, like an old game running at a low frame rate. The
+   only bright, cheerful theme in the set. Component overrides live in the
+   SKY ISLES block near the end of this stylesheet. */
+html[data-theme="skyisles"] {
+  --bg: #8fd0ff;
+  --panel: #fbfdf5;
+  --panel-2: #eef6fb;
+  --border: #c3d6e3;
+  --border-strong: #2d6a9f;
+  --accent: #3f9a26;
+  --accent-2: #2d6a9f;
+  --accent-soft: rgba(63,154,38,0.14);
+  --accent-2-soft: rgba(45,106,159,0.12);
+  --text: #173247;
+  --text-dim: #4b6a82;
+  --text-faint: #7d97ab;
+  --good: #2e8f2a;
+  --good-soft: rgba(46,143,42,0.13);
+  --bad: #d23a2e;
+  --bad-soft: rgba(210,58,46,0.12);
+  --neutral: #1f86c4;
+  --neutral-soft: rgba(31,134,196,0.12);
+  --gold: #c98a0b;
+  --radius-s: 0px;
+  --radius-m: 0px;
+  --radius-l: 0px;
+  --shadow-card: 4px 4px 0 rgba(23,50,71,0.28);
+  --ease: steps(4, end);
+  /* Pixel units: every outline, notch and hard shadow is a multiple of 2px
+     or 4px so the whole theme sits on the same chunky grid. */
+  --px: 2px;
+  --ink: #173247;
+  --grass: #5cb83a;
+  --grass-dark: #3f8a24;
+  --dirt: #8a5a33;
+  --dirt-dark: #6e4526;
+  --stone: #9aa3a8;
+  --sky-deep: #4f9fe6;
+
+  /* The 9 identities as wool colors - the team colors a Bedwars island
+     actually flies, bold and flat for the pixel look. */
+  --roster-milo: #3ab3da;
+  --roster-potat: #8932b8;
+  --roster-aballs: #f9801d;
+  --roster-zoiv: #e45ab4;
+  --roster-max: #5e9c16;
+  --roster-sqoz: #3c44aa;
+  --roster-kermit: #80c71f;
+  --roster-ssent: #b02e26;
+  --roster-key: #f2c21a;
+
+  /* Rank colors in real Minecraft chat hues, darkened enough to read on
+     the pale panels. */
+  --rank-admin: #c8261b;
+  --rank-mod: #2e8f2a;
+  --rank-youtube: #c8261b;
+  --rank-mvpplusplus: #c98a0b;
+  --rank-mvp: #1a8fb0;
+  --rank-mvpplus: #1a8fb0;
+  --rank-vip: #3f9a26;
+  --rank-vipplus: #3f9a26;
 }
 
 * { box-sizing: border-box; }
@@ -2092,6 +2159,10 @@ li[data-theme-value="ledger"] .theme-swatch i { left: 19px; top: 11px; width: 9p
 /* Deep Current: dark water fading down with a rising bubble */
 li[data-theme-value="deepcurrent"] .theme-swatch { background: linear-gradient(180deg, #0c4a5e, #041824 80%); }
 li[data-theme-value="deepcurrent"] .theme-swatch b { left: -4px; right: -4px; top: 6px; height: 6px; background: radial-gradient(ellipse 6px 3px at 25% 0, transparent 90%, rgba(53,230,196,0.5) 100%) 0 0 / 12px 6px repeat-x; opacity: 0.8; }
+li[data-theme-value="skyisles"] .theme-swatch { background: linear-gradient(180deg, #5aa9ef 0 45%, #8fd0ff 45% 70%, #c4e8ff 70%); image-rendering: pixelated; }
+li[data-theme-value="skyisles"] .theme-swatch b { left: 12px; top: 15px; width: 20px; height: 4px; background: #5cb83a; box-shadow: 0 4px 0 #8a5a33, 4px 8px 0 -0px #6e4526, -4px 4px 0 -0px transparent; }
+li[data-theme-value="skyisles"] .theme-swatch b::after { content: ""; position: absolute; left: 4px; top: 8px; width: 12px; height: 4px; background: #6e4526; box-shadow: 4px 4px 0 -0px #5a381e; }
+li[data-theme-value="skyisles"] .theme-swatch i { left: 4px; top: 5px; width: 12px; height: 4px; background: #fff; box-shadow: 4px -3px 0 -0px #fff, 22px 2px 0 -0px rgba(255,255,255,0.85); }
 li[data-theme-value="deepcurrent"] .theme-swatch i { left: 28px; top: 16px; width: 7px; height: 7px; border-radius: 50%; border: 1px solid rgba(160,255,240,0.8); box-shadow: -12px 5px 0 -1.5px rgba(53,230,196,0.6); }
 @media (prefers-reduced-motion: reduce) {
   .theme-dropdown-menu li:hover .theme-swatch { transform: none; }
@@ -2567,6 +2638,7 @@ html:not([data-theme]) .empty-icon-neon { display: block; color: var(--accent); 
 html[data-theme="casefiles"] .empty-icon-casefiles { display: block; color: var(--text-dim); }
 html[data-theme="ledger"] .empty-icon-ledger { display: block; color: var(--gold); }
 html[data-theme="deepcurrent"] .empty-icon-deepcurrent { display: block; color: var(--accent); }
+html[data-theme="skyisles"] .empty-icon-skyisles { display: block; }
 
 /* Neon: a slowly rotating radar sweep, echoing "still scanning, nothing
    found" rather than a static dead icon - the one empty state in this set
@@ -2604,7 +2676,9 @@ html[data-theme="casefiles"] #leaderboardEmptyState .empty-state-text,
 html[data-theme="ledger"] #emptyState .empty-state-text,
 html[data-theme="ledger"] #leaderboardEmptyState .empty-state-text,
 html[data-theme="deepcurrent"] #emptyState .empty-state-text,
-html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text {
+html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text,
+html[data-theme="skyisles"] #emptyState .empty-state-text,
+html[data-theme="skyisles"] #leaderboardEmptyState .empty-state-text {
   font-size: 0;
 }
 html[data-theme="casefiles"] #emptyState .empty-state-text::before,
@@ -2612,7 +2686,9 @@ html[data-theme="casefiles"] #leaderboardEmptyState .empty-state-text::before,
 html[data-theme="ledger"] #emptyState .empty-state-text::before,
 html[data-theme="ledger"] #leaderboardEmptyState .empty-state-text::before,
 html[data-theme="deepcurrent"] #emptyState .empty-state-text::before,
-html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text::before {
+html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text::before,
+html[data-theme="skyisles"] #emptyState .empty-state-text::before,
+html[data-theme="skyisles"] #leaderboardEmptyState .empty-state-text::before {
   font-size: 16px;
 }
 html[data-theme="casefiles"] #emptyState .empty-state-text::before { content: "No exhibits on file match this search."; }
@@ -2621,6 +2697,8 @@ html[data-theme="deepcurrent"] #emptyState .empty-state-text::before { content: 
 html[data-theme="casefiles"] #leaderboardEmptyState .empty-state-text::before { content: "No victims on file match these filters."; }
 html[data-theme="ledger"] #leaderboardEmptyState .empty-state-text::before { content: "No matching victims recorded in this ledger."; }
 html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text::before { content: "No catches match these filters."; }
+html[data-theme="skyisles"] #emptyState .empty-state-text::before { content: "Nothing but empty sky out here. Try another search."; }
+html[data-theme="skyisles"] #leaderboardEmptyState .empty-state-text::before { content: "No islands conquered that match these filters."; }
 
 .pagination {
   max-width: 1200px;
@@ -7808,6 +7886,1799 @@ html[data-theme="deepcurrent"] .sweat-card.live-new { animation: cardIn 0.4s var
 @media (prefers-reduced-motion: reduce) {
   .sweat-card.live-new, .sweat-row.live-new { animation: none !important; }
 }
+/* @@SKYISLES@@ */
+/* Generated pixel sprites (see icons.py in the theme notes). */
+html[data-theme="skyisles"] {
+  --px-sword: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M13 0h3v1H13zM12 1h1v1H12zM15 1h1v1H15zM11 2h1v1H11zM15 2h1v1H15zM10 3h1v1H10zM14 3h1v1H14zM9 4h1v1H9zM13 4h1v1H13zM8 5h1v1H8zM12 5h1v1H12zM2 6h2v1H2zM7 6h1v1H7zM11 6h1v1H11zM2 7h1v1H2zM4 7h1v1H4zM6 7h1v1H6zM10 7h1v1H10zM3 8h1v1H3zM5 8h1v1H5zM9 8h1v1H9zM4 9h1v1H4zM8 9h1v1H8zM5 10h1v1H5zM8 10h1v1H8zM4 11h1v1H4zM6 11h2v1H6zM9 11h1v1H9zM3 12h1v1H3zM6 12h1v1H6zM8 12h1v1H8zM10 12h1v1H10zM1 13h2v1H1zM5 13h1v1H5zM9 13h2v1H9zM0 14h1v1H0zM4 14h1v1H4zM0 15h4v1H0z'/%3E%3Cpath fill='%23ffffff' d='M13 1h1v1H13zM12 2h1v1H12zM11 3h1v1H11zM10 4h1v1H10zM9 5h1v1H9zM8 6h1v1H8zM7 7h1v1H7z'/%3E%3Cpath fill='%236ff2ea' d='M14 1h1v1H14zM13 2h2v1H13zM12 3h2v1H12zM11 4h2v1H11zM10 5h2v1H10zM9 6h2v1H9zM8 7h2v1H8zM6 8h3v1H6zM6 9h2v1H6z'/%3E%3Cpath fill='%2311807b' d='M3 7h1v1H3zM4 8h1v1H4zM5 9h1v1H5zM6 10h2v1H6zM8 11h1v1H8zM9 12h1v1H9z'/%3E%3Cpath fill='%237a4a22' d='M5 11h1v1H5zM4 12h2v1H4zM3 13h2v1H3zM3 14h1v1H3z'/%3E%3Cpath fill='%23ffd84a' d='M1 14h2v1H1z'/%3E%3C/svg%3E");
+  --px-compass: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M5 0h6v1H5zM3 1h2v1H3zM11 1h2v1H11zM2 2h1v1H2zM13 2h1v1H13zM1 3h1v1H1zM14 3h1v1H14zM1 4h1v1H1zM14 4h1v1H14zM0 5h1v1H0zM15 5h1v1H15zM0 6h1v1H0zM15 6h1v1H15zM0 7h1v1H0zM7 7h2v1H7zM15 7h1v1H15zM0 8h1v1H0zM7 8h2v1H7zM15 8h1v1H15zM0 9h1v1H0zM15 9h1v1H15zM0 10h1v1H0zM15 10h1v1H15zM1 11h1v1H1zM14 11h1v1H14zM1 12h1v1H1zM14 12h1v1H14zM2 13h1v1H2zM13 13h1v1H13zM3 14h2v1H3zM11 14h2v1H11zM5 15h6v1H5z'/%3E%3Cpath fill='%23c6c6c6' d='M5 1h6v1H5zM3 2h2v1H3zM11 2h2v1H11zM2 3h1v1H2zM13 3h1v1H13zM2 4h1v1H2zM13 4h1v1H13zM1 5h1v1H1zM14 5h1v1H14zM1 6h1v1H1zM14 6h1v1H14zM1 7h1v1H1zM14 7h1v1H14zM1 8h1v1H1zM14 8h1v1H14zM1 9h1v1H1zM14 9h1v1H14zM1 10h1v1H1zM14 10h1v1H14zM2 11h1v1H2zM13 11h1v1H13zM2 12h1v1H2zM13 12h1v1H13zM3 13h2v1H3zM11 13h2v1H11zM5 14h6v1H5z'/%3E%3Cpath fill='%23f3e9c6' d='M5 2h6v1H5zM3 3h10v1H3zM3 4h7v1H3zM11 4h2v1H11zM2 5h7v1H2zM11 5h3v1H11zM2 6h6v1H2zM10 6h4v1H10zM2 7h5v1H2zM9 7h4v1H9zM2 8h5v1H2zM9 8h4v1H9zM2 9h4v1H2zM8 9h4v1H8zM2 10h3v1H2zM7 10h4v1H7zM3 11h1v1H3zM3 12h1v1H3z'/%3E%3Cpath fill='%23e8423a' d='M10 4h1v1H10zM9 5h2v1H9zM8 6h2v1H8z'/%3E%3Cpath fill='%23c9b98a' d='M13 7h1v1H13zM13 8h1v1H13zM12 9h2v1H12zM11 10h3v1H11zM4 11h1v1H4zM6 11h7v1H6zM4 12h9v1H4zM5 13h6v1H5z'/%3E%3Cpath fill='%236f777c' d='M6 9h2v1H6zM5 10h2v1H5zM5 11h1v1H5z'/%3E%3C/svg%3E");
+  --px-nametag: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 11' shape-rendering='crispEdges'%3E%3Cpath fill='%237a4a22' d='M0 0h1v1H0zM1 1h1v1H1zM2 2h1v1H2z'/%3E%3Cpath fill='%231e2a33' d='M3 2h12v1H3zM2 3h1v1H2zM15 3h1v1H15zM1 4h1v1H1zM4 4h2v1H4zM15 4h1v1H15zM0 5h1v1H0zM3 5h1v1H3zM6 5h1v1H6zM15 5h1v1H15zM0 6h1v1H0zM3 6h1v1H3zM6 6h1v1H6zM15 6h1v1H15zM1 7h1v1H1zM4 7h2v1H4zM15 7h1v1H15zM2 8h1v1H2zM15 8h1v1H15zM3 9h1v1H3zM15 9h1v1H15zM3 10h12v1H3z'/%3E%3Cpath fill='%23f3e9c6' d='M3 3h12v1H3zM2 4h2v1H2zM6 4h9v1H6zM1 5h2v1H1zM13 5h1v1H13zM1 6h2v1H1zM7 6h7v1H7zM2 7h2v1H2zM6 7h1v1H6zM11 7h2v1H11zM3 8h10v1H3z'/%3E%3Cpath fill='%238b8b8b' d='M4 5h2v1H4zM4 6h2v1H4z'/%3E%3Cpath fill='%233b6fd6' d='M7 5h6v1H7zM7 7h4v1H7z'/%3E%3Cpath fill='%23c9b98a' d='M14 5h1v1H14zM14 6h1v1H14zM13 7h2v1H13zM13 8h2v1H13zM4 9h11v1H4z'/%3E%3C/svg%3E");
+  --px-book: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 13' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M2 0h12v1H2zM1 1h1v1H1zM14 1h1v1H14zM1 2h1v1H1zM14 2h1v1H14zM1 3h1v1H1zM14 3h1v1H14zM1 4h1v1H1zM14 4h1v1H14zM1 5h1v1H1zM14 5h1v1H14zM1 6h1v1H1zM14 6h1v1H14zM1 7h1v1H1zM14 7h1v1H14zM1 8h1v1H1zM14 8h1v1H14zM1 9h1v1H1zM14 9h1v1H14zM1 10h1v1H1zM3 10h12v1H3zM1 11h1v1H1zM14 11h1v1H14zM1 12h14v1H1z'/%3E%3Cpath fill='%236b2e10' d='M2 1h1v1H2zM2 2h1v1H2zM2 3h1v1H2zM2 4h1v1H2zM2 5h1v1H2zM2 6h1v1H2zM2 7h1v1H2zM2 8h1v1H2zM2 9h1v1H2zM2 10h1v1H2zM2 11h1v1H2z'/%3E%3Cpath fill='%23a5522a' d='M3 1h11v1H3zM3 2h11v1H3zM3 3h3v1H3zM10 3h4v1H10zM3 4h3v1H3zM10 4h4v1H10zM3 5h3v1H3zM10 5h4v1H10zM3 6h11v1H3zM3 7h11v1H3zM3 8h11v1H3zM3 9h11v1H3z'/%3E%3Cpath fill='%23ffd84a' d='M6 3h4v1H6zM6 4h1v1H6zM9 4h1v1H9zM6 5h4v1H6z'/%3E%3Cpath fill='%23a3231c' d='M7 4h2v1H7z'/%3E%3Cpath fill='%23f3e9c6' d='M3 11h9v1H3z'/%3E%3Cpath fill='%23c9b98a' d='M12 11h2v1H12z'/%3E%3C/svg%3E");
+  --px-bed: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M0 0h3v1H0zM0 1h1v1H0zM2 1h1v1H2zM0 2h1v1H0zM2 2h14v1H2zM0 3h1v1H0zM2 3h1v1H2zM7 3h1v1H7zM15 3h1v1H15zM0 4h1v1H0zM2 4h1v1H2zM7 4h1v1H7zM15 4h1v1H15zM0 5h1v1H0zM2 5h14v1H2zM0 6h1v1H0zM2 6h1v1H2zM15 6h1v1H15zM0 7h1v1H0zM2 7h12v1H2zM15 7h1v1H15zM0 8h3v1H0zM13 8h3v1H13z'/%3E%3Cpath fill='%237a4a22' d='M1 1h1v1H1zM1 2h1v1H1zM1 3h1v1H1zM1 4h1v1H1zM1 5h1v1H1zM1 6h1v1H1zM14 6h1v1H14zM1 7h1v1H1zM14 7h1v1H14z'/%3E%3Cpath fill='%23ffffff' d='M3 3h4v1H3zM3 4h3v1H3z'/%3E%3Cpath fill='%23e8423a' d='M8 3h7v1H8zM8 4h6v1H8z'/%3E%3Cpath fill='%23d9eeff' d='M6 4h1v1H6z'/%3E%3Cpath fill='%23a3231c' d='M14 4h1v1H14z'/%3E%3Cpath fill='%23b98a4e' d='M3 6h11v1H3z'/%3E%3C/svg%3E");
+  --px-diamond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M2 0h6v1H2zM1 1h1v1H1zM8 1h1v1H8zM0 2h1v1H0zM9 2h1v1H9zM0 3h1v1H0zM9 3h1v1H9zM1 4h1v1H1zM8 4h1v1H8zM2 5h1v1H2zM7 5h1v1H7zM3 6h1v1H3zM6 6h1v1H6zM4 7h2v1H4z'/%3E%3Cpath fill='%236ff2ea' d='M2 1h1v1H2zM5 1h1v1H5zM1 2h1v1H1zM3 2h4v1H3zM1 3h6v1H1zM2 4h5v1H2zM3 5h3v1H3zM4 6h1v1H4z'/%3E%3Cpath fill='%23ffffff' d='M3 1h2v1H3zM2 2h1v1H2z'/%3E%3Cpath fill='%2327c2bb' d='M6 1h2v1H6zM7 2h1v1H7zM7 3h1v1H7z'/%3E%3Cpath fill='%2311807b' d='M8 2h1v1H8zM8 3h1v1H8zM7 4h1v1H7zM6 5h1v1H6zM5 6h1v1H5z'/%3E%3C/svg%3E");
+  --px-emerald: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M2 0h4v1H2zM1 1h1v1H1zM6 1h1v1H6zM0 2h1v1H0zM7 2h1v1H7zM0 3h1v1H0zM7 3h1v1H7zM0 4h1v1H0zM7 4h1v1H7zM0 5h1v1H0zM7 5h1v1H7zM1 6h1v1H1zM6 6h1v1H6zM2 7h4v1H2z'/%3E%3Cpath fill='%238dffb0' d='M2 1h1v1H2zM4 1h1v1H4zM1 2h1v1H1zM3 2h1v1H3zM1 3h2v1H1zM1 4h1v1H1z'/%3E%3Cpath fill='%23ffffff' d='M3 1h1v1H3zM2 2h1v1H2z'/%3E%3Cpath fill='%231fcf62' d='M5 1h1v1H5zM4 2h2v1H4zM3 3h3v1H3zM2 4h4v1H2zM1 5h4v1H1zM2 6h2v1H2z'/%3E%3Cpath fill='%230b7a3a' d='M6 2h1v1H6zM6 3h1v1H6zM6 4h1v1H6zM5 5h2v1H5zM4 6h2v1H4z'/%3E%3C/svg%3E");
+  --px-gold: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 7' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M4 0h7v1H4zM3 1h1v1H3zM10 1h1v1H10zM2 2h1v1H2zM10 2h1v1H10zM1 3h7v1H1zM10 3h1v1H10zM1 4h1v1H1zM8 4h1v1H8zM10 4h1v1H10zM1 5h1v1H1zM10 5h1v1H10zM1 6h10v1H1z'/%3E%3Cpath fill='%23fff6c2' d='M4 1h2v1H4zM3 2h1v1H3zM2 4h2v1H2z'/%3E%3Cpath fill='%23ffd84a' d='M6 1h3v1H6zM4 2h4v1H4zM4 4h3v1H4zM2 5h4v1H2z'/%3E%3Cpath fill='%23e0a92e' d='M9 1h1v1H9zM8 2h1v1H8zM8 3h1v1H8zM7 4h1v1H7zM6 5h1v1H6z'/%3E%3Cpath fill='%23a86c00' d='M9 2h1v1H9zM9 3h1v1H9zM9 4h1v1H9zM7 5h3v1H7z'/%3E%3C/svg%3E");
+  --px-iron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 7' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M4 0h7v1H4zM3 1h1v1H3zM10 1h1v1H10zM2 2h1v1H2zM10 2h1v1H10zM1 3h7v1H1zM10 3h1v1H10zM1 4h1v1H1zM8 4h1v1H8zM10 4h1v1H10zM1 5h1v1H1zM10 5h1v1H10zM1 6h10v1H1z'/%3E%3Cpath fill='%23ffffff' d='M4 1h2v1H4zM3 2h1v1H3zM2 4h2v1H2z'/%3E%3Cpath fill='%23c6c6c6' d='M6 1h3v1H6zM4 2h4v1H4zM4 4h3v1H4zM2 5h4v1H2z'/%3E%3Cpath fill='%238b8b8b' d='M9 1h1v1H9zM8 2h1v1H8zM8 3h1v1H8zM7 4h1v1H7zM6 5h1v1H6z'/%3E%3Cpath fill='%236f777c' d='M9 2h1v1H9zM9 3h1v1H9zM9 4h1v1H9zM7 5h3v1H7z'/%3E%3C/svg%3E");
+  --px-tnt: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M0 0h16v1H0zM0 1h1v1H0zM15 1h1v1H15zM0 2h1v1H0zM15 2h1v1H15zM0 3h1v1H0zM15 3h1v1H15zM0 4h1v1H0zM15 4h1v1H15zM0 5h1v1H0zM2 5h3v1H2zM6 5h1v1H6zM9 5h1v1H9zM11 5h3v1H11zM15 5h1v1H15zM0 6h1v1H0zM3 6h1v1H3zM6 6h2v1H6zM9 6h1v1H9zM12 6h1v1H12zM15 6h1v1H15zM0 7h1v1H0zM3 7h1v1H3zM6 7h1v1H6zM8 7h2v1H8zM12 7h1v1H12zM15 7h1v1H15zM0 8h1v1H0zM3 8h1v1H3zM6 8h1v1H6zM9 8h1v1H9zM12 8h1v1H12zM15 8h1v1H15zM0 9h1v1H0zM15 9h1v1H15zM0 10h1v1H0zM15 10h1v1H15zM0 11h1v1H0zM15 11h1v1H15zM0 12h1v1H0zM15 12h1v1H15zM0 13h1v1H0zM15 13h1v1H15zM0 14h1v1H0zM15 14h1v1H15zM0 15h16v1H0z'/%3E%3Cpath fill='%23e8423a' d='M1 1h2v1H1zM4 1h2v1H4zM7 1h2v1H7zM10 1h2v1H10zM13 1h2v1H13zM1 2h2v1H1zM4 2h2v1H4zM7 2h2v1H7zM10 2h2v1H10zM13 2h2v1H13zM1 3h2v1H1zM4 3h2v1H4zM7 3h2v1H7zM10 3h2v1H10zM13 3h2v1H13zM1 10h2v1H1zM4 10h2v1H4zM7 10h2v1H7zM10 10h2v1H10zM13 10h2v1H13zM1 11h2v1H1zM4 11h2v1H4zM7 11h2v1H7zM10 11h2v1H10zM13 11h2v1H13zM1 12h2v1H1zM4 12h2v1H4zM7 12h2v1H7zM10 12h2v1H10zM13 12h2v1H13zM1 13h2v1H1zM4 13h2v1H4zM7 13h2v1H7zM10 13h2v1H10zM13 13h2v1H13z'/%3E%3Cpath fill='%23a3231c' d='M3 1h1v1H3zM6 1h1v1H6zM9 1h1v1H9zM12 1h1v1H12zM3 2h1v1H3zM6 2h1v1H6zM9 2h1v1H9zM12 2h1v1H12zM3 3h1v1H3zM6 3h1v1H6zM9 3h1v1H9zM12 3h1v1H12zM3 10h1v1H3zM6 10h1v1H6zM9 10h1v1H9zM12 10h1v1H12zM3 11h1v1H3zM6 11h1v1H6zM9 11h1v1H9zM12 11h1v1H12zM3 12h1v1H3zM6 12h1v1H6zM9 12h1v1H9zM12 12h1v1H12zM3 13h1v1H3zM6 13h1v1H6zM9 13h1v1H9zM12 13h1v1H12zM1 14h14v1H1z'/%3E%3Cpath fill='%23ffffff' d='M1 4h14v1H1zM1 5h1v1H1zM5 5h1v1H5zM7 5h2v1H7zM10 5h1v1H10zM14 5h1v1H14zM1 6h2v1H1zM4 6h2v1H4zM8 6h1v1H8zM10 6h2v1H10zM13 6h2v1H13zM1 7h2v1H1zM4 7h2v1H4zM7 7h1v1H7zM10 7h2v1H10zM13 7h2v1H13zM1 8h2v1H1zM4 8h2v1H4zM7 8h2v1H7zM10 8h2v1H10zM13 8h2v1H13zM1 9h14v1H1z'/%3E%3C/svg%3E");
+  --px-heart: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 8' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M1 0h3v1H1zM5 0h3v1H5zM0 1h1v1H0zM4 1h1v1H4zM8 1h1v1H8zM0 2h1v1H0zM8 2h1v1H8zM0 3h1v1H0zM8 3h1v1H8zM1 4h1v1H1zM7 4h1v1H7zM2 5h1v1H2zM6 5h1v1H6zM3 6h1v1H3zM5 6h1v1H5zM4 7h1v1H4z'/%3E%3Cpath fill='%23ffffff' d='M1 1h1v1H1zM1 2h1v1H1z'/%3E%3Cpath fill='%23e8423a' d='M2 1h2v1H2zM5 1h3v1H5zM2 2h6v1H2zM1 3h6v1H1zM2 4h4v1H2zM3 5h2v1H3z'/%3E%3Cpath fill='%23a3231c' d='M7 3h1v1H7zM6 4h1v1H6zM5 5h1v1H5zM4 6h1v1H4z'/%3E%3C/svg%3E");
+  --px-xp: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M2 0h4v1H2zM1 1h1v1H1zM6 1h1v1H6zM0 2h1v1H0zM7 2h1v1H7zM0 3h1v1H0zM7 3h1v1H7zM0 4h1v1H0zM7 4h1v1H7zM0 5h1v1H0zM7 5h1v1H7zM1 6h1v1H1zM6 6h1v1H6zM2 7h4v1H2z'/%3E%3Cpath fill='%23d4ff6a' d='M2 1h3v1H2zM1 2h1v1H1zM3 2h3v1H3zM1 3h5v1H1zM1 4h4v1H1zM2 5h2v1H2z'/%3E%3Cpath fill='%235ec220' d='M5 1h1v1H5zM6 2h1v1H6zM6 3h1v1H6zM5 4h2v1H5zM1 5h1v1H1zM4 5h3v1H4zM2 6h4v1H2z'/%3E%3Cpath fill='%23ffffff' d='M2 2h1v1H2z'/%3E%3C/svg%3E");
+  --px-crown: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M1 0h1v1H1zM5 0h2v1H5zM10 0h1v1H10zM0 1h1v1H0zM2 1h1v1H2zM4 1h1v1H4zM7 1h1v1H7zM9 1h1v1H9zM11 1h1v1H11zM0 2h1v1H0zM3 2h1v1H3zM8 2h1v1H8zM11 2h1v1H11zM0 3h1v1H0zM11 3h1v1H11zM0 4h1v1H0zM11 4h1v1H11zM0 5h1v1H0zM11 5h1v1H11zM0 6h1v1H0zM11 6h1v1H11zM0 7h12v1H0z'/%3E%3Cpath fill='%23ffd84a' d='M1 1h1v1H1zM5 1h2v1H5zM10 1h1v1H10zM1 2h2v1H1zM4 2h4v1H4zM9 2h2v1H9zM1 3h10v1H1zM1 4h1v1H1zM3 4h3v1H3zM7 4h2v1H7zM10 4h1v1H10zM1 5h10v1H1z'/%3E%3Cpath fill='%23e8423a' d='M2 4h1v1H2zM9 4h1v1H9z'/%3E%3Cpath fill='%236ff2ea' d='M6 4h1v1H6z'/%3E%3Cpath fill='%23a86c00' d='M1 6h10v1H1z'/%3E%3C/svg%3E");
+  --px-pearl: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M2 0h4v1H2zM1 1h1v1H1zM6 1h1v1H6zM0 2h1v1H0zM7 2h1v1H7zM0 3h1v1H0zM7 3h1v1H7zM0 4h1v1H0zM7 4h1v1H7zM0 5h1v1H0zM7 5h1v1H7zM1 6h1v1H1zM6 6h1v1H6zM2 7h4v1H2z'/%3E%3Cpath fill='%23145a52' d='M2 1h1v1H2zM5 1h1v1H5zM1 2h1v1H1zM6 2h1v1H6zM1 5h1v1H1zM6 5h1v1H6zM2 6h1v1H2zM5 6h1v1H5z'/%3E%3Cpath fill='%232fb39c' d='M3 1h2v1H3zM2 2h1v1H2zM5 2h1v1H5zM1 3h1v1H1zM6 3h1v1H6zM1 4h1v1H1zM6 4h1v1H6zM2 5h1v1H2zM5 5h1v1H5zM3 6h2v1H3z'/%3E%3Cpath fill='%23b5fff0' d='M3 2h2v1H3zM2 3h1v1H2zM4 3h2v1H4zM2 4h4v1H2zM3 5h2v1H3z'/%3E%3Cpath fill='%23ffffff' d='M3 3h1v1H3z'/%3E%3C/svg%3E");
+  --px-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M4 0h1v1H4zM3 1h1v1H3zM5 1h1v1H5zM3 2h1v1H3zM5 2h1v1H5zM0 3h3v1H0zM6 3h3v1H6zM0 4h1v1H0zM8 4h1v1H8zM1 5h1v1H1zM7 5h1v1H7zM2 6h1v1H2zM6 6h1v1H6zM1 7h1v1H1zM4 7h1v1H4zM7 7h1v1H7zM1 8h2v1H1zM6 8h2v1H6z'/%3E%3Cpath fill='%23ffd84a' d='M4 1h1v1H4zM4 2h1v1H4zM3 3h3v1H3zM1 4h3v1H1zM5 4h3v1H5zM2 5h5v1H2zM3 6h3v1H3zM2 7h2v1H2zM5 7h2v1H5z'/%3E%3Cpath fill='%23fff6c2' d='M4 4h1v1H4z'/%3E%3C/svg%3E");
+  --px-grass: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath fill='%238fdc5a' d='M0 0h3v1H0zM5 0h3v1H5zM9 0h3v1H9zM14 0h1v1H14zM2 1h1v1H2zM8 1h1v1H8zM13 1h1v1H13z'/%3E%3Cpath fill='%235cb83a' d='M3 0h2v1H3zM8 0h1v1H8zM12 0h2v1H12zM15 0h1v1H15zM0 1h2v1H0zM3 1h5v1H3zM9 1h4v1H9zM14 1h2v1H14zM0 2h4v1H0zM5 2h6v1H5zM12 2h4v1H12zM1 3h1v1H1zM3 3h1v1H3zM6 3h1v1H6zM8 3h1v1H8zM10 3h1v1H10zM12 3h1v1H12zM14 3h1v1H14z'/%3E%3Cpath fill='%233f8a24' d='M4 2h1v1H4zM11 2h1v1H11zM0 3h1v1H0zM2 3h1v1H2zM4 3h1v1H4zM7 3h1v1H7zM9 3h1v1H9zM13 3h1v1H13zM15 3h1v1H15zM1 4h1v1H1zM3 4h1v1H3zM6 4h1v1H6zM10 4h1v1H10zM14 4h1v1H14z'/%3E%3Cpath fill='%238a5a33' d='M5 3h1v1H5zM11 3h1v1H11zM0 4h1v1H0zM2 4h1v1H2zM4 4h2v1H4zM7 4h3v1H7zM11 4h3v1H11zM15 4h1v1H15zM0 5h5v1H0zM6 5h6v1H6zM13 5h3v1H13zM0 6h2v1H0zM3 6h6v1H3zM10 6h6v1H10zM0 7h6v1H0zM7 7h6v1H7zM14 7h2v1H14zM0 8h1v1H0zM2 8h8v1H2zM11 8h5v1H11zM0 9h5v1H0zM6 9h2v1H6zM9 9h7v1H9zM0 10h2v1H0zM3 10h10v1H3zM14 10h2v1H14zM0 11h5v1H0zM6 11h4v1H6zM11 11h5v1H11zM0 12h8v1H0zM9 12h2v1H9zM12 12h4v1H12zM0 13h1v1H0zM2 13h2v1H2zM5 13h9v1H5zM15 13h1v1H15zM0 14h8v1H0zM9 14h7v1H9zM0 15h3v1H0zM4 15h8v1H4zM13 15h3v1H13z'/%3E%3Cpath fill='%236e4526' d='M5 5h1v1H5zM9 6h1v1H9zM13 7h1v1H13zM1 8h1v1H1zM8 9h1v1H8zM5 11h1v1H5zM11 12h1v1H11zM1 13h1v1H1zM8 14h1v1H8z'/%3E%3Cpath fill='%235a381e' d='M12 5h1v1H12zM2 6h1v1H2zM6 7h1v1H6zM10 8h1v1H10zM5 9h1v1H5zM2 10h1v1H2zM13 10h1v1H13zM10 11h1v1H10zM8 12h1v1H8zM4 13h1v1H4zM14 13h1v1H14zM3 15h1v1H3zM12 15h1v1H12z'/%3E%3C/svg%3E");
+  --px-grasstop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 6' shape-rendering='crispEdges'%3E%3Cpath fill='%238fdc5a' d='M0 0h3v1H0zM5 0h3v1H5zM9 0h3v1H9zM14 0h1v1H14zM2 1h1v1H2zM8 1h1v1H8zM13 1h1v1H13z'/%3E%3Cpath fill='%235cb83a' d='M3 0h2v1H3zM8 0h1v1H8zM12 0h2v1H12zM15 0h1v1H15zM0 1h2v1H0zM3 1h5v1H3zM9 1h4v1H9zM14 1h2v1H14zM0 2h4v1H0zM5 2h6v1H5zM12 2h4v1H12zM1 3h1v1H1zM3 3h1v1H3zM6 3h1v1H6zM8 3h1v1H8zM10 3h1v1H10zM12 3h1v1H12zM14 3h1v1H14z'/%3E%3Cpath fill='%233f8a24' d='M4 2h1v1H4zM11 2h1v1H11zM0 3h1v1H0zM2 3h1v1H2zM4 3h2v1H4zM7 3h1v1H7zM9 3h1v1H9zM11 3h1v1H11zM13 3h1v1H13zM15 3h1v1H15zM0 4h1v1H0zM2 4h1v1H2zM4 4h2v1H4zM7 4h1v1H7zM9 4h2v1H9zM12 4h1v1H12zM15 4h1v1H15zM2 5h1v1H2zM6 5h1v1H6zM12 5h1v1H12z'/%3E%3C/svg%3E");
+  --px-dirt: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%238a5a33' d='M0 0h3v1H0zM4 0h4v1H4zM0 1h6v1H0zM0 2h1v1H0zM2 2h6v1H2zM0 3h4v1H0zM5 3h3v1H5zM0 4h2v1H0zM3 4h4v1H3zM1 5h7v1H1zM0 6h5v1H0zM6 6h2v1H6zM0 7h2v1H0zM3 7h5v1H3z'/%3E%3Cpath fill='%236e4526' d='M3 0h1v1H3zM7 1h1v1H7zM1 2h1v1H1zM2 4h1v1H2zM7 4h1v1H7zM5 6h1v1H5z'/%3E%3Cpath fill='%235a381e' d='M6 1h1v1H6zM4 3h1v1H4zM0 5h1v1H0zM2 7h1v1H2z'/%3E%3C/svg%3E");
+  --px-stone: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%239aa3a8' d='M0 0h2v1H0zM3 0h5v1H3zM0 1h5v1H0zM6 1h2v1H6zM1 2h2v1H1zM4 2h4v1H4zM0 3h7v1H0zM0 4h2v1H0zM3 4h2v1H3zM6 4h2v1H6zM0 5h8v1H0zM0 6h1v1H0zM2 6h3v1H2zM6 6h2v1H6zM0 7h3v1H0zM4 7h4v1H4z'/%3E%3Cpath fill='%236f777c' d='M2 0h1v1H2zM5 1h1v1H5zM0 2h1v1H0zM7 3h1v1H7zM2 4h1v1H2zM1 6h1v1H1zM5 6h1v1H5z'/%3E%3Cpath fill='%23c6c6c6' d='M3 2h1v1H3zM5 4h1v1H5zM3 7h1v1H3z'/%3E%3C/svg%3E");
+  --px-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 6' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffffff' d='M6 0h1v1H6zM5 1h2v1H5zM0 2h1v1H0zM4 2h2v1H4zM0 3h2v1H0zM3 3h2v1H3zM1 4h3v1H1zM2 5h1v1H2z'/%3E%3C/svg%3E");
+  --px-checkk: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 6' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M6 0h1v1H6zM5 1h2v1H5zM0 2h1v1H0zM4 2h2v1H4zM0 3h2v1H0zM3 3h2v1H3zM1 4h3v1H1zM2 5h1v1H2z'/%3E%3C/svg%3E");
+  --px-cloud: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 6' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffffff' d='M8 0h5v1H8zM4 1h11v1H4zM17 1h3v1H17zM2 2h21v1H2zM1 3h23v1H1zM0 4h24v1H0z'/%3E%3Cpath fill='%23d9eeff' d='M0 5h24v1H0z'/%3E%3C/svg%3E");
+  --px-cloud2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 5' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffffff' d='M5 0h4v1H5zM2 1h9v1H2zM12 1h2v1H12zM1 2h14v1H1zM0 3h16v1H0z'/%3E%3Cpath fill='%23d9eeff' d='M0 4h16v1H0z'/%3E%3C/svg%3E");
+  --px-pickaxe: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 13' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M3 0h9v1H3zM2 1h1v1H2zM12 1h1v1H12zM1 2h1v1H1zM4 2h7v1H4zM13 2h1v1H13zM1 3h1v1H1zM3 3h1v1H3zM8 3h1v1H8zM10 3h1v1H10zM12 3h1v1H12zM14 3h1v1H14zM1 4h2v1H1zM7 4h1v1H7zM9 4h1v1H9zM13 4h2v1H13zM6 5h1v1H6zM8 5h1v1H8zM5 6h1v1H5zM7 6h1v1H7zM4 7h1v1H4zM6 7h1v1H6zM3 8h1v1H3zM5 8h1v1H5zM2 9h1v1H2zM4 9h1v1H4zM1 10h1v1H1zM3 10h1v1H3zM0 11h1v1H0zM2 11h1v1H2zM0 12h2v1H0z'/%3E%3Cpath fill='%236ff2ea' d='M3 1h1v1H3zM7 1h3v1H7zM2 2h1v1H2zM11 2h1v1H11z'/%3E%3Cpath fill='%23ffffff' d='M4 1h3v1H4z'/%3E%3Cpath fill='%2327c2bb' d='M10 1h2v1H10zM3 2h1v1H3zM12 2h1v1H12zM2 3h1v1H2zM13 3h1v1H13z'/%3E%3Cpath fill='%237a4a22' d='M9 3h1v1H9zM8 4h1v1H8zM7 5h1v1H7zM6 6h1v1H6zM5 7h1v1H5zM4 8h1v1H4zM3 9h1v1H3zM2 10h1v1H2zM1 11h1v1H1z'/%3E%3C/svg%3E");
+  --px-sun: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M2 0h8v1H2zM1 1h1v1H1zM10 1h1v1H10zM0 2h1v1H0zM11 2h1v1H11zM0 3h1v1H0zM11 3h1v1H11zM0 4h1v1H0zM11 4h1v1H11zM0 5h1v1H0zM11 5h1v1H11zM0 6h1v1H0zM11 6h1v1H11zM0 7h1v1H0zM11 7h1v1H11zM1 8h1v1H1zM10 8h1v1H10zM2 9h8v1H2z'/%3E%3Cpath fill='%23ffd84a' d='M2 1h2v1H2zM8 1h2v1H8zM1 2h1v1H1zM10 2h1v1H10zM1 3h1v1H1zM10 3h1v1H10zM1 4h1v1H1zM10 4h1v1H10zM1 5h1v1H1zM10 5h1v1H10zM1 6h2v1H1zM9 6h2v1H9zM2 7h8v1H2z'/%3E%3Cpath fill='%23fff6c2' d='M4 1h4v1H4zM2 2h8v1H2zM2 3h8v1H2zM2 4h8v1H2zM2 5h8v1H2zM3 6h6v1H3z'/%3E%3Cpath fill='%23e0a92e' d='M1 7h1v1H1zM10 7h1v1H10zM2 8h8v1H2z'/%3E%3C/svg%3E");
+  --px-fire: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffcf3a' d='M4 0h1v1H4zM3 1h1v1H3zM2 2h2v1H2zM6 2h1v1H6zM1 3h1v1H1zM4 3h1v1H4zM6 3h1v1H6zM1 4h1v1H1zM5 4h1v1H5zM0 5h1v1H0zM0 6h1v1H0z'/%3E%3Cpath fill='%23ff8a1f' d='M4 1h1v1H4zM4 2h1v1H4zM2 3h2v1H2zM7 3h1v1H7zM2 4h1v1H2zM4 4h1v1H4zM6 4h2v1H6zM1 5h1v1H1zM5 5h2v1H5zM1 6h1v1H1zM6 6h1v1H6zM1 7h1v1H1z'/%3E%3Cpath fill='%23e8423a' d='M3 4h1v1H3zM2 5h3v1H2zM7 5h1v1H7zM2 6h4v1H2zM7 6h1v1H7zM2 7h2v1H2zM5 7h2v1H5z'/%3E%3Cpath fill='%23a3231c' d='M4 7h1v1H4z'/%3E%3C/svg%3E");
+  --px-skull: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M1 0h6v1H1zM0 1h1v1H0zM7 1h1v1H7zM0 2h1v1H0zM7 2h1v1H7zM0 3h3v1H0zM5 3h3v1H5zM0 4h3v1H0zM5 4h3v1H5zM0 5h1v1H0zM7 5h1v1H7zM1 6h1v1H1zM3 6h2v1H3zM6 6h1v1H6zM2 7h4v1H2z'/%3E%3Cpath fill='%23ffffff' d='M1 1h6v1H1zM1 2h6v1H1zM3 3h2v1H3zM3 4h2v1H3zM1 5h6v1H1zM2 6h1v1H2zM5 6h1v1H5z'/%3E%3C/svg%3E");
+  --px-wool: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffffff' d='M0 0h8v1H0zM0 1h1v1H0zM2 1h4v1H2zM7 1h1v1H7zM0 2h4v1H0zM5 2h3v1H5zM0 3h2v1H0zM3 3h5v1H3zM0 4h6v1H0zM7 4h1v1H7zM0 5h1v1H0zM2 5h2v1H2zM5 5h3v1H5zM0 6h8v1H0zM0 7h2v1H0zM3 7h3v1H3zM7 7h1v1H7z'/%3E%3Cpath fill='%23d9eeff' d='M1 1h1v1H1zM6 1h1v1H6zM4 2h1v1H4zM2 3h1v1H2zM6 4h1v1H6zM1 5h1v1H1zM4 5h1v1H4zM2 7h1v1H2zM6 7h1v1H6z'/%3E%3C/svg%3E");
+  --px-isle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 18' shape-rendering='crispEdges'%3E%3Cpath fill='%235cb83a' d='M8 0h4v1H8zM7 1h2v1H7zM10 1h3v1H10zM6 2h2v1H6zM9 2h2v1H9zM12 2h2v1H12zM6 3h1v1H6zM8 3h3v1H8zM12 3h2v1H12zM7 4h1v1H7zM9 4h2v1H9zM12 4h1v1H12zM4 7h1v1H4zM6 7h1v1H6zM12 7h2v1H12zM18 7h1v1H18zM21 7h2v1H21zM29 7h1v1H29zM1 8h2v1H1zM4 8h5v1H4zM11 8h1v1H11zM13 8h2v1H13zM17 8h9v1H17zM27 8h1v1H27zM29 8h2v1H29z'/%3E%3Cpath fill='%238fdc5a' d='M9 1h1v1H9zM8 2h1v1H8zM0 7h4v1H0zM5 7h1v1H5zM7 7h5v1H7zM14 7h4v1H14zM19 7h2v1H19zM23 7h6v1H23zM30 7h2v1H30z'/%3E%3Cpath fill='%233f8a24' d='M11 2h1v1H11zM7 3h1v1H7zM11 3h1v1H11zM8 4h1v1H8zM11 4h1v1H11zM0 8h1v1H0zM3 8h1v1H3zM9 8h2v1H9zM12 8h1v1H12zM15 8h2v1H15zM26 8h1v1H26zM28 8h1v1H28zM31 8h1v1H31z'/%3E%3Cpath fill='%237a4a22' d='M9 5h2v1H9zM9 6h2v1H9z'/%3E%3Cpath fill='%236e4526' d='M1 9h1v1H1zM3 9h1v1H3zM16 9h2v1H16zM21 9h1v1H21zM25 9h2v1H25zM30 9h1v1H30zM12 10h1v1H12zM21 10h4v1H21zM27 10h1v1H27zM4 11h1v1H4zM9 11h1v1H9zM12 11h1v1H12zM16 11h1v1H16zM20 11h1v1H20zM26 11h1v1H26zM13 12h1v1H13zM23 12h1v1H23zM9 13h1v1H9zM14 13h1v1H14z'/%3E%3Cpath fill='%238a5a33' d='M2 9h1v1H2zM4 9h12v1H4zM18 9h3v1H18zM22 9h3v1H22zM27 9h3v1H27zM2 10h10v1H2zM13 10h8v1H13zM25 10h2v1H25zM28 10h2v1H28zM5 11h4v1H5zM10 11h2v1H10zM13 11h3v1H13zM17 11h3v1H17zM21 11h5v1H21zM27 11h1v1H27zM5 12h8v1H5zM14 12h9v1H14zM24 12h3v1H24zM7 13h2v1H7zM10 13h4v1H10zM15 13h10v1H15zM9 14h1v1H9zM12 14h2v1H12zM15 14h1v1H15zM17 14h1v1H17zM18 15h2v1H18zM14 16h1v1H14z'/%3E%3Cpath fill='%236f777c' d='M10 14h1v1H10zM22 14h1v1H22zM11 15h1v1H11zM15 15h1v1H15zM20 15h1v1H20zM16 16h1v1H16zM14 17h1v1H14z'/%3E%3Cpath fill='%239aa3a8' d='M11 14h1v1H11zM14 14h1v1H14zM16 14h1v1H16zM18 14h4v1H18zM12 15h3v1H12zM16 15h2v1H16zM13 16h1v1H13zM15 16h1v1H15zM17 16h2v1H17zM15 17h3v1H15z'/%3E%3C/svg%3E");
+  --px-idleisle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 11' shape-rendering='crispEdges'%3E%3Cpath fill='%235cb83a' d='M0 0h1v1H0zM2 0h2v1H2zM9 0h1v1H9zM14 0h2v1H14zM23 0h2v1H23zM1 1h1v1H1zM3 1h1v1H3zM5 1h5v1H5zM11 1h4v1H11zM16 1h1v1H16zM18 1h1v1H18zM20 1h3v1H20zM24 1h2v1H24zM27 1h1v1H27z'/%3E%3Cpath fill='%238fdc5a' d='M1 0h1v1H1zM4 0h5v1H4zM10 0h4v1H10zM16 0h7v1H16zM25 0h3v1H25z'/%3E%3Cpath fill='%233f8a24' d='M0 1h1v1H0zM2 1h1v1H2zM4 1h1v1H4zM10 1h1v1H10zM15 1h1v1H15zM17 1h1v1H17zM19 1h1v1H19zM23 1h1v1H23zM26 1h1v1H26z'/%3E%3Cpath fill='%236e4526' d='M1 2h1v1H1zM10 2h1v1H10zM13 2h1v1H13zM20 2h4v1H20zM7 3h1v1H7zM14 3h2v1H14zM18 3h1v1H18zM21 3h2v1H21zM24 3h2v1H24zM10 4h1v1H10zM15 4h1v1H15zM20 4h1v1H20zM9 5h1v1H9zM11 5h1v1H11zM13 5h1v1H13zM22 5h1v1H22zM6 6h1v1H6zM8 6h1v1H8zM15 6h1v1H15zM17 6h2v1H17zM10 7h1v1H10zM18 7h2v1H18z'/%3E%3Cpath fill='%238a5a33' d='M2 2h8v1H2zM11 2h2v1H11zM14 2h6v1H14zM24 2h3v1H24zM2 3h5v1H2zM8 3h6v1H8zM16 3h2v1H16zM19 3h2v1H19zM23 3h1v1H23zM3 4h7v1H3zM11 4h4v1H11zM16 4h4v1H16zM21 4h4v1H21zM5 5h4v1H5zM10 5h1v1H10zM12 5h1v1H12zM14 5h8v1H14zM7 6h1v1H7zM9 6h6v1H9zM16 6h1v1H16zM19 6h3v1H19zM8 7h2v1H8zM11 7h7v1H11zM14 8h2v1H14zM12 9h1v1H12zM15 9h1v1H15z'/%3E%3Cpath fill='%236f777c' d='M10 8h1v1H10zM13 8h1v1H13zM16 8h1v1H16zM13 9h1v1H13zM13 10h1v1H13z'/%3E%3Cpath fill='%239aa3a8' d='M11 8h2v1H11zM17 8h1v1H17zM14 9h1v1H14zM14 10h1v1H14z'/%3E%3C/svg%3E");
+  --px-gen: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M0 0h10v1H0zM0 1h1v1H0zM9 1h1v1H9zM0 2h1v1H0zM9 2h1v1H9zM0 3h1v1H0zM2 3h6v1H2zM9 3h1v1H9zM0 4h1v1H0zM2 4h1v1H2zM7 4h1v1H7zM9 4h1v1H9zM0 5h1v1H0zM2 5h6v1H2zM9 5h1v1H9zM0 6h1v1H0zM9 6h1v1H9zM0 7h10v1H0z'/%3E%3Cpath fill='%236f777c' d='M1 1h1v1H1zM3 1h1v1H3zM5 1h1v1H5zM7 1h1v1H7z'/%3E%3Cpath fill='%239aa3a8' d='M2 1h1v1H2zM4 1h1v1H4zM6 1h1v1H6zM8 1h1v1H8z'/%3E%3Cpath fill='%238b8b8b' d='M1 2h1v1H1zM3 2h1v1H3zM5 2h1v1H5zM7 2h1v1H7zM1 6h1v1H1zM8 6h1v1H8z'/%3E%3Cpath fill='%23c6c6c6' d='M2 2h1v1H2zM4 2h1v1H4zM6 2h1v1H6zM8 2h1v1H8zM1 3h1v1H1zM8 3h1v1H8zM1 4h1v1H1zM8 4h1v1H8zM1 5h1v1H1zM8 5h1v1H8zM2 6h6v1H2z'/%3E%3Cpath fill='%2311807b' d='M3 4h4v1H3z'/%3E%3C/svg%3E");
+  --px-isle-small: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 8' shape-rendering='crispEdges'%3E%3Cpath fill='%238fdc5a' d='M0 0h1v1H0zM2 0h1v1H2zM4 0h5v1H4zM10 0h5v1H10zM17 0h1v1H17z'/%3E%3Cpath fill='%235cb83a' d='M1 0h1v1H1zM3 0h1v1H3zM9 0h1v1H9zM15 0h2v1H15zM0 1h1v1H0zM2 1h1v1H2zM4 1h2v1H4zM7 1h8v1H7zM17 1h1v1H17z'/%3E%3Cpath fill='%233f8a24' d='M1 1h1v1H1zM3 1h1v1H3zM6 1h1v1H6zM15 1h2v1H15z'/%3E%3Cpath fill='%238a5a33' d='M1 2h14v1H1zM16 2h1v1H16zM2 3h2v1H2zM5 3h11v1H5zM3 4h1v1H3zM5 4h2v1H5zM9 4h5v1H9zM5 5h1v1H5zM7 5h1v1H7zM9 5h1v1H9zM11 5h2v1H11zM10 6h2v1H10zM8 7h1v1H8z'/%3E%3Cpath fill='%236e4526' d='M15 2h1v1H15zM4 3h1v1H4zM4 4h1v1H4zM7 4h2v1H7zM14 4h1v1H14zM6 5h1v1H6zM8 5h1v1H8zM10 5h1v1H10z'/%3E%3Cpath fill='%236f777c' d='M6 6h1v1H6zM8 6h1v1H8z'/%3E%3Cpath fill='%239aa3a8' d='M7 6h1v1H7zM9 6h1v1H9zM9 7h1v1H9z'/%3E%3C/svg%3E");
+  --px-far1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 11' shape-rendering='crispEdges'%3E%3Cpath fill='%23a6d3f2' d='M0 0h40v1H0zM0 1h40v1H0zM1 2h38v1H1zM2 3h36v1H2zM4 4h32v1H4zM6 5h28v1H6zM8 6h24v1H8zM11 7h18v1H11zM13 8h14v1H13zM15 9h10v1H15zM17 10h6v1H17z'/%3E%3C/svg%3E");
+  --px-far2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 8' shape-rendering='crispEdges'%3E%3Cpath fill='%238cc3ea' d='M0 0h26v1H0zM0 1h26v1H0zM1 2h24v1H1zM2 3h22v1H2zM4 4h18v1H4zM6 5h14v1H6zM8 6h10v1H8zM11 7h4v1H11z'/%3E%3C/svg%3E");
+  --px-chick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M3 0h4v1H3zM2 1h1v1H2zM7 1h1v1H7zM2 2h1v1H2zM4 2h1v1H4zM7 2h1v1H7zM2 3h1v1H2zM7 3h1v1H7zM0 4h3v1H0zM7 4h1v1H7zM0 5h1v1H0zM7 5h1v1H7zM0 6h1v1H0zM7 6h1v1H7zM1 7h1v1H1zM6 7h1v1H6zM2 8h1v1H2zM4 8h1v1H4zM6 8h1v1H6z'/%3E%3Cpath fill='%23ffffff' d='M3 1h4v1H3zM3 2h1v1H3zM5 2h2v1H5zM3 3h4v1H3zM3 4h4v1H3zM1 5h6v1H1zM1 6h1v1H1zM3 6h4v1H3zM2 7h4v1H2z'/%3E%3Cpath fill='%23ff8a1f' d='M8 2h2v1H8zM3 8h1v1H3zM5 8h1v1H5zM2 9h2v1H2zM5 9h2v1H5z'/%3E%3Cpath fill='%23e8423a' d='M8 3h1v1H8z'/%3E%3Cpath fill='%23c6c6c6' d='M2 6h1v1H2z'/%3E%3C/svg%3E");
+  --px-chick2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M3 0h4v1H3zM2 1h1v1H2zM7 1h1v1H7zM2 2h1v1H2zM4 2h1v1H4zM7 2h1v1H7zM2 3h1v1H2zM7 3h1v1H7zM0 4h3v1H0zM7 4h1v1H7zM0 5h1v1H0zM7 5h1v1H7zM0 6h1v1H0zM7 6h1v1H7zM1 7h1v1H1zM6 7h1v1H6zM2 8h1v1H2zM4 8h2v1H4z'/%3E%3Cpath fill='%23ffffff' d='M3 1h4v1H3zM3 2h1v1H3zM5 2h2v1H5zM3 3h4v1H3zM3 4h4v1H3zM1 5h6v1H1zM1 6h1v1H1zM3 6h4v1H3zM2 7h4v1H2z'/%3E%3Cpath fill='%23ff8a1f' d='M8 2h2v1H8zM3 8h1v1H3zM2 9h2v1H2zM5 9h2v1H5z'/%3E%3Cpath fill='%23e8423a' d='M8 3h1v1H8z'/%3E%3Cpath fill='%23c6c6c6' d='M2 6h1v1H2z'/%3E%3C/svg%3E");
+  --px-bird: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 4' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M0 0h1v1H0zM6 0h1v1H6zM1 1h1v1H1zM5 1h1v1H5zM2 2h1v1H2zM4 2h1v1H4zM3 3h1v1H3z'/%3E%3C/svg%3E");
+  --px-bird2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 4' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M0 1h3v1H0zM4 1h3v1H4zM3 2h1v1H3z'/%3E%3C/svg%3E");
+  --px-cloudband: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 225' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffffff' d='M20 20h5v1H20zM16 21h11v1H16zM29 21h3v1H29zM14 22h21v1H14zM13 23h23v1H13zM12 24h24v1H12zM155 48h4v1H155zM152 49h9v1H152zM162 49h2v1H162zM151 50h14v1H151zM150 51h16v1H150zM238 96h5v1H238zM234 97h11v1H234zM247 97h3v1H247zM232 98h21v1H232zM231 99h23v1H231zM230 100h24v1H230zM65 128h4v1H65zM62 129h9v1H62zM72 129h2v1H72zM61 130h14v1H61zM60 131h16v1H60zM178 170h5v1H178zM174 171h11v1H174zM187 171h3v1H187zM172 172h21v1H172zM171 173h23v1H171zM170 174h24v1H170zM267 204h4v1H267zM264 205h9v1H264zM274 205h2v1H274zM263 206h14v1H263zM262 207h16v1H262z'/%3E%3Cpath fill='%23d9eeff' d='M12 25h24v1H12zM150 52h16v1H150zM230 101h24v1H230zM60 132h16v1H60zM170 175h24v1H170zM262 208h16v1H262z'/%3E%3C/svg%3E");
+  --px-farband: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 225' shape-rendering='crispEdges'%3E%3Cpath fill='%23bfe3fb' d='M115 30h4v1H115zM112 31h9v1H112zM122 31h2v1H122zM111 32h14v1H111zM110 33h16v1H110zM365 95h4v1H365zM362 96h9v1H362zM372 96h2v1H372zM361 97h14v1H361zM360 98h16v1H360zM225 120h4v1H225zM222 121h9v1H222zM232 121h2v1H232zM221 122h14v1H221zM220 123h16v1H220zM15 150h4v1H15zM12 151h9v1H12zM22 151h2v1H22zM11 152h14v1H11zM10 153h16v1H10z'/%3E%3Cpath fill='%23a6d3f2' d='M110 34h16v1H110zM40 70h40v1H40zM40 71h40v1H40zM41 72h38v1H41zM42 73h36v1H42zM44 74h32v1H44zM46 75h28v1H46zM48 76h24v1H48zM51 77h18v1H51zM53 78h14v1H53zM55 79h10v1H55zM57 80h6v1H57zM360 99h16v1H360zM220 124h16v1H220zM10 154h16v1H10zM150 185h40v1H150zM150 186h40v1H150zM151 187h38v1H151zM152 188h36v1H152zM154 189h32v1H154zM156 190h28v1H156zM158 191h24v1H158zM161 192h18v1H161zM163 193h14v1H163zM165 194h10v1H165zM167 195h6v1H167z'/%3E%3Cpath fill='%238cc3ea' d='M250 40h26v1H250zM250 41h26v1H250zM251 42h24v1H251zM252 43h22v1H252zM254 44h18v1H254zM256 45h14v1H256zM258 46h10v1H258zM261 47h4v1H261zM320 150h26v1H320zM320 151h26v1H320zM321 152h24v1H321zM322 153h22v1H322zM324 154h18v1H324zM326 155h14v1H326zM328 156h10v1H328zM331 157h4v1H331z'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   SKY ISLES THEME - component overrides
+   A retro 8-bit daytime sky. Cards are floating islands (grass cap,
+   stepped dirt underside), panels are chunky pixel dialog windows
+   with notched corners, buttons are bevelled blocks, and motion runs
+   on steps() so it reads like an old game at a low frame rate. The
+   sprites (items, blocks, islands, clouds) are pixel-art SVGs held in
+   the --px-* custom properties generated just above.
+   ============================================================ */
+html[data-theme="skyisles"] {
+  /* The notched pixel outline: four hard shadows, one per side, leave the
+     corners empty so every box gets stepped corners without clip-path. */
+  --pxb: 0 -4px 0 0 var(--ink), 0 4px 0 0 var(--ink), -4px 0 0 0 var(--ink), 4px 0 0 0 var(--ink);
+  --pxb2: 0 -2px 0 0 var(--ink), 0 2px 0 0 var(--ink), -2px 0 0 0 var(--ink), 2px 0 0 0 var(--ink);
+  --pxdrop: 8px 8px 0 0 rgba(23,50,71,0.22);
+  --bevel: inset 4px 4px 0 0 rgba(255,255,255,0.75), inset -4px -4px 0 0 rgba(23,50,71,0.12);
+  --slot: inset 2px 2px 0 0 #373737, inset -2px -2px 0 0 #ffffff;
+  --font-pixel: 'Jersey 10', 'Silkscreen', monospace;
+  --font-arcade: 'Press Start 2P', 'Silkscreen', monospace;
+  --font-label: 'Silkscreen', 'Jersey 10', monospace;
+  image-rendering: pixelated;
+  font-synthesis: none;
+}
+
+/* ---------- Sky: banded retro gradient, sun, far islands, clouds ---------- */
+html[data-theme="skyisles"] #starfield,
+html[data-theme="skyisles"] #bubblefield { display: none; }
+/* Hard colour bands instead of a smooth gradient, like a 16-colour palette
+   dithered sky, with a square pixel sun parked top-right. */
+html[data-theme="skyisles"] #nebula {
+  display: block;
+  opacity: 1;
+  overflow: hidden;
+  background:
+    var(--px-sun) 7vw 150px / 96px 80px no-repeat,
+    linear-gradient(180deg,
+      #4f9fe6 0 14%, #5aa9ef 14% 26%, #67b4f5 26% 40%, #76bff9 40% 54%,
+      #86c9fc 54% 68%, #97d3fe 68% 82%, #a9dcff 82% 100%);
+}
+html[data-theme="skyisles"] #nebula::before,
+html[data-theme="skyisles"] #nebula::after,
+html[data-theme="skyisles"] #nebulaGlow2 {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  will-change: transform;
+}
+/* Far layer: hazy islands and small clouds, drifting slowly. The element is
+   one tile wider than the screen and slides by exactly one tile, so the
+   loop is seamless; steps() makes it move in whole 4px pixels. */
+html[data-theme="skyisles"] #nebula::after {
+  right: -1600px;
+  background: var(--px-farband) 0 0 / 1600px 900px repeat;
+  animation: skyDriftFar 400s steps(400) infinite;
+  opacity: 0.9;
+}
+/* Near layer: big white clouds, faster, for parallax. */
+html[data-theme="skyisles"] #nebula::before {
+  right: -1200px;
+  background: var(--px-cloudband) 0 60px / 1200px 900px repeat;
+  animation: skyDriftNear 150s steps(300) infinite;
+  z-index: 1;
+}
+/* A little flock of pixel birds crossing now and then. */
+html[data-theme="skyisles"] #nebulaGlow2 {
+  display: block;
+  top: 36vh;
+  bottom: auto;
+  left: -80px;
+  width: 64px;
+  height: 36px;
+  background:
+    var(--px-bird) 0 12px / 21px 12px no-repeat,
+    var(--px-bird) 30px 0 / 21px 12px no-repeat,
+    var(--px-bird2) 40px 24px / 21px 12px no-repeat;
+  animation: skyBirds 38s steps(190) infinite, skyBirdFlap 0.5s steps(1) infinite;
+  z-index: 2;
+}
+@keyframes skyDriftFar { to { transform: translateX(-1600px); } }
+@keyframes skyDriftNear { to { transform: translateX(-1200px); } }
+@keyframes skyBirds {
+  0% { transform: translate(0, 0); }
+  60% { transform: translate(calc(100vw + 160px), -12vh); }
+  100% { transform: translate(calc(100vw + 160px), -12vh); }
+}
+@keyframes skyBirdFlap {
+  0% { background-image: var(--px-bird), var(--px-bird2), var(--px-bird); }
+  50% { background-image: var(--px-bird2), var(--px-bird), var(--px-bird2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="skyisles"] #nebula::before,
+  html[data-theme="skyisles"] #nebula::after,
+  html[data-theme="skyisles"] #nebulaGlow2 { animation: none; }
+  html[data-theme="skyisles"] #nebulaGlow2 { display: none; }
+}
+
+/* ---------- Type ---------- */
+html[data-theme="skyisles"] body {
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  font-size-adjust: 0.56;
+  -webkit-font-smoothing: none;
+}
+html[data-theme="skyisles"] .panel-header h2,
+html[data-theme="skyisles"] .edit-modal-title,
+html[data-theme="skyisles"] .shortcuts-title {
+  font-family: var(--font-arcade); font-size-adjust: none;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+html[data-theme="skyisles"] .stat-hero-value,
+html[data-theme="skyisles"] .modal-stat-value,
+html[data-theme="skyisles"] #statsStar,
+html[data-theme="skyisles"] #statsUsername,
+html[data-theme="skyisles"] .sweat-card-name,
+html[data-theme="skyisles"] .leaderboard-name,
+html[data-theme="skyisles"] #modalUsername,
+html[data-theme="skyisles"] .user-cell span {
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+html[data-theme="skyisles"] ::selection { background: var(--grass); color: #fff; }
+html[data-theme="skyisles"] ::-webkit-scrollbar-thumb { border-radius: 0; background: var(--dirt); box-shadow: inset 0 3px 0 var(--grass); }
+html[data-theme="skyisles"] body { scrollbar-color: var(--dirt) #cfe9fb; }
+
+/* ---------- Hero: blocky wordmark with a yellow splash line ---------- */
+html[data-theme="skyisles"] .hero { padding: 26px 0 34px; }
+html[data-theme="skyisles"] .hero-eyebrow {
+  font-family: var(--font-label); font-size-adjust: none;
+  font-weight: 700;
+  font-size: 0.78em;
+  letter-spacing: 1.5px;
+  color: #fff;
+  background: var(--accent-2);
+  padding: 5px 12px 4px;
+  box-shadow: var(--pxb2), 4px 4px 0 2px rgba(23,50,71,0.25);
+  text-shadow: 2px 2px 0 #173247;
+  margin-bottom: 22px;
+}
+/* The title as chunky extruded block letters: solid white face, a stepped
+   stack of hard shadows for depth, no gradient-clip. */
+html[data-theme="skyisles"] h1 {
+  font-family: var(--font-arcade); font-size-adjust: none;
+  font-weight: 400;
+  font-size: 2.35em;
+  line-height: 1.25;
+  letter-spacing: 1px;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: #ffffff;
+  filter: none;
+  text-shadow:
+    2px 2px 0 #9ad0f5, 4px 4px 0 #2d6a9f, 6px 6px 0 #2d6a9f, 8px 8px 0 #173247,
+    -2px 0 0 #173247, 0 -2px 0 #173247, 2px 0 0 #173247, 0 2px 0 #173247;
+}
+/* Minecraft-style splash text: yellow, tilted, pulsing in two sizes. The
+   line is picked at random by the script (data-splash) on every visit. */
+html[data-theme="skyisles"] .hero { position: relative; }
+html[data-theme="skyisles"] .hero-flourish {
+  display: block;
+  position: absolute;
+  left: calc(50% + min(38vw, 330px));
+  top: 92px;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+html[data-theme="skyisles"] .hero-flourish::after {
+  content: attr(data-splash);
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%) rotate(-14deg);
+  white-space: nowrap;
+  font-family: var(--font-arcade); font-size-adjust: none;
+  font-size: 11px;
+  color: #ffff3c;
+  text-shadow: 2px 2px 0 #3f3f00;
+  animation: skySplash 0.6s steps(3) infinite alternate;
+}
+@keyframes skySplash {
+  from { transform: translate(-50%, -50%) rotate(-14deg) scale(1); }
+  to { transform: translate(-50%, -50%) rotate(-14deg) scale(1.12); }
+}
+html[data-theme="skyisles"] #credits {
+  font-family: var(--font-pixel);
+  color: #1d4a6e;
+  opacity: 1;
+  margin-top: 16px;
+}
+html[data-theme="skyisles"] #credits a,
+html[data-theme="skyisles"] #credits kbd { color: #173247; }
+html[data-theme="skyisles"] .hero-pin { display: none; }
+
+/* ---------- Hotbar quick-nav ---------- */
+/* The sticky jump links read as the Minecraft hotbar: a dark strip of
+   square slots, the current section in the bright white selector frame. */
+html[data-theme="skyisles"] .quick-nav {
+  width: max-content;
+  max-width: calc(100% - 16px);
+  gap: 0;
+  padding: 4px;
+  background: #5b5b5b;
+  border: none;
+  border-radius: 0;
+  box-shadow: var(--pxb), 8px 8px 0 0 rgba(23,50,71,0.25);
+  margin-bottom: 40px;
+}
+html[data-theme="skyisles"] .quick-nav-link {
+  position: relative;
+  border-radius: 0;
+  border: none;
+  padding: 8px 16px 7px;
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: 0.95em;
+  letter-spacing: 0.3px;
+  color: #e7e7e7;
+  background: #8b8b8b;
+  box-shadow: var(--slot);
+  margin: 2px;
+  text-shadow: 2px 2px 0 #3f3f3f;
+  transition: none;
+}
+html[data-theme="skyisles"] .quick-nav-link:hover { color: #ffffa0; background: #9d9d9d; }
+html[data-theme="skyisles"] .quick-nav-link.active {
+  color: #ffffff;
+  background: #a8a8a8;
+  box-shadow: var(--slot), 0 0 0 3px #ffffff, 0 0 0 5px #1e1e1e;
+  z-index: 1;
+}
+
+/* ---------- Section headers ---------- */
+/* Header rule is a strip of grass with a pixel chicken pottering along it;
+   the icon sits in an inventory slot; the eyebrow tag reads WORLD 1-1. */
+html[data-theme="skyisles"] .panel-header {
+  position: relative;
+  align-items: flex-end;
+  padding-bottom: 36px;
+  border-bottom: none;
+}
+html[data-theme="skyisles"] .panel-header::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 12px;
+  background: var(--px-grasstop) 0 0 / 32px 12px repeat-x;
+  pointer-events: none;
+}
+html[data-theme="skyisles"] .panel-header::after {
+  content: "";
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--px-chick) 0 0 / 20px 20px no-repeat;
+  pointer-events: none;
+  animation: skyChickWalk 36s steps(180) infinite, skyChickStep 0.4s steps(1) infinite;
+}
+@keyframes skyChickWalk {
+  0% { left: 2%; transform: scaleX(1); }
+  45% { left: 94%; transform: scaleX(1); }
+  50% { left: 94%; transform: scaleX(-1); }
+  95% { left: 2%; transform: scaleX(-1); }
+  100% { left: 2%; transform: scaleX(1); }
+}
+@keyframes skyChickStep {
+  0% { background-image: var(--px-chick); }
+  50% { background-image: var(--px-chick2); }
+}
+html[data-theme="skyisles"] .panel-icon {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 0;
+  font-size: 0; font-size-adjust: none;
+  background: #8b8b8b;
+  box-shadow: inset 4px 4px 0 0 #373737, inset -4px -4px 0 0 #ffffff, var(--pxb2);
+}
+html[data-theme="skyisles"] .panel-icon::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  background: center / contain no-repeat;
+  filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.3));
+}
+html[data-theme="skyisles"] .panel-icon-lookup::before { background-image: var(--px-compass); animation: skyCompass 4s steps(1) infinite; }
+html[data-theme="skyisles"] .panel-icon-results::before { background-image: var(--px-sword); }
+html[data-theme="skyisles"] .panel-icon-denick::before { background-image: var(--px-nametag); }
+html[data-theme="skyisles"] .panel-icon-activity::before { background-image: var(--px-book); }
+@keyframes skyCompass {
+  0%, 100% { transform: rotate(0deg); }
+  70% { transform: rotate(0deg); }
+  75% { transform: rotate(-15deg); }
+  80% { transform: rotate(10deg); }
+  85% { transform: rotate(-5deg); }
+}
+html[data-theme="skyisles"] .panel-header:hover .panel-icon::before { transform: translateY(-2px); }
+html[data-theme="skyisles"] .exhibit-tag {
+  display: inline-block;
+  font-size: 0; font-size-adjust: none;
+  background: var(--accent-2);
+  padding: 4px 9px 3px;
+  margin-bottom: 8px;
+  box-shadow: var(--pxb2);
+}
+html[data-theme="skyisles"] .exhibit-tag::before {
+  font-family: var(--font-label); font-size-adjust: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff;
+  text-shadow: 1px 1px 0 #173247;
+}
+html[data-theme="skyisles"] .exhibit-tag-lookup::before { content: "World 1-1"; }
+html[data-theme="skyisles"] .exhibit-tag-results::before { content: "World 1-2"; }
+html[data-theme="skyisles"] .exhibit-tag-denick::before { content: "World 1-3"; }
+html[data-theme="skyisles"] .exhibit-tag-activity::before { content: "World 1-4"; }
+html[data-theme="skyisles"] .panel-header h2 {
+  font-size: 1.05em;
+  color: #fff;
+  text-shadow: 2px 2px 0 #173247, -2px 0 0 #173247, 0 -2px 0 #173247, 2px 0 0 #173247, 0 2px 0 #173247, 4px 4px 0 rgba(23,50,71,0.35);
+  line-height: 1.5;
+}
+html[data-theme="skyisles"] .panel-header p { color: #1d4a6e; font-size: 0.9em; }
+
+/* ---------- Panels: pixel dialog windows ---------- */
+/* White fill, notched ink outline, a pale inner rule like a 16-bit RPG
+   text box, and a hard offset shadow instead of a blur. */
+html[data-theme="skyisles"] .card {
+  background: var(--panel);
+  border: none;
+  border-radius: 0;
+  box-shadow: inset 0 0 0 4px #ffffff, inset 0 0 0 6px #bcd9ee, var(--pxb), 12px 12px 0 0 rgba(23,50,71,0.22);
+}
+html[data-theme="skyisles"] .dash-left { border-right: 4px dotted #bcd9ee; }
+@media (max-width: 700px) {
+  html[data-theme="skyisles"] .dash-left { border-right: none; border-bottom: 4px dotted #bcd9ee; }
+}
+
+/* ---------- Buttons: bevelled blocks ---------- */
+html[data-theme="skyisles"] .btn {
+  border-radius: 0;
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: none;
+}
+/* Primary = a grass-green block. Hover lifts it a pixel step; pressing
+   flips the bevel and sinks it, like a real button in an old menu. */
+html[data-theme="skyisles"] .btn-primary {
+  position: relative;
+  background: #4fae2e;
+  color: #ffffff;
+  text-shadow: 2px 2px 0 #1f5a10;
+  box-shadow: inset 4px 4px 0 0 #8ee060, inset -4px -4px 0 0 #2f7a18, var(--pxb), 6px 6px 0 2px rgba(23,50,71,0.25);
+}
+html[data-theme="skyisles"] .btn-primary:hover:not(:disabled) {
+  background: #5cc036;
+  transform: translate(0, -2px);
+  box-shadow: inset 4px 4px 0 0 #a6f07a, inset -4px -4px 0 0 #2f7a18, var(--pxb), 6px 8px 0 2px rgba(23,50,71,0.25);
+}
+html[data-theme="skyisles"] .btn-primary:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: inset 4px 4px 0 0 #2f7a18, inset -4px -4px 0 0 #8ee060, var(--pxb), 2px 2px 0 2px rgba(23,50,71,0.25);
+}
+/* Ghost = Minecraft's stone menu button. */
+html[data-theme="skyisles"] .btn-ghost,
+html[data-theme="skyisles"] .preview-clear,
+html[data-theme="skyisles"] .load-retry-btn,
+html[data-theme="skyisles"] .toolbar-export {
+  background: #c6c6c6;
+  color: #2a2a2a;
+  border: none;
+  border-radius: 0;
+  text-shadow: 1px 1px 0 #ffffff;
+  box-shadow: inset 3px 3px 0 0 #ffffff, inset -3px -3px 0 0 #7d7d7d, var(--pxb2);
+}
+html[data-theme="skyisles"] .btn-ghost:hover,
+html[data-theme="skyisles"] .preview-clear:hover,
+html[data-theme="skyisles"] .load-retry-btn:hover,
+html[data-theme="skyisles"] .toolbar-export:hover {
+  color: #173247;
+  background: #d8e6f0;
+  box-shadow: inset 3px 3px 0 0 #ffffff, inset -3px -3px 0 0 #7d98ad, 0 -2px 0 0 #fff, 0 2px 0 0 #fff, -2px 0 0 0 #fff, 2px 0 0 0 #fff, 0 0 0 4px var(--ink);
+}
+html[data-theme="skyisles"] .btn-ghost:active,
+html[data-theme="skyisles"] .toolbar-export:active {
+  box-shadow: inset 3px 3px 0 0 #7d7d7d, inset -3px -3px 0 0 #ffffff, var(--pxb2);
+  transform: translateY(2px);
+}
+html[data-theme="skyisles"] .btn-danger {
+  background: #d23a2e;
+  color: #fff;
+  text-shadow: 2px 2px 0 #6e140e;
+  box-shadow: inset 4px 4px 0 0 #ff7a6a, inset -4px -4px 0 0 #8e1a12, var(--pxb), 6px 6px 0 2px rgba(23,50,71,0.25);
+}
+html[data-theme="skyisles"] .btn-danger:hover:not(:disabled) { filter: none; background: #e4483b; transform: translateY(-2px); }
+html[data-theme="skyisles"] .icon-btn {
+  border-radius: 0;
+  border: none;
+  width: 28px;
+  height: 28px;
+  background: #c6c6c6;
+  color: #3a3a3a;
+  box-shadow: inset 2px 2px 0 0 #ffffff, inset -2px -2px 0 0 #7d7d7d, var(--pxb2);
+  transition: none;
+  font-family: var(--font-pixel);
+}
+html[data-theme="skyisles"] .icon-btn.edit:hover {
+  color: #fff;
+  background: var(--accent-2);
+  box-shadow: inset 2px 2px 0 0 #6aa6de, inset -2px -2px 0 0 #1b4670, var(--pxb2);
+  transform: translateY(-2px);
+}
+html[data-theme="skyisles"] .icon-btn.danger:hover {
+  color: #fff;
+  background: var(--bad);
+  box-shadow: inset 2px 2px 0 0 #ff7a6a, inset -2px -2px 0 0 #8e1a12, var(--pxb2);
+  transform: translateY(-2px);
+}
+html[data-theme="skyisles"] .icon-btn:active { transform: translateY(1px); }
+html[data-theme="skyisles"] .section-toggle {
+  border-radius: 0;
+  border: none;
+  background: #c6c6c6;
+  color: #2a2a2a;
+  font-family: var(--font-label); font-size-adjust: none;
+  box-shadow: inset 2px 2px 0 0 #ffffff, inset -2px -2px 0 0 #7d7d7d, var(--pxb2);
+}
+html[data-theme="skyisles"] .section-toggle:hover { background: #d8e6f0; color: #173247; }
+
+/* ---------- Inputs: Minecraft text fields ---------- */
+html[data-theme="skyisles"] input[type="text"],
+html[data-theme="skyisles"] input[type="number"],
+html[data-theme="skyisles"] input[type="date"],
+html[data-theme="skyisles"] input[type="password"],
+html[data-theme="skyisles"] textarea,
+html[data-theme="skyisles"] select,
+html[data-theme="skyisles"] .note-input {
+  font-family: var(--font-pixel);
+  border-radius: 0;
+  background: #1e2a33;
+  border: 2px solid #a0a0a0;
+  color: #ffffff;
+  caret-color: #7cfc4a;
+}
+html[data-theme="skyisles"] input::placeholder,
+html[data-theme="skyisles"] textarea::placeholder { color: #8fa3b3; }
+html[data-theme="skyisles"] input:focus,
+html[data-theme="skyisles"] textarea:focus,
+html[data-theme="skyisles"] select:focus,
+html[data-theme="skyisles"] .note-input:focus {
+  background: #1e2a33;
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px var(--ink);
+  outline: none;
+}
+html[data-theme="skyisles"] input[type="date"] { color-scheme: dark; }
+
+/* ---------- Header controls: stone buttons + inventory-style menus ---------- */
+html[data-theme="skyisles"] .theme-dropdown-btn {
+  border-radius: 0;
+  border: none;
+  font-family: var(--font-pixel);
+  color: #2a2a2a;
+  background: #c6c6c6;
+  text-shadow: 1px 1px 0 #fff;
+  box-shadow: inset 3px 3px 0 0 #ffffff, inset -3px -3px 0 0 #7d7d7d, var(--pxb2), 4px 4px 0 2px rgba(23,50,71,0.25);
+  transition: none;
+}
+html[data-theme="skyisles"] .theme-dropdown-btn:hover,
+html[data-theme="skyisles"] .theme-dropdown-btn[aria-expanded="true"] {
+  color: #173247;
+  background: #d8e6f0;
+  border-color: transparent;
+  box-shadow: inset 3px 3px 0 0 #ffffff, inset -3px -3px 0 0 #7d98ad, 0 0 0 2px #fff, 0 0 0 4px var(--ink), 4px 4px 0 4px rgba(23,50,71,0.25);
+}
+html[data-theme="skyisles"] .theme-dropdown-arrow { transition: none; }
+html[data-theme="skyisles"] .theme-dropdown-menu {
+  border: none;
+  border-radius: 0;
+  padding: 8px;
+  background: #c6c6c6;
+  box-shadow: inset 4px 4px 0 0 #ffffff, inset -4px -4px 0 0 #555555, var(--pxb), 8px 8px 0 2px rgba(23,50,71,0.3);
+  animation: skyMenuPop 0.16s steps(2) both;
+  transform-origin: top right;
+}
+@keyframes skyMenuPop { from { transform: scale(0.85); opacity: 0.4; } to { transform: none; opacity: 1; } }
+html[data-theme="skyisles"] .theme-dropdown-menu li {
+  border-radius: 0;
+  color: #2a2a2a;
+  font-family: var(--font-pixel);
+  transition: none;
+}
+html[data-theme="skyisles"] .theme-dropdown-menu li:hover,
+html[data-theme="skyisles"] .theme-dropdown-menu li:focus-visible {
+  background: #8b8b8b;
+  color: #ffffff;
+  text-shadow: 1px 1px 0 #3f3f3f;
+  box-shadow: var(--slot);
+}
+html[data-theme="skyisles"] .theme-dropdown-menu li[aria-selected="true"] {
+  color: #173247;
+  background: #eaf6ff;
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+html[data-theme="skyisles"] .theme-swatch { border-radius: 0; box-shadow: 0 0 0 2px var(--ink); }
+html[data-theme="skyisles"] .theme-dropdown-menu li:hover .theme-swatch { transform: translateY(-2px); }
+html[data-theme="skyisles"] .audio-row + .audio-row { border-top: 2px dotted #8b8b8b; }
+html[data-theme="skyisles"] .audio-row { color: #2a2a2a; font-family: var(--font-pixel); }
+html[data-theme="skyisles"] .audio-vol-row input { accent-color: #4fae2e; }
+/* Toggle switch as a lever: a stone slot with a square knob. */
+html[data-theme="skyisles"] .audio-switch {
+  border-radius: 0;
+  border: none;
+  background: #555;
+  box-shadow: inset 2px 2px 0 #2a2a2a, var(--pxb2);
+}
+html[data-theme="skyisles"] .audio-switch::after {
+  border-radius: 0;
+  background: #c6c6c6;
+  box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #7d7d7d;
+  transition: transform 0.12s steps(2);
+}
+html[data-theme="skyisles"] .audio-switch:checked { background: #3f9a26; border-color: transparent; }
+html[data-theme="skyisles"] .audio-switch:checked::after { background: #c6c6c6; }
+
+/* ---------- Chips: stone buttons with a pixel checkbox ---------- */
+html[data-theme="skyisles"] .chip span {
+  position: relative;
+  border-radius: 0;
+  border: none;
+  padding: 7px 13px 6px 34px;
+  font-family: var(--font-pixel);
+  font-weight: 600;
+  color: #2a2a2a;
+  background: #c6c6c6;
+  text-shadow: 1px 1px 0 #fff;
+  box-shadow: inset 3px 3px 0 0 #ffffff, inset -3px -3px 0 0 #7d7d7d, var(--pxb2);
+  transition: none;
+}
+html[data-theme="skyisles"] .chip span::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  background: #1e2a33;
+  box-shadow: 0 0 0 2px #8b8b8b;
+}
+html[data-theme="skyisles"] .chip span::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 12px;
+  height: 11px;
+  margin-top: -6px;
+  background: var(--px-check) center / contain no-repeat;
+  transform: scale(0);
+  transition: transform 0.12s steps(2);
+}
+html[data-theme="skyisles"] .chip:hover span { background: #d8e6f0; color: #173247; }
+html[data-theme="skyisles"] .chip input:checked + span,
+html[data-theme="skyisles"] .chip.cheat-chip input:checked + span,
+html[data-theme="skyisles"] .chip.boost-chip input:checked + span {
+  color: #ffffff;
+  background: #4fae2e;
+  border-color: transparent;
+  text-shadow: 1px 1px 0 #1f5a10;
+  box-shadow: inset 3px 3px 0 0 #2f7a18, inset -3px -3px 0 0 #8ee060, var(--pxb2);
+}
+html[data-theme="skyisles"] .chip.cheat-chip input:checked + span {
+  background: #d23a2e;
+  text-shadow: 1px 1px 0 #6e140e;
+  box-shadow: inset 3px 3px 0 0 #8e1a12, inset -3px -3px 0 0 #ff7a6a, var(--pxb2);
+}
+html[data-theme="skyisles"] .chip.boost-chip input:checked + span {
+  background: #e0a92e;
+  text-shadow: 1px 1px 0 #6e4a00;
+  box-shadow: inset 3px 3px 0 0 #a86c00, inset -3px -3px 0 0 #ffe066, var(--pxb2);
+}
+html[data-theme="skyisles"] .chip input:checked + span::after { transform: scale(1); }
+html[data-theme="skyisles"] .chip input:focus-visible + span { outline: 2px dashed var(--ink); outline-offset: 4px; }
+
+/* Roster: square wool blocks in each person's team color. */
+html[data-theme="skyisles"] .chip-group.roster .roster-avatar,
+html[data-theme="skyisles"] .beaten-avatar {
+  border-radius: 0;
+  border: none;
+  background: var(--px-wool) 0 0 / 100% 100%, var(--chip-color);
+  background-blend-mode: multiply;
+  color: #fff;
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.6), -1px 0 0 rgba(0,0,0,0.35), 0 -1px 0 rgba(0,0,0,0.35);
+}
+html[data-theme="skyisles"] .chip-group.roster .roster-avatar {
+  padding: 0;
+  opacity: 0.55;
+  box-shadow: inset -4px -4px 0 rgba(0,0,0,0.22), inset 4px 4px 0 rgba(255,255,255,0.25), var(--pxb2);
+  transition: none;
+}
+html[data-theme="skyisles"] .chip-group.roster .roster-avatar::before,
+html[data-theme="skyisles"] .chip-group.roster .roster-avatar::after { content: none; }
+html[data-theme="skyisles"] .chip-group.roster .roster-chip:hover .roster-avatar {
+  opacity: 0.85;
+  transform: translateY(-2px);
+}
+html[data-theme="skyisles"] .chip-group.roster .chip input:checked + .roster-avatar {
+  opacity: 1;
+  background: var(--px-wool) 0 0 / 100% 100%, var(--chip-color);
+  background-blend-mode: multiply;
+  color: #fff;
+  transform: translateY(-4px);
+  box-shadow: inset -4px -4px 0 rgba(0,0,0,0.22), inset 4px 4px 0 rgba(255,255,255,0.25), 0 0 0 2px var(--ink), 0 0 0 5px #ffffff, 0 0 0 7px var(--ink), 0 8px 0 2px rgba(23,50,71,0.25);
+  animation: skyBlockPlace 0.24s steps(3);
+}
+@keyframes skyBlockPlace {
+  0% { transform: translateY(-12px); }
+  60% { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
+}
+html[data-theme="skyisles"] .beaten-avatar {
+  box-shadow: inset -2px -2px 0 rgba(0,0,0,0.25), 0 0 0 2px var(--ink);
+}
+
+/* ---------- Toolbar ---------- */
+html[data-theme="skyisles"] .toolbar-row { border-top: 4px dotted #bcd9ee; }
+html[data-theme="skyisles"] .toolbar-divider { width: 4px; background: #bcd9ee; }
+html[data-theme="skyisles"] .toolbar #searchInput { border-radius: 0; }
+html[data-theme="skyisles"] .search-box-icon { color: #8fa3b3; }
+html[data-theme="skyisles"] .search-box:focus-within .search-box-icon { color: #7cfc4a; }
+html[data-theme="skyisles"] .search-box-kbd {
+  border-radius: 0;
+  font-family: var(--font-pixel);
+  background: #3a4a55;
+  color: #fff;
+  border-color: #8fa3b3;
+}
+html[data-theme="skyisles"] .search-box-clear { border-radius: 0; background: #3a4a55; color: #fff; }
+html[data-theme="skyisles"] .search-box-clear:hover { background: var(--bad); color: #fff; }
+/* Filter fields are the dark text field themselves; the input inside is
+   just transparent text. */
+html[data-theme="skyisles"] .filter-field {
+  border-radius: 0;
+  border: 2px solid #a0a0a0;
+  background: #1e2a33;
+  transition: none;
+}
+html[data-theme="skyisles"] .filter-field:hover { border-color: #d0d0d0; }
+html[data-theme="skyisles"] .filter-field:focus-within { border-color: #fff; box-shadow: 0 0 0 2px var(--ink); }
+html[data-theme="skyisles"] .filter-field.is-set { border-color: #7cfc4a; background: #1e3320; }
+html[data-theme="skyisles"] .filter-prefix { color: #8fa3b3; font-family: var(--font-label); font-size-adjust: none; font-weight: 700; }
+html[data-theme="skyisles"] .filter-field.is-set .filter-prefix { color: #7cfc4a; }
+html[data-theme="skyisles"] .toolbar .filter-field input,
+html[data-theme="skyisles"] .toolbar .filter-field input:focus {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #fff;
+}
+html[data-theme="skyisles"] .filter-reset { border-radius: 0; font-family: var(--font-pixel); color: var(--text-dim); transition: none; }
+html[data-theme="skyisles"] .filter-reset:hover:not(:disabled) { color: #fff; background: var(--accent); }
+html[data-theme="skyisles"] .filter-reset-count:not(:empty) { border-radius: 0; background: var(--bad); color: #fff; }
+/* View toggle as a three-slot mini hotbar. */
+html[data-theme="skyisles"] .view-toggle {
+  border-radius: 0;
+  border: none;
+  padding: 3px;
+  background: #5b5b5b;
+  box-shadow: var(--pxb2);
+}
+html[data-theme="skyisles"] .view-btn {
+  border-radius: 0;
+  margin: 1px;
+  color: #e7e7e7;
+  background: #8b8b8b;
+  font-family: var(--font-pixel);
+  text-shadow: 1px 1px 0 #3f3f3f;
+  box-shadow: var(--slot);
+  transition: none;
+}
+html[data-theme="skyisles"] .view-btn:hover:not(.active) { color: #ffffa0; }
+html[data-theme="skyisles"] .view-btn.active {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  background: #a8a8a8;
+  box-shadow: var(--slot), 0 0 0 2px #fff, 0 0 0 4px #1e1e1e;
+}
+html[data-theme="skyisles"] .view-btn svg { filter: drop-shadow(1px 1px 0 #3f3f3f); }
+
+/* ---------- Pills ---------- */
+html[data-theme="skyisles"] .pill {
+  border-radius: 0;
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: 0.8em;
+  padding: 3px 8px 2px;
+  border: none;
+  box-shadow: var(--pxb2);
+  margin: 2px;
+}
+/* Star count as a real Minecraft chat line: dark translucent box, full
+   bright MC colors with the game's hard drop shadow. */
+html[data-theme="skyisles"] .pill.prestige-tag {
+  --mc-0: #3a3a3a;
+  --mc-1: #3b4fe0;
+  --mc-2: #1faa1f;
+  --mc-3: #14b0b0;
+  --mc-4: #c01818;
+  --mc-5: #b01fb0;
+  --mc-6: #ffaa00;
+  --mc-7: #aaaaaa;
+  --mc-8: #6a6a6a;
+  --mc-9: #6b7bff;
+  --mc-a: #55ff55;
+  --mc-b: #55ffff;
+  --mc-c: #ff5555;
+  --mc-d: #ff55ff;
+  --mc-e: #ffff55;
+  --mc-f: #ffffff;
+  background: rgba(20,20,20,0.82);
+  box-shadow: 0 0 0 2px #1e1e1e;
+}
+html[data-theme="skyisles"] .pill.prestige-tag span { text-shadow: 2px 2px 0 rgba(0,0,0,0.55); }
+html[data-theme="skyisles"] .pill.fkdr,
+html[data-theme="skyisles"] .pill.level,
+html[data-theme="skyisles"] .pill.cheat,
+html[data-theme="skyisles"] .pill.boost { position: relative; padding-left: 24px; }
+html[data-theme="skyisles"] .pill.fkdr::before,
+html[data-theme="skyisles"] .pill.level::before,
+html[data-theme="skyisles"] .pill.cheat::before,
+html[data-theme="skyisles"] .pill.boost::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  width: 14px;
+  height: 12px;
+  margin-top: -6px;
+  background: center / contain no-repeat;
+}
+html[data-theme="skyisles"] .pill.fkdr { background: #d7fbf8; color: #0b5e5a; }
+html[data-theme="skyisles"] .pill.fkdr::before { background-image: var(--px-diamond); }
+html[data-theme="skyisles"] .pill.level { background: #fff2c2; color: #7a5200; }
+html[data-theme="skyisles"] .pill.level::before { background-image: var(--px-star); }
+/* The warning glyph in the text is hidden behind the sprite. */
+html[data-theme="skyisles"] .pill.cheat {
+  background: #d23a2e;
+  color: #fff;
+  text-shadow: 1px 1px 0 #6e140e;
+  text-indent: -1.1em;
+  overflow: hidden;
+  animation: skyTntBlink 1.2s steps(1) infinite;
+}
+html[data-theme="skyisles"] .pill.cheat::before { background-image: var(--px-tnt); width: 12px; height: 12px; left: 6px; }
+@keyframes skyTntBlink { 0%, 80% { background: #d23a2e; } 90% { background: #ff8a7f; } }
+html[data-theme="skyisles"] .pill.boost {
+  background: #ffd84a;
+  color: #6e4a00;
+  text-shadow: 1px 1px 0 #fff3b0;
+  text-indent: -1.1em;
+  overflow: hidden;
+}
+html[data-theme="skyisles"] .pill.boost::before { background-image: var(--px-gold); }
+html[data-theme="skyisles"] .pill.live-pill {
+  background: #7cfc4a;
+  color: #173247;
+  animation: skyBlink 0.8s steps(1) infinite;
+}
+@keyframes skyBlink { 50% { background: #ffffff; } }
+
+/* ---------- Sweat cards: floating islands ---------- */
+/* Grass cap on top, the card face as the island's white cliff, and a
+   stepped dirt-and-stone underside hanging below. Each island bobs on its
+   own beat (the individual translate property, so it never fights the
+   hover/press transforms). */
+html[data-theme="skyisles"] .card-grid { row-gap: 44px; column-gap: 20px; padding-top: 6px; }
+html[data-theme="skyisles"] .sweat-card {
+  border: none;
+  border-radius: 0;
+  padding: 26px 16px 14px;
+  background: var(--panel);
+  box-shadow: inset 0 -4px 0 0 #e1ecd8, 0 -2px 0 0 var(--ink), 0 2px 0 0 var(--ink), -2px 0 0 0 var(--ink), 2px 0 0 0 var(--ink);
+  transition: transform 0.2s steps(2), box-shadow 0.2s steps(2);
+  animation: skyIslandRise 0.5s steps(5) backwards, skyBob 3.2s steps(2) 0.6s infinite;
+}
+html[data-theme="skyisles"] .sweat-card:nth-child(6n+2) { animation-duration: 0.5s, 3.8s; animation-delay: 0s, 1.2s; }
+html[data-theme="skyisles"] .sweat-card:nth-child(6n+3) { animation-duration: 0.5s, 2.9s; animation-delay: 0s, 0.3s; }
+html[data-theme="skyisles"] .sweat-card:nth-child(6n+4) { animation-duration: 0.5s, 3.5s; animation-delay: 0s, 1.8s; }
+html[data-theme="skyisles"] .sweat-card:nth-child(6n+5) { animation-duration: 0.5s, 4.1s; animation-delay: 0s, 0.9s; }
+html[data-theme="skyisles"] .sweat-card:nth-child(6n+6) { animation-duration: 0.5s, 3.3s; animation-delay: 0s, 2.4s; }
+@keyframes skyBob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -3px; }
+}
+@keyframes skyIslandRise {
+  0% { opacity: 0; transform: translateY(40px); }
+  40% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0); }
+}
+html[data-theme="skyisles"] .sweat-card::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: -4px;
+  height: 18px;
+  background: var(--px-grasstop) 0 0 / 32px 12px repeat-x;
+  border-top: 2px solid var(--ink);
+  pointer-events: none;
+  z-index: 1;
+}
+html[data-theme="skyisles"] .sweat-card::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: calc(100% + 2px);
+  height: 30px;
+  background:
+    var(--px-dirt) 0 0 / 16px 16px repeat;
+  -webkit-mask: var(--sky-underside) 0 0 / 100% 100% no-repeat;
+  mask: var(--sky-underside) 0 0 / 100% 100% no-repeat;
+  pointer-events: none;
+  opacity: 1;
+  filter: drop-shadow(0 2px 0 var(--ink));
+}
+html[data-theme="skyisles"] {
+  /* Stepped taper for the island underside, used as a mask. */
+  --sky-underside: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 8' preserveAspectRatio='none' shape-rendering='crispEdges'%3E%3Cpath d='M0 0H40V2H38V3H35V4H32V5H28V6H24V7H21V8H19V7H16V6H12V5H8V4H5V3H2V2H0Z'/%3E%3C/svg%3E");
+}
+html[data-theme="skyisles"] .sweat-card:hover {
+  transform: translateY(-6px);
+  border-color: transparent;
+  box-shadow: inset 0 -4px 0 0 #e1ecd8, 0 -2px 0 0 var(--ink), 0 2px 0 0 var(--ink), -2px 0 0 0 var(--ink), 2px 0 0 0 var(--ink), 0 0 0 4px #ffffff, 0 0 0 6px var(--ink);
+}
+html[data-theme="skyisles"] .sweat-card:active { transform: translateY(0); }
+html[data-theme="skyisles"] .sweat-card:focus-visible { outline: 3px dashed #ffffff; outline-offset: 6px; }
+html[data-theme="skyisles"] .sweat-card.row-exit { animation: skyIslandFall 0.5s steps(5) forwards; }
+@keyframes skyIslandFall {
+  0% { transform: translateY(0) rotate(0); opacity: 1; }
+  30% { transform: translateY(-6px) rotate(-2deg); }
+  100% { transform: translateY(80px) rotate(6deg); opacity: 0; }
+}
+/* XP-level style number: lime digits with a dark outline. */
+html[data-theme="skyisles"] .sweat-card-index {
+  top: 20px;
+  right: 12px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  font-family: var(--font-arcade); font-size-adjust: none;
+  font-size: 9px;
+  font-weight: 400;
+  color: #80ff20;
+  padding: 2px 0;
+  text-shadow: 1px 1px 0 #1b3a00, -1px -1px 0 #1b3a00, 1px -1px 0 #1b3a00, -1px 1px 0 #1b3a00, 2px 2px 0 #1b3a00;
+  z-index: 2;
+}
+html[data-theme="skyisles"] .sweat-card-avatar,
+html[data-theme="skyisles"] .user-avatar,
+html[data-theme="skyisles"] .lb-avatar {
+  border-radius: 0;
+  border: 2px solid var(--ink);
+  image-rendering: pixelated;
+  background: #8b8b8b;
+  box-shadow: 2px 2px 0 rgba(23,50,71,0.3);
+}
+html[data-theme="skyisles"] .sweat-card-name { font-size: 1.12em; }
+html[data-theme="skyisles"] .sweat-card:hover .sweat-card-name .name-text { color: var(--accent-2); }
+html[data-theme="skyisles"] .sweat-card-date { font-family: var(--font-pixel); color: var(--text-faint); }
+html[data-theme="skyisles"] .sweat-card-footer { border-top: 2px dotted var(--border); }
+/* Stat readout as three inventory slots. */
+html[data-theme="skyisles"] .sweat-card-stats {
+  border: none;
+  border-radius: 0;
+  gap: 4px;
+  background: transparent;
+  padding: 0;
+}
+html[data-theme="skyisles"] .card-stat {
+  background: #8b8b8b;
+  box-shadow: var(--slot);
+  border: none;
+  border-radius: 0;
+  padding: 5px 4px 4px;
+}
+html[data-theme="skyisles"] .card-stat + .card-stat { border-left: none; }
+html[data-theme="skyisles"] .card-stat-label {
+  font-family: var(--font-label); font-size-adjust: none;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  color: #e7e7e7;
+  text-shadow: 1px 1px 0 #3f3f3f;
+}
+html[data-theme="skyisles"] .card-stat-value {
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 2px 2px 0 #3f3f3f;
+}
+
+/* ---------- Tiers: Nether island (Demon) and End island (Final Boss) ---------- */
+/* Demon: crimson nylium cap, netherrack underside, a lava-glow outline
+   stepping between two reds, and a pixel flame flickering on the grass. */
+html[data-theme="skyisles"] .sweat-card.tier-t4::before {
+  background: var(--px-grasstop) 0 0 / 32px 12px repeat-x;
+  filter: hue-rotate(250deg) saturate(1.6) brightness(0.85);
+}
+html[data-theme="skyisles"] .sweat-card.tier-t4::after {
+  background: #7a2a26 var(--px-dirt) 0 0 / 16px 16px repeat;
+  background-blend-mode: multiply;
+  filter: drop-shadow(0 2px 0 var(--ink)) hue-rotate(-25deg) saturate(1.8);
+}
+html[data-theme="skyisles"] .sweat-card.tier-t4 .sweat-card-frame {
+  inset: -2px;
+  border: none;
+  box-shadow: 0 0 0 4px #b3261e, 0 0 0 6px var(--ink);
+  animation: skyLava 1.2s steps(1) infinite;
+}
+@keyframes skyLava {
+  0%, 100% { box-shadow: 0 0 0 4px #b3261e, 0 0 0 6px var(--ink); }
+  50% { box-shadow: 0 0 0 4px #ff6a10, 0 0 0 6px var(--ink); }
+}
+html[data-theme="skyisles"] .sweat-card.tier-t4 .sweat-card-frame::before,
+html[data-theme="skyisles"] .sweat-card.tier-t5 .sweat-card-frame::before {
+  content: "";
+  position: absolute;
+  top: -26px;
+  right: 18px;
+  width: 20px;
+  height: 20px;
+  background: var(--px-fire) center bottom / contain no-repeat;
+  animation: skyFlicker 0.36s steps(1) infinite;
+}
+@keyframes skyFlicker {
+  0% { transform: scaleX(1); }
+  50% { transform: scaleX(-1) scaleY(0.9); transform-origin: bottom; }
+}
+/* Final Boss: end-stone island in the void, with an animated end-portal
+   border of drifting specks and the bed they defend perched on top. */
+html[data-theme="skyisles"] .sweat-card.tier-t5::before {
+  background: #dbde9f;
+  background-image: repeating-linear-gradient(90deg, #e8ebb2 0 4px, #cfd28f 4px 8px, #dbde9f 8px 14px);
+  height: 14px;
+}
+html[data-theme="skyisles"] .sweat-card.tier-t5::after {
+  background: #cfd28f var(--px-stone) 0 0 / 16px 16px repeat;
+  background-blend-mode: multiply;
+  filter: drop-shadow(0 2px 0 var(--ink)) sepia(0.6) brightness(1.15);
+}
+html[data-theme="skyisles"] .sweat-card.tier-t5 .sweat-card-frame {
+  inset: -8px;
+  padding: 6px;
+  border-radius: 0;
+  background:
+    radial-gradient(1px 1px at 20% 30%, #b8ffe8 99%, transparent),
+    radial-gradient(1px 1px at 70% 60%, #d9b8ff 99%, transparent),
+    radial-gradient(1px 1px at 40% 80%, #b8ffe8 99%, transparent),
+    radial-gradient(1px 1px at 85% 15%, #ffffff 99%, transparent),
+    #0c1a22;
+  background-size: 24px 24px, 30px 30px, 18px 18px, 36px 36px, auto;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  filter: none;
+  box-shadow: none;
+  animation: skyPortal 2.4s steps(12) infinite;
+}
+@keyframes skyPortal {
+  to { background-position: 24px -24px, -30px 30px, 18px 18px, -36px -36px, 0 0; }
+}
+html[data-theme="skyisles"] .sweat-card.tier-t5 .sweat-card-frame::after {
+  content: "";
+  position: absolute;
+  top: -16px;
+  right: 40px;
+  width: 32px;
+  height: 18px;
+  background: var(--px-bed) center / contain no-repeat;
+  filter: drop-shadow(0 0 0 #fff) drop-shadow(0 -2px 0 rgba(208,120,255,0.8)) drop-shadow(0 2px 0 rgba(208,120,255,0.8));
+  animation: skyBedAura 1.6s steps(2) infinite;
+}
+html[data-theme="skyisles"] .sweat-card.tier-t5 .sweat-card-frame::before { display: none; }
+@keyframes skyBedAura {
+  50% { filter: drop-shadow(0 -2px 0 rgba(255,255,255,0.9)) drop-shadow(2px 0 0 rgba(208,120,255,0.9)) drop-shadow(-2px 0 0 rgba(208,120,255,0.9)); }
+}
+html[data-theme="skyisles"] .pill.tier-pill { font-family: var(--font-arcade); font-size-adjust: none; font-weight: 400; font-size: 8px; padding: 5px 7px 4px; letter-spacing: 0.5px; }
+html[data-theme="skyisles"] .pill.tier-pill.t4 { background: #6e1a14; color: #ffb347; text-shadow: 1px 1px 0 #2a0400; }
+html[data-theme="skyisles"] .pill.tier-pill.t5 { background: #1a0f2e; color: #e0b8ff; text-shadow: 1px 1px 0 #000, 0 0 4px #b06ae8; }
+
+/* ---------- Stats strip: advancement toasts ---------- */
+html[data-theme="skyisles"] .ss-tile {
+  background: #212121;
+  box-shadow: inset 0 0 0 2px #555555, inset 0 0 0 4px #1a1a1a, var(--pxb), 8px 8px 0 0 rgba(23,50,71,0.25);
+  transition: none;
+}
+html[data-theme="skyisles"] .ss-tile[data-username]:hover { transform: translateY(-4px); }
+html[data-theme="skyisles"] .ss-label { color: #ffff55; font-family: var(--font-pixel); font-size: 0.78em; letter-spacing: 0.3px; text-shadow: 2px 2px 0 #3f3f00; }
+html[data-theme="skyisles"] .ss-value { color: #ffffff; font-family: var(--font-pixel); font-weight: 700; text-shadow: 3px 3px 0 #3f3f3f; }
+html[data-theme="skyisles"] .ss-who, html[data-theme="skyisles"] .ss-sub, html[data-theme="skyisles"] .ss-flag-legend { color: #cfcfcf; font-family: var(--font-pixel); }
+html[data-theme="skyisles"] .ss-sub b { color: #7cfc4a; }
+html[data-theme="skyisles"] .ss-who img { border-radius: 0; box-shadow: 0 0 0 2px #555; }
+html[data-theme="skyisles"] .ss-spark span {
+  border-radius: 0;
+  background: #7cfc4a;
+  opacity: 0.45;
+  box-shadow: inset -2px 0 0 #3fb52a;
+}
+html[data-theme="skyisles"] .ss-spark span:last-child { opacity: 1; animation: skyBlink 1s steps(1) infinite; }
+/* Flag bar as an XP bar: dark trough with notch ticks. */
+html[data-theme="skyisles"] .ss-flag-bar {
+  border-radius: 0;
+  height: 8px;
+  background: #3a3a3a repeating-linear-gradient(90deg, transparent 0 10%, #000 10% calc(10% + 2px));
+  box-shadow: 0 0 0 2px #000;
+}
+
+/* ---------- Sweat Lookup ---------- */
+html[data-theme="skyisles"] .lookup-input svg { color: #8fa3b3; }
+html[data-theme="skyisles"] .lookup-input:focus-within svg { color: #7cfc4a; }
+html[data-theme="skyisles"] .form-label,
+html[data-theme="skyisles"] .field-label,
+html[data-theme="skyisles"] .recent-label,
+html[data-theme="skyisles"] .sweat-meter-kicker,
+html[data-theme="skyisles"] .sweat-gauge-label { font-family: var(--font-label); font-size-adjust: none; font-weight: 700; letter-spacing: 0.5px; }
+html[data-theme="skyisles"] .recent-chip {
+  border-radius: 0;
+  border: none;
+  background: #c6c6c6;
+  color: #2a2a2a;
+  box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #7d7d7d, var(--pxb2);
+  transition: none;
+}
+html[data-theme="skyisles"] .recent-chip img { border-radius: 0; }
+html[data-theme="skyisles"] .recent-chip:hover { background: #d8e6f0; color: #173247; transform: translateY(-2px); }
+/* Preview column's empty prompt: a dotted sky window with a floating
+   island idling inside it. */
+html[data-theme="skyisles"] .dash-empty {
+  border: none;
+  border-radius: 0;
+  color: #1d4a6e;
+  background: linear-gradient(180deg, #bfe6ff 0 30%, #d4efff 30% 60%, #e6f6ff 60%);
+  box-shadow: inset 0 0 0 2px var(--ink), inset 4px 4px 0 2px rgba(23,50,71,0.12);
+}
+html[data-theme="skyisles"] #statsEmpty.is-scanning { color: var(--accent-2); }
+html[data-theme="skyisles"] .idle-isle { display: block; }
+.idle-isle i { position: absolute; display: block; background: center / contain no-repeat; }
+.idle-isle .isle-cloud { left: 0; top: 10px; width: 64px; height: 20px; background-image: var(--px-cloud2); opacity: 0.9; animation: isleCloud 9s steps(36) infinite; }
+.idle-isle .isle-land { left: 14px; top: 62px; width: 112px; height: 56px; background-image: var(--px-idleisle); animation: isleBob 2.4s steps(2) infinite; }
+.idle-isle .isle-bed { left: 26px; top: 45px; width: 40px; height: 22px; background-image: var(--px-bed); animation: isleBob 2.4s steps(2) infinite; }
+.idle-isle .isle-gen { left: 86px; top: 51px; width: 25px; height: 20px; background-image: var(--px-gen); animation: isleBob 2.4s steps(2) infinite; }
+.idle-isle .isle-gem { left: 91px; top: 38px; width: 15px; height: 12px; background-image: var(--px-diamond); opacity: 0; animation: isleGem 3s steps(12) infinite; }
+.idle-isle .isle-gem.g2 { animation-delay: 1.5s; }
+@keyframes isleBob { 50% { transform: translateY(-4px); } }
+@keyframes isleCloud { from { transform: translateX(-70px); } to { transform: translateX(150px); } }
+@keyframes isleGem {
+  0% { opacity: 0; transform: translateY(8px) scaleX(1); }
+  15% { opacity: 1; }
+  25% { transform: translateY(-6px) scaleX(-1); }
+  50% { transform: translateY(-12px) scaleX(1); }
+  75% { opacity: 1; transform: translateY(-18px) scaleX(-1); }
+  100% { opacity: 0; transform: translateY(-26px) scaleX(1); }
+}
+html[data-theme="skyisles"] #statsEmpty.is-scanning .isle-gem { filter: drop-shadow(0 0 0 #fff) brightness(1.2); }
+
+/* Lookup result: the skin on a grass block pedestal, the gauge as an XP
+   ring, tier text in the arcade font. */
+html[data-theme="skyisles"] #statsContent.tier-t1 { --tier: #3f9a26; }
+html[data-theme="skyisles"] #statsContent.tier-t2 { --tier: #1f86c4; }
+html[data-theme="skyisles"] #statsContent.tier-t3 { --tier: #c98a0b; }
+html[data-theme="skyisles"] #statsContent.tier-t4 { --tier: #c8261b; }
+html[data-theme="skyisles"] #statsContent.tier-t5 { --tier: #8932b8; }
+html[data-theme="skyisles"] .skin-aura {
+  inset: auto -12px -14px;
+  height: 24px;
+  border-radius: 0;
+  filter: none;
+  background: var(--px-grasstop) 0 0 / 32px 12px repeat-x, var(--px-dirt) 0 12px / 16px 16px repeat;
+  box-shadow: var(--pxb2);
+  animation: none;
+}
+html[data-theme="skyisles"] .skin-tilt { border-radius: 0; }
+html[data-theme="skyisles"] .skin-tilt #statsAvatar,
+html[data-theme="skyisles"] #statsAvatar {
+  border-radius: 0;
+  border: none;
+  background: linear-gradient(180deg, #7ec3f2, #bfe6ff);
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 4px rgba(255,255,255,0.4);
+}
+html[data-theme="skyisles"] .skin-glare { border-radius: 0; }
+html[data-theme="skyisles"] .sweat-meter {
+  border-radius: 0;
+  border: none;
+  background: #212121;
+  color: #fff;
+  box-shadow: inset 0 0 0 2px #555, var(--pxb2), 6px 6px 0 0 rgba(23,50,71,0.22);
+}
+html[data-theme="skyisles"] .sweat-gauge .g-track { stroke: #3a3a3a; stroke-width: 10; }
+html[data-theme="skyisles"] .sweat-gauge .g-ticks { stroke: #000; stroke-width: 10; stroke-dasharray: 2 7.8; }
+html[data-theme="skyisles"] .sweat-gauge .g-fill { stroke: #7cfc4a; stroke-width: 10; stroke-linecap: butt; filter: none; }
+html[data-theme="skyisles"] #statsContent.tier-t4 .sweat-gauge .g-fill { stroke: #ff5555; }
+html[data-theme="skyisles"] #statsContent.tier-t5 .sweat-gauge .g-fill { stroke: #d98cff; }
+html[data-theme="skyisles"] .sweat-gauge-value { color: #80ff20; font-family: var(--font-arcade); font-size-adjust: none; font-size: 0.8em; font-weight: 400; text-shadow: 2px 2px 0 #1b3a00; }
+html[data-theme="skyisles"] .sweat-gauge-label,
+html[data-theme="skyisles"] .sweat-meter-kicker { color: #aaaaaa; }
+html[data-theme="skyisles"] .sweat-tier {
+  font-family: var(--font-arcade); font-size-adjust: none;
+  font-weight: 400;
+  font-size: 1.05em;
+  line-height: 1.5;
+  color: var(--tier);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.6);
+  filter: brightness(1.6) saturate(1.2);
+}
+html[data-theme="skyisles"] .sweat-tier-sub { color: #cfcfcf; }
+html[data-theme="skyisles"] .sweat-tier-scale span { border-radius: 0; height: 8px; background: #3a3a3a; box-shadow: 0 0 0 1px #000; }
+html[data-theme="skyisles"] .sweat-tier-scale span.on { background: #7cfc4a; box-shadow: 0 0 0 1px #000, inset 0 -3px 0 #3fb52a; }
+html[data-theme="skyisles"] #statsContent.stats-pop { animation: skyStatsPop 0.4s steps(4) both; }
+@keyframes skyStatsPop {
+  0% { opacity: 0; transform: translateY(-24px); }
+  60% { opacity: 1; transform: translateY(4px); }
+  100% { transform: translateY(0); }
+}
+html[data-theme="skyisles"] .stat-hero,
+html[data-theme="skyisles"] .stats-tag-panel,
+html[data-theme="skyisles"] .modal-stat-tile,
+html[data-theme="skyisles"] .modal-tags-section {
+  border: none;
+  border-radius: 0;
+  background: #8b8b8b;
+  box-shadow: var(--slot);
+  color: #fff;
+}
+html[data-theme="skyisles"] .stat-hero-label,
+html[data-theme="skyisles"] .modal-stat-label,
+html[data-theme="skyisles"] .stats-tag-panel h4,
+html[data-theme="skyisles"] .modal-tags-section h4 { color: #e7e7e7; font-family: var(--font-label); font-size-adjust: none; text-shadow: 1px 1px 0 #3f3f3f; }
+html[data-theme="skyisles"] .stat-hero-value,
+html[data-theme="skyisles"] .modal-stat-value { color: #fff; text-shadow: 2px 2px 0 #3f3f3f; }
+html[data-theme="skyisles"] .modal-stat-delta { border-radius: 0; font-family: var(--font-pixel); }
+html[data-theme="skyisles"] #statsUsername { font-size: 1.35em; }
+html[data-theme="skyisles"] #statsStar { font-family: var(--font-pixel); }
+html[data-theme="skyisles"] .stat-hero:hover { transform: translateY(-4px); box-shadow: var(--slot), 0 0 0 2px #fff; }
+html[data-theme="skyisles"] .stat-hero::after { display: none; }
+html[data-theme="skyisles"] .stat-hero.fkdr .stat-hero-value { color: #55ffff; }
+html[data-theme="skyisles"] .stat-hero.wlr .stat-hero-value { color: #55ff55; }
+html[data-theme="skyisles"] .stat-hero.kdr .stat-hero-value { color: #ffaa00; }
+html[data-theme="skyisles"] .stat-hero.bblr .stat-hero-value { color: #ff55ff; }
+html[data-theme="skyisles"] .stat-hero-sub { color: #e7e7e7; text-shadow: 1px 1px 0 #3f3f3f; }
+html[data-theme="skyisles"] #statsContent.stats-pop .stat-hero,
+html[data-theme="skyisles"] #statsContent.stats-pop .stats-tag-panel,
+html[data-theme="skyisles"] #statsContent.stats-pop .sweat-meter { animation-name: skyTilePlace; animation-timing-function: steps(3); }
+@keyframes skyTilePlace {
+  0% { opacity: 0; transform: translateY(-16px); }
+  66% { opacity: 1; transform: translateY(2px); }
+  100% { opacity: 1; transform: none; }
+}
+/* Standing bars (preview tiles and the popup) as XP bars. */
+html[data-theme="skyisles"] .modal-standing-bar {
+  height: 8px;
+  border-radius: 0;
+  background: #3a3a3a;
+  box-shadow: 0 0 0 2px #1e1e1e;
+}
+html[data-theme="skyisles"] .modal-standing-bar > span {
+  border-radius: 0;
+  background: #7cfc4a repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), rgba(0,0,0,0.5) calc(10% - 2px) 10%);
+  box-shadow: inset 0 -3px 0 #3fb52a;
+  animation: skyXpFill 0.8s steps(8) both;
+}
+@keyframes skyXpFill { from { transform: scaleX(0); } }
+html[data-theme="skyisles"] .modal-standing-text { font-family: var(--font-pixel); color: inherit; }
+html[data-theme="skyisles"] .stat-standing .modal-standing-text { color: #e7e7e7; text-shadow: 1px 1px 0 #3f3f3f; }
+/* Hypixel rank as the bracketed chat prefix. */
+html[data-theme="skyisles"] #statsRank {
+  border: none;
+  border-radius: 0;
+  background: rgba(20,20,20,0.82);
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: 0.8em;
+  padding: 3px 8px 2px;
+  box-shadow: 0 0 0 2px #1e1e1e;
+  filter: brightness(1.7) saturate(1.3);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.6);
+}
+html[data-theme="skyisles"] #statsRank::before { content: "["; }
+html[data-theme="skyisles"] #statsRank::after { content: "]"; }
+
+/* ---------- Tooltip: the Minecraft item tooltip ---------- */
+html[data-theme="skyisles"] #customTooltip {
+  background: rgba(16,0,16,0.94);
+  color: #ffffff;
+  border: 2px solid #2d0a6b;
+  border-radius: 0;
+  outline: 2px solid rgba(16,0,16,0.94);
+  font-family: var(--font-pixel);
+  text-shadow: 1px 1px 0 #3f3f3f;
+  box-shadow: inset 0 0 0 1px #5000ff55;
+  transition: opacity 0.1s steps(1);
+}
+html[data-theme="skyisles"] #customTooltip::after { display: none; }
+
+/* ---------- Leaderboard: gold / iron / copper block podium ---------- */
+html[data-theme="skyisles"] { --medal-1: #f2c21a; --medal-2: #d8d8d8; --medal-3: #d27d4b; }
+html[data-theme="skyisles"] .lb-step:hover { transform: translateY(-4px); }
+html[data-theme="skyisles"] .leaderboard-chip { transition: transform 0.15s steps(2); }
+html[data-theme="skyisles"] .lb-avatar {
+  border-radius: 0;
+  border: none;
+  background: var(--px-wool) 0 0 / 100% 100%, var(--chip-color);
+  background-blend-mode: multiply;
+  color: #fff;
+  font-family: var(--font-pixel);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.6);
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,0.22), inset 3px 3px 0 rgba(255,255,255,0.25), var(--pxb2);
+}
+html[data-theme="skyisles"] .lb-step .lb-avatar {
+  box-shadow: inset -6px -6px 0 rgba(0,0,0,0.22), inset 6px 6px 0 rgba(255,255,255,0.25), 0 0 0 2px var(--ink), 0 0 0 5px var(--medal), 0 0 0 7px var(--ink);
+  animation: isleBob 2.4s steps(2) infinite;
+}
+html[data-theme="skyisles"] .lb-step.lb-place-2 .lb-avatar { animation-delay: 0.8s; }
+html[data-theme="skyisles"] .lb-step.lb-place-3 .lb-avatar { animation-delay: 1.6s; }
+html[data-theme="skyisles"] .lb-crown { font-size: 0; font-size-adjust: none; height: 32px; }
+html[data-theme="skyisles"] .lb-crown::before {
+  content: "";
+  display: block;
+  width: 36px;
+  height: 24px;
+  margin: 4px auto 0;
+  background: var(--px-crown) center / contain no-repeat;
+  animation: skyCrown 1.6s steps(2) infinite;
+}
+html[data-theme="skyisles"] .lb-crown > span { display: none; }
+@keyframes skyCrown { 50% { transform: translateY(-3px); } }
+html[data-theme="skyisles"] .lb-step-count,
+html[data-theme="skyisles"] .leaderboard-count { color: #1d4a6e; font-family: var(--font-pixel); }
+/* Blocks: flat metal face with a pixel bevel and a darker lower lip. */
+html[data-theme="skyisles"] .lb-block {
+  border: none;
+  border-radius: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 14px, rgba(0,0,0,0.08) 14px 16px),
+    repeating-linear-gradient(90deg, transparent 0 14px, rgba(255,255,255,0.12) 14px 16px),
+    var(--medal);
+  box-shadow: inset 6px 6px 0 rgba(255,255,255,0.45), inset -6px -6px 0 rgba(0,0,0,0.25), var(--pxb), 8px 8px 0 0 rgba(23,50,71,0.22);
+}
+html[data-theme="skyisles"] .lb-place {
+  font-family: var(--font-arcade); font-size-adjust: none;
+  font-weight: 400;
+  font-size: 1.6em;
+  color: #fff;
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.45), -2px 0 0 var(--ink), 2px 0 0 var(--ink), 0 -2px 0 var(--ink), 0 2px 0 var(--ink);
+}
+html[data-theme="skyisles"] .lb-place-1 .lb-place { font-size: 2.1em; }
+html[data-theme="skyisles"] .lb-step.active .lb-block {
+  box-shadow: inset 6px 6px 0 rgba(255,255,255,0.45), inset -6px -6px 0 rgba(0,0,0,0.25), 0 0 0 4px var(--ink), 0 0 0 7px #fff, 0 0 0 9px var(--ink);
+}
+html[data-theme="skyisles"] .lb-step.active .lb-block::after,
+html[data-theme="skyisles"] .lb-row.active::after {
+  font-family: var(--font-label); font-size-adjust: none;
+  color: #fff;
+  text-shadow: 1px 1px 0 var(--ink);
+  animation: skyBlink 1s steps(1) infinite;
+}
+html[data-theme="skyisles"] .lb-row.active::after { color: var(--accent); text-shadow: none; }
+html[data-theme="skyisles"] .lb-row {
+  border: none;
+  border-radius: 0;
+  background: var(--panel);
+  box-shadow: var(--pxb2), 4px 4px 0 2px rgba(23,50,71,0.18);
+  transition: none;
+}
+html[data-theme="skyisles"] .lb-row:hover { background: #eaf6ff; transform: translateX(2px); }
+html[data-theme="skyisles"] .lb-row.active { background: #e6f7da; }
+html[data-theme="skyisles"] .lb-row .leaderboard-rank { font-family: var(--font-arcade); font-size-adjust: none; font-size: 0.7em; color: var(--accent-2); }
+html[data-theme="skyisles"] .lb-bar { border-radius: 0; background: #3a3a3a; height: 8px; box-shadow: 0 0 0 2px #1e1e1e; }
+html[data-theme="skyisles"] .lb-bar > span { border-radius: 0; background: #7cfc4a; box-shadow: inset 0 -3px 0 #3fb52a; }
+html[data-theme="skyisles"] .leaderboard-chip:hover .leaderboard-name { color: var(--accent-2); }
+
+/* ---------- Table: an inventory grid ---------- */
+html[data-theme="skyisles"] .table-wrap { overflow: auto; }
+html[data-theme="skyisles"] thead tr { background: #5b5b5b; }
+html[data-theme="skyisles"] thead th {
+  color: #ffffff;
+  font-family: var(--font-label); font-size-adjust: none;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0 #1e1e1e;
+  border-bottom: 4px solid var(--ink);
+}
+html[data-theme="skyisles"] th.sortable:hover { background: #7a7a7a; color: #ffffa0; }
+html[data-theme="skyisles"] tbody tr { border-bottom: 2px dotted var(--border); }
+html[data-theme="skyisles"] tbody tr:nth-child(even) { background: rgba(191,230,255,0.25); }
+html[data-theme="skyisles"] tbody tr:hover { background: #e6f7da; }
+html[data-theme="skyisles"] tbody tr:hover .user-cell span { color: var(--accent-2); text-shadow: none; }
+html[data-theme="skyisles"] td { font-family: var(--font-pixel); }
+html[data-theme="skyisles"] .sweat-row { animation: skyRowIn 0.3s steps(3) both; }
+html[data-theme="skyisles"] .sweat-row.row-exit { animation: skyRowOut 0.3s steps(3) forwards; }
+@keyframes skyRowIn { from { opacity: 0; transform: translateX(-24px); } }
+@keyframes skyRowOut { to { opacity: 0; transform: translateX(24px); } }
+html[data-theme="skyisles"] .row-note-icon { filter: none; }
+html[data-theme="skyisles"] .row-tier-pill { border-radius: 0; font-family: var(--font-arcade); font-size-adjust: none; font-size: 7px; }
+html[data-theme="skyisles"] .sweat-row.tier-t4 > td:first-child::before { background: #ff6a10; box-shadow: none; width: 4px; border-radius: 0; animation: skyLavaBar 1.2s steps(1) infinite; }
+html[data-theme="skyisles"] .sweat-row.tier-t5 > td:first-child::before { background: #b06ae8; box-shadow: none; width: 4px; border-radius: 0; animation: skyLavaBar 1.2s steps(1) infinite reverse; }
+html[data-theme="skyisles"] .sweat-row.tier-t5 { background: linear-gradient(90deg, rgba(176,106,232,0.14), transparent 45%); }
+@keyframes skyLavaBar { 50% { filter: brightness(1.5); } }
+
+/* ---------- Notes: oak signs ---------- */
+html[data-theme="skyisles"] .sweat-card-note,
+html[data-theme="skyisles"] .note-item {
+  position: relative;
+  border: none;
+  border-radius: 0;
+  color: #3b2410;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 10px, rgba(90,56,30,0.35) 10px 12px),
+    #c89a5c;
+  box-shadow: inset 2px 2px 0 #e0b87a, inset -2px -2px 0 #8a6232, var(--pxb2);
+  font-family: var(--font-pixel);
+  text-shadow: none;
+}
+html[data-theme="skyisles"] .sweat-card-note { margin-top: 12px; }
+html[data-theme="skyisles"] .sweat-card-note .note-meta,
+html[data-theme="skyisles"] .note-item-date { color: #6b4a22; font-family: var(--font-pixel); }
+html[data-theme="skyisles"] .note-item-text { color: #2e1a08; }
+html[data-theme="skyisles"] .note-item-author { color: #3b2410; font-weight: 700; }
+html[data-theme="skyisles"] .note-item-author::after { color: #6b4a22; }
+html[data-theme="skyisles"] .note-item::after { display: none; }
+html[data-theme="skyisles"] .sweat-card:hover .sweat-card-note { transform: rotate(-1deg); }
+html[data-theme="skyisles"] .note-list { gap: 12px; padding: 4px; }
+html[data-theme="skyisles"] .note-signer::before { border-radius: 0; box-shadow: 0 0 0 1px var(--ink); }
+html[data-theme="skyisles"] .note-signer { font-family: var(--font-pixel); }
+
+/* ---------- Modals: GUI windows ---------- */
+html[data-theme="skyisles"] .modal { background: rgba(23,50,71,0.55); }
+html[data-theme="skyisles"] .modal-content {
+  border: none;
+  border-radius: 0;
+  background: #c6c6c6;
+  color: #2a2a2a;
+  box-shadow: inset 4px 4px 0 0 #ffffff, inset -4px -4px 0 0 #555555, var(--pxb), 12px 12px 0 0 rgba(0,0,0,0.3);
+}
+html[data-theme="skyisles"] .modal-content h2,
+html[data-theme="skyisles"] .modal-content h3 { color: #3f3f3f; }
+html[data-theme="skyisles"] #modalUsername { color: #3f3f3f; font-size: 1.4em; text-shadow: none; }
+html[data-theme="skyisles"] #modalSkin {
+  border-radius: 0;
+  border: none;
+  background: linear-gradient(180deg, #7ec3f2, #bfe6ff);
+  box-shadow: inset 2px 2px 0 #373737, inset -2px -2px 0 #fff;
+  image-rendering: pixelated;
+}
+html[data-theme="skyisles"] .modal-record {
+  border: none;
+  border-radius: 0;
+  background: #8b8b8b;
+  box-shadow: var(--slot);
+}
+html[data-theme="skyisles"] .modal-record-label { color: #e7e7e7; font-family: var(--font-label); font-size-adjust: none; text-shadow: 1px 1px 0 #3f3f3f; }
+html[data-theme="skyisles"] .modal-record-value { color: #fff; text-shadow: 1px 1px 0 #3f3f3f; }
+html[data-theme="skyisles"] .modal-copy-link,
+html[data-theme="skyisles"] .modal-close,
+html[data-theme="skyisles"] .modal-notes-count { border-radius: 0; }
+html[data-theme="skyisles"] .modal-notes-count { background: var(--ink); color: #fff; }
+html[data-theme="skyisles"] .edit-section-label {
+  font-family: var(--font-label); font-size-adjust: none;
+  color: #3f3f3f;
+  border-bottom: 2px solid #8b8b8b;
+  letter-spacing: 0.5px;
+}
+html[data-theme="skyisles"] .edit-modal-title { color: #3f3f3f; font-size: 1em; line-height: 1.5; }
+html[data-theme="skyisles"] .edit-stats-grid .edit-field { background: #8b8b8b; box-shadow: var(--slot); padding: 8px; }
+html[data-theme="skyisles"] .edit-stats-grid .edit-field label { color: #fff; text-shadow: 1px 1px 0 #3f3f3f; }
+html[data-theme="skyisles"] .confirm-modal-content { text-align: center; }
+/* Confirm-delete icon is a lit TNT block, flashing white before it blows. */
+html[data-theme="skyisles"] .confirm-icon {
+  border: none;
+  border-radius: 0;
+  font-size: 0; font-size-adjust: none;
+  width: 56px;
+  height: 56px;
+  background: var(--px-tnt) center / contain no-repeat;
+  animation: skyTntFlash 0.8s steps(1) infinite;
+  image-rendering: pixelated;
+}
+@keyframes skyTntFlash { 50% { filter: brightness(2.2) saturate(0.2); } }
+
+/* ---------- Status lines type out a character at a time ---------- */
+html[data-theme="skyisles"] #status,
+html[data-theme="skyisles"] #editStatus,
+html[data-theme="skyisles"] #adminKeyStatus { display: inline-block; font-family: var(--font-pixel); }
+html[data-theme="skyisles"] #status.typewriter-play,
+html[data-theme="skyisles"] #editStatus.typewriter-play,
+html[data-theme="skyisles"] #adminKeyStatus.typewriter-play { animation: skyType 0.7s steps(14) both; }
+html[data-theme="skyisles"] #status.typewriter-dismiss,
+html[data-theme="skyisles"] #editStatus.typewriter-dismiss,
+html[data-theme="skyisles"] #adminKeyStatus.typewriter-dismiss { animation: skyType 0.35s steps(7) reverse both; }
+@keyframes skyType { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+/* ---------- Denicking + activity log ---------- */
+html[data-theme="skyisles"] .denick-mode-toggle { border-radius: 0; border: none; background: #5b5b5b; padding: 3px; box-shadow: var(--pxb2); }
+html[data-theme="skyisles"] .denick-mode-btn {
+  border-radius: 0;
+  margin: 1px;
+  color: #e7e7e7;
+  background: #8b8b8b;
+  box-shadow: var(--slot);
+  text-shadow: 1px 1px 0 #3f3f3f;
+  font-family: var(--font-pixel);
+  transition: none;
+}
+html[data-theme="skyisles"] .denick-mode-btn.active {
+  color: #fff;
+  background: #a8a8a8;
+  position: relative;
+  z-index: 1;
+  box-shadow: var(--slot), 0 0 0 2px #fff, 0 0 0 4px #1e1e1e;
+}
+html[data-theme="skyisles"] .denick-row {
+  border: none;
+  border-radius: 0;
+  background: var(--panel-2);
+  box-shadow: var(--pxb2);
+}
+html[data-theme="skyisles"] .denick-row.is-current { background: #e6f7da; }
+html[data-theme="skyisles"] .denick-row::before,
+html[data-theme="skyisles"] .denick-row.is-current::before { border-radius: 0; }
+html[data-theme="skyisles"] .activity-chip { border-radius: 0; box-shadow: var(--pxb2); border: none; font-family: var(--font-pixel); }
+html[data-theme="skyisles"] .activity-select select { border-radius: 0; }
+
+/* ---------- Empty states ---------- */
+html[data-theme="skyisles"] #emptyState .empty-state-text,
+html[data-theme="skyisles"] #leaderboardEmptyState .empty-state-text { font-family: var(--font-pixel); color: #1d4a6e; }
+
+/* ---------- Keyboard shortcuts sheet ---------- */
+html[data-theme="skyisles"] .shortcuts-sheet {
+  border: none;
+  border-radius: 0;
+  background: #c6c6c6;
+  color: #2a2a2a;
+  box-shadow: inset 4px 4px 0 0 #ffffff, inset -4px -4px 0 0 #555555, var(--pxb), 12px 12px 0 0 rgba(0,0,0,0.3);
+}
+html[data-theme="skyisles"] .shortcuts-title { color: #3f3f3f; font-size: 0.9em; }
+html[data-theme="skyisles"] .shortcuts-list li { border-color: #8b8b8b; }
+html[data-theme="skyisles"] .shortcuts-list kbd {
+  border-radius: 0;
+  border: none;
+  background: #8b8b8b;
+  color: #fff;
+  font-family: var(--font-pixel);
+  text-shadow: 1px 1px 0 #3f3f3f;
+  box-shadow: var(--slot);
+}
+
+/* ---------- Live new sweat: dropped in from the sky ---------- */
+html[data-theme="skyisles"] .sweat-card.live-new {
+  animation: skyIslandDrop 0.7s steps(7) backwards, skyBob 3.2s steps(2) 0.8s infinite;
+  box-shadow: inset 0 -4px 0 0 #e1ecd8, 0 0 0 2px var(--ink), 0 0 0 5px #7cfc4a, 0 0 0 7px var(--ink);
+}
+@keyframes skyIslandDrop {
+  0% { opacity: 0; transform: translateY(-120px); }
+  60% { opacity: 1; transform: translateY(8px); }
+  80% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+
+/* ---------- Primary click flourish + success pulse ---------- */
+html[data-theme="skyisles"] .btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(#fff, #fff) 0 0 / 6px 6px no-repeat,
+    linear-gradient(#fff, #fff) 100% 0 / 6px 6px no-repeat,
+    linear-gradient(#fff, #fff) 0 100% / 6px 6px no-repeat,
+    linear-gradient(#fff, #fff) 100% 100% / 6px 6px no-repeat;
+}
+html[data-theme="skyisles"] .btn-primary.stamp-flourish::after { animation: skySparkle 0.4s steps(4); }
+@keyframes skySparkle {
+  0% { opacity: 1; inset: 0; }
+  100% { opacity: 0; inset: -18px; }
+}
+html[data-theme="skyisles"] .add-sweat-row .btn.success-pulse { animation: skyLevelUp 0.6s steps(6); }
+@keyframes skyLevelUp {
+  0%, 100% { filter: none; }
+  33% { filter: brightness(1.4) hue-rotate(40deg); }
+  66% { filter: brightness(1.2); }
+}
+html[data-theme="skyisles"] .flip-sheen { display: none; }
+/* Popup stat tiles: bright Minecraft chat colors on the grey slots. */
+html[data-theme="skyisles"] .modal-stat-tile .modal-stat-value { text-shadow: 2px 2px 0 #3f3f3f; }
+html[data-theme="skyisles"] .modal-stat-tile.stat-fkdr .modal-stat-value { color: #55ffff; }
+html[data-theme="skyisles"] .modal-stat-tile.stat-wlr .modal-stat-value { color: #55ff55; }
+html[data-theme="skyisles"] .modal-stat-tile.stat-finals .modal-stat-value { color: #ff5555; }
+html[data-theme="skyisles"] .modal-stat-tile.stat-wins .modal-stat-value { color: #ffff55; }
+html[data-theme="skyisles"] .modal-stat-tile .modal-standing { color: #7cfc4a; }
+html[data-theme="skyisles"] .modal-stat-tile .modal-standing-text { color: #e7e7e7; text-shadow: 1px 1px 0 #3f3f3f; }
+html[data-theme="skyisles"] .modal-stat-delta {
+  border: none;
+  background: #3a3a3a;
+  box-shadow: 0 0 0 2px #1e1e1e;
+  color: #cfcfcf;
+}
+html[data-theme="skyisles"] .modal-stat-delta.delta-up,
+html[data-theme="skyisles"] .modal-stat-delta.delta-down { background: #3a3a3a; }
+html[data-theme="skyisles"] .modal-stat-delta.delta-up .delta-value { color: #55ff55; }
+html[data-theme="skyisles"] .modal-stat-delta.delta-down .delta-value { color: #ff5555; }
+html[data-theme="skyisles"] .modal-tags-label { color: #3f3f3f; font-family: var(--font-label); font-size-adjust: none; font-weight: 700; letter-spacing: 0.5px; }
+html[data-theme="skyisles"] .modal-tags-section .modal-tags-label { color: #fff; text-shadow: 1px 1px 0 #3f3f3f; }
+html[data-theme="skyisles"] .modal-tags-row,
+html[data-theme="skyisles"] .urchin-reason-text { color: #e7e7e7; text-shadow: 1px 1px 0 #3f3f3f; }
+html[data-theme="skyisles"] #modalTitle { color: #3f3f3f; font-family: var(--font-label); font-size-adjust: none; }
+html[data-theme="skyisles"] .modal-live-dot { border-radius: 0; background: #55ff55; box-shadow: 0 0 0 1px #1e1e1e; animation: skyBlink 1s steps(1) infinite; }
+html[data-theme="skyisles"] .modal-username-sub { color: #555; }
+html[data-theme="skyisles"] .modal-copy-link {
+  border: none;
+  border-radius: 0;
+  background: #c6c6c6;
+  color: #2a2a2a;
+  box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #7d7d7d, var(--pxb2);
+  font-family: var(--font-pixel);
+}
+html[data-theme="skyisles"] .modal-copy-link:hover { background: #d8e6f0; color: #173247; }
+/* Close button: a red X block. */
+html[data-theme="skyisles"] .modal-close {
+  border: none;
+  border-radius: 0;
+  background: #d23a2e;
+  color: #fff;
+  font-family: var(--font-arcade); font-size-adjust: none;
+  font-size: 12px;
+  text-shadow: 1px 1px 0 #6e140e;
+  box-shadow: inset 2px 2px 0 #ff7a6a, inset -2px -2px 0 #8e1a12, var(--pxb2);
+  transition: none;
+}
+html[data-theme="skyisles"] .modal-close:hover { color: #fff; background: #e4483b; transform: translateY(-2px); border-color: transparent; }
+html[data-theme="skyisles"] .modal-close:active { transform: translateY(1px); }
+html[data-theme="skyisles"] .modal-record-flags .pill { font-size: 0.75em; }
+html[data-theme="skyisles"] .modal-notes-empty { color: #555; font-family: var(--font-pixel); }
+html[data-theme="skyisles"] .chip-group.roster .roster-avatar::after,
+html[data-theme="skyisles"] .roster-check { border-radius: 0; }
+html[data-theme="skyisles"] .roster-chip:has(input:checked)::after {
+  border-radius: 0;
+  border: none;
+  width: 14px;
+  height: 14px;
+  bottom: -2px;
+  right: -2px;
+  background: var(--px-check) center / 10px 9px no-repeat, #3f9a26;
+  box-shadow: var(--pxb2);
+  z-index: 2;
+}
+
+/* Switch scene canvas (drawn by THEME_REVEALS.skyisles). */
+.tto-sky-canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+
+/* ---------- Click effects ---------- */
+.fx-sky-chunk {
+  width: 6px;
+  height: 6px;
+  background: var(--c);
+  box-shadow: inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+/* Crack overlay stepping through three break stages (sprite strip). */
+.fx-sky-crack {
+  width: 32px;
+  height: 32px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 8' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M3 3h2v1H3zM4 4h1v1H4zM11 2h1v1h-1zM12 3h2v1h-2zM10 4h1v2h-1zM13 4h1v1h-1zM9 6h1v1H9zM18 1h1v1h-1zM19 2h2v1h-2zM17 3h1v2h-1zM21 3h1v1h-1zM22 4h1v2h-1zM16 5h1v1h-1zM19 5h1v2h-1zM18 7h1v1h-1z'/%3E%3C/svg%3E") 0 0 / 96px 32px no-repeat;
+  image-rendering: pixelated;
+}
+.fx-sky-tnt { width: 32px; height: 32px; background: var(--px-tnt) center / contain no-repeat; }
+.fx-sky-pearl { width: 16px; height: 16px; background: var(--px-pearl) center / contain no-repeat; }
+.fx-sky-puff { width: 24px; height: 24px; background: #fff; box-shadow: 0 0 0 2px rgba(30,42,51,0.4); }
+html[data-theme="skyisles"] .fx-word {
+  font-family: var(--font-arcade); font-size-adjust: none;
+  font-weight: 400;
+  font-size: 18px;
+  color: #ffff55;
+  letter-spacing: 1px;
+  text-shadow: 3px 3px 0 #3f3f00, -2px 0 0 #1e2a33, 2px 0 0 #1e2a33, 0 -2px 0 #1e2a33, 0 2px 0 #1e2a33;
+}
+html[data-theme="skyisles"] .fx-word small {
+  font-family: var(--font-arcade); font-size-adjust: none;
+  font-size: 0.45em;
+  color: #80ff20;
+  text-shadow: 2px 2px 0 #1b3a00;
+}
+
+/* ---------- Success flourish: advancement toast + XP orbs ---------- */
+.flourish-sky-toast {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  display: grid;
+  grid-template-columns: 32px auto;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+  padding: 8px 14px 8px 10px;
+  background: #212121;
+  box-shadow: inset 0 0 0 2px #555, 0 -2px 0 0 #000, 0 2px 0 0 #000, -2px 0 0 0 #000, 2px 0 0 0 #000;
+  white-space: nowrap;
+  font-family: 'Jersey 10', monospace;
+  text-align: left;
+}
+.flourish-sky-toast i { grid-row: 1 / 3; width: 32px; height: 32px; background: var(--px-sword) center / 28px no-repeat, #8b8b8b; box-shadow: inset 2px 2px 0 #373737, inset -2px -2px 0 #fff; }
+.flourish-sky-toast b { color: #ffff55; font-size: 14px; text-shadow: 2px 2px 0 #3f3f00; }
+.flourish-sky-toast span { color: #ffffff; font-size: 13px; text-shadow: 1px 1px 0 #3f3f3f; }
+.flourish-sky-orb {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px;
+  background: var(--px-xp) center / contain no-repeat;
+}
+
+/* ---------- BED DESTROYED: the Minecraft death screen ---------- */
+html[data-theme="skyisles"] .egg-scene-bg {
+  background: linear-gradient(180deg, rgba(120,0,0,0.55), rgba(200,20,20,0.35) 60%, rgba(80,0,0,0.6));
+}
+html[data-theme="skyisles"] .egg-bed { padding-bottom: 40px; box-sizing: content-box; }
+html[data-theme="skyisles"] .egg-bed::after {
+  content: "";
+  position: absolute;
+  left: -40px;
+  right: -40px;
+  bottom: -10px;
+  height: 56px;
+  background: var(--px-idleisle) center / 100% 100% no-repeat;
+  z-index: -1;
+}
+html[data-theme="skyisles"] .egg-title {
+  font-family: var(--font-arcade); font-size-adjust: none;
+  font-weight: 400;
+  font-size: clamp(22px, 5vw, 52px);
+  line-height: 1.3;
+  color: #ffffff;
+  letter-spacing: 2px;
+  text-shadow: 4px 4px 0 #3f3f3f;
+}
+html[data-theme="skyisles"] .egg-sub {
+  font-family: var(--font-pixel);
+  font-size: clamp(16px, 2.4vw, 22px);
+  color: #ffff55;
+  text-shadow: 2px 2px 0 #3f3f00;
+}
+/* Chat-style toasts as actual Minecraft chat lines. */
+html[data-theme="skyisles"] .egg-toast {
+  font-family: var(--font-pixel);
+  font-size: 15px;
+  color: #ffffff;
+  background: rgba(0,0,0,0.55);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  text-shadow: 2px 2px 0 #3f3f3f;
+}
+
+/* ---------- Empty states, skeletons, pagination ---------- */
+html[data-theme="skyisles"] .empty-icon-skyisles {
+  width: 108px;
+  height: 64px;
+  background: var(--px-isle-small) center / 90px auto no-repeat;
+  animation: isleBob 2.4s steps(2) infinite;
+}
+html[data-theme="skyisles"] .skeleton-card {
+  border: none;
+  border-radius: 0;
+  background: var(--panel);
+  box-shadow: var(--pxb2);
+  animation-timing-function: steps(2);
+}
+html[data-theme="skyisles"] .skeleton-block,
+html[data-theme="skyisles"] .skeleton-avatar { border-radius: 0; }
+html[data-theme="skyisles"] .pagination-label { font-family: var(--font-pixel); color: #1d4a6e; }
+html[data-theme="skyisles"] .loading-state { animation-timing-function: steps(2); font-family: var(--font-pixel); }
+
+/* ---------- Phones ---------- */
+@media (max-width: 700px) {
+  html[data-theme="skyisles"] #nebula {
+    background:
+      var(--px-sun) 10px 10px / 48px 40px no-repeat,
+      linear-gradient(180deg,
+        #4f9fe6 0 14%, #5aa9ef 14% 26%, #67b4f5 26% 40%, #76bff9 40% 54%,
+        #86c9fc 54% 68%, #97d3fe 68% 82%, #a9dcff 82% 100%);
+  }
+  html[data-theme="skyisles"] h1 { font-size: 1.7em; }
+  html[data-theme="skyisles"] .hero-flourish {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 26px;
+  }
+  html[data-theme="skyisles"] .hero-flourish::after { left: 68%; top: 6px; font-size: 9px; }
+  html[data-theme="skyisles"] .quick-nav {
+    width: auto;
+    max-width: none;
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+  html[data-theme="skyisles"] .quick-nav-link { flex: 1 0 auto; text-align: center; padding: 8px 6px 7px; font-size: 0.8em; }
+  html[data-theme="skyisles"] .panel-header h2 { font-size: 0.9em; }
+  html[data-theme="skyisles"] .card-grid { row-gap: 40px; }
+}
+/* font-size-adjust turns font-size:0 back into visible text in Chromium, so
+   the zeroed-out label hosts opt out and their ::before labels opt back in. */
+html[data-theme="skyisles"] #emptyState .empty-state-text,
+html[data-theme="skyisles"] #leaderboardEmptyState .empty-state-text { font-size-adjust: none; }
+html[data-theme="skyisles"] #emptyState .empty-state-text::before,
+html[data-theme="skyisles"] #leaderboardEmptyState .empty-state-text::before { font-size-adjust: 0.56; }
+html[data-theme="skyisles"] .leaderboard-person-title {
+  display: inline-block;
+  font-family: var(--font-label); font-size-adjust: none;
+  font-weight: 700;
+  font-size: 0.85em;
+  letter-spacing: 1px;
+  color: #fff;
+  background: var(--accent-2);
+  padding: 7px 12px 6px;
+  text-shadow: 1px 1px 0 var(--ink);
+  box-shadow: var(--pxb2);
+}
+
+/* @@END-SKYISLES@@ */
 </style>
 </head>
 <body>
@@ -7849,6 +9720,7 @@ html[data-theme="deepcurrent"] .sweat-card.live-new { animation: cardIn 0.4s var
         <li role="option" data-theme-value="casefiles" data-label="Case Files" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Case Files</span><span class="theme-opt-tag">Detective dossier</span></span></li>
         <li role="option" data-theme-value="ledger" data-label="Private Bank" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Private Bank</span><span class="theme-opt-tag">Old-money vault</span></span></li>
         <li role="option" data-theme-value="deepcurrent" data-label="Deep Current" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Deep Current</span><span class="theme-opt-tag">Abyssal sonar</span></span></li>
+        <li role="option" data-theme-value="skyisles" data-label="Sky Isles" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Sky Isles</span><span class="theme-opt-tag">Retro pixel skies</span></span></li>
       </ul>
     </div>
     <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; <span class="key-owner-name">Your Key</span></button>
@@ -7935,6 +9807,7 @@ html[data-theme="deepcurrent"] .sweat-card.live-new { animation: cardIn 0.4s var
                     <path d="M60 3 L55 -5 L65 -5 Z" transform="translate(0 6)" class="index" />
                   </svg>
                 </div>
+                <div class="idle-isle"><i class="isle-cloud"></i><i class="isle-land"></i><i class="isle-bed"></i><i class="isle-gen"></i><i class="isle-gem"></i><i class="isle-gem g2"></i></div>
               </div>
               <p id="statsEmptyText">Search a player, then Preview to see their card here before you log it.</p>
             </div>
@@ -8107,6 +9980,7 @@ html[data-theme="deepcurrent"] .sweat-card.live-new { animation: cardIn 0.4s var
       <circle cx="37" cy="17" r="2" fill="currentColor" opacity="0.45" />
       <circle cx="41" cy="29" r="1.6" fill="currentColor" opacity="0.5" />
     </svg>
+    <span class="empty-icon empty-icon-skyisles" aria-hidden="true"></span>
     <div class="empty-state-text">No sweats match these filters yet.</div>
   </div>
 
@@ -8190,6 +10064,7 @@ html[data-theme="deepcurrent"] .sweat-card.live-new { animation: cardIn 0.4s var
         <circle cx="37" cy="17" r="2" fill="currentColor" opacity="0.45" />
         <circle cx="41" cy="29" r="1.6" fill="currentColor" opacity="0.5" />
       </svg>
+      <span class="empty-icon empty-icon-skyisles" aria-hidden="true"></span>
       <div class="empty-state-text">This person hasn't beaten anyone matching the current filters.</div>
     </div>
     <div id="leaderboardPagination" class="pagination" hidden>
@@ -8656,6 +10531,21 @@ window.siteAudio = (function () {
   const PENTA = [0, 3, 5, 7, 10];
   const pentaNote = (root, i) => root + 12 * Math.floor(i / 5) + PENTA[((i % 5) + 5) % 5];
 
+  // Sky Isles: 8-bit square/triangle voices plus Minecraft-ish block
+  // sounds (a short filtered crunch with a low knock under it).
+  function chip(t, n, o = {}) {
+    tone(t, { type: o.type || "square", f: midi(n), f2: o.to != null ? midi(o.to) : undefined, glide: o.glide, dur: o.dur || 0.09, hold: o.hold, gain: o.gain || 0.035, a: 0.002, lp: o.lp || 3200, pan: o.pan, dest: o.dest });
+  }
+  function block(t, o = {}) {
+    noise(t, { type: "lowpass", f: o.f || 1500, f2: o.f2 || 350, dur: o.dur || 0.07, gain: o.gain || 0.16, pan: o.pan, dest: o.dest });
+    tone(t, { type: "triangle", f: o.knock || 150, f2: (o.knock || 150) * 0.55, dur: 0.06, gain: (o.gain || 0.16) * 0.6, a: 0.001, pan: o.pan, dest: o.dest });
+  }
+  function xpOrb(t, o = {}) {
+    const f = o.f || rnd(1500, 2300);
+    tone(t, { type: "triangle", f, f2: f * 1.12, glide: 0.05, dur: 0.1, gain: o.gain || 0.05, a: 0.002, pan: o.pan, dest: o.dest });
+    tone(t, { f: f * 2, dur: 0.06, gain: (o.gain || 0.05) * 0.3, a: 0.002, pan: o.pan, dest: o.dest });
+  }
+
   const SETS = {
     neon: {
       click(t, pan, step) {
@@ -8959,6 +10849,77 @@ window.siteAudio = (function () {
         noise(t + 1.1, { type: "lowpass", f: 300, f2: 1400, dur: 0.6, gain: 0.1, swell: 0.5 });
       },
     },
+    skyisles: {
+      // A block being placed: dull crunch + knock, pitch nudged per click.
+      click(t, pan, step) {
+        block(t, { pan, knock: 140 + ((step || 0) % 4) * 18, f: rnd(1200, 1800) });
+      },
+      // TNT: a fizzing fuse blip, then the blast and falling debris.
+      rare(t, pan) {
+        chip(t, 60, { to: 72, glide: 0.12, dur: 0.12, gain: 0.03, pan });
+        noise(t + 0.14, { type: "lowpass", f: 2400, f2: 160, dur: 0.9, gain: 0.34, pan });
+        tone(t + 0.14, { f: 90, f2: 32, dur: 0.7, gain: 0.3, a: 0.002, pan });
+        for (let i = 0; i < 6; i++) block(t + 0.35 + i * rnd(0.05, 0.1), { gain: 0.05, pan: (pan || 0) + rnd(-0.4, 0.4), knock: rnd(90, 160) });
+      },
+      tier(t, tier) {
+        // A longer, higher chiptune run for each combo step.
+        const run = [72, 76, 79, 84, 88, 91];
+        run.slice(0, 3 + Math.min(3, tier)).forEach((n, i) => chip(t + i * 0.055, n + tier, { dur: 0.07, gain: 0.03 }));
+        xpOrb(t + 0.2 + tier * 0.05, { gain: 0.04 });
+      },
+      ui(t) { chip(t, 84, { dur: 0.035, gain: 0.02 }); },
+      toggle(t, on) { chip(t, on ? 76 : 83, { dur: 0.05, gain: 0.03 }); chip(t + 0.05, on ? 83 : 76, { dur: 0.06, gain: 0.03 }); },
+      save(t) { xpOrb(t, { f: 1760 }); xpOrb(t + 0.08, { f: 2350 }); },
+      // Block break: gritty grains, then the pop of the drop.
+      del(t) {
+        for (let i = 0; i < 4; i++) noise(t + i * 0.045, { type: "bandpass", f: rnd(700, 1400), q: 1.5, dur: 0.05, gain: 0.12 });
+        block(t + 0.2, { f: 900, f2: 200, knock: 110, gain: 0.14 });
+        chip(t + 0.26, 67, { to: 55, glide: 0.12, dur: 0.12, gain: 0.025 });
+      },
+      slide(t, open) { chip(t, open ? 60 : 72, { to: open ? 72 : 60, glide: 0.14, dur: 0.14, gain: 0.025, type: "triangle" }); },
+      page(t, next) { chip(t, next ? 76 : 79, { dur: 0.05, gain: 0.025 }); chip(t + 0.06, next ? 79 : 76, { dur: 0.06, gain: 0.025 }); },
+      view(t) { chip(t, 79, { dur: 0.05, gain: 0.028 }); chip(t + 0.05, 84, { dur: 0.07, gain: 0.028 }); },
+      type(t, kind) {
+        if (kind === "enter") { chip(t, 79, { dur: 0.05, gain: 0.025 }); chip(t + 0.05, 86, { dur: 0.08, gain: 0.025 }); return; }
+        const n = kind === "back" ? 60 : kind === "space" ? 64 : choose([72, 74, 76, 79]);
+        chip(t, n, { dur: 0.025, gain: 0.018, lp: 2400 });
+      },
+      // Falling through the clouds (a long descending run over rushing
+      // air), a thump on landing, and a little "stage start" jingle.
+      switchTo(t) {
+        // Blocks popping in over the old page...
+        for (let i = 0; i < 8; i++) chip(t + i * 0.08, choose([84, 86, 88, 91]), { dur: 0.03, gain: 0.018, type: "triangle" });
+        for (let i = 0; i < 16; i++) chip(t + 0.7 + i * 0.05, 96 - i * 2.5, { dur: 0.045, gain: 0.02, lp: 2600 });
+        tone(t + 0.7, { type: "triangle", f: 900, f2: 180, dur: 0.8, gain: 0.05, lp: 1400 });
+        noise(t + 0.7, { type: "lowpass", f: 500, f2: 1400, dur: 0.7, gain: 0.07, swell: 0.6 });
+        block(t + 1.6, { f: 900, f2: 180, knock: 90, gain: 0.3 });
+        [[72, 0], [76, 0.09], [79, 0.18], [84, 0.27]].forEach(([n, k]) => chip(t + 1.7 + k, n, { dur: 0.09, gain: 0.035 }));
+        chip(t + 2.06, 88, { dur: 0.3, hold: 0.1, gain: 0.035 });
+        tone(t + 1.7, { type: "triangle", f: midi(48), dur: 0.5, hold: 0.2, gain: 0.08 });
+      },
+      // A platformer jump up, and the drop back down.
+      flipOpen(t, dur) {
+        chip(t, 55, { to: 79, glide: dur * 0.45, dur: dur * 0.5, gain: 0.035 });
+        block(t + dur * 0.85, { gain: 0.08, knock: 120 });
+      },
+      flipClose(t) { chip(t, 79, { to: 55, glide: 0.18, dur: 0.18, gain: 0.03 }); block(t + 0.18, { gain: 0.06 }); },
+      scanStart(t) { chip(t, 72, { dur: 0.06, gain: 0.03 }); chip(t + 0.07, 79, { dur: 0.06, gain: 0.03 }); },
+      scanTick(t) { chip(t, choose([84, 86, 88]), { dur: 0.04, gain: 0.015, type: "triangle" }); },
+      scanEvery: 0.9,
+      // The classic two-note coin pickup.
+      found(t) { chip(t, 83, { dur: 0.07, gain: 0.035 }); chip(t + 0.07, 88, { dur: 0.35, hold: 0.05, gain: 0.035 }); },
+      error(t) { chip(t, 55, { dur: 0.12, gain: 0.04, lp: 1600 }); chip(t + 0.14, 48, { dur: 0.25, gain: 0.04, lp: 1200 }); },
+      // Advancement made: a bright arpeggio over a triangle bass, plus XP.
+      success(t) {
+        [72, 76, 79, 84, 88].forEach((n, i) => chip(t + i * 0.07, n, { dur: 0.1, gain: 0.03 }));
+        tone(t, { type: "triangle", f: midi(48), dur: 0.45, hold: 0.1, gain: 0.08 });
+        for (let i = 0; i < 4; i++) xpOrb(t + 0.4 + i * rnd(0.05, 0.09), { gain: 0.04 });
+      },
+      stunt(t) {
+        [60, 64, 67, 72, 67, 72, 76, 79, 76, 79, 84].forEach((n, i) => chip(t + i * 0.08, n, { dur: 0.07, gain: 0.03 }));
+        for (let i = 0; i < 6; i++) xpOrb(t + 0.9 + i * 0.07, { gain: 0.035 });
+      },
+    },
   };
 
   const set = (id) => SETS[id] || SETS.neon;
@@ -9015,6 +10976,22 @@ window.siteAudio = (function () {
       arrive(t) {
         ping(t, { f: 1250, gain: 0.12 });
         for (let i = 0; i < 5; i++) bubble(t + 0.15 + i * rnd(0.05, 0.1), { gain: 0.05 });
+      },
+    },
+    skyisles: {
+      // Minecraft note-block chime: triangle "harp", brighter for 1st place.
+      chime(t, place) {
+        [[84, 88, 91], [79, 83], [76]][place - 1].forEach((n, i) => {
+          tone(t + i * 0.07, { type: "triangle", f: midi(n), dur: 0.4, gain: 0.06 });
+          tone(t + i * 0.07, { f: midi(n + 12), dur: 0.12, gain: 0.015 });
+        });
+      },
+      arrive(t) {
+        // A new island dropping in: falling blip, thump, fanfare.
+        chip(t, 88, { to: 64, glide: 0.25, dur: 0.25, gain: 0.03 });
+        block(t + 0.27, { gain: 0.14, knock: 100 });
+        [[76, 0], [79, 0.1], [84, 0.2]].forEach(([n, k]) => chip(t + 0.42 + k, n, { dur: 0.09, gain: 0.03 }));
+        xpOrb(t + 0.75, { gain: 0.05 });
       },
     },
   };
@@ -9181,6 +11158,32 @@ window.siteAudio = (function () {
         return rnd(0.8, 1.8);
       };
     },
+    skyisles(bus, add) {
+      // A calm daytime sky: no noise bed at all, just a soft chiptune
+      // arpeggio drifting by now and then, a triangle bass note under it,
+      // and birds chirping. Deeper down the page it gets sparser and
+      // lower; a lookup in progress speeds it up.
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass"; lp.frequency.value = 2200; lp.Q.value = 0.5;
+      lp.connect(gainNode(1, bus));
+      let bar = 0;
+      const chords = [[60, 64, 67, 72], [57, 60, 64, 69], [53, 57, 60, 65], [55, 59, 62, 67]];
+      return (t) => {
+        bar++;
+        const low = Math.round(mood.depth * 2) * -2;
+        if (Math.random() < 0.55 + (mood.busy ? 0.3 : 0) - mood.depth * 0.2) {
+          const ch = chords[bar % chords.length];
+          tone(t, { type: "triangle", f: midi(ch[0] - 12 + low), dur: 1.4, hold: 0.3, gain: 0.07, a: 0.02, dest: lp });
+          const pattern = choose([[0, 1, 2, 3, 2, 1], [0, 2, 1, 3], [3, 2, 1, 0, 1, 2]]);
+          pattern.forEach((k, i) => tone(t + 0.1 + i * 0.16, { type: "square", f: midi(ch[k] + 12 + low), dur: 0.14, gain: 0.012, a: 0.004, lp: 1800, dest: lp }));
+        }
+        if (Math.random() < 0.3 - mood.depth * 0.15) {
+          const f = rnd(2600, 3600), n = 2 + Math.floor(rnd(0, 3)), pan = rnd(-0.8, 0.8);
+          for (let i = 0; i < n; i++) tone(t + 1.2 + i * 0.11, { f, f2: f * rnd(1.15, 1.35), glide: 0.06, dur: 0.07, gain: 0.018, pan, dest: bus });
+        }
+        return mood.busy ? rnd(1.1, 1.5) : rnd(2.2, 3.4);
+      };
+    },
   };
 
   const ambienceTrim = (id) => Math.pow(10, ((TRIM[id] || {}).ambience || 0) / 20);
@@ -9298,6 +11301,7 @@ window.siteAudio = (function () {
     casefiles: { view: -7, toggle: 6, save: -5, delete: 11, slide: 2, ambience: 2.5, click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
     ledger: { view: 4, toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
     deepcurrent: { toggle: -2, save: 2, delete: -2, slide: 3, type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -4 },
+    skyisles: { click: 10, rare: -9, combo: 9.5, ui: 5, toggle: -1, save: 8, delete: 2.5, slide: 8.5, page: 6, view: 3, type: 10, switch: 6, flipOpen: 8, flipClose: 4, scan: 6.5, found: 4, error: 3, success: 1, stunt: 7, arrive: 7.5, ambience: 9 },
     shared: { bed: -5, chat: -2 },
   };
   const SHARED = { chat: (t) => pling(t, [78, 85]), techno: fanfare, bed: bedDestroyed };
@@ -9888,6 +11892,139 @@ const THEME_REVEALS = {
       },
     };
   },
+  // Sky Isles: a retro screen dissolve. Sky-colored pixel blocks pop in
+  // over the old page in random order, you fall through the clouds for a
+  // moment (a "loading terrain" card in the middle), then the blocks pop
+  // back out and the new page drops in and lands with a small bounce.
+  // Everything is drawn on one canvas at a low frame rate, so it looks
+  // like an old game and costs one element instead of hundreds.
+  skyisles(x, y, w, h) {
+    const duration = 2000;
+    const S = w < 600 ? 40 : 64;
+    const cols = Math.ceil(w / S), rows = Math.ceil(h / S);
+    const bands = ["#4f9fe6", "#5aa9ef", "#67b4f5", "#76bff9", "#86c9fc", "#97d3fe", "#a9dcff"];
+    const cells = [];
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      // Blocks nearer the click pop in first, with plenty of jitter.
+      const d = Math.hypot(c * S + S / 2 - x, r * S + S / 2 - y) / Math.hypot(w, h);
+      cells.push({ c, r, on: Math.min(0.33, d * 0.28 + Math.random() * 0.12), off: 0.62 + Math.random() * 0.26, color: bands[Math.min(bands.length - 1, Math.floor(r / rows * bands.length))] });
+    }
+    const CLOUD = ["....#####...", "..#########.", ".###########", "############", "oooooooooooo"];
+    const clouds = Array.from({ length: 7 }, (_, i) => ({ x: Math.random() * w, px: 6 + Math.floor(Math.random() * 5), t0: 0.3 + i * 0.045 + Math.random() * 0.03 }));
+    const drawCloud = (g, cx, cy, px) => {
+      CLOUD.forEach((row, ry) => [...row].forEach((ch, rx) => {
+        if (ch === ".") return;
+        g.fillStyle = ch === "o" ? "#d9eeff" : "#ffffff";
+        g.fillRect(Math.round(cx + rx * px), Math.round(cy + ry * px), px, px);
+      }));
+    };
+    const drawIsle = (g, cx, cy, px, bed) => {
+      const widths = [16, 16, 14, 12, 10, 7, 4, 2];
+      widths.forEach((wd, i) => {
+        g.fillStyle = i === 0 ? "#8fdc5a" : i === 1 ? "#5cb83a" : i < 5 ? "#8a5a33" : "#9aa3a8";
+        g.fillRect(cx + ((16 - wd) / 2) * px, cy + i * px, wd * px, px);
+      });
+      if (!bed) return;
+      // A tiny red bed sitting on the grass.
+      g.fillStyle = "#d23a2e"; g.fillRect(cx + 5 * px, cy - 2 * px, 5 * px, 2 * px);
+      g.fillStyle = "#f2f2f2"; g.fillRect(cx + 9 * px, cy - 2 * px, 2 * px, 2 * px);
+      g.fillStyle = "#6b4a22"; g.fillRect(cx + 5 * px, cy - 3 * px, px, px);
+    };
+    return {
+      duration,
+      newFrames: [
+        { opacity: 0, transform: "translateY(-56px)" },
+        { opacity: 0, transform: "translateY(-56px)", offset: 0.36 },
+        { opacity: 1, transform: "translateY(-56px)", offset: 0.37, easing: "steps(6)" },
+        { opacity: 1, transform: "translateY(0)", offset: 0.8, easing: "steps(2)" },
+        { opacity: 1, transform: "translateY(-10px)", offset: 0.87, easing: "steps(2)" },
+        { opacity: 1, transform: "translateY(0)" },
+      ],
+      newOpts: { duration },
+      oldFrames: [
+        { transform: "translateY(0)", easing: "steps(5)" },
+        { transform: "translateY(-80px)", offset: 0.36 },
+        { transform: "translateY(-80px)", opacity: 0, offset: 0.37 },
+        { transform: "translateY(-80px)", opacity: 0 },
+      ],
+      oldOpts: { duration },
+      fx() {
+        const cv = document.createElement("canvas");
+        cv.className = "tto-sky-canvas";
+        cv.width = w; cv.height = h;
+        themeTransitionOverlay.appendChild(cv);
+        const g = cv.getContext("2d");
+        g.imageSmoothingEnabled = false;
+        const start = performance.now();
+        let lastStep = -1;
+        const frame = (now) => {
+          if (!cv.isConnected) return;
+          const k = Math.min(1, (now - start) / duration);
+          // 15 fps, like an old console.
+          const step = Math.floor((now - start) / 66);
+          if (step !== lastStep) {
+            lastStep = step;
+            g.clearRect(0, 0, w, h);
+            cells.forEach(cell => {
+              if (k < cell.on || k > cell.off) return;
+              g.fillStyle = cell.color;
+              g.fillRect(cell.c * S, cell.r * S, S, S);
+              g.fillStyle = "rgba(255,255,255,0.14)";
+              g.fillRect(cell.c * S, cell.r * S, S, 4);
+              g.fillStyle = "rgba(23,50,71,0.10)";
+              g.fillRect(cell.c * S, cell.r * S + S - 4, S, 4);
+            });
+            if (k > 0.3 && k < 0.8) {
+              const fade = k > 0.66 ? 1 - (k - 0.66) / 0.14 : 1;
+              g.globalAlpha = Math.max(0, fade);
+              // Clouds and one island rushing up past you as you fall.
+              clouds.forEach(cl => {
+                const p = (k - cl.t0) / 0.32;
+                if (p < 0 || p > 1) return;
+                const cy = Math.round((h + 60 - p * (h + 200)) / 8) * 8;
+                drawCloud(g, Math.round(cl.x / 8) * 8 - 36 * cl.px / 6, cy, cl.px);
+              });
+              const ip = (k - 0.38) / 0.34;
+              const ipx = w < 600 ? 8 : 12;
+              if (ip > 0 && ip < 1) drawIsle(g, Math.round(w * 0.1 / 8) * 8, Math.round((h + 40 - ip * (h + 220)) / 8) * 8, ipx, true);
+              const ip2 = (k - 0.46) / 0.3;
+              if (ip2 > 0 && ip2 < 1) drawIsle(g, Math.round(w * 0.74 / 8) * 8, Math.round((h + 40 - ip2 * (h + 160)) / 8) * 8, ipx - 4, false);
+              if (k > 0.4 && k < 0.7) {
+                const small = w < 600;
+                const bw = small ? 300 : 520, bh = small ? 118 : 150;
+                const bx = Math.round((w - bw) / 2), by = Math.round(h / 2 - bh / 2);
+                // Pixel dialog box: dark outline, notched corners, drop shadow.
+                g.fillStyle = "rgba(23,50,71,0.35)"; g.fillRect(bx + 8, by + 8, bw, bh);
+                g.fillStyle = "#173247"; g.fillRect(bx + 4, by, bw - 8, bh); g.fillRect(bx, by + 4, bw, bh - 8);
+                g.fillStyle = "#fbfdf5"; g.fillRect(bx + 4, by + 4, bw - 8, bh - 8);
+                g.fillStyle = "#5cb83a"; g.fillRect(bx + 4, by + 4, bw - 8, 8);
+                g.textAlign = "center";
+                g.font = `${small ? 20 : 32}px 'Press Start 2P', monospace`;
+                g.fillStyle = "#173247";
+                const sh = small ? 2 : 4;
+                g.fillText("SKY ISLES", w / 2 + sh, by + (small ? 50 : 62) + sh);
+                g.fillStyle = "#3f9a26";
+                g.fillText("SKY ISLES", w / 2, by + (small ? 50 : 62));
+                g.font = `${small ? 8 : 11}px 'Press Start 2P', monospace`;
+                g.fillStyle = "#4b6a82";
+                g.fillText("Loading terrain" + ".".repeat(1 + (step % 3)), w / 2, by + (small ? 76 : 92));
+                // Chunky progress bar filling in whole blocks.
+                const segs = 12, sw = Math.floor((bw - 64) / segs), px0 = Math.round(w / 2 - (sw * segs) / 2), py0 = by + bh - (small ? 30 : 38);
+                const filled = Math.floor(Math.min(1, (k - 0.4) / 0.26) * segs);
+                for (let i = 0; i < segs; i++) {
+                  g.fillStyle = "#173247"; g.fillRect(px0 + i * sw, py0, sw - 2, 14);
+                  if (i < filled) { g.fillStyle = "#80ff20"; g.fillRect(px0 + i * sw + 2, py0 + 2, sw - 6, 10); g.fillStyle = "#3f9a26"; g.fillRect(px0 + i * sw + 2, py0 + 8, sw - 6, 4); }
+                }
+              }
+              g.globalAlpha = 1;
+            }
+          }
+          if (k < 1) requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      },
+    };
+  },
 };
 
 function playThemeTransition(themeId, swapFn, origin) {
@@ -9938,11 +12075,13 @@ const FAVICON_TILES = {
   casefiles: { bg: "#efe6cc", edge: "#2a241c" },
   ledger: { bg: "#16233a", edge: "#a9822e" },
   deepcurrent: { bg: "#062033", edge: "#35e6c4" },
+  // Square pixel tile of sky with the bed parked on a strip of grass.
+  skyisles: { bg: "#7cc8ff", edge: "#1e2a33", rx: 0, extra: '<rect x="3" y="2" width="4" height="1" fill="#fff"/><rect x="2" y="3" width="6" height="1" fill="#fff"/><rect x="10" y="3" width="3" height="1" fill="#e9f6ff"/><rect x="1" y="13" width="14" height="1" fill="#5cb83a"/><rect x="1" y="14" width="14" height="1" fill="#8a5a33"/>' },
 };
 function faviconHref(themeId) {
   const t = FAVICON_TILES[themeId] || FAVICON_TILES.neon;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
-    <rect x="0.5" y="0.5" width="15" height="15" rx="3" fill="${t.bg}" stroke="${t.edge}"/>
+    <rect x="0.5" y="0.5" width="15" height="15" rx="${t.rx != null ? t.rx : 3}" fill="${t.bg}" stroke="${t.edge}"/>${t.extra || ""}
     <rect x="2" y="5" width="4" height="3" fill="#e9e9e9"/><rect x="2" y="5" width="4" height="1" fill="#fff"/>
     <rect x="6" y="5" width="8" height="3" fill="#b3312c"/><rect x="6" y="5" width="8" height="1" fill="#e0504a"/>
     <rect x="2" y="8" width="12" height="2" fill="#8e2622"/>
@@ -9959,6 +12098,19 @@ function currentThemeId() {
 
 // { animate: false } is used for the initial load only - restoring the
 // saved theme on page load shouldn't play the switch wipe.
+// Sky Isles' yellow splash line under the title, Minecraft title-screen
+// style: a fresh one each time the theme is applied.
+const SKY_SPLASHES = [
+  "Protect your bed!", "Now in 8-bit!", "Don't look down!", "Bridge carefully!", "Watch the void!",
+  "Rush mid!", "Diamonds!", "gg ez!", "Final kill!", "100% sweat!", "Pixel perfect!",
+  "Technoblade never dies!", "Also try Skywars!", "Buy wool, not regrets!", "Floating since day one!",
+  "Get the iron!", "Clutch or kick!", "Beds are for breaking!",
+];
+function pickSkySplash() {
+  const el = document.querySelector(".hero-flourish");
+  if (el) el.dataset.splash = SKY_SPLASHES[Math.floor(Math.random() * SKY_SPLASHES.length)];
+}
+
 function applyTheme(themeId, opts = {}) {
   window.loadThemeFonts(themeId);
   const swap = () => {
@@ -9970,6 +12122,7 @@ function applyTheme(themeId, opts = {}) {
     themeDropdownLabel.textContent = THEME_LABELS[themeId];
     siteFavicon.href = faviconHref(themeId);
     themeOptions.forEach(li => li.setAttribute("aria-selected", li.dataset.themeValue === themeId ? "true" : "false"));
+    if (themeId === "skyisles") pickSkySplash();
     try { localStorage.setItem(THEME_STORAGE_KEY, themeId); } catch (e) {}
   };
   if (opts.animate === false || themeId === currentThemeId()) {
@@ -13327,6 +15480,23 @@ function cardFlipOpen(theme, f) {
       ],
     };
   }
+  if (theme === "skyisles") {
+    // A platformer jump: the card hops up out of the grid in a stepped
+    // arc, lands in the middle with a squash, and settles.
+    const arc = (k, lift) => `translate(${f.dx * (1 - k)}px, ${f.dy * (1 - k) - lift}px) scale(${f.sx + (1 - f.sx) * k}, ${f.sy + (1 - f.sy) * k})`;
+    return {
+      duration: 720,
+      origin: "50% 100%",
+      frames: [
+        { transform: `${arc(0, 0)} scale(1.04, 0.94)`, opacity: 0.9, easing: "steps(3)" },
+        { transform: `${arc(0.4, 150)} scale(0.94, 1.08)`, opacity: 1, offset: 0.35, easing: "steps(3)" },
+        { transform: `${arc(0.85, 60)}`, offset: 0.62, easing: "steps(2)" },
+        { transform: "translateY(4px) scale(1.07, 0.92)", offset: 0.76, easing: "steps(2)" },
+        { transform: "translateY(-6px) scale(0.98, 1.03)", offset: 0.88, easing: "steps(1)" },
+        { transform: "none", opacity: 1 },
+      ],
+    };
+  }
   // The first half accelerates into edge-on and the second half leaves it
   // at the same speed (matching end/start slopes of 2), so the card spins
   // straight through the middle. Easing out into 90deg instead made it
@@ -13351,6 +15521,17 @@ function cardFlipClose(theme, f) {
   }
   if (theme === "deepcurrent") {
     return { duration: 280, frames: [{ transform: "none", filter: "blur(0px)", opacity: 1 }, { transform: `${toward} translateY(30px)`, filter: "blur(10px)", opacity: 0 }] };
+  }
+  if (theme === "skyisles") {
+    return {
+      duration: 320,
+      origin: "50% 100%",
+      frames: [
+        { transform: "none", opacity: 1, easing: "steps(2)" },
+        { transform: "translateY(-18px) scale(0.96, 1.05)", opacity: 1, offset: 0.35, easing: "steps(3)" },
+        { transform: `${toward} translateY(40px)`, opacity: 0 },
+      ],
+    };
   }
   const p = theme === "ledger" ? 1400 : 1200;
   return {
@@ -13588,7 +15769,8 @@ const SUCCESS_MESSAGES = {
   neon: "Sweat added!",
   casefiles: "Case filed.",
   ledger: "Entry recorded.",
-  deepcurrent: "Sweat logged."
+  deepcurrent: "Sweat logged.",
+  skyisles: "Sweat defeated! +XP"
 };
 
 function buildNeonFlourish(container) {
@@ -13879,6 +16061,39 @@ function buildLedgerFlourish(container) {
   return total;
 }
 
+// Sky Isles: a Minecraft "Advancement Made!" toast pops up above the
+// button in steps, while XP orbs burst out and rain back down onto it.
+function buildSkyIslesFlourish(container) {
+  const toast = document.createElement("div");
+  toast.className = "flourish-sky-toast";
+  toast.innerHTML = '<i></i><b>Advancement Made!</b><span>Sweat Defeated</span>';
+  container.appendChild(toast);
+  toast.animate([
+    { transform: "translate(-50%, 0) scale(0.6)", opacity: 0 },
+    { transform: "translate(-50%, -64px) scale(1)", opacity: 1, offset: 0.15 },
+    { transform: "translate(-50%, -64px) scale(1)", opacity: 1, offset: 0.8 },
+    { transform: "translate(-50%, -80px) scale(1)", opacity: 0 },
+  ], { duration: 1800, easing: "steps(4)", fill: "both" });
+  for (let i = 0; i < 14; i++) {
+    const orb = document.createElement("div");
+    orb.className = "flourish-sky-orb";
+    container.appendChild(orb);
+    const vx = rand(-160, 160), vy = rand(-320, -200), g = 900, frames = [];
+    for (let k = 0; k <= 10; k++) {
+      const t = k / 10 * 0.9;
+      frames.push({ transform: `translate(${(vx * t).toFixed(0)}px, ${Math.min(10, vy * t + 0.5 * g * t * t).toFixed(0)}px)`, opacity: k < 8 ? 1 : 0 });
+    }
+    orb.animate(frames, { duration: 900, delay: 120 + i * 30, easing: "steps(10)", fill: "both" });
+  }
+  const btn = document.getElementById("addSweatBtn");
+  if (btn) {
+    btn.classList.remove("success-pulse");
+    void btn.offsetWidth;
+    btn.classList.add("success-pulse");
+  }
+  return 1900;
+}
+
 function playSuccessFlourish() {
   // Anchored to the Add Sweat button's own row, not the whole (much
   // taller) #form-container - centering within the full card put the
@@ -13896,6 +16111,7 @@ function playSuccessFlourish() {
   const build = theme === "casefiles" ? buildCaseFilesFlourish
     : theme === "ledger" ? buildLedgerFlourish
     : theme === "deepcurrent" ? buildDeepCurrentFlourish
+    : theme === "skyisles" ? buildSkyIslesFlourish
     : buildNeonFlourish;
   const duration = build(wrap);
 
@@ -14474,7 +16690,60 @@ function fxWord(x, y, text, opts = {}) {
   return el;
 }
 
-const THEME_BURSTS = { neon: burstNeon, casefiles: burstCaseFiles, ledger: burstLedger, deepcurrent: burstDeepCurrent };
+// Sky Isles: the click breaks a block. A pixel crack flashes, then chunks
+// of it (grass, stone, wool, ore...) pop out and fall under gravity in hard
+// steps. The rare one is either a lit TNT block that blows ("BOOM!") or
+// a thrown ender pearl that teleports a burst of purple sparkles across.
+const SKY_BLOCKS = [
+  ["#5cb83a", "#8a5a33", "#6e4526"], ["#9aa3a8", "#6f777c", "#c6c6c6"], ["#8a5a33", "#6e4526", "#b98a4e"],
+  ["#6ff2ea", "#27c2bb", "#9aa3a8"], ["#ffd84a", "#e0a92e", "#9aa3a8"], ["#e8423a", "#ffffff", "#a3231c"],
+];
+function skyChunks(x, y, colors, n, power) {
+  for (let i = 0; i < n; i++) {
+    const s = pick([4, 6, 6, 8]);
+    const el = fxEl("fx-sky-chunk", x - s / 2, y - s / 2);
+    el.style.setProperty("--c", pick(colors));
+    el.style.width = el.style.height = `${s}px`;
+    fxPlay(el, arcFrames(rand(-120, 120) * power, rand(-260, -120) * power, 900, rand(0.55, 0.8)), { duration: rand(550, 800), easing: "steps(8)" });
+  }
+}
+function burstSkyIsles(x, y, big, quiet) {
+  const colors = pick(SKY_BLOCKS);
+  const crack = fxEl("fx-sky-crack", x - 16, y - 16);
+  fxPlay(crack, [{ opacity: 1, backgroundPosition: "0 0" }, { opacity: 1, backgroundPosition: "-96px 0", offset: 0.8 }, { opacity: 0, backgroundPosition: "-96px 0" }], { duration: 220, easing: "steps(3)" });
+  if (!big) { skyChunks(x, y, colors, 7, 1); return; }
+  if (Math.random() < 0.5 || quiet) {
+    const tnt = fxEl("fx-sky-tnt", x - 16, y - 16);
+    fxPlay(tnt, [
+      { transform: "scale(1)", filter: "brightness(1)" }, { filter: "brightness(2.5)", offset: 0.2 }, { filter: "brightness(1)", offset: 0.4 },
+      { filter: "brightness(2.5)", offset: 0.6 }, { transform: "scale(1.15)", filter: "brightness(3)", offset: 0.95 }, { transform: "scale(1.3)", filter: "brightness(3)", opacity: 0 },
+    ], { duration: 520, easing: "steps(1)" });
+    setTimeout(() => {
+      for (let i = 0; i < 9; i++) {
+        const puff = fxEl("fx-sky-puff", x + rand(-40, 40) - 12, y + rand(-40, 30) - 12);
+        fxPlay(puff, [{ transform: "scale(0.3)", opacity: 1, background: "#ffffff" }, { transform: "scale(1)", opacity: 1, background: "#ffe066", offset: 0.3 }, { transform: "scale(1.6)", opacity: 0, background: "#8b8b8b" }], { duration: rand(420, 700), delay: rand(0, 120), easing: "steps(4)" });
+      }
+      skyChunks(x, y, ["#e8423a", "#ffffff", "#8b8b8b", "#5cb83a", "#8a5a33"], 16, 1.6);
+      if (!quiet) fxWord(x, y - 20, "BOOM!");
+    }, 500);
+  } else {
+    const pearl = fxEl("fx-sky-pearl", x - 8, y - 8);
+    const dx = rand(90, 170) * (Math.random() < 0.5 ? -1 : 1), vy = -300;
+    fxPlay(pearl, arcFrames(dx / 0.6, vy, 800, 0.6, (p) => `rotate(${Math.round(p * 4) * 90}deg)`), { duration: 600, easing: "steps(8)" });
+    const lx = x + dx, ly = y + vy * 0.6 + 0.5 * 800 * 0.36;
+    setTimeout(() => {
+      for (let i = 0; i < 14; i++) {
+        const sp = fxEl("fx-sky-chunk", lx, ly);
+        sp.style.setProperty("--c", pick(["#b06ae8", "#6a2fa6", "#e0b8ff"]));
+        const a = rand(0, Math.PI * 2), d = rand(14, 44);
+        fxPlay(sp, [{ transform: "translate(0,0)", opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px, ${Math.sin(a) * d - 20}px)`, opacity: 0 }], { duration: rand(500, 800), easing: "steps(5)" });
+      }
+      if (!quiet) fxWord(lx, ly - 20, "WHOOSH");
+    }, 600);
+  }
+}
+
+const THEME_BURSTS = { neon: burstNeon, casefiles: burstCaseFiles, ledger: burstLedger, deepcurrent: burstDeepCurrent, skyisles: burstSkyIsles };
 // quiet = the big burst without its rare word/fish, for when something else
 // (the combo counter, a title stunt) is already putting text on screen.
 function themedBurst(x, y, big, quiet) {
@@ -14488,6 +16757,7 @@ const COMBO_LABELS = {
   casefiles: ["COUNTS", "REPEAT OFFENDER", "CRIME SPREE", "MOST WANTED", "PUBLIC ENEMY #1"],
   ledger: ["deposits", "compound interest", "bull market", "hostile takeover", "old money"],
   deepcurrent: ["DEPTH", "PRESSURE RISING", "THE TRENCH", "ABYSSAL", "LEVIATHAN"],
+  skyisles: ["+XP", "LEVEL UP!", "DIAMONDS!", "NETHERITE", "DRAGON SLAYER"],
 };
 const COMBO_TIERS = [5, 10, 20, 35, 50];
 let comboCount = 0;
@@ -14721,6 +16991,38 @@ function titleStunt() {
       { transform: "perspective(600px) rotateX(720deg)", filter: "brightness(1)" },
     ], { duration: 1200, easing: "cubic-bezier(.3,.1,.3,1)" }).finished.then(release, release);
     for (let i = 0; i < 6; i++) setTimeout(() => burstLedger(r.left + rand(0, r.width), r.bottom, false), i * 110);
+  } else if (theme === "skyisles") {
+    // Each letter hops like a platformer character, one after another in
+    // a wave, spitting out an XP orb as it lands. The letters are wrapped
+    // in spans just for the stunt and the original markup is put back.
+    const saved = heroTitle.innerHTML;
+    const text = heroTitle.textContent;
+    heroTitle.textContent = "";
+    const spans = [...text].map(ch => {
+      const sp = document.createElement("span");
+      sp.textContent = ch;
+      sp.style.display = "inline-block";
+      sp.style.whiteSpace = "pre";
+      heroTitle.appendChild(sp);
+      return sp;
+    });
+    const anims = spans.map((sp, i) => sp.animate([
+      { transform: "translateY(0)" },
+      { transform: "translateY(-26px) scale(0.9, 1.1)", offset: 0.4 },
+      { transform: "translateY(0) scale(1.15, 0.85)", offset: 0.75 },
+      { transform: "translateY(0)" },
+    ], { duration: 420, delay: i * 45, easing: "steps(4)" }));
+    spans.forEach((sp, i) => {
+      if (!sp.textContent.trim() || i % 3) return;
+      setTimeout(() => {
+        const b = sp.getBoundingClientRect();
+        skyChunks(b.left + b.width / 2, b.top, ["#d4ff6a", "#5ec220"], 2, 0.6);
+      }, i * 45 + 320);
+    });
+    Promise.all(anims.map(a => a.finished)).catch(() => {}).then(() => {
+      heroTitle.innerHTML = saved;
+      release();
+    });
   } else if (theme === "deepcurrent") {
     heroTitle.animate([
       { transform: "none", filter: "blur(0)", opacity: 1 },
@@ -14883,7 +17185,7 @@ exportCsvBtn.addEventListener("click", exportCsv);
 // add theme and view switching plus a themed cheat sheet on "?".
 const SHORTCUTS = [
   [["/"], "Search sweats"],
-  [["1", "2", "3", "4"], "Neon, Case Files, Private Bank, Deep Current"],
+  [THEME_IDS.map((_, i) => String(i + 1)), themeOptions.map(li => li.dataset.label).join(", ")],
   [["G"], "Grid view"],
   [["T"], "Table view"],
   [["L"], "Leaderboard view"],
@@ -14943,7 +17245,7 @@ document.addEventListener("keydown", (e) => {
   // page underneath it.
   if ([...document.querySelectorAll(".modal")].some(m => m.style.display === "flex")) return;
   const key = e.key.toLowerCase();
-  const themeIdx = ["1", "2", "3", "4"].indexOf(key);
+  const themeIdx = /^[1-9]$/.test(key) ? +key - 1 : -1;
   if (themeIdx !== -1 && THEME_IDS[themeIdx]) {
     const r = themeDropdownBtn.getBoundingClientRect();
     applyTheme(THEME_IDS[themeIdx], { origin: { x: r.left + r.width / 2, y: r.top + r.height / 2 } });

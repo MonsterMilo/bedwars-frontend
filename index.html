@@ -7054,14 +7054,35 @@ function setViewMode(mode) {
   renderTable();
 }
 
+// The backend serves sweats a page (up to 1000) at a time, newest first, so
+// walk the cursor until it runs out - otherwise everything past the first
+// 1000 silently drops off the list, filters and leaderboard. A backend that
+// predates paging ignores `paged` and returns a bare array; take it as-is.
+async function fetchAllSweats() {
+  const all = [];
+  let cursor = null;
+  do {
+    const params = new URLSearchParams({ paged: '1', limit: '1000' });
+    if (cursor) params.set('cursor', cursor);
+    const res = await fetch(`${backendBaseURL}/sweats?${params}`);
+    if (!res.ok) throw new Error("Failed to fetch sweats");
+    const data = await res.json();
+    if (Array.isArray(data)) return data;
+    all.push(...data.sweats);
+    cursor = data.nextCursor;
+    if (cursor && data.total > 1000) {
+      cardGrid.innerHTML = `<div class="empty-state loading-state">Loading sweats&hellip; ${all.length} of ${data.total}</div>`;
+    }
+  } while (cursor);
+  return all;
+}
+
 // Load sweats. Shows a loading placeholder first since the backend runs on a
 // free-tier host that can take several seconds to spin back up after being idle.
 async function loadSweats() {
   cardGrid.innerHTML = '<div class="empty-state loading-state">Loading sweats&hellip;</div>';
   try {
-    const res = await fetch(`${backendBaseURL}/sweats?limit=1000`);
-    if (!res.ok) throw new Error("Failed to fetch sweats");
-    sweats = await res.json();
+    sweats = await fetchAllSweats();
     renderTable();
   } catch (err) {
     status.textContent = "Error loading sweats: " + err.message;

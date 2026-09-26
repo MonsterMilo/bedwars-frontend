@@ -6476,7 +6476,7 @@ html[data-theme="deepcurrent"] .pill.boost {
       <h2 id="modalUsername">Loading...</h2>
       <div id="modalTitle"><span class="modal-live-dot"></span>Live Stats</div>
       <div class="modal-body">
-        <img id="modalSkin" src="" />
+        <img id="modalSkin" src="" decoding="async" />
         <div id="modalStats" class="modal-stats-grid"></div>
       </div>
       <div id="modalRecord" class="modal-record" hidden></div>
@@ -9380,15 +9380,18 @@ function cardFlipOpen(theme, f) {
       ],
     };
   }
+  // The first half accelerates into edge-on and the second half leaves it
+  // at the same speed (matching end/start slopes of 2), so the card spins
+  // straight through the middle. Easing out into 90deg instead made it
+  // crawl as an almost invisible sliver, which read as a freeze.
   const ledger = theme === "ledger";
   const p = ledger ? 1400 : 1200;
-  const ease = ledger ? "cubic-bezier(.45,.05,.3,1)" : "cubic-bezier(.3,.6,.3,1)";
   return {
-    duration: ledger ? 720 : 560,
+    duration: ledger ? 680 : 540,
     frames: [
-      { transform: `perspective(${p}px) ${start} rotateY(0deg)`, opacity: 0.85, boxShadow: "0 0 0 rgba(0,0,0,0)", easing: ease },
-      { transform: `perspective(${p}px) ${mid("rotateY(90deg)")}`, opacity: 1, offset: 0.45, easing: "step-end" },
-      { transform: `perspective(${p}px) ${mid("rotateY(-90deg)")}`, opacity: 1, offset: 0.55, easing: ledger ? "cubic-bezier(.2,.6,.3,1)" : "cubic-bezier(.2,.9,.3,1.12)" },
+      { transform: `perspective(${p}px) ${start} rotateY(0deg)`, opacity: 0.85, easing: "cubic-bezier(.5,0,.75,.5)" },
+      { transform: `perspective(${p}px) ${mid("rotateY(90deg)")}`, opacity: 1, offset: 0.45 },
+      { transform: `perspective(${p}px) ${mid("rotateY(-90deg)")}`, opacity: 1, offset: 0.45, easing: ledger ? "cubic-bezier(.25,.5,.45,1)" : "cubic-bezier(.22,.44,.35,1.1)" },
       { transform: `perspective(${p}px) translate(0, 0) scale(1, 1) rotateY(0deg)`, opacity: 1 },
     ],
   };

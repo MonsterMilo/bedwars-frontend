@@ -12782,6 +12782,11 @@ function scrapedEntriesForPlayer(username) {
   });
 }
 
+const DENICK_FALLBACK_SOURCES = new Set(["Tricktracker"]);
+function denickSourceRank(source) {
+  return DENICK_FALLBACK_SOURCES.has(source) ? 1 : 0;
+}
+
 // One row per distinct username (nick mode) or nick (player mode) - when
 // both sources know the same pair, the more recent one is kept and the
 // other noted in its hover via alsoIn.
@@ -12791,11 +12796,18 @@ function mergeDenickEntries(entries, keyField) {
     const key = String(e[keyField]).toLowerCase();
     const existing = byKey.get(key);
     if (!existing) { byKey.set(key, { ...e, alsoIn: new Set() }); continue; }
-    const [keep, other] = e.updated > existing.updated ? [{ ...e, alsoIn: existing.alsoIn }, existing] : [existing, e];
+    // Tricktracker is the least accurate source, so it never beats another
+    // source on the same pair - it only fills gaps. Between equals, newest wins.
+    const eWins = denickSourceRank(e.source) !== denickSourceRank(existing.source)
+      ? denickSourceRank(e.source) < denickSourceRank(existing.source)
+      : e.updated > existing.updated;
+    const [keep, other] = eWins ? [{ ...e, alsoIn: existing.alsoIn }, existing] : [existing, e];
     if (other.source !== keep.source) keep.alsoIn.add(other.source);
     byKey.set(key, keep);
   }
-  return [...byKey.values()].sort((a, b) => b.updated - a.updated);
+  // Tricktracker rows go after everything else (it's the last resort), most
+  // recent first within each group - so it's only "Current" when it's alone.
+  return [...byKey.values()].sort((a, b) => denickSourceRank(a.source) - denickSourceRank(b.source) || b.updated - a.updated);
 }
 
 // Shown under the name instead of hidden behind a hover, per feedback that

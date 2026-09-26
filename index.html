@@ -6835,34 +6835,74 @@ html[data-theme="deepcurrent"] .note-signer { font-family: 'JetBrains Mono', mon
 #customTooltip.note-tip { max-width: 340px; text-align: left; }
 
 /* ============================================================
+   SECTION HIDE/SHOW
+   Every section heading has a small Hide/Show button; hidden sections
+   keep their heading (so they can be brought back) and are remembered
+   per browser (localStorage "hiddenSections").
+   ============================================================ */
+.panel-header > div:not(.panel-icon) { flex: 1; min-width: 0; }
+.section-toggle {
+  flex: none;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-faint);
+  font: inherit; font-size: 0.78em; font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.section-toggle:hover { color: var(--text); border-color: var(--border-strong); }
+.section-toggle svg { width: 13px; height: 13px; transform: rotate(180deg); transition: transform 0.25s var(--ease); }
+.section-toggle[aria-expanded="false"] svg { transform: none; }
+.section-toggle[aria-expanded="false"] { color: var(--accent); border-color: var(--border-strong); }
+.section-body.is-collapsed { display: none; }
+@media (max-width: 560px) {
+  .section-toggle { padding: 7px; }
+  .section-toggle-label { display: none; }
+}
+html[data-theme="casefiles"] .section-toggle { border-radius: 2px; font-family: 'Courier Prime', monospace; text-transform: uppercase; }
+html[data-theme="ledger"] .section-toggle { border-radius: 0; font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.9em; }
+
+/* ============================================================
    ACTIVITY LOG (KEY_ADMIN only)
    Deliberately plain: a readable list, one line per change with a colored
    dot for the kind of change, details underneath. It picks up each
    theme's fonts and colors from the usual tokens rather than getting its
-   own scene. Collapsed until opened with the Show button.
+   own scene. 20 per page.
    ============================================================ */
 [data-admin-only][hidden] { display: none !important; }
-#activitySection > div:nth-child(2) { flex: 1; min-width: 0; }
-.activity-toggle { flex: none; }
-.activity-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.activity-toolbar select {
-  font: inherit; font-size: 0.85em;
-  padding: 7px 10px;
+#activityContainer { max-width: 980px; margin: 0 auto 44px; padding: 18px 22px 16px; }
+.activity-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.activity-select { position: relative; display: inline-flex; }
+.activity-select select {
+  appearance: none; -webkit-appearance: none;
+  font: inherit; font-size: 0.85em; font-weight: 600;
+  padding: 7px 30px 7px 12px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 999px;
   background: var(--panel-2);
   color: var(--text);
+  cursor: pointer;
 }
-.activity-toolbar .btn { margin-left: auto; padding: 7px 14px; font-size: 0.85em; }
-#activityStatus:empty { min-height: 0; margin-top: 8px; }
+.activity-select select:hover, .activity-select select:focus-visible { border-color: var(--border-strong); outline: none; }
+.activity-select svg { position: absolute; right: 10px; top: 50%; width: 12px; height: 12px; margin-top: -6px; pointer-events: none; color: var(--text-faint); }
+.activity-toolbar .icon-btn { margin-left: auto; }
+.activity-toolbar .icon-btn.loading svg { animation: activitySpin 0.8s linear infinite; }
+@keyframes activitySpin { to { transform: rotate(360deg); } }
+html[data-theme="casefiles"] .activity-select select { border-radius: 2px; font-family: 'Courier Prime', monospace; }
+html[data-theme="ledger"] .activity-select select { border-radius: 0; font-family: 'EB Garamond', serif; font-size: 0.95em; }
+#activityStatus:empty { display: none; }
+#activityStatus { margin: 10px 0 0; }
 
-.activity-list { list-style: none; margin: 4px 0 0; padding: 0; }
+.activity-list { list-style: none; margin: 0; padding: 0; }
 .activity-row {
   --act-color: var(--accent);
   display: grid;
-  grid-template-columns: 10px 1fr auto;
+  grid-template-columns: 8px 1fr auto;
   gap: 2px 12px;
-  align-items: baseline;
+  align-items: start;
   padding: 10px 2px;
   border-bottom: 1px solid var(--border);
 }
@@ -6871,28 +6911,41 @@ html[data-theme="deepcurrent"] .note-signer { font-family: 'JetBrains Mono', mon
 .activity-row[data-action="sweat.delete"] { --act-color: var(--bad); }
 .activity-row[data-action="sweat.restore"] { --act-color: var(--gold); }
 .activity-row[data-action^="note."] { --act-color: var(--accent-2); }
-.activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--act-color); align-self: start; margin-top: 0.5em; }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--act-color); margin-top: 0.5em; }
 .activity-main { min-width: 0; }
-.activity-line { color: var(--text-dim); line-height: 1.45; }
+.activity-line { color: var(--text-dim); line-height: 1.45; font-size: 0.95em; }
 .activity-who-name { font-weight: 700; }
 .activity-player { font-weight: 700; color: var(--text); }
-.activity-time { font-size: 0.8em; color: var(--text-faint); white-space: nowrap; }
-.activity-side { display: flex; align-items: center; gap: 10px; }
-.activity-details { margin: 2px 0 0; font-size: 0.85em; color: var(--text-dim); }
-.activity-details .was { text-decoration: line-through; opacity: 0.7; }
-.activity-details .now { color: var(--text); font-weight: 700; }
-.activity-details .plus { color: var(--good); }
-.activity-details .minus { color: var(--bad); }
-.activity-note { margin: 3px 0 0; font-size: 0.88em; color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere; }
+.activity-side { display: flex; align-items: center; gap: 10px; min-height: 1.4em; }
+.activity-time { font-size: 0.78em; color: var(--text-faint); white-space: nowrap; }
+.activity-details { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px 6px; font-size: 0.82em; }
+.activity-chip {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.activity-chip .was { text-decoration: line-through; opacity: 0.65; }
+.activity-chip .now { color: var(--text); font-weight: 700; }
+.activity-chip .plus { color: var(--good); font-weight: 700; }
+.activity-chip .minus { color: var(--bad); font-weight: 700; }
+.activity-note { margin-top: 4px; font-size: 0.86em; color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere; }
 .activity-note::before { content: "\201C"; }
 .activity-note::after { content: "\201D"; }
 .activity-note.was { color: var(--text-faint); text-decoration: line-through; }
-.activity-note-by { font-size: 0.85em; color: var(--text-faint); margin-left: 6px; }
-.activity-restore-btn { padding: 4px 12px; font-size: 0.8em; }
-.activity-restored { font-size: 0.78em; color: var(--good); white-space: nowrap; }
-.activity-more { display: block; margin: 12px auto 0; }
+.activity-note-by { font-size: 0.8em; color: var(--text-faint); margin-left: 6px; }
+.activity-restore-btn { padding: 3px 12px; font-size: 0.78em; }
+.activity-restored { font-size: 0.76em; color: var(--good); white-space: nowrap; }
+#activityEmpty { margin-top: 14px; }
+#activityPagination { margin: 12px auto 0; }
+html[data-theme="casefiles"] .activity-chip { border-radius: 2px; }
+html[data-theme="ledger"] .activity-chip { border-radius: 0; font-variant-numeric: tabular-nums; }
 @media (max-width: 560px) {
-  .activity-row { grid-template-columns: 10px 1fr; }
+  #activityContainer { padding: 14px 14px 12px; }
+  .activity-row { grid-template-columns: 8px 1fr; }
   .activity-side { grid-column: 2; }
 }
 html[data-theme="casefiles"] .panel-icon-activity::before { content: "\270E"; }
@@ -6982,8 +7035,10 @@ html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Lo
       <h2>Sweat Lookup</h2>
       <p>Search a player, review their stats, and log the win.</p>
     </div>
+    <button type="button" class="section-toggle" data-section="lookup" aria-expanded="true" aria-controls="lookupBody" aria-label="Hide Sweat Lookup"><span class="section-toggle-label">Hide</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 
+  <div class="section-body" id="lookupBody" data-section-body="lookup">
   <div id="form-container" class="card lookup-dashboard">
     <form id="sweatForm" autocomplete="off">
       <div class="dash-grid">
@@ -7134,6 +7189,8 @@ html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Lo
     </form>
   </div>
 
+  </div>
+
   <div class="panel-header" id="defeatedSweatsSection">
     <div class="panel-icon panel-icon-results">&#127942;</div>
     <div>
@@ -7141,8 +7198,10 @@ html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Lo
       <h2>Defeated Sweats</h2>
       <p id="resultCount">Loading players&hellip;</p>
     </div>
+    <button type="button" class="section-toggle" data-section="defeated" aria-expanded="true" aria-controls="defeatedBody" aria-label="Hide Defeated Sweats"><span class="section-toggle-label">Hide</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 
+  <div class="section-body" id="defeatedBody" data-section-body="defeated">
   <div id="sweatStats" class="sweat-stats" aria-label="Summary of the sweats matching the current filters"></div>
 
   <div class="toolbar card">
@@ -7304,6 +7363,8 @@ html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Lo
     </div>
   </div>
 
+  </div>
+
   <div class="panel-header" id="denickingSection">
     <div class="panel-icon panel-icon-denick">&#127917;</div>
     <div>
@@ -7311,8 +7372,10 @@ html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Lo
       <h2>Denicking</h2>
       <p>Look up a nick or a player across the Denicker DB and Diamond Dome.</p>
     </div>
+    <button type="button" class="section-toggle" data-section="denick" aria-expanded="true" aria-controls="denickBody" aria-label="Hide Denicking"><span class="section-toggle-label">Hide</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 
+  <div class="section-body" id="denickBody" data-section-body="denick">
   <div id="denickContainer" class="card">
     <div class="denick-mode-toggle" role="tablist" aria-label="Denick lookup mode">
       <button type="button" class="denick-mode-btn active" data-mode="nick" role="tab" aria-selected="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5.5c0-1.5 2.2-2.5 5-2.5s5 1 5 2.5v1.2c0 2.8-2.2 5.8-5 6.3-2.8-.5-5-3.5-5-6.3z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="10" cy="7" r="1" fill="currentColor"/></svg>Nick &rarr; Owners</button>
@@ -7341,6 +7404,8 @@ html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Lo
     </div>
   </div>
 
+  </div>
+
   <!-- ACTIVITY LOG: only shown to KEY_ADMIN (not KEY_MILO); the backend
        enforces the same rule on GET /activity and restore. -->
   <div class="panel-header" id="activitySection" data-admin-only hidden>
@@ -7350,24 +7415,22 @@ html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Lo
       <h2>Activity</h2>
       <p>Who added, edited and deleted what. Deleted sweats can be restored here.</p>
     </div>
-    <button type="button" id="activityToggle" class="btn btn-ghost activity-toggle" aria-expanded="false" aria-controls="activityContainer">Show</button>
+    <button type="button" class="section-toggle" data-section="activity" aria-expanded="true" aria-controls="activityBody" aria-label="Hide Activity"><span class="section-toggle-label">Hide</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 
-  <div id="activityContainer" class="card" hidden>
+  <div class="section-body" id="activityBody" data-section-body="activity" data-admin-only hidden>
+  <div id="activityContainer" class="card">
     <div class="activity-toolbar">
-      <select id="activityWho" aria-label="Filter by person"><option value="">Everyone</option></select>
-      <select id="activityAction" aria-label="Filter by action">
+      <label class="activity-select"><select id="activityWho" aria-label="Filter by person"><option value="">Everyone</option></select><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></label>
+      <label class="activity-select"><select id="activityAction" aria-label="Filter by change">
         <option value="">All changes</option>
         <option value="sweat.add">Added</option>
         <option value="sweat.edit">Edited</option>
         <option value="sweat.delete">Deleted</option>
         <option value="sweat.restore">Restored</option>
         <option value="note.add,note.edit,note.delete">Notes</option>
-      </select>
-      <button type="button" id="activityRefreshBtn" class="btn btn-ghost">
-        <span class="fetch-btn-label">Refresh</span>
-        <span class="fetch-btn-spinner" aria-hidden="true"></span>
-      </button>
+      </select><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></label>
+      <button type="button" id="activityRefreshBtn" class="icon-btn" data-tooltip="Refresh" aria-label="Refresh activity"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 2.5v3h-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
     <div id="activityStatus" class="denick-status" role="status" aria-live="polite"></div>
     <ol id="activityList" class="activity-list"></ol>
@@ -7380,7 +7443,13 @@ html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Lo
       </svg>
       <p>Nothing logged yet. Changes show up here as soon as someone adds, edits or deletes a sweat.</p>
     </div>
-    <button type="button" id="activityMoreBtn" class="btn btn-ghost activity-more" hidden>Load older</button>
+    <div id="activityPagination" class="pagination" hidden>
+      <button type="button" class="icon-btn page-prev" data-tooltip="Newer">&#8249;</button>
+      <span class="pagination-label"></span>
+      <button type="button" class="icon-btn page-next" data-tooltip="Older">&#8250;</button>
+    </div>
+  </div>
+
   </div>
 
   <!-- PLAYER MODAL -->
@@ -7456,6 +7525,8 @@ html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Lo
           </div>
         </div>
       </div>
+
+      <div class="edit-section edit-notes-section" id="editNotesSlot"></div>
 
       <div id="editStatus" role="alert" aria-live="assertive"></div>
 
@@ -8089,50 +8160,65 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// --- Quick-nav: jump links to the three sections below, sticky so it's
-// still reachable once Defeated Sweats' up-to-32-card grid has scrolled
-// Sweat Lookup/Denicking well out of view. ---
+// --- Quick-nav: jump links to each section, sticky so they're still
+// reachable once Defeated Sweats' up-to-32-card grid has scrolled the
+// others well out of view. ---
+// Every load starts at the top of the page rather than wherever the
+// browser remembered the last scroll position.
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+window.scrollTo(0, 0);
+
 const quickNavLinks = document.querySelectorAll(".quick-nav-link");
 function setActiveQuickNavLink(id) {
   quickNavLinks.forEach(link => link.classList.toggle("active", link.dataset.target === id));
 }
+// After a link is clicked it stays lit until you scroll yourself, so the
+// smooth scroll (or a section that's too short to reach the top, or one
+// still loading) doesn't hand the highlight to a neighbouring section.
+let quickNavLockedTo = null;
+["wheel", "touchstart", "keydown", "mousedown"].forEach(type => {
+  window.addEventListener(type, (e) => {
+    if (!quickNavLockedTo || (e.target.closest && e.target.closest("#quickNav"))) return;
+    quickNavLockedTo = null;
+    updateQuickNavActive();
+  }, { passive: true });
+});
 quickNavLinks.forEach(link => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
     const target = document.getElementById(link.dataset.target);
     if (!target) return;
+    // Jumping to a hidden section brings it back.
+    const toggle = target.querySelector(".section-toggle");
+    if (toggle && toggle.getAttribute("aria-expanded") === "false") toggle.click();
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    quickNavLockedTo = link.dataset.target;
+    setActiveQuickNavLink(quickNavLockedTo);
     target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
   });
 });
-// Marks a section's link active as its heading crosses a thin band just
-// below the sticky nav (rootMargin shrinks the observed viewport to that
-// band) - only reacting to entries scrolling IN, not out, so a link stays
-// active for the rest of a long section (Defeated Sweats) rather than
-// going "unset" the moment its heading scrolls past the top.
-const quickNavObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) setActiveQuickNavLink(entry.target.id);
+// Scroll-spy: the active link is the last visible section whose heading has
+// risen above a line 30% of the way down the viewport (below the sticky
+// nav). Short sections near the bottom (Denicking, Activity - or either one
+// hidden) can't always scroll that far, so over the last stretch of the
+// page that line sweeps down to the bottom of the screen, lighting each
+// remaining section in order and ending on the last one.
+function updateQuickNavActive() {
+  if (quickNavLockedTo) return;
+  const links = [...quickNavLinks].filter(link => !link.hidden);
+  if (!links.length) return;
+  const base = 66 + (window.innerHeight - 66) * 0.3;
+  const remaining = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+  const sweep = Math.min(Math.max(1 - remaining / (window.innerHeight * 0.6), 0), 1);
+  const line = base + (window.innerHeight - 40 - base) * sweep;
+  let active = links[0];
+  links.forEach(link => {
+    const target = document.getElementById(link.dataset.target);
+    if (target && target.getClientRects().length && target.getBoundingClientRect().top <= line) active = link;
   });
-}, { rootMargin: "-66px 0px -70% 0px", threshold: 0 });
-[...quickNavLinks].forEach(link => {
-  const target = document.getElementById(link.dataset.target);
-  if (target) quickNavObserver.observe(target);
-});
-// The band approach above can't ever mark the last section (Denicking)
-// active if it's short enough that the page runs out of room to scroll
-// its heading up into that band in the first place - once you're
-// scrolled to the very bottom, force its link active regardless of where
-// its heading actually landed. Checked from the same rAF-throttled
-// scroll handler as the starfield parallax below rather than adding a
-// second scroll listener.
-function updateQuickNavAtBottom() {
-  const lastLink = [...quickNavLinks].reverse().find(link => !link.hidden);
-  if (!lastLink) return;
-  if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
-    setActiveQuickNavLink(lastLink.dataset.target);
-  }
+  setActiveQuickNavLink(active.dataset.target);
 }
+window.addEventListener("resize", updateQuickNavActive);
 
 const starContainer = document.getElementById("starfield");
 
@@ -8199,7 +8285,7 @@ window.addEventListener("scroll", () => {
       const progress = Math.min(scrollY / starFieldHeight, 1);
       starContainer.style.transform = `translateY(${-progress * starFieldHeight}px)`;
       starContainer.style.opacity = 1 - progress;
-      updateQuickNavAtBottom();
+      updateQuickNavActive();
       ticking = false;
     });
     ticking = true;
@@ -8278,7 +8364,7 @@ function updateKeyIdentityUi() {
     el.textContent = keyOwner ? `Signed as ${label}` : (getAdminKey() ? "Signed with your key" : "Needs your key to save");
     el.style.setProperty("--note-author-color", keyOwner ? noteAuthorColor(keyOwner) : "var(--text-faint)");
   });
-  if (typeof renderModalNotesList === "function" && document.getElementById("playerModal").style.display === "flex") renderModalNotesList();
+  if (typeof renderModalNotesList === "function" && (document.getElementById("playerModal").style.display === "flex" || document.getElementById("editModal").style.display === "flex")) renderModalNotesList();
   // Activity log + restore: KEY_ADMIN only (not KEY_MILO).
   document.querySelectorAll("[data-admin-only]").forEach(el => { el.hidden = keyOwner !== "admin"; });
   document.dispatchEvent(new CustomEvent("keyownerchange"));
@@ -10491,6 +10577,7 @@ function openEditModal(s) {
   });
   editCheatingCheckbox.checked = !!s.cheating;
   editBoostingCheckbox.checked = !!s.boosting;
+  renderEditModalNotes(s);
 
   editModal.style.display = "flex";
   animateModalIn(editModal);
@@ -10803,9 +10890,25 @@ function replaceSweat(updated) {
   renderModalNotesList();
 }
 
+// The one Notes block lives in the player popup, but the Edit popup
+// borrows it (moved into #editNotesSlot) so notes can be added, edited and
+// deleted from either place with the same code.
+const modalNotesHome = { parent: modalNotes.parentNode, next: modalNotes.nextSibling };
+const editNotesSlot = document.getElementById("editNotesSlot");
+
 function renderModalNotes(item) {
+  if (modalNotes.parentNode !== modalNotesHome.parent) modalNotesHome.parent.insertBefore(modalNotes, modalNotesHome.next);
   modalNotesItem = item;
-  modalNoteSweats = sweatsForModalItem(item);
+  showModalNotesFor(sweatsForModalItem(item));
+}
+function renderEditModalNotes(sweat) {
+  editNotesSlot.appendChild(modalNotes);
+  modalNotesItem = null;
+  showModalNotesFor([sweat]);
+  modalNotes.hidden = false;
+}
+function showModalNotesFor(list) {
+  modalNoteSweats = list;
   modalNotes.hidden = modalNoteSweats.length === 0;
   modalNoteForm.hidden = true;
   modalNoteAddBtn.hidden = false;
@@ -11735,24 +11838,59 @@ restoreStateFromUrl();
 
 
 // ============================================================
+// SECTION HIDE/SHOW
+// Each section heading's Hide/Show button collapses everything under it.
+// Which sections are hidden is remembered per browser; everything is
+// shown by default.
+// ============================================================
+const HIDDEN_SECTIONS_STORAGE = "hiddenSections";
+let hiddenSections = [];
+try { hiddenSections = JSON.parse(localStorage.getItem(HIDDEN_SECTIONS_STORAGE) || "[]"); } catch {}
+if (!Array.isArray(hiddenSections)) hiddenSections = [];
+function isSectionHidden(key) { return hiddenSections.includes(key); }
+function applySectionState(key) {
+  const body = document.querySelector(`[data-section-body="${key}"]`);
+  const toggle = document.querySelector(`.section-toggle[data-section="${key}"]`);
+  const hidden = isSectionHidden(key);
+  if (body) body.classList.toggle("is-collapsed", hidden);
+  if (toggle) {
+    toggle.setAttribute("aria-expanded", hidden ? "false" : "true");
+    toggle.querySelector(".section-toggle-label").textContent = hidden ? "Show" : "Hide";
+    const name = toggle.closest(".panel-header").querySelector("h2").textContent;
+    toggle.setAttribute("aria-label", `${hidden ? "Show" : "Hide"} ${name}`);
+  }
+}
+document.querySelectorAll(".section-toggle").forEach(toggle => {
+  const key = toggle.dataset.section;
+  applySectionState(key);
+  toggle.addEventListener("click", () => {
+    hiddenSections = isSectionHidden(key) ? hiddenSections.filter(k => k !== key) : [...hiddenSections, key];
+    try { localStorage.setItem(HIDDEN_SECTIONS_STORAGE, JSON.stringify(hiddenSections)); } catch {}
+    applySectionState(key);
+    document.dispatchEvent(new CustomEvent("sectiontoggle", { detail: { key, hidden: isSectionHidden(key) } }));
+    updateQuickNavActive();
+  });
+});
+
+// ============================================================
 // ACTIVITY LOG (KEY_ADMIN only - not KEY_MILO)
 // A plain list of every add/edit/delete of a sweat or note from
-// GET /activity, newest first, with Restore on deleted sweats
-// (POST /sweats/:id/restore). The heading only shows for the admin key;
-// the list itself stays collapsed until opened with Show, and that choice
-// is remembered. Usernames and note text are player-written: textContent only.
+// GET /activity, newest first, 20 per page, with Restore on deleted sweats
+// (POST /sweats/:id/restore). Only shows for the admin key; the backend
+// refuses everyone else anyway. Usernames and note text are
+// player-written: textContent only.
 // ============================================================
-const activityContainer = document.getElementById("activityContainer");
-const activityToggle = document.getElementById("activityToggle");
 const activityList = document.getElementById("activityList");
 const activityStatus = document.getElementById("activityStatus");
 const activityEmpty = document.getElementById("activityEmpty");
-const activityMoreBtn = document.getElementById("activityMoreBtn");
 const activityRefreshBtn = document.getElementById("activityRefreshBtn");
 const activityWhoSelect = document.getElementById("activityWho");
 const activityActionSelect = document.getElementById("activityAction");
-const ACTIVITY_OPEN_STORAGE = "activityOpen";
-const ACTIVITY_PAGE = 40;
+const activityPagination = document.getElementById("activityPagination");
+const activityPrev = activityPagination.querySelector(".page-prev");
+const activityNext = activityPagination.querySelector(".page-next");
+const activityPageLabel = activityPagination.querySelector(".pagination-label");
+const ACTIVITY_PAGE = 20;
 const ACTIVITY_FIELD_LABELS = {
   star: "Stars", fkdr: "FKDR", wlr: "WLR", bblr: "BBLR", kdr: "KDR",
   finals: "Finals", finalDeaths: "Final deaths", beds: "Beds broken", bedsLost: "Beds lost",
@@ -11767,9 +11905,10 @@ const ACTIVITY_VERBS = {
   "note.edit": "edited a note on",
   "note.delete": "removed a note from"
 };
-let activityOpen = false;
-try { activityOpen = localStorage.getItem(ACTIVITY_OPEN_STORAGE) === "1"; } catch {}
-let activityNextBefore = null;
+// Cursor paging: activityCursors[i] is the "before" cursor that loads page
+// i (page 0 has none), filled in as pages are visited.
+let activityCursors = [null];
+let activityPage = 0;
 let activityLoadedAt = 0;
 let activityRequest = 0;
 
@@ -11788,30 +11927,38 @@ function activitySpan(cls, text) {
   return el;
 }
 
-// Edit details as one line: "FKDR 12.8 -> 14.2 · Beaten by +Zoiv · -Cheating".
-function activityDiffLine(changes) {
-  const div = document.createElement("div");
-  div.className = "activity-details";
-  Object.entries(changes || {}).forEach(([field, pair], i) => {
-    const [was, now] = Array.isArray(pair) ? pair : [null, pair];
-    if (i) div.append(" · ");
-    if (BEATEN_BY[field] || field === "cheating" || field === "boosting") {
-      const name = BEATEN_BY[field] ? BEATEN_BY[field].label : ACTIVITY_FIELD_LABELS[field];
-      div.append(activitySpan(now ? "plus" : "minus", `${BEATEN_BY[field] ? "Beaten by " : ""}${now ? "+" : "−"}${name}`));
-    } else {
-      div.append(`${ACTIVITY_FIELD_LABELS[field] || field} `, activitySpan("was", formatActivityValue(was)), " → ", activitySpan("now", formatActivityValue(now)));
-    }
+// Edit details as small chips: "Beaten by +Zoiv -Potat", "+Cheating",
+// "FKDR 12.8 -> 14.2". Stats that only changed past the 2nd decimal (the
+// edit form re-saves every stat, rounded) are left out.
+function activityDiffChips(changes) {
+  const wrap = document.createElement("div");
+  wrap.className = "activity-details";
+  const chip = () => { const c = document.createElement("span"); c.className = "activity-chip"; wrap.appendChild(c); return c; };
+  const entries = Object.entries(changes || {}).map(([f, pair]) => [f, ...(Array.isArray(pair) ? pair : [null, pair])]);
+  const roster = entries.filter(([f]) => BEATEN_BY[f]);
+  if (roster.length) {
+    const c = chip();
+    c.append("Beaten by");
+    roster.forEach(([f, , now]) => c.append(activitySpan(now ? "plus" : "minus", `${now ? "+" : "−"}${BEATEN_BY[f].label}`)));
+  }
+  entries.filter(([f]) => f === "cheating" || f === "boosting").forEach(([f, , now]) => {
+    chip().append(activitySpan(now ? "plus" : "minus", `${now ? "+" : "−"}${ACTIVITY_FIELD_LABELS[f]}`));
   });
-  return div.childNodes.length ? div : null;
+  entries.filter(([f]) => !BEATEN_BY[f] && f !== "cheating" && f !== "boosting").forEach(([f, was, now]) => {
+    const w = formatActivityValue(was), n = formatActivityValue(now);
+    if (w === n) return;
+    chip().append(ACTIVITY_FIELD_LABELS[f] || f, activitySpan("was", w), "→", activitySpan("now", n));
+  });
+  return wrap.childNodes.length ? wrap : null;
 }
 function activityNote(text, was, by) {
-  const p = document.createElement("div");
-  p.className = "activity-note" + (was ? " was" : "");
-  p.textContent = text;
-  if (!by) return p;
+  const div = document.createElement("div");
+  div.className = "activity-note" + (was ? " was" : "");
+  div.textContent = text;
+  if (!by) return div;
   const wrap = document.createElement("div");
-  wrap.append(p, activitySpan("activity-note-by", by));
-  p.style.display = "inline";
+  div.style.display = "inline";
+  wrap.append(div, activitySpan("activity-note-by", by));
   return wrap;
 }
 
@@ -11819,7 +11966,6 @@ function renderActivityRow(e) {
   const li = document.createElement("li");
   li.className = "activity-row";
   li.dataset.action = e.action;
-  li.dataset.sweatId = String(e.sweatId || "");
   li.appendChild(activitySpan("activity-dot", ""));
 
   const main = document.createElement("div");
@@ -11832,7 +11978,7 @@ function renderActivityRow(e) {
   main.appendChild(line);
 
   if (e.action === "sweat.edit") {
-    const diff = activityDiffLine(e.changes);
+    const diff = activityDiffChips(e.changes);
     if (diff) main.appendChild(diff);
   } else if (e.action === "note.edit") {
     if (e.noteBefore) main.appendChild(activityNote(e.noteBefore, true));
@@ -11884,72 +12030,74 @@ async function restoreSweat(entry, btn) {
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Couldn't restore that sweat."));
     activityStatus.textContent = `${entry.username || "Sweat"} is back, with all its stats and notes.`;
     await loadSweats();
-    loadActivity({ reset: true, quiet: true });
+    loadActivity(0);
   } catch (err) {
     activityStatus.textContent = err.message;
     btn.disabled = false;
   }
 }
 
-async function loadActivity({ reset = false, quiet = false } = {}) {
-  if (keyOwner !== "admin" || !activityOpen) return;
+function activityShouldLoad() {
+  return keyOwner === "admin" && !isSectionHidden("activity");
+}
+// page: which page to show (0 = newest). Changing filters starts over.
+async function loadActivity(page = 0) {
+  if (!activityShouldLoad()) return;
+  if (page === 0) activityCursors = [null];
   const req = ++activityRequest;
   const params = new URLSearchParams({ limit: String(ACTIVITY_PAGE) });
   if (activityWhoSelect.value) params.set("who", activityWhoSelect.value);
   if (activityActionSelect.value) params.set("action", activityActionSelect.value);
-  if (!reset && activityNextBefore) params.set("before", activityNextBefore);
-  const busyBtn = reset ? activityRefreshBtn : activityMoreBtn;
-  busyBtn.disabled = true;
-  busyBtn.classList.add("loading");
-  if (!quiet) activityStatus.textContent = reset && !activityList.children.length ? "Loading…" : "";
+  if (activityCursors[page]) params.set("before", activityCursors[page]);
+  activityRefreshBtn.classList.add("loading");
+  const showLoading = !activityList.children.length;
+  if (showLoading) activityStatus.textContent = "Loading\u2026";
   try {
     const res = await fetch(`${backendBaseURL}/activity?${params}`, { headers: adminHeaders() });
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Couldn't load activity."));
     const data = await res.json();
     if (req !== activityRequest) return;
-    if (reset) activityList.textContent = "";
+    activityPage = page;
+    activityCursors[page + 1] = data.nextBefore || null;
+    activityList.textContent = "";
     (data.entries || []).forEach(e => activityList.appendChild(renderActivityRow(e)));
-    activityNextBefore = data.nextBefore || null;
-    activityMoreBtn.hidden = !activityNextBefore;
     activityEmpty.hidden = activityList.children.length > 0;
+    const hasNext = !!data.nextBefore;
+    activityPagination.hidden = page === 0 && !hasNext;
+    activityPrev.disabled = page === 0;
+    activityNext.disabled = !hasNext;
+    activityPageLabel.textContent = `Page ${page + 1}`;
     activityLoadedAt = Date.now();
-    if (!quiet) activityStatus.textContent = "";
+    if (showLoading) activityStatus.textContent = "";
   } catch (err) {
     if (req === activityRequest) activityStatus.textContent = err.message;
   } finally {
-    busyBtn.disabled = false;
-    busyBtn.classList.remove("loading");
+    if (req === activityRequest) activityRefreshBtn.classList.remove("loading");
   }
 }
 
-function syncActivityVisibility() {
-  const show = keyOwner === "admin" && activityOpen;
-  activityContainer.hidden = !show;
-  activityToggle.textContent = activityOpen ? "Hide" : "Show";
-  activityToggle.setAttribute("aria-expanded", activityOpen ? "true" : "false");
-  if (show && Date.now() - activityLoadedAt > 20000) loadActivity({ reset: true });
-}
-activityToggle.addEventListener("click", () => {
-  activityOpen = !activityOpen;
-  try { localStorage.setItem(ACTIVITY_OPEN_STORAGE, activityOpen ? "1" : "0"); } catch {}
-  syncActivityVisibility();
-});
 [...BEATEN_BY_KEYS.map(k => [k, BEATEN_BY[k].label]), ["admin", "Admin"]].forEach(([id, label]) => {
   activityWhoSelect.add(new Option(label, id));
 });
-activityWhoSelect.addEventListener("change", () => loadActivity({ reset: true }));
-activityActionSelect.addEventListener("change", () => loadActivity({ reset: true }));
-activityRefreshBtn.addEventListener("click", () => loadActivity({ reset: true }));
-activityMoreBtn.addEventListener("click", () => loadActivity());
-// The Activity quick-nav link opens the list if it's collapsed.
-document.querySelector('.quick-nav-link[data-target="activitySection"]').addEventListener("click", () => {
-  if (!activityOpen) activityToggle.click();
-});
+activityWhoSelect.addEventListener("change", () => loadActivity(0));
+activityActionSelect.addEventListener("change", () => loadActivity(0));
+activityRefreshBtn.addEventListener("click", () => loadActivity(activityPage));
+activityPrev.addEventListener("click", () => { if (activityPage > 0) loadActivity(activityPage - 1); });
+activityNext.addEventListener("click", () => { if (activityCursors[activityPage + 1]) loadActivity(activityPage + 1); });
+
+function refreshActivityIfStale() {
+  if (activityShouldLoad() && Date.now() - activityLoadedAt > 20000) loadActivity(0);
+}
 document.addEventListener("keyownerchange", () => {
-  if (keyOwner !== "admin") { activityList.textContent = ""; activityNextBefore = null; activityLoadedAt = 0; }
-  syncActivityVisibility();
+  if (keyOwner !== "admin") { activityList.textContent = ""; activityLoadedAt = 0; return; }
+  refreshActivityIfStale();
 });
-syncActivityVisibility();
+document.addEventListener("sectiontoggle", (e) => { if (e.detail.key === "activity") refreshActivityIfStale(); });
+// Changes made on the page since the last load show up when you scroll back.
+new IntersectionObserver((entries) => {
+  if (entries.some(en => en.isIntersecting)) refreshActivityIfStale();
+}).observe(document.getElementById("activitySection"));
+refreshActivityIfStale();
 </script>
 
 </body>

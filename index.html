@@ -1268,8 +1268,8 @@ html[data-theme="neon"] .idle-reticle { display: block; }
 
 /* Case Files: a magnifying glass drifting over a latent fingerprint. */
 html[data-theme="casefiles"] .idle-print { display: block; }
-.idle-print .print { position: absolute; left: 20px; top: 12px; width: 100px; height: 110px; fill: none; stroke: var(--text-dim); stroke-width: 1.8; stroke-linecap: round; opacity: .55; }
-.idle-print .glass { position: absolute; left: 0; top: 0; width: 70px; height: 70px; fill: color-mix(in srgb, var(--panel) 45%, transparent); stroke: var(--accent); stroke-width: 3.5; stroke-linecap: round; filter: drop-shadow(2px 3px 2px rgba(42,36,28,.25)); animation: glassDrift 6s ease-in-out infinite; }
+.idle-print .print { position: absolute; left: 12px; top: 4px; width: 116px; height: 128px; fill: none; stroke: var(--text-dim); stroke-width: 1.6; stroke-linecap: round; opacity: .6; }
+.idle-print .glass { position: absolute; left: 0; top: 0; width: 76px; height: 76px; fill: color-mix(in srgb, var(--panel) 45%, transparent); stroke: var(--accent); stroke-width: 3.5; stroke-linecap: round; filter: drop-shadow(2px 3px 2px rgba(42,36,28,.25)); animation: glassDrift 6s ease-in-out infinite; }
 .idle-print .glass line { stroke-width: 6; stroke: var(--text); }
 @keyframes glassDrift {
   0%, 100% { transform: translate(18px, 14px) rotate(0deg); }
@@ -1306,12 +1306,12 @@ html[data-theme="ledger"] .idle-dial { display: block; }
 html[data-theme="deepcurrent"] .idle-sonar { display: block; }
 .idle-sonar {
   border-radius: 50%;
-  background: conic-gradient(from 0deg, transparent 0 290deg, color-mix(in srgb, var(--accent) 40%, transparent) 355deg, transparent 360deg);
+  background: conic-gradient(from 0deg, transparent 0 290deg, color-mix(in srgb, var(--accent) 55%, transparent) 355deg, transparent 360deg);
   -webkit-mask: radial-gradient(closest-side, #000 99%, transparent 100%);
   mask: radial-gradient(closest-side, #000 99%, transparent 100%);
   animation: radarSpin 4s linear infinite;
 }
-.idle-sonar i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+.idle-sonar i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); }
 .idle-sonar i:nth-child(2) { inset: 20%; }
 .idle-sonar i:nth-child(3) { inset: 40%; }
 .idle-sonar b { position: absolute; left: 72%; top: 24%; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: sonarBlip 4s linear infinite; }

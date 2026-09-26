@@ -1170,6 +1170,200 @@ html:not([data-theme]) #statsContent.stats-pop {
   gap: 14px;
 }
 
+/* At-a-glance strip above the toolbar - totals and record holders for
+   whatever the filters currently match, so the section opens with the
+   headline numbers instead of straight into a wall of cards. Player tiles
+   carry data-username/data-uuid, so the same document click handler that
+   opens a card's player popup opens theirs. */
+.sweat-stats {
+  max-width: 1200px;
+  margin: 0 auto 18px;
+  display: grid;
+  grid-template-columns: 1.5fr repeat(3, minmax(0, 1fr)) 1.2fr;
+  gap: 12px;
+}
+.sweat-stats:empty { display: none; }
+.ss-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 16px 13px;
+  overflow: hidden;
+}
+.ss-tile[data-username] { cursor: pointer; transition: transform 0.2s var(--ease), border-color 0.2s var(--ease); }
+.ss-tile[data-username]:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+.ss-tile[data-username]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ss-label {
+  color: var(--text-faint);
+  font-size: 0.68em;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.ss-value {
+  color: var(--text);
+  font-size: 1.7em;
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ss-value .pill.prestige-tag { font-size: 0.62em; vertical-align: middle; }
+.ss-who {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: var(--text-dim);
+  font-size: 0.84em;
+  font-weight: 600;
+}
+.ss-who img {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: 5px;
+  image-rendering: pixelated;
+}
+.ss-who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-sub { color: var(--text-dim); font-size: 0.8em; font-weight: 600; }
+.ss-sub b { color: var(--good); }
+
+.ss-total-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.ss-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 40px;
+  flex: none;
+}
+.ss-spark span {
+  width: 9px;
+  min-height: 3px;
+  border-radius: 3px 3px 1px 1px;
+  background: var(--accent);
+  opacity: 0.35;
+}
+.ss-spark span:last-child { opacity: 1; }
+
+.ss-flag-bar {
+  display: flex;
+  height: 7px;
+  margin-top: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--border);
+}
+.ss-flag-bar .cheat { background: var(--bad); }
+.ss-flag-bar .boost { background: var(--gold); }
+.ss-flag-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.8em; font-weight: 700; color: var(--text-dim); }
+.ss-flag-legend i { display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 2px; vertical-align: 0; }
+.ss-flag-legend .cheat i { background: var(--bad); }
+.ss-flag-legend .boost i { background: var(--gold); }
+
+@media (max-width: 900px) {
+  .sweat-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ss-tile-total, .ss-tile-flags { grid-column: span 3; }
+}
+@media (max-width: 620px) {
+  .sweat-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  /* Total on its own row, then star/FKDR and index/flags in pairs. */
+  .ss-tile-total { grid-column: 1 / -1; }
+  .ss-tile-flags { grid-column: auto; }
+  .ss-tile { padding: 12px 13px 11px; }
+  .ss-value { font-size: 1.4em; }
+  .ss-flag-legend { gap: 2px 10px; }
+}
+
+/* Neon - HUD readouts: a colored hairline across the top of each tile and a
+   soft glow on the headline numbers, one accent per record. */
+html:not([data-theme]) .ss-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, var(--ss-tone, var(--accent)), transparent);
+}
+html:not([data-theme]) .ss-value { text-shadow: 0 0 16px color-mix(in srgb, var(--ss-tone, var(--accent)) 45%, transparent); }
+html:not([data-theme]) .ss-spark span { background: var(--accent); box-shadow: 0 0 8px rgba(0,217,255,0.5); }
+.ss-tile-star { --ss-tone: var(--gold); }
+.ss-tile-fkdr { --ss-tone: var(--accent-2); }
+.ss-tile-index { --ss-tone: var(--bad); }
+.ss-tile-fkdr .ss-value { color: var(--accent-2); }
+
+/* Case Files - index cards clipped to the board: ruled lines, a red margin
+   rule, typewritten labels, and the headline number stamped in Anton. */
+html[data-theme="casefiles"] .ss-tile {
+  border-radius: 2px;
+  background:
+    linear-gradient(90deg, transparent 22px, rgba(163,47,29,0.35) 22px 23px, transparent 23px),
+    repeating-linear-gradient(180deg, #fffdf4 0 21px, rgba(46,74,92,0.13) 21px 22px);
+  padding-left: 32px;
+  box-shadow: 2px 3px 0 rgba(42,36,28,0.12), 0 8px 14px -8px rgba(42,36,28,0.35);
+}
+html[data-theme="casefiles"] .ss-tile:nth-child(odd) { transform: rotate(-0.6deg); }
+html[data-theme="casefiles"] .ss-tile:nth-child(even) { transform: rotate(0.5deg); }
+html[data-theme="casefiles"] .ss-tile[data-username]:hover { transform: rotate(0deg) translateY(-2px); }
+html[data-theme="casefiles"] .ss-label { font-family: 'Courier Prime', monospace; color: var(--accent-2); letter-spacing: 0.08em; }
+html[data-theme="casefiles"] .ss-value { font-family: 'Anton', 'Arial Narrow', sans-serif; font-weight: 400; letter-spacing: 0.02em; }
+html[data-theme="casefiles"] .ss-tile-fkdr .ss-value { color: var(--text); }
+html[data-theme="casefiles"] .ss-who,
+html[data-theme="casefiles"] .ss-sub,
+html[data-theme="casefiles"] .ss-flag-legend { font-family: 'Courier Prime', monospace; }
+html[data-theme="casefiles"] .ss-who img { border-radius: 0; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--border); }
+html[data-theme="casefiles"] .ss-spark span { background: var(--text-dim); border-radius: 0; }
+html[data-theme="casefiles"] .ss-spark span:last-child { background: var(--accent-2); }
+html[data-theme="casefiles"] .ss-flag-bar { border-radius: 0; height: 9px; }
+
+/* Private Bank - a statement summary: one engraved line of figures with
+   gold rules between them rather than separate boxes. */
+html[data-theme="ledger"] .sweat-stats {
+  gap: 0;
+  padding: 6px 0;
+  border-top: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
+  box-shadow: inset 0 3px 0 #fff, inset 0 4px 0 var(--border), inset 0 -3px 0 #fff, inset 0 -4px 0 var(--border);
+}
+html[data-theme="ledger"] .ss-tile {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  border-left: 1px solid var(--border);
+  padding: 12px 18px;
+}
+html[data-theme="ledger"] .ss-tile:first-child { border-left: 0; }
+html[data-theme="ledger"] .ss-label { font-family: 'EB Garamond', serif; font-style: italic; text-transform: none; letter-spacing: 0.02em; font-size: 0.9em; font-weight: 400; color: var(--text-dim); }
+html[data-theme="ledger"] .ss-value { font-family: 'Playfair Display', serif; font-weight: 600; }
+html[data-theme="ledger"] .ss-tile-fkdr .ss-value { color: var(--text); }
+html[data-theme="ledger"] .ss-who,
+html[data-theme="ledger"] .ss-sub,
+html[data-theme="ledger"] .ss-flag-legend { font-family: 'EB Garamond', serif; font-size: 0.92em; }
+html[data-theme="ledger"] .ss-sub b { color: var(--good); }
+html[data-theme="ledger"] .ss-who img { border-radius: 50%; box-shadow: 0 0 0 1px var(--gold); }
+html[data-theme="ledger"] .ss-spark span { background: var(--gold); border-radius: 0; width: 7px; }
+html[data-theme="ledger"] .ss-flag-bar { height: 3px; border-radius: 0; }
+@media (max-width: 900px) {
+  html[data-theme="ledger"] .ss-tile { border-left: 0; border-top: 1px solid var(--border); }
+  html[data-theme="ledger"] .ss-tile-total { border-top: 0; }
+}
+
+/* Deep Current - instrument gauges: mono readouts, a faint depth grid in
+   each tile, and the sparkline drawn as sonar returns. */
+html[data-theme="deepcurrent"] .ss-tile {
+  background:
+    repeating-linear-gradient(90deg, rgba(53,230,196,0.05) 0 1px, transparent 1px 18px),
+    linear-gradient(160deg, var(--panel), var(--panel-2));
+}
+html[data-theme="deepcurrent"] .ss-value,
+html[data-theme="deepcurrent"] .ss-label,
+html[data-theme="deepcurrent"] .ss-flag-legend { font-family: 'JetBrains Mono', monospace; }
+html[data-theme="deepcurrent"] .ss-value { font-weight: 700; text-shadow: 0 0 14px color-mix(in srgb, var(--ss-tone, var(--accent)) 40%, transparent); }
+html[data-theme="deepcurrent"] .ss-label { color: var(--accent); opacity: 0.75; letter-spacing: 0.1em; }
+html[data-theme="deepcurrent"] .ss-spark span { background: var(--accent); box-shadow: 0 0 8px rgba(53,230,196,0.5); border-radius: 999px; }
+
 #searchContainer { display: flex; justify-content: center; }
 #searchInput { width: 100%; max-width: 420px; }
 
@@ -6246,6 +6440,8 @@ html[data-theme="deepcurrent"] .pill.boost {
     </div>
   </div>
 
+  <div id="sweatStats" class="sweat-stats" aria-label="Summary of the sweats matching the current filters"></div>
+
   <div class="toolbar card">
     <div id="searchContainer">
       <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
@@ -8220,6 +8416,89 @@ function updatePaginationControls(container, totalPages) {
 // both the card grid and the table on every keystroke/filter change roughly
 // doubles the work for a view the user isn't even looking at. setViewMode()
 // re-renders on switch, so the freshly-shown view is never stale.
+// Summary strip above the toolbar (see .sweat-stats) - totals and record
+// holders across whatever the filters currently match. Player tiles get the
+// same data-username/data-uuid/logged-stat dataset a card has, so clicking
+// one opens that player's popup through the shared document click handler.
+// Names go in via textContent, never markup, same as the cards.
+const sweatStatsEl = document.getElementById("sweatStats");
+
+function renderSweatStats(list) {
+  sweatStatsEl.innerHTML = "";
+  if (!list.length) return;
+
+  const num = v => Number(v) || 0;
+  const indexOf = s => num(s.fkdr) * num(s.fkdr) * num(s.star);
+  const best = pick => list.reduce((a, b) => (pick(b) > pick(a) ? b : a));
+
+  // Sweats per calendar month for the last six months, oldest first.
+  const now = new Date();
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, label: d.toLocaleDateString(undefined, { month: "short" }), n: 0 });
+  }
+  const monthByKey = new Map(months.map(m => [m.key, m]));
+  const monthAgo = now.getTime() - 30 * 86400000;
+  let recent = 0;
+  list.forEach(s => {
+    const key = String(s.dateAdded || "").slice(0, 7);
+    if (monthByKey.has(key)) monthByKey.get(key).n++;
+    const t = Date.parse(s.dateAdded);
+    if (t >= monthAgo) recent++;
+  });
+  const peak = Math.max(1, ...months.map(m => m.n));
+
+  const tile = (cls, label) => {
+    const el = document.createElement("div");
+    el.className = `card ss-tile ${cls}`;
+    el.innerHTML = `<span class="ss-label">${label}</span>`;
+    sweatStatsEl.appendChild(el);
+    return el;
+  };
+
+  const total = tile("ss-tile-total", "Sweats beaten");
+  total.insertAdjacentHTML("beforeend", `
+    <div class="ss-total-row">
+      <div>
+        <div class="ss-value">${list.length.toLocaleString()}</div>
+        <div class="ss-sub">${recent ? `<b>+${recent}</b> in the last 30 days` : "None in the last 30 days"}</div>
+      </div>
+      <div class="ss-spark" role="img" aria-label="Sweats per month: ${months.map(m => `${m.label} ${m.n}`).join(", ")}">
+        ${months.map(m => `<span style="height:${Math.round(m.n / peak * 100)}%" data-tooltip="${m.label}: ${m.n}"></span>`).join("")}
+      </div>
+    </div>`);
+
+  const playerTile = (cls, label, s, valueHtml) => {
+    const el = tile(cls, label);
+    el.dataset.username = s.username;
+    el.dataset.uuid = s.uuid;
+    setLoggedStatsDataset(el, s);
+    el.tabIndex = 0;
+    el.setAttribute("role", "button");
+    el.insertAdjacentHTML("beforeend", `<div class="ss-value">${valueHtml}</div><div class="ss-who"><img alt="" /><span></span></div>`);
+    withRetryingAvatar(el.querySelector("img"), s.uuid, s.username);
+    el.querySelector(".ss-who span").textContent = s.username;
+    el.setAttribute("aria-label", `${label}: ${s.username}. View their stats`);
+  };
+
+  const topStar = best(s => num(s.star));
+  playerTile("ss-tile-star", "Highest star", topStar, `<span class="pill prestige-tag">${prestigeTagHtml(num(topStar.star))}</span>`);
+  const topFkdr = best(s => num(s.fkdr));
+  playerTile("ss-tile-fkdr", "Best FKDR", topFkdr, num(topFkdr.fkdr).toFixed(2));
+  const topIndex = best(indexOf);
+  playerTile("ss-tile-index", "Top index", topIndex, Math.round(indexOf(topIndex)).toLocaleString());
+
+  const cheats = list.filter(s => s.cheating).length;
+  const boosts = list.filter(s => s.boosting).length;
+  const pct = n => (n / list.length * 100).toFixed(1);
+  const flags = tile("ss-tile-flags", "Flagged");
+  flags.insertAdjacentHTML("beforeend", `
+    <div class="ss-value">${Math.round(list.filter(s => s.cheating || s.boosting).length / list.length * 100)}%</div>
+    <div class="ss-flag-bar" aria-hidden="true"><span class="cheat" style="width:${pct(cheats)}%"></span><span class="boost" style="width:${pct(boosts)}%"></span></div>
+    <div class="ss-flag-legend"><span class="cheat"><i></i>${cheats} cheating</span><span class="boost"><i></i>${boosts} boosting</span></div>`);
+}
+
 function renderTable() {
   // A full re-render can remove the element the tooltip is currently
   // anchored to (e.g. a row that no longer matches the filter) without
@@ -8229,6 +8508,7 @@ function renderTable() {
   const { filteredSweats, usernameCounts } = getProcessedSweats();
 
   resultCount.textContent = filteredSweats.length;
+  renderSweatStats(filteredSweats);
   updateSortHeaders();
 
   if (viewMode === "grid" || viewMode === "table") {

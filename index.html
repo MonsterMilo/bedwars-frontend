@@ -5136,64 +5136,126 @@ html[data-theme="ledger"] .view-btn.active {
 .tto-vault-rim {
   position: absolute;
   border-radius: 50%;
-  box-shadow: 0 0 0 6px #c9a24a, 0 0 0 9px #6e5220, 0 0 40px 12px rgba(230,190,90,0.55), inset 0 0 30px 6px rgba(0,0,0,0.6);
+  box-shadow: 0 0 0 7px #d9dee4, 0 0 0 10px #6d747c, 0 0 0 13px #b9c0c8, 0 0 44px 14px rgba(230,240,255,0.5), inset 0 0 34px 8px rgba(0,0,0,0.7);
 }
 .tto-vault-door {
   position: absolute;
   border-radius: 50%;
   transform-origin: 0% 50%;
   background:
-    radial-gradient(circle at 50% 50%, transparent 0 58%, rgba(0,0,0,0.25) 59% 60%, transparent 61%),
-    repeating-conic-gradient(from 0deg, rgba(255,255,255,0.05) 0 3deg, rgba(0,0,0,0.05) 3deg 6deg),
-    radial-gradient(circle at 34% 28%, #fbeec0 0%, #d9b45c 28%, #a07a2c 62%, #5c4214 100%);
-  box-shadow: 0 0 0 5px #3b2a0c, 0 0 0 9px #d4ae57, 0 0 0 12px #4a3510, 0 30px 90px rgba(0,0,0,0.65), inset 0 0 50px rgba(60,40,5,0.6);
+    radial-gradient(circle at 50% 50%, transparent 0 57%, rgba(0,0,0,0.28) 57.5% 58.5%, rgba(255,255,255,0.35) 59% 59.6%, transparent 60%),
+    radial-gradient(circle at 50% 50%, transparent 0 80%, rgba(0,0,0,0.3) 80.5% 81.5%, rgba(255,255,255,0.4) 82% 82.6%, transparent 83%),
+    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0 1px, rgba(0,0,0,0.04) 1px 3px),
+    conic-gradient(from 200deg, #f4f6f8, #b8bec6 18%, #eef1f4 34%, #9aa1aa 52%, #e6e9ed 70%, #a9b0b8 86%, #f4f6f8);
+  box-shadow: 0 0 0 5px #4b5159, 0 0 0 9px #d4d9df, 0 0 0 12px #5d646c, 0 34px 90px rgba(0,0,0,0.7), inset 0 0 60px rgba(30,35,45,0.45), inset 0 3px 0 rgba(255,255,255,0.8);
   backface-visibility: hidden;
+}
+/* Rivet ring just inside the rim. */
+.tto-vault-door::before {
+  content: "";
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, #5d646c 0 1.4deg, transparent 1.4deg 15deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 calc(50% - 7px), #000 calc(50% - 6px) calc(50% - 1px), transparent 50%);
+  mask: radial-gradient(circle, transparent 0 calc(50% - 7px), #000 calc(50% - 6px) calc(50% - 1px), transparent 50%);
 }
 .tto-vault-ring {
   position: absolute;
-  inset: 12%;
+  inset: 20%;
   border-radius: 50%;
-  border: 3px solid rgba(90,64,18,0.7);
-  box-shadow: inset 0 0 0 6px rgba(250,230,170,0.25), 0 0 0 6px rgba(250,230,170,0.2);
+  border: 2px solid rgba(60,66,74,0.55);
+  box-shadow: inset 0 0 0 5px rgba(255,255,255,0.35), 0 0 0 4px rgba(255,255,255,0.25), inset 0 6px 14px rgba(0,0,0,0.18);
 }
 .tto-vault-wheel {
   position: absolute;
-  inset: 30%;
+  inset: 31%;
   border-radius: 50%;
-  border: 7px solid #f3dc97;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.45), inset 0 0 0 2px #7a5a1c;
+  border: 8px solid #eef1f4;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.5), inset 0 0 0 2px #7b838c, 0 0 0 2px #7b838c;
 }
 .tto-vault-wheel i {
   position: absolute;
   left: 50%;
-  top: -12%;
-  width: 8px;
-  height: 124%;
-  margin-left: -4px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #8a6522, #f7e3a6, #8a6522);
+  top: -16%;
+  width: 10px;
+  height: 132%;
+  margin-left: -5px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #6d747c, #ffffff 45%, #c3c9d0 60%, #6d747c);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
 }
+.tto-vault-wheel i::before,
+.tto-vault-wheel i::after {
+  content: "";
+  position: absolute;
+  left: -5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, #b8bec6 55%, #5d646c);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.45);
+}
+.tto-vault-wheel i::before { top: -8px; }
+.tto-vault-wheel i::after { bottom: -8px; }
 .tto-vault-wheel i:nth-child(2) { transform: rotate(60deg); }
 .tto-vault-wheel i:nth-child(3) { transform: rotate(120deg); }
 .tto-vault-wheel b {
   position: absolute;
-  inset: 34%;
+  inset: 32%;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fff3c8, #c9a24a 60%, #6e5220);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  background: radial-gradient(circle at 35% 30%, #ffffff, #c8ced5 50%, #6d747c);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 0 0 3px rgba(255,255,255,0.5);
 }
+.tto-vault-dial {
+  position: absolute;
+  left: 50%;
+  top: 7.5%;
+  width: 17%;
+  height: 17%;
+  margin-left: -8.5%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #2c3138 0 30%, transparent 31%),
+    repeating-conic-gradient(from 0deg, #2c3138 0 1.2deg, transparent 1.2deg 10deg),
+    radial-gradient(circle at 35% 30%, #ffffff, #d7dce2 55%, #8a929b);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.45), 0 0 0 3px #6d747c, inset 0 0 0 4px rgba(255,255,255,0.7);
+}
+.tto-vault-dial::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 6%;
+  width: 3px;
+  height: 22%;
+  margin-left: -1.5px;
+  background: #c0392b;
+  border-radius: 2px;
+}
+.tto-vault-hinge {
+  position: absolute;
+  left: -5%;
+  width: 11%;
+  height: 13%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #5d646c, #eef1f4 40%, #9aa1aa 70%, #4b5159);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,0,0,0.3);
+}
+.tto-vault-hinge.h1 { top: 20%; }
+.tto-vault-hinge.h2 { bottom: 20%; }
 .tto-vault-plate {
   position: absolute;
   left: 50%;
-  bottom: 13%;
+  bottom: 10%;
   transform: translateX(-50%);
-  padding: 3px 10px;
+  padding: 4px 12px;
   font: 700 10px/1.2 Georgia, serif;
-  letter-spacing: 0.22em;
-  color: #3b2a0c;
-  background: linear-gradient(#f7e7b4, #c9a24a);
-  border: 1px solid #6e5220;
+  letter-spacing: 0.24em;
+  color: #2c3138;
+  background: linear-gradient(#ffffff, #c3c9d0);
+  border: 1px solid #6d747c;
   border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.35);
   white-space: nowrap;
 }
 .tto-vault-bolt {
@@ -5201,11 +5263,11 @@ html[data-theme="ledger"] .view-btn.active {
   left: 50%;
   top: 50%;
   width: 14px;
-  height: 14px;
-  margin: -7px 0 0 -7px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fff6d6, #b8913e 60%, #5c4214);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  height: 28px;
+  margin: -14px 0 0 -7px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #6d747c, #ffffff 45%, #b8bec6 65%, #5d646c);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.55);
 }
 .tto-coin {
   position: absolute;
@@ -6996,8 +7058,8 @@ const THEME_REVEALS = {
       },
     };
   },
-  // Private Bank: a brass vault door swings in over the old page, its
-  // wheel spins and the bolts pull back, the door swings open on its hinge
+  // Private Bank: a steel vault door swings in over the old page, its
+  // combination dial and wheel spin and the locking bars pull back, the door swings open on its hinge
   // to show the new theme through the vault opening, and a burst of gold
   // coins spills out as the opening widens to fill the screen.
   ledger(x, y, w, h) {
@@ -7045,7 +7107,15 @@ const THEME_REVEALS = {
         const door = document.createElement("div");
         door.className = "tto-vault-door";
         place(door, size);
-        door.innerHTML = '<div class="tto-vault-ring"></div><div class="tto-vault-wheel"><i></i><i></i><i></i><b></b></div><div class="tto-vault-plate">PRIVATE BANK</div>';
+        door.innerHTML = '<div class="tto-vault-hinge h1"></div><div class="tto-vault-hinge h2"></div><div class="tto-vault-ring"></div><div class="tto-vault-dial"></div><div class="tto-vault-wheel"><i></i><i></i><i></i><b></b></div><div class="tto-vault-plate">PRIVATE BANK &middot; EST. 1887</div>';
+        door.querySelector(".tto-vault-dial").animate([
+          { transform: "rotate(0deg)" },
+          { transform: "rotate(0deg)", offset: 0.05, easing: "ease-in-out" },
+          { transform: "rotate(-220deg)", offset: 0.14, easing: "ease-in-out" },
+          { transform: "rotate(95deg)", offset: 0.22, easing: "ease-in-out" },
+          { transform: "rotate(-40deg)", offset: 0.28 },
+          { transform: "rotate(-40deg)" },
+        ], { duration, fill: "both" });
         for (let i = 0; i < 12; i++) {
           const bolt = document.createElement("span");
           bolt.className = "tto-vault-bolt";
@@ -7070,10 +7140,10 @@ const THEME_REVEALS = {
         door.querySelectorAll(".tto-vault-bolt").forEach(bolt => {
           const a = bolt.style.getPropertyValue("--a");
           bolt.animate([
-            { transform: `rotate(${a}) translateY(${-doorR * 0.86}px)` },
-            { transform: `rotate(${a}) translateY(${-doorR * 0.86}px)`, offset: 0.26, easing: "ease-in" },
-            { transform: `rotate(${a}) translateY(${-doorR * 0.7}px)`, offset: 0.34 },
-            { transform: `rotate(${a}) translateY(${-doorR * 0.7}px)` },
+            { transform: `rotate(${a}) translateY(${-doorR * 0.98}px)` },
+            { transform: `rotate(${a}) translateY(${-doorR * 0.98}px)`, offset: 0.26, easing: "ease-in" },
+            { transform: `rotate(${a}) translateY(${-doorR * 0.74}px)`, offset: 0.34 },
+            { transform: `rotate(${a}) translateY(${-doorR * 0.74}px)` },
           ], { duration, fill: "both" });
         });
 

@@ -10800,10 +10800,7 @@ async function loadSweats() {
   } catch (err) {
     status.textContent = "Error loading sweats: " + err.message;
     cardGrid.innerHTML = '<div class="empty-state load-error"><span>Couldn\'t load sweats. The server may still be waking up.</span><button type="button" class="load-retry-btn">Try again</button></div>';
-    cardGrid.querySelector(".load-retry-btn").addEventListener("click", () => {
-      siteAudio.play("ui");
-      loadSweats();
-    });
+    cardGrid.querySelector(".load-retry-btn").addEventListener("click", () => loadSweats());
     siteAudio.play("error");
   } finally {
     clearTimeout(wakingTimer);
@@ -14642,8 +14639,8 @@ document.addEventListener("keydown", (e) => {
   const viewBtn = { g: viewGridBtn, t: viewTableBtn, l: viewLeaderboardBtn }[key];
   if (viewBtn) {
     if (!viewBtn.classList.contains("active")) {
+      siteAudio.play("view");
       viewBtn.click();
-      siteAudio.play("ui");
     }
     scrollToSection("defeatedSweatsSection");
     return;

@@ -880,6 +880,26 @@ html[data-theme="deepcurrent"] .denick-row .pill { font-family: 'JetBrains Mono'
   min-height: 180px;
 }
 
+/* Clears the previewed player (or stops a lookup that's still scanning)
+   without adding them. */
+.dash-label-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.preview-clear {
+  font: inherit;
+  font-size: 0.95em;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+.preview-clear:hover, .preview-clear:focus-visible { color: var(--bad); border-color: var(--bad); background: var(--accent-soft); }
+.preview-clear[hidden] { display: none; }
+html[data-theme="casefiles"] .preview-clear { border-radius: 2px; font-family: 'Courier Prime', monospace; }
+
 /* Not absolutely positioned - the empty prompt and the populated card are
    very different heights (a handful of stat tiles plus two tag panels is
    much taller than one line of placeholder text), and pinning the
@@ -5155,76 +5175,42 @@ html[data-theme="ledger"] .pill.boost {
   box-shadow: inset 0 1px 1px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(0,0,0,0.25);
 }
 
-/* Private Bank success flourish - a wax seal drops onto the form and
-   settles with a wobble, echoing a document being officially sealed. The
-   seal itself is a generated SVG (see buildWaxSealMarkup() in the script
-   below), not a styled div, since a real wax seal's silhouette is a
-   scalloped/flower-like edge (a ring of small outward bumps around a
-   circle, not a plain disc or even a slightly-uneven blob), and it needs
-   a raised inner rim plus curved text following that rim - none of which
-   a CSS border-radius/background can produce. The SVG supplies its own
-   gradient, edge, rim, and text; this element just sizes/positions/
-   animates the whole thing and gives it a shape-following drop-shadow
-   (box-shadow can't follow the scalloped silhouette, only the element's
-   own rectangular box - same reasoning as the torn-paper hero elsewhere
-   on this page). A soft ink-impression halo (a flattened, blurred dark
-   ellipse) pulses under the seal as it lands, like pressure spreading
-   into the paper, and a few gold sparkles kick out from underneath it.
-   Two animations on the seal itself (not one) since the settle-then-hold
-   and the eventual fade need different timing/easing and touch different
-   properties for most of their run - see the comment on them for why
-   running them together here doesn't hit the usual "animation
-   permanently wins" trap. */
-html[data-theme="ledger"] .flourish-impression {
-  position: absolute;
-  width: 110px;
-  height: 32px;
+/* Private Bank success flourish - a real sealing-wax moment: a drop of
+   molten oxblood wax falls onto the Add Sweat button and spreads into an
+   irregular puddle, a brass-and-walnut seal stamp comes down and presses
+   the bank's crest into it, lifts away, and a gold sheen runs across the
+   fresh impression before it fades. The seal and stamp are generated SVGs
+   (see buildWaxSealMarkup()/WAX_STAMP_SVG in the script) and the timing is
+   WAAPI, driven from buildLedgerFlourish(). These rules only size and
+   stack the pieces. */
+html[data-theme="ledger"] .ws-seal,
+html[data-theme="ledger"] .ws-drop,
+html[data-theme="ledger"] .ws-stamp,
+html[data-theme="ledger"] .ws-press-shadow { position: absolute; }
+html[data-theme="ledger"] .ws-seal {
+  width: 124px;
+  height: 124px;
+  filter: drop-shadow(0 6px 7px rgba(22,35,58,0.45)) drop-shadow(0 1px 1px rgba(40,5,12,0.5));
+}
+html[data-theme="ledger"] .ws-seal svg { display: block; width: 100%; height: 100%; overflow: visible; }
+html[data-theme="ledger"] .ws-drop {
+  width: 20px;
+  height: 24px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 42% 42%;
+  background: radial-gradient(circle at 35% 30%, #c0394c, #7d1322 55%, #43060f);
+  box-shadow: 0 4px 6px rgba(22,35,58,0.35);
+}
+html[data-theme="ledger"] .ws-stamp {
+  width: 96px;
+  height: 151px;
+  filter: drop-shadow(0 10px 10px rgba(22,35,58,0.35));
+}
+html[data-theme="ledger"] .ws-stamp svg { display: block; width: 100%; height: 100%; }
+html[data-theme="ledger"] .ws-press-shadow {
+  width: 120px;
+  height: 40px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(22,35,58,0.28), transparent 72%);
-  animation: sealImpression 0.7s ease-out forwards;
-}
-@keyframes sealImpression {
-  0% { transform: scale(0.2); opacity: 0; }
-  50% { opacity: 0.9; }
-  100% { transform: scale(1); opacity: 0; }
-}
-html[data-theme="ledger"] .flourish-seal {
-  position: relative;
-  width: 104px;
-  height: 104px;
-  filter: drop-shadow(0 10px 16px rgba(22,35,58,0.55));
-  /* sealDrop ends holding opacity:1 (forwards) - sealFade starts after it
-     via animation-delay and only then touches opacity, so the two never
-     actually fight over the property at the same moment; sealFade simply
-     has nothing to contribute (fill-mode:none) until its delay elapses. */
-  animation: sealDrop 0.6s cubic-bezier(.25,1.6,.4,1) forwards,
-             sealFade 0.5s ease-in 1.3s forwards;
-}
-html[data-theme="ledger"] .flourish-seal svg { display: block; width: 100%; height: 100%; overflow: visible; }
-@keyframes sealDrop {
-  0% { transform: scale(2.2) rotate(-20deg); opacity: 0; }
-  55% { transform: scale(0.92) rotate(-20deg); opacity: 1; }
-  75% { transform: scale(1.04) rotate(-20deg); opacity: 1; }
-  100% { transform: scale(1) rotate(-20deg); opacity: 1; }
-}
-@keyframes sealFade {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-html[data-theme="ledger"] .flourish-sparkle {
-  position: absolute;
-  color: var(--gold);
-  font-size: 15px;
-  line-height: 1;
-  animation: sealSparkle 0.9s ease-out forwards;
-}
-html[data-theme="ledger"] .flourish-sparkle::before {
-  content: "\2726";
-}
-@keyframes sealSparkle {
-  0% { transform: translate(0, 0) scale(0) rotate(0deg); opacity: 0; }
-  35% { opacity: 1; }
-  100% { transform: translate(var(--dx), var(--dy)) scale(1) rotate(80deg); opacity: 0; }
+  background: radial-gradient(closest-side, rgba(22,35,58,0.35), transparent);
 }
 
 /* Animated ink-draw underline on player names - a thin gold rule that
@@ -7461,7 +7447,9 @@ html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monos
         </div>
 
         <div class="dash-right">
-          <div class="dash-label">Preview</div>
+          <div class="dash-label dash-label-row">Preview
+            <button type="button" id="clearPreviewBtn" class="preview-clear" hidden>&#10005; Clear</button>
+          </div>
           <div class="dash-preview-frame">
             <div id="statsEmpty" class="dash-empty">
               <div class="dash-idle" aria-hidden="true">
@@ -8211,6 +8199,17 @@ window.siteAudio = (function () {
         for (let i = 0; i < 3 + tier; i++) tone(t + i * 0.055, { type: "square", f: midi(pentaNote(69 + tier * 2, i * 2)), dur: 0.1, gain: 0.07, lp: 4000 });
       },
       ui(t) { tone(t, { type: "square", f: 1760, dur: 0.018, gain: 0.045, lp: 5000 }); },
+      toggle(t, on) { tone(t, { type: "square", f: on ? 988 : 1319, f2: on ? 1319 : 988, glide: 0.05, dur: 0.06, gain: 0.05, lp: 3500 }); },
+      save(t) { [76, 83].forEach((n, i) => tone(t + i * 0.07, { type: "square", f: midi(n), dur: 0.1, gain: 0.06, lp: 4000 })); },
+      del(t) { tone(t, { type: "sawtooth", f: 1400, f2: 120, dur: 0.28, gain: 0.06, lp: 2500 }); noise(t, { type: "highpass", f: 3000, dur: 0.1, gain: 0.05 }); },
+      slide(t, open) { tone(t, { f: open ? 300 : 1100, f2: open ? 1100 : 300, dur: 0.18, gain: 0.05 }); noise(t, { type: "bandpass", f: open ? 800 : 3000, f2: open ? 3000 : 800, dur: 0.2, gain: 0.04, swell: 0.5 }); },
+      // Soft digital keypresses; Enter confirms with a two-note blip.
+      type(t, kind) {
+        if (kind === "enter") { [81, 88].forEach((n, i) => tone(t + i * 0.05, { type: "square", f: midi(n), dur: 0.05, gain: 0.04, lp: 4000 })); return; }
+        const f = kind === "back" ? 900 : kind === "space" ? 1200 : rnd(1500, 1900);
+        tone(t, { type: "square", f, dur: 0.02, gain: 0.035, lp: 3500 });
+        noise(t, { type: "highpass", f: 5000, dur: 0.008, gain: 0.03 });
+      },
       switchTo(t) {
         const d = 1.6;
         // CRT glitch stutters over the old page.
@@ -8275,6 +8274,25 @@ window.siteAudio = (function () {
         metal(t + (2 + tier) * 0.07, 2100, { ratios: [1, 2.1, 3.9], gain: 0.07, dur: 1.2 });
       },
       ui(t) { typeKey(t, { gain: 0.06 }); },
+      // Ticking a box is a pencil check mark; unticking rubs it out.
+      toggle(t, on) {
+        if (on) { noise(t, { type: "bandpass", f: 3200, q: 2, dur: 0.04, gain: 0.08 }); noise(t + 0.045, { type: "bandpass", f: 2600, q: 2, dur: 0.07, gain: 0.07 }); }
+        else for (let i = 0; i < 3; i++) noise(t + i * 0.05, { type: "bandpass", f: 1400, q: 1, dur: 0.045, gain: 0.05 });
+      },
+      save(t) { thud(t, { f: 150, f2: 55, dur: 0.14, gain: 0.3 }); paper(t, 0.06, { gain: 0.05 }); },
+      // Deleting crumples the page up.
+      del(t) { for (let i = 0; i < 7; i++) noise(t + i * 0.035 + rnd(0, 0.02), { type: "bandpass", f: rnd(900, 3000), q: 1.4, dur: 0.05, gain: 0.08 }); },
+      slide(t, open) { paper(t, 0.22, { f: open ? 900 : 2400, f2: open ? 2400 : 900, gain: 0.1 }); },
+      // A typewriter: key strikes, a heavier space bar, and Enter rings the
+      // carriage bell and zips the carriage back.
+      type(t, kind) {
+        if (kind === "enter") {
+          metal(t, 2100, { ratios: [1, 2.1, 3.9], gain: 0.035, dur: 0.9 });
+          noise(t + 0.08, { type: "bandpass", f: 1400, f2: 700, q: 1.5, dur: 0.25, gain: 0.06, swell: 0.3 });
+          return;
+        }
+        typeKey(t, { gain: kind === "space" ? 0.13 : 0.1, f: kind === "space" ? 1800 : kind === "back" ? 2000 : undefined });
+      },
       switchTo(t) {
         const d = 1.8;
         paper(t, 0.2 * d, { f: 1200, f2: 3500, gain: 0.16, swell: 0.6 });
@@ -8325,6 +8343,24 @@ window.siteAudio = (function () {
         metal(t + 0.06, 2349 + tier * 120, { ratios: [1, 1.26, 2.52], gain: 0.08, dur: 0.9 });
       },
       ui(t) { tone(t, { type: "triangle", f: 2400, f2: 1800, dur: 0.02, gain: 0.05 }); },
+      // A small brass switch.
+      toggle(t, on) { noise(t, { type: "bandpass", f: on ? 3400 : 2600, q: 5, dur: 0.015, gain: 0.12 }); tone(t, { f: on ? 520 : 400, dur: 0.03, gain: 0.04 }); },
+      save(t) { metal(t, 2637, { ratios: [1, 1.26, 2.52], gain: 0.05, dur: 0.6 }); },
+      // A drawer of files sliding shut with a heavy clunk.
+      del(t) { noise(t, { type: "lowpass", f: 500, f2: 1200, dur: 0.18, gain: 0.08, swell: 0.6 }); thud(t + 0.18, { f: 110, f2: 50, dur: 0.14, gain: 0.3, nf: 1200, ndur: 0.03 }); },
+      slide(t, open) { noise(t, { type: "bandpass", f: open ? 700 : 1600, f2: open ? 1600 : 700, q: 0.8, dur: 0.2, gain: 0.07, swell: 0.5 }); },
+      // An old adding machine: firm clicky keys, and Enter pulls the
+      // handle with a ratchet and a soft bell.
+      type(t, kind) {
+        if (kind === "enter") {
+          for (let i = 0; i < 4; i++) noise(t + i * 0.035, { type: "bandpass", f: 3000, q: 6, dur: 0.012, gain: 0.08 });
+          metal(t + 0.16, 2637, { ratios: [1, 1.26, 2.52], gain: 0.03, dur: 0.6 });
+          return;
+        }
+        const f = kind === "back" ? 1500 : kind === "space" ? 1300 : rnd(2000, 2400);
+        noise(t, { type: "bandpass", f, q: 4, dur: 0.018, gain: 0.09 });
+        tone(t, { f: 320, f2: 180, dur: 0.03, gain: 0.04 });
+      },
       switchTo(t) {
         const d = 1.5;
         noise(t, { type: "lowpass", f: 200, f2: 700, dur: 0.2 * d, gain: 0.2, swell: 0.8 });
@@ -8358,10 +8394,18 @@ window.siteAudio = (function () {
         metal(t + 0.12, 2637, { ratios: [1, 1.26, 2.52], gain: 0.06, dur: 0.8 });
       },
       error(t) { [0, 0.18].forEach(k => tone(t + k, { type: "square", f: 196, dur: 0.12, hold: 0.04, gain: 0.05, lp: 900 })); },
+      // Matches the wax seal flourish: the wax drop plops down, the brass
+      // stamp presses in with a soft squish, lifts off the tacky wax, and a
+      // bell rings as the gold sheen passes over the crest.
       success(t) {
-        noise(t, { type: "bandpass", f: 700, q: 1, dur: 0.1, gain: 0.08 });
-        metal(t + 0.07, 2637, { ratios: [1, 1.26, 2.52], gain: 0.09, dur: 1 });
-        for (let i = 0; i < 6; i++) coin(t + 0.12 + i * 0.05, { gain: 0.04 });
+        tone(t + 0.32, { f: 260, f2: 110, dur: 0.09, gain: 0.25 });
+        noise(t + 0.32, { type: "lowpass", f: 900, f2: 300, dur: 0.12, gain: 0.12 });
+        thud(t + 0.7, { f: 120, f2: 50, dur: 0.22, gain: 0.45, nf: 700 });
+        metal(t + 0.7, 480, { gain: 0.03, dur: 0.25 });
+        noise(t + 0.72, { type: "lowpass", f: 500, f2: 1400, dur: 0.18, gain: 0.08, swell: 0.4 });
+        tone(t + 0.95, { f: 320, f2: 720, dur: 0.06, gain: 0.08 });
+        metal(t + 1.25, 2637, { ratios: [1, 1.26, 2.52], gain: 0.08, dur: 1.2 });
+        metal(t + 1.33, 3520, { ratios: [1, 1.26, 2.52], gain: 0.04, dur: 1 });
       },
       stunt(t) {
         noise(t, { type: "bandpass", f: 500, f2: 2500, q: 0.7, dur: 0.6, gain: 0.1, swell: 0.5 });
@@ -8386,6 +8430,18 @@ window.siteAudio = (function () {
         for (let i = 0; i < 3; i++) bubble(t + 0.05 + i * 0.05, { gain: 0.06 });
       },
       ui(t) { bubble(t, { f: 700, gain: 0.04, dur: 0.04 }); },
+      toggle(t, on) { bubble(t, { f: on ? 600 : 900, rise: on ? 2 : 0.55, gain: 0.07, dur: 0.06 }); },
+      save(t) { ping(t, { f: 1760, gain: 0.05, dur: 0.6 }); },
+      // Something sinking away into the deep.
+      del(t) { tone(t, { f: 500, f2: 90, dur: 0.45, gain: 0.1 }); for (let i = 0; i < 3; i++) bubble(t + 0.05 + i * 0.07, { gain: 0.04, f: 400 - i * 60 }); },
+      slide(t, open) { noise(t, { type: "lowpass", f: open ? 250 : 900, f2: open ? 900 : 250, dur: 0.3, gain: 0.1, swell: 0.5 }); },
+      // Each keypress is a small droplet; Enter lets out a little rush of
+      // bubbles.
+      type(t, kind) {
+        if (kind === "enter") { for (let i = 0; i < 4; i++) bubble(t + i * 0.04, { gain: 0.05, f: 500 + i * 140 }); return; }
+        const f = kind === "back" ? 380 : kind === "space" ? 450 : rnd(600, 900);
+        bubble(t, { f, gain: 0.05, dur: 0.04, rise: kind === "back" ? 0.6 : 2.2 });
+      },
       switchTo(t) {
         const d = 1.9;
         // Sinking into dark water...
@@ -8503,15 +8559,38 @@ window.siteAudio = (function () {
       };
     },
     casefiles(bus, add) {
-      // Rain against the office window, with the odd roll of thunder.
-      const rain = ctx.createBufferSource(); rain.buffer = ambNoise; rain.loop = true;
-      const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 500;
-      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 3200;
-      rain.connect(hp); hp.connect(lp); lp.connect(gainNode(0.22, bus)); add(rain);
+      // A late-night detective's office: a warm, muffled room tone, a slow
+      // minor-key electric-piano progression and a muted upright bass
+      // walking under it, with the odd page turning. Everything is kept
+      // soft and low-passed - no hiss or sharp edges.
+      const room = ctx.createBufferSource(); room.buffer = ambNoise; room.loop = true; room.playbackRate.value = 0.3;
+      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 160;
+      room.connect(lp); lp.connect(gainNode(0.18, bus)); add(room);
+      // Dm9 - Bbmaj7 - Gm9 - A7sus, voiced low and close.
+      const CHORDS = [
+        { bass: [38, 41, 45, 43], keys: [53, 57, 60, 64] },
+        { bass: [34, 38, 41, 40], keys: [50, 53, 57, 62] },
+        { bass: [31, 34, 38, 36], keys: [50, 53, 57, 58] },
+        { bass: [33, 37, 40, 38], keys: [50, 55, 57, 61] },
+      ];
+      const beat = 0.75;
+      let bar = 0;
+      const epiano = (t, n, g, dur) => {
+        tone(t, { type: "sine", f: midi(n), dur, gain: g, a: 0.02, dest: bus });
+        tone(t, { type: "triangle", f: midi(n), dur: dur * 0.5, gain: g * 0.25, a: 0.01, lp: 1400, dest: bus });
+        tone(t, { f: midi(n + 12), dur: dur * 0.35, gain: g * 0.12, a: 0.01, dest: bus });
+      };
       return (t) => {
-        for (let i = 0; i < 6; i++) tone(t + rnd(0, 0.5), { f: rnd(2500, 5500), dur: 0.02, gain: rnd(0.01, 0.03), a: 0.001, pan: rnd(-0.8, 0.8), dest: bus });
-        if (Math.random() < 0.006) noise(t, { type: "lowpass", f: 180, f2: 60, dur: 4, gain: 0.6, swell: 0.25, dest: bus });
-        return 0.5;
+        const c = CHORDS[bar % CHORDS.length];
+        // Electric piano: the chord rolled gently from the bottom.
+        c.keys.forEach((n, i) => epiano(t + i * 0.035, n, 0.035, beat * 3.6));
+        if (bar % 2 === 1) epiano(t + beat * 2.5, choose(c.keys) + 12, 0.02, beat * 2);
+        // Upright bass: soft plucked walk, one note a beat.
+        c.bass.forEach((n, i) => tone(t + i * beat, { type: "triangle", f: midi(n), dur: beat * 0.95, gain: 0.11, a: 0.012, lp: 420, dest: bus }));
+        // Now and then a page turns somewhere in the room.
+        if (Math.random() < 0.18) noise(t + rnd(0.5, beat * 3), { type: "lowpass", f: 900, f2: 1600, q: 0.5, dur: 0.45, gain: 0.05, swell: 0.45, dest: bus });
+        bar++;
+        return beat * 4;
       };
     },
     ledger(bus, add) {
@@ -8657,10 +8736,10 @@ window.siteAudio = (function () {
   // loudness so each kind of moment sits at the same level in every theme
   // (clicks ~-28dB, rare clicks ~-22, flips ~-27, switch scenes ~-14...).
   const TRIM = {
-    neon: { combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -2 },
-    casefiles: { click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
-    ledger: { rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
-    deepcurrent: { rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -4 },
+    neon: { save: 3, delete: 5, type: 4, combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -2 },
+    casefiles: { toggle: 6, save: -5, delete: 11, slide: 2, ambience: 2.5, click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
+    ledger: { toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
+    deepcurrent: { toggle: -2, save: 2, delete: -2, slide: 3, type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -4 },
     shared: { bed: -5, chat: -2 },
   };
   const SHARED = { chat: (t) => pling(t, [78, 85]), techno: fanfare, bed: bedDestroyed };
@@ -8682,7 +8761,8 @@ window.siteAudio = (function () {
         flipOpen: () => s.flipOpen(t, (opts.duration || 600) / 1000),
         flipClose: () => s.flipClose(t),
         found: () => s.found(t), error: () => s.error(t), success: () => s.success(t),
-        stunt: () => s.stunt(t), ui: () => s.ui(t),
+        stunt: () => s.stunt(t), ui: () => s.ui(t), type: () => s.type(t, opts.kind || "key"),
+        toggle: () => s.toggle(t, !!opts.on), save: () => s.save(t), delete: () => s.del(t), slide: () => s.slide(t, !!opts.open),
         scanStart: () => s.scanStart(t), scanTick: () => s.scanTick(t),
       })[name]();
     } finally {
@@ -8702,7 +8782,7 @@ window.siteAudio = (function () {
   }
   const DUCK = { switch: 2, bed: 3.2, techno: 1.2 };
 
-  let lastClick = 0;
+  let lastClick = 0, lastType = 0;
   function play(name, opts = {}) {
     if (!ready()) return;
     const theme = opts.theme || themeNow();
@@ -8713,6 +8793,10 @@ window.siteAudio = (function () {
       // A fast flurry of clicks gets a little quieter so it doesn't pile up.
       if (t - lastClick < 0.18) trim = -4;
       lastClick = t;
+    }
+    if (name === "type") {
+      if (t - lastType < 0.025) return;
+      lastType = t;
     }
     if (DUCK[name]) duck(t, DUCK[name]);
     try { schedule(name, theme, t, { ...opts, trim, pan: panFor(opts.x) }); } catch (e) {}
@@ -8811,6 +8895,24 @@ window.siteAudio = (function () {
   });
   sync();
 })();
+
+// Checkbox chips and filters get an on/off toggle sound, dropdown
+// selects a tick.
+document.addEventListener("change", (e) => {
+  const el = e.target;
+  if (!el || !el.matches) return;
+  if (el.matches("input[type='checkbox']")) siteAudio.play("toggle", { on: el.checked });
+  else if (el.matches("select, input[type='radio']")) siteAudio.play("ui");
+});
+
+// Themed typing sounds in every text box and textarea on the site.
+document.addEventListener("keydown", (e) => {
+  const el = e.target;
+  if (!el || !el.matches || !el.matches("input[type='text'], input[type='search'], input[type='password'], input[type='number'], input:not([type]), textarea")) return;
+  if (e.ctrlKey || e.metaKey || e.altKey || e.repeat && e.key !== "Backspace") return;
+  const kind = e.key === "Enter" ? "enter" : e.key === "Backspace" || e.key === "Delete" ? "back" : e.key === " " ? "space" : e.key.length === 1 ? "key" : null;
+  if (kind) siteAudio.play("type", { kind });
+});
 </script>
 
 <script>
@@ -9920,10 +10022,12 @@ async function runDenickSearch() {
       if (apiResult.noKey) denickStatus.textContent = "Showing Diamond Dome only, and nothing matched.";
       else if (apiResult.error) denickStatus.textContent = `Denicker API didn't respond (${apiResult.error}) - showing Diamond Dome only, and nothing matched.`;
       else denickStatus.textContent = "No results.";
+      siteAudio.play("error");
       return;
     }
 
     renderDenickPage();
+    siteAudio.play("found");
     if (apiResult.noKey) denickStatus.textContent = "Showing Diamond Dome results only.";
     else if (apiResult.error) denickStatus.textContent = "Denicker API didn't respond - showing Diamond Dome results only.";
   } catch (err) {
@@ -9932,6 +10036,7 @@ async function runDenickSearch() {
     denickPagination.hidden = true;
     denickEmpty.hidden = false;
     denickStatus.textContent = `Error: ${err.message}`;
+    siteAudio.play("error");
   } finally {
     if (!isStale()) {
       denickSearchBtn.disabled = false;
@@ -9996,13 +10101,15 @@ async function saveAdminKey() {
     if (next) localStorage.setItem(ADMIN_KEY_STORAGE, next);
     else localStorage.removeItem(ADMIN_KEY_STORAGE);
   } catch {}
-  if (!next) { adminKeyStatus.textContent = "Key cleared."; refreshKeyOwner(); return; }
+  if (!next) { adminKeyStatus.textContent = "Key cleared."; siteAudio.play("delete"); refreshKeyOwner(); return; }
   adminKeyStatus.textContent = "Checking key...";
   const who = await refreshKeyOwner();
   if (who) {
     adminKeyStatus.textContent = `Key saved. You're signed in as ${noteAuthorLabel(who)}.`;
+    siteAudio.play("save");
   } else {
     adminKeyStatus.textContent = "Key saved, but the server didn't recognise it. Check it's typed right.";
+    siteAudio.play("error");
   }
 }
 saveAdminKeyBtn.addEventListener('click', saveAdminKey);
@@ -10029,6 +10136,7 @@ const status = document.getElementById('status');
 const fetchBtn = document.getElementById('fetchBtn');
 const statsDisplay = document.getElementById('statsDisplay');
 const statsEmpty = document.getElementById('statsEmpty');
+const clearPreviewBtn = document.getElementById("clearPreviewBtn");
 const searchInput = document.getElementById('searchInput');
 
 const statsAvatar = document.getElementById('statsAvatar');
@@ -10048,6 +10156,11 @@ const statsStar = document.getElementById('statsStar');
 // an overlap fade.
 function showStatsCard() {
   siteAudio.play("found");
+  // The lookup is done - stop the scanning sound and idle speed-up. Left
+  // running, the scan loop kept ticking the whole time a preview sat
+  // waiting to be added.
+  setStatsScanning(null);
+  clearPreviewBtn.hidden = false;
   statsEmpty.hidden = true;
   statsDisplay.style.display = "flex";
   const content = document.getElementById("statsContent");
@@ -10059,6 +10172,7 @@ function showStatsEmpty() {
   statsDisplay.style.display = "none";
   statsEmpty.hidden = false;
   setStatsScanning(null);
+  clearPreviewBtn.hidden = true;
 }
 // While a lookup is in flight the empty preview speeds up its idle scene
 // and names who it is looking for.
@@ -10154,6 +10268,21 @@ let currentStats = null;
 // instead of overwriting currentUUID/currentStats with out-of-date data.
 // Same guard pattern already used for the player modal (modal.dataset.activeUuid).
 let statsFetchToken = 0;
+
+// Dismisses the preview (or cancels a lookup still scanning) without
+// adding the player. Bumping the token makes any in-flight lookup drop
+// its result when it lands.
+clearPreviewBtn.addEventListener("click", () => {
+  statsFetchToken++;
+  currentUUID = null;
+  currentStats = null;
+  usernameInput.value = "";
+  status.textContent = "";
+  showStatsEmpty();
+  fetchBtn.disabled = false;
+  fetchBtn.classList.remove("loading");
+  usernameInput.focus();
+});
 
 // Shared focus management for all four custom modals (player/edit/admin-key/
 // confirm-delete) - none of these are a native <dialog>, so nothing moves
@@ -10376,9 +10505,13 @@ async function loadSweats() {
 fetchBtn.addEventListener('click', async () => {
   fetchBtn.disabled = true;
   fetchBtn.classList.add("loading");
+  const tokenBefore = statsFetchToken;
   try {
     await fetchAndDisplayStats();
   } catch (err) {
+    // Cleared (or superseded by a newer lookup) while in flight - the
+    // failure is for a lookup nobody is waiting on any more.
+    if (statsFetchToken > tokenBefore + 1) return;
     status.textContent = err.message;
     setStatsScanning(null);
     siteAudio.play("error");
@@ -10453,11 +10586,13 @@ form.addEventListener('submit', async e => {
 
   if (!username) {
     status.textContent = "Please enter a username first.";
+    siteAudio.play("error");
     return;
   }
 
   if (!anyBeatenBySelected) {
     status.textContent = "Please select at least one player who beat them.";
+    siteAudio.play("error");
     return;
   }
 
@@ -10517,6 +10652,7 @@ form.addEventListener('submit', async e => {
     playSuccessFlourish();
   } catch (err) {
     status.textContent = err.message;
+    siteAudio.play("error");
   } finally {
     addSweatBtn.disabled = false;
   }
@@ -10702,6 +10838,7 @@ async function fetchAndDisplayStats() {
   status.textContent = "Fetching stats...";
   showStatsEmpty();
   setStatsScanning(usernameRaw);
+  clearPreviewBtn.hidden = false;
 
   // Fetch UUID
   const resMojang = await fetch(`${backendBaseURL}/mojang/${usernameRaw}`, { headers: adminHeaders() });
@@ -11787,6 +11924,7 @@ function playRowExit(el) {
 
 async function removeSweat(id, rowEl) {
   if (!(await confirmDelete())) return;
+  siteAudio.play("delete");
   // Animate out and send the DELETE request at the same time, rather than
   // one after the other - the exit animation plays during the network
   // round-trip instead of adding to it, so deleting doesn't feel slower
@@ -11806,6 +11944,7 @@ async function removeSweat(id, rowEl) {
     // than leaving it invisible.
     if (rowEl && rowEl.isConnected) rowEl.classList.remove("row-exit");
     status.textContent = "Error removing sweat: " + err.message;
+    siteAudio.play("error");
   }
 }
 
@@ -11867,6 +12006,7 @@ saveEditBtn.addEventListener("click", async () => {
 
   if (hasInvalid) {
     editStatus.textContent = "Please enter a valid number for every stat.";
+    siteAudio.play("error");
     return;
   }
 
@@ -11888,10 +12028,12 @@ saveEditBtn.addEventListener("click", async () => {
     }
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to save changes"));
 
+    siteAudio.play("save");
     closeEditModalFn();
     await loadSweats();
   } catch (err) {
     editStatus.textContent = err.message;
+    siteAudio.play("error");
   } finally {
     saveEditBtn.disabled = false;
   }
@@ -12250,7 +12392,7 @@ modalNoteForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const target = modalNoteSweats[0];
   const text = modalNoteText.value.trim();
-  if (!target || !text) { modalNoteStatus.textContent = "Write something first."; return; }
+  if (!target || !text) { modalNoteStatus.textContent = "Write something first."; siteAudio.play("error"); return; }
   modalNoteSave.disabled = true;
   modalNoteStatus.textContent = "";
   try {
@@ -12268,8 +12410,10 @@ modalNoteForm.addEventListener("submit", async (e) => {
     replaceSweat(updated);
     const last = modalNotesList.lastElementChild;
     if (last) last.classList.add("note-item-new");
+    siteAudio.play("save");
   } catch (err) {
     modalNoteStatus.textContent = err.message;
+    siteAudio.play("error");
   } finally {
     modalNoteSave.disabled = !modalNoteText.value.trim();
   }
@@ -12319,8 +12463,10 @@ function startEditNote(li, note, sweat) {
       });
       if (!res.ok) throw new Error(await noteErrorMessage(res, "Failed to edit note"));
       replaceSweat(await res.json());
+      siteAudio.play("save");
     } catch (err) {
       modalNoteStatus.textContent = err.message;
+      siteAudio.play("error");
       saveBtn.disabled = false;
     }
   });
@@ -12349,6 +12495,7 @@ async function deleteNote(btn, note, sweat) {
     });
     if (!res.ok) throw new Error(await noteErrorMessage(res, "Failed to delete note"));
     const updated = await res.json();
+    siteAudio.play("delete");
     const li = btn.closest(".note-item");
     if (li && li.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       await li.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateX(16px)" }], { duration: 220, easing: "ease-in" }).finished.catch(() => {});
@@ -12356,6 +12503,7 @@ async function deleteNote(btn, note, sweat) {
     replaceSweat(updated);
   } catch (err) {
     modalNoteStatus.textContent = err.message;
+    siteAudio.play("error");
     btn.disabled = false;
   }
 }
@@ -12864,63 +13012,133 @@ function buildCaseFilesFlourish(container) {
   return 1600;
 }
 
-// Builds a wax-seal SVG: a scalloped (flower/gear-like) outer edge, a
-// raised inner rim, curved text following that rim top and bottom, and a
-// bold word centered between them - the classic envelope-seal layout.
-// Generated rather than hand-drawn since the scalloped edge is really a
-// ring of small circular-arc "bumps" around a base circle, which is much
-// easier to get evenly spaced by computing the points than by eyeballing
-// path coordinates by hand.
-function buildWaxSealMarkup(ringText, centerText) {
-  const cx = 50, cy = 50, baseR = 40, bumps = 18, bumpHeight = 5;
-  const points = [];
-  for (let i = 0; i < bumps; i++) {
-    const angle = (i / bumps) * Math.PI * 2 - Math.PI / 2;
-    points.push([cx + baseR * Math.cos(angle), cy + baseR * Math.sin(angle)]);
+// Builds a wax-seal SVG in the style of a real one: an irregular puddle
+// of wax (no two alike - the edge is a circle wobbled by a few random
+// low harmonics plus a couple of little runs where the wax spread
+// further), a raised lip where the stamp pushed wax outward, a recessed
+// flat disc, and the bank's crest (dotted border, laurel, PB monogram,
+// EST. 1887) embossed into it. The emboss is the crest drawn three times -
+// a light copy nudged up-left and a dark copy nudged down-right under the
+// face - which reads as relief without needing an SVG lighting filter.
+// The lip, disc and crest start hidden (class ws-pressed) and are shown
+// the moment the stamp lands.
+function buildWaxSealMarkup() {
+  const uid = "ws" + Math.random().toString(36).slice(2, 8);
+  const N = 72;
+  const harmonics = [2, 3, 5, 8].map((k, i) => [k, [1.4, 1.1, 0.7, 0.35][i], Math.random() * Math.PI * 2]);
+  const runs = [0, 1, 2].map(() => [Math.random() * Math.PI * 2, 2.5 + Math.random() * 3.5]);
+  const pts = [];
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * Math.PI * 2;
+    let r = 45;
+    harmonics.forEach(([k, amp, ph]) => { r += amp * Math.sin(k * a + ph); });
+    runs.forEach(([at, amp]) => {
+      const d = Math.atan2(Math.sin(a - at), Math.cos(a - at));
+      r += amp * Math.exp(-(d * d) / 0.02);
+    });
+    pts.push([r * Math.cos(a), r * Math.sin(a)]);
   }
-  // Sagitta formula: the radius of a circular arc whose chord is `chord`
-  // long and whose peak bulges `bumpHeight` past that chord.
-  const segAngle = (Math.PI * 2) / bumps;
-  const chord = 2 * baseR * Math.sin(segAngle / 2);
-  const arcR = (chord * chord / 4 + bumpHeight * bumpHeight) / (2 * bumpHeight);
-  let edgePath = `M ${points[0][0].toFixed(2)} ${points[0][1].toFixed(2)}`;
-  for (let i = 1; i <= bumps; i++) {
-    const pt = points[i % bumps];
-    edgePath += ` A ${arcR.toFixed(2)} ${arcR.toFixed(2)} 0 0 1 ${pt[0].toFixed(2)} ${pt[1].toFixed(2)}`;
+  // Catmull-Rom through the points, as cubic Beziers, for a smooth edge.
+  const P = (i) => pts[(i + N) % N];
+  let blob = `M${P(0)[0].toFixed(2)} ${P(0)[1].toFixed(2)}`;
+  for (let i = 0; i < N; i++) {
+    const [p0, p1, p2, p3] = [P(i - 1), P(i), P(i + 1), P(i + 2)];
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    blob += ` C${c1[0].toFixed(2)} ${c1[1].toFixed(2)} ${c2[0].toFixed(2)} ${c2[1].toFixed(2)} ${p2[0].toFixed(2)} ${p2[1].toFixed(2)}`;
   }
-  edgePath += " Z";
+  blob += "Z";
+
+  // Laurel: leaves along both sides of an arc, left branch mirrored right.
+  let laurel = "";
+  for (let side = -1; side <= 1; side += 2) {
+    for (let i = 0; i < 7; i++) {
+      const deg = 100 + i * 17;
+      const a = (deg * Math.PI) / 180;
+      const x = -side * 20.5 * Math.cos(a);
+      const y = 20.5 * Math.sin(a);
+      const rot = side < 0 ? deg + 125 : 55 - deg;
+      laurel += `<ellipse cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" rx="3.3" ry="1.25" transform="rotate(${rot.toFixed(1)} ${x.toFixed(2)} ${y.toFixed(2)})"/>`;
+    }
+  }
 
   return `
-    <svg viewBox="0 0 100 100">
+    <svg viewBox="-60 -60 120 120">
       <defs>
-        <radialGradient id="sealGrad" cx="32%" cy="24%" r="85%">
-          <stop offset="0%" stop-color="#ffe0da" />
-          <stop offset="9%" stop-color="#ff9585" />
-          <stop offset="30%" stop-color="#e2102f" />
-          <stop offset="62%" stop-color="#8c0b1f" />
-          <stop offset="100%" stop-color="#2a070d" />
+        <radialGradient id="${uid}-wax" cx="38%" cy="32%" r="78%">
+          <stop offset="0" stop-color="#a8283a"/>
+          <stop offset=".45" stop-color="#7f1424"/>
+          <stop offset=".8" stop-color="#5a0a17"/>
+          <stop offset="1" stop-color="#3a050e"/>
         </radialGradient>
-        <radialGradient id="sealGlint" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="rgba(255,255,255,0.95)" />
-          <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-        </radialGradient>
-        <path id="sealTopArc" d="M 21,53 A 29,29 0 0 1 79,53" fill="none" />
-        <path id="sealBottomArc" d="M 24,63 A 27,27 0 0 0 76,63" fill="none" />
+        <linearGradient id="${uid}-lip" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#c9485c"/>
+          <stop offset=".5" stop-color="#7a1222"/>
+          <stop offset="1" stop-color="#34040c"/>
+        </linearGradient>
+        <linearGradient id="${uid}-well" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#2c030a"/>
+          <stop offset=".55" stop-color="#6e0f1d" stop-opacity="0"/>
+          <stop offset="1" stop-color="#b8394c"/>
+        </linearGradient>
+        <linearGradient id="${uid}-gloss" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#fff" stop-opacity=".55"/>
+          <stop offset=".45" stop-color="#fff" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="${uid}-sheen" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#f3d58a" stop-opacity="0"/>
+          <stop offset=".5" stop-color="#f3d58a" stop-opacity=".55"/>
+          <stop offset="1" stop-color="#f3d58a" stop-opacity="0"/>
+        </linearGradient>
+        <clipPath id="${uid}-clip"><path d="${blob}"/></clipPath>
+        <clipPath id="${uid}-disc"><circle r="31"/></clipPath>
+        <filter id="${uid}-grain" x="-10%" y="-10%" width="120%" height="120%">
+          <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="${Math.floor(Math.random() * 99)}"/>
+          <feColorMatrix values="0 0 0 0 0.1  0 0 0 0 0  0 0 0 0 0.02  0 0 0 -1.4 0.95"/>
+        </filter>
+        <filter id="${uid}-soft"><feGaussianBlur stdDeviation="0.7"/></filter>
+        <filter id="${uid}-blur2"><feGaussianBlur stdDeviation="1.6"/></filter>
+        <g id="${uid}-crest">
+          <circle r="26.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="0.01 2.35" stroke-linecap="round"/>
+          <circle r="23.6" fill="none" stroke="currentColor" stroke-width="0.6"/>
+          <g fill="currentColor">${laurel}</g>
+          <text y="7.2" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-style="italic" font-weight="700" font-size="21" fill="currentColor">PB</text>
+          <text y="-12.5" text-anchor="middle" font-size="6.5" fill="currentColor">&#10022;</text>
+          <text y="17.6" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-weight="700" font-size="3.9" letter-spacing="0.9" fill="currentColor">EST. 1887</text>
+        </g>
       </defs>
-      <path d="${edgePath}" fill="url(#sealGrad)" stroke="#2a070d" stroke-width="1" />
-      <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(0,0,0,0.35)" stroke-width="1" />
-      <circle cx="50" cy="50" r="28.3" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.6" />
-      <ellipse cx="34" cy="26" rx="11" ry="7" fill="url(#sealGlint)" transform="rotate(-25 34 26)" />
-      <text font-size="6.4" font-family="'Playfair Display', serif" font-weight="700" letter-spacing="1.1" fill="rgba(0,0,0,0.4)">
-        <textPath href="#sealTopArc" startOffset="50%" text-anchor="middle">${ringText}</textPath>
-      </text>
-      <text x="50" y="59" font-size="16.5" font-family="'Playfair Display', serif" font-weight="700" text-anchor="middle" fill="rgba(0,0,0,0.42)">${centerText}</text>
-      <text font-size="6.4" font-family="'Playfair Display', serif" font-weight="700" letter-spacing="1.1" fill="rgba(0,0,0,0.4)">
-        <textPath href="#sealBottomArc" startOffset="50%" text-anchor="middle">${ringText}</textPath>
-      </text>
-    </svg>
-  `;
+      <path d="${blob}" fill="url(#${uid}-wax)"/>
+      <g clip-path="url(#${uid}-clip)">
+        <rect x="-60" y="-60" width="120" height="120" filter="url(#${uid}-grain)" opacity=".5"/>
+      </g>
+      <path d="${blob}" fill="none" stroke="url(#${uid}-gloss)" stroke-width="1.6" filter="url(#${uid}-soft)"/>
+      <ellipse cx="-27" cy="-25" rx="7" ry="2.6" transform="rotate(-42 -27 -25)" fill="#fff" opacity=".3" filter="url(#${uid}-blur2)"/>
+      <g class="ws-pressed">
+        <circle r="34.5" fill="none" stroke="url(#${uid}-lip)" stroke-width="7" filter="url(#${uid}-soft)"/>
+        <circle r="31" fill="#6c0e1c"/>
+        <circle r="30.2" fill="none" stroke="url(#${uid}-well)" stroke-width="2.2" filter="url(#${uid}-soft)"/>
+        <use href="#${uid}-crest" transform="translate(-0.75 -0.75)" color="#c4485b" opacity=".75"/>
+        <use href="#${uid}-crest" transform="translate(0.8 0.8)" color="#26020a" opacity=".85"/>
+        <use href="#${uid}-crest" color="#7c1323"/>
+        <g clip-path="url(#${uid}-disc)"><rect class="ws-sheen" x="-70" y="-40" width="40" height="80" fill="url(#${uid}-sheen)" opacity="0"/></g>
+      </g>
+    </svg>`;
 }
+
+// A brass seal stamp on a turned walnut handle, seen from the side.
+const WAX_STAMP_SVG = `<svg viewBox="0 0 70 110">
+  <defs>
+    <linearGradient id="wsWood" x1="0" x2="1"><stop offset="0" stop-color="#3b2314"/><stop offset=".35" stop-color="#7a4a2a"/><stop offset=".6" stop-color="#5a341d"/><stop offset="1" stop-color="#2a180d"/></linearGradient>
+    <linearGradient id="wsBrass" x1="0" x2="1"><stop offset="0" stop-color="#6b4e1c"/><stop offset=".3" stop-color="#e8c878"/><stop offset=".5" stop-color="#b8923e"/><stop offset=".75" stop-color="#f1d894"/><stop offset="1" stop-color="#5c4216"/></linearGradient>
+  </defs>
+  <ellipse cx="35" cy="14" rx="13" ry="12" fill="url(#wsWood)"/>
+  <ellipse cx="31" cy="9" rx="4" ry="2.5" fill="#fff" opacity=".18"/>
+  <path d="M28 24 Q35 28 42 24 L40 38 Q44 42 41 47 L29 47 Q26 42 30 38 Z" fill="url(#wsWood)"/>
+  <rect x="21" y="46" width="28" height="7" rx="2" fill="url(#wsBrass)"/>
+  <path d="M24 53 L46 53 L55 86 L15 86 Z" fill="url(#wsBrass)"/>
+  <rect x="12" y="85" width="46" height="9" rx="1.5" fill="url(#wsBrass)"/>
+  <rect x="12" y="92" width="46" height="2" fill="#4a3410" opacity=".6"/>
+</svg>`;
 
 // A burst of bubbles rising from the button (mostly upward, with some
 // horizontal scatter) rather than the omnidirectional ring/particle burst
@@ -12959,28 +13177,80 @@ function buildDeepCurrentFlourish(container) {
   return 1000;
 }
 
+// Private Bank: drop of wax -> brass stamp presses the crest -> lift ->
+// gold sheen -> fade. Timings match the ledger "success" sound in
+// siteAudio (plop at 0.32s, press at 0.7s, lift at 0.95s, chime at 1.25s).
 function buildLedgerFlourish(container) {
-  const impression = document.createElement("div");
-  impression.className = "flourish-impression";
-  container.appendChild(impression);
+  const make = (cls, html) => {
+    const el = document.createElement("div");
+    el.className = cls;
+    if (html) el.innerHTML = html;
+    container.appendChild(el);
+    return el;
+  };
+  const shadow = make("ws-press-shadow");
+  const seal = make("ws-seal", buildWaxSealMarkup());
+  const drop = make("ws-drop");
+  const stamp = make("ws-stamp", WAX_STAMP_SVG);
+  const pressed = seal.querySelector(".ws-pressed");
+  const sheen = seal.querySelector(".ws-sheen");
+  const tilt = `rotate(${(Math.random() * 16 - 8).toFixed(1)}deg)`;
+  const total = 2600;
+  const opts = (extra) => ({ duration: total, fill: "both", ...extra });
 
-  const seal = document.createElement("div");
-  seal.className = "flourish-seal";
-  seal.innerHTML = buildWaxSealMarkup("✦ VERIFIED ✦", "SEALED");
-  container.appendChild(seal);
-
-  const sparkleCount = 6;
-  for (let i = 0; i < sparkleCount; i++) {
-    const sparkle = document.createElement("div");
-    sparkle.className = "flourish-sparkle";
-    const angle = (i / sparkleCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-    const distance = 44 + Math.random() * 22;
-    sparkle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
-    sparkle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
-    sparkle.style.animationDelay = `${0.32 + Math.random() * 0.15}s`;
-    container.appendChild(sparkle);
+  if (reducedMotion.matches) {
+    [drop, stamp, shadow].forEach(el => el.remove());
+    seal.animate([{ opacity: 0 }, { opacity: 1, offset: 0.15 }, { opacity: 1, offset: 0.8 }, { opacity: 0 }], opts());
+    return total;
   }
-  return 1800;
+
+  // The stamp's base face sits on the seal's middle when pressed.
+  stamp.style.bottom = "calc(50% - 30px)";
+  drop.animate([
+    { transform: "translateY(-150px) scale(.8, 1.1)", opacity: 0, easing: "ease-in" },
+    { transform: "translateY(-150px) scale(.8, 1.1)", opacity: 1, offset: 0.02, easing: "cubic-bezier(.5,0,1,1)" },
+    { transform: "translateY(0) scale(.9, 1.1)", opacity: 1, offset: 0.123 },
+    { transform: "translateY(0) scale(1.6, .5)", opacity: 0, offset: 0.14 },
+    { opacity: 0 },
+  ], opts());
+  seal.animate([
+    { transform: `${tilt} scale(.15)`, opacity: 0 },
+    { transform: `${tilt} scale(.15)`, opacity: 0, offset: 0.12, easing: "cubic-bezier(.2,.9,.3,1.2)" },
+    { transform: `${tilt} scale(.62)`, opacity: 1, offset: 0.2, easing: "ease-out" },
+    { transform: `${tilt} scale(.66)`, opacity: 1, offset: 0.27, easing: "cubic-bezier(.3,1.5,.5,1)" },
+    { transform: `${tilt} scale(1.04)`, opacity: 1, offset: 0.3, easing: "ease-out" },
+    { transform: `${tilt} scale(1)`, opacity: 1, offset: 0.36 },
+    { transform: `${tilt} scale(1)`, opacity: 1, offset: 0.78, easing: "ease-in" },
+    { transform: `${tilt} scale(.96)`, opacity: 0 },
+  ], opts());
+  pressed.animate([{ opacity: 0 }, { opacity: 0, offset: 0.275, easing: "steps(1, end)" }, { opacity: 1, offset: 0.28 }, { opacity: 1 }], opts());
+  stamp.animate([
+    { transform: "translateY(-130px)", opacity: 0 },
+    { transform: "translateY(-130px)", opacity: 0, offset: 0.17, easing: "ease-out" },
+    { transform: "translateY(-80px)", opacity: 1, offset: 0.2, easing: "cubic-bezier(.6,0,1,.6)" },
+    { transform: "translateY(0) scaleY(1)", opacity: 1, offset: 0.27, easing: "ease-out" },
+    { transform: "translateY(2px) scaleY(.97)", opacity: 1, offset: 0.3, easing: "ease-in-out" },
+    { transform: "translateY(0) scaleY(1)", opacity: 1, offset: 0.35, easing: "cubic-bezier(.4,0,.2,1)" },
+    { transform: "translateY(-120px)", opacity: 0, offset: 0.48 },
+    { transform: "translateY(-120px)", opacity: 0 },
+  ], opts({ transformOrigin: "50% 100%" }));
+  stamp.style.transformOrigin = "50% 100%";
+  shadow.animate([
+    { transform: "scale(.3)", opacity: 0 },
+    { transform: "scale(.3)", opacity: 0, offset: 0.17 },
+    { transform: "scale(1)", opacity: 1, offset: 0.28 },
+    { transform: "scale(1)", opacity: 1, offset: 0.35 },
+    { transform: "scale(.4)", opacity: 0, offset: 0.46 },
+    { opacity: 0 },
+  ], opts());
+  sheen.animate([
+    { transform: "translateX(0)", opacity: 0 },
+    { transform: "translateX(0)", opacity: 0, offset: 0.47, easing: "ease-in-out" },
+    { transform: "translateX(30px)", opacity: 1, offset: 0.55, easing: "ease-in-out" },
+    { transform: "translateX(100px)", opacity: 0, offset: 0.68 },
+    { transform: "translateX(100px)", opacity: 0 },
+  ], opts());
+  return total;
 }
 
 function playSuccessFlourish() {
@@ -13137,6 +13407,7 @@ document.querySelectorAll(".section-toggle").forEach(toggle => {
     hiddenSections = isSectionHidden(key) ? hiddenSections.filter(k => k !== key) : [...hiddenSections, key];
     try { localStorage.setItem(HIDDEN_SECTIONS_STORAGE, JSON.stringify(hiddenSections)); } catch {}
     applySectionState(key);
+    siteAudio.play("slide", { open: !isSectionHidden(key) });
     document.dispatchEvent(new CustomEvent("sectiontoggle", { detail: { key, hidden: isSectionHidden(key) } }));
     updateQuickNavActive();
   });
@@ -13299,10 +13570,12 @@ async function restoreSweat(entry, btn) {
     });
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Couldn't restore that sweat."));
     activityStatus.textContent = `${entry.username || "Sweat"} is back, with all its stats and notes.`;
+    siteAudio.play("save");
     await loadSweats();
     loadActivity(0);
   } catch (err) {
     activityStatus.textContent = err.message;
+    siteAudio.play("error");
     btn.disabled = false;
   }
 }
@@ -13653,8 +13926,9 @@ document.addEventListener("pointerdown", (e) => {
 // popup, which has its own flip sound, so they're left out.
 document.addEventListener("pointerdown", (e) => {
   if (e.button !== 0) return;
-  const el = e.target.closest && e.target.closest("button, a, summary, [role='button'], [role='option'], [role='tab']");
-  if (!el || el.closest("[data-username]") || el.disabled) return;
+  const el = e.target.closest && e.target.closest("button, a, summary, th.sortable, [role='button'], [role='option'], [role='tab']");
+  // Cards/rows have their flip sound, and section toggles their own slide.
+  if (!el || el.closest("[data-username]") || el.disabled || el.classList.contains("section-toggle")) return;
   siteAudio.play("ui");
 }, { passive: true });
 

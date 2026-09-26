@@ -786,8 +786,8 @@ h1 {
 
 /* Results read as a history timeline: a rail down the left with one dot
    per entry (colored by source - accent for the Denicker API, gold for
-   Diamond Dome), and the most recent "Current" entry lifted into its own
-   highlighted card. */
+   Diamond Dome, accent-2 for Tricktracker), and the most recent "Current"
+   entry lifted into its own highlighted card. */
 .denick-results {
   position: relative;
   display: flex;
@@ -834,6 +834,7 @@ h1 {
   box-shadow: 0 0 0 3px var(--panel);
 }
 .denick-row[data-source="dome"]::before { background: var(--gold); }
+.denick-row[data-source="tricktracker"]::before { background: var(--accent-2); }
 .denick-row.is-current {
   border-color: color-mix(in srgb, var(--good) 45%, transparent);
   background: linear-gradient(90deg, color-mix(in srgb, var(--good) 10%, transparent), transparent 70%), var(--panel-2);
@@ -10089,7 +10090,7 @@ html[data-theme="skyisles"] .leaderboard-person-title {
     <div>
       <span class="exhibit-tag exhibit-tag-denick">Exhibit C</span>
       <h2>Denicking</h2>
-      <p>Look up a nick or a player across the Denicker DB and Diamond Dome.</p>
+      <p>Look up a nick or a player across the Denicker DB, Diamond Dome and Tricktracker.</p>
     </div>
     <button type="button" class="section-toggle" data-section="denick" aria-expanded="true" aria-controls="denickBody" aria-label="Hide Denicking"><span class="section-toggle-label">Hide</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
@@ -12579,24 +12580,33 @@ function updateKeyIdentityUi() {
 
 // ============================================================
 // DENICKING
-// Looks up a nick or player across two sources and merges them the same
+// Looks up a nick or player across several sources and merges them the same
 // way the /denicker Starfish plugin command does (see denicker-1.5.0.js):
-// most recent match wins, and if both sources agree the other is noted in
-// the hover rather than shown as a separate row.
+// most recent match wins, and if more than one source agrees the others are
+// noted under the row rather than shown as separate rows.
 //   - Denicker API: proxied through our own backend (/denicker/*) so its
 //     private key never reaches the browser - see server.js.
-//   - Diamond Dome: a public, keyless gist of scraped nicks, fetched
-//     directly from the browser and parsed into the same two lookup maps
-//     the plugin builds (byNick/byPlayer).
+//   - Scraped sources (Diamond Dome, Tricktracker): public, keyless gists of
+//     nicks scraped from each Discord's #denicks channel, all in the same
+//     format, fetched directly from the browser and parsed into the same two
+//     lookup maps the plugin builds (byNick/byPlayer).
 // ============================================================
-const DIAMOND_DOME_URL = "https://gist.githubusercontent.com/MonsterMilo/169045d75d17d68a41d051bae056106d/raw/diamond-dome-nicks.json";
-let diamondDome = null;
-let diamondDomeLoadPromise = null;
+const SCRAPED_SOURCES = [
+  { name: "Diamond Dome", url: "https://gist.githubusercontent.com/MonsterMilo/169045d75d17d68a41d051bae056106d/raw/diamond-dome-nicks.json", data: null, loadPromise: null },
+  { name: "Tricktracker", url: "https://gist.githubusercontent.com/MonsterMilo/f599b8b81224056ea42a436ece0be5ed/raw/tricktracker-nicks.json", data: null, loadPromise: null }
+];
+const SCRAPED_NAMES = SCRAPED_SOURCES.map(s => s.name).join(" and ");
 
-function loadDiamondDome() {
-  if (diamondDome) return Promise.resolve(diamondDome);
-  if (diamondDomeLoadPromise) return diamondDomeLoadPromise;
-  diamondDomeLoadPromise = fetch(DIAMOND_DOME_URL)
+// Each source loads independently - one gist being down still leaves the
+// others (and the Denicker API) able to answer.
+function loadScrapedSources() {
+  return Promise.allSettled(SCRAPED_SOURCES.map(loadScrapedSource));
+}
+
+function loadScrapedSource(source) {
+  if (source.data) return Promise.resolve(source.data);
+  if (source.loadPromise) return source.loadPromise;
+  source.loadPromise = fetch(source.url)
     .then(res => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
@@ -12623,14 +12633,14 @@ function loadDiamondDome() {
         }
       }
       for (const list of byPlayer.values()) list.sort((a, b) => b.last - a.last);
-      diamondDome = { byNick, byPlayer };
-      return diamondDome;
+      source.data = { byNick, byPlayer };
+      return source.data;
     })
     .catch(err => {
-      diamondDomeLoadPromise = null; // let the next search try again instead of caching a failure forever
+      source.loadPromise = null; // let the next search try again instead of caching a failure forever
       throw err;
     });
-  return diamondDomeLoadPromise;
+  return source.loadPromise;
 }
 
 function denickTimeAgo(ms) {
@@ -12667,16 +12677,20 @@ async function queryDenickerNicks(path, params) {
   }
 }
 
-function domeEntriesForNick(nick) {
-  const result = diamondDome?.byNick.get(String(nick).toLowerCase());
-  if (!result) return [];
-  return result.owners.map(o => ({ username: o.player, nick: result.nick, updated: o.last, source: "Diamond Dome", sighting: o }));
+function scrapedEntriesForNick(nick) {
+  return SCRAPED_SOURCES.flatMap(source => {
+    const result = source.data?.byNick.get(String(nick).toLowerCase());
+    if (!result) return [];
+    return result.owners.map(o => ({ username: o.player, nick: result.nick, updated: o.last, source: source.name, sighting: o }));
+  });
 }
 
-function domeEntriesForPlayer(username) {
-  const list = diamondDome?.byPlayer.get(String(username).toLowerCase());
-  if (!list) return [];
-  return list.map(n => ({ username: n.player, nick: n.nick, updated: n.last, source: "Diamond Dome", sighting: n }));
+function scrapedEntriesForPlayer(username) {
+  return SCRAPED_SOURCES.flatMap(source => {
+    const list = source.data?.byPlayer.get(String(username).toLowerCase());
+    if (!list) return [];
+    return list.map(n => ({ username: n.player, nick: n.nick, updated: n.last, source: source.name, sighting: n }));
+  });
 }
 
 // One row per distinct username (nick mode) or nick (player mode) - when
@@ -12696,9 +12710,9 @@ function mergeDenickEntries(entries, keyField) {
 }
 
 // Shown under the name instead of hidden behind a hover, per feedback that
-// the source/detail should just be visible - "Denicker API" or "Diamond
-// Dome" plus, for a Diamond Dome sighting, how many times and in what game,
-// plus a note when the other source also has this same pair.
+// the source/detail should just be visible - "Denicker API" or a scraped
+// source's name plus, for a scraped sighting, how many times and in what
+// game, plus a note when another source also has this same pair.
 function denickSubtitle(entry) {
   const parts = [entry.source];
   if (entry.sighting) {
@@ -12744,7 +12758,7 @@ function renderDenickResults(entries, nameOf, startIndex) {
 
     const row = document.createElement("div");
     row.className = isCurrent ? "denick-row is-current" : "denick-row";
-    row.dataset.source = entry.source === "Diamond Dome" ? "dome" : "api";
+    row.dataset.source = { "Diamond Dome": "dome", "Tricktracker": "tricktracker" }[entry.source] || "api";
 
     const who = document.createElement("div");
     who.className = "denick-row-who";
@@ -12836,13 +12850,13 @@ async function runDenickSearch() {
   denickEmpty.hidden = true;
 
   try {
-    await loadDiamondDome().catch(() => {}); // a Diamond Dome hiccup shouldn't block the Denicker half from showing
+    await loadScrapedSources(); // never rejects - a gist hiccup shouldn't block the Denicker half from showing
     if (isStale()) return;
 
-    let apiResult, domeEntries, keyField, nameOf;
+    let apiResult, scrapedEntries, keyField, nameOf;
     if (denickMode === "nick") {
       apiResult = await queryDenickerNicks("/denicker/nick/" + encodeURIComponent(query), "");
-      domeEntries = domeEntriesForNick(query);
+      scrapedEntries = scrapedEntriesForNick(query);
       keyField = "username";
       nameOf = e => e.username;
     } else {
@@ -12854,21 +12868,21 @@ async function runDenickSearch() {
       apiResult = uuid
         ? await queryDenickerNicks(`/denicker/history/${uuid}`, `username=${encodeURIComponent(query)}`)
         : { entries: [] };
-      domeEntries = domeEntriesForPlayer(query);
+      scrapedEntries = scrapedEntriesForPlayer(query);
       keyField = "nick";
       nameOf = e => e.nick;
     }
     if (isStale()) return;
 
-    const merged = mergeDenickEntries([...apiResult.entries, ...domeEntries], keyField);
+    const merged = mergeDenickEntries([...apiResult.entries, ...scrapedEntries], keyField);
     denickAllResults = merged;
     denickNameOf = nameOf;
     denickPage = 1;
     if (merged.length === 0) {
       denickPagination.hidden = true;
       denickEmpty.hidden = false;
-      if (apiResult.noKey) denickStatus.textContent = "Showing Diamond Dome only, and nothing matched.";
-      else if (apiResult.error) denickStatus.textContent = `Denicker API didn't respond (${apiResult.error}) - showing Diamond Dome only, and nothing matched.`;
+      if (apiResult.noKey) denickStatus.textContent = `Showing ${SCRAPED_NAMES} only, and nothing matched.`;
+      else if (apiResult.error) denickStatus.textContent = `Denicker API didn't respond (${apiResult.error}) - showing ${SCRAPED_NAMES} only, and nothing matched.`;
       else denickStatus.textContent = "No results.";
       siteAudio.play("error");
       return;
@@ -12876,8 +12890,8 @@ async function runDenickSearch() {
 
     renderDenickPage();
     siteAudio.play("found");
-    if (apiResult.noKey) denickStatus.textContent = "Showing Diamond Dome results only.";
-    else if (apiResult.error) denickStatus.textContent = "Denicker API didn't respond - showing Diamond Dome results only.";
+    if (apiResult.noKey) denickStatus.textContent = `Showing ${SCRAPED_NAMES} results only.`;
+    else if (apiResult.error) denickStatus.textContent = `Denicker API didn't respond - showing ${SCRAPED_NAMES} results only.`;
   } catch (err) {
     if (isStale()) return;
     denickAllResults = [];

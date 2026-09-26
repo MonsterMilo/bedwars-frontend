@@ -4955,453 +4955,71 @@ html[data-theme="ledger"] .view-btn.active {
 
 /* ============================================================
    THEME SWITCH TRANSITION
-   A brief full-screen wipe plays whenever picking a new theme from the
-   dropdown (see applyTheme()/playThemeTransition() - not on the initial
-   page load, which just applies the saved theme with no animation). One
-   shared clip-path keyframe - grow in from the left edge, then shrink out
-   past the right edge - covers the whole screen at the midpoint, which is
-   exactly when JS actually swaps the data-theme attribute, so the instant
-   underneath is always masked by full coverage rather than popping half-
-   old/half-new. Same clip-path-as-reveal technique the status message
-   typewriter effect already uses, just grown to full-viewport scale.
+   Built on the View Transitions API (see playThemeTransition() in the
+   script): the browser snapshots the page in the old theme, the theme is
+   swapped instantly underneath, and the new theme is revealed over the
+   old one - the page never blacks out. Each theme reveals itself its own
+   way: Neon bursts out of the picked option in a glowing ring, Case Files
+   drops in like a fresh sheet landing on the desk, Private Bank turns
+   over like a ledger page with a gilt edge, and Deep Current floods up
+   from the bottom on a wave with bubbles rising through it.
+   #themeTransitionOverlay only carries the decorations (ring, page edge,
+   bubbles) and is given its own view-transition-name while playing so it
+   draws above both snapshots.
    ============================================================ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-group(tto-fx),
+::view-transition-new(tto-fx),
+::view-transition-old(tto-fx) {
+  animation: none;
+}
 #themeTransitionOverlay {
-  --tto-dur: 950ms; /* overridden inline per-theme by playThemeTransition() - see script */
   position: fixed;
   inset: 0;
   z-index: 5000;
   pointer-events: none;
-  visibility: hidden;
+  display: none;
   overflow: hidden;
 }
-#themeTransitionOverlay.active { visibility: visible; }
-.tto-panel {
-  position: absolute;
-  inset: 0;
-  clip-path: inset(0 100% 0 0);
+#themeTransitionOverlay.active {
+  display: block;
+  view-transition-name: tto-fx;
 }
-/* Deep Current's own transition (below) rises a field of bubbles instead
-   of sweeping a banded-gradient panel across the screen, so it needs
-   somewhere to put them - a plain absolutely-positioned layer on top of
-   .tto-panel, empty (and harmless) for every other theme since bubbles
-   are only ever generated into it right before playing that one
-   transition (see playThemeTransition/spawnTtoBubbles in the script) and
-   cleared again once it ends. */
-.tto-bubbles {
+.tto-ring {
   position: absolute;
-  inset: 0;
-  overflow: hidden;
+  border-radius: 50%;
+  border: 3px solid #35e6ff;
+  box-shadow: 0 0 24px 4px rgba(0,217,255,0.7), inset 0 0 24px 2px rgba(168,85,247,0.55);
+  transform: scale(0);
 }
-/* --start-y staggers where each bubble's rise *begins* (roughly -35vh,
-   noticeably deeper below the screen than just out of view, up to 55vh,
-   a bit over halfway up) via `bottom` rather than the animated transform -
-   so at any single instant during the transition, bubbles are scattered
-   across the whole vertical span instead of all traveling together as
-   one band that has to sweep upward before it reads as covering
-   top-to-bottom. The transform itself (in the keyframe below) is the
-   same fixed -140vh climb for every bubble regardless of --start-y,
-   which is what actually made an early version read as "a short line" -
-   every bubble starting from essentially the same place and moving in
-   near lockstep. The range tops out well short of the screen's actual
-   top edge (100vh) - a first pass let it go up to 115vh, so by the time
-   the panel was even opaque enough to see anything against, the
-   highest-starting bubbles had already risen past the top and the
-   lowest-starting ones had already climbed high enough to leave the
-   bottom of the screen empty. */
+.tto-ring.tto-ring-2 {
+  border-color: #c084fc;
+  box-shadow: 0 0 18px 3px rgba(192,132,252,0.6);
+}
+.tto-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.28) 70%, rgba(0,0,0,0.05));
+  border-right: 2px solid #c9a24a;
+  box-shadow: 1px 0 10px rgba(201,162,74,0.65);
+}
 .tto-bubble {
   position: absolute;
-  bottom: calc(-10% + var(--start-y, 0px));
   left: var(--x);
+  bottom: -80px;
   width: var(--size);
   height: var(--size);
   border-radius: 50%;
-  background: radial-gradient(circle at 32% 26%, rgba(255,255,255,0.8), rgba(255,255,255,0.12) 55%, transparent 76%);
-  border: 1px solid rgba(255,255,255,0.28);
-  opacity: var(--op);
-  /* forwards matters here, not just cosmetic - each bubble's own
-     delay+duration adds up to less than the transition's own total
-     length, so without it, the instant an individual bubble's animation
-     finished it would snap back to its unanimated resting position
-     (sitting at --start-y, fully visible) instead of staying up past the
-     top where it rose to. Since most bubbles have similar durations,
-     they finished in a cluster - reading as a bunch of bubbles flashing
-     back into view together, on whatever part of the screen --start-y
-     happened to place them, right as the transition was wrapping up. */
-  animation: ttoBubbleRise var(--dur) linear var(--delay) forwards;
-}
-@keyframes ttoBubbleRise {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(var(--wobble, 0), -140vh); }
-}
-@keyframes ttoWipe {
-  0% { clip-path: inset(0 100% 0 0); }
-  50% { clip-path: inset(0 0 0 0); }
-  100% { clip-path: inset(0 0 0 100%); }
-}
-/* Shared by any theme whose transition isn't the left-to-right wipe
-   above - a plain fade that's fully opaque across the middle 60% of the
-   duration, comfortably straddling the swap firing at the midpoint, so
-   it masks the swap exactly as reliably as the wipe's full coverage
-   does regardless of what decorative effect (Deep Current's bubbles,
-   Neon's pixel grid) is layered on top of it. */
-@keyframes ttoFade {
-  0% { opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { opacity: 0; }
-}
-/* Neon's dissolve - a grid of small blocks each popping independently
-   in and out (spawnTtoPixels() in the script generates them fresh per
-   play, same pattern as the bubbles above), rather than one continuous
-   shape - reads as the screen glitching apart into digital noise and
-   reassembling into the new theme instead of a clean wipe. Sits on top
-   of .tto-panel's own plain dark fade (see that theme's rule), which is
-   the layer actually guaranteeing the swap stays masked. A gap between
-   cells (showing the dark panel through it) is what makes this read as
-   distinct chunky pixels instead of a blotchy color field, and each
-   pixel holds fully opaque (no partial-opacity dip) so the colors stay
-   solid, saturated neon rather than looking washed-out/translucent. */
-.tto-pixels {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: repeat(20, 1fr);
-  grid-template-rows: repeat(12, 1fr);
-  gap: 3px;
-}
-.tto-pixel {
+  background: radial-gradient(circle at 32% 26%, rgba(255,255,255,0.85), rgba(160,255,240,0.14) 55%, transparent 76%);
+  border: 1px solid rgba(190,255,245,0.35);
   opacity: 0;
-  background: var(--pixel-color, #00d9ff);
-  /* the glow is what sells "neon" - it bleeds a soft halo of the pixel's
-     own color across the dark gaps into its neighbors, rather than each
-     block reading as a flat, isolated colored square. */
-  box-shadow: 0 0 12px 3px var(--pixel-color, #00d9ff);
-  /* forwards as cheap insurance against the same class of bug fixed on
-     .tto-bubble above - here the animation's own end state (opacity:0)
-     already matches the element's plain un-animated style, so a pixel
-     finishing early wouldn't visibly snap to anything different, but
-     there's no reason to depend on that coincidence holding forever. */
-  animation: ttoPixelFlicker var(--tto-dur) var(--delay) forwards;
-}
-@keyframes ttoPixelFlicker {
-  0% { opacity: 0; transform: scale(0.4); }
-  12% { opacity: 1; transform: scale(1) translate(var(--jx, 0), var(--jy, 0)); }
-  78% { opacity: 1; transform: scale(1) translate(var(--jx, 0), var(--jy, 0)); }
-  100% { opacity: 0; transform: scale(0.5); }
-}
-
-/* Colors below are hand-picked per theme rather than read live via var() -
-   the data-theme swap happens mid-animation, so a live var() reference
-   would shift color partway through the sweep instead of reading as one
-   deliberate hue for the theme being switched to. Same reasoning the file
-   already uses elsewhere for tuned glow/gradient effects.
-   Each gradient uses hard color STOPS (two stops a couple percent apart,
-   not one smooth blend across the whole width) rather than one long
-   linear blend between distant hues - a straight RGB interpolation from
-   e.g. cream to brick-red to gold passes through muddy in-between tones
-   (dull pink, mustard) that don't belong to any theme's real palette.
-   Hard bands keep every visible pixel one of the theme's actual token
-   colors, just arranged as solid stripes instead of a wash. */
-/* Neon dissolves into a field of glitchy digital blocks (see
-   spawnTtoPixels() in the script) instead of sweeping a gradient across.
-   .tto-panel keeps its role as the actual masking layer underneath - a
-   plain dark fade (ttoFade, shared with Deep Current's wash - see that
-   theme's comment) rather than the shared wipe, since a grid of
-   individually-popping pixels can't be trusted to have zero gaps between
-   them at any single instant the way one continuous panel reliably can.
-   .tto-pixels (styled further down, near its own spawn function) is the
-   actual flashy visual sitting on top of this safety net. */
-#themeTransitionOverlay[data-playing="neon"] .tto-panel {
-  background: #050912;
-  animation: ttoFade var(--tto-dur) ease-in-out both;
-}
-/* Case Files - a manila folder cover falls from above and slams flat
-   over the screen (a quick squash/rebound on impact instead of landing
-   dead-still), holds there covering the swap, then keeps rotating open
-   around a top hinge - lifting up and away from the viewer like an
-   actual folder cover being opened, rather than folding down toward the
-   camera - fading out as it goes past edge-on so it's fully gone by the
-   time this ends regardless of exactly when the overlay's own cleanup
-   timer cuts it off. .tto-panel *is* the folder cover here (no separate
-   element needed) - its own background is a shaded manila gradient
-   (rather than a flat cream) so it reads as a real folder surface, its
-   ::before is an actual tab shape (clipped into a trapezoid, not just a
-   floating rectangle) bearing the case label in red, ::after is the same
-   paper-grain texture the wipe version already used, and its child
-   .tto-folder-stamp is a second, much bigger "CASE FILES" stamped
-   directly on the front. The tab sits fully inside the viewport (top: 0,
-   not poking above it) - a fixed/absolute element can never render above
-   its fixed ancestor's own top edge (that edge already *is* the top of
-   the browser viewport), so an earlier version's negative top offset put
-   the tab permanently off-screen. The folder itself is inset slightly
-   from the right/bottom edges (see .tto-folder-paper below) rather than
-   covering true edge-to-edge, so a sliver of the paper stack underneath
-   peeks out - reading as an overstuffed folder rather than a flat cover. */
-#themeTransitionOverlay[data-playing="casefiles"] .tto-panel {
-  clip-path: none;
-  inset: 0 3% 3% 0;
-  transform-origin: 50% 0%;
-  background: linear-gradient(155deg, #ecd08f 0%, #d9a860 45%, #c08a45 100%);
-  box-shadow: inset 0 0 0 10px rgba(120,74,20,0.25), 0 30px 70px rgba(20,15,5,0.5);
-  animation: ttoFolderSlamCaseFiles var(--tto-dur) cubic-bezier(.5,0,.7,1) both;
-}
-#themeTransitionOverlay[data-playing="casefiles"] .tto-panel::before {
-  content: "EXHIBIT A";
-  position: absolute;
-  top: 0;
-  left: 8%;
-  width: 300px;
-  height: 68px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(155deg, #faf3df 0%, #eeddb3 100%);
-  clip-path: polygon(3% 100%, 0 18%, 6% 0, 94% 0, 100% 18%, 97% 100%);
-  box-shadow: 0 10px 18px rgba(20,15,5,0.45), inset 0 0 0 3px rgba(163,35,31,0.75);
-  color: #a3231f;
-  font: 800 21px 'Courier New', monospace;
-  letter-spacing: 0.1em;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
-}
-#themeTransitionOverlay[data-playing="casefiles"] .tto-panel::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.5;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-}
-/* the big front stamp - a second, much larger "CASE FILES" pressed
-   diagonally across the folder's face like an ink stamp (deliberately
-   different text than the tab's "EXHIBIT A" - a real folder's tab
-   labels a specific exhibit while a stamp on the cover marks the whole
-   case, so the two reading the same felt redundant), on top of (and
-   moving together with, since it's a real child rather than a fixed
-   sibling) .tto-panel's own fall/slam/open animation. */
-.tto-folder-stamp {
-  display: none;
-}
-#themeTransitionOverlay[data-playing="casefiles"] .tto-folder-stamp {
-  display: block;
-  position: absolute;
-  top: 44%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-8deg);
-  padding: 22px 42px;
-  border: 8px double rgba(163,35,31,0.62);
-  border-radius: 8px;
-  color: rgba(163,35,31,0.62);
-  font: 800 clamp(38px, 8vw, 76px) 'Courier New', monospace;
-  letter-spacing: 0.1em;
-  white-space: nowrap;
-  mix-blend-mode: multiply;
-}
-/* the peeking paper - a plain full-bleed sheet sitting behind .tto-panel
-   and always covering the full screen (so it's just as safe a mask for
-   the swap as the folder itself), with the folder inset a few percent
-   from the right/bottom edges so a margin of it shows there. The two
-   thin diagonal-adjacent lines hint at a couple more sheets stacked
-   underneath rather than one flat rectangle. Fades out in step with the
-   folder's own opacity so it never lingers and blocks the reveal once
-   the folder has rotated away. */
-.tto-folder-paper {
-  display: none;
-}
-#themeTransitionOverlay[data-playing="casefiles"] .tto-folder-paper {
-  display: block;
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, transparent calc(100% - 3.6%), rgba(60,40,10,0.12) calc(100% - 3.6%), rgba(60,40,10,0.12) calc(100% - 3.4%), transparent calc(100% - 3.4%)),
-    linear-gradient(0deg, transparent calc(100% - 3.6%), rgba(60,40,10,0.12) calc(100% - 3.6%), rgba(60,40,10,0.12) calc(100% - 3.4%), transparent calc(100% - 3.4%)),
-    #f7f2e0;
-  animation: ttoFolderPaperFade var(--tto-dur) cubic-bezier(.5,0,.7,1) both;
-}
-@keyframes ttoFolderPaperFade {
-  0%   { opacity: 1; }
-  62%  { opacity: 1; }
-  100% { opacity: 0; }
-}
-@keyframes ttoFolderSlamCaseFiles {
-  0%   { transform: perspective(1800px) translateY(-120vh) scale(1, 1) rotateX(0deg); opacity: 1; }
-  22%  { transform: perspective(1800px) translateY(1.5vh) scale(1.02, 0.94) rotateX(0deg); opacity: 1; }
-  32%  { transform: perspective(1800px) translateY(0) scale(1, 1) rotateX(0deg); opacity: 1; }
-  62%  { transform: perspective(1800px) translateY(0) scale(1, 1) rotateX(0deg); opacity: 1; }
-  100% { transform: perspective(1800px) translateY(0) scale(1, 1) rotateX(120deg); opacity: 0; }
-}
-/* Private Bank - a sealed, addressed envelope drops in, its wax seal
-   cracks and the flap opens, and a paper slides up out of it - rather
-   than the panel itself carrying the whole visual, .tto-panel here is
-   reduced to a plain dark wash (ttoFade, the same shared fade Deep
-   Current/Neon use underneath their own decorative layers) which is the
-   actual guarantee the swap stays masked, while .tto-envelope (a single
-   fixed graphic - there's only ever one envelope, so unlike the bubbles/
-   pixels it doesn't need to be spawned per-play) is the decorative
-   animation layered on top of it. */
-#themeTransitionOverlay[data-playing="ledger"] .tto-panel {
-  clip-path: none;
-  background: #14110c;
-  animation: ttoFade var(--tto-dur) ease-in-out both;
-}
-.tto-envelope {
-  display: none;
-  position: absolute;
-  inset: 0;
-  align-items: center;
-  justify-content: center;
-}
-#themeTransitionOverlay[data-playing="ledger"] .tto-envelope {
-  display: flex;
-}
-.tto-envelope-body {
-  position: relative;
-  width: min(80vw, 760px);
-  height: min(52vw, 490px);
-  background: linear-gradient(155deg, #f6efdc 0%, #ece0c4 100%);
-  box-shadow: 0 30px 70px rgba(20,15,5,0.5);
-  border: 1px solid rgba(120,90,40,0.35);
-  perspective: 1400px;
-  animation: ttoEnvelopeFall var(--tto-dur) cubic-bezier(.4,0,.2,1) both;
-}
-/* the "professional writing" - a small addressed block in the lower-left
-   third of the envelope face, like a typed recipient address. */
-.tto-envelope-address {
-  position: absolute;
-  left: 12%;
-  bottom: 16%;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-style: italic;
-  font-size: 18px;
-  color: #3a2f1c;
-}
-/* a postal cancellation mark - two parallel arcs over a plain ring,
-   rotated off-axis like a real postmark stamped slightly crooked. Sits
-   low enough (past the flap's own halfway point) that it's clear of the
-   flap's triangular clip-path rather than getting sliced by it - the
-   flap only ever fills that narrowing wedge shape, so anything near the
-   edges higher up would render half-covered by it. */
-.tto-envelope-postmark {
-  position: absolute;
-  top: 38%;
-  right: 6%;
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  border: 2px solid rgba(30,60,90,0.55);
-  opacity: 0.7;
-  transform: rotate(-12deg);
-}
-.tto-envelope-postmark::before,
-.tto-envelope-postmark::after {
-  content: "";
-  position: absolute;
-  left: -24px;
-  right: -24px;
-  height: 0;
-  border-top: 2px solid rgba(30,60,90,0.5);
-}
-.tto-envelope-postmark::before { top: 18px; }
-.tto-envelope-postmark::after { bottom: 18px; }
-/* the ink stamp - a rubber-stamped rectangle, printed slightly crooked
-   and with mix-blend-mode so it reads as ink pressed into paper rather
-   than a flat sticker sitting on top of it. Same reasoning on vertical
-   placement as the postmark above - low enough to clear the flap's
-   triangular clip-path instead of being sliced by it. */
-.tto-envelope-stampmark {
-  position: absolute;
-  left: 6%;
-  top: 40%;
-  padding: 6px 14px;
-  border: 3px solid rgba(163,35,31,0.8);
-  border-radius: 4px;
-  color: rgba(163,35,31,0.8);
-  font: 800 16px 'Courier New', monospace;
-  letter-spacing: 0.12em;
-  transform: rotate(-9deg);
-  mix-blend-mode: multiply;
-  opacity: 0.85;
-}
-/* the flap - a triangle clipped from a rectangle spanning the top half
-   of the envelope, hinged along its own top edge (shared with the
-   envelope body's top edge) so opening it rotates it up and away from
-   the viewer, the same direction a real envelope flap lifts. */
-.tto-envelope-flap {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 56%;
-  transform-origin: 50% 0%;
-  transform-style: preserve-3d;
-  background: linear-gradient(200deg, #f2e6c9 0%, #dfc890 100%);
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-  box-shadow: inset 0 -14px 18px -14px rgba(80,55,20,0.35);
-  animation: ttoEnvelopeFlapOpen var(--tto-dur) cubic-bezier(.5,0,.3,1) both;
-}
-/* the wax seal - an irregular blob (mismatched border-radius corners
-   rather than a perfect circle) rather than a clean circle, sitting on
-   the flap's point, cracking away once the flap starts lifting. */
-.tto-envelope-seal {
-  position: absolute;
-  top: calc(56% - 29px);
-  left: calc(50% - 29px);
-  width: 58px;
-  height: 58px;
-  border-radius: 44% 56% 58% 42% / 46% 44% 56% 54%;
-  background: radial-gradient(circle at 34% 28%, #c9403a, #7c1712 70%, #5c0f0c 100%);
-  box-shadow: 0 3px 6px rgba(20,10,5,0.5);
-  animation: ttoSealCrack var(--tto-dur) linear both;
-}
-.tto-envelope-seal::after {
-  content: "PB";
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font: 700 16px Georgia, serif;
-  color: rgba(255,220,200,0.55);
-}
-/* the paper - hidden (opacity 0) until the flap is well into opening,
-   then rises up out from behind it and past the top of the envelope,
-   reading as the letter being pulled out rather than just appearing. */
-.tto-envelope-paper {
-  position: absolute;
-  left: 7%;
-  bottom: 20%;
-  width: 86%;
-  height: 62%;
-  background: linear-gradient(180deg, #fffdf6, #f4efe0);
-  box-shadow: 0 12px 30px rgba(20,15,5,0.35);
-  animation: ttoPaperRise var(--tto-dur) cubic-bezier(.3,0,.2,1) both;
-}
-@keyframes ttoEnvelopeFall {
-  0%   { transform: translateY(-140vh) rotate(-6deg) scale(0.92); opacity: 1; }
-  40%  { transform: translateY(2%) rotate(1.5deg) scale(1.03); opacity: 1; }
-  50%  { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
-  86%  { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
-  100% { transform: translateY(-4%) rotate(0deg) scale(1.01); opacity: 0; }
-}
-@keyframes ttoEnvelopeFlapOpen {
-  0%   { transform: rotateX(0deg); }
-  52%  { transform: rotateX(0deg); }
-  78%  { transform: rotateX(-155deg); }
-  100% { transform: rotateX(-155deg); }
-}
-@keyframes ttoSealCrack {
-  0%   { opacity: 1; transform: scale(1) rotate(0deg); }
-  54%  { opacity: 1; transform: scale(1) rotate(0deg); }
-  63%  { opacity: 0; transform: scale(1.3) rotate(16deg); }
-  100% { opacity: 0; transform: scale(1.3) rotate(16deg); }
-}
-@keyframes ttoPaperRise {
-  0%   { transform: translateY(6%) scale(0.94); opacity: 0; }
-  58%  { transform: translateY(6%) scale(0.94); opacity: 0; }
-  84%  { transform: translateY(-40%) scale(1); opacity: 1; }
-  100% { transform: translateY(-48%) scale(1); opacity: 1; }
 }
 
 /* ============================================================
@@ -5928,25 +5546,6 @@ html[data-theme="deepcurrent"] #customTooltip.tooltip-below::after {
   border-bottom: none;
   border-left: 1px solid var(--accent);
   border-top: 1px solid var(--accent);
-}
-
-/* Theme-switch transition - unlike the other three (a banded-gradient
-   panel wiped across the screen, or Neon's grid of glitchy pixels), this
-   rises a field of bubbles up through a dark open-water wash instead -
-   see spawnTtoBubbles() in the script, called right before this plays.
-   .tto-panel drops the shared left-to-right clip-path wipe entirely
-   (clip-path: none overrides the base rule's permanent
-   inset(0 100% 0 0), which would otherwise clip this panel to nothing
-   forever, wipe or no wipe) in favor of the same plain opacity fade
-   (ttoFade, shared with Neon's wash) Neon uses - solid enough at its
-   peak (20%-80% of the duration, which comfortably straddles the swap
-   firing at 50%) to mask the swap the same as the wipe themes' full
-   coverage does, while the bubbles rising through it are the actual
-   visual. */
-#themeTransitionOverlay[data-playing="deepcurrent"] .tto-panel {
-  clip-path: none;
-  background: linear-gradient(180deg, #0a2a3a 0%, #062031 40%, #041624 70%, #01070c 100%);
-  animation: ttoFade var(--tto-dur) ease-in-out both;
 }
 
 /* Success flourish - a burst of bubbles rising from the Add Sweat button
@@ -6506,16 +6105,7 @@ html[data-theme="deepcurrent"] .pill.boost {
 <div id="nebula"><div id="nebulaGlow2" aria-hidden="true"></div></div>
 <div id="starfield"></div>
 <div id="bubblefield"></div>
-<div id="themeTransitionOverlay" aria-hidden="true"><div class="tto-folder-paper"></div><div class="tto-panel"><div class="tto-folder-stamp">CASE FILES</div></div><div class="tto-pixels" id="ttoPixels"></div><div class="tto-bubbles" id="ttoBubbles"></div><div class="tto-envelope">
-  <div class="tto-envelope-body">
-    <div class="tto-envelope-address"><span>Mr. J. Holdersworth</span><span>Vault Access Division</span><span>The Private Bank &mdash; Main Branch</span></div>
-    <div class="tto-envelope-postmark"></div>
-    <div class="tto-envelope-stampmark">APPROVED</div>
-    <div class="tto-envelope-paper"></div>
-    <div class="tto-envelope-flap"></div>
-    <div class="tto-envelope-seal"></div>
-  </div>
-</div></div>
+<div id="themeTransitionOverlay" aria-hidden="true"></div>
 <div id="customTooltip" role="tooltip" aria-hidden="true"></div>
 
 <div class="page">
@@ -6995,119 +6585,164 @@ function openThemeDropdown() {
   themeDropdownBtn.setAttribute("aria-expanded", "true");
 }
 
-// A brief full-screen wipe (see #themeTransitionOverlay in <style>) plays
-// while switching themes - the actual data-theme swap happens at the
-// wipe's midpoint, when it's covering the whole screen, so the swap
-// itself is always masked rather than popping half-old/half-new.
+// Theme switching reveals the new theme over a snapshot of the old one
+// with the View Transitions API (see THEME SWITCH TRANSITION in <style>),
+// starting from wherever the theme was picked. Browsers without it, and
+// anyone with reduced motion on, just get the instant swap.
 const themeTransitionOverlay = document.getElementById("themeTransitionOverlay");
-const ttoBubbles = document.getElementById("ttoBubbles");
-const THEME_TRANSITION_MS = 800;
-let themeTransitionSwapTimer = null;
-let themeTransitionEndTimer = null;
+let themeTransition = null;
 
-// Deep Current's transition only - a dense burst of bubbles rising from
-// the bottom of the screen to the top, generated fresh right before each
-// play (same "randomize a handful of CSS custom properties per element"
-// approach as the ambient #bubblefield/success-flourish bubbles
-// elsewhere) rather than one repeating background pattern, so they don't
-// all rise in visible lockstep. --start-y (see the .tto-bubble comment)
-// spreads out where each one *starts*, so the column reads as spanning
-// top-to-bottom immediately instead of one short band that has to travel
-// up before it looks that tall. Durations/delays are kept well inside
-// THEME_TRANSITION_MS so bubbles finish rising (and naturally read as
-// gone) before clearTtoBubbles() below removes them, rather than getting
-// visibly cut off mid-flight.
-function spawnTtoBubbles(count) {
-  const frag = document.createDocumentFragment();
+function spawnTtoBubbles(count, duration) {
   for (let i = 0; i < count; i++) {
     const bubble = document.createElement("div");
     bubble.className = "tto-bubble";
-    const size = (Math.random() * 46 + 20).toFixed(1);
-    const dur = (Math.random() * 0.35 + 0.65).toFixed(2);
-    const delay = (Math.random() * 0.15).toFixed(2);
-    const x = (Math.random() * 100).toFixed(1);
-    const startY = (Math.random() * 90 - 35).toFixed(1);
-    const wobble = (Math.random() * 36 - 18).toFixed(1) + "px";
-    const op = (Math.random() * 0.4 + 0.45).toFixed(2);
-    bubble.style.setProperty("--size", `${size}px`);
-    bubble.style.setProperty("--dur", `${dur}s`);
-    bubble.style.setProperty("--delay", `${delay}s`);
-    bubble.style.setProperty("--start-y", `${startY}vh`);
-    bubble.style.setProperty("--x", `${x}%`);
-    bubble.style.setProperty("--wobble", wobble);
-    bubble.style.setProperty("--op", op);
-    frag.appendChild(bubble);
+    const size = Math.random() * 30 + 10;
+    bubble.style.setProperty("--size", `${size.toFixed(1)}px`);
+    bubble.style.setProperty("--x", `${(Math.random() * 100).toFixed(1)}%`);
+    themeTransitionOverlay.appendChild(bubble);
+    const delay = Math.random() * duration * 0.3;
+    const drift = Math.random() * 40 - 20;
+    bubble.animate([
+      { transform: "translate(0, 0)", opacity: 0 },
+      { opacity: Math.random() * 0.4 + 0.5, offset: 0.15 },
+      { opacity: 0.6, offset: 0.8 },
+      { transform: `translate(${drift}px, -${window.innerHeight + 120}px)`, opacity: 0 },
+    ], { duration: duration * (0.5 + Math.random() * 0.2), delay, easing: "cubic-bezier(.35,0,.6,1)", fill: "both" });
   }
-  ttoBubbles.appendChild(frag);
-}
-function clearTtoBubbles() {
-  ttoBubbles.innerHTML = "";
 }
 
-// Neon's transition only - fills the fixed 20x12 CSS grid (.tto-pixels)
-// with one block per cell, each popping in/out on its own random delay
-// and picking its own color from the theme's palette, so the grid reads
-// as glitchy digital noise assembling and scattering rather than a flat
-// pattern turning on and off in unison. Every pixel holds at full opacity
-// (see .tto-pixel/ttoPixelFlicker in the CSS) so there's no per-pixel
-// transparency left to randomize here.
-const ttoPixels = document.getElementById("ttoPixels");
-const TTO_PIXEL_COLORS = ["#00d9ff", "#a855f7", "#35e6ff", "#c084fc", "#ff3ec8", "#ffffff"];
-function spawnTtoPixels(cols, rows) {
-  const frag = document.createDocumentFragment();
-  for (let i = 0; i < cols * rows; i++) {
-    const pixel = document.createElement("div");
-    pixel.className = "tto-pixel";
-    const delay = (Math.random() * 0.1).toFixed(2);
-    const color = TTO_PIXEL_COLORS[Math.floor(Math.random() * TTO_PIXEL_COLORS.length)];
-    const jx = (Math.random() * 6 - 3).toFixed(1) + "px";
-    const jy = (Math.random() * 6 - 3).toFixed(1) + "px";
-    pixel.style.setProperty("--delay", `${delay}s`);
-    pixel.style.setProperty("--pixel-color", color);
-    pixel.style.setProperty("--jx", jx);
-    pixel.style.setProperty("--jy", jy);
-    frag.appendChild(pixel);
+// Wavy top edge for Deep Current's flood, as a clip-path polygon: the
+// same number of points at every level so the browser can tween between
+// them, with the wave's phase shifting as it rises.
+function waterline(levelPct, phase) {
+  const pts = [];
+  for (let i = 0; i <= 24; i++) {
+    const x = (i / 24) * 100;
+    const y = levelPct + Math.sin(i / 24 * Math.PI * 4 + phase) * 2.2;
+    pts.push(`${x.toFixed(2)}% ${y.toFixed(2)}%`);
   }
-  ttoPixels.appendChild(frag);
-}
-function clearTtoPixels() {
-  ttoPixels.innerHTML = "";
+  pts.push("100% 110%", "0% 110%");
+  return `polygon(${pts.join(", ")})`;
 }
 
-// Case Files and Private Bank both play longer, more elaborate sequences
-// (a folder needs time to fall/slam/swing open; an envelope needs to
-// fall, crack its seal, open its flap AND let a paper rise out of it) so
-// they get a longer total duration than the shared default - every
-// theme's transition still scales its own keyframe percentages against
-// whatever --tto-dur ends up set to (see the CSS), so this is the single
-// place that duration is chosen.
-const TTO_DURATIONS = { casefiles: 1150, ledger: 1450 };
+const THEME_REVEALS = {
+  neon(x, y, w, h) {
+    const r = Math.hypot(Math.max(x, w - x), Math.max(y, h - y));
+    const duration = 700;
+    const easing = "cubic-bezier(.65,0,.3,1)";
+    return {
+      duration,
+      newFrames: [{ clipPath: `circle(0px at ${x}px ${y}px)` }, { clipPath: `circle(${r}px at ${x}px ${y}px)` }],
+      newOpts: { duration, easing },
+      oldFrames: [{ filter: "brightness(1)" }, { filter: "brightness(.55) saturate(1.3)" }],
+      oldOpts: { duration, easing },
+      fx() {
+        [0, 70].forEach((lag, i) => {
+          const ring = document.createElement("div");
+          ring.className = "tto-ring" + (i ? " tto-ring-2" : "");
+          Object.assign(ring.style, { left: `${x - r}px`, top: `${y - r}px`, width: `${r * 2}px`, height: `${r * 2}px` });
+          themeTransitionOverlay.appendChild(ring);
+          ring.animate([
+            { transform: "scale(0)", opacity: 1 },
+            { opacity: 1, offset: 0.75 },
+            { transform: "scale(1)", opacity: 0 },
+          ], { duration, delay: lag, easing, fill: "both" });
+        });
+      },
+    };
+  },
+  casefiles() {
+    const duration = 760;
+    return {
+      duration,
+      newFrames: [
+        { transform: "translateY(-104%) rotate(-3deg) scale(1.04)", filter: "drop-shadow(0 30px 40px rgba(0,0,0,.45))" },
+        { transform: "translateY(0) rotate(0.8deg) scale(1.04)", filter: "drop-shadow(0 12px 18px rgba(0,0,0,.35))", offset: 0.62, easing: "cubic-bezier(.3,0,.5,1)" },
+        { transform: "translateY(0) rotate(-0.4deg) scale(1.02)", filter: "drop-shadow(0 4px 8px rgba(0,0,0,.2))", offset: 0.8 },
+        { transform: "none", filter: "drop-shadow(0 0 0 rgba(0,0,0,0))" },
+      ],
+      newOpts: { duration, easing: "cubic-bezier(.55,0,.75,.6)", transformOrigin: "50% 0" },
+      oldFrames: [
+        { transform: "none", filter: "brightness(1)" },
+        { transform: "none", filter: "brightness(.7) sepia(.25)", offset: 0.62 },
+        { transform: "translateY(4px) scale(.99)", filter: "brightness(.6) sepia(.3)", offset: 0.7 },
+        { transform: "none", filter: "brightness(.6) sepia(.3)" },
+      ],
+      oldOpts: { duration },
+    };
+  },
+  ledger(x, y, w) {
+    const duration = 820;
+    const easing = "cubic-bezier(.7,0,.25,1)";
+    return {
+      duration,
+      newFrames: [{ clipPath: "inset(0 0 0 100%)" }, { clipPath: "inset(0 0 0 0)" }],
+      newOpts: { duration, easing },
+      oldFrames: [{ filter: "brightness(1)" }, { filter: "brightness(.65)" }],
+      oldOpts: { duration, easing },
+      fx() {
+        const edge = document.createElement("div");
+        edge.className = "tto-edge";
+        themeTransitionOverlay.appendChild(edge);
+        edge.animate([
+          { transform: `translateX(${w}px)`, opacity: 1 },
+          { opacity: 1, offset: 0.85 },
+          { transform: "translateX(-60px)", opacity: 0 },
+        ], { duration, easing, fill: "both" });
+      },
+    };
+  },
+  deepcurrent() {
+    const duration = 1000;
+    return {
+      duration,
+      newFrames: [
+        { clipPath: waterline(106, 0) },
+        { clipPath: waterline(50, Math.PI * 1.5), offset: 0.5 },
+        { clipPath: waterline(-6, Math.PI * 3) },
+      ],
+      newOpts: { duration, easing: "cubic-bezier(.45,0,.35,1)" },
+      oldFrames: [{ filter: "brightness(1) blur(0)" }, { filter: "brightness(.55) hue-rotate(20deg) blur(2px)" }],
+      oldOpts: { duration },
+      fx() { spawnTtoBubbles(45, duration); },
+    };
+  },
+};
 
-function playThemeTransition(themeId, swapFn) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+function playThemeTransition(themeId, swapFn, origin) {
+  if (!document.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     swapFn();
     return;
   }
-  const duration = TTO_DURATIONS[themeId] || THEME_TRANSITION_MS;
-  hideTooltip(); // a tooltip left open would otherwise float above the full-screen wipe
-  clearTimeout(themeTransitionSwapTimer);
-  clearTimeout(themeTransitionEndTimer);
-  themeTransitionOverlay.classList.remove("active");
-  void themeTransitionOverlay.offsetWidth; // restart the animation cleanly if one was already mid-flight
-  themeTransitionOverlay.style.setProperty("--tto-dur", `${duration}ms`);
-  themeTransitionOverlay.setAttribute("data-playing", themeId);
-  clearTtoBubbles();
-  clearTtoPixels();
-  if (themeId === "deepcurrent") spawnTtoBubbles(85);
-  if (themeId === "neon") spawnTtoPixels(20, 12);
-  themeTransitionOverlay.classList.add("active");
-  themeTransitionSwapTimer = setTimeout(swapFn, duration / 2);
-  themeTransitionEndTimer = setTimeout(() => {
+  hideTooltip(); // a tooltip left open would be frozen into the old snapshot
+  if (themeTransition) themeTransition.skipTransition();
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const x = origin ? origin.x : w - 60;
+  const y = origin ? origin.y : 40;
+  const reveal = (THEME_REVEALS[themeId] || THEME_REVEALS.neon)(x, y, w, h);
+  const cleanup = () => {
     themeTransitionOverlay.classList.remove("active");
-    themeTransitionOverlay.removeAttribute("data-playing");
-    clearTtoBubbles();
-    clearTtoPixels();
-  }, duration + 30);
+    themeTransitionOverlay.innerHTML = "";
+  };
+  const vt = document.startViewTransition(() => {
+    swapFn();
+    cleanup();
+    if (reveal.fx) {
+      themeTransitionOverlay.classList.add("active");
+      reveal.fx();
+    }
+  });
+  themeTransition = vt;
+  vt.ready.then(() => {
+    const root = document.documentElement;
+    root.animate(reveal.newFrames, { ...reveal.newOpts, fill: "both", pseudoElement: "::view-transition-new(root)" });
+    if (reveal.oldFrames) root.animate(reveal.oldFrames, { ...reveal.oldOpts, fill: "both", pseudoElement: "::view-transition-old(root)" });
+  }).catch(() => {});
+  vt.finished.finally(() => {
+    if (themeTransition === vt) themeTransition = null;
+    cleanup();
+  });
 }
 
 function currentThemeId() {
@@ -7132,7 +6767,7 @@ function applyTheme(themeId, opts = {}) {
     swap();
     return;
   }
-  playThemeTransition(themeId, swap);
+  playThemeTransition(themeId, swap, opts.origin);
 }
 
 let savedTheme = "neon";
@@ -7215,7 +6850,8 @@ themeDropdownBtn.addEventListener("click", () => {
 
 themeOptions.forEach(li => {
   const selectThis = () => {
-    applyTheme(li.dataset.themeValue);
+    const r = li.getBoundingClientRect();
+    applyTheme(li.dataset.themeValue, { origin: { x: r.left + r.width / 2, y: r.top + r.height / 2 } });
     closeThemeDropdown();
     themeDropdownBtn.focus();
   };
@@ -8931,7 +8567,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
       // opening the player modal underneath it.
       const flipFrom = card.getBoundingClientRect();
       openEditModal(s);
-      requestAnimationFrame(() => playCardFlipExpand(flipFrom, editModal.querySelector(".modal-card")));
+      requestAnimationFrame(() => playCardFlipExpand(flipFrom, editModal.querySelector(".modal-card"), card));
     });
 
     card.querySelector(".remove-btn").addEventListener("click", (e) => {
@@ -9657,66 +9293,148 @@ async function openPlayerModal(item) {
 // runs (it flips modal.style.display to "flex" synchronously, before its
 // first await, so the modal's natural centered/full-size layout already
 // exists one animation frame later) and handed to playCardFlipExpand,
-// which grows .modal-card out of that rect into its resting position.
+// which flips .modal-card out of that card into its resting position.
 document.addEventListener("click", (e) => {
   if (e.target.closest("button")) return;
   const item = e.target.closest("[data-username]");
   if (!item) return;
   const flipFrom = item.getBoundingClientRect();
   openPlayerModal(item);
-  if (flipFrom) requestAnimationFrame(() => playCardFlipExpand(flipFrom, modal.querySelector(".modal-card")));
+  if (flipFrom) requestAnimationFrame(() => playCardFlipExpand(flipFrom, modal.querySelector(".modal-card"), item));
 });
 
 // Modal open/close transitions, shared by all four modals and all four
-// themes. Replaces the old per-theme CSS "flip" keyframes, which stretched
-// the card non-uniformly (text squashed mid-flight), ran a second pop
-// animation on top of the flip, and snapped shut with no close animation.
+// themes, run with the Web Animations API so an open can never restart on
+// its own or stack on a second animation.
 //
-// Open: the backdrop fades in and the card grows out of whatever was
-// clicked (a card, tile or row) with a uniform scale, so its contents
-// never distort. Without a source it rises in from slightly below. Each
-// theme only changes the character of that one motion: Neon tilts in on
-// a slight 3D angle, Case Files lands with a small rotation and a bounce
-// like a photo dropped on a desk, Private Bank settles slowly with no
-// overshoot, and Deep Current comes up out of a blur like surfacing.
-// Close: a quick fade and drop, then display:none once it's finished.
-// Reduced-motion users get a plain fade both ways.
-const MODAL_MOTION = {
-  neon:        { extra: "perspective(1000px) rotateX(8deg)", easing: "cubic-bezier(.16,1,.3,1)", duration: 440 },
-  casefiles:   { extra: "rotate(-3.5deg)", easing: "cubic-bezier(.34,1.4,.64,1)", duration: 520 },
-  ledger:      { extra: "", easing: "cubic-bezier(.25,.9,.3,1)", duration: 520 },
-  deepcurrent: { extra: "", easing: "cubic-bezier(.16,1,.3,1)", duration: 560, blur: true },
-};
+// Opened from a card-shaped source (a grid card, podium spot, stats tile
+// or the Edit pencil) the popup plays each theme's card flip: it starts
+// exactly over the clicked card and flips/flies out to full size (FLIP:
+// First = the card's rect, Last = the popup's resting rect). Neon spins
+// through a 3D flip, Case Files is tossed up and caught on a pin where it
+// swings to rest, Private Bank turns over like a ledger page, and Deep
+// Current bursts up out of a blur. Closing plays a short reverse back
+// into the card it came from, if that card is still on screen.
+// Anything else (table rows, dialogs with no source) rises in from just
+// below and drops away on close. Reduced-motion users get plain fades.
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+function themeKey() {
+  return document.documentElement.getAttribute("data-theme") || "neon";
+}
+
+// The rotateY flips go to 90deg (edge-on), jump to -90deg while invisible
+// (step-end), then carry on to 0 - one continuous turn instead of opening
+// halfway and swinging back the way it came. perspective() lives inside
+// the transform so the vanishing point travels with the card rather than
+// sitting at the middle of the screen.
+function cardFlipOpen(theme, f) {
+  const mid = (p) => `translate(${f.dx * 0.5}px, ${f.dy * 0.5}px) scale(${(f.sx + 1) / 2}, ${(f.sy + 1) / 2}) ${p}`;
+  const start = `translate(${f.dx}px, ${f.dy}px) scale(${f.sx}, ${f.sy})`;
+  if (theme === "casefiles") {
+    return {
+      duration: 1150,
+      origin: "50% -16px",
+      frames: [
+        { transform: `translate(${f.dx}px, ${f.dyTop}px) scale(${f.sx}, ${f.sy}) rotate(0deg)`, opacity: 0.7, easing: "cubic-bezier(.2,.7,.3,1)" },
+        { transform: `translate(${f.dx * 0.15}px, ${f.dyTop * 0.15}px) scale(1.12) rotate(0deg)`, opacity: 1, offset: 0.28, easing: "cubic-bezier(.55,0,1,.45)" },
+        { transform: "scale(0.97, 1.04) rotate(8deg)", opacity: 1, offset: 0.44, easing: "ease-in-out" },
+        { transform: "rotate(-5deg)", offset: 0.6, easing: "ease-in-out" },
+        { transform: "rotate(2.5deg)", offset: 0.75, easing: "ease-in-out" },
+        { transform: "rotate(-1deg)", offset: 0.88, easing: "ease-in-out" },
+        { transform: "none", opacity: 1 },
+      ],
+    };
+  }
+  if (theme === "deepcurrent") {
+    return {
+      duration: 800,
+      frames: [
+        { transform: `translate(${f.dx}px, ${f.dy + 50}px) scale(${f.sx * 0.85}, ${f.sy * 0.85})`, filter: "blur(18px)", opacity: 0.1, easing: "cubic-bezier(.2,.8,.2,1)" },
+        { transform: `translate(${f.dx * 0.05}px, ${f.dy * 0.05 - 14}px) scale(1.05)`, filter: "blur(1.5px)", opacity: 1, offset: 0.55, easing: "ease-in-out" },
+        { transform: "translateY(4px) scale(0.99)", filter: "blur(0px)", offset: 0.8, easing: "ease-out" },
+        { transform: "none", filter: "blur(0px)", opacity: 1 },
+      ],
+    };
+  }
+  const ledger = theme === "ledger";
+  const p = ledger ? 1400 : 1200;
+  const ease = ledger ? "cubic-bezier(.45,.05,.3,1)" : "cubic-bezier(.3,.6,.3,1)";
+  return {
+    duration: ledger ? 720 : 560,
+    frames: [
+      { transform: `perspective(${p}px) ${start} rotateY(0deg)`, opacity: 0.85, boxShadow: "0 0 0 rgba(0,0,0,0)", easing: ease },
+      { transform: `perspective(${p}px) ${mid("rotateY(90deg)")}`, opacity: 1, offset: 0.45, easing: "step-end" },
+      { transform: `perspective(${p}px) ${mid("rotateY(-90deg)")}`, opacity: 1, offset: 0.55, easing: ledger ? "cubic-bezier(.2,.6,.3,1)" : "cubic-bezier(.2,.9,.3,1.12)" },
+      { transform: `perspective(${p}px) translate(0, 0) scale(1, 1) rotateY(0deg)`, opacity: 1 },
+    ],
+  };
+}
+
+function cardFlipClose(theme, f) {
+  const toward = `translate(${f.dx * 0.6}px, ${f.dy * 0.6}px) scale(${0.4 + f.sx * 0.6}, ${0.4 + f.sy * 0.6})`;
+  if (theme === "casefiles") {
+    return { duration: 260, origin: "50% -16px", frames: [{ transform: "none", opacity: 1 }, { transform: `${toward} rotate(-7deg)`, opacity: 0 }] };
+  }
+  if (theme === "deepcurrent") {
+    return { duration: 280, frames: [{ transform: "none", filter: "blur(0px)", opacity: 1 }, { transform: `${toward} translateY(30px)`, filter: "blur(10px)", opacity: 0 }] };
+  }
+  const p = theme === "ledger" ? 1400 : 1200;
+  return {
+    duration: theme === "ledger" ? 300 : 250,
+    frames: [
+      { transform: `perspective(${p}px) translate(0, 0) scale(1, 1) rotateY(0deg)`, opacity: 1 },
+      { transform: `perspective(${p}px) ${toward} rotateY(90deg)`, opacity: 0.6 },
+    ],
+  };
+}
+
+// Card-shaped sources get the flip; a wide thin table row would squash
+// the popup into a strip, so rows use the plain rise instead.
+function isCardShaped(rect) {
+  const ratio = rect.width / rect.height;
+  return rect.width > 40 && rect.height > 40 && ratio > 0.3 && ratio < 3.2;
+}
+
+function flipDeltas(sourceRect, target) {
+  return {
+    dx: (sourceRect.left + sourceRect.width / 2) - (target.left + target.width / 2),
+    dy: (sourceRect.top + sourceRect.height / 2) - (target.top + target.height / 2),
+    dyTop: sourceRect.top - target.top,
+    sx: sourceRect.width / target.width,
+    sy: sourceRect.height / target.height,
+  };
+}
 
 function stopModalAnimations(modalEl) {
   const card = modalEl.querySelector(".modal-card");
   [modalEl, card].forEach(el => el && el.getAnimations().forEach(a => a.cancel()));
+  if (card) card.style.transformOrigin = "";
   delete modalEl.dataset.closing;
 }
 
-function animateModalIn(modalEl, sourceRect) {
+function animateModalIn(modalEl, sourceRect, sourceEl) {
   const card = modalEl.querySelector(".modal-card");
   stopModalAnimations(modalEl);
+  modalEl._flipSource = sourceEl || null;
   modalEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: "ease-out" });
   if (!card || reducedMotion.matches) return;
 
-  const motion = MODAL_MOTION[document.documentElement.getAttribute("data-theme")] || MODAL_MOTION.neon;
   const target = card.getBoundingClientRect();
-  let from;
-  if (sourceRect && target.width && target.height) {
-    const dx = (sourceRect.left + sourceRect.width / 2) - (target.left + target.width / 2);
-    const dy = (sourceRect.top + sourceRect.height / 2) - (target.top + target.height / 2);
-    const scale = Math.min(1, Math.max(0.25, Math.min(sourceRect.width / target.width, sourceRect.height / target.height)));
-    from = `translate(${dx}px, ${dy}px) scale(${scale}) ${motion.extra}`;
-  } else {
-    from = `translateY(18px) scale(0.96) ${motion.extra}`;
+  if (sourceRect && target.width && target.height && isCardShaped(sourceRect)) {
+    const motion = cardFlipOpen(themeKey(), flipDeltas(sourceRect, target));
+    card.style.transformOrigin = motion.origin || "";
+    card.animate(motion.frames, { duration: motion.duration, easing: "linear" }).onfinish = () => {
+      card.style.transformOrigin = "";
+    };
+    return;
   }
+  modalEl._flipSource = null;
   card.animate([
-    { transform: from, opacity: 0, filter: motion.blur ? "blur(8px)" : "none" },
+    { transform: "translateY(18px) scale(0.96)", opacity: 0 },
     { opacity: 1, offset: 0.35 },
-    { transform: "none", opacity: 1, filter: "none" },
-  ], { duration: motion.duration, easing: motion.easing });
+    { transform: "none", opacity: 1 },
+  ], { duration: 420, easing: "cubic-bezier(.16,1,.3,1)" });
 }
 
 function animateModalOut(modalEl) {
@@ -9725,29 +9443,39 @@ function animateModalOut(modalEl) {
     stopModalAnimations(modalEl);
     modalEl.style.display = "none";
   };
+  const card = modalEl.querySelector(".modal-card");
+  const source = modalEl._flipSource;
+  modalEl._flipSource = null;
+  stopModalAnimations(modalEl);
+  modalEl.dataset.closing = "1";
   if (reducedMotion.matches) {
-    modalEl.dataset.closing = "1";
     modalEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: "forwards" }).onfinish = hide;
     return;
   }
-  const card = modalEl.querySelector(".modal-card");
-  stopModalAnimations(modalEl);
-  modalEl.dataset.closing = "1";
+  let duration = 210;
   if (card) {
-    card.animate([
-      { transform: "none", opacity: 1 },
-      { transform: "translateY(12px) scale(0.965)", opacity: 0 },
-    ], { duration: 180, easing: "cubic-bezier(.4,0,1,1)", fill: "forwards" });
+    const sourceRect = source && source.isConnected ? source.getBoundingClientRect() : null;
+    const onScreen = sourceRect && sourceRect.width && sourceRect.bottom > 0 && sourceRect.top < window.innerHeight;
+    if (onScreen && isCardShaped(sourceRect)) {
+      const motion = cardFlipClose(themeKey(), flipDeltas(sourceRect, card.getBoundingClientRect()));
+      card.style.transformOrigin = motion.origin || "";
+      card.animate(motion.frames, { duration: motion.duration, easing: "cubic-bezier(.5,0,.75,0)", fill: "forwards" });
+      duration = motion.duration + 20;
+    } else {
+      card.animate([
+        { transform: "none", opacity: 1 },
+        { transform: "translateY(12px) scale(0.965)", opacity: 0 },
+      ], { duration: 180, easing: "cubic-bezier(.4,0,1,1)", fill: "forwards" });
+    }
   }
-  modalEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 210, easing: "ease-in", fill: "forwards" }).onfinish = hide;
+  modalEl.animate([{ opacity: 1 }, { opacity: 1, offset: 0.3 }, { opacity: 0 }], { duration, easing: "ease-in", fill: "forwards" }).onfinish = hide;
 }
 
-// Kept under its old name since both the grid click handler and the Edit
-// button call it one frame after the modal is shown (so the modal's own
-// resting rect exists to measure against).
-function playCardFlipExpand(sourceRect, content) {
+// Called by the card click handler and the Edit pencil one frame after the
+// modal is shown, so the modal's own resting rect exists to measure.
+function playCardFlipExpand(sourceRect, content, sourceEl) {
   if (!content) return;
-  animateModalIn(content.closest(".modal"), sourceRect);
+  animateModalIn(content.closest(".modal"), sourceRect, sourceEl);
 }
 
 // Cards/rows are plain div/tr elements (not <button>s), so they need their

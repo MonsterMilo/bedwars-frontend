@@ -10179,7 +10179,7 @@ html[data-theme="skyisles"] .leaderboard-person-title {
     <div>
       <span class="exhibit-tag exhibit-tag-denick">Exhibit C</span>
       <h2>Denicking</h2>
-      <p>Look up a nick or a player across the Denicker DB, Diamond Dome and Tricktracker.</p>
+      <p>Look up a nick or a player in the database.</p>
     </div>
     <button type="button" class="section-toggle" data-section="denick" aria-expanded="true" aria-controls="denickBody" aria-label="Hide Denicking"><span class="section-toggle-label">Hide</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
@@ -12684,7 +12684,6 @@ const SCRAPED_SOURCES = [
   { name: "Diamond Dome", url: "https://gist.githubusercontent.com/MonsterMilo/169045d75d17d68a41d051bae056106d/raw/diamond-dome-nicks.json", data: null, loadPromise: null },
   { name: "Tricktracker", url: "https://gist.githubusercontent.com/MonsterMilo/f599b8b81224056ea42a436ece0be5ed/raw/tricktracker-nicks.json", data: null, loadPromise: null }
 ];
-const SCRAPED_NAMES = SCRAPED_SOURCES.map(s => s.name).join(" and ");
 
 // Each source loads independently - one gist being down still leaves the
 // others (and the Denicker API) able to answer.
@@ -12982,17 +12981,16 @@ async function runDenickSearch() {
     if (merged.length === 0) {
       denickPagination.hidden = true;
       denickEmpty.hidden = false;
-      if (apiResult.noKey) denickStatus.textContent = `Showing ${SCRAPED_NAMES} only, and nothing matched.`;
-      else if (apiResult.error) denickStatus.textContent = `Denicker API didn't respond (${apiResult.error}) - showing ${SCRAPED_NAMES} only, and nothing matched.`;
-      else denickStatus.textContent = "No results.";
+      // Per Milo, the section just talks about "the database" rather than
+      // naming each source; a partial search is only mentioned on a real failure.
+      denickStatus.textContent = apiResult.error ? "No results (part of the database didn't respond)." : "No results.";
       siteAudio.play("error");
       return;
     }
 
     renderDenickPage();
     siteAudio.play("found");
-    if (apiResult.noKey) denickStatus.textContent = `Showing ${SCRAPED_NAMES} results only.`;
-    else if (apiResult.error) denickStatus.textContent = `Denicker API didn't respond - showing ${SCRAPED_NAMES} results only.`;
+    if (apiResult.error) denickStatus.textContent = "Part of the database didn't respond, so some results may be missing.";
   } catch (err) {
     if (isStale()) return;
     denickAllResults = [];

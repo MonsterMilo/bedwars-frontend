@@ -1207,6 +1207,185 @@ html:not([data-theme]) #statsContent.stats-pop {
 .stat-hero.kdr .stat-hero-value { color: var(--gold); }
 .stat-hero.bblr .stat-hero-value { color: var(--good); }
 
+/* ---- Sweat Lookup upgrades ---------------------------------------- */
+/* Search field with an icon and an Enter hint. */
+.lookup-input { position: relative; flex: 1; display: flex; align-items: center; min-width: 0; }
+.lookup-input svg { position: absolute; left: 13px; width: 17px; height: 17px; color: var(--text-faint); pointer-events: none; transition: color .2s; }
+.lookup-input input { width: 100%; padding-left: 40px !important; padding-right: 64px !important; }
+.lookup-input:focus-within svg { color: var(--accent); }
+.lookup-kbd {
+  position: absolute;
+  right: 10px;
+  padding: 2px 7px;
+  font: 700 0.66em/1.4 inherit;
+  letter-spacing: .04em;
+  color: var(--text-faint);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  pointer-events: none;
+  opacity: .8;
+}
+
+@media (hover: none) { .lookup-kbd { display: none; } .lookup-input input { padding-right: 14px !important; } }
+.recent-lookups { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+.recent-label { font-size: .66em; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-faint); margin-right: 2px; }
+.recent-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 3px;
+  font: inherit;
+  font-size: .76em;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color .2s, border-color .2s, transform .2s var(--ease), background .2s;
+}
+.recent-chip img { width: 20px; height: 20px; border-radius: 50%; image-rendering: pixelated; }
+.recent-chip:hover { color: var(--text); border-color: var(--accent); background: var(--accent-soft); transform: translateY(-1px); }
+.recent-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Empty preview: a slow radar sweep that speeds up while scanning. */
+.dash-empty { position: relative; overflow: hidden; min-height: 240px; }
+.dash-radar {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 260px;
+  height: 260px;
+  margin: -130px 0 0 -130px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: .5;
+  background: conic-gradient(from 0deg, transparent 0 300deg, color-mix(in srgb, var(--accent) 35%, transparent) 355deg, transparent 360deg);
+  -webkit-mask: radial-gradient(closest-side, #000 99%, transparent 100%);
+  mask: radial-gradient(closest-side, #000 99%, transparent 100%);
+  animation: radarSpin 4s linear infinite;
+}
+.dash-radar i {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.dash-radar i:nth-child(2) { inset: 20%; }
+.dash-radar i:nth-child(3) { inset: 40%; }
+.dash-empty > :not(.dash-radar) { position: relative; }
+.dash-empty.is-scanning { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.dash-empty.is-scanning .dash-radar { opacity: 1; animation-duration: 1.1s; }
+.dash-empty.is-scanning .dash-empty-icon { color: var(--accent); animation: scanPulse 1s ease-in-out infinite; }
+@keyframes radarSpin { to { transform: rotate(360deg); } }
+@keyframes scanPulse { 50% { transform: scale(1.15); opacity: 1; } }
+
+/* Skin on a glowing stage that tilts toward the cursor. */
+#statsContent { --tier: var(--gold); }
+#statsContent.tier-t1 { --tier: var(--good); }
+#statsContent.tier-t2 { --tier: var(--neutral); }
+#statsContent.tier-t3 { --tier: var(--gold); }
+#statsContent.tier-t4 { --tier: var(--bad); }
+#statsContent.tier-t5 { --tier: var(--accent-2); }
+.skin-stage {
+  position: relative;
+  flex-shrink: 0;
+  perspective: 700px;
+  --gx: 50%;
+  --gy: 30%;
+}
+.skin-aura {
+  position: absolute;
+  inset: -18px -26px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--tier) 40%, transparent), transparent);
+  filter: blur(8px);
+  animation: auraPulse 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes auraPulse { 50% { opacity: .55; transform: scale(.94); } }
+.skin-tilt {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  border-radius: var(--radius-m);
+}
+.skin-stage.is-tilting .skin-tilt { transition: transform .08s linear; }
+.skin-tilt #statsAvatar { display: block; border-color: color-mix(in srgb, var(--tier) 55%, var(--border-strong)); box-shadow: 0 0 26px color-mix(in srgb, var(--tier) 30%, transparent), 0 14px 30px rgba(0,0,0,.35); }
+.skin-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-m);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .3s;
+  background: radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,.28), transparent 55%);
+  mix-blend-mode: soft-light;
+}
+.skin-stage.is-tilting .skin-glare { opacity: 1; }
+@media (min-width: 621px) { .skin-tilt #statsAvatar { width: 140px; height: 270px; } }
+@media (max-width: 620px) { .skin-stage { width: 100%; } }
+
+/* Threat level gauge. */
+.sweat-meter {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-s);
+  border: 1px solid color-mix(in srgb, var(--tier) 35%, var(--border));
+  background: linear-gradient(100deg, color-mix(in srgb, var(--tier) 12%, transparent), transparent 70%);
+}
+.sweat-gauge { position: relative; width: 92px; height: 92px; flex-shrink: 0; }
+.sweat-gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.sweat-gauge circle { fill: none; }
+.sweat-gauge .g-track { stroke: color-mix(in srgb, var(--text) 10%, transparent); stroke-width: 9; }
+.sweat-gauge .g-ticks { stroke: color-mix(in srgb, var(--text) 22%, transparent); stroke-width: 3; stroke-dasharray: 1.5 8.3; }
+.sweat-gauge .g-fill { stroke: var(--tier); stroke-width: 9; stroke-linecap: round; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tier) 70%, transparent)); }
+.sweat-gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.sweat-gauge-value { font-size: 1.15em; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+.sweat-gauge-label { font-size: .58em; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint); }
+.sweat-meter-info { min-width: 0; text-align: left; }
+.sweat-meter-kicker { font-size: .64em; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text-faint); }
+.sweat-tier { font-size: 1.45em; font-weight: 900; line-height: 1.15; color: var(--tier); text-shadow: 0 0 18px color-mix(in srgb, var(--tier) 45%, transparent); }
+.sweat-tier-sub { font-size: .76em; color: var(--text-dim); margin-top: 2px; }
+.sweat-tier-scale { display: flex; gap: 4px; margin-top: 8px; }
+.sweat-tier-scale span { width: 22px; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--text) 12%, transparent); }
+.sweat-tier-scale span.on { background: var(--tier); box-shadow: 0 0 8px color-mix(in srgb, var(--tier) 60%, transparent); }
+
+/* Tiles: ranking bar, hover lift and a staggered drop-in. */
+.stat-hero { position: relative; overflow: hidden; transition: transform .2s var(--ease), border-color .2s, box-shadow .2s; }
+.stat-hero:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: 0 8px 20px rgba(0,0,0,.18); }
+.stat-hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: currentColor;
+  opacity: 0;
+}
+.stat-standing .modal-standing { margin-top: 8px; justify-content: center; }
+#statsContent.stats-pop .stat-hero,
+#statsContent.stats-pop .stats-tag-panel,
+#statsContent.stats-pop .sweat-meter { animation: previewTileIn .5s cubic-bezier(.2,.8,.2,1) both; }
+#statsContent.stats-pop .sweat-meter { animation-delay: .05s; }
+#statsContent.stats-pop .stat-hero:nth-child(1) { animation-delay: .12s; }
+#statsContent.stats-pop .stat-hero:nth-child(2) { animation-delay: .18s; }
+#statsContent.stats-pop .stat-hero:nth-child(3) { animation-delay: .24s; }
+#statsContent.stats-pop .stat-hero:nth-child(4) { animation-delay: .30s; }
+#statsContent.stats-pop .stats-tag-panel { animation-delay: .36s; }
+@keyframes previewTileIn { from { opacity: 0; transform: translateY(12px) scale(.97); } }
+@media (prefers-reduced-motion: reduce) {
+  .dash-radar, .skin-aura { animation: none; }
+  #statsContent.stats-pop .stat-hero,
+  #statsContent.stats-pop .stats-tag-panel,
+  #statsContent.stats-pop .sweat-meter { animation: none; }
+}
+
 /* Shared by the Urchin and Seraph tag panels - same layout, different data source. */
 .stats-tag-panel {
   grid-column: 1 / -1;
@@ -5136,64 +5315,127 @@ html[data-theme="ledger"] .view-btn.active {
 .tto-vault-rim {
   position: absolute;
   border-radius: 50%;
-  box-shadow: 0 0 0 6px #c9a24a, 0 0 0 9px #6e5220, 0 0 40px 12px rgba(230,190,90,0.55), inset 0 0 30px 6px rgba(0,0,0,0.6);
+  box-shadow: 0 0 0 7px #d9dee4, 0 0 0 10px #6d747c, 0 0 0 13px #b9c0c8, 0 0 44px 14px rgba(230,240,255,0.5), inset 0 0 34px 8px rgba(0,0,0,0.7);
 }
 .tto-vault-door {
   position: absolute;
   border-radius: 50%;
   transform-origin: 0% 50%;
   background:
-    radial-gradient(circle at 50% 50%, transparent 0 58%, rgba(0,0,0,0.25) 59% 60%, transparent 61%),
-    repeating-conic-gradient(from 0deg, rgba(255,255,255,0.05) 0 3deg, rgba(0,0,0,0.05) 3deg 6deg),
-    radial-gradient(circle at 34% 28%, #fbeec0 0%, #d9b45c 28%, #a07a2c 62%, #5c4214 100%);
-  box-shadow: 0 0 0 5px #3b2a0c, 0 0 0 9px #d4ae57, 0 0 0 12px #4a3510, 0 30px 90px rgba(0,0,0,0.65), inset 0 0 50px rgba(60,40,5,0.6);
+    radial-gradient(circle at 50% 50%, transparent 0 57%, rgba(0,0,0,0.28) 57.5% 58.5%, rgba(255,255,255,0.35) 59% 59.6%, transparent 60%),
+    radial-gradient(circle at 50% 50%, transparent 0 80%, rgba(0,0,0,0.3) 80.5% 81.5%, rgba(255,255,255,0.4) 82% 82.6%, transparent 83%),
+    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0 1px, rgba(0,0,0,0.04) 1px 3px),
+    conic-gradient(from 200deg, #f4f6f8, #b8bec6 18%, #eef1f4 34%, #9aa1aa 52%, #e6e9ed 70%, #a9b0b8 86%, #f4f6f8);
+  box-shadow: 0 0 0 5px #4b5159, 0 0 0 9px #d4d9df, 0 0 0 12px #5d646c, 0 34px 90px rgba(0,0,0,0.7), inset 0 0 60px rgba(30,35,45,0.45), inset 0 3px 0 rgba(255,255,255,0.8);
   backface-visibility: hidden;
+}
+/* Rivet ring just inside the rim. */
+.tto-vault-door::before {
+  content: "";
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, #5d646c 0 1.4deg, transparent 1.4deg 15deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 calc(50% - 7px), #000 calc(50% - 6px) calc(50% - 1px), transparent 50%);
+  mask: radial-gradient(circle, transparent 0 calc(50% - 7px), #000 calc(50% - 6px) calc(50% - 1px), transparent 50%);
 }
 .tto-vault-ring {
   position: absolute;
-  inset: 12%;
+  inset: 20%;
   border-radius: 50%;
-  border: 3px solid rgba(90,64,18,0.7);
-  box-shadow: inset 0 0 0 6px rgba(250,230,170,0.25), 0 0 0 6px rgba(250,230,170,0.2);
+  border: 2px solid rgba(60,66,74,0.55);
+  box-shadow: inset 0 0 0 5px rgba(255,255,255,0.35), 0 0 0 4px rgba(255,255,255,0.25), inset 0 6px 14px rgba(0,0,0,0.18);
 }
 .tto-vault-wheel {
   position: absolute;
-  inset: 30%;
+  inset: 31%;
   border-radius: 50%;
-  border: 7px solid #f3dc97;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.45), inset 0 0 0 2px #7a5a1c;
+  border: 8px solid #eef1f4;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.5), inset 0 0 0 2px #7b838c, 0 0 0 2px #7b838c;
 }
 .tto-vault-wheel i {
   position: absolute;
   left: 50%;
-  top: -12%;
-  width: 8px;
-  height: 124%;
-  margin-left: -4px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #8a6522, #f7e3a6, #8a6522);
+  top: -16%;
+  width: 10px;
+  height: 132%;
+  margin-left: -5px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #6d747c, #ffffff 45%, #c3c9d0 60%, #6d747c);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
 }
+.tto-vault-wheel i::before,
+.tto-vault-wheel i::after {
+  content: "";
+  position: absolute;
+  left: -5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, #b8bec6 55%, #5d646c);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.45);
+}
+.tto-vault-wheel i::before { top: -8px; }
+.tto-vault-wheel i::after { bottom: -8px; }
 .tto-vault-wheel i:nth-child(2) { transform: rotate(60deg); }
 .tto-vault-wheel i:nth-child(3) { transform: rotate(120deg); }
 .tto-vault-wheel b {
   position: absolute;
-  inset: 34%;
+  inset: 32%;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fff3c8, #c9a24a 60%, #6e5220);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  background: radial-gradient(circle at 35% 30%, #ffffff, #c8ced5 50%, #6d747c);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 0 0 3px rgba(255,255,255,0.5);
 }
-.tto-vault-plate {
+.tto-vault-dial {
   position: absolute;
   left: 50%;
-  bottom: 13%;
-  transform: translateX(-50%);
-  padding: 3px 10px;
-  font: 700 10px/1.2 Georgia, serif;
-  letter-spacing: 0.22em;
-  color: #3b2a0c;
-  background: linear-gradient(#f7e7b4, #c9a24a);
-  border: 1px solid #6e5220;
+  top: 7.5%;
+  width: 17%;
+  height: 17%;
+  margin-left: -8.5%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #2c3138 0 30%, transparent 31%),
+    repeating-conic-gradient(from 0deg, #2c3138 0 1.2deg, transparent 1.2deg 10deg),
+    radial-gradient(circle at 35% 30%, #ffffff, #d7dce2 55%, #8a929b);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.45), 0 0 0 3px #6d747c, inset 0 0 0 4px rgba(255,255,255,0.7);
+}
+.tto-vault-dial::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 6%;
+  width: 3px;
+  height: 22%;
+  margin-left: -1.5px;
+  background: #c0392b;
   border-radius: 2px;
+}
+.tto-vault-hinge {
+  position: absolute;
+  left: -5%;
+  width: 11%;
+  height: 13%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #5d646c, #eef1f4 40%, #9aa1aa 70%, #4b5159);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,0,0,0.3);
+}
+.tto-vault-hinge.h1 { top: 20%; }
+.tto-vault-hinge.h2 { bottom: 20%; }
+.tto-vault-plate {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 19%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  font: 700 10px/1.2 Georgia, serif;
+  letter-spacing: 0.24em;
+  color: #2c3138;
+  background: linear-gradient(#ffffff, #c3c9d0);
+  border: 1px solid #6d747c;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.35);
   white-space: nowrap;
 }
 .tto-vault-bolt {
@@ -5201,11 +5443,11 @@ html[data-theme="ledger"] .view-btn.active {
   left: 50%;
   top: 50%;
   width: 14px;
-  height: 14px;
-  margin: -7px 0 0 -7px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fff6d6, #b8913e 60%, #5c4214);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  height: 28px;
+  margin: -14px 0 0 -7px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #6d747c, #ffffff 45%, #b8bec6 65%, #5d646c);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.55);
 }
 .tto-coin {
   position: absolute;
@@ -6357,12 +6599,17 @@ html[data-theme="deepcurrent"] .pill.boost {
         <div class="dash-left">
           <div class="dash-label">Player</div>
           <div class="lookup-row">
-            <input type="text" id="username" placeholder="Enter username" aria-label="Minecraft username" />
+            <div class="lookup-input">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2" /><line x1="15.5" y1="15.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+              <input type="text" id="username" placeholder="Enter username" aria-label="Minecraft username" />
+              <kbd class="lookup-kbd">Enter</kbd>
+            </div>
             <button type="button" id="fetchBtn" class="btn btn-ghost">
               <span class="fetch-btn-label">Preview</span>
               <span class="fetch-btn-spinner" aria-hidden="true"></span>
             </button>
           </div>
+          <div class="recent-lookups" id="recentLookups" hidden></div>
 
           <div class="dash-label">Beaten By</div>
           <div class="chip-group roster" id="beatenByGroup"></div>
@@ -6384,42 +6631,72 @@ html[data-theme="deepcurrent"] .pill.boost {
           <div class="dash-label">Preview</div>
           <div class="dash-preview-frame">
             <div id="statsEmpty" class="dash-empty">
+              <div class="dash-radar" aria-hidden="true"><i></i><i></i><i></i></div>
               <svg viewBox="0 0 48 48" class="dash-empty-icon" aria-hidden="true">
                 <circle cx="21" cy="21" r="13" fill="none" stroke="currentColor" stroke-width="2.5" />
                 <line x1="30.5" y1="30.5" x2="41" y2="41" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
               </svg>
-              <p>Search a player, then Preview to see their card here before you log it.</p>
+              <p id="statsEmptyText">Search a player, then Preview to see their card here before you log it.</p>
             </div>
 
             <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
               <div id="statsContent">
-                <img id="statsAvatar" src="" alt="Player skin" />
+                <div class="skin-stage" id="skinStage">
+                  <div class="skin-aura"></div>
+                  <div class="skin-tilt" id="skinTilt">
+                    <img id="statsAvatar" src="" alt="Player skin" decoding="async" />
+                    <div class="skin-glare"></div>
+                  </div>
+                </div>
                 <div id="statsRight">
                   <div id="statsTopRow">
                     <span id="statsRank"></span>
                     <span id="statsUsername"></span>
                     <span id="statsStar" class="pill prestige-tag"></span>
                   </div>
+                  <div class="sweat-meter" id="sweatMeter">
+                    <div class="sweat-gauge">
+                      <svg viewBox="0 0 120 120" aria-hidden="true">
+                        <circle class="g-track" cx="60" cy="60" r="50" />
+                        <circle class="g-ticks" cx="60" cy="60" r="56" />
+                        <circle class="g-fill" id="gaugeFill" cx="60" cy="60" r="50" />
+                      </svg>
+                      <div class="sweat-gauge-center">
+                        <div class="sweat-gauge-value" id="gaugeValue">0</div>
+                        <div class="sweat-gauge-label">Index</div>
+                      </div>
+                    </div>
+                    <div class="sweat-meter-info">
+                      <div class="sweat-meter-kicker">Threat level</div>
+                      <div class="sweat-tier" id="sweatTier">Sweat</div>
+                      <div class="sweat-tier-sub" id="sweatTierSub"></div>
+                      <div class="sweat-tier-scale" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+                    </div>
+                  </div>
                   <div id="statsColumns">
                     <div class="stat-hero wlr">
                       <div class="stat-hero-label">WLR</div>
                       <div class="stat-hero-value" id="statWLR">0</div>
                       <div class="stat-hero-sub"><span id="statWins">0</span>W &middot; <span id="statLosses">0</span>L</div>
+                      <div class="stat-standing" data-field="wlr"></div>
                     </div>
                     <div class="stat-hero fkdr">
                       <div class="stat-hero-label">FKDR</div>
                       <div class="stat-hero-value" id="statFKDR">0</div>
                       <div class="stat-hero-sub"><span id="statFinals">0</span>F &middot; <span id="statFinalDeaths">0</span>FD</div>
+                      <div class="stat-standing" data-field="fkdr"></div>
                     </div>
                     <div class="stat-hero kdr">
                       <div class="stat-hero-label">KDR</div>
                       <div class="stat-hero-value" id="statKDR">0</div>
                       <div class="stat-hero-sub"><span id="statKills">0</span>K &middot; <span id="statDeaths">0</span>D</div>
+                      <div class="stat-standing" data-field="kdr"></div>
                     </div>
                     <div class="stat-hero bblr">
                       <div class="stat-hero-label">BBLR</div>
                       <div class="stat-hero-value" id="statBBLR">0</div>
                       <div class="stat-hero-sub"><span id="statBeds">0</span>B &middot; <span id="statBedsLost">0</span>BL</div>
+                      <div class="stat-standing" data-field="bblr"></div>
                     </div>
 
                     <div id="statsUrchin" class="stats-tag-panel">
@@ -6996,8 +7273,8 @@ const THEME_REVEALS = {
       },
     };
   },
-  // Private Bank: a brass vault door swings in over the old page, its
-  // wheel spins and the bolts pull back, the door swings open on its hinge
+  // Private Bank: a steel vault door swings in over the old page, its
+  // combination dial and wheel spin and the locking bars pull back, the door swings open on its hinge
   // to show the new theme through the vault opening, and a burst of gold
   // coins spills out as the opening widens to fill the screen.
   ledger(x, y, w, h) {
@@ -7045,7 +7322,16 @@ const THEME_REVEALS = {
         const door = document.createElement("div");
         door.className = "tto-vault-door";
         place(door, size);
-        door.innerHTML = '<div class="tto-vault-ring"></div><div class="tto-vault-wheel"><i></i><i></i><i></i><b></b></div><div class="tto-vault-plate">PRIVATE BANK</div>';
+        door.innerHTML = '<div class="tto-vault-hinge h1"></div><div class="tto-vault-hinge h2"></div><div class="tto-vault-ring"></div><div class="tto-vault-dial"></div><div class="tto-vault-wheel"><i></i><i></i><i></i><b></b></div><div class="tto-vault-plate">PRIVATE BANK &middot; EST. 1887</div>';
+        door.querySelector(".tto-vault-plate").style.fontSize = `${Math.max(7, Math.min(11, doorR * 0.045)).toFixed(1)}px`;
+        door.querySelector(".tto-vault-dial").animate([
+          { transform: "rotate(0deg)" },
+          { transform: "rotate(0deg)", offset: 0.05, easing: "ease-in-out" },
+          { transform: "rotate(-220deg)", offset: 0.14, easing: "ease-in-out" },
+          { transform: "rotate(95deg)", offset: 0.22, easing: "ease-in-out" },
+          { transform: "rotate(-40deg)", offset: 0.28 },
+          { transform: "rotate(-40deg)" },
+        ], { duration, fill: "both" });
         for (let i = 0; i < 12; i++) {
           const bolt = document.createElement("span");
           bolt.className = "tto-vault-bolt";
@@ -7070,10 +7356,10 @@ const THEME_REVEALS = {
         door.querySelectorAll(".tto-vault-bolt").forEach(bolt => {
           const a = bolt.style.getPropertyValue("--a");
           bolt.animate([
-            { transform: `rotate(${a}) translateY(${-doorR * 0.86}px)` },
-            { transform: `rotate(${a}) translateY(${-doorR * 0.86}px)`, offset: 0.26, easing: "ease-in" },
-            { transform: `rotate(${a}) translateY(${-doorR * 0.7}px)`, offset: 0.34 },
-            { transform: `rotate(${a}) translateY(${-doorR * 0.7}px)` },
+            { transform: `rotate(${a}) translateY(${-doorR * 0.98}px)` },
+            { transform: `rotate(${a}) translateY(${-doorR * 0.98}px)`, offset: 0.26, easing: "ease-in" },
+            { transform: `rotate(${a}) translateY(${-doorR * 0.74}px)`, offset: 0.34 },
+            { transform: `rotate(${a}) translateY(${-doorR * 0.74}px)` },
           ], { duration, fill: "both" });
         });
 
@@ -7196,8 +7482,11 @@ function playThemeTransition(themeId, swapFn, origin) {
     root.animate(reveal.newFrames, { ...reveal.newOpts, fill: "both", pseudoElement: "::view-transition-new(root)" });
     if (reveal.oldFrames) root.animate(reveal.oldFrames, { ...reveal.oldOpts, fill: "both", pseudoElement: "::view-transition-old(root)" });
   }).catch(() => {});
+  // Only the newest switch cleans up, so a switch interrupted by another
+  // can't wipe the newer one's decorations when it resolves.
   vt.finished.finally(() => {
-    if (themeTransition === vt) themeTransition = null;
+    if (themeTransition !== vt) return;
+    themeTransition = null;
     cleanup();
   });
 }
@@ -7880,6 +8169,15 @@ function showStatsCard() {
 function showStatsEmpty() {
   statsDisplay.style.display = "none";
   statsEmpty.hidden = false;
+  setStatsScanning(null);
+}
+// While a lookup is in flight the empty preview becomes a radar sweep
+// naming who it's looking for.
+const STATS_EMPTY_TEXT = "Search a player, then Preview to see their card here before you log it.";
+function setStatsScanning(name) {
+  const text = document.getElementById("statsEmptyText");
+  statsEmpty.classList.toggle("is-scanning", !!name);
+  if (text) text.textContent = name ? `Scanning Hypixel for ${name}…` : STATS_EMPTY_TEXT;
 }
 
 const statWins = document.getElementById('statWins');
@@ -8161,10 +8459,55 @@ fetchBtn.addEventListener('click', async () => {
     await fetchAndDisplayStats();
   } catch (err) {
     status.textContent = err.message;
+    setStatsScanning(null);
   } finally {
     fetchBtn.disabled = false;
     fetchBtn.classList.remove("loading");
   }
+});
+
+// Recently previewed players, kept per browser, as one-tap chips under
+// the search box.
+const recentLookupsEl = document.getElementById("recentLookups");
+const RECENT_KEY = "recentLookups";
+function loadRecentLookups() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch (e) { return []; }
+}
+function rememberLookup(name, uuid) {
+  const list = loadRecentLookups().filter(r => r.name.toLowerCase() !== name.toLowerCase());
+  list.unshift({ name, uuid });
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 6))); } catch (e) {}
+  renderRecentLookups();
+}
+function renderRecentLookups() {
+  const list = loadRecentLookups();
+  recentLookupsEl.hidden = !list.length;
+  recentLookupsEl.innerHTML = list.length ? '<span class="recent-label">Recent</span>' : "";
+  list.forEach(r => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "recent-chip";
+    const img = document.createElement("img");
+    img.alt = "";
+    img.src = avatarUrlFor(r.uuid);
+    const label = document.createElement("span");
+    label.textContent = r.name;
+    chip.append(img, label);
+    chip.addEventListener("click", () => {
+      usernameInput.value = r.name;
+      if (!fetchBtn.disabled) fetchBtn.click();
+    });
+    recentLookupsEl.appendChild(chip);
+  });
+}
+renderRecentLookups();
+
+// Enter in the username box previews the player instead of submitting
+// the whole form (which would try to log them straight away).
+usernameInput.addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  if (!fetchBtn.disabled) fetchBtn.click();
 });
 
 // Shared by Urchin and Seraph tag rendering. Confirmed against Urchin's
@@ -8433,6 +8776,7 @@ async function fetchAndDisplayStats() {
 
   status.textContent = "Fetching stats...";
   showStatsEmpty();
+  setStatsScanning(usernameRaw);
 
   // Fetch UUID
   const resMojang = await fetch(`${backendBaseURL}/mojang/${usernameRaw}`, { headers: adminHeaders() });
@@ -8481,6 +8825,7 @@ async function fetchAndDisplayStats() {
 
   updateStatsDisplay(currentStats);
   status.textContent = "";
+  rememberLookup(mojangData.name, currentUUID);
 }
 
 async function getPlayerStats(uuid) {
@@ -8619,8 +8964,116 @@ function updateStatsDisplay(stats) {
   renderTagBadges(statUrchin, statUrchinReason, stats.urchinTagsData || [], URCHIN_TAG_ICONS);
   renderTagBadges(statSeraph, statSeraphReason, stats.seraphTagsData || [], SERAPH_TAG_ICONS);
 
+  document.querySelectorAll("#statsColumns .stat-standing").forEach(el => {
+    el.innerHTML = trackedStandingHtml(el.dataset.field, stats[el.dataset.field]);
+  });
+  renderSweatMeter(stats);
+
   showStatsCard();
+  animatePreviewNumbers();
 }
+
+// Threat level: the site's own index (FKDR squared times stars) placed on
+// a log scale, with a tier name and how it ranks against every tracked
+// sweat's saved index.
+const SWEAT_TIERS = [
+  { max: 5e3, name: "Casual", key: "t1" },
+  { max: 5e4, name: "Tryhard", key: "t2" },
+  { max: 5e5, name: "Sweat", key: "t3" },
+  { max: 5e6, name: "Demon", key: "t4" },
+  { max: Infinity, name: "Final Boss", key: "t5" },
+];
+const gaugeFill = document.getElementById("gaugeFill");
+const gaugeValue = document.getElementById("gaugeValue");
+function renderSweatMeter(stats) {
+  const index = (Number(stats.fkdr) || 0) ** 2 * (Number(stats.star) || 0);
+  const tierIdx = SWEAT_TIERS.findIndex(t => index < t.max);
+  const tier = SWEAT_TIERS[tierIdx];
+  const content = document.getElementById("statsContent");
+  SWEAT_TIERS.forEach(t => content.classList.remove(`tier-${t.key}`));
+  content.classList.add(`tier-${tier.key}`);
+  document.getElementById("sweatTier").textContent = tier.name;
+  document.querySelectorAll(".sweat-tier-scale span").forEach((el, i) => el.classList.toggle("on", i <= tierIdx));
+
+  const indexes = sweats.map(s => (Number(s.fkdr) || 0) ** 2 * (Number(s.star) || 0)).filter(Number.isFinite);
+  const sub = document.getElementById("sweatTierSub");
+  if (indexes.length >= 3) {
+    const pct = Math.round(indexes.filter(v => v < index).length / indexes.length * 100);
+    sub.textContent = `Tougher than ${pct}% of tracked sweats`;
+  } else {
+    sub.textContent = "";
+  }
+
+  const C = 2 * Math.PI * 50;
+  const p = Math.max(0.03, Math.min(1, Math.log10(Math.max(1, index)) / 7));
+  gaugeFill.style.strokeDasharray = `${C}`;
+  gaugeFill.dataset.target = String(C * (1 - p));
+  gaugeValue.dataset.value = String(Math.round(index));
+}
+
+// Count the preview's numbers up from zero, sweep the gauge in and drop
+// the stat tiles in one after another. Skipped for reduced motion.
+function animatePreviewNumbers() {
+  const C = 2 * Math.PI * 50;
+  const target = Number(gaugeFill.dataset.target) || 0;
+  const indexValue = Number(gaugeValue.dataset.value) || 0;
+  const fmtIndex = v => v >= 1e6 ? `${(v / 1e6).toFixed(v >= 1e7 ? 0 : 1)}M` : v >= 1e4 ? `${Math.round(v / 1e3)}K` : Math.round(v).toLocaleString();
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) {
+    gaugeFill.style.strokeDashoffset = target;
+    gaugeValue.textContent = fmtIndex(indexValue);
+    return;
+  }
+  gaugeFill.animate([{ strokeDashoffset: C }, { strokeDashoffset: target }], { duration: 1100, delay: 150, easing: "cubic-bezier(.2,.8,.2,1)", fill: "both" });
+  gaugeFill.style.strokeDashoffset = target;
+
+  const els = [...document.querySelectorAll("#statsColumns .stat-hero-value")].map(el => {
+    const text = el.textContent;
+    const decimals = (text.split(".")[1] || "").length;
+    return { el, text, target: parseFloat(text.replace(/,/g, "")), decimals };
+  }).filter(o => Number.isFinite(o.target));
+  const start = performance.now();
+  const duration = 900;
+  const step = now => {
+    const t = Math.min(1, (now - start) / duration);
+    const e = 1 - Math.pow(1 - t, 3);
+    gaugeValue.textContent = fmtIndex(indexValue * e);
+    els.forEach(o => { o.el.textContent = (o.target * e).toFixed(o.decimals); });
+    if (t < 1) requestAnimationFrame(step);
+    else {
+      gaugeValue.textContent = fmtIndex(indexValue);
+      els.forEach(o => { o.el.textContent = o.text; });
+    }
+  };
+  requestAnimationFrame(step);
+}
+
+// The preview skin tilts toward the cursor in 3D with a moving glare,
+// and settles back when the pointer leaves.
+(function setupSkinTilt() {
+  const stage = document.getElementById("skinStage");
+  const tilt = document.getElementById("skinTilt");
+  if (!stage || !tilt) return;
+  let frame = 0;
+  stage.addEventListener("pointermove", e => {
+    if (e.pointerType === "touch" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const r = stage.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5;
+    const py = (e.clientY - r.top) / r.height - 0.5;
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      stage.classList.add("is-tilting");
+      tilt.style.transform = `rotateY(${(px * 28).toFixed(1)}deg) rotateX(${(-py * 18).toFixed(1)}deg) scale(1.04)`;
+      stage.style.setProperty("--gx", `${((px + 0.5) * 100).toFixed(0)}%`);
+      stage.style.setProperty("--gy", `${((py + 0.5) * 100).toFixed(0)}%`);
+    });
+  });
+  stage.addEventListener("pointerleave", () => {
+    cancelAnimationFrame(frame);
+    stage.classList.remove("is-tilting");
+    tilt.style.transform = "";
+  });
+})();
 
 function updateSortHeaders() {
   document.querySelectorAll("th.sortable").forEach(th => {

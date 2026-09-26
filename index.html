@@ -1160,15 +1160,6 @@ html:not([data-theme]) #statsContent.stats-pop {
 
 .stats-tag-panel .stat-hero-label { margin-bottom: 0; }
 
-/* Toolbar (search + filters + view toggle) */
-.toolbar {
-  max-width: 1200px;
-  margin: 0 auto 22px;
-  padding: 18px 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
 
 /* At-a-glance strip above the toolbar - totals and record holders for
    whatever the filters currently match, so the section opens with the
@@ -1364,74 +1355,76 @@ html[data-theme="deepcurrent"] .ss-value { font-weight: 700; text-shadow: 0 0 14
 html[data-theme="deepcurrent"] .ss-label { color: var(--accent); opacity: 0.75; letter-spacing: 0.1em; }
 html[data-theme="deepcurrent"] .ss-spark span { background: var(--accent); box-shadow: 0 0 8px rgba(53,230,196,0.5); border-radius: 999px; }
 
-#searchContainer { display: flex; justify-content: center; }
-#searchInput { width: 100%; max-width: 420px; }
-
-.filter-fields {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.filter-field {
+/* Toolbar - one search bar with the view switch beside it, then a single
+   row of compact filter pills ("Stars ≥ 100"), the flag chips and a Reset
+   that counts how many filters are on. A pill that's set lights up, so it's
+   obvious at a glance why the list is shorter than expected. */
+.toolbar {
+  max-width: 1200px;
+  margin: 0 auto 22px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 14px;
 }
-
-.filter-field label {
-  font-size: 0.7em;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-.filter-field input[type="number"], .filter-field input[type="date"] { padding: 8px 10px; font-size: 14px; }
-
-#minStars, #minFkdr, #minIndex { width: 100px; }
-#minDate { width: 140px; }
-
-#minStars::-webkit-outer-spin-button, #minStars::-webkit-inner-spin-button,
-#minFkdr::-webkit-outer-spin-button, #minFkdr::-webkit-inner-spin-button,
-#minIndex::-webkit-outer-spin-button, #minIndex::-webkit-inner-spin-button {
-  -webkit-appearance: none; margin: 0;
-}
-#minStars, #minFkdr, #minIndex { -moz-appearance: textfield; }
-
-.toolbar-row {
+.toolbar-top {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
   gap: 12px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
 }
-
-.toolbar-actions-left {
+.search-box {
+  position: relative;
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  min-width: 0;
 }
-
-.toolbar-actions-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.search-box-icon {
+  position: absolute;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  color: var(--text-faint);
+  pointer-events: none;
+  transition: color 0.2s var(--ease);
 }
-
-.icon-btn.reset {
+.search-box:focus-within .search-box-icon { color: var(--accent); }
+.toolbar #searchInput {
+  width: 100%;
+  padding: 12px 44px 12px 42px;
   font-size: 15px;
+  border-radius: var(--radius-m);
 }
-.icon-btn.reset:hover {
-  color: var(--accent);
-  border-color: var(--border-strong);
+.search-box-kbd,
+.search-box-clear {
+  position: absolute;
+  right: 10px;
+}
+.search-box-kbd {
+  padding: 1px 7px;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  color: var(--text-faint);
+  font: 700 0.75em/1.4 inherit;
+  font-family: inherit;
+  pointer-events: none;
+}
+.search-box:focus-within .search-box-kbd,
+.search-box-clear:not([hidden]) ~ .search-box-kbd { display: none; }
+#searchInput:not(:placeholder-shown) ~ .search-box-kbd { display: none; }
+.search-box-clear {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
   background: var(--accent-soft);
-  transform: rotate(-45deg);
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
 }
+.search-box-clear:hover { background: var(--accent); color: var(--bg); }
 
 .view-toggle {
   display: flex;
@@ -1442,26 +1435,187 @@ html[data-theme="deepcurrent"] .ss-spark span { background: var(--accent); box-s
   padding: 4px;
   flex-shrink: 0;
 }
-
 .view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   border: none;
   background: transparent;
   color: var(--text-dim);
   font-family: inherit;
   font-weight: 700;
   font-size: 0.85em;
-  padding: 7px 16px;
+  padding: 8px 15px;
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.2s var(--ease);
 }
-
+.view-btn svg { width: 14px; height: 14px; fill: currentColor; flex: none; }
+.view-btn:hover:not(.active) { color: var(--text); }
 .view-btn.active {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: #04050a;
   box-shadow: 0 4px 14px rgba(0,217,255,0.3);
 }
 .view-btn:active { transform: scale(0.94); }
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.filter-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.filter-field {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 4px 0 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.03);
+  cursor: text;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.filter-prefix {
+  color: var(--text-faint);
+  font-size: 0.78em;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.toolbar .filter-field input,
+.toolbar .filter-field input:focus {
+  width: 58px;
+  padding: 6px 8px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 700;
+}
+.toolbar .filter-field-date input { width: 132px; }
+.filter-field:hover { border-color: var(--border-strong); }
+.filter-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.filter-field.is-set {
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+}
+.filter-field.is-set .filter-prefix { color: var(--accent); }
+
+#minStars::-webkit-outer-spin-button, #minStars::-webkit-inner-spin-button,
+#minFkdr::-webkit-outer-spin-button, #minFkdr::-webkit-inner-spin-button,
+#minIndex::-webkit-outer-spin-button, #minIndex::-webkit-inner-spin-button {
+  -webkit-appearance: none; margin: 0;
+}
+#minStars, #minFkdr, #minIndex { -moz-appearance: textfield; }
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+}
+.toolbar-actions-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.filter-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 0.85em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.filter-reset:hover:not(:disabled) { color: var(--accent); background: var(--accent-soft); }
+.filter-reset:disabled { opacity: 0.4; cursor: default; }
+.filter-reset-count:not(:empty) {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.85em;
+  line-height: 18px;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .toolbar-top { flex-direction: column; align-items: stretch; }
+  .view-toggle { justify-content: space-between; }
+  .view-btn { flex: 1; justify-content: center; padding: 8px 10px; }
+  .toolbar-divider { display: none; }
+  .filter-fields { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .filter-field { width: 100%; }
+  .toolbar .filter-field input, .toolbar .filter-field input:focus { flex: 1; width: 100%; min-width: 0; }
+  .filter-field-date { grid-column: 1 / -1; }
+  .filter-reset { margin-left: 0; }
+}
+
+/* Case Files - the search bar is a typed index-card line and the filter
+   pills are square file tags; set ones get a red "stamped" edge. */
+html[data-theme="casefiles"] .filter-field { border-radius: 2px; border-style: dashed; background: #fffdf4; }
+html[data-theme="casefiles"] .filter-field.is-set { border-style: solid; border-color: var(--accent-2); background: rgba(163,47,29,0.07); }
+html[data-theme="casefiles"] .filter-field.is-set .filter-prefix { color: var(--accent-2); }
+html[data-theme="casefiles"] .filter-prefix,
+html[data-theme="casefiles"] .filter-reset,
+html[data-theme="casefiles"] .search-box-kbd { font-family: 'Courier Prime', monospace; text-transform: uppercase; }
+html[data-theme="casefiles"] .toolbar #searchInput { border-radius: 2px; background: #fffdf4; }
+html[data-theme="casefiles"] .search-box-clear,
+html[data-theme="casefiles"] .filter-reset,
+html[data-theme="casefiles"] .filter-reset-count:not(:empty) { border-radius: 2px; }
+html[data-theme="casefiles"] .filter-reset-count:not(:empty) { background: var(--accent-2); color: #fbf6e6; }
+html[data-theme="casefiles"] .toolbar-row { border-top-style: dashed; border-top-color: var(--border-strong); }
+
+/* Private Bank - fields are engraved form lines: no box, just a gold
+   underline with the label set in italic Garamond, like a cheque. */
+html[data-theme="ledger"] .filter-field {
+  height: 34px;
+  padding: 0 2px 0 4px;
+  border: 0;
+  border-bottom: 1px solid var(--border-strong);
+  border-radius: 0;
+  background: none;
+}
+html[data-theme="ledger"] .filter-field:focus-within { box-shadow: none; border-bottom-color: var(--gold); }
+html[data-theme="ledger"] .filter-field.is-set { background: none; border-bottom: 2px solid var(--gold); }
+html[data-theme="ledger"] .filter-prefix { font-family: 'EB Garamond', serif; font-style: italic; font-weight: 400; font-size: 0.95em; letter-spacing: 0; }
+html[data-theme="ledger"] .filter-field.is-set .filter-prefix { color: var(--gold); }
+html[data-theme="ledger"] .toolbar .filter-field input { font-family: 'Playfair Display', serif; }
+html[data-theme="ledger"] .toolbar #searchInput { border-radius: 0; }
+html[data-theme="ledger"] .filter-reset { border-radius: 0; font-family: 'EB Garamond', serif; font-size: 0.95em; }
+html[data-theme="ledger"] .filter-reset-count:not(:empty) { background: var(--gold); color: #fff; border-radius: 0; }
+html[data-theme="ledger"] .search-box-kbd { border-radius: 0; }
+html[data-theme="ledger"] .toolbar-divider { background: var(--gold); opacity: 0.5; }
+
+/* Deep Current - readout pills with a mono value, and set ones glow teal
+   like an instrument that's been dialed in. */
+html[data-theme="deepcurrent"] .filter-field { background: rgba(3,12,20,0.5); }
+html[data-theme="deepcurrent"] .filter-field.is-set { box-shadow: 0 0 12px rgba(53,230,196,0.25); }
+html[data-theme="deepcurrent"] .toolbar .filter-field input,
+html[data-theme="deepcurrent"] .filter-reset-count,
+html[data-theme="deepcurrent"] .search-box-kbd { font-family: 'JetBrains Mono', monospace; }
+html[data-theme="deepcurrent"] .filter-prefix { font-family: 'JetBrains Mono', monospace; font-weight: 600; letter-spacing: 0.06em; }
+html[data-theme="deepcurrent"] .toolbar #searchInput { background: rgba(3,12,20,0.5); }
 
 /* Theme switch - a hand-built dropdown (button + listbox) rather than a
    native <select>, whose option-list styling the browser won't hand over
@@ -6579,49 +6733,41 @@ html[data-theme="deepcurrent"] .pill.boost {
     <div>
       <span class="exhibit-tag exhibit-tag-results">Exhibit B</span>
       <h2>Defeated Sweats</h2>
-      <p><span id="resultCount">0</span> tracked players</p>
+      <p id="resultCount">Loading players&hellip;</p>
     </div>
   </div>
 
   <div id="sweatStats" class="sweat-stats" aria-label="Summary of the sweats matching the current filters"></div>
 
   <div class="toolbar card">
-    <div id="searchContainer">
-      <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
-    </div>
-    <div class="filter-fields" aria-label="Minimum stat filters">
-      <div class="filter-field">
-        <label for="minStars">Min Stars</label>
-        <input id="minStars" type="number" step="1" placeholder="e.g. 100">
+    <div class="toolbar-top">
+      <div id="searchContainer" class="search-box">
+        <svg class="search-box-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2" /><line x1="15.5" y1="15.5" x2="20.5" y2="20.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+        <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" aria-keyshortcuts="/" />
+        <kbd class="search-box-kbd" aria-hidden="true">/</kbd>
+        <button type="button" id="searchClearBtn" class="search-box-clear" aria-label="Clear search" hidden>&times;</button>
       </div>
-      <div class="filter-field">
-        <label for="minFkdr">Min FKDR</label>
-        <input id="minFkdr" type="number" step="0.1" placeholder="e.g. 2.5">
-      </div>
-      <div class="filter-field">
-        <label for="minIndex">Min Index</label>
-        <input id="minIndex" type="number" step="1" placeholder="e.g. 300">
-      </div>
-      <div class="filter-field">
-        <label for="minDate">Min Date</label>
-        <input id="minDate" type="date">
+      <div class="view-toggle" role="group" aria-label="Result view">
+        <button type="button" id="viewGridBtn" class="view-btn active"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2" /><rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2" /><rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2" /><rect x="9" y="9" width="5.5" height="5.5" rx="1.2" /></svg><span>Grid</span></button>
+        <button type="button" id="viewTableBtn" class="view-btn"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2" width="13" height="2.4" rx="1" /><rect x="1.5" y="6.8" width="13" height="2.4" rx="1" /><rect x="1.5" y="11.6" width="13" height="2.4" rx="1" /></svg><span>Table</span></button>
+        <button type="button" id="viewLeaderboardBtn" class="view-btn"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="7" width="4.4" height="8" rx="1" /><rect x="5.8" y="2" width="4.4" height="13" rx="1" /><rect x="10.6" y="9.5" width="4.4" height="5.5" rx="1" /></svg><span>Leaderboard</span></button>
       </div>
     </div>
 
     <div class="toolbar-row">
+      <div class="filter-fields" role="group" aria-label="Minimum stat filters">
+        <label class="filter-field" for="minStars"><span class="filter-prefix">Stars &ge;</span><input id="minStars" type="number" step="1" placeholder="100"></label>
+        <label class="filter-field" for="minFkdr"><span class="filter-prefix">FKDR &ge;</span><input id="minFkdr" type="number" step="0.1" placeholder="2.5"></label>
+        <label class="filter-field" for="minIndex"><span class="filter-prefix">Index &ge;</span><input id="minIndex" type="number" step="1" placeholder="300"></label>
+        <label class="filter-field filter-field-date" for="minDate"><span class="filter-prefix">Since</span><input id="minDate" type="date"></label>
+      </div>
+      <span class="toolbar-divider" aria-hidden="true"></span>
       <div class="toolbar-actions-left">
         <label class="chip"><input type="checkbox" id="hideDuplicates" /><span>Hide Dupes</span></label>
         <label class="chip cheat-chip"><input type="checkbox" id="cheatersOnly" /><span>Cheaters Only</span></label>
         <label class="chip boost-chip"><input type="checkbox" id="boostersOnly" /><span>Boosters Only</span></label>
       </div>
-      <div class="toolbar-actions-right">
-        <button id="resetFiltersBtn" type="button" class="icon-btn reset" data-tooltip="Reset filters">&#8635;</button>
-        <div class="view-toggle" role="group" aria-label="Result view">
-          <button type="button" id="viewGridBtn" class="view-btn active">Grid</button>
-          <button type="button" id="viewTableBtn" class="view-btn">Table</button>
-          <button type="button" id="viewLeaderboardBtn" class="view-btn">Leaderboard</button>
-        </div>
-      </div>
+      <button id="resetFiltersBtn" type="button" class="filter-reset" disabled><span aria-hidden="true">&#8635;</span> Reset<span class="filter-reset-count" id="activeFilterCount"></span></button>
     </div>
   </div>
 
@@ -8118,6 +8264,41 @@ resetFiltersBtn.addEventListener('click', () => {
   renderTable();
 });
 
+// Search clear button, "/" to jump to search, and the toolbar's "which
+// filters are on" state: set filter pills get .is-set, and Reset shows how
+// many filters are active (and is disabled when there's nothing to reset).
+// Runs from renderTable, so URL-restored filters light up too.
+const searchClearBtn = document.getElementById("searchClearBtn");
+const activeFilterCount = document.getElementById("activeFilterCount");
+searchClearBtn.addEventListener("click", () => {
+  searchInput.value = "";
+  currentFilter = "";
+  currentPage = 1;
+  renderTable();
+  searchInput.focus();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+  const t = e.target;
+  if (t.closest && t.closest("input, textarea, select, [contenteditable]")) return;
+  if ([...document.querySelectorAll(".modal")].some(m => m.style.display === "flex")) return;
+  e.preventDefault();
+  searchInput.focus();
+});
+function updateFilterIndicators() {
+  searchClearBtn.hidden = searchInput.value === "";
+  let active = searchInput.value.trim() ? 1 : 0;
+  [filterStars, filterFkdr, filterIndex, filterDate].forEach(inp => {
+    const set = inp.value.trim() !== "";
+    inp.closest(".filter-field").classList.toggle("is-set", set);
+    if (set) active++;
+  });
+  [hideDuplicatesCheckbox, cheatersOnlyCheckbox, boostersOnlyCheckbox].forEach(cb => { if (cb.checked) active++; });
+  activeFilterCount.textContent = active ? String(active) : "";
+  resetFiltersBtn.disabled = active === 0;
+  resetFiltersBtn.setAttribute("aria-label", active ? `Reset ${active} active filter${active > 1 ? "s" : ""}` : "No filters to reset");
+}
+
 [cheatersOnlyCheckbox, boostersOnlyCheckbox].forEach(cb => {
   cb.addEventListener('change', () => { currentPage = 1; renderTable(); });
 });
@@ -8651,8 +8832,14 @@ function renderTable() {
   hideTooltip();
   const { filteredSweats, usernameCounts } = getProcessedSweats();
 
-  resultCount.textContent = filteredSweats.length;
+  // "16 tracked players" normally, "3 of 16 players match" while filtering.
+  const total = sweats.length;
+  const plural = n => (n === 1 ? "player" : "players");
+  resultCount.textContent = filteredSweats.length === total
+    ? `${total.toLocaleString()} tracked ${plural(total)}`
+    : `${filteredSweats.length.toLocaleString()} of ${total.toLocaleString()} ${plural(total)} match`;
   renderSweatStats(filteredSweats);
+  updateFilterIndicators();
   updateSortHeaders();
 
   if (viewMode === "grid" || viewMode === "table") {

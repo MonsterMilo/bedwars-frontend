@@ -5016,15 +5016,85 @@ html[data-theme="ledger"] .view-btn.active {
   border-color: #c084fc;
   box-shadow: 0 0 18px 3px rgba(192,132,252,0.6);
 }
-.tto-edge {
+.tto-vault-rim {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 60px;
-  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.28) 70%, rgba(0,0,0,0.05));
-  border-right: 2px solid #c9a24a;
-  box-shadow: 1px 0 10px rgba(201,162,74,0.65);
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px #c9a24a, 0 0 0 9px #6e5220, 0 0 40px 12px rgba(230,190,90,0.55), inset 0 0 30px 6px rgba(0,0,0,0.6);
+}
+.tto-vault-door {
+  position: absolute;
+  border-radius: 50%;
+  transform-origin: 0% 50%;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 58%, rgba(0,0,0,0.25) 59% 60%, transparent 61%),
+    repeating-conic-gradient(from 0deg, rgba(255,255,255,0.05) 0 3deg, rgba(0,0,0,0.05) 3deg 6deg),
+    radial-gradient(circle at 34% 28%, #fbeec0 0%, #d9b45c 28%, #a07a2c 62%, #5c4214 100%);
+  box-shadow: 0 0 0 5px #3b2a0c, 0 0 0 9px #d4ae57, 0 0 0 12px #4a3510, 0 30px 90px rgba(0,0,0,0.65), inset 0 0 50px rgba(60,40,5,0.6);
+  backface-visibility: hidden;
+}
+.tto-vault-ring {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  border: 3px solid rgba(90,64,18,0.7);
+  box-shadow: inset 0 0 0 6px rgba(250,230,170,0.25), 0 0 0 6px rgba(250,230,170,0.2);
+}
+.tto-vault-wheel {
+  position: absolute;
+  inset: 30%;
+  border-radius: 50%;
+  border: 7px solid #f3dc97;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.45), inset 0 0 0 2px #7a5a1c;
+}
+.tto-vault-wheel i {
+  position: absolute;
+  left: 50%;
+  top: -12%;
+  width: 8px;
+  height: 124%;
+  margin-left: -4px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #8a6522, #f7e3a6, #8a6522);
+}
+.tto-vault-wheel i:nth-child(2) { transform: rotate(60deg); }
+.tto-vault-wheel i:nth-child(3) { transform: rotate(120deg); }
+.tto-vault-wheel b {
+  position: absolute;
+  inset: 34%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3c8, #c9a24a 60%, #6e5220);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+.tto-vault-plate {
+  position: absolute;
+  left: 50%;
+  bottom: 13%;
+  transform: translateX(-50%);
+  padding: 3px 10px;
+  font: 700 10px/1.2 Georgia, serif;
+  letter-spacing: 0.22em;
+  color: #3b2a0c;
+  background: linear-gradient(#f7e7b4, #c9a24a);
+  border: 1px solid #6e5220;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.tto-vault-bolt {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6d6, #b8913e 60%, #5c4214);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+.tto-coin {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6cf 0%, #f0cf6e 30%, #c9a24a 60%, #8a6522 100%);
+  box-shadow: inset 0 0 0 2px rgba(110,82,32,0.8), inset 0 0 0 4px rgba(255,240,190,0.5), 0 2px 6px rgba(0,0,0,0.4);
 }
 .tto-bubble {
   position: absolute;
@@ -6691,27 +6761,111 @@ const THEME_REVEALS = {
       oldOpts: { duration },
     };
   },
-  ledger(x, y, w) {
-    const duration = 820;
-    const easing = "cubic-bezier(.7,0,.25,1)";
+  // Private Bank: a brass vault door swings in over the old page, its
+  // wheel spins and the bolts pull back, the door swings open on its hinge
+  // to show the new theme through the vault opening, and a burst of gold
+  // coins spills out as the opening widens to fill the screen.
+  ledger(x, y, w, h) {
+    const duration = 1500;
+    const cx = w / 2;
+    const cy = h / 2;
+    const doorR = Math.min(w, h) * 0.38;
+    const full = Math.hypot(w, h) / 2 + 20;
+    const hole = (r) => `circle(${r}px at ${cx}px ${cy}px)`;
     return {
       duration,
       newFrames: [
-        { clipPath: "inset(0 0 0 100%)", filter: "brightness(.8) sepia(.2)" },
-        { clipPath: "inset(0 0 0 0)", filter: "brightness(1) sepia(0)" },
+        { clipPath: hole(0), filter: "brightness(.7) sepia(.3)" },
+        { clipPath: hole(0), filter: "brightness(.7) sepia(.3)", offset: 0.35, easing: "cubic-bezier(.3,0,.3,1)" },
+        { clipPath: hole(doorR * 0.97), filter: "brightness(.9) sepia(.15)", offset: 0.39, easing: "linear" },
+        { clipPath: hole(doorR * 1.02), filter: "brightness(1) sepia(0)", offset: 0.56, easing: "cubic-bezier(.6,0,.25,1)" },
+        { clipPath: hole(full), filter: "brightness(1) sepia(0)" },
       ],
-      newOpts: { duration, easing },
-      oldFrames: [{ filter: "brightness(1)" }, { filter: "brightness(.65)" }],
-      oldOpts: { duration, easing },
+      newOpts: { duration },
+      oldFrames: [
+        { filter: "brightness(1) blur(0px)", easing: "ease-out" },
+        { filter: "brightness(.45) blur(1.5px)", offset: 0.2 },
+        { filter: "brightness(.4) blur(2px)" },
+      ],
+      oldOpts: { duration },
       fx() {
-        const edge = document.createElement("div");
-        edge.className = "tto-edge";
-        themeTransitionOverlay.appendChild(edge);
-        edge.animate([
-          { transform: `translateX(${w}px)`, opacity: 1 },
-          { opacity: 1, offset: 0.85 },
-          { transform: "translateX(-60px)", opacity: 0 },
-        ], { duration, easing, fill: "both" });
+        const size = doorR * 2;
+        const place = (el, d) => Object.assign(el.style, { left: `${cx - d / 2}px`, top: `${cy - d / 2}px`, width: `${d}px`, height: `${d}px` });
+
+        // Gold rim around the opening, flashing as the vault swings wide.
+        const rim = document.createElement("div");
+        rim.className = "tto-vault-rim";
+        place(rim, size);
+        themeTransitionOverlay.appendChild(rim);
+        rim.animate([
+          { transform: "scale(.3)", opacity: 0 },
+          { transform: "scale(1)", opacity: 1, offset: 0.2, easing: "linear" },
+          { transform: "scale(1.03)", opacity: 1, offset: 0.34, easing: "ease-out" },
+          { transform: "scale(1)", opacity: 1, offset: 0.37, easing: "linear" },
+          { transform: "scale(1)", opacity: 1, offset: 0.56, easing: "cubic-bezier(.6,0,.25,1)" },
+          { transform: `scale(${(full / doorR).toFixed(2)})`, opacity: 0 },
+        ], { duration, fill: "both" });
+
+        // The door itself, hinged on its left edge.
+        const door = document.createElement("div");
+        door.className = "tto-vault-door";
+        place(door, size);
+        door.innerHTML = '<div class="tto-vault-ring"></div><div class="tto-vault-wheel"><i></i><i></i><i></i><b></b></div><div class="tto-vault-plate">PRIVATE BANK</div>';
+        for (let i = 0; i < 12; i++) {
+          const bolt = document.createElement("span");
+          bolt.className = "tto-vault-bolt";
+          bolt.style.setProperty("--a", `${i * 30}deg`);
+          door.appendChild(bolt);
+        }
+        themeTransitionOverlay.appendChild(door);
+        door.animate([
+          { transform: "perspective(1400px) scale(.3) rotate(-40deg)", opacity: 0, easing: "cubic-bezier(.2,.9,.3,1.15)" },
+          { transform: "perspective(1400px) scale(1) rotate(0deg)", opacity: 1, offset: 0.2, easing: "linear" },
+          { transform: "perspective(1400px) scale(1.03) rotate(0deg)", opacity: 1, offset: 0.34, easing: "ease-out" },
+          { transform: "perspective(1400px) translateY(3px) scale(1) rotate(0deg)", opacity: 1, offset: 0.37, easing: "cubic-bezier(.45,0,.3,1)" },
+          { transform: "perspective(1400px) translateX(-12px) rotateY(-105deg)", opacity: 1, offset: 0.6, easing: "ease-in" },
+          { transform: "perspective(1400px) translateX(-12px) rotateY(-110deg)", opacity: 0 },
+        ], { duration, fill: "both" });
+        door.querySelector(".tto-vault-wheel").animate([
+          { transform: "rotate(0deg)" },
+          { transform: "rotate(0deg)", offset: 0.06, easing: "cubic-bezier(.5,0,.3,1)" },
+          { transform: "rotate(300deg)", offset: 0.33 },
+          { transform: "rotate(300deg)" },
+        ], { duration, fill: "both" });
+        door.querySelectorAll(".tto-vault-bolt").forEach(bolt => {
+          const a = bolt.style.getPropertyValue("--a");
+          bolt.animate([
+            { transform: `rotate(${a}) translateY(${-doorR * 0.86}px)` },
+            { transform: `rotate(${a}) translateY(${-doorR * 0.86}px)`, offset: 0.26, easing: "ease-in" },
+            { transform: `rotate(${a}) translateY(${-doorR * 0.7}px)`, offset: 0.34 },
+            { transform: `rotate(${a}) translateY(${-doorR * 0.7}px)` },
+          ], { duration, fill: "both" });
+        });
+
+        // Coins burst out of the vault and tumble down under gravity.
+        for (let i = 0; i < 34; i++) {
+          const coin = document.createElement("div");
+          coin.className = "tto-coin";
+          const d = 16 + Math.random() * 14;
+          place(coin, d);
+          themeTransitionOverlay.appendChild(coin);
+          const ang = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.3;
+          const speed = (0.55 + Math.random() * 0.6) * Math.min(w, h);
+          const vx = Math.cos(ang) * speed;
+          const vy = Math.sin(ang) * speed;
+          const g = h * 2.2;
+          const life = 0.6 + Math.random() * 0.25;
+          const spin = 360 + Math.random() * 720;
+          const frames = [];
+          for (let k = 0; k <= 6; k++) {
+            const t = (k / 6) * life;
+            frames.push({
+              transform: `translate(${(vx * t).toFixed(1)}px, ${(vy * t + 0.5 * g * t * t).toFixed(1)}px) rotateY(${(spin * k / 6).toFixed(0)}deg) scale(${k === 0 ? 0.3 : 1})`,
+              opacity: k === 0 ? 0 : k === 6 ? 0 : 1,
+            });
+          }
+          coin.animate(frames, { duration: life * 1000, delay: duration * 0.38 + Math.random() * 150, easing: "linear", fill: "both" });
+        }
       },
     };
   },

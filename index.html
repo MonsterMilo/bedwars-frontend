@@ -3059,6 +3059,149 @@ html:not([data-theme]) .modal-card.card-flip-expand {
 .modal-stat-delta.delta-down .delta-value { color: var(--bad); }
 .modal-stat-delta.delta-flat .delta-value { color: var(--text-faint); }
 
+/* Player popup - where the live number stands among every tracked sweat
+   (a thin meter under each stat), and a strip with the saved record: when
+   they were logged, their index, who beat them and any flags. */
+.modal-stat-tile.stat-star .modal-stat-value .pill.prestige-tag {
+  font-size: 0.78em;
+  text-shadow: none;
+}
+.modal-standing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  cursor: help;
+}
+.modal-standing-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+.modal-standing-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
+  animation: standingFill 0.8s var(--ease) both;
+  transform-origin: left;
+}
+@keyframes standingFill { from { transform: scaleX(0); } }
+.modal-standing-text {
+  flex: none;
+  font-size: 0.6em;
+  font-weight: 700;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.stat-star .modal-standing { color: var(--gold); }
+.stat-fkdr .modal-standing { color: var(--accent-2); }
+.stat-wlr .modal-standing { color: var(--neutral); }
+.stat-finals .modal-standing { color: var(--bad); }
+.stat-star .modal-standing { max-width: 240px; margin-left: auto; margin-right: auto; }
+
+.modal-record {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 22px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius-s);
+  border: 1px dashed var(--border-strong);
+  background: var(--accent-soft);
+}
+.modal-record[hidden] { display: none; }
+.modal-record-item { display: flex; flex-direction: column; gap: 4px; }
+.modal-record-label {
+  font-size: 0.62em;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.modal-record-value { font-size: 0.92em; font-weight: 700; color: var(--text); }
+.modal-record-beaten { margin-left: auto; align-items: flex-end; }
+.modal-record-flags { display: flex; gap: 6px; flex-basis: 100%; }
+@media (max-width: 560px) {
+  /* Skin on top as a short banner so the stat tiles get the full width -
+     side by side, the big values (finals, wins) got clipped on phones. */
+  #playerModal .modal-body { flex-direction: column; gap: 12px; }
+  #playerModal #modalSkin { width: 100%; height: 170px; }
+  #playerModal .modal-stats-grid { width: 100%; }
+}
+@media (max-width: 480px) {
+  .modal-record { gap: 10px 16px; }
+  .modal-record-beaten { margin-left: 0; align-items: flex-start; flex-basis: 100%; }
+}
+
+/* A lit floor under the skin, so the render stands on something instead of
+   floating in a box - each theme swaps the light for its own material. */
+#modalSkin {
+  background:
+    radial-gradient(ellipse 60% 10% at 50% 94%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 70%),
+    radial-gradient(circle at 50% 40%, var(--accent-soft), transparent 70%);
+}
+/* On wider screens the player popup becomes a two-column profile: a big
+   skin render with the saved record under it on the left, live stats and
+   tags on the right. .modal-body's children join the grid directly via
+   display: contents, so phones keep the original stacked layout. */
+@media (min-width: 761px) {
+  #playerModal .modal-content {
+    width: 720px;
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-areas:
+      "name name"
+      "live live"
+      "skin stats"
+      "record urchin"
+      "record seraph";
+    grid-template-rows: auto auto auto auto 1fr;
+    column-gap: 22px;
+    align-items: start;
+  }
+  #playerModal #modalUsername { grid-area: name; }
+  #playerModal #modalTitle { grid-area: live; }
+  #playerModal .modal-body { display: contents; }
+  #playerModal #modalSkin { grid-area: skin; width: 100%; height: 100%; min-height: 250px; }
+  #playerModal #modalStats { grid-area: stats; }
+  #playerModal .modal-record { grid-area: record; flex-direction: column; align-items: stretch; gap: 12px; }
+  #playerModal .modal-record-beaten { margin-left: 0; align-items: flex-start; }
+  #playerModal .modal-tags-urchin { grid-area: urchin; }
+  #playerModal .modal-tags-seraph { grid-area: seraph; }
+  #playerModal .modal-record[hidden] + .modal-tags-urchin { grid-column: 1 / -1; }
+  #playerModal .modal-record[hidden] ~ .modal-tags-seraph { grid-column: 1 / -1; }
+  #playerModal .modal-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #playerModal .modal-stat-tile { padding: 12px 12px 10px; }
+  #playerModal .modal-stat-value { font-size: 1.55em; }
+}
+html[data-theme="casefiles"] .modal-record { background: #f4e7bf; border-color: var(--border-strong); }
+html[data-theme="casefiles"] .modal-record-label { font-family: 'Courier Prime', monospace; color: var(--accent-2); }
+html[data-theme="casefiles"] .modal-record-value,
+html[data-theme="casefiles"] .modal-standing-text { font-family: 'Courier Prime', monospace; }
+html[data-theme="casefiles"] .modal-standing-bar { border-radius: 0; height: 5px; }
+html[data-theme="casefiles"] .modal-standing-bar > span { border-radius: 0; }
+html[data-theme="casefiles"] .modal-standing { color: var(--text-dim); }
+html[data-theme="ledger"] .modal-record {
+  border: 0;
+  border-top: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
+  border-radius: 0;
+  background: none;
+}
+html[data-theme="ledger"] .modal-record-label { font-family: 'EB Garamond', serif; font-style: italic; text-transform: none; font-size: 0.85em; letter-spacing: 0; font-weight: 400; }
+html[data-theme="ledger"] .modal-record-value { font-family: 'Playfair Display', serif; font-weight: 600; }
+html[data-theme="ledger"] .modal-standing { color: var(--gold); }
+html[data-theme="ledger"] .modal-standing-bar { height: 2px; border-radius: 0; }
+html[data-theme="ledger"] .modal-standing-text { font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.72em; }
+html[data-theme="deepcurrent"] .modal-record { border-style: solid; border-color: rgba(53,230,196,0.25); background: rgba(53,230,196,0.06); }
+html[data-theme="deepcurrent"] .modal-record-value,
+html[data-theme="deepcurrent"] .modal-standing-text { font-family: 'JetBrains Mono', monospace; }
+html[data-theme="deepcurrent"] .modal-standing-bar > span { box-shadow: 0 0 6px currentColor; }
+
 .modal-tags-section {
   margin-top: 16px;
   padding: 12px 14px;
@@ -6658,12 +6801,13 @@ html[data-theme="deepcurrent"] .pill.boost {
         <img id="modalSkin" src="" />
         <div id="modalStats" class="modal-stats-grid"></div>
       </div>
-      <div class="modal-tags-section">
+      <div id="modalRecord" class="modal-record" hidden></div>
+      <div class="modal-tags-section modal-tags-urchin">
         <div class="modal-tags-label">Urchin Tags</div>
         <div id="modalTags" class="modal-tags-row">Checking...</div>
         <div id="modalTagsReason" class="urchin-reason-text" hidden></div>
       </div>
-      <div class="modal-tags-section">
+      <div class="modal-tags-section modal-tags-seraph">
         <div class="modal-tags-label">Seraph Tags</div>
         <div id="modalSeraphTags" class="modal-tags-row">Checking...</div>
         <div id="modalSeraphTagsReason" class="urchin-reason-text" hidden></div>
@@ -9213,6 +9357,45 @@ function sinceBeatDeltaHtml(liveValue, loggedRaw, { decimals = 0, suffix = "", l
   return `<div class="modal-stat-delta delta-${tone}" title="${tip}"><span class="delta-value">${shown}</span> ${label}</div>`;
 }
 
+// "Beats 82% of tracked" meter under a player-popup stat: the share of
+// tracked sweats with a lower saved value for that field. Skipped when
+// fewer than three sweats have the field (too few to rank against) or for
+// stats the sweats list doesn't store.
+function trackedStandingHtml(field, live) {
+  if (!field) return "";
+  const liveNum = Number(live);
+  const values = sweats.map(s => Number(s[field])).filter(Number.isFinite);
+  if (values.length < 3 || !Number.isFinite(liveNum)) return "";
+  const pct = Math.round(values.filter(v => v < liveNum).length / values.length * 100);
+  return `<div class="modal-standing" data-tooltip="Higher than ${pct}% of the ${values.length} tracked sweats' saved ${field === "star" ? "stars" : field.toUpperCase()}">
+    <span class="modal-standing-bar"><span style="width:${pct}%"></span></span>
+    <span class="modal-standing-text">Beats ${pct}%</span>
+  </div>`;
+}
+
+// "Logged 3/12/2026 · beaten by M A" strip under the stats, from the saved
+// sweat record (by uuid, falling back to the name for older records).
+// Hidden for players opened from somewhere with no record, e.g. a denick
+// result for someone who was never logged.
+const modalRecord = document.getElementById("modalRecord");
+function renderModalRecord(uuid, item) {
+  const clean = u => String(u || "").replace(/-/g, "").toLowerCase();
+  const record = sweats.find(s => uuid && clean(s.uuid) === clean(uuid))
+    || sweats.find(s => s.username && s.username.toLowerCase() === String(item.dataset.username || "").toLowerCase());
+  modalRecord.hidden = !record;
+  if (!record) return;
+  const beaten = BEATEN_BY_KEYS.filter(k => record[k]);
+  const date = record.dateAdded ? new Date(record.dateAdded) : null;
+  const index = (Number(record.fkdr) || 0) ** 2 * (Number(record.star) || 0);
+  modalRecord.innerHTML = `
+    <div class="modal-record-item"><span class="modal-record-label">Logged</span><span class="modal-record-value">${date && !isNaN(date) ? date.toLocaleDateString() : "Unknown"}</span></div>
+    <div class="modal-record-item"><span class="modal-record-label">Index</span><span class="modal-record-value">${Math.round(index).toLocaleString()}</span></div>
+    <div class="modal-record-item modal-record-beaten"><span class="modal-record-label">Beaten by</span><span class="beaten-by-avatars">${beaten.length
+      ? beaten.map(k => `<span class="beaten-avatar" style="--chip-color:var(--roster-${k})" data-tooltip="${BEATEN_BY[k].label}">${BEATEN_BY[k].initials}</span>`).join("")
+      : '<span class="modal-record-value">Nobody yet</span>'}</span></div>
+    ${record.cheating || record.boosting ? `<div class="modal-record-flags">${record.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}${record.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}</div>` : ""}`;
+}
+
 async function openPlayerModal(item) {
   rememberFocusBeforeModal();
   const username = item.dataset.username;
@@ -9228,6 +9411,7 @@ async function openPlayerModal(item) {
   closeModal.focus();
   modalUsername.textContent = "Loading...";
   modalStats.textContent = "Fetching live stats...";
+  modalRecord.hidden = true;
   modalTags.textContent = "Checking...";
   modalTagsReason.hidden = true;
   modalSeraphTags.textContent = "Checking...";
@@ -9277,13 +9461,19 @@ async function openPlayerModal(item) {
     const starDelta = sinceBeatDeltaHtml(data.star, item.dataset.loggedStar, { suffix: "\u2605", label: "since you beat them", when });
     const fkdrDelta = sinceBeatDeltaHtml(data.fkdr, item.dataset.loggedFkdr, { decimals: 2, label: "since", when });
 
-    modalStats.innerHTML = `
-      <div class="modal-stat-tile stat-star"><div class="modal-stat-label">Star</div><div class="modal-stat-value">${data.star}</div>${starDelta}</div>
-      <div class="modal-stat-tile stat-fkdr"><div class="modal-stat-label">FKDR</div><div class="modal-stat-value">${data.fkdr.toFixed(2)}</div>${fkdrDelta}</div>
-      <div class="modal-stat-tile stat-wlr"><div class="modal-stat-label">WLR</div><div class="modal-stat-value">${data.wlr.toFixed(2)}</div></div>
-      <div class="modal-stat-tile stat-finals"><div class="modal-stat-label">Finals</div><div class="modal-stat-value">${data.finals}</div></div>
-      <div class="modal-stat-tile stat-wins"><div class="modal-stat-label">Wins</div><div class="modal-stat-value">${data.wins}</div></div>
-    `;
+    // Each tile also shows where this player's live number would land among
+    // every tracked sweat (see trackedStanding), and big counts get
+    // thousands separators. The star value is the same themed prestige tag
+    // the cards use rather than a bare number.
+    const statTile = (cls, label, value, field, live, extra = "") => `
+      <div class="modal-stat-tile ${cls}"><div class="modal-stat-label">${label}</div><div class="modal-stat-value">${value}</div>${extra}${trackedStandingHtml(field, live)}</div>`;
+    modalStats.innerHTML =
+      statTile("stat-star", "Star", `<span class="pill prestige-tag">${prestigeTagHtml(Number(data.star) || 0)}</span>`, "star", data.star, starDelta) +
+      statTile("stat-fkdr", "FKDR", data.fkdr.toFixed(2), "fkdr", data.fkdr, fkdrDelta) +
+      statTile("stat-wlr", "WLR", data.wlr.toFixed(2), "wlr", data.wlr) +
+      statTile("stat-finals", "Finals", Number(data.finals).toLocaleString(), "finals", data.finals) +
+      statTile("stat-wins", "Wins", Number(data.wins).toLocaleString(), null, null);
+    renderModalRecord(uuid, item);
 
     // Re-check Urchin + Seraph tags live on every open instead of using any
     // stored value, same as the fetch-stats flow always re-fetches current

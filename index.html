@@ -1799,6 +1799,39 @@ html:not([data-theme]) .sweat-card:hover::after {
 .pill.cheat { color: var(--bad); border-color: rgba(255,92,114,0.4); background: var(--bad-soft); }
 .pill.boost { color: var(--gold); border-color: rgba(255,209,102,0.4); background: rgba(255,209,102,0.1); }
 
+/* Star count as a Hypixel-style prestige tag (see prestigeTagHtml) - the
+   per-character colors are inline, so every theme just has to give it a
+   dark enough surface for Minecraft's bright chat colors to read on: a
+   smoked-glass chip in Neon, black label-maker tape in Case Files, a
+   gold-rimmed black enamel badge in Private Bank, and deep-water glass in
+   Deep Current. The 1px drop shadow is the in-game text shadow. */
+.pill.prestige-tag {
+  display: inline-block;
+  background: rgba(4,6,12,0.75);
+  border-color: rgba(255,255,255,0.14);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.55);
+  white-space: nowrap;
+}
+html[data-theme="casefiles"] .pill.prestige-tag {
+  background: linear-gradient(180deg, #2a2a2c, #161617);
+  border: none;
+  border-radius: 2px;
+  letter-spacing: 1px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 2px rgba(40,30,10,0.35);
+}
+html[data-theme="ledger"] .pill.prestige-tag {
+  border: 1px solid #8a6a1f;
+  background: radial-gradient(circle at 30% 25%, #353944, #0e1016 75%);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -2px 3px rgba(0,0,0,0.4);
+}
+html[data-theme="deepcurrent"] .pill.prestige-tag {
+  border: 1px solid rgba(255,255,255,0.22);
+  background: radial-gradient(circle at 28% 22%, rgba(120,200,210,0.25), rgba(2,16,24,0.92) 60%);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.25), 0 0 8px rgba(53,230,196,0.18);
+}
+
 /* The one denick badge left - "Current", marking whichever row is the most
    recent match (the nick's present owner, or the nick a player is using
    now) - everything else is just plain time-ago text, not a categorized
@@ -2392,8 +2425,23 @@ html:not([data-theme]) .modal-card.card-flip-expand {
 /* Responsive */
 @media (max-width: 620px) {
   h1 { font-size: 2em; }
-  .hero-controls { position: static; margin-top: 16px; justify-content: center; }
+  .hero-controls { position: static; margin: 16px 0 18px; justify-content: center; }
   .toolbar-row { justify-content: center; }
+  /* Keeps the three jump links on one row on a phone instead of wrapping
+     Denicking onto a second line (which doubled the sticky bar's height and
+     covered more of the page while scrolling) - tighter pills, and a
+     sideways scroll as the fallback for any theme font that's still too
+     wide rather than a wrap. */
+  .quick-nav {
+    flex-wrap: nowrap;
+    justify-content: safe center;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 2px;
+    padding: 6px;
+  }
+  .quick-nav::-webkit-scrollbar { display: none; }
+  .quick-nav-link { padding: 6px 8px; font-size: 0.78em; flex-shrink: 0; }
 }
 
 @media (max-width: 480px) {
@@ -5670,7 +5718,7 @@ html[data-theme="deepcurrent"] .pill.boost {
                   <div id="statsTopRow">
                     <span id="statsRank"></span>
                     <span id="statsUsername"></span>
-                    <span id="statsStar">&#9733;0</span>
+                    <span id="statsStar" class="pill prestige-tag"></span>
                   </div>
                   <div id="statsColumns">
                     <div class="stat-hero wlr">
@@ -7478,7 +7526,8 @@ function updateStatsDisplay(stats) {
     statsRank.style.display = "none";
   }
 
-  statsStar.textContent = `★${stats.star}`;
+  statsStar.innerHTML = prestigeTagHtml(stats.star);
+  statsStar.setAttribute("aria-label", `${Number(stats.star) || 0} stars`);
 
   statWins.textContent = stats.wins;
   statFinals.textContent = stats.finals;
@@ -7667,6 +7716,48 @@ function renderTable() {
   }
 }
 
+// Hypixel-style prestige tag - "[1981✫]" colored the way Bedwars colors it
+// in-game: one color per hundred stars below 1000, a rainbow at 1000, the
+// "Prime" tiers (1100-1900) with gray brackets around the base color, and
+// per-character multi-color patterns from 2000 up. Colors are Minecraft's
+// chat color codes, with the few near-invisible-on-dark ones (dark blue,
+// dark red, dark purple, dark gray, black) lifted a little so they still
+// read on the tag's dark background.
+const MC_COLORS = {
+  "0": "#555555", "1": "#4b4be0", "2": "#00aa00", "3": "#00aaaa",
+  "4": "#d63232", "5": "#c040c0", "6": "#ffaa00", "7": "#aaaaaa",
+  "8": "#7a7a7a", "9": "#5555ff", "a": "#55ff55", "b": "#55ffff",
+  "c": "#ff5555", "d": "#ff55ff", "e": "#ffff55", "f": "#ffffff",
+};
+const PRESTIGE_BASE = "7f6b2349d5"; // 0-900 and, for 1100-1900, each Prime tier's color
+const PRESTIGE_PATTERNS = { // 7 codes, one per character of "[2000✪]"
+  20: "877ff78", 21: "ffee666", 22: "66ffb33", 23: "55dd6ee",
+  24: "bbff778", 25: "ffaa222", 26: "44ccdd5", 27: "eeff888",
+  28: "aa2266e", 29: "bb33991", 30: "ee66cc4", 31: "993366e",
+  32: "c4774cc", 33: "999dcc4", 34: "2add552", 35: "cc442aa",
+  36: "aaab991", 37: "44ccb33", 38: "11955d1", 39: "ccaa399",
+  40: "55cc66e",
+};
+function prestigeTagHtml(starRaw) {
+  const star = Math.max(0, Math.floor(Number(starRaw) || 0));
+  const tier = Math.floor(star / 100);
+  const glyph = star >= 1100 ? "✪" : "✫";
+  const chars = ["[", ...String(star), glyph, "]"];
+  let codes;
+  if (tier < 10) {
+    codes = chars.map(() => PRESTIGE_BASE[tier]);
+  } else if (tier === 10) {
+    codes = chars.map((_, i) => "c6eabd5"[i % 7]);
+  } else if (tier < 20) {
+    const base = PRESTIGE_BASE[tier - 10];
+    codes = chars.map((c, i) => (i === 0 || i === chars.length - 1) ? "7" : base);
+  } else {
+    const pattern = PRESTIGE_PATTERNS[tier] || "c6eab9d";
+    codes = chars.map((_, i) => pattern[Math.round(i * (pattern.length - 1) / (chars.length - 1))]);
+  }
+  return chars.map((c, i) => `<span style="color:${MC_COLORS[codes[i]]}">${c}</span>`).join("");
+}
+
 function avatarUrlFor(uuid) {
   const cleanUuid = (uuid || "").replace(/-/g, "");
   return `https://visage.surgeplay.com/face/256/${cleanUuid}`;
@@ -7724,7 +7815,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
         <div class="sweat-card-name"><span class="name-text"></span><span class="sweat-card-dupe"></span></div>
       </div>
       <div class="sweat-card-pills">
-        <span class="pill level">★ ${starVal}</span>
+        <span class="pill prestige-tag" aria-label="${starVal} stars">${prestigeTagHtml(starVal)}</span>
         <span class="pill fkdr">${fkdrVal.toFixed(2)} FKDR</span>
         ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
         ${s.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}
@@ -7909,7 +8000,7 @@ function buildSweatRow(s, { usernameCounts }) {
   const fkdrVal = Number(s.fkdr) || 0;
 
   const starTd = document.createElement("td");
-  starTd.textContent = starVal;
+  starTd.innerHTML = `<span class="pill prestige-tag" aria-label="${starVal} stars">${prestigeTagHtml(starVal)}</span>`;
   tr.appendChild(starTd);
 
   const fkdrTd = document.createElement("td");

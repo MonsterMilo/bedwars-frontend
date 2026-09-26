@@ -13,10 +13,33 @@
     const savedTheme = localStorage.getItem("siteTheme");
     if (savedTheme && savedTheme !== "neon") document.documentElement.setAttribute("data-theme", savedTheme);
   } catch (e) {}
+
+  // Each theme only pulls in the Google Fonts it actually uses, instead of
+  // every family for all four themes on every visit. The active theme's
+  // stylesheet is requested right here in <head>; applyTheme() calls this
+  // again when the visitor switches, and each theme's sheet loads once.
+  // Adding a theme means adding its families here too.
+  window.THEME_FONT_FAMILIES = {
+    neon: "family=Manrope:wght@400;500;600;700;800",
+    casefiles: "family=Courier+Prime:wght@400;700&family=Anton",
+    ledger: "family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Pinyon+Script",
+    deepcurrent: "family=Sora:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700"
+  };
+  window.loadThemeFonts = function (themeId) {
+    const families = window.THEME_FONT_FAMILIES[themeId] || window.THEME_FONT_FAMILIES.neon;
+    const id = "theme-fonts-" + (window.THEME_FONT_FAMILIES[themeId] ? themeId : "neon");
+    if (document.getElementById(id)) return;
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?" + families + "&display=swap";
+    document.head.appendChild(link);
+  };
+  window.loadThemeFonts(document.documentElement.getAttribute("data-theme") || "neon");
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Anton&family=Courier+Prime:wght@400;700&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Chakra+Petch:wght@500;600;700&family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <style>
 
 :root {
@@ -1508,6 +1531,49 @@ html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text::before 
    the backend's free-tier host has been idle and needs to spin back up. */
 @keyframes loadingPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
 .loading-state { animation: loadingPulse 1.4s ease-in-out infinite; }
+
+/* Placeholder cards shaped like .sweat-card, drawn while the sweat list
+   loads so the grid doesn't jump from one line of text to a full page. Built
+   only from theme tokens, so every theme gets matching skeletons for free. */
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: linear-gradient(160deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  padding: 18px;
+  animation: loadingPulse 1.4s ease-in-out infinite;
+}
+.skeleton-card:nth-child(3n) { animation-delay: 0.2s; }
+.skeleton-card:nth-child(3n+1) { animation-delay: 0.4s; }
+.skeleton-row { display: flex; align-items: center; gap: 12px; }
+.skeleton-block {
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--border);
+  background: color-mix(in srgb, var(--text-faint) 28%, transparent);
+}
+.skeleton-avatar { width: 50px; height: 50px; border-radius: var(--radius-m); flex-shrink: 0; }
+.skeleton-name { width: 55%; height: 16px; }
+.skeleton-pill { width: 64px; height: 22px; border-radius: 999px; }
+.skeleton-footer { width: 40%; }
+
+/* Only revealed once loading has dragged on - see loadSweats(). */
+.server-waking-note {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.9em;
+  font-weight: 600;
+  padding: 4px 20px 0;
+}
+.server-waking-note[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-state, .skeleton-card { animation: none; opacity: 0.7; }
+}
 
 /* Success flourish shown over #form-container after a sweat is added -
    playSuccessFlourish() (near the submit handler) builds the theme-
@@ -6187,6 +6253,7 @@ function currentThemeId() {
 // { animate: false } is used for the initial load only - restoring the
 // saved theme on page load shouldn't play the switch wipe.
 function applyTheme(themeId, opts = {}) {
+  window.loadThemeFonts(themeId);
   const swap = () => {
     if (themeId === "neon") {
       document.documentElement.removeAttribute("data-theme");
@@ -7054,10 +7121,36 @@ function setViewMode(mode) {
   renderTable();
 }
 
-// Load sweats. Shows a loading placeholder first since the backend runs on a
-// free-tier host that can take several seconds to spin back up after being idle.
+// Load sweats. Shows skeleton cards first since the backend runs on a
+// free-tier host that can take several seconds to spin back up after being
+// idle; if the request is still going after SERVER_WAKING_DELAY_MS, a note
+// explains the wait so a cold start doesn't read as a broken page.
+const SKELETON_CARD_COUNT = 6;
+const SERVER_WAKING_DELAY_MS = 2500;
+
+function skeletonCardsMarkup() {
+  const card = `
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="skeleton-row">
+        <span class="skeleton-block skeleton-avatar"></span>
+        <span class="skeleton-block skeleton-name"></span>
+      </div>
+      <div class="skeleton-row">
+        <span class="skeleton-block skeleton-pill"></span>
+        <span class="skeleton-block skeleton-pill"></span>
+      </div>
+      <span class="skeleton-block skeleton-footer"></span>
+    </div>`;
+  return card.repeat(SKELETON_CARD_COUNT);
+}
+
 async function loadSweats() {
-  cardGrid.innerHTML = '<div class="empty-state loading-state">Loading sweats&hellip;</div>';
+  cardGrid.setAttribute("aria-busy", "true");
+  cardGrid.innerHTML = `
+    <div class="server-waking-note" role="status" hidden>Waking up the server&hellip; this can take up to a minute after it's been idle.</div>
+    ${skeletonCardsMarkup()}`;
+  const wakingNote = cardGrid.querySelector(".server-waking-note");
+  const wakingTimer = setTimeout(() => { wakingNote.hidden = false; }, SERVER_WAKING_DELAY_MS);
   try {
     const res = await fetch(`${backendBaseURL}/sweats?limit=1000`);
     if (!res.ok) throw new Error("Failed to fetch sweats");
@@ -7066,6 +7159,9 @@ async function loadSweats() {
   } catch (err) {
     status.textContent = "Error loading sweats: " + err.message;
     cardGrid.innerHTML = '<div class="empty-state">Couldn\'t load sweats - try refreshing.</div>';
+  } finally {
+    clearTimeout(wakingTimer);
+    cardGrid.removeAttribute("aria-busy");
   }
 }
 

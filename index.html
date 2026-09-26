@@ -7643,6 +7643,95 @@ html[data-theme="deepcurrent"] .sweat-card.tier-t5 .sweat-card-frame {
 html[data-theme="deepcurrent"] .pill.tier-pill.t4 { color: #ffc978; background: rgba(255,176,59,0.12); border-color: rgba(255,176,59,0.5); text-shadow: none; }
 html[data-theme="deepcurrent"] .pill.tier-pill.t5 { color: #d9c8ff; background: rgba(155,107,255,0.16); border-color: rgba(155,107,255,0.6); text-shadow: 0 0 6px rgba(53,230,196,0.6); }
 
+/* With no tier pill on grid cards, the frame alone marks the tier, so each
+   theme's frame gets a little more presence. */
+/* Neon: Demon is a hot magenta ring with a white-hot spark racing round it;
+   Final Boss keeps the spinning spectrum ring and breathes a glow. */
+html:not([data-theme]) .sweat-card.tier-t4 .sweat-card-frame {
+  border: none;
+  padding: 2px;
+  background: conic-gradient(from var(--tier-spin, 0deg), rgba(236,72,153,0.55) 0 72%, #ff4fa0 84%, #fff 89%, #ff4fa0 93%, rgba(236,72,153,0.55) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  box-shadow: none;
+  animation: tierSpin 3.2s linear infinite, tierGlowPink 2.6s ease-in-out infinite;
+}
+@keyframes tierGlowPink {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(236,72,153,0.55)); }
+  50% { filter: drop-shadow(0 0 12px rgba(236,72,153,0.95)); }
+}
+html:not([data-theme]) .sweat-card.tier-t5 .sweat-card-frame {
+  padding: 3px;
+  animation: tierSpin 4s linear infinite, tierGlowViolet 3s ease-in-out infinite;
+}
+@keyframes tierGlowViolet {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(168,85,247,0.6)); }
+  50% { filter: drop-shadow(0 0 16px rgba(0,217,255,0.85)); }
+}
+html:not([data-theme]) .sweat-card.tier-t4 { box-shadow: 0 0 26px -6px rgba(236,72,153,0.55); }
+html:not([data-theme]) .sweat-card.tier-t5 { box-shadow: 0 0 34px -6px rgba(168,85,247,0.6); }
+/* Case Files: Demon is circled twice in red marker, a little off true like
+   a real hand; Final Boss gets the double rule plus crime-scene tape
+   across two corners. */
+html[data-theme="casefiles"] .sweat-card.tier-t4 .sweat-card-frame {
+  inset: -3px;
+  border: 2px solid rgba(163,47,29,0.75);
+  border-radius: 10px 16px 8px 18px / 14px 8px 16px 10px;
+}
+html[data-theme="casefiles"] .sweat-card.tier-t4 .sweat-card-frame::after {
+  content: "";
+  position: absolute;
+  inset: -4px 2px 1px -3px;
+  border: 2px solid rgba(163,47,29,0.45);
+  border-radius: 16px 9px 18px 8px / 9px 15px 10px 16px;
+  transform: rotate(-0.7deg);
+}
+html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame { border-width: 4px; }
+html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::before,
+html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::after {
+  content: "";
+  position: absolute;
+  width: 74px;
+  height: 13px;
+  background: repeating-linear-gradient(-45deg, #f2c230 0 9px, #1c1a17 9px 16px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.35);
+  opacity: 0.92;
+}
+html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::before { left: -26px; top: 12px; transform: rotate(-45deg); }
+html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::after { right: -26px; bottom: 12px; transform: rotate(-45deg); }
+/* Private Bank: engraved gold corner brackets on both tiers; heavier for
+   Final Boss, whose foil sheen keeps sweeping across. */
+html[data-theme="ledger"] .sweat-card.tier-t4 .sweat-card-frame,
+html[data-theme="ledger"] .sweat-card.tier-t5 .sweat-card-frame { --bk: 2px; --bl: 22px; }
+html[data-theme="ledger"] .sweat-card.tier-t5 .sweat-card-frame { --bk: 3px; --bl: 30px; box-shadow: inset 0 0 0 2px var(--gold), 0 0 0 1px rgba(169,130,46,0.35), 0 6px 22px -8px rgba(169,130,46,0.6); }
+html[data-theme="ledger"] .sweat-card.tier-t4 .sweat-card-frame::before,
+html[data-theme="ledger"] .sweat-card.tier-t5 .sweat-card-frame::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--gold), var(--gold)) top left / var(--bl) var(--bk) no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top left / var(--bk) var(--bl) no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top right / var(--bl) var(--bk) no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top right / var(--bk) var(--bl) no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom left / var(--bl) var(--bk) no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom left / var(--bk) var(--bl) no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom right / var(--bl) var(--bk) no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom right / var(--bk) var(--bl) no-repeat;
+}
+/* Deep Current: Demon's amber warning light slowly pulses; Final Boss's
+   bioluminescent rim also glows out into the water. */
+html[data-theme="deepcurrent"] .sweat-card.tier-t4 .sweat-card-frame { animation: tierAmber 3.2s ease-in-out infinite; }
+@keyframes tierAmber {
+  0%, 100% { box-shadow: inset 0 0 18px rgba(255,176,59,0.22), 0 0 10px rgba(255,176,59,0.25); }
+  50% { box-shadow: inset 0 0 30px rgba(255,176,59,0.4), 0 0 24px rgba(255,176,59,0.55); }
+}
+html[data-theme="deepcurrent"] .sweat-card.tier-t5 { box-shadow: 0 0 30px -4px rgba(53,230,196,0.35), 0 0 60px -10px rgba(155,107,255,0.45); }
+@media (prefers-reduced-motion: reduce) {
+  .sweat-card.tier-t4 .sweat-card-frame { animation: none !important; }
+}
 /* Table and Leaderboard rows: the tier pill sits under the index number,
    and the row gets a stripe down its left edge in each theme's tier color. */
 .row-tier-pill {
@@ -14410,7 +14499,6 @@ function renderCardGrid(filteredSweats, usernameCounts) {
       <div class="sweat-card-pills">
         <span class="pill prestige-tag" aria-label="${starVal} stars">${prestigeTagHtml(starVal)}</span>
         <span class="pill fkdr">${fkdrVal.toFixed(2)} FKDR</span>
-        ${tier.key === "t5" ? `<span class="pill tier-pill ${tier.key}">${tier.name}</span>` : ""}
         ${isLiveNew ? '<span class="pill live-pill">New</span>' : ""}
         ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
         ${s.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}

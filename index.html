@@ -6833,6 +6833,73 @@ html[data-theme="deepcurrent"] .note-signer { font-family: 'JetBrains Mono', mon
 .key-admin-badge { color: var(--gold); font-size: 0.85em; margin-left: -2px; text-shadow: 0 0 8px color-mix(in srgb, var(--gold) 60%, transparent); }
 /* Tooltips holding a full note get more room than the default 240px. */
 #customTooltip.note-tip { max-width: 340px; text-align: left; }
+
+/* ============================================================
+   ACTIVITY LOG (KEY_ADMIN only)
+   Deliberately plain: a readable list, one line per change with a colored
+   dot for the kind of change, details underneath. It picks up each
+   theme's fonts and colors from the usual tokens rather than getting its
+   own scene. Collapsed until opened with the Show button.
+   ============================================================ */
+[data-admin-only][hidden] { display: none !important; }
+#activitySection > div:nth-child(2) { flex: 1; min-width: 0; }
+.activity-toggle { flex: none; }
+.activity-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.activity-toolbar select {
+  font: inherit; font-size: 0.85em;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--text);
+}
+.activity-toolbar .btn { margin-left: auto; padding: 7px 14px; font-size: 0.85em; }
+#activityStatus:empty { min-height: 0; margin-top: 8px; }
+
+.activity-list { list-style: none; margin: 4px 0 0; padding: 0; }
+.activity-row {
+  --act-color: var(--accent);
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  gap: 2px 12px;
+  align-items: baseline;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--border);
+}
+.activity-row:last-child { border-bottom: 0; }
+.activity-row[data-action="sweat.add"] { --act-color: var(--good); }
+.activity-row[data-action="sweat.delete"] { --act-color: var(--bad); }
+.activity-row[data-action="sweat.restore"] { --act-color: var(--gold); }
+.activity-row[data-action^="note."] { --act-color: var(--accent-2); }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--act-color); align-self: start; margin-top: 0.5em; }
+.activity-main { min-width: 0; }
+.activity-line { color: var(--text-dim); line-height: 1.45; }
+.activity-who-name { font-weight: 700; }
+.activity-player { font-weight: 700; color: var(--text); }
+.activity-time { font-size: 0.8em; color: var(--text-faint); white-space: nowrap; }
+.activity-side { display: flex; align-items: center; gap: 10px; }
+.activity-details { margin: 2px 0 0; font-size: 0.85em; color: var(--text-dim); }
+.activity-details .was { text-decoration: line-through; opacity: 0.7; }
+.activity-details .now { color: var(--text); font-weight: 700; }
+.activity-details .plus { color: var(--good); }
+.activity-details .minus { color: var(--bad); }
+.activity-note { margin: 3px 0 0; font-size: 0.88em; color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere; }
+.activity-note::before { content: "\201C"; }
+.activity-note::after { content: "\201D"; }
+.activity-note.was { color: var(--text-faint); text-decoration: line-through; }
+.activity-note-by { font-size: 0.85em; color: var(--text-faint); margin-left: 6px; }
+.activity-restore-btn { padding: 4px 12px; font-size: 0.8em; }
+.activity-restored { font-size: 0.78em; color: var(--good); white-space: nowrap; }
+.activity-more { display: block; margin: 12px auto 0; }
+@media (max-width: 560px) {
+  .activity-row { grid-template-columns: 10px 1fr; }
+  .activity-side { grid-column: 2; }
+}
+html[data-theme="casefiles"] .panel-icon-activity::before { content: "\270E"; }
+html[data-theme="ledger"] .panel-icon-activity::before { content: "\2630"; }
+html[data-theme="ledger"] .exhibit-tag-activity::before { content: "Schedule D"; }
+html[data-theme="deepcurrent"] .panel-icon-activity::before { content: "\2248"; }
+html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Log D"; }
 </style>
 </head>
 <body>
@@ -6905,6 +6972,7 @@ html[data-theme="deepcurrent"] .note-signer { font-family: 'JetBrains Mono', mon
     <a href="#sweatLookupSection" class="quick-nav-link active" data-target="sweatLookupSection">Sweat Lookup</a>
     <a href="#defeatedSweatsSection" class="quick-nav-link" data-target="defeatedSweatsSection">Defeated Sweats</a>
     <a href="#denickingSection" class="quick-nav-link" data-target="denickingSection">Denicking</a>
+    <a href="#activitySection" class="quick-nav-link" data-target="activitySection" data-admin-only hidden>Activity</a>
   </nav>
 
   <div class="panel-header" id="sweatLookupSection">
@@ -7273,6 +7341,48 @@ html[data-theme="deepcurrent"] .note-signer { font-family: 'JetBrains Mono', mon
     </div>
   </div>
 
+  <!-- ACTIVITY LOG: only shown to KEY_ADMIN (not KEY_MILO); the backend
+       enforces the same rule on GET /activity and restore. -->
+  <div class="panel-header" id="activitySection" data-admin-only hidden>
+    <div class="panel-icon panel-icon-activity">&#128220;</div>
+    <div>
+      <span class="exhibit-tag exhibit-tag-activity">Exhibit D</span>
+      <h2>Activity</h2>
+      <p>Who added, edited and deleted what. Deleted sweats can be restored here.</p>
+    </div>
+    <button type="button" id="activityToggle" class="btn btn-ghost activity-toggle" aria-expanded="false" aria-controls="activityContainer">Show</button>
+  </div>
+
+  <div id="activityContainer" class="card" hidden>
+    <div class="activity-toolbar">
+      <select id="activityWho" aria-label="Filter by person"><option value="">Everyone</option></select>
+      <select id="activityAction" aria-label="Filter by action">
+        <option value="">All changes</option>
+        <option value="sweat.add">Added</option>
+        <option value="sweat.edit">Edited</option>
+        <option value="sweat.delete">Deleted</option>
+        <option value="sweat.restore">Restored</option>
+        <option value="note.add,note.edit,note.delete">Notes</option>
+      </select>
+      <button type="button" id="activityRefreshBtn" class="btn btn-ghost">
+        <span class="fetch-btn-label">Refresh</span>
+        <span class="fetch-btn-spinner" aria-hidden="true"></span>
+      </button>
+    </div>
+    <div id="activityStatus" class="denick-status" role="status" aria-live="polite"></div>
+    <ol id="activityList" class="activity-list"></ol>
+    <div id="activityEmpty" class="dash-empty" hidden>
+      <svg viewBox="0 0 48 48" class="dash-empty-icon" aria-hidden="true">
+        <rect x="10" y="6" width="28" height="36" rx="3" fill="none" stroke="currentColor" stroke-width="2.5" />
+        <line x1="16" y1="16" x2="32" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+        <line x1="16" y1="24" x2="32" y2="24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+        <line x1="16" y1="32" x2="26" y2="32" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+      </svg>
+      <p>Nothing logged yet. Changes show up here as soon as someone adds, edits or deletes a sweat.</p>
+    </div>
+    <button type="button" id="activityMoreBtn" class="btn btn-ghost activity-more" hidden>Load older</button>
+  </div>
+
   <!-- PLAYER MODAL -->
   <div id="playerModal" class="modal">
     <div class="modal-card">
@@ -7389,7 +7499,7 @@ html[data-theme="deepcurrent"] .note-signer { font-family: 'JetBrains Mono', mon
         </svg>
       </div>
       <h2 class="confirm-modal-title">Remove Sweat?</h2>
-      <p class="confirm-modal-desc">This can't be undone.</p>
+      <p class="confirm-modal-desc">It disappears for everyone. Only the admin key can bring it back.</p>
       <div class="confirm-modal-actions">
         <button type="button" id="cancelConfirmDeleteBtn" class="btn btn-ghost">Cancel</button>
         <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Remove</button>
@@ -8017,7 +8127,7 @@ const quickNavObserver = new IntersectionObserver((entries) => {
 // scroll handler as the starfield parallax below rather than adding a
 // second scroll listener.
 function updateQuickNavAtBottom() {
-  const lastLink = quickNavLinks[quickNavLinks.length - 1];
+  const lastLink = [...quickNavLinks].reverse().find(link => !link.hidden);
   if (!lastLink) return;
   if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
     setActiveQuickNavLink(lastLink.dataset.target);
@@ -8169,6 +8279,9 @@ function updateKeyIdentityUi() {
     el.style.setProperty("--note-author-color", keyOwner ? noteAuthorColor(keyOwner) : "var(--text-faint)");
   });
   if (typeof renderModalNotesList === "function" && document.getElementById("playerModal").style.display === "flex") renderModalNotesList();
+  // Activity log + restore: KEY_ADMIN only (not KEY_MILO).
+  document.querySelectorAll("[data-admin-only]").forEach(el => { el.hidden = keyOwner !== "admin"; });
+  document.dispatchEvent(new CustomEvent("keyownerchange"));
 }
 
 // ============================================================
@@ -11620,6 +11733,223 @@ function restoreStateFromUrl() {
 }
 restoreStateFromUrl();
 
+
+// ============================================================
+// ACTIVITY LOG (KEY_ADMIN only - not KEY_MILO)
+// A plain list of every add/edit/delete of a sweat or note from
+// GET /activity, newest first, with Restore on deleted sweats
+// (POST /sweats/:id/restore). The heading only shows for the admin key;
+// the list itself stays collapsed until opened with Show, and that choice
+// is remembered. Usernames and note text are player-written: textContent only.
+// ============================================================
+const activityContainer = document.getElementById("activityContainer");
+const activityToggle = document.getElementById("activityToggle");
+const activityList = document.getElementById("activityList");
+const activityStatus = document.getElementById("activityStatus");
+const activityEmpty = document.getElementById("activityEmpty");
+const activityMoreBtn = document.getElementById("activityMoreBtn");
+const activityRefreshBtn = document.getElementById("activityRefreshBtn");
+const activityWhoSelect = document.getElementById("activityWho");
+const activityActionSelect = document.getElementById("activityAction");
+const ACTIVITY_OPEN_STORAGE = "activityOpen";
+const ACTIVITY_PAGE = 40;
+const ACTIVITY_FIELD_LABELS = {
+  star: "Stars", fkdr: "FKDR", wlr: "WLR", bblr: "BBLR", kdr: "KDR",
+  finals: "Finals", finalDeaths: "Final deaths", beds: "Beds broken", bedsLost: "Beds lost",
+  kills: "Kills", deaths: "Deaths", cheating: "Cheating", boosting: "Boosting"
+};
+const ACTIVITY_VERBS = {
+  "sweat.add": "added",
+  "sweat.edit": "edited",
+  "sweat.delete": "deleted",
+  "sweat.restore": "restored",
+  "note.add": "added a note to",
+  "note.edit": "edited a note on",
+  "note.delete": "removed a note from"
+};
+let activityOpen = false;
+try { activityOpen = localStorage.getItem(ACTIVITY_OPEN_STORAGE) === "1"; } catch {}
+let activityNextBefore = null;
+let activityLoadedAt = 0;
+let activityRequest = 0;
+
+function activityWhoLabel(who) {
+  return noteAuthorLabel(who) || "Someone";
+}
+function formatActivityValue(v) {
+  if (v === null || v === undefined || v === "") return "—";
+  const n = Number(v);
+  return Number.isFinite(n) && !Number.isInteger(n) ? String(Math.round(n * 100) / 100) : String(v);
+}
+function activitySpan(cls, text) {
+  const el = document.createElement("span");
+  if (cls) el.className = cls;
+  el.textContent = text;
+  return el;
+}
+
+// Edit details as one line: "FKDR 12.8 -> 14.2 · Beaten by +Zoiv · -Cheating".
+function activityDiffLine(changes) {
+  const div = document.createElement("div");
+  div.className = "activity-details";
+  Object.entries(changes || {}).forEach(([field, pair], i) => {
+    const [was, now] = Array.isArray(pair) ? pair : [null, pair];
+    if (i) div.append(" · ");
+    if (BEATEN_BY[field] || field === "cheating" || field === "boosting") {
+      const name = BEATEN_BY[field] ? BEATEN_BY[field].label : ACTIVITY_FIELD_LABELS[field];
+      div.append(activitySpan(now ? "plus" : "minus", `${BEATEN_BY[field] ? "Beaten by " : ""}${now ? "+" : "−"}${name}`));
+    } else {
+      div.append(`${ACTIVITY_FIELD_LABELS[field] || field} `, activitySpan("was", formatActivityValue(was)), " → ", activitySpan("now", formatActivityValue(now)));
+    }
+  });
+  return div.childNodes.length ? div : null;
+}
+function activityNote(text, was, by) {
+  const p = document.createElement("div");
+  p.className = "activity-note" + (was ? " was" : "");
+  p.textContent = text;
+  if (!by) return p;
+  const wrap = document.createElement("div");
+  wrap.append(p, activitySpan("activity-note-by", by));
+  p.style.display = "inline";
+  return wrap;
+}
+
+function renderActivityRow(e) {
+  const li = document.createElement("li");
+  li.className = "activity-row";
+  li.dataset.action = e.action;
+  li.dataset.sweatId = String(e.sweatId || "");
+  li.appendChild(activitySpan("activity-dot", ""));
+
+  const main = document.createElement("div");
+  main.className = "activity-main";
+  const line = document.createElement("div");
+  line.className = "activity-line";
+  const who = activitySpan("activity-who-name", activityWhoLabel(e.who));
+  if (e.who === "admin" || BEATEN_BY[e.who]) who.style.color = noteAuthorColor(e.who);
+  line.append(who, ` ${ACTIVITY_VERBS[e.action] || e.action} `, activitySpan("activity-player", e.username || "a sweat"));
+  main.appendChild(line);
+
+  if (e.action === "sweat.edit") {
+    const diff = activityDiffLine(e.changes);
+    if (diff) main.appendChild(diff);
+  } else if (e.action === "note.edit") {
+    if (e.noteBefore) main.appendChild(activityNote(e.noteBefore, true));
+    if (e.noteText) main.appendChild(activityNote(e.noteText));
+  } else if (e.action === "note.delete") {
+    const by = e.noteAuthor && e.noteAuthor !== e.who ? `by ${activityWhoLabel(e.noteAuthor)}` : "";
+    if (e.noteText) main.appendChild(activityNote(e.noteText, true, by));
+  } else if (e.noteText) {
+    main.appendChild(activityNote(e.noteText));
+  }
+  li.appendChild(main);
+
+  const side = document.createElement("div");
+  side.className = "activity-side";
+  if (e.action === "sweat.delete") {
+    if (e.restorable) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn btn-ghost activity-restore-btn";
+      btn.textContent = "Restore";
+      btn.setAttribute("aria-label", `Restore ${e.username || "this sweat"}`);
+      btn.addEventListener("click", () => restoreSweat(e, btn));
+      side.appendChild(btn);
+    } else {
+      side.appendChild(activitySpan("activity-restored", "✓ Restored"));
+    }
+  }
+  const at = e.at ? new Date(e.at) : null;
+  if (at && !isNaN(at)) {
+    const time = document.createElement("time");
+    time.className = "activity-time";
+    time.dateTime = at.toISOString();
+    time.textContent = relativeNoteDate(at);
+    time.dataset.tooltip = at.toLocaleString();
+    side.appendChild(time);
+  }
+  li.appendChild(side);
+  return li;
+}
+
+async function restoreSweat(entry, btn) {
+  btn.disabled = true;
+  activityStatus.textContent = "";
+  try {
+    const res = await fetch(`${backendBaseURL}/sweats/${encodeURIComponent(entry.sweatId)}/restore`, {
+      method: "POST",
+      headers: adminHeaders()
+    });
+    if (!res.ok) throw new Error(await extractErrorMessage(res, "Couldn't restore that sweat."));
+    activityStatus.textContent = `${entry.username || "Sweat"} is back, with all its stats and notes.`;
+    await loadSweats();
+    loadActivity({ reset: true, quiet: true });
+  } catch (err) {
+    activityStatus.textContent = err.message;
+    btn.disabled = false;
+  }
+}
+
+async function loadActivity({ reset = false, quiet = false } = {}) {
+  if (keyOwner !== "admin" || !activityOpen) return;
+  const req = ++activityRequest;
+  const params = new URLSearchParams({ limit: String(ACTIVITY_PAGE) });
+  if (activityWhoSelect.value) params.set("who", activityWhoSelect.value);
+  if (activityActionSelect.value) params.set("action", activityActionSelect.value);
+  if (!reset && activityNextBefore) params.set("before", activityNextBefore);
+  const busyBtn = reset ? activityRefreshBtn : activityMoreBtn;
+  busyBtn.disabled = true;
+  busyBtn.classList.add("loading");
+  if (!quiet) activityStatus.textContent = reset && !activityList.children.length ? "Loading…" : "";
+  try {
+    const res = await fetch(`${backendBaseURL}/activity?${params}`, { headers: adminHeaders() });
+    if (!res.ok) throw new Error(await extractErrorMessage(res, "Couldn't load activity."));
+    const data = await res.json();
+    if (req !== activityRequest) return;
+    if (reset) activityList.textContent = "";
+    (data.entries || []).forEach(e => activityList.appendChild(renderActivityRow(e)));
+    activityNextBefore = data.nextBefore || null;
+    activityMoreBtn.hidden = !activityNextBefore;
+    activityEmpty.hidden = activityList.children.length > 0;
+    activityLoadedAt = Date.now();
+    if (!quiet) activityStatus.textContent = "";
+  } catch (err) {
+    if (req === activityRequest) activityStatus.textContent = err.message;
+  } finally {
+    busyBtn.disabled = false;
+    busyBtn.classList.remove("loading");
+  }
+}
+
+function syncActivityVisibility() {
+  const show = keyOwner === "admin" && activityOpen;
+  activityContainer.hidden = !show;
+  activityToggle.textContent = activityOpen ? "Hide" : "Show";
+  activityToggle.setAttribute("aria-expanded", activityOpen ? "true" : "false");
+  if (show && Date.now() - activityLoadedAt > 20000) loadActivity({ reset: true });
+}
+activityToggle.addEventListener("click", () => {
+  activityOpen = !activityOpen;
+  try { localStorage.setItem(ACTIVITY_OPEN_STORAGE, activityOpen ? "1" : "0"); } catch {}
+  syncActivityVisibility();
+});
+[...BEATEN_BY_KEYS.map(k => [k, BEATEN_BY[k].label]), ["admin", "Admin"]].forEach(([id, label]) => {
+  activityWhoSelect.add(new Option(label, id));
+});
+activityWhoSelect.addEventListener("change", () => loadActivity({ reset: true }));
+activityActionSelect.addEventListener("change", () => loadActivity({ reset: true }));
+activityRefreshBtn.addEventListener("click", () => loadActivity({ reset: true }));
+activityMoreBtn.addEventListener("click", () => loadActivity());
+// The Activity quick-nav link opens the list if it's collapsed.
+document.querySelector('.quick-nav-link[data-target="activitySection"]').addEventListener("click", () => {
+  if (!activityOpen) activityToggle.click();
+});
+document.addEventListener("keyownerchange", () => {
+  if (keyOwner !== "admin") { activityList.textContent = ""; activityNextBefore = null; activityLoadedAt = 0; }
+  syncActivityVisibility();
+});
+syncActivityVisibility();
 </script>
 
 </body>

@@ -679,35 +679,97 @@ h1 {
    ============================================================ */
 #denickContainer { max-width: 980px; margin: 0 auto 44px; padding: 26px 30px 28px; }
 
-.denick-mode-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
-.denick-mode-btn {
-  flex: 1;
-  padding: 10px 14px;
-  border-radius: var(--radius-s);
+/* Mode switch - a segmented control matching the Grid/Table/Leaderboard
+   toggle instead of two full-width boxes. */
+.denick-mode-toggle {
+  display: flex;
+  gap: 4px;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto 18px;
+  padding: 4px;
   border: 1px solid var(--border);
-  background: var(--panel-2);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.03);
+}
+.denick-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
   color: var(--text-dim);
   font: inherit;
-  font-weight: 600;
+  font-size: 0.9em;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
 }
-.denick-mode-btn.active { background: var(--panel); border-color: var(--accent); color: var(--accent); }
+.denick-mode-btn svg { width: 15px; height: 15px; flex: none; }
+.denick-mode-btn:hover:not(.active) { color: var(--text); }
+.denick-mode-btn.active { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 1px var(--border-strong); }
 
 .denick-status { min-height: 1.2em; margin-top: 10px; font-size: 0.85em; color: var(--text-dim); }
 
-.denick-results { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+/* Results read as a history timeline: a rail down the left with one dot
+   per entry (colored by source - accent for the Denicker API, gold for
+   Diamond Dome), and the most recent "Current" entry lifted into its own
+   highlighted card. */
+.denick-results {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+  padding-left: 22px;
+}
+.denick-results:not(:empty)::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 18px;
+  bottom: 18px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--accent), var(--border) 60%);
+  opacity: 0.6;
+}
 .denick-row {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px 10px;
-  padding: 8px 14px;
-  border-radius: var(--radius-s);
+  padding: 10px 14px;
+  border-radius: var(--radius-m);
   background: var(--panel-2);
   border: 1px solid var(--border);
+  transition: border-color 0.2s var(--ease), transform 0.2s var(--ease);
 }
+.denick-row:hover { border-color: var(--border-strong); transform: translateX(2px); }
+.denick-row::before {
+  content: "";
+  position: absolute;
+  left: -21px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--panel);
+}
+.denick-row[data-source="dome"]::before { background: var(--gold); }
+.denick-row.is-current {
+  border-color: color-mix(in srgb, var(--good) 45%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--good) 10%, transparent), transparent 70%), var(--panel-2);
+}
+.denick-row.is-current::before { width: 14px; height: 14px; margin-top: -7px; left: -23px; background: var(--good); box-shadow: 0 0 0 3px var(--panel), 0 0 12px var(--good); }
+.denick-row.is-current .denick-avatar { width: 36px; height: 36px; }
 .denick-row-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
 /* Minecraft head renders are natively 8x8 px per face - scaling that up
    with the browser's default smoothing turns it to mush, so it's pinned to
@@ -727,8 +789,31 @@ h1 {
 .denick-row-sub { font-size: 0.78em; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 @media (max-width: 480px) {
-  .denick-mode-toggle { flex-direction: column; }
+  .denick-mode-toggle { width: 100%; }
+  .denick-mode-btn { flex: 1; padding: 8px 6px; font-size: 0.8em; gap: 5px; }
+  .denick-row .pill { flex: none; font-size: 0.72em; }
 }
+
+/* Per-theme touches for the mode switch and timeline rail. */
+html[data-theme="casefiles"] .denick-mode-toggle,
+html[data-theme="casefiles"] .denick-mode-btn { border-radius: 2px; }
+html[data-theme="casefiles"] .denick-mode-btn { font-family: 'Courier Prime', monospace; text-transform: uppercase; }
+html[data-theme="casefiles"] .denick-mode-btn.active { background: var(--panel); color: var(--accent-2); box-shadow: inset 0 0 0 1.5px var(--accent-2); }
+html[data-theme="casefiles"] .denick-results::before { background: repeating-linear-gradient(180deg, var(--accent-2) 0 5px, transparent 5px 9px); opacity: 0.5; }
+html[data-theme="casefiles"] .denick-row { border-radius: 2px; border-style: dashed; }
+html[data-theme="casefiles"] .denick-row::before { border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 0 3px var(--panel), inset 0 -2px 0 rgba(0,0,0,0.25); }
+html[data-theme="casefiles"] .denick-row.is-current { border-style: solid; }
+html[data-theme="ledger"] .denick-mode-toggle,
+html[data-theme="ledger"] .denick-mode-btn,
+html[data-theme="ledger"] .denick-row { border-radius: 0; }
+html[data-theme="ledger"] .denick-mode-btn { font-family: 'EB Garamond', serif; font-size: 1em; }
+html[data-theme="ledger"] .denick-mode-btn.active { background: var(--accent-2); color: #fff; box-shadow: none; }
+html[data-theme="ledger"] .denick-results::before { width: 1px; background: var(--gold); }
+html[data-theme="ledger"] .denick-row::before { border-radius: 0; transform: rotate(45deg); width: 8px; height: 8px; margin-top: -4px; left: -20px; }
+html[data-theme="ledger"] .denick-row.is-current::before { width: 11px; height: 11px; margin-top: -5.5px; left: -21.5px; box-shadow: 0 0 0 3px #fff; }
+html[data-theme="deepcurrent"] .denick-mode-btn.active { box-shadow: inset 0 0 0 1px var(--border-strong), 0 0 12px rgba(53,230,196,0.2); }
+html[data-theme="deepcurrent"] .denick-row { background: linear-gradient(160deg, var(--panel), var(--panel-2)); }
+html[data-theme="deepcurrent"] .denick-row .pill { font-family: 'JetBrains Mono', monospace; }
 
 /* ============================================================
    SWEAT LOOKUP - "split dashboard" layout
@@ -1021,14 +1106,26 @@ input:focus {
   width: 100%;
 }
 
+/* Full-body skin render (not just the face) standing on a lit floor, to
+   the left of the stats - same look as the player popup's skin. Stacks
+   back above the stats on narrow screens. */
 #statsAvatar {
-  width: 72px;
-  height: 72px;
-  border-radius: 18px;
-  border: 2px solid var(--border-strong);
+  width: 120px;
+  height: 220px;
+  object-fit: contain;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--border-strong);
   flex-shrink: 0;
-  background: rgba(255,255,255,0.03);
+  background:
+    radial-gradient(ellipse 60% 9% at 50% 94%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 70%),
+    radial-gradient(circle at 50% 40%, var(--accent-soft), transparent 70%);
   box-shadow: 0 0 20px rgba(0,217,255,0.18);
+}
+@media (min-width: 621px) {
+  #statsContent { flex-direction: row; align-items: center; text-align: left; gap: 18px; }
+}
+@media (max-width: 620px) {
+  #statsAvatar { width: 100%; height: 170px; }
 }
 
 #statsRight { width: 100%; min-width: 0; display: flex; flex-direction: column; gap: 14px; align-items: center; }
@@ -1160,84 +1257,271 @@ html:not([data-theme]) #statsContent.stats-pop {
 
 .stats-tag-panel .stat-hero-label { margin-bottom: 0; }
 
-/* Toolbar (search + filters + view toggle) */
+
+/* At-a-glance strip above the toolbar - totals and record holders for
+   whatever the filters currently match, so the section opens with the
+   headline numbers instead of straight into a wall of cards. Player tiles
+   carry data-username/data-uuid, so the same document click handler that
+   opens a card's player popup opens theirs. */
+.sweat-stats {
+  max-width: 1200px;
+  margin: 0 auto 18px;
+  display: grid;
+  grid-template-columns: 1.5fr repeat(3, minmax(0, 1fr)) 1.2fr;
+  gap: 12px;
+}
+.sweat-stats:empty { display: none; }
+.ss-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 16px 13px;
+  overflow: hidden;
+}
+.ss-tile[data-username] { cursor: pointer; transition: transform 0.2s var(--ease), border-color 0.2s var(--ease); }
+.ss-tile[data-username]:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+.ss-tile[data-username]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ss-label {
+  color: var(--text-faint);
+  font-size: 0.68em;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.ss-value {
+  color: var(--text);
+  font-size: 1.7em;
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ss-value .pill.prestige-tag { font-size: 0.62em; vertical-align: middle; }
+.ss-who {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: var(--text-dim);
+  font-size: 0.84em;
+  font-weight: 600;
+}
+.ss-who img {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: 5px;
+  image-rendering: pixelated;
+}
+.ss-who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-sub { color: var(--text-dim); font-size: 0.8em; font-weight: 600; }
+.ss-sub b { color: var(--good); }
+
+.ss-total-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.ss-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 40px;
+  flex: none;
+}
+.ss-spark span {
+  width: 9px;
+  min-height: 3px;
+  border-radius: 3px 3px 1px 1px;
+  background: var(--accent);
+  opacity: 0.35;
+}
+.ss-spark span:last-child { opacity: 1; }
+
+.ss-flag-bar {
+  display: flex;
+  height: 7px;
+  margin-top: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--border);
+}
+.ss-flag-bar .cheat { background: var(--bad); }
+.ss-flag-bar .boost { background: var(--gold); }
+.ss-flag-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.8em; font-weight: 700; color: var(--text-dim); }
+.ss-flag-legend i { display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 2px; vertical-align: 0; }
+.ss-flag-legend .cheat i { background: var(--bad); }
+.ss-flag-legend .boost i { background: var(--gold); }
+
+@media (max-width: 900px) {
+  .sweat-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ss-tile-total, .ss-tile-flags { grid-column: span 3; }
+}
+@media (max-width: 620px) {
+  .sweat-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  /* Total on its own row, then star/FKDR and index/flags in pairs. */
+  .ss-tile-total { grid-column: 1 / -1; }
+  .ss-tile-flags { grid-column: auto; }
+  .ss-tile { padding: 12px 13px 11px; }
+  .ss-value { font-size: 1.4em; }
+  .ss-flag-legend { gap: 2px 10px; }
+}
+
+/* Neon - HUD readouts: a colored hairline across the top of each tile and a
+   soft glow on the headline numbers, one accent per record. */
+html:not([data-theme]) .ss-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, var(--ss-tone, var(--accent)), transparent);
+}
+html:not([data-theme]) .ss-value { text-shadow: 0 0 16px color-mix(in srgb, var(--ss-tone, var(--accent)) 45%, transparent); }
+html:not([data-theme]) .ss-spark span { background: var(--accent); box-shadow: 0 0 8px rgba(0,217,255,0.5); }
+.ss-tile-star { --ss-tone: var(--gold); }
+.ss-tile-fkdr { --ss-tone: var(--accent-2); }
+.ss-tile-index { --ss-tone: var(--bad); }
+.ss-tile-fkdr .ss-value { color: var(--accent-2); }
+
+/* Case Files - index cards clipped to the board: ruled lines, a red margin
+   rule, typewritten labels, and the headline number stamped in Anton. */
+html[data-theme="casefiles"] .ss-tile {
+  border-radius: 2px;
+  background:
+    linear-gradient(90deg, transparent 22px, rgba(163,47,29,0.35) 22px 23px, transparent 23px),
+    repeating-linear-gradient(180deg, #fffdf4 0 21px, rgba(46,74,92,0.13) 21px 22px);
+  padding-left: 32px;
+  box-shadow: 2px 3px 0 rgba(42,36,28,0.12), 0 8px 14px -8px rgba(42,36,28,0.35);
+}
+html[data-theme="casefiles"] .ss-tile:nth-child(odd) { transform: rotate(-0.6deg); }
+html[data-theme="casefiles"] .ss-tile:nth-child(even) { transform: rotate(0.5deg); }
+html[data-theme="casefiles"] .ss-tile[data-username]:hover { transform: rotate(0deg) translateY(-2px); }
+html[data-theme="casefiles"] .ss-label { font-family: 'Courier Prime', monospace; color: var(--accent-2); letter-spacing: 0.08em; }
+html[data-theme="casefiles"] .ss-value { font-family: 'Anton', 'Arial Narrow', sans-serif; font-weight: 400; letter-spacing: 0.02em; }
+html[data-theme="casefiles"] .ss-tile-fkdr .ss-value { color: var(--text); }
+html[data-theme="casefiles"] .ss-who,
+html[data-theme="casefiles"] .ss-sub,
+html[data-theme="casefiles"] .ss-flag-legend { font-family: 'Courier Prime', monospace; }
+html[data-theme="casefiles"] .ss-who img { border-radius: 0; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--border); }
+html[data-theme="casefiles"] .ss-spark span { background: var(--text-dim); border-radius: 0; }
+html[data-theme="casefiles"] .ss-spark span:last-child { background: var(--accent-2); }
+html[data-theme="casefiles"] .ss-flag-bar { border-radius: 0; height: 9px; }
+
+/* Private Bank - a statement summary: one engraved line of figures with
+   gold rules between them rather than separate boxes. */
+html[data-theme="ledger"] .sweat-stats {
+  gap: 0;
+  padding: 6px 0;
+  border-top: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
+  box-shadow: inset 0 3px 0 #fff, inset 0 4px 0 var(--border), inset 0 -3px 0 #fff, inset 0 -4px 0 var(--border);
+}
+html[data-theme="ledger"] .ss-tile {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  border-left: 1px solid var(--border);
+  padding: 12px 18px;
+}
+html[data-theme="ledger"] .ss-tile:first-child { border-left: 0; }
+html[data-theme="ledger"] .ss-label { font-family: 'EB Garamond', serif; font-style: italic; text-transform: none; letter-spacing: 0.02em; font-size: 0.9em; font-weight: 400; color: var(--text-dim); }
+html[data-theme="ledger"] .ss-value { font-family: 'Playfair Display', serif; font-weight: 600; }
+html[data-theme="ledger"] .ss-tile-fkdr .ss-value { color: var(--text); }
+html[data-theme="ledger"] .ss-who,
+html[data-theme="ledger"] .ss-sub,
+html[data-theme="ledger"] .ss-flag-legend { font-family: 'EB Garamond', serif; font-size: 0.92em; }
+html[data-theme="ledger"] .ss-sub b { color: var(--good); }
+html[data-theme="ledger"] .ss-who img { border-radius: 50%; box-shadow: 0 0 0 1px var(--gold); }
+html[data-theme="ledger"] .ss-spark span { background: var(--gold); border-radius: 0; width: 7px; }
+html[data-theme="ledger"] .ss-flag-bar { height: 3px; border-radius: 0; }
+@media (max-width: 900px) {
+  html[data-theme="ledger"] .ss-tile { border-left: 0; border-top: 1px solid var(--border); }
+  html[data-theme="ledger"] .ss-tile-total { border-top: 0; }
+}
+
+/* Deep Current - instrument gauges: mono readouts, a faint depth grid in
+   each tile, and the sparkline drawn as sonar returns. */
+html[data-theme="deepcurrent"] .ss-tile {
+  background:
+    repeating-linear-gradient(90deg, rgba(53,230,196,0.05) 0 1px, transparent 1px 18px),
+    linear-gradient(160deg, var(--panel), var(--panel-2));
+}
+html[data-theme="deepcurrent"] .ss-value,
+html[data-theme="deepcurrent"] .ss-label,
+html[data-theme="deepcurrent"] .ss-flag-legend { font-family: 'JetBrains Mono', monospace; }
+html[data-theme="deepcurrent"] .ss-value { font-weight: 700; text-shadow: 0 0 14px color-mix(in srgb, var(--ss-tone, var(--accent)) 40%, transparent); }
+html[data-theme="deepcurrent"] .ss-label { color: var(--accent); opacity: 0.75; letter-spacing: 0.1em; }
+html[data-theme="deepcurrent"] .ss-spark span { background: var(--accent); box-shadow: 0 0 8px rgba(53,230,196,0.5); border-radius: 999px; }
+
+/* Toolbar - one search bar with the view switch beside it, then a single
+   row of compact filter pills ("Stars ≥ 100"), the flag chips and a Reset
+   that counts how many filters are on. A pill that's set lights up, so it's
+   obvious at a glance why the list is shorter than expected. */
 .toolbar {
   max-width: 1200px;
   margin: 0 auto 22px;
-  padding: 18px 22px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
-
-#searchContainer { display: flex; justify-content: center; }
-#searchInput { width: 100%; max-width: 420px; }
-
-.filter-fields {
+.toolbar-top {
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.filter-field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.filter-field label {
-  font-size: 0.7em;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-.filter-field input[type="number"], .filter-field input[type="date"] { padding: 8px 10px; font-size: 14px; }
-
-#minStars, #minFkdr, #minIndex { width: 100px; }
-#minDate { width: 140px; }
-
-#minStars::-webkit-outer-spin-button, #minStars::-webkit-inner-spin-button,
-#minFkdr::-webkit-outer-spin-button, #minFkdr::-webkit-inner-spin-button,
-#minIndex::-webkit-outer-spin-button, #minIndex::-webkit-inner-spin-button {
-  -webkit-appearance: none; margin: 0;
-}
-#minStars, #minFkdr, #minIndex { -moz-appearance: textfield; }
-
-.toolbar-row {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
   gap: 12px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
 }
-
-.toolbar-actions-left {
+.search-box {
+  position: relative;
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  min-width: 0;
 }
-
-.toolbar-actions-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.search-box-icon {
+  position: absolute;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  color: var(--text-faint);
+  pointer-events: none;
+  transition: color 0.2s var(--ease);
 }
-
-.icon-btn.reset {
+.search-box:focus-within .search-box-icon { color: var(--accent); }
+.toolbar #searchInput {
+  width: 100%;
+  padding: 12px 44px 12px 42px;
   font-size: 15px;
+  border-radius: var(--radius-m);
 }
-.icon-btn.reset:hover {
-  color: var(--accent);
-  border-color: var(--border-strong);
+.search-box-kbd,
+.search-box-clear {
+  position: absolute;
+  right: 10px;
+}
+.search-box-kbd {
+  padding: 1px 7px;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  color: var(--text-faint);
+  font: 700 0.75em/1.4 inherit;
+  font-family: inherit;
+  pointer-events: none;
+}
+.search-box:focus-within .search-box-kbd,
+.search-box-clear:not([hidden]) ~ .search-box-kbd { display: none; }
+#searchInput:not(:placeholder-shown) ~ .search-box-kbd { display: none; }
+.search-box-clear {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
   background: var(--accent-soft);
-  transform: rotate(-45deg);
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
 }
+.search-box-clear:hover { background: var(--accent); color: var(--bg); }
 
 .view-toggle {
   display: flex;
@@ -1248,26 +1532,187 @@ html:not([data-theme]) #statsContent.stats-pop {
   padding: 4px;
   flex-shrink: 0;
 }
-
 .view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   border: none;
   background: transparent;
   color: var(--text-dim);
   font-family: inherit;
   font-weight: 700;
   font-size: 0.85em;
-  padding: 7px 16px;
+  padding: 8px 15px;
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.2s var(--ease);
 }
-
+.view-btn svg { width: 14px; height: 14px; fill: currentColor; flex: none; }
+.view-btn:hover:not(.active) { color: var(--text); }
 .view-btn.active {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: #04050a;
   box-shadow: 0 4px 14px rgba(0,217,255,0.3);
 }
 .view-btn:active { transform: scale(0.94); }
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.filter-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.filter-field {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 4px 0 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.03);
+  cursor: text;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.filter-prefix {
+  color: var(--text-faint);
+  font-size: 0.78em;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.toolbar .filter-field input,
+.toolbar .filter-field input:focus {
+  width: 58px;
+  padding: 6px 8px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 700;
+}
+.toolbar .filter-field-date input { width: 132px; }
+.filter-field:hover { border-color: var(--border-strong); }
+.filter-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.filter-field.is-set {
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+}
+.filter-field.is-set .filter-prefix { color: var(--accent); }
+
+#minStars::-webkit-outer-spin-button, #minStars::-webkit-inner-spin-button,
+#minFkdr::-webkit-outer-spin-button, #minFkdr::-webkit-inner-spin-button,
+#minIndex::-webkit-outer-spin-button, #minIndex::-webkit-inner-spin-button {
+  -webkit-appearance: none; margin: 0;
+}
+#minStars, #minFkdr, #minIndex { -moz-appearance: textfield; }
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+}
+.toolbar-actions-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.filter-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 0.85em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.filter-reset:hover:not(:disabled) { color: var(--accent); background: var(--accent-soft); }
+.filter-reset:disabled { opacity: 0.4; cursor: default; }
+.filter-reset-count:not(:empty) {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.85em;
+  line-height: 18px;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .toolbar-top { flex-direction: column; align-items: stretch; }
+  .view-toggle { justify-content: space-between; }
+  .view-btn { flex: 1; justify-content: center; padding: 8px 10px; }
+  .toolbar-divider { display: none; }
+  .filter-fields { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .filter-field { width: 100%; }
+  .toolbar .filter-field input, .toolbar .filter-field input:focus { flex: 1; width: 100%; min-width: 0; }
+  .filter-field-date { grid-column: 1 / -1; }
+  .filter-reset { margin-left: 0; }
+}
+
+/* Case Files - the search bar is a typed index-card line and the filter
+   pills are square file tags; set ones get a red "stamped" edge. */
+html[data-theme="casefiles"] .filter-field { border-radius: 2px; border-style: dashed; background: #fffdf4; }
+html[data-theme="casefiles"] .filter-field.is-set { border-style: solid; border-color: var(--accent-2); background: rgba(163,47,29,0.07); }
+html[data-theme="casefiles"] .filter-field.is-set .filter-prefix { color: var(--accent-2); }
+html[data-theme="casefiles"] .filter-prefix,
+html[data-theme="casefiles"] .filter-reset,
+html[data-theme="casefiles"] .search-box-kbd { font-family: 'Courier Prime', monospace; text-transform: uppercase; }
+html[data-theme="casefiles"] .toolbar #searchInput { border-radius: 2px; background: #fffdf4; }
+html[data-theme="casefiles"] .search-box-clear,
+html[data-theme="casefiles"] .filter-reset,
+html[data-theme="casefiles"] .filter-reset-count:not(:empty) { border-radius: 2px; }
+html[data-theme="casefiles"] .filter-reset-count:not(:empty) { background: var(--accent-2); color: #fbf6e6; }
+html[data-theme="casefiles"] .toolbar-row { border-top-style: dashed; border-top-color: var(--border-strong); }
+
+/* Private Bank - fields are engraved form lines: no box, just a gold
+   underline with the label set in italic Garamond, like a cheque. */
+html[data-theme="ledger"] .filter-field {
+  height: 34px;
+  padding: 0 2px 0 4px;
+  border: 0;
+  border-bottom: 1px solid var(--border-strong);
+  border-radius: 0;
+  background: none;
+}
+html[data-theme="ledger"] .filter-field:focus-within { box-shadow: none; border-bottom-color: var(--gold); }
+html[data-theme="ledger"] .filter-field.is-set { background: none; border-bottom: 2px solid var(--gold); }
+html[data-theme="ledger"] .filter-prefix { font-family: 'EB Garamond', serif; font-style: italic; font-weight: 400; font-size: 0.95em; letter-spacing: 0; }
+html[data-theme="ledger"] .filter-field.is-set .filter-prefix { color: var(--gold); }
+html[data-theme="ledger"] .toolbar .filter-field input { font-family: 'Playfair Display', serif; }
+html[data-theme="ledger"] .toolbar #searchInput { border-radius: 0; }
+html[data-theme="ledger"] .filter-reset { border-radius: 0; font-family: 'EB Garamond', serif; font-size: 0.95em; }
+html[data-theme="ledger"] .filter-reset-count:not(:empty) { background: var(--gold); color: #fff; border-radius: 0; }
+html[data-theme="ledger"] .search-box-kbd { border-radius: 0; }
+html[data-theme="ledger"] .toolbar-divider { background: var(--gold); opacity: 0.5; }
+
+/* Deep Current - readout pills with a mono value, and set ones glow teal
+   like an instrument that's been dialed in. */
+html[data-theme="deepcurrent"] .filter-field { background: rgba(3,12,20,0.5); }
+html[data-theme="deepcurrent"] .filter-field.is-set { box-shadow: 0 0 12px rgba(53,230,196,0.25); }
+html[data-theme="deepcurrent"] .toolbar .filter-field input,
+html[data-theme="deepcurrent"] .filter-reset-count,
+html[data-theme="deepcurrent"] .search-box-kbd { font-family: 'JetBrains Mono', monospace; }
+html[data-theme="deepcurrent"] .filter-prefix { font-family: 'JetBrains Mono', monospace; font-weight: 600; letter-spacing: 0.06em; }
+html[data-theme="deepcurrent"] .toolbar #searchInput { background: rgba(3,12,20,0.5); }
 
 /* Theme switch - a hand-built dropdown (button + listbox) rather than a
    native <select>, whose option-list styling the browser won't hand over
@@ -1340,70 +1785,370 @@ html:not([data-theme]) #statsContent.stats-pop {
   background: var(--accent-soft);
 }
 
-/* Leaderboard view */
-/* Grid instead of flex-wrap so a 9-person roster lands evenly (3x3) instead
-   of ragged rows with a lone chip stranded on the last line - same fix as
-   the beaten-by roster picker in the Sweat Lookup form. */
+/* Leaderboard view - a podium for the top three and a ranked list with a
+   progress bar for everyone else, instead of nine identical chips. Every
+   entry is still a .leaderboard-chip button (click to drill into that
+   person's sweats), so the themes' name/hover treatments keep applying.
+   Medal colors are tokens so each theme can tune gold/silver/bronze to its
+   own palette the same way it tunes the roster colors. */
+:root {
+  --medal-1: #ffd166;
+  --medal-2: #c9d4e6;
+  --medal-3: #e39a62;
+}
+html[data-theme="casefiles"] { --medal-1: #b8912f; --medal-2: #7b776b; --medal-3: #9a5a33; }
+html[data-theme="ledger"] { --medal-1: #a9822e; --medal-2: #8a8e96; --medal-3: #9c6238; }
+html[data-theme="deepcurrent"] { --medal-1: #ffe066; --medal-2: #bfe3ea; --medal-3: #ff9f6b; }
+
 .leaderboard-ranking {
   max-width: 1200px;
-  margin: 0 auto 20px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  margin: 0 auto 26px;
 }
 
-@media (max-width: 620px) {
-  .leaderboard-ranking { grid-template-columns: repeat(2, 1fr); }
-  /* Same fix as the roster picker above - always exactly 9 entries, so the
-     last one otherwise strands alone at the start of a half-empty row. */
-  .leaderboard-ranking .leaderboard-chip:last-child { grid-column: 1 / -1; }
+.lb-podium {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 14px;
+  max-width: 760px;
+  margin: 8px auto 22px;
 }
 
 .leaderboard-chip {
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+  transition: transform 0.2s var(--ease), filter 0.2s var(--ease);
+}
+.leaderboard-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+.lb-step {
+  --medal: var(--medal-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.lb-step.lb-place-1 { --medal: var(--medal-1); }
+.lb-step.lb-place-2 { --medal: var(--medal-2); }
+.lb-step:hover { transform: translateY(-3px); }
+.lb-step:active { transform: translateY(0) scale(0.98); }
+
+.lb-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--chip-color);
+  color: #0b0d14;
+  font-weight: 800;
+  font-size: 0.8em;
+}
+.lb-step .lb-avatar {
+  width: 64px;
+  height: 64px;
+  font-size: 1.25em;
+  box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px var(--medal);
+}
+.lb-step.lb-place-1 .lb-avatar {
+  width: 80px;
+  height: 80px;
+  font-size: 1.5em;
+}
+.lb-crown {
+  height: 22px;
+  color: var(--medal-1);
+  font-size: 1.3em;
+  line-height: 22px;
+}
+.lb-step:not(.lb-place-1) .lb-crown { visibility: hidden; }
+
+.lb-step .leaderboard-name {
+  max-width: 100%;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 800;
+  font-size: 1.02em;
+}
+.lb-step-count {
+  color: var(--text-dim);
+  font-size: 0.8em;
+  font-weight: 600;
+}
+.lb-step-count b {
+  color: var(--text);
+  font-size: 1.15em;
+}
+
+.lb-block {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 70px;
+  margin-top: 6px;
+  border-radius: var(--radius-m) var(--radius-m) 0 0;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--medal);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--medal) 22%, transparent), transparent 90%), var(--panel);
+}
+.lb-place-1 .lb-block { height: 112px; }
+.lb-place-2 .lb-block { height: 88px; }
+.lb-place {
+  color: var(--medal);
+  font-size: 2.3em;
+  font-weight: 800;
+  line-height: 1;
+}
+.lb-place-1 .lb-place { font-size: 3em; }
+.lb-place-roman { display: none; }
+
+/* The selected person - a lit plinth and a "viewing" label, since the
+   drill-down table below it otherwise only says whose it is in its title. */
+.lb-step.active .lb-block {
+  border-color: var(--border-strong);
+  border-top-color: var(--medal);
+  box-shadow: 0 0 0 1px var(--border-strong), 0 12px 28px -12px color-mix(in srgb, var(--medal) 60%, transparent);
+}
+.lb-step.active .lb-block::after,
+.lb-row.active::after {
+  content: "Viewing";
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.62em;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.lb-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+.lb-row {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 16px;
+  gap: 12px;
+  padding: 9px 14px;
   border-radius: var(--radius-m);
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.02);
-  color: var(--text-dim);
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s var(--ease);
+  background: var(--panel);
+  text-align: left;
 }
-.leaderboard-chip:hover { border-color: var(--border-strong); }
-.leaderboard-chip:active { transform: scale(0.97); }
-.leaderboard-chip.active {
+.lb-row:hover { border-color: var(--border-strong); }
+.lb-row:active { transform: scale(0.99); }
+.lb-row.active {
   border-color: var(--border-strong);
-  background: var(--accent-soft);
-  color: var(--text);
-  box-shadow: 0 0 14px rgba(0,217,255,0.2);
+  background: linear-gradient(90deg, var(--accent-soft), transparent 70%), var(--panel);
 }
-
-.leaderboard-rank {
-  font-size: 0.75em;
-  font-weight: 800;
+.lb-row.active::after {
+  position: static;
+  transform: none;
+  order: 3;
+}
+.lb-row .leaderboard-rank {
+  width: 26px;
+  flex: none;
   color: var(--text-faint);
-}
-.leaderboard-chip.active .leaderboard-rank { color: var(--accent-2); }
-.leaderboard-rank.medal { font-size: 1.3em; }
-
-.leaderboard-name { font-weight: 700; font-size: 0.95em; }
-
-.leaderboard-count {
-  font-size: 0.78em;
+  font-size: 0.82em;
   font-weight: 800;
-  padding: 2px 9px;
+}
+.lb-row .leaderboard-name {
+  width: 76px;
+  flex: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 0.95em;
+}
+.lb-bar {
+  flex: 1;
+  height: 6px;
+  min-width: 30px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.06);
-  color: var(--text-dim);
+  background: var(--border);
+  overflow: hidden;
 }
-.leaderboard-chip.active .leaderboard-count {
-  background: var(--accent-2-soft);
+.lb-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--chip-color);
+  transition: width 0.5s var(--ease);
+}
+.lb-row .leaderboard-count {
+  order: 4;
+  min-width: 26px;
+  text-align: right;
+  font-weight: 800;
+  font-size: 0.95em;
+  color: var(--text);
+}
+
+@media (max-width: 620px) {
+  .lb-podium { gap: 8px; }
+  .lb-step .lb-avatar { width: 50px; height: 50px; font-size: 1.05em; }
+  .lb-step.lb-place-1 .lb-avatar { width: 62px; height: 62px; font-size: 1.25em; }
+  .lb-block { height: 56px; }
+  .lb-place-1 .lb-block { height: 90px; }
+  .lb-place-2 .lb-block { height: 70px; }
+  .lb-place { font-size: 1.8em; }
+  .lb-place-1 .lb-place { font-size: 2.3em; }
+  .lb-list { grid-template-columns: 1fr; }
+  .lb-step.active .lb-block::after { bottom: 5px; font-size: 0.55em; }
+}
+
+/* Neon - lit-up plinths: the medal color glows through the block and the
+   top-three avatars get a halo, like stage lights on a podium. */
+html:not([data-theme]) .lb-step .lb-avatar {
+  box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px var(--medal), 0 0 22px color-mix(in srgb, var(--medal) 55%, transparent);
+}
+html:not([data-theme]) .lb-place {
+  text-shadow: 0 0 18px color-mix(in srgb, var(--medal) 70%, transparent);
+}
+html:not([data-theme]) .lb-bar > span {
+  box-shadow: 0 0 10px var(--chip-color);
+}
+
+/* Case Files - the podium is three stacked manila folders with the rank
+   stamped on in red ink, avatars pinned up as square mugshot tabs. */
+html[data-theme="casefiles"] .lb-avatar,
+html[data-theme="casefiles"] .lb-step .lb-avatar {
+  border-radius: 2px;
+  color: #2a241c;
+  box-shadow: 0 0 0 4px #fbf6e6, 0 0 0 5px var(--border), 3px 5px 8px rgba(42,36,28,0.3);
+}
+html[data-theme="casefiles"] .lb-avatar { box-shadow: 0 0 0 2px #fbf6e6, 0 0 0 3px var(--border); }
+html[data-theme="casefiles"] .lb-step.lb-place-2 .lb-avatar { transform: rotate(-3deg); }
+html[data-theme="casefiles"] .lb-step.lb-place-3 .lb-avatar { transform: rotate(2.5deg); }
+html[data-theme="casefiles"] .lb-crown { color: var(--accent-2); font-family: 'Anton', sans-serif; font-size: 0.8em; letter-spacing: 0.12em; }
+html[data-theme="casefiles"] .lb-crown::before { content: "MOST WANTED"; }
+html[data-theme="casefiles"] .lb-crown > span { display: none; }
+html[data-theme="casefiles"] .lb-block {
+  border: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border-strong);
+  border-radius: 3px 3px 0 0;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 17px, rgba(163,145,92,0.18) 17px 18px),
+    #e9d9a8;
+  box-shadow: inset 0 -6px 0 rgba(0,0,0,0.05), 4px 4px 0 -1px #dcc88f;
+}
+html[data-theme="casefiles"] .lb-place {
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
   color: var(--accent-2);
+  padding: 0 10px;
+  border: 3px solid var(--accent-2);
+  border-radius: 4px;
+  transform: rotate(-6deg);
+  opacity: 0.85;
+  font-size: 1.7em;
+  line-height: 1.15;
 }
+html[data-theme="casefiles"] .lb-place-1 .lb-place { font-size: 2.2em; }
+html[data-theme="casefiles"] .lb-step-count,
+html[data-theme="casefiles"] .lb-row .leaderboard-rank { font-family: 'Courier Prime', monospace; }
+html[data-theme="casefiles"] .lb-row {
+  background: var(--panel);
+  border-style: dashed;
+}
+html[data-theme="casefiles"] .lb-row.active { border-style: solid; background: #f2e3b3; }
+html[data-theme="casefiles"] .lb-bar {
+  height: 8px;
+  border-radius: 0;
+  background: repeating-linear-gradient(90deg, var(--border) 0 1px, transparent 1px 8px);
+}
+html[data-theme="casefiles"] .lb-bar > span { border-radius: 0; background: var(--text-dim); opacity: 0.75; }
+html[data-theme="casefiles"] .lb-step.active .lb-block::after,
+html[data-theme="casefiles"] .lb-row.active::after { color: var(--accent-2); font-family: 'Courier Prime', monospace; content: "OPEN FILE"; }
+
+/* Private Bank - engraved medallions on white stone, Roman numerals set in
+   Playfair, thin double gold rules instead of a filled block. */
+html[data-theme="ledger"] .lb-avatar {
+  color: #fff;
+  font-family: 'Playfair Display', serif;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--chip-color) 55%, #fff), var(--chip-color) 60%, color-mix(in srgb, var(--chip-color) 70%, #000));
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+html[data-theme="ledger"] .lb-step .lb-avatar {
+  box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--medal), 0 0 0 7px #fff, 0 0 0 8px color-mix(in srgb, var(--medal) 50%, transparent), 0 10px 20px -8px rgba(22,35,58,0.4);
+}
+html[data-theme="ledger"] .lb-crown > span { display: none; }
+html[data-theme="ledger"] .lb-crown::before { content: "\2766"; }
+html[data-theme="ledger"] .lb-block {
+  border: 0;
+  border-top: 1px solid var(--medal);
+  border-radius: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--medal) 10%, #fff), #fff);
+  box-shadow: inset 0 3px 0 #fff, inset 0 4px 0 var(--medal), 0 14px 26px -20px rgba(22,35,58,0.5);
+  outline: 1px solid var(--border);
+}
+html[data-theme="ledger"] .lb-place-num { display: none; }
+html[data-theme="ledger"] .lb-place-roman {
+  display: inline;
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-style: italic;
+}
+html[data-theme="ledger"] .lb-step .leaderboard-name { font-weight: 600; }
+html[data-theme="ledger"] .lb-step-count { font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.95em; }
+html[data-theme="ledger"] .lb-row { border-radius: 0; border-color: var(--border); }
+html[data-theme="ledger"] .lb-row.active { border-color: var(--gold); background: linear-gradient(90deg, var(--accent-soft), transparent 70%), #fff; }
+html[data-theme="ledger"] .lb-row .leaderboard-rank { font-family: 'Playfair Display', serif; font-style: italic; }
+html[data-theme="ledger"] .lb-bar { height: 3px; background: var(--border); border-radius: 0; }
+html[data-theme="ledger"] .lb-bar > span { border-radius: 0; background: var(--gold); }
+html[data-theme="ledger"] .lb-step.active .lb-block::after,
+html[data-theme="ledger"] .lb-row.active::after { color: var(--gold); font-family: 'EB Garamond', serif; letter-spacing: 0.2em; }
+
+/* Deep Current - depth soundings: the plinths are columns of water that get
+   darker toward the bottom, ranks read out in the mono gauge font, and the
+   leader gets the same slow sonar ping the rest of this theme uses. */
+html[data-theme="deepcurrent"] .lb-avatar { color: #031018; }
+html[data-theme="deepcurrent"] .lb-step .lb-avatar {
+  position: relative;
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--medal), 0 0 20px color-mix(in srgb, var(--medal) 40%, transparent);
+}
+html[data-theme="deepcurrent"] .lb-step.lb-place-1 .lb-avatar::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid var(--medal);
+  opacity: 0;
+  animation: alarmPing 2.6s ease-out infinite;
+}
+html[data-theme="deepcurrent"] .lb-block {
+  border-radius: 14px 14px 0 0;
+  border-color: rgba(53,230,196,0.18);
+  border-top: 2px solid var(--medal);
+  background:
+    repeating-linear-gradient(180deg, transparent 0 13px, rgba(53,230,196,0.08) 13px 14px),
+    linear-gradient(180deg, color-mix(in srgb, var(--medal) 20%, #0e2a3c), #04121c);
+}
+html[data-theme="deepcurrent"] .lb-place,
+html[data-theme="deepcurrent"] .lb-row .leaderboard-rank,
+html[data-theme="deepcurrent"] .lb-row .leaderboard-count,
+html[data-theme="deepcurrent"] .lb-step-count {
+  font-family: 'JetBrains Mono', monospace;
+}
+html[data-theme="deepcurrent"] .lb-place { text-shadow: 0 0 14px color-mix(in srgb, var(--medal) 60%, transparent); }
+html[data-theme="deepcurrent"] .lb-row { background: linear-gradient(160deg, var(--panel), var(--panel-2)); }
+html[data-theme="deepcurrent"] .lb-row.active { box-shadow: 0 0 14px rgba(53,230,196,0.2); }
+html[data-theme="deepcurrent"] .lb-bar > span { box-shadow: 0 0 8px var(--chip-color); }
 
 .leaderboard-person-title {
   max-width: 1200px;
@@ -1998,6 +2743,11 @@ html[data-theme="deepcurrent"] .pill.prestige-tag span { text-shadow: 0 0 5px; }
 }
 
 .beaten-by-avatars { display: flex; gap: 4px; flex-shrink: 0; }
+/* Four or more beaters overlap into a stack instead of pushing the card's
+   Edit/Remove buttons past its edge. */
+.sweat-card .beaten-by-avatars:has(> :nth-child(4)) { gap: 0; }
+.sweat-card .beaten-by-avatars:has(> :nth-child(4)) > .beaten-avatar { box-shadow: 0 0 0 2px var(--panel); }
+.sweat-card .beaten-by-avatars:has(> :nth-child(4)) > .beaten-avatar + .beaten-avatar { margin-left: -4px; }
 
 .beaten-avatar {
   width: 22px;
@@ -2565,6 +3315,149 @@ html:not([data-theme]) .modal-card.card-flip-expand {
 .modal-stat-delta.delta-down .delta-value { color: var(--bad); }
 .modal-stat-delta.delta-flat .delta-value { color: var(--text-faint); }
 
+/* Player popup - where the live number stands among every tracked sweat
+   (a thin meter under each stat), and a strip with the saved record: when
+   they were logged, their index, who beat them and any flags. */
+.modal-stat-tile.stat-star .modal-stat-value .pill.prestige-tag {
+  font-size: 0.78em;
+  text-shadow: none;
+}
+.modal-standing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  cursor: help;
+}
+.modal-standing-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+.modal-standing-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
+  animation: standingFill 0.8s var(--ease) both;
+  transform-origin: left;
+}
+@keyframes standingFill { from { transform: scaleX(0); } }
+.modal-standing-text {
+  flex: none;
+  font-size: 0.6em;
+  font-weight: 700;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.stat-star .modal-standing { color: var(--gold); }
+.stat-fkdr .modal-standing { color: var(--accent-2); }
+.stat-wlr .modal-standing { color: var(--neutral); }
+.stat-finals .modal-standing { color: var(--bad); }
+.stat-star .modal-standing { max-width: 240px; margin-left: auto; margin-right: auto; }
+
+.modal-record {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 22px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius-s);
+  border: 1px dashed var(--border-strong);
+  background: var(--accent-soft);
+}
+.modal-record[hidden] { display: none; }
+.modal-record-item { display: flex; flex-direction: column; gap: 4px; }
+.modal-record-label {
+  font-size: 0.62em;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.modal-record-value { font-size: 0.92em; font-weight: 700; color: var(--text); }
+.modal-record-beaten { margin-left: auto; align-items: flex-end; }
+.modal-record-flags { display: flex; gap: 6px; flex-basis: 100%; }
+@media (max-width: 560px) {
+  /* Skin on top as a short banner so the stat tiles get the full width -
+     side by side, the big values (finals, wins) got clipped on phones. */
+  #playerModal .modal-body { flex-direction: column; gap: 12px; }
+  #playerModal #modalSkin { width: 100%; height: 170px; }
+  #playerModal .modal-stats-grid { width: 100%; }
+}
+@media (max-width: 480px) {
+  .modal-record { gap: 10px 16px; }
+  .modal-record-beaten { margin-left: 0; align-items: flex-start; flex-basis: 100%; }
+}
+
+/* A lit floor under the skin, so the render stands on something instead of
+   floating in a box - each theme swaps the light for its own material. */
+#modalSkin {
+  background:
+    radial-gradient(ellipse 60% 10% at 50% 94%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 70%),
+    radial-gradient(circle at 50% 40%, var(--accent-soft), transparent 70%);
+}
+/* On wider screens the player popup becomes a two-column profile: a big
+   skin render with the saved record under it on the left, live stats and
+   tags on the right. .modal-body's children join the grid directly via
+   display: contents, so phones keep the original stacked layout. */
+@media (min-width: 761px) {
+  #playerModal .modal-content {
+    width: 720px;
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-areas:
+      "name name"
+      "live live"
+      "skin stats"
+      "record urchin"
+      "record seraph";
+    grid-template-rows: auto auto auto auto 1fr;
+    column-gap: 22px;
+    align-items: start;
+  }
+  #playerModal #modalUsername { grid-area: name; }
+  #playerModal #modalTitle { grid-area: live; }
+  #playerModal .modal-body { display: contents; }
+  #playerModal #modalSkin { grid-area: skin; width: 100%; height: 100%; min-height: 250px; }
+  #playerModal #modalStats { grid-area: stats; }
+  #playerModal .modal-record { grid-area: record; flex-direction: column; align-items: stretch; gap: 12px; }
+  #playerModal .modal-record-beaten { margin-left: 0; align-items: flex-start; }
+  #playerModal .modal-tags-urchin { grid-area: urchin; }
+  #playerModal .modal-tags-seraph { grid-area: seraph; }
+  #playerModal .modal-record[hidden] + .modal-tags-urchin { grid-column: 1 / -1; }
+  #playerModal .modal-record[hidden] ~ .modal-tags-seraph { grid-column: 1 / -1; }
+  #playerModal .modal-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #playerModal .modal-stat-tile { padding: 12px 12px 10px; }
+  #playerModal .modal-stat-value { font-size: 1.55em; }
+}
+html[data-theme="casefiles"] .modal-record { background: #f4e7bf; border-color: var(--border-strong); }
+html[data-theme="casefiles"] .modal-record-label { font-family: 'Courier Prime', monospace; color: var(--accent-2); }
+html[data-theme="casefiles"] .modal-record-value,
+html[data-theme="casefiles"] .modal-standing-text { font-family: 'Courier Prime', monospace; }
+html[data-theme="casefiles"] .modal-standing-bar { border-radius: 0; height: 5px; }
+html[data-theme="casefiles"] .modal-standing-bar > span { border-radius: 0; }
+html[data-theme="casefiles"] .modal-standing { color: var(--text-dim); }
+html[data-theme="ledger"] .modal-record {
+  border: 0;
+  border-top: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
+  border-radius: 0;
+  background: none;
+}
+html[data-theme="ledger"] .modal-record-label { font-family: 'EB Garamond', serif; font-style: italic; text-transform: none; font-size: 0.85em; letter-spacing: 0; font-weight: 400; }
+html[data-theme="ledger"] .modal-record-value { font-family: 'Playfair Display', serif; font-weight: 600; }
+html[data-theme="ledger"] .modal-standing { color: var(--gold); }
+html[data-theme="ledger"] .modal-standing-bar { height: 2px; border-radius: 0; }
+html[data-theme="ledger"] .modal-standing-text { font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.72em; }
+html[data-theme="deepcurrent"] .modal-record { border-style: solid; border-color: rgba(53,230,196,0.25); background: rgba(53,230,196,0.06); }
+html[data-theme="deepcurrent"] .modal-record-value,
+html[data-theme="deepcurrent"] .modal-standing-text { font-family: 'JetBrains Mono', monospace; }
+html[data-theme="deepcurrent"] .modal-standing-bar > span { box-shadow: 0 0 6px currentColor; }
+
 .modal-tags-section {
   margin-top: 16px;
   padding: 12px 14px;
@@ -3103,10 +3996,6 @@ html[data-theme="casefiles"] .view-btn.active {
   box-shadow: none;
   color: var(--panel);
 }
-html[data-theme="casefiles"] .leaderboard-chip.active {
-  box-shadow: none;
-}
-
 /* File-tag look for the theme dropdown: square instead of pill, uppercase
    typewriter label. */
 /* File-tag look for the theme dropdown: square instead of rounded, uppercase
@@ -3678,7 +4567,6 @@ html[data-theme="ledger"] .pill {
   border-radius: var(--radius-s);
 }
 
-html[data-theme="ledger"] .leaderboard-chip.active,
 html[data-theme="ledger"] .view-btn.active {
   box-shadow: none;
 }
@@ -4901,34 +5789,6 @@ html[data-theme="deepcurrent"] .chip input:checked + span {
 html[data-theme="deepcurrent"] .view-btn.active {
   box-shadow: 0 4px 14px rgba(53,230,196,0.3);
 }
-/* Leaderboard chips read as sonar contacts on a scope - the selected one
-   gets a slow ping ring (the same alarmPing keyframe the confirm-delete
-   icon uses, repurposed here at low opacity) instead of just a static glow,
-   and ranks/counts move to the mono readout font already used for other
-   numeric displays in this theme. */
-html[data-theme="deepcurrent"] .leaderboard-chip {
-  border-radius: 12px;
-  background: linear-gradient(160deg, var(--panel), var(--panel-2));
-}
-html[data-theme="deepcurrent"] .leaderboard-chip:hover {
-  border-color: var(--border-strong);
-  box-shadow: 0 0 12px rgba(53,230,196,0.18);
-}
-html[data-theme="deepcurrent"] .leaderboard-chip.active {
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 14px rgba(53,230,196,0.2);
-}
-html[data-theme="deepcurrent"] .leaderboard-chip.active::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border: 1px solid var(--accent);
-  opacity: 0;
-  animation: alarmPing 2.4s ease-out infinite;
-  pointer-events: none;
-}
 html[data-theme="deepcurrent"] .leaderboard-rank,
 html[data-theme="deepcurrent"] .leaderboard-count {
   font-family: 'JetBrains Mono', monospace;
@@ -5916,7 +6776,7 @@ html[data-theme="deepcurrent"] .pill.boost {
 
             <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
               <div id="statsContent">
-                <img id="statsAvatar" src="" alt="Player head" />
+                <img id="statsAvatar" src="" alt="Player skin" />
                 <div id="statsRight">
                   <div id="statsTopRow">
                     <span id="statsRank"></span>
@@ -5975,47 +6835,41 @@ html[data-theme="deepcurrent"] .pill.boost {
     <div>
       <span class="exhibit-tag exhibit-tag-results">Exhibit B</span>
       <h2>Defeated Sweats</h2>
-      <p><span id="resultCount">0</span> tracked players</p>
+      <p id="resultCount">Loading players&hellip;</p>
     </div>
   </div>
 
+  <div id="sweatStats" class="sweat-stats" aria-label="Summary of the sweats matching the current filters"></div>
+
   <div class="toolbar card">
-    <div id="searchContainer">
-      <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" />
-    </div>
-    <div class="filter-fields" aria-label="Minimum stat filters">
-      <div class="filter-field">
-        <label for="minStars">Min Stars</label>
-        <input id="minStars" type="number" step="1" placeholder="e.g. 100">
+    <div class="toolbar-top">
+      <div id="searchContainer" class="search-box">
+        <svg class="search-box-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2" /><line x1="15.5" y1="15.5" x2="20.5" y2="20.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+        <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" aria-keyshortcuts="/" />
+        <kbd class="search-box-kbd" aria-hidden="true">/</kbd>
+        <button type="button" id="searchClearBtn" class="search-box-clear" aria-label="Clear search" hidden>&times;</button>
       </div>
-      <div class="filter-field">
-        <label for="minFkdr">Min FKDR</label>
-        <input id="minFkdr" type="number" step="0.1" placeholder="e.g. 2.5">
-      </div>
-      <div class="filter-field">
-        <label for="minIndex">Min Index</label>
-        <input id="minIndex" type="number" step="1" placeholder="e.g. 300">
-      </div>
-      <div class="filter-field">
-        <label for="minDate">Min Date</label>
-        <input id="minDate" type="date">
+      <div class="view-toggle" role="group" aria-label="Result view">
+        <button type="button" id="viewGridBtn" class="view-btn active"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2" /><rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2" /><rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2" /><rect x="9" y="9" width="5.5" height="5.5" rx="1.2" /></svg><span>Grid</span></button>
+        <button type="button" id="viewTableBtn" class="view-btn"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2" width="13" height="2.4" rx="1" /><rect x="1.5" y="6.8" width="13" height="2.4" rx="1" /><rect x="1.5" y="11.6" width="13" height="2.4" rx="1" /></svg><span>Table</span></button>
+        <button type="button" id="viewLeaderboardBtn" class="view-btn"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="7" width="4.4" height="8" rx="1" /><rect x="5.8" y="2" width="4.4" height="13" rx="1" /><rect x="10.6" y="9.5" width="4.4" height="5.5" rx="1" /></svg><span>Leaderboard</span></button>
       </div>
     </div>
 
     <div class="toolbar-row">
+      <div class="filter-fields" role="group" aria-label="Minimum stat filters">
+        <label class="filter-field" for="minStars"><span class="filter-prefix">Stars &ge;</span><input id="minStars" type="number" step="1" placeholder="100"></label>
+        <label class="filter-field" for="minFkdr"><span class="filter-prefix">FKDR &ge;</span><input id="minFkdr" type="number" step="0.1" placeholder="2.5"></label>
+        <label class="filter-field" for="minIndex"><span class="filter-prefix">Index &ge;</span><input id="minIndex" type="number" step="1" placeholder="300"></label>
+        <label class="filter-field filter-field-date" for="minDate"><span class="filter-prefix">Since</span><input id="minDate" type="date"></label>
+      </div>
+      <span class="toolbar-divider" aria-hidden="true"></span>
       <div class="toolbar-actions-left">
         <label class="chip"><input type="checkbox" id="hideDuplicates" /><span>Hide Dupes</span></label>
         <label class="chip cheat-chip"><input type="checkbox" id="cheatersOnly" /><span>Cheaters Only</span></label>
         <label class="chip boost-chip"><input type="checkbox" id="boostersOnly" /><span>Boosters Only</span></label>
       </div>
-      <div class="toolbar-actions-right">
-        <button id="resetFiltersBtn" type="button" class="icon-btn reset" data-tooltip="Reset filters">&#8635;</button>
-        <div class="view-toggle" role="group" aria-label="Result view">
-          <button type="button" id="viewGridBtn" class="view-btn active">Grid</button>
-          <button type="button" id="viewTableBtn" class="view-btn">Table</button>
-          <button type="button" id="viewLeaderboardBtn" class="view-btn">Leaderboard</button>
-        </div>
-      </div>
+      <button id="resetFiltersBtn" type="button" class="filter-reset" disabled><span aria-hidden="true">&#8635;</span> Reset<span class="filter-reset-count" id="activeFilterCount"></span></button>
     </div>
   </div>
 
@@ -6157,8 +7011,8 @@ html[data-theme="deepcurrent"] .pill.boost {
 
   <div id="denickContainer" class="card">
     <div class="denick-mode-toggle" role="tablist" aria-label="Denick lookup mode">
-      <button type="button" class="denick-mode-btn active" data-mode="nick" role="tab" aria-selected="true">Nick &rarr; Owners</button>
-      <button type="button" class="denick-mode-btn" data-mode="player" role="tab" aria-selected="false">Player &rarr; Nicks Used</button>
+      <button type="button" class="denick-mode-btn active" data-mode="nick" role="tab" aria-selected="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5.5c0-1.5 2.2-2.5 5-2.5s5 1 5 2.5v1.2c0 2.8-2.2 5.8-5 6.3-2.8-.5-5-3.5-5-6.3z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="10" cy="7" r="1" fill="currentColor"/></svg>Nick &rarr; Owners</button>
+      <button type="button" class="denick-mode-btn" data-mode="player" role="tab" aria-selected="false"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2.8 14c.6-2.8 2.7-4.3 5.2-4.3s4.6 1.5 5.2 4.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Player &rarr; Nicks Used</button>
     </div>
     <div class="lookup-row">
       <input type="text" id="denickInput" placeholder="Enter a nick" aria-label="Nick or player to search" />
@@ -6195,12 +7049,13 @@ html[data-theme="deepcurrent"] .pill.boost {
         <img id="modalSkin" src="" />
         <div id="modalStats" class="modal-stats-grid"></div>
       </div>
-      <div class="modal-tags-section">
+      <div id="modalRecord" class="modal-record" hidden></div>
+      <div class="modal-tags-section modal-tags-urchin">
         <div class="modal-tags-label">Urchin Tags</div>
         <div id="modalTags" class="modal-tags-row">Checking...</div>
         <div id="modalTagsReason" class="urchin-reason-text" hidden></div>
       </div>
-      <div class="modal-tags-section">
+      <div class="modal-tags-section modal-tags-seraph">
         <div class="modal-tags-label">Seraph Tags</div>
         <div id="modalSeraphTags" class="modal-tags-row">Checking...</div>
         <div id="modalSeraphTagsReason" class="urchin-reason-text" hidden></div>
@@ -6851,7 +7706,8 @@ function renderDenickResults(entries, nameOf, startIndex) {
     const isCurrent = startIndex + i === 0 && denickAllResults.length > 1;
 
     const row = document.createElement("div");
-    row.className = "denick-row";
+    row.className = isCurrent ? "denick-row is-current" : "denick-row";
+    row.dataset.source = entry.source === "Diamond Dome" ? "dome" : "api";
 
     const who = document.createElement("div");
     who.className = "denick-row-who";
@@ -7511,6 +8367,41 @@ resetFiltersBtn.addEventListener('click', () => {
   renderTable();
 });
 
+// Search clear button, "/" to jump to search, and the toolbar's "which
+// filters are on" state: set filter pills get .is-set, and Reset shows how
+// many filters are active (and is disabled when there's nothing to reset).
+// Runs from renderTable, so URL-restored filters light up too.
+const searchClearBtn = document.getElementById("searchClearBtn");
+const activeFilterCount = document.getElementById("activeFilterCount");
+searchClearBtn.addEventListener("click", () => {
+  searchInput.value = "";
+  currentFilter = "";
+  currentPage = 1;
+  renderTable();
+  searchInput.focus();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+  const t = e.target;
+  if (t.closest && t.closest("input, textarea, select, [contenteditable]")) return;
+  if ([...document.querySelectorAll(".modal")].some(m => m.style.display === "flex")) return;
+  e.preventDefault();
+  searchInput.focus();
+});
+function updateFilterIndicators() {
+  searchClearBtn.hidden = searchInput.value === "";
+  let active = searchInput.value.trim() ? 1 : 0;
+  [filterStars, filterFkdr, filterIndex, filterDate].forEach(inp => {
+    const set = inp.value.trim() !== "";
+    inp.closest(".filter-field").classList.toggle("is-set", set);
+    if (set) active++;
+  });
+  [hideDuplicatesCheckbox, cheatersOnlyCheckbox, boostersOnlyCheckbox].forEach(cb => { if (cb.checked) active++; });
+  activeFilterCount.textContent = active ? String(active) : "";
+  resetFiltersBtn.disabled = active === 0;
+  resetFiltersBtn.setAttribute("aria-label", active ? `Reset ${active} active filter${active > 1 ? "s" : ""}` : "No filters to reset");
+}
+
 [cheatersOnlyCheckbox, boostersOnlyCheckbox].forEach(cb => {
   cb.addEventListener('change', () => { currentPage = 1; renderTable(); });
 });
@@ -7778,7 +8669,7 @@ function renderTagBadges(container, reasonEl, tagsData, iconMap, emptyText = "No
 }
 
 function updateStatsDisplay(stats) {
-  statsAvatar.src = `https://visage.surgeplay.com/face/256/${currentUUID}`;
+  statsAvatar.src = `https://visage.surgeplay.com/full/256/${currentUUID}`;
   statsUsername.textContent = stats.username;
 
   if (stats.rank.name) {
@@ -7953,6 +8844,89 @@ function updatePaginationControls(container, totalPages) {
 // both the card grid and the table on every keystroke/filter change roughly
 // doubles the work for a view the user isn't even looking at. setViewMode()
 // re-renders on switch, so the freshly-shown view is never stale.
+// Summary strip above the toolbar (see .sweat-stats) - totals and record
+// holders across whatever the filters currently match. Player tiles get the
+// same data-username/data-uuid/logged-stat dataset a card has, so clicking
+// one opens that player's popup through the shared document click handler.
+// Names go in via textContent, never markup, same as the cards.
+const sweatStatsEl = document.getElementById("sweatStats");
+
+function renderSweatStats(list) {
+  sweatStatsEl.innerHTML = "";
+  if (!list.length) return;
+
+  const num = v => Number(v) || 0;
+  const indexOf = s => num(s.fkdr) * num(s.fkdr) * num(s.star);
+  const best = pick => list.reduce((a, b) => (pick(b) > pick(a) ? b : a));
+
+  // Sweats per calendar month for the last six months, oldest first.
+  const now = new Date();
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, label: d.toLocaleDateString(undefined, { month: "short" }), n: 0 });
+  }
+  const monthByKey = new Map(months.map(m => [m.key, m]));
+  const monthAgo = now.getTime() - 30 * 86400000;
+  let recent = 0;
+  list.forEach(s => {
+    const key = String(s.dateAdded || "").slice(0, 7);
+    if (monthByKey.has(key)) monthByKey.get(key).n++;
+    const t = Date.parse(s.dateAdded);
+    if (t >= monthAgo) recent++;
+  });
+  const peak = Math.max(1, ...months.map(m => m.n));
+
+  const tile = (cls, label) => {
+    const el = document.createElement("div");
+    el.className = `card ss-tile ${cls}`;
+    el.innerHTML = `<span class="ss-label">${label}</span>`;
+    sweatStatsEl.appendChild(el);
+    return el;
+  };
+
+  const total = tile("ss-tile-total", "Sweats beaten");
+  total.insertAdjacentHTML("beforeend", `
+    <div class="ss-total-row">
+      <div>
+        <div class="ss-value">${list.length.toLocaleString()}</div>
+        <div class="ss-sub">${recent ? `<b>+${recent}</b> in the last 30 days` : "None in the last 30 days"}</div>
+      </div>
+      <div class="ss-spark" role="img" aria-label="Sweats per month: ${months.map(m => `${m.label} ${m.n}`).join(", ")}">
+        ${months.map(m => `<span style="height:${Math.round(m.n / peak * 100)}%" data-tooltip="${m.label}: ${m.n}"></span>`).join("")}
+      </div>
+    </div>`);
+
+  const playerTile = (cls, label, s, valueHtml) => {
+    const el = tile(cls, label);
+    el.dataset.username = s.username;
+    el.dataset.uuid = s.uuid;
+    setLoggedStatsDataset(el, s);
+    el.tabIndex = 0;
+    el.setAttribute("role", "button");
+    el.insertAdjacentHTML("beforeend", `<div class="ss-value">${valueHtml}</div><div class="ss-who"><img alt="" /><span></span></div>`);
+    withRetryingAvatar(el.querySelector("img"), s.uuid, s.username);
+    el.querySelector(".ss-who span").textContent = s.username;
+    el.setAttribute("aria-label", `${label}: ${s.username}. View their stats`);
+  };
+
+  const topStar = best(s => num(s.star));
+  playerTile("ss-tile-star", "Highest star", topStar, `<span class="pill prestige-tag">${prestigeTagHtml(num(topStar.star))}</span>`);
+  const topFkdr = best(s => num(s.fkdr));
+  playerTile("ss-tile-fkdr", "Best FKDR", topFkdr, num(topFkdr.fkdr).toFixed(2));
+  const topIndex = best(indexOf);
+  playerTile("ss-tile-index", "Top index", topIndex, Math.round(indexOf(topIndex)).toLocaleString());
+
+  const cheats = list.filter(s => s.cheating).length;
+  const boosts = list.filter(s => s.boosting).length;
+  const pct = n => (n / list.length * 100).toFixed(1);
+  const flags = tile("ss-tile-flags", "Flagged");
+  flags.insertAdjacentHTML("beforeend", `
+    <div class="ss-value">${Math.round(list.filter(s => s.cheating || s.boosting).length / list.length * 100)}%</div>
+    <div class="ss-flag-bar" aria-hidden="true"><span class="cheat" style="width:${pct(cheats)}%"></span><span class="boost" style="width:${pct(boosts)}%"></span></div>
+    <div class="ss-flag-legend"><span class="cheat"><i></i>${cheats} cheating</span><span class="boost"><i></i>${boosts} boosting</span></div>`);
+}
+
 function renderTable() {
   // A full re-render can remove the element the tooltip is currently
   // anchored to (e.g. a row that no longer matches the filter) without
@@ -7961,7 +8935,14 @@ function renderTable() {
   hideTooltip();
   const { filteredSweats, usernameCounts } = getProcessedSweats();
 
-  resultCount.textContent = filteredSweats.length;
+  // "16 tracked players" normally, "3 of 16 players match" while filtering.
+  const total = sweats.length;
+  const plural = n => (n === 1 ? "player" : "players");
+  resultCount.textContent = filteredSweats.length === total
+    ? `${total.toLocaleString()} tracked ${plural(total)}`
+    : `${filteredSweats.length.toLocaleString()} of ${total.toLocaleString()} ${plural(total)} match`;
+  renderSweatStats(filteredSweats);
+  updateFilterIndicators();
   updateSortHeaders();
 
   if (viewMode === "grid" || viewMode === "table") {
@@ -8354,14 +9335,34 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   const ranked = [...BEATEN_BY_KEYS].sort((a, b) => counts[b] - counts[a]);
   if (!leaderboardPerson) leaderboardPerson = ranked[0];
 
-  const MEDALS = ["\u{1F947}", "\u{1F948}", "\u{1F949}"]; // gold, silver, bronze - re-evaluated every render, so they always follow whoever currently ranks there
-  leaderboardRanking.innerHTML = ranked.map((k, i) => `
-    <button type="button" class="leaderboard-chip${k === leaderboardPerson ? " active" : ""}" data-person="${k}">
-      <span class="leaderboard-rank${i < 3 ? " medal" : ""}">${MEDALS[i] || ("#" + (i + 1))}</span>
+  // Podium for the top three (laid out 2nd, 1st, 3rd so the winner stands
+  // in the middle), then a ranked list with a bar scaled to the leader's
+  // count for everyone else. Places are re-evaluated every render, so they
+  // always follow whoever currently ranks there under the active filters.
+  const ROMAN = ["I", "II", "III"];
+  const topCount = Math.max(1, counts[ranked[0]]);
+  const avatar = k => `<span class="lb-avatar" style="--chip-color:var(--roster-${k})">${BEATEN_BY[k].initials}</span>`;
+  const activeClass = k => (k === leaderboardPerson ? " active" : "");
+  const podium = [1, 0, 2].map(i => {
+    const k = ranked[i];
+    return `
+    <button type="button" class="leaderboard-chip lb-step lb-place-${i + 1}${activeClass(k)}" data-person="${k}" aria-label="${["1st", "2nd", "3rd"][i]} place: ${BEATEN_BY[k].label}, ${counts[k]} sweats">
+      <span class="lb-crown" aria-hidden="true"><span>&#9819;</span></span>
+      ${avatar(k)}
       <span class="leaderboard-name">${BEATEN_BY[k].label}</span>
+      <span class="lb-step-count"><b>${counts[k]}</b> ${counts[k] === 1 ? "sweat" : "sweats"}</span>
+      <span class="lb-block" aria-hidden="true"><span class="lb-place"><span class="lb-place-num">${i + 1}</span><span class="lb-place-roman">${ROMAN[i]}</span></span></span>
+    </button>`;
+  }).join("");
+  const rest = ranked.slice(3).map((k, i) => `
+    <button type="button" class="leaderboard-chip lb-row${activeClass(k)}" data-person="${k}" style="--chip-color:var(--roster-${k})">
+      <span class="leaderboard-rank">#${i + 4}</span>
+      ${avatar(k)}
+      <span class="leaderboard-name">${BEATEN_BY[k].label}</span>
+      <span class="lb-bar" aria-hidden="true"><span style="width:${Math.round(counts[k] / topCount * 100)}%"></span></span>
       <span class="leaderboard-count">${counts[k]}</span>
-    </button>
-  `).join("");
+    </button>`).join("");
+  leaderboardRanking.innerHTML = `<div class="lb-podium">${podium}</div><div class="lb-list">${rest}</div>`;
 
   leaderboardRanking.querySelectorAll(".leaderboard-chip").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -8646,6 +9647,45 @@ function sinceBeatDeltaHtml(liveValue, loggedRaw, { decimals = 0, suffix = "", l
   return `<div class="modal-stat-delta delta-${tone}" title="${tip}"><span class="delta-value">${shown}</span> ${label}</div>`;
 }
 
+// "Beats 82% of tracked" meter under a player-popup stat: the share of
+// tracked sweats with a lower saved value for that field. Skipped when
+// fewer than three sweats have the field (too few to rank against) or for
+// stats the sweats list doesn't store.
+function trackedStandingHtml(field, live) {
+  if (!field) return "";
+  const liveNum = Number(live);
+  const values = sweats.map(s => Number(s[field])).filter(Number.isFinite);
+  if (values.length < 3 || !Number.isFinite(liveNum)) return "";
+  const pct = Math.round(values.filter(v => v < liveNum).length / values.length * 100);
+  return `<div class="modal-standing" data-tooltip="Higher than ${pct}% of the ${values.length} tracked sweats' saved ${field === "star" ? "stars" : field.toUpperCase()}">
+    <span class="modal-standing-bar"><span style="width:${pct}%"></span></span>
+    <span class="modal-standing-text">Beats ${pct}%</span>
+  </div>`;
+}
+
+// "Logged 3/12/2026 · beaten by M A" strip under the stats, from the saved
+// sweat record (by uuid, falling back to the name for older records).
+// Hidden for players opened from somewhere with no record, e.g. a denick
+// result for someone who was never logged.
+const modalRecord = document.getElementById("modalRecord");
+function renderModalRecord(uuid, item) {
+  const clean = u => String(u || "").replace(/-/g, "").toLowerCase();
+  const record = sweats.find(s => uuid && clean(s.uuid) === clean(uuid))
+    || sweats.find(s => s.username && s.username.toLowerCase() === String(item.dataset.username || "").toLowerCase());
+  modalRecord.hidden = !record;
+  if (!record) return;
+  const beaten = BEATEN_BY_KEYS.filter(k => record[k]);
+  const date = record.dateAdded ? new Date(record.dateAdded) : null;
+  const index = (Number(record.fkdr) || 0) ** 2 * (Number(record.star) || 0);
+  modalRecord.innerHTML = `
+    <div class="modal-record-item"><span class="modal-record-label">Logged</span><span class="modal-record-value">${date && !isNaN(date) ? date.toLocaleDateString() : "Unknown"}</span></div>
+    <div class="modal-record-item"><span class="modal-record-label">Index</span><span class="modal-record-value">${Math.round(index).toLocaleString()}</span></div>
+    <div class="modal-record-item modal-record-beaten"><span class="modal-record-label">Beaten by</span><span class="beaten-by-avatars">${beaten.length
+      ? beaten.map(k => `<span class="beaten-avatar" style="--chip-color:var(--roster-${k})" data-tooltip="${BEATEN_BY[k].label}">${BEATEN_BY[k].initials}</span>`).join("")
+      : '<span class="modal-record-value">Nobody yet</span>'}</span></div>
+    ${record.cheating || record.boosting ? `<div class="modal-record-flags">${record.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}${record.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}</div>` : ""}`;
+}
+
 async function openPlayerModal(item) {
   rememberFocusBeforeModal();
   const username = item.dataset.username;
@@ -8661,6 +9701,7 @@ async function openPlayerModal(item) {
   closeModal.focus();
   modalUsername.textContent = "Loading...";
   modalStats.textContent = "Fetching live stats...";
+  modalRecord.hidden = true;
   modalTags.textContent = "Checking...";
   modalTagsReason.hidden = true;
   modalSeraphTags.textContent = "Checking...";
@@ -8710,13 +9751,19 @@ async function openPlayerModal(item) {
     const starDelta = sinceBeatDeltaHtml(data.star, item.dataset.loggedStar, { suffix: "\u2605", label: "since you beat them", when });
     const fkdrDelta = sinceBeatDeltaHtml(data.fkdr, item.dataset.loggedFkdr, { decimals: 2, label: "since", when });
 
-    modalStats.innerHTML = `
-      <div class="modal-stat-tile stat-star"><div class="modal-stat-label">Star</div><div class="modal-stat-value">${data.star}</div>${starDelta}</div>
-      <div class="modal-stat-tile stat-fkdr"><div class="modal-stat-label">FKDR</div><div class="modal-stat-value">${data.fkdr.toFixed(2)}</div>${fkdrDelta}</div>
-      <div class="modal-stat-tile stat-wlr"><div class="modal-stat-label">WLR</div><div class="modal-stat-value">${data.wlr.toFixed(2)}</div></div>
-      <div class="modal-stat-tile stat-finals"><div class="modal-stat-label">Finals</div><div class="modal-stat-value">${data.finals}</div></div>
-      <div class="modal-stat-tile stat-wins"><div class="modal-stat-label">Wins</div><div class="modal-stat-value">${data.wins}</div></div>
-    `;
+    // Each tile also shows where this player's live number would land among
+    // every tracked sweat (see trackedStanding), and big counts get
+    // thousands separators. The star value is the same themed prestige tag
+    // the cards use rather than a bare number.
+    const statTile = (cls, label, value, field, live, extra = "") => `
+      <div class="modal-stat-tile ${cls}"><div class="modal-stat-label">${label}</div><div class="modal-stat-value">${value}</div>${extra}${trackedStandingHtml(field, live)}</div>`;
+    modalStats.innerHTML =
+      statTile("stat-star", "Star", `<span class="pill prestige-tag">${prestigeTagHtml(Number(data.star) || 0)}</span>`, "star", data.star, starDelta) +
+      statTile("stat-fkdr", "FKDR", data.fkdr.toFixed(2), "fkdr", data.fkdr, fkdrDelta) +
+      statTile("stat-wlr", "WLR", data.wlr.toFixed(2), "wlr", data.wlr) +
+      statTile("stat-finals", "Finals", Number(data.finals).toLocaleString(), "finals", data.finals) +
+      statTile("stat-wins", "Wins", Number(data.wins).toLocaleString(), null, null);
+    renderModalRecord(uuid, item);
 
     // Re-check Urchin + Seraph tags live on every open instead of using any
     // stored value, same as the fetch-stats flow always re-fetches current

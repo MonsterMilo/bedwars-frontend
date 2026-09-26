@@ -17316,6 +17316,7 @@ exportCsvBtn.addEventListener("click", exportCsv);
 
 // Keyboard shortcuts. "/" (search) and Esc (close) already existed; these
 // add theme and view switching plus a themed cheat sheet on "?".
+const IS_MAC = /Mac|iP(hone|ad|od)/.test(navigator.platform || navigator.userAgent);
 const SHORTCUTS = [
   [["/"], "Search sweats"],
   [THEME_IDS.map((_, i) => String(i + 1)), themeOptions.map(li => li.dataset.label).join(", ")],
@@ -17323,7 +17324,7 @@ const SHORTCUTS = [
   [["T"], "Table view"],
   [["L"], "Leaderboard view"],
   [["K"], "Sweat Lookup"],
-  [["E"], "Export the current view as CSV"],
+  [[IS_MAC ? "⌘" : "Ctrl", "E"], "Export the current view as CSV"],
   [["?"], "Show or hide this list"],
   [["Esc"], "Close any popup"],
 ];
@@ -17368,6 +17369,14 @@ function scrollToSection(id) {
   if (el) el.scrollIntoView({ behavior: reducedMotionQuery.matches ? "auto" : "smooth", block: "start" });
 }
 document.addEventListener("keydown", (e) => {
+  // Export is the one shortcut with a modifier (Ctrl+E, or Cmd+E on a
+  // Mac) so typing "ez" or "bedwars" on the page never downloads a file.
+  if ((IS_MAC ? e.metaKey : e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "e" && !isTypingTarget(e.target)) {
+    if (!shortcutsBackdrop.hidden || [...document.querySelectorAll(".modal")].some(m => m.style.display === "flex")) return;
+    e.preventDefault();
+    exportCsv();
+    return;
+  }
   if (e.ctrlKey || e.metaKey || e.altKey || isTypingTarget(e.target)) return;
   if (!shortcutsBackdrop.hidden) {
     if (e.key === "Escape" || e.key === "?") { e.preventDefault(); toggleShortcuts(false); }
@@ -17399,7 +17408,6 @@ document.addEventListener("keydown", (e) => {
     usernameField.focus({ preventScroll: true });
     return;
   }
-  if (key === "e") exportCsv();
 });
 
 

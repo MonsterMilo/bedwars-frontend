@@ -880,6 +880,26 @@ html[data-theme="deepcurrent"] .denick-row .pill { font-family: 'JetBrains Mono'
   min-height: 180px;
 }
 
+/* Clears the previewed player (or stops a lookup that's still scanning)
+   without adding them. */
+.dash-label-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.preview-clear {
+  font: inherit;
+  font-size: 0.95em;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+.preview-clear:hover, .preview-clear:focus-visible { color: var(--bad); border-color: var(--bad); background: var(--accent-soft); }
+.preview-clear[hidden] { display: none; }
+html[data-theme="casefiles"] .preview-clear { border-radius: 2px; font-family: 'Courier Prime', monospace; }
+
 /* Not absolutely positioned - the empty prompt and the populated card are
    very different heights (a handful of stat tiles plus two tag panels is
    much taller than one line of placeholder text), and pinning the
@@ -7461,7 +7481,9 @@ html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monos
         </div>
 
         <div class="dash-right">
-          <div class="dash-label">Preview</div>
+          <div class="dash-label dash-label-row">Preview
+            <button type="button" id="clearPreviewBtn" class="preview-clear" hidden>&#10005; Clear</button>
+          </div>
           <div class="dash-preview-frame">
             <div id="statsEmpty" class="dash-empty">
               <div class="dash-idle" aria-hidden="true">
@@ -8211,6 +8233,13 @@ window.siteAudio = (function () {
         for (let i = 0; i < 3 + tier; i++) tone(t + i * 0.055, { type: "square", f: midi(pentaNote(69 + tier * 2, i * 2)), dur: 0.1, gain: 0.07, lp: 4000 });
       },
       ui(t) { tone(t, { type: "square", f: 1760, dur: 0.018, gain: 0.045, lp: 5000 }); },
+      // Soft digital keypresses; Enter confirms with a two-note blip.
+      type(t, kind) {
+        if (kind === "enter") { [81, 88].forEach((n, i) => tone(t + i * 0.05, { type: "square", f: midi(n), dur: 0.05, gain: 0.04, lp: 4000 })); return; }
+        const f = kind === "back" ? 900 : kind === "space" ? 1200 : rnd(1500, 1900);
+        tone(t, { type: "square", f, dur: 0.02, gain: 0.035, lp: 3500 });
+        noise(t, { type: "highpass", f: 5000, dur: 0.008, gain: 0.03 });
+      },
       switchTo(t) {
         const d = 1.6;
         // CRT glitch stutters over the old page.
@@ -8275,6 +8304,16 @@ window.siteAudio = (function () {
         metal(t + (2 + tier) * 0.07, 2100, { ratios: [1, 2.1, 3.9], gain: 0.07, dur: 1.2 });
       },
       ui(t) { typeKey(t, { gain: 0.06 }); },
+      // A typewriter: key strikes, a heavier space bar, and Enter rings the
+      // carriage bell and zips the carriage back.
+      type(t, kind) {
+        if (kind === "enter") {
+          metal(t, 2100, { ratios: [1, 2.1, 3.9], gain: 0.035, dur: 0.9 });
+          noise(t + 0.08, { type: "bandpass", f: 1400, f2: 700, q: 1.5, dur: 0.25, gain: 0.06, swell: 0.3 });
+          return;
+        }
+        typeKey(t, { gain: kind === "space" ? 0.13 : 0.1, f: kind === "space" ? 1800 : kind === "back" ? 2000 : undefined });
+      },
       switchTo(t) {
         const d = 1.8;
         paper(t, 0.2 * d, { f: 1200, f2: 3500, gain: 0.16, swell: 0.6 });
@@ -8325,6 +8364,18 @@ window.siteAudio = (function () {
         metal(t + 0.06, 2349 + tier * 120, { ratios: [1, 1.26, 2.52], gain: 0.08, dur: 0.9 });
       },
       ui(t) { tone(t, { type: "triangle", f: 2400, f2: 1800, dur: 0.02, gain: 0.05 }); },
+      // An old adding machine: firm clicky keys, and Enter pulls the
+      // handle with a ratchet and a soft bell.
+      type(t, kind) {
+        if (kind === "enter") {
+          for (let i = 0; i < 4; i++) noise(t + i * 0.035, { type: "bandpass", f: 3000, q: 6, dur: 0.012, gain: 0.08 });
+          metal(t + 0.16, 2637, { ratios: [1, 1.26, 2.52], gain: 0.03, dur: 0.6 });
+          return;
+        }
+        const f = kind === "back" ? 1500 : kind === "space" ? 1300 : rnd(2000, 2400);
+        noise(t, { type: "bandpass", f, q: 4, dur: 0.018, gain: 0.09 });
+        tone(t, { f: 320, f2: 180, dur: 0.03, gain: 0.04 });
+      },
       switchTo(t) {
         const d = 1.5;
         noise(t, { type: "lowpass", f: 200, f2: 700, dur: 0.2 * d, gain: 0.2, swell: 0.8 });
@@ -8386,6 +8437,13 @@ window.siteAudio = (function () {
         for (let i = 0; i < 3; i++) bubble(t + 0.05 + i * 0.05, { gain: 0.06 });
       },
       ui(t) { bubble(t, { f: 700, gain: 0.04, dur: 0.04 }); },
+      // Each keypress is a small droplet; Enter lets out a little rush of
+      // bubbles.
+      type(t, kind) {
+        if (kind === "enter") { for (let i = 0; i < 4; i++) bubble(t + i * 0.04, { gain: 0.05, f: 500 + i * 140 }); return; }
+        const f = kind === "back" ? 380 : kind === "space" ? 450 : rnd(600, 900);
+        bubble(t, { f, gain: 0.05, dur: 0.04, rise: kind === "back" ? 0.6 : 2.2 });
+      },
       switchTo(t) {
         const d = 1.9;
         // Sinking into dark water...
@@ -8657,10 +8715,10 @@ window.siteAudio = (function () {
   // loudness so each kind of moment sits at the same level in every theme
   // (clicks ~-28dB, rare clicks ~-22, flips ~-27, switch scenes ~-14...).
   const TRIM = {
-    neon: { combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -2 },
+    neon: { type: 4, combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -2 },
     casefiles: { click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
-    ledger: { rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
-    deepcurrent: { rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -4 },
+    ledger: { type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
+    deepcurrent: { type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -4 },
     shared: { bed: -5, chat: -2 },
   };
   const SHARED = { chat: (t) => pling(t, [78, 85]), techno: fanfare, bed: bedDestroyed };
@@ -8682,7 +8740,7 @@ window.siteAudio = (function () {
         flipOpen: () => s.flipOpen(t, (opts.duration || 600) / 1000),
         flipClose: () => s.flipClose(t),
         found: () => s.found(t), error: () => s.error(t), success: () => s.success(t),
-        stunt: () => s.stunt(t), ui: () => s.ui(t),
+        stunt: () => s.stunt(t), ui: () => s.ui(t), type: () => s.type(t, opts.kind || "key"),
         scanStart: () => s.scanStart(t), scanTick: () => s.scanTick(t),
       })[name]();
     } finally {
@@ -8702,7 +8760,7 @@ window.siteAudio = (function () {
   }
   const DUCK = { switch: 2, bed: 3.2, techno: 1.2 };
 
-  let lastClick = 0;
+  let lastClick = 0, lastType = 0;
   function play(name, opts = {}) {
     if (!ready()) return;
     const theme = opts.theme || themeNow();
@@ -8713,6 +8771,10 @@ window.siteAudio = (function () {
       // A fast flurry of clicks gets a little quieter so it doesn't pile up.
       if (t - lastClick < 0.18) trim = -4;
       lastClick = t;
+    }
+    if (name === "type") {
+      if (t - lastType < 0.025) return;
+      lastType = t;
     }
     if (DUCK[name]) duck(t, DUCK[name]);
     try { schedule(name, theme, t, { ...opts, trim, pan: panFor(opts.x) }); } catch (e) {}
@@ -8811,6 +8873,15 @@ window.siteAudio = (function () {
   });
   sync();
 })();
+
+// Themed typing sounds in every text box and textarea on the site.
+document.addEventListener("keydown", (e) => {
+  const el = e.target;
+  if (!el || !el.matches || !el.matches("input[type='text'], input[type='search'], input[type='password'], input:not([type]), textarea")) return;
+  if (e.ctrlKey || e.metaKey || e.altKey || e.repeat && e.key !== "Backspace") return;
+  const kind = e.key === "Enter" ? "enter" : e.key === "Backspace" || e.key === "Delete" ? "back" : e.key === " " ? "space" : e.key.length === 1 ? "key" : null;
+  if (kind) siteAudio.play("type", { kind });
+});
 </script>
 
 <script>
@@ -10029,6 +10100,7 @@ const status = document.getElementById('status');
 const fetchBtn = document.getElementById('fetchBtn');
 const statsDisplay = document.getElementById('statsDisplay');
 const statsEmpty = document.getElementById('statsEmpty');
+const clearPreviewBtn = document.getElementById("clearPreviewBtn");
 const searchInput = document.getElementById('searchInput');
 
 const statsAvatar = document.getElementById('statsAvatar');
@@ -10048,6 +10120,11 @@ const statsStar = document.getElementById('statsStar');
 // an overlap fade.
 function showStatsCard() {
   siteAudio.play("found");
+  // The lookup is done - stop the scanning sound and idle speed-up. Left
+  // running, the scan loop kept ticking the whole time a preview sat
+  // waiting to be added.
+  setStatsScanning(null);
+  clearPreviewBtn.hidden = false;
   statsEmpty.hidden = true;
   statsDisplay.style.display = "flex";
   const content = document.getElementById("statsContent");
@@ -10059,6 +10136,7 @@ function showStatsEmpty() {
   statsDisplay.style.display = "none";
   statsEmpty.hidden = false;
   setStatsScanning(null);
+  clearPreviewBtn.hidden = true;
 }
 // While a lookup is in flight the empty preview speeds up its idle scene
 // and names who it is looking for.
@@ -10154,6 +10232,21 @@ let currentStats = null;
 // instead of overwriting currentUUID/currentStats with out-of-date data.
 // Same guard pattern already used for the player modal (modal.dataset.activeUuid).
 let statsFetchToken = 0;
+
+// Dismisses the preview (or cancels a lookup still scanning) without
+// adding the player. Bumping the token makes any in-flight lookup drop
+// its result when it lands.
+clearPreviewBtn.addEventListener("click", () => {
+  statsFetchToken++;
+  currentUUID = null;
+  currentStats = null;
+  usernameInput.value = "";
+  status.textContent = "";
+  showStatsEmpty();
+  fetchBtn.disabled = false;
+  fetchBtn.classList.remove("loading");
+  usernameInput.focus();
+});
 
 // Shared focus management for all four custom modals (player/edit/admin-key/
 // confirm-delete) - none of these are a native <dialog>, so nothing moves
@@ -10376,9 +10469,13 @@ async function loadSweats() {
 fetchBtn.addEventListener('click', async () => {
   fetchBtn.disabled = true;
   fetchBtn.classList.add("loading");
+  const tokenBefore = statsFetchToken;
   try {
     await fetchAndDisplayStats();
   } catch (err) {
+    // Cleared (or superseded by a newer lookup) while in flight - the
+    // failure is for a lookup nobody is waiting on any more.
+    if (statsFetchToken > tokenBefore + 1) return;
     status.textContent = err.message;
     setStatsScanning(null);
     siteAudio.play("error");
@@ -10702,6 +10799,7 @@ async function fetchAndDisplayStats() {
   status.textContent = "Fetching stats...";
   showStatsEmpty();
   setStatsScanning(usernameRaw);
+  clearPreviewBtn.hidden = false;
 
   // Fetch UUID
   const resMojang = await fetch(`${backendBaseURL}/mojang/${usernameRaw}`, { headers: adminHeaders() });

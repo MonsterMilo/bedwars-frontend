@@ -285,6 +285,8 @@ body {
   scrollbar-width: thin;
 }
 
+/* Highlighted text takes the theme accent instead of the browser blue. */
+::selection { background: var(--accent); color: var(--bg); }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: var(--panel); }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
@@ -2042,6 +2044,57 @@ html[data-theme="deepcurrent"] .toolbar #searchInput { background: rgba(3,12,20,
   color: var(--text);
   font-weight: 800;
   background: var(--accent-soft);
+}
+
+/* Theme picker previews - each option carries a tiny tile drawn in its own
+   theme's look (not the current one), so you can see where you're going
+   before the switch scene plays. The tile has two parts: <i> is the
+   theme's signature motif, <b> its accent rule. */
+.theme-dropdown-menu li[data-theme-value] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px 8px 8px;
+}
+.theme-opt-text { display: flex; flex-direction: column; gap: 1px; line-height: 1.2; }
+.theme-opt-tag { font-size: 11px; font-weight: 500; opacity: 0.7; letter-spacing: 0.2px; }
+.theme-swatch {
+  position: relative;
+  flex: none;
+  width: 46px;
+  height: 32px;
+  border-radius: 7px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12), 0 1px 3px rgba(0,0,0,0.25);
+  transition: transform 0.2s var(--ease);
+}
+.theme-dropdown-menu li:hover .theme-swatch,
+.theme-dropdown-menu li:focus-visible .theme-swatch { transform: scale(1.08) rotate(-2deg); }
+.theme-swatch i, .theme-swatch b { position: absolute; display: block; }
+/* Neon: starfield with a cyan-to-violet title bar */
+li[data-theme-value="neon"] .theme-swatch {
+  background:
+    radial-gradient(1px 1px at 8px 7px, #fff 60%, transparent),
+    radial-gradient(1px 1px at 36px 24px, #cfe 60%, transparent),
+    radial-gradient(1px 1px at 30px 6px, #fff 60%, transparent),
+    linear-gradient(135deg, #04121a, #120a24);
+}
+li[data-theme-value="neon"] .theme-swatch b { left: 8px; right: 8px; top: 13px; height: 5px; border-radius: 3px; background: linear-gradient(90deg, #00d9ff, #a855f7); box-shadow: 0 0 6px #00d9ff; }
+li[data-theme-value="neon"] .theme-swatch i { left: 14px; right: 14px; top: 21px; height: 2px; border-radius: 2px; background: rgba(255,255,255,0.35); }
+/* Case Files: manila page, torn edge, red CLASSIFIED stamp */
+li[data-theme-value="casefiles"] .theme-swatch { background: #e8dcb8; }
+li[data-theme-value="casefiles"] .theme-swatch b { left: 4px; right: 4px; top: 4px; bottom: 6px; background: #fbf6e6; clip-path: polygon(0 0, 100% 0, 100% 86%, 88% 100%, 72% 88%, 56% 100%, 40% 90%, 24% 100%, 10% 88%, 0 96%); }
+li[data-theme-value="casefiles"] .theme-swatch i { left: 11px; top: 10px; width: 22px; height: 9px; border: 1.5px solid #a3302b; border-radius: 2px; transform: rotate(-9deg); z-index: 1; background: repeating-linear-gradient(90deg, transparent 0 3px, rgba(163,48,43,0.7) 3px 5px) center / 70% 2px no-repeat; }
+/* Private Bank: navy guilloche with a gold double rule */
+li[data-theme-value="ledger"] .theme-swatch { background: repeating-radial-gradient(circle at 50% 120%, #16233a 0 2px, #1d2d4a 2px 4px); }
+li[data-theme-value="ledger"] .theme-swatch b { left: 6px; right: 6px; top: 12px; height: 7px; border-top: 1.5px solid #c9a24a; border-bottom: 1.5px solid #c9a24a; }
+li[data-theme-value="ledger"] .theme-swatch i { left: 19px; top: 11px; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #f3d98a, #a9822e); z-index: 1; }
+/* Deep Current: dark water fading down with a rising bubble */
+li[data-theme-value="deepcurrent"] .theme-swatch { background: linear-gradient(180deg, #0c4a5e, #041824 80%); }
+li[data-theme-value="deepcurrent"] .theme-swatch b { left: -4px; right: -4px; top: 6px; height: 6px; background: radial-gradient(ellipse 6px 3px at 25% 0, transparent 90%, rgba(53,230,196,0.5) 100%) 0 0 / 12px 6px repeat-x; opacity: 0.8; }
+li[data-theme-value="deepcurrent"] .theme-swatch i { left: 28px; top: 16px; width: 7px; height: 7px; border-radius: 50%; border: 1px solid rgba(160,255,240,0.8); box-shadow: -12px 5px 0 -1.5px rgba(53,230,196,0.6); }
+@media (prefers-reduced-motion: reduce) {
+  .theme-dropdown-menu li:hover .theme-swatch { transform: none; }
 }
 
 /* Sound control - sits beside the theme dropdown and borrows its button
@@ -6642,6 +6695,74 @@ html[data-theme="deepcurrent"] .pill.boost {
 .note-btn-small { padding: 6px 12px; font-size: 13px; }
 
 /* Grid card */
+/* Stat readout under the pills: WLR, BBLR and finals, so a card without a
+   note still says something in the space above its footer. Each theme
+   re-dresses it below. */
+.sweat-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: -4px 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-s);
+  background: rgba(255,255,255,0.02);
+  overflow: hidden;
+}
+.card-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 4px 5px;
+  min-width: 0;
+}
+.card-stat + .card-stat { border-left: 1px solid var(--border); }
+.card-stat-label {
+  font-size: 0.62em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.card-stat-value {
+  font-size: 0.86em;
+  font-weight: 800;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* Neon: a HUD strip, values lit in the theme's cyan */
+html:not([data-theme]) .sweat-card-stats { background: rgba(0,217,255,0.04); border-color: rgba(0,217,255,0.16); }
+html:not([data-theme]) .card-stat + .card-stat { border-left-color: rgba(0,217,255,0.16); }
+html:not([data-theme]) .card-stat-value { color: var(--neutral); text-shadow: 0 0 8px rgba(79,195,247,0.45); }
+/* Case Files: typed onto the index card's ruled lines */
+html[data-theme="casefiles"] .sweat-card-stats {
+  border: none;
+  border-radius: 0;
+  background: none;
+  border-top: 1px dashed rgba(42,36,28,0.35);
+  border-bottom: 1px dashed rgba(42,36,28,0.35);
+  margin-top: 0;
+}
+html[data-theme="casefiles"] .card-stat + .card-stat { border-left: none; }
+html[data-theme="casefiles"] .card-stat-label { font-family: 'Courier Prime', monospace; color: var(--accent-2, #a3302b); letter-spacing: 0.04em; }
+html[data-theme="casefiles"] .card-stat-value { font-family: 'Courier Prime', monospace; font-weight: 700; }
+/* Private Bank: a ledger row between gold double rules */
+html[data-theme="ledger"] .sweat-card-stats {
+  border: none;
+  border-radius: 0;
+  background: none;
+  border-top: 3px double rgba(169,130,46,0.55);
+  border-bottom: 1px solid rgba(169,130,46,0.35);
+}
+html[data-theme="ledger"] .card-stat + .card-stat { border-left: 1px solid rgba(169,130,46,0.3); }
+html[data-theme="ledger"] .card-stat-label { font-family: 'EB Garamond', serif; font-style: italic; text-transform: none; letter-spacing: 0.02em; font-size: 0.78em; font-weight: 400; color: var(--text-dim); }
+html[data-theme="ledger"] .card-stat-value { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 0.92em; }
+/* Deep Current: an instrument readout on dark glass */
+html[data-theme="deepcurrent"] .sweat-card-stats { background: rgba(2,14,22,0.55); border-color: rgba(53,230,196,0.22); box-shadow: inset 0 1px 6px rgba(0,0,0,0.4); }
+html[data-theme="deepcurrent"] .card-stat + .card-stat { border-left-color: rgba(53,230,196,0.15); }
+html[data-theme="deepcurrent"] .card-stat-label { font-family: 'JetBrains Mono', monospace; color: var(--accent); opacity: 0.75; letter-spacing: 0.08em; }
+html[data-theme="deepcurrent"] .card-stat-value { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
 .sweat-card-note {
   position: relative;
   margin: -4px 0 14px;
@@ -7724,10 +7845,10 @@ html[data-theme="deepcurrent"] .sweat-card.live-new { animation: cardIn 0.4s var
         <span class="theme-dropdown-arrow" aria-hidden="true">&#9662;</span>
       </button>
       <ul class="theme-dropdown-menu" id="themeDropdownMenu" role="listbox" aria-label="Site theme" hidden>
-        <li role="option" data-theme-value="neon" aria-selected="true" tabindex="0">Neon</li>
-        <li role="option" data-theme-value="casefiles" aria-selected="false" tabindex="0">Case Files</li>
-        <li role="option" data-theme-value="ledger" aria-selected="false" tabindex="0">Private Bank</li>
-        <li role="option" data-theme-value="deepcurrent" aria-selected="false" tabindex="0">Deep Current</li>
+        <li role="option" data-theme-value="neon" data-label="Neon" aria-selected="true" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Neon</span><span class="theme-opt-tag">Arcade HUD</span></span></li>
+        <li role="option" data-theme-value="casefiles" data-label="Case Files" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Case Files</span><span class="theme-opt-tag">Detective dossier</span></span></li>
+        <li role="option" data-theme-value="ledger" data-label="Private Bank" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Private Bank</span><span class="theme-opt-tag">Old-money vault</span></span></li>
+        <li role="option" data-theme-value="deepcurrent" data-label="Deep Current" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Deep Current</span><span class="theme-opt-tag">Abyssal sonar</span></span></li>
       </ul>
     </div>
     <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; <span class="key-owner-name">Your Key</span></button>
@@ -9370,7 +9491,7 @@ const themeDropdownMenu = document.getElementById("themeDropdownMenu");
 const themeDropdownLabel = document.getElementById("themeDropdownLabel");
 const themeOptions = Array.from(themeDropdownMenu.querySelectorAll("li"));
 const THEME_IDS = themeOptions.map(li => li.dataset.themeValue);
-const THEME_LABELS = Object.fromEntries(themeOptions.map(li => [li.dataset.themeValue, li.textContent]));
+const THEME_LABELS = Object.fromEntries(themeOptions.map(li => [li.dataset.themeValue, li.dataset.label]));
 
 function closeThemeDropdown() {
   themeDropdownMenu.hidden = true;
@@ -11941,6 +12062,21 @@ function withRetryingAvatar(imgEl, uuid, username) {
   imgEl.alt = `Avatar of ${username}`;
 }
 
+// The three logged stats that don't get a pill (WLR, BBLR, finals), as a
+// compact readout row on each grid card. Values are coerced to numbers, so
+// nothing user-controlled reaches innerHTML; a missing stat shows a dash.
+function cardStatCellsHtml(s) {
+  const num = v => (v === null || v === undefined || v === "" || !Number.isFinite(Number(v))) ? null : Number(v);
+  const cells = [
+    ["WLR", num(s.wlr), v => v.toFixed(2)],
+    ["BBLR", num(s.bblr), v => v.toFixed(2)],
+    ["Finals", num(s.finals), v => Math.round(v).toLocaleString()],
+  ];
+  return cells.map(([label, v, fmt]) =>
+    `<span class="card-stat"><span class="card-stat-label">${label}</span><span class="card-stat-value">${v === null ? "&ndash;" : fmt(v)}</span></span>`
+  ).join("");
+}
+
 function renderCardGrid(filteredSweats, usernameCounts) {
   cardGrid.innerHTML = "";
   emptyState.hidden = filteredSweats.length !== 0;
@@ -11993,6 +12129,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
         ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
         ${s.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}
       </div>
+      <div class="sweat-card-stats">${cardStatCellsHtml(s)}</div>
       ${sweatNotes(s).length ? '<div class="sweat-card-note"><p class="note-text"></p><span class="note-meta"></span></div>' : ""}
       <div class="sweat-card-footer">
         <div class="beaten-by-avatars">${beatenByHtml}</div>

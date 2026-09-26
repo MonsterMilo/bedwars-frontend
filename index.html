@@ -8203,6 +8203,8 @@ window.siteAudio = (function () {
       save(t) { [76, 83].forEach((n, i) => tone(t + i * 0.07, { type: "square", f: midi(n), dur: 0.1, gain: 0.06, lp: 4000 })); },
       del(t) { tone(t, { type: "sawtooth", f: 1400, f2: 120, dur: 0.28, gain: 0.06, lp: 2500 }); noise(t, { type: "highpass", f: 3000, dur: 0.1, gain: 0.05 }); },
       slide(t, open) { tone(t, { f: open ? 300 : 1100, f2: open ? 1100 : 300, dur: 0.18, gain: 0.05 }); noise(t, { type: "bandpass", f: open ? 800 : 3000, f2: open ? 3000 : 800, dur: 0.2, gain: 0.04, swell: 0.5 }); },
+      page(t, next) { [0, 0.045].forEach((k, i) => tone(t + k, { type: "square", f: midi(next ? 76 + i * 5 : 81 - i * 5), dur: 0.05, gain: 0.045, lp: 3500 })); },
+      view(t) { tone(t, { type: "triangle", f: 660, f2: 1320, dur: 0.1, gain: 0.05 }); noise(t, { type: "highpass", f: 4000, dur: 0.05, gain: 0.03 }); },
       // Soft digital keypresses; Enter confirms with a two-note blip.
       type(t, kind) {
         if (kind === "enter") { [81, 88].forEach((n, i) => tone(t + i * 0.05, { type: "square", f: midi(n), dur: 0.05, gain: 0.04, lp: 4000 })); return; }
@@ -8283,6 +8285,9 @@ window.siteAudio = (function () {
       // Deleting crumples the page up.
       del(t) { for (let i = 0; i < 7; i++) noise(t + i * 0.035 + rnd(0, 0.02), { type: "bandpass", f: rnd(900, 3000), q: 1.4, dur: 0.05, gain: 0.08 }); },
       slide(t, open) { paper(t, 0.22, { f: open ? 900 : 2400, f2: open ? 2400 : 900, gain: 0.1 }); },
+      // Leafing to the next page of the case file.
+      page(t, next) { paper(t, 0.28, { f: next ? 1100 : 2600, f2: next ? 2600 : 1100, gain: 0.13, swell: 0.3 }); noise(t + 0.22, { type: "bandpass", f: 1800, q: 1, dur: 0.03, gain: 0.05 }); },
+      view(t) { paper(t, 0.14, { f: 1500, f2: 2800, gain: 0.1 }); thud(t + 0.12, { f: 170, f2: 90, dur: 0.05, gain: 0.12, nf: 2000, ndur: 0.02 }); },
       // A typewriter: key strikes, a heavier space bar, and Enter rings the
       // carriage bell and zips the carriage back.
       type(t, kind) {
@@ -8349,6 +8354,9 @@ window.siteAudio = (function () {
       // A drawer of files sliding shut with a heavy clunk.
       del(t) { noise(t, { type: "lowpass", f: 500, f2: 1200, dur: 0.18, gain: 0.08, swell: 0.6 }); thud(t + 0.18, { f: 110, f2: 50, dur: 0.14, gain: 0.3, nf: 1200, ndur: 0.03 }); },
       slide(t, open) { noise(t, { type: "bandpass", f: open ? 700 : 1600, f2: open ? 1600 : 700, q: 0.8, dur: 0.2, gain: 0.07, swell: 0.5 }); },
+      // A heavy ledger page turning over.
+      page(t, next) { noise(t, { type: "bandpass", f: next ? 600 : 1500, f2: next ? 1500 : 600, q: 0.7, dur: 0.32, gain: 0.1, swell: 0.35 }); tone(t + 0.28, { f: 180, f2: 120, dur: 0.05, gain: 0.05 }); },
+      view(t) { this.toggle(t, true); this.toggle(t + 0.07, false); tone(t, { f: 880, f2: 660, dur: 0.12, gain: 0.03 }); },
       // An old adding machine: firm clicky keys, and Enter pulls the
       // handle with a ratchet and a soft bell.
       type(t, kind) {
@@ -8435,6 +8443,8 @@ window.siteAudio = (function () {
       // Something sinking away into the deep.
       del(t) { tone(t, { f: 500, f2: 90, dur: 0.45, gain: 0.1 }); for (let i = 0; i < 3; i++) bubble(t + 0.05 + i * 0.07, { gain: 0.04, f: 400 - i * 60 }); },
       slide(t, open) { noise(t, { type: "lowpass", f: open ? 250 : 900, f2: open ? 900 : 250, dur: 0.3, gain: 0.1, swell: 0.5 }); },
+      page(t, next) { noise(t, { type: "bandpass", f: next ? 400 : 1200, f2: next ? 1200 : 400, q: 0.8, dur: 0.3, gain: 0.1, swell: 0.4 }); bubble(t + 0.15, { gain: 0.04, f: next ? 700 : 450 }); },
+      view(t) { bubble(t, { f: 500, gain: 0.06 }); bubble(t + 0.05, { f: 750, gain: 0.05 }); },
       // Each keypress is a small droplet; Enter lets out a little rush of
       // bubbles.
       type(t, kind) {
@@ -8736,9 +8746,9 @@ window.siteAudio = (function () {
   // loudness so each kind of moment sits at the same level in every theme
   // (clicks ~-28dB, rare clicks ~-22, flips ~-27, switch scenes ~-14...).
   const TRIM = {
-    neon: { save: 3, delete: 5, type: 4, combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -2 },
-    casefiles: { toggle: 6, save: -5, delete: 11, slide: 2, ambience: 2.5, click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
-    ledger: { toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
+    neon: { view: 3, save: 3, delete: 5, type: 4, combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -2 },
+    casefiles: { view: -7, toggle: 6, save: -5, delete: 11, slide: 2, ambience: 2.5, click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
+    ledger: { view: 4, toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
     deepcurrent: { toggle: -2, save: 2, delete: -2, slide: 3, type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -4 },
     shared: { bed: -5, chat: -2 },
   };
@@ -8763,6 +8773,7 @@ window.siteAudio = (function () {
         found: () => s.found(t), error: () => s.error(t), success: () => s.success(t),
         stunt: () => s.stunt(t), ui: () => s.ui(t), type: () => s.type(t, opts.kind || "key"),
         toggle: () => s.toggle(t, !!opts.on), save: () => s.save(t), delete: () => s.del(t), slide: () => s.slide(t, !!opts.open),
+        page: () => s.page(t, !!opts.next), view: () => s.view(t),
         scanStart: () => s.scanStart(t), scanTick: () => s.scanTick(t),
       })[name]();
     } finally {
@@ -13929,6 +13940,9 @@ document.addEventListener("pointerdown", (e) => {
   const el = e.target.closest && e.target.closest("button, a, summary, th.sortable, [role='button'], [role='option'], [role='tab']");
   // Cards/rows have their flip sound, and section toggles their own slide.
   if (!el || el.closest("[data-username]") || el.disabled || el.classList.contains("section-toggle")) return;
+  // Paging turns a page; the Grid/Table/Leaderboard switch has its own.
+  if (el.matches(".page-prev, .page-next")) { siteAudio.play("page", { next: el.classList.contains("page-next") }); return; }
+  if (el.matches(".view-btn")) { if (!el.classList.contains("active")) siteAudio.play("view"); return; }
   siteAudio.play("ui");
 }, { passive: true });
 

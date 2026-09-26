@@ -7308,6 +7308,288 @@ html[data-theme="ledger"] .egg-toast { font-family: 'EB Garamond', serif; font-s
 html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: rgba(10,33,48,0.88); }
 .egg-toast b { font-weight: 700; }
 
+
+/* ============================================================
+   THREAT-TIER CARD FRAMES
+   Demon and Final Boss sweats (same index tiers as the Sweat Lookup
+   gauge) get a frame and a tier pill so the most dangerous players stand
+   out in the grid. The frame is its own child element because Private
+   Bank and Deep Current already use the card's ::before/::after.
+   ============================================================ */
+.sweat-card-frame {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+}
+.pill.tier-pill {
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  font-size: 0.72em;
+}
+/* Neon: magenta glow for Demon, a spinning neon ring for Final Boss. */
+.sweat-card.tier-t4 .sweat-card-frame {
+  border: 1px solid rgba(236,72,153,0.7);
+  box-shadow: 0 0 14px rgba(236,72,153,0.35), inset 0 0 12px rgba(236,72,153,0.12);
+}
+.sweat-card.tier-t5 .sweat-card-frame {
+  padding: 2px;
+  background: conic-gradient(from var(--tier-spin, 0deg), #00d9ff, #a855f7, #ec4899, #facc15, #00d9ff);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  filter: drop-shadow(0 0 8px rgba(168,85,247,0.6));
+  animation: tierSpin 4s linear infinite;
+}
+@property --tier-spin { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes tierSpin { to { --tier-spin: 360deg; } }
+.pill.tier-pill.t4 { color: #f9a8d4; background: rgba(236,72,153,0.14); border-color: rgba(236,72,153,0.45); }
+.pill.tier-pill.t5 {
+  color: #fff;
+  background: linear-gradient(90deg, rgba(0,217,255,0.3), rgba(168,85,247,0.35), rgba(236,72,153,0.3));
+  border-color: rgba(168,85,247,0.7);
+  text-shadow: 0 0 6px rgba(168,85,247,0.9);
+}
+
+/* Case Files: red marker outline, and a double red border for the most
+   wanted. Pills read as rubber stamps. */
+html[data-theme="casefiles"] .sweat-card.tier-t4 .sweat-card-frame {
+  border: 2px solid rgba(163,47,29,0.55);
+  box-shadow: none;
+}
+html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame {
+  padding: 0;
+  background: none;
+  -webkit-mask: none;
+  mask: none;
+  filter: none;
+  animation: none;
+  border: 3px double #a32f1d;
+  box-shadow: 0 0 0 3px rgba(163,47,29,0.12);
+}
+html[data-theme="casefiles"] .pill.tier-pill {
+  color: #a32f1d;
+  background: transparent;
+  border: 2px solid #a32f1d;
+  border-radius: 3px;
+  transform: rotate(-4deg);
+  text-shadow: none;
+  font-family: 'Courier Prime', monospace;
+  opacity: 0.85;
+}
+html[data-theme="casefiles"] .pill.tier-pill.t5 { background: rgba(163,47,29,0.1); }
+
+/* Private Bank: gold foil for Demon, a black and gold account with a
+   slow foil sheen for Final Boss. */
+html[data-theme="ledger"] .sweat-card.tier-t4 .sweat-card-frame {
+  inset: 3px;
+  border: 1px solid var(--gold);
+  box-shadow: inset 0 0 0 3px rgba(169,130,46,0.12);
+}
+html[data-theme="ledger"] .sweat-card.tier-t5 .sweat-card-frame {
+  inset: 3px;
+  padding: 0;
+  -webkit-mask: none;
+  mask: none;
+  filter: none;
+  border: 2px solid #16233a;
+  box-shadow: inset 0 0 0 2px var(--gold);
+  background: linear-gradient(115deg, transparent 40%, rgba(212,175,90,0.28) 50%, transparent 60%) no-repeat;
+  background-size: 250% 100%;
+  animation: tierFoil 5s ease-in-out infinite;
+}
+@keyframes tierFoil { 0%, 30% { background-position: 120% 0; } 70%, 100% { background-position: -120% 0; } }
+html[data-theme="ledger"] .pill.tier-pill {
+  font-family: inherit;
+  color: #7a5c1c;
+  background: linear-gradient(180deg, #f6e7b8, #e2c77d);
+  border: 1px solid #a9822e;
+  border-radius: 2px;
+  text-shadow: none;
+}
+html[data-theme="ledger"] .pill.tier-pill.t5 { color: #f3dc9a; background: #16233a; border-color: #a9822e; }
+
+/* Deep Current: amber warning light for Demon, a bioluminescent pulse
+   for Final Boss. */
+html[data-theme="deepcurrent"] .sweat-card.tier-t4 .sweat-card-frame {
+  inset: 0;
+  border: 2px solid rgba(255,176,59,0.85);
+  box-shadow: inset 0 0 22px rgba(255,176,59,0.28);
+}
+html[data-theme="deepcurrent"] .sweat-card.tier-t5 .sweat-card-frame {
+  padding: 0;
+  -webkit-mask: none;
+  mask: none;
+  filter: none;
+  background: none;
+  inset: 0;
+  border: 2px solid rgba(155,107,255,0.9);
+  animation: tierBiolume 2.8s ease-in-out infinite;
+}
+@keyframes tierBiolume {
+  0%, 100% { box-shadow: inset 0 0 16px rgba(155,107,255,0.3); border-color: rgba(155,107,255,0.9); }
+  50% { box-shadow: inset 0 0 34px rgba(53,230,196,0.4); border-color: rgba(53,230,196,0.95); }
+}
+html[data-theme="deepcurrent"] .pill.tier-pill.t4 { color: #ffc978; background: rgba(255,176,59,0.12); border-color: rgba(255,176,59,0.5); text-shadow: none; }
+html[data-theme="deepcurrent"] .pill.tier-pill.t5 { color: #d9c8ff; background: rgba(155,107,255,0.16); border-color: rgba(155,107,255,0.6); text-shadow: 0 0 6px rgba(53,230,196,0.6); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sweat-card.tier-t5 .sweat-card-frame { animation: none !important; }
+}
+
+/* ============================================================
+   COPY LINK (player popup)
+   ============================================================ */
+.modal-copy-link {
+  position: absolute;
+  top: 12px;
+  right: 50px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78em;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: color 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.modal-copy-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.modal-copy-link:hover { color: var(--text); background: var(--accent-soft); border-color: var(--border-strong); }
+.modal-copy-link:focus { outline: none; }
+.modal-copy-link:focus-visible { color: var(--text); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.modal-copy-link.copied { color: var(--good); border-color: var(--good); }
+html[data-theme="casefiles"] .modal-copy-link { border-radius: 3px; font-family: 'Courier Prime', monospace; }
+html[data-theme="ledger"] .modal-copy-link { border-radius: 2px; letter-spacing: 0.5px; text-transform: uppercase; font-size: 0.7em; }
+@media (max-width: 520px) {
+  .modal-copy-link span { display: none; }
+  .modal-copy-link { padding: 0; width: 32px; justify-content: center; }
+}
+
+/* ============================================================
+   EXPORT BUTTON (toolbar) + LOAD RETRY
+   ============================================================ */
+.toolbar-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 14px;
+  transition: color 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.toolbar-export svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.toolbar-export:hover { color: var(--text); background: var(--accent-soft); border-color: var(--border-strong); }
+.toolbar-export:disabled { opacity: 0.45; cursor: default; }
+html[data-theme="casefiles"] .toolbar-export,
+html[data-theme="ledger"] .toolbar-export { border-radius: 3px; }
+/* CSV downloads are a desktop thing; on phones the button would take a whole toolbar row. */
+@media (max-width: 600px) { .toolbar-export { display: none; } }
+.load-error { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.load-retry-btn {
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 8px 18px;
+}
+.load-retry-btn:hover { border-color: var(--accent); }
+html[data-theme="casefiles"] .load-retry-btn,
+html[data-theme="ledger"] .load-retry-btn { border-radius: 3px; }
+.server-waking-elapsed { font-variant-numeric: tabular-nums; opacity: 0.75; }
+
+/* ============================================================
+   KEYBOARD SHORTCUTS SHEET (press ?)
+   ============================================================ */
+.shortcuts-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(3px);
+}
+.shortcuts-backdrop[hidden] { display: none; }
+.shortcuts-sheet {
+  position: relative;
+  width: min(420px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  background: linear-gradient(160deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-l);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,217,255,0.12), 0 0 30px rgba(168,85,247,0.2);
+  padding: 22px 22px 18px;
+  color: var(--text);
+}
+.shortcuts-title { margin: 0 0 4px; font-size: 1.15em; letter-spacing: 0.5px; }
+.shortcuts-title::before { content: "// "; color: var(--accent); }
+.shortcuts-sub { margin: 0 0 16px; color: var(--text-dim); font-size: 0.85em; }
+.shortcuts-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.shortcuts-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 0.92em; }
+.shortcuts-list li span:last-child { color: var(--text-dim); text-align: right; }
+.shortcuts-keys { display: inline-flex; gap: 4px; flex-shrink: 0; }
+.shortcuts-list kbd {
+  min-width: 26px;
+  padding: 3px 7px;
+  text-align: center;
+  font: 700 0.85em ui-monospace, "Consolas", monospace;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+}
+.shortcuts-close { top: 10px; right: 10px; }
+html[data-theme="casefiles"] .shortcuts-sheet {
+  border-radius: 3px;
+  box-shadow: 4px 6px 0 rgba(42,36,28,0.25);
+  transform: rotate(-0.6deg);
+  background:
+    repeating-linear-gradient(180deg, transparent 0 27px, rgba(46,74,92,0.12) 27px 28px),
+    var(--panel);
+}
+html[data-theme="casefiles"] .shortcuts-title { font-family: 'Courier Prime', monospace; text-transform: uppercase; }
+html[data-theme="casefiles"] .shortcuts-title::before { content: "FIELD MANUAL \2014  "; color: var(--accent-2); }
+html[data-theme="casefiles"] .shortcuts-list kbd { border-radius: 2px; color: var(--text); background: #efe4c2; }
+html[data-theme="ledger"] .shortcuts-sheet {
+  border-radius: 2px;
+  box-shadow: 0 0 0 4px var(--panel), 0 0 0 5px var(--gold), 0 24px 50px rgba(22,35,58,0.35);
+}
+html[data-theme="ledger"] .shortcuts-title { text-transform: uppercase; letter-spacing: 2px; font-size: 1em; }
+html[data-theme="ledger"] .shortcuts-title::before { content: "\00A7  "; color: var(--gold); }
+html[data-theme="ledger"] .shortcuts-list li { border-bottom: 1px dotted var(--border-strong); padding-bottom: 6px; }
+html[data-theme="ledger"] .shortcuts-list kbd { border-radius: 2px; color: var(--accent-2); background: #f6efd9; border-color: var(--gold); }
+html[data-theme="deepcurrent"] .shortcuts-sheet {
+  border: 1.5px solid rgba(255,255,255,0.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 24px 60px rgba(0,0,0,0.6), 0 0 24px rgba(53,230,196,0.2);
+}
+html[data-theme="deepcurrent"] .shortcuts-title::before { content: "\25C9  "; }
+html[data-theme="deepcurrent"] .shortcuts-list kbd { border-radius: 50px; }
+
+.credits-shortcuts-btn { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+.credits-shortcuts-btn:hover { color: var(--text); }
+.credits-shortcuts-btn kbd { font: 700 0.9em ui-monospace, "Consolas", monospace; padding: 0 5px; border: 1px solid currentColor; border-radius: 4px; }
+@media (hover: none) { .credits-shortcuts { display: none; } }
 </style>
 </head>
 <body>
@@ -7358,7 +7640,7 @@ html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monos
     <div class="hero-eyebrow">&#9876; Community Leaderboard</div>
     <h1>Bedwars Sweat Tracker</h1>
     <div class="hero-flourish" aria-hidden="true"></div>
-    <p id="credits">Developed by Milo &middot; Powered by Hypixel API</p>
+    <p id="credits">Developed by Milo &middot; Powered by Hypixel API<span class="credits-shortcuts"> &middot; <button type="button" id="shortcutsHintBtn" class="credits-shortcuts-btn">Press <kbd>?</kbd> for shortcuts</button></span></p>
   </header>
   <div class="hero-controls">
     <div class="theme-dropdown audio-ctl" id="audioCtl">
@@ -7584,6 +7866,7 @@ html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monos
         <button type="button" id="viewTableBtn" class="view-btn"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2" width="13" height="2.4" rx="1" /><rect x="1.5" y="6.8" width="13" height="2.4" rx="1" /><rect x="1.5" y="11.6" width="13" height="2.4" rx="1" /></svg><span>Table</span></button>
         <button type="button" id="viewLeaderboardBtn" class="view-btn"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="7" width="4.4" height="8" rx="1" /><rect x="5.8" y="2" width="4.4" height="13" rx="1" /><rect x="10.6" y="9.5" width="4.4" height="5.5" rx="1" /></svg><span>Leaderboard</span></button>
       </div>
+      <button id="exportCsvBtn" type="button" class="toolbar-export" data-tooltip="Download the sweats in this view as a spreadsheet (CSV)"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg>Export</button>
     </div>
 
     <div class="toolbar-row">
@@ -7825,6 +8108,7 @@ html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monos
       <span class="modal-folder-tab">Case File &middot; Open</span>
       <div class="modal-content">
       <button type="button" id="closeModal" class="modal-close" aria-label="Close">&times;</button>
+      <button type="button" id="copyPlayerLink" class="modal-copy-link" aria-label="Copy link to this player"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></svg><span>Copy link</span></button>
       <h2 id="modalUsername">Loading...</h2>
       <div id="modalTitle"><span class="modal-live-dot"></span>Live Stats</div>
       <div class="modal-body">
@@ -10497,18 +10781,30 @@ function skeletonCardsMarkup() {
 async function loadSweats() {
   cardGrid.setAttribute("aria-busy", "true");
   cardGrid.innerHTML = `
-    <div class="server-waking-note" role="status" hidden>Waking up the server&hellip; this can take up to a minute after it's been idle.</div>
+    <div class="server-waking-note" role="status" hidden>Waking up the server&hellip; this can take up to a minute after it's been idle. <span class="server-waking-elapsed"></span></div>
     ${skeletonCardsMarkup()}`;
   const wakingNote = cardGrid.querySelector(".server-waking-note");
-  const wakingTimer = setTimeout(() => { wakingNote.hidden = false; }, SERVER_WAKING_DELAY_MS);
+  const elapsedEl = wakingNote.querySelector(".server-waking-elapsed");
+  const started = Date.now();
+  let elapsedTimer = null;
+  const wakingTimer = setTimeout(() => {
+    wakingNote.hidden = false;
+    // A running count so a long cold start visibly isn't frozen.
+    const tick = () => { elapsedEl.textContent = `(${Math.round((Date.now() - started) / 1000)}s)`; };
+    tick();
+    elapsedTimer = setInterval(tick, 1000);
+  }, SERVER_WAKING_DELAY_MS);
   try {
     sweats = await fetchAllSweats();
     renderTable();
   } catch (err) {
     status.textContent = "Error loading sweats: " + err.message;
-    cardGrid.innerHTML = '<div class="empty-state">Couldn\'t load sweats - try refreshing.</div>';
+    cardGrid.innerHTML = '<div class="empty-state load-error"><span>Couldn\'t load sweats. The server may still be waking up.</span><button type="button" class="load-retry-btn">Try again</button></div>';
+    cardGrid.querySelector(".load-retry-btn").addEventListener("click", () => loadSweats());
+    siteAudio.play("error");
   } finally {
     clearTimeout(wakingTimer);
+    clearInterval(elapsedTimer);
     cardGrid.removeAttribute("aria-busy");
   }
 }
@@ -11504,6 +11800,11 @@ function renderCardGrid(filteredSweats, usernameCounts) {
     const starVal = Number(s.star) || 0;
     const fkdrVal = Number(s.fkdr) || 0;
     const indexValue = fkdrVal * fkdrVal * starVal;
+    // Demon and Final Boss sweats get a themed frame and tier pill (same
+    // tiers as the Sweat Lookup gauge).
+    const tier = SWEAT_TIERS.find(t => indexValue < t.max);
+    const standout = tier.key === "t4" || tier.key === "t5";
+    if (standout) card.classList.add(`tier-${tier.key}`);
 
     const beatenByHtml = BEATEN_BY_KEYS
       .filter(k => s[k])
@@ -11511,6 +11812,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
       .join("");
 
     card.innerHTML = `
+      ${standout ? '<span class="sweat-card-frame" aria-hidden="true"></span>' : ""}
       <span class="sweat-card-index">${Math.round(indexValue).toLocaleString()}</span>
       <div class="sweat-card-top">
         <img class="sweat-card-avatar" alt="" />
@@ -11519,6 +11821,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
       <div class="sweat-card-pills">
         <span class="pill prestige-tag" aria-label="${starVal} stars">${prestigeTagHtml(starVal)}</span>
         <span class="pill fkdr">${fkdrVal.toFixed(2)} FKDR</span>
+        ${standout ? `<span class="pill tier-pill ${tier.key}">${tier.name}</span>` : ""}
         ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
         ${s.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}
       </div>
@@ -14167,6 +14470,188 @@ usernameField.addEventListener("input", () => {
     if (!reducedMotionQuery.matches) themedBurst(r.left + r.width * 0.7, r.top + r.height / 2, true);
   }
   technoShown = isTechno;
+});
+
+// ============================================================
+// COPY LINK, CSV EXPORT, KEYBOARD SHORTCUTS
+// ============================================================
+
+// Copy link in the player popup - a ?player= link (the same one the URL
+// already carries while the popup is open) for pasting in Discord.
+const copyPlayerLinkBtn = document.getElementById("copyPlayerLink");
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Older browsers and non-secure origins: fall back to a hidden textarea.
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;opacity:0;pointer-events:none";
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch {}
+    ta.remove();
+    return ok;
+  }
+}
+copyPlayerLinkBtn.addEventListener("click", async () => {
+  const name = openPlayerName || document.getElementById("modalUsername").textContent.trim();
+  if (!name) return;
+  const url = `${location.origin}${location.pathname}?player=${encodeURIComponent(name)}`;
+  const label = copyPlayerLinkBtn.querySelector("span");
+  if (await copyText(url)) {
+    siteAudio.play("success");
+    copyPlayerLinkBtn.classList.add("copied");
+    label.textContent = "Copied!";
+    eggToast(`Link to <b>${name.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c])}</b> copied.`, 2600);
+  } else {
+    siteAudio.play("error");
+    label.textContent = "Copy failed";
+  }
+  setTimeout(() => { copyPlayerLinkBtn.classList.remove("copied"); label.textContent = "Copy link"; }, 1800);
+});
+
+// CSV export of whatever the current filters and sort show, across every
+// page (not just the one on screen). Built in the browser from the sweats
+// already loaded, so it needs no backend change.
+const exportCsvBtn = document.getElementById("exportCsvBtn");
+const CSV_COLUMNS = [
+  ["Username", s => s.username],
+  ["UUID", s => s.uuid || ""],
+  ["Date added", s => s.dateAdded ? new Date(s.dateAdded).toISOString().slice(0, 10) : ""],
+  ["Stars", s => Number(s.star) || 0],
+  ["FKDR", s => Number(s.fkdr) || 0],
+  ["WLR", s => Number(s.wlr) || 0],
+  ["BBLR", s => Number(s.bblr) || 0],
+  ["KDR", s => Number(s.kdr) || 0],
+  ["Finals", s => Number(s.finals) || 0],
+  ["Final deaths", s => Number(s.finalDeaths) || 0],
+  ["Beds", s => Number(s.beds) || 0],
+  ["Beds lost", s => Number(s.bedsLost) || 0],
+  ["Kills", s => Number(s.kills) || 0],
+  ["Deaths", s => Number(s.deaths) || 0],
+  ["Index", s => Math.round((Number(s.fkdr) || 0) ** 2 * (Number(s.star) || 0))],
+  ["Tier", s => SWEAT_TIERS.find(t => (Number(s.fkdr) || 0) ** 2 * (Number(s.star) || 0) < t.max).name],
+  ["Cheating", s => s.cheating ? "yes" : ""],
+  ["Boosting", s => s.boosting ? "yes" : ""],
+  ["Beaten by", s => BEATEN_BY_KEYS.filter(k => s[k]).map(k => BEATEN_BY[k].label).join("; ")],
+  ["Notes", s => sweatNotes(s).length],
+  ["Latest note", s => { const n = sweatNotes(s); return n.length ? n[n.length - 1].text : ""; }],
+];
+function csvCell(v) {
+  if (typeof v === "number") return String(v);
+  let str = String(v ?? "");
+  // Stop spreadsheet apps from running a cell as a formula.
+  if (/^[=+\-@\t\r]/.test(str)) str = "'" + str;
+  return /[",\r\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+function exportCsv() {
+  const list = getProcessedSweats().filteredSweats;
+  if (!list.length) { siteAudio.play("error"); return; }
+  const lines = [CSV_COLUMNS.map(c => csvCell(c[0])).join(",")];
+  list.forEach(s => lines.push(CSV_COLUMNS.map(c => csvCell(c[1](s))).join(",")));
+  const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `bedwars-sweats-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  siteAudio.play("success");
+  eggToast(`Exported <b>${list.length}</b> sweat${list.length === 1 ? "" : "s"}.`, 2600);
+}
+exportCsvBtn.addEventListener("click", exportCsv);
+
+// Keyboard shortcuts. "/" (search) and Esc (close) already existed; these
+// add theme and view switching plus a themed cheat sheet on "?".
+const SHORTCUTS = [
+  [["/"], "Search sweats"],
+  [["1", "2", "3", "4"], "Neon, Case Files, Private Bank, Deep Current"],
+  [["G"], "Grid view"],
+  [["T"], "Table view"],
+  [["L"], "Leaderboard view"],
+  [["K"], "Sweat Lookup"],
+  [["E"], "Export the current view as CSV"],
+  [["?"], "Show or hide this list"],
+  [["Esc"], "Close any popup"],
+];
+const shortcutsBackdrop = document.createElement("div");
+shortcutsBackdrop.className = "shortcuts-backdrop";
+shortcutsBackdrop.hidden = true;
+shortcutsBackdrop.innerHTML = `
+  <div class="shortcuts-sheet" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle">
+    <button type="button" class="modal-close shortcuts-close" aria-label="Close">&times;</button>
+    <h2 class="shortcuts-title" id="shortcutsTitle">Shortcuts</h2>
+    <p class="shortcuts-sub">Work anywhere on the page, except while typing in a box.</p>
+    <ul class="shortcuts-list">
+      ${SHORTCUTS.map(([keys, what]) => `<li><span class="shortcuts-keys">${keys.map(k => `<kbd>${k}</kbd>`).join("")}</span><span>${what}</span></li>`).join("")}
+    </ul>
+  </div>`;
+document.body.appendChild(shortcutsBackdrop);
+let shortcutsReturnFocus = null;
+function toggleShortcuts(show = shortcutsBackdrop.hidden) {
+  if (show === !shortcutsBackdrop.hidden) return;
+  shortcutsBackdrop.hidden = !show;
+  siteAudio.play(show ? "flipOpen" : "flipClose", show ? { duration: 220 } : {});
+  if (show) {
+    shortcutsReturnFocus = document.activeElement;
+    shortcutsBackdrop.querySelector(".shortcuts-close").focus();
+    if (!reducedMotionQuery.matches) {
+      shortcutsBackdrop.querySelector(".shortcuts-sheet").animate(
+        [{ opacity: 0, transform: "translateY(12px) scale(0.97)" }, { opacity: 1, transform: "none" }],
+        { duration: 220, easing: "cubic-bezier(.2,.8,.3,1)" }
+      );
+    }
+  } else if (shortcutsReturnFocus && shortcutsReturnFocus.focus) {
+    shortcutsReturnFocus.focus();
+  }
+}
+shortcutsBackdrop.addEventListener("click", (e) => {
+  if (e.target === shortcutsBackdrop || e.target.closest(".shortcuts-close")) toggleShortcuts(false);
+});
+document.getElementById("shortcutsHintBtn").addEventListener("click", () => toggleShortcuts(true));
+
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: reducedMotionQuery.matches ? "auto" : "smooth", block: "start" });
+}
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey || isTypingTarget(e.target)) return;
+  if (!shortcutsBackdrop.hidden) {
+    if (e.key === "Escape" || e.key === "?") { e.preventDefault(); toggleShortcuts(false); }
+    return;
+  }
+  if (e.key === "?") { e.preventDefault(); toggleShortcuts(true); return; }
+  // Leave the rest alone while a popup is open, so keys don't act on the
+  // page underneath it.
+  if ([...document.querySelectorAll(".modal")].some(m => m.style.display === "flex")) return;
+  const key = e.key.toLowerCase();
+  const themeIdx = ["1", "2", "3", "4"].indexOf(key);
+  if (themeIdx !== -1 && THEME_IDS[themeIdx]) {
+    const r = themeDropdownBtn.getBoundingClientRect();
+    applyTheme(THEME_IDS[themeIdx], { origin: { x: r.left + r.width / 2, y: r.top + r.height / 2 } });
+    return;
+  }
+  const viewBtn = { g: viewGridBtn, t: viewTableBtn, l: viewLeaderboardBtn }[key];
+  if (viewBtn) {
+    if (!viewBtn.classList.contains("active")) {
+      siteAudio.play("view");
+      viewBtn.click();
+    }
+    scrollToSection("defeatedSweatsSection");
+    return;
+  }
+  if (key === "k") {
+    e.preventDefault();
+    scrollToSection("sweatLookupSection");
+    usernameField.focus({ preventScroll: true });
+    return;
+  }
+  if (key === "e") exportCsv();
 });
 
 console.log(

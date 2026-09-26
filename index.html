@@ -6714,7 +6714,6 @@ html:not([data-theme]) .sweat-card-note::before {
   margin-bottom: 2px;
 }
 html:not([data-theme]) .note-item-text { color: #c8f7ff; }
-html:not([data-theme]) .note-item-author::before { content: "> "; color: var(--accent-2); }
 html:not([data-theme]) .note-input:focus { box-shadow: 0 0 0 3px var(--accent-soft), 0 0 18px rgba(0,217,255,0.25); }
 
 /* --- Case Files: sticky note with a paper clip --- */
@@ -6811,6 +6810,25 @@ html[data-theme="deepcurrent"] .note-item-text { color: #d6f6f0; }
 html[data-theme="deepcurrent"] .note-input { background: rgba(3,12,20,0.5); border-radius: 12px; }
 @media (prefers-reduced-motion: reduce) {
   html[data-theme="deepcurrent"] .sweat-card-note::before { animation: none; }
+}
+
+/* Notes polish: author chips, hover touches, bigger tap targets on phones */
+.note-item-avatar { width: 20px; height: 20px; font-size: 9px; flex-shrink: 0; }
+.note-item-avatar.anon { --chip-color: var(--text-faint); }
+.note-item-date[title] { cursor: help; }
+.note-hint { font-size: 0.92em; opacity: 0.8; }
+@media (hover: none), (max-width: 560px) { .note-hint { display: none; } }
+.sweat-card-note { transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s var(--ease); }
+html:not([data-theme]) .sweat-card:hover .sweat-card-note { box-shadow: -4px 0 16px -6px rgba(0,217,255,0.7); background: linear-gradient(90deg, rgba(0,217,255,0.14), rgba(0,217,255,0.03)); }
+html[data-theme="casefiles"] .sweat-card:hover .sweat-card-note { transform: rotate(0deg) translateY(-2px); box-shadow: 3px 6px 10px rgba(60,40,10,0.28); }
+html[data-theme="ledger"] .sweat-card:hover .sweat-card-note { background: linear-gradient(90deg, transparent, var(--accent-soft), transparent); }
+html[data-theme="deepcurrent"] .sweat-card:hover .sweat-card-note { border-color: rgba(53,230,196,0.5); box-shadow: 0 0 18px rgba(53,230,196,0.18) inset; }
+@media (max-width: 560px) {
+  .note-item-actions .icon-btn { width: 32px; height: 32px; font-size: 13px; }
+  .note-list { max-height: 45vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sweat-card-note, .note-item, .note-item-new { transition: none; animation: none; }
 }
 </style>
 </head>
@@ -7286,6 +7304,7 @@ html[data-theme="deepcurrent"] .note-input { background: rgba(3,12,20,0.5); bord
           <textarea id="modalNoteText" class="note-input" rows="3" maxlength="280" placeholder="Add a note about this player..." aria-label="New note"></textarea>
           <div class="note-compose-meta">
             <label class="note-author-field">By <select id="modalNoteAuthor" class="note-author-select" aria-label="Note written by"></select></label>
+            <span class="note-hint" aria-hidden="true">Ctrl+Enter to save</span>
             <span class="note-count" id="modalNoteCount">0/280</span>
             <button type="button" id="modalNoteCancel" class="btn btn-ghost note-btn-small">Cancel</button>
             <button type="submit" id="modalNoteSave" class="btn btn-primary note-btn-small">Save note</button>
@@ -10497,6 +10516,17 @@ function formatNoteDate(d) {
   const date = d ? new Date(d) : null;
   return date && !isNaN(date) ? date.toLocaleDateString() : "";
 }
+// "just now" / "5m ago" / "3h ago" / "2d ago", then the plain date past a week.
+function relativeNoteDate(d) {
+  const date = d ? new Date(d) : null;
+  if (!date || isNaN(date)) return "";
+  const mins = Math.round((Date.now() - date.getTime()) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  if (mins < 60 * 24) return `${Math.round(mins / 60)}h ago`;
+  if (mins < 60 * 24 * 7) return `${Math.round(mins / 1440)}d ago`;
+  return date.toLocaleDateString();
+}
 // Both "By" pickers remember the last name used, so whoever is on this
 // browser picks themselves once.
 function fillNoteAuthorSelect(select) {
@@ -10542,7 +10572,10 @@ const modalNoteCancel = document.getElementById("modalNoteCancel");
 const modalNoteSave = document.getElementById("modalNoteSave");
 const modalNoteStatus = document.getElementById("modalNoteStatus");
 fillNoteAuthorSelect(modalNoteAuthor);
-modalNoteText.addEventListener("input", () => updateNoteCount(modalNoteText, modalNoteCount));
+modalNoteText.addEventListener("input", () => {
+  updateNoteCount(modalNoteText, modalNoteCount);
+  modalNoteSave.disabled = !modalNoteText.value.trim();
+});
 
 // The sweat entries the open popup is about: every logged entry for this
 // player (the same player can be logged more than once), with the one that
@@ -10581,6 +10614,7 @@ function renderModalNotes(item) {
   modalNoteForm.hidden = true;
   modalNoteAddBtn.hidden = false;
   modalNoteText.value = "";
+  modalNoteSave.disabled = true;
   modalNoteStatus.textContent = "";
   updateNoteCount(modalNoteText, modalNoteCount);
   renderModalNotesList();
@@ -10600,6 +10634,7 @@ function renderModalNotesList() {
     li.style.animationDelay = Math.min(i * 0.04, 0.4) + "s";
     li.innerHTML = `
       <div class="note-item-head">
+        <span class="note-item-avatar beaten-avatar" aria-hidden="true"></span>
         <span class="note-item-author"></span>
         <span class="note-item-date"></span>
         ${canChange ? `<span class="note-item-actions">
@@ -10611,9 +10646,18 @@ function renderModalNotesList() {
     const who = noteAuthorLabel(note.author);
     const authorEl = li.querySelector(".note-item-author");
     authorEl.textContent = who || "Anonymous";
-    if (who) authorEl.setAttribute("data-initials", BEATEN_BY[note.author].initials);
-    const when = formatNoteDate(note.createdAt);
-    li.querySelector(".note-item-date").textContent = (when + (note.editedAt ? " · edited" : "")) +
+    const avatarEl = li.querySelector(".note-item-avatar");
+    if (who) {
+      avatarEl.textContent = BEATEN_BY[note.author].initials;
+      avatarEl.style.setProperty("--chip-color", `var(--roster-${note.author})`);
+    } else {
+      avatarEl.textContent = "?";
+      avatarEl.classList.add("anon");
+    }
+    const when = relativeNoteDate(note.createdAt);
+    const dateEl = li.querySelector(".note-item-date");
+    dateEl.title = formatNoteDate(note.createdAt) + (note.editedAt ? ` (edited ${formatNoteDate(note.editedAt)})` : "");
+    dateEl.textContent = (when + (note.editedAt ? " · edited" : "")) +
       (modalNoteSweats.length > 1 ? ` · entry from ${formatNoteDate(sweat.dateAdded) || "?"}` : "");
     li.querySelector(".note-item-text").textContent = note.text;
     if (canChange) {
@@ -10622,6 +10666,7 @@ function renderModalNotesList() {
     }
     modalNotesList.appendChild(li);
   });
+  modalNotesList.scrollTop = modalNotesList.scrollHeight;
 }
 
 modalNoteAddBtn.addEventListener("click", () => {
@@ -10633,6 +10678,7 @@ modalNoteAddBtn.addEventListener("click", () => {
 modalNoteCancel.addEventListener("click", () => {
   modalNoteForm.hidden = true;
   modalNoteAddBtn.hidden = false;
+  modalNoteAddBtn.focus();
   modalNoteText.value = "";
   updateNoteCount(modalNoteText, modalNoteCount);
 });
@@ -10664,7 +10710,7 @@ modalNoteForm.addEventListener("submit", async (e) => {
   } catch (err) {
     modalNoteStatus.textContent = err.message;
   } finally {
-    modalNoteSave.disabled = false;
+    modalNoteSave.disabled = !modalNoteText.value.trim();
   }
 });
 
@@ -10684,19 +10730,24 @@ function startEditNote(li, note, sweat) {
   const counter = form.querySelector(".note-count");
   input.value = note.text;
   updateNoteCount(input, counter);
-  input.addEventListener("input", () => updateNoteCount(input, counter));
+  const saveBtn = form.querySelector('[type="submit"]');
+  input.addEventListener("input", () => { updateNoteCount(input, counter); saveBtn.disabled = !input.value.trim(); });
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); form.requestSubmit(); }
   });
   textEl.hidden = true;
   li.appendChild(form);
   input.focus();
-  form.querySelector(".note-edit-cancel").addEventListener("click", () => { form.remove(); textEl.hidden = false; });
+  form.querySelector(".note-edit-cancel").addEventListener("click", () => {
+    form.remove();
+    textEl.hidden = false;
+    const editBtn = li.querySelector(".note-edit");
+    if (editBtn) editBtn.focus();
+  });
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const text = input.value.trim();
     if (!text) return;
-    const saveBtn = form.querySelector('[type="submit"]');
     saveBtn.disabled = true;
     try {
       const res = await fetch(`${backendBaseURL}/sweats/${sweat._id}/notes/${note._id}`, {
@@ -11117,6 +11168,10 @@ window.onclick = (e) => {
 // more than one at a time.
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
+  if (e.target.closest && e.target.closest(".note-edit-form, .modal-note-form")) {
+    const cancel = e.target.closest("form").querySelector(".note-edit-cancel, #modalNoteCancel");
+    if (cancel) { cancel.click(); return; }
+  }
   if (confirmDeleteModal.style.display === "flex") { resolveConfirmDelete(false); return; }
   if (editModal.style.display === "flex") { closeEditModalFn(); return; }
   if (adminKeyModal.style.display === "flex") { closeAdminKeyModalFn(); return; }

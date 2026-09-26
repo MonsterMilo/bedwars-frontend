@@ -1242,6 +1242,7 @@ html:not([data-theme]) #statsContent.stats-pop {
 .dash-idle { position: relative; width: 140px; height: 140px; flex: none; }
 .dash-idle > div { position: absolute; inset: 0; display: none; }
 .dash-empty > p { position: relative; }
+#statsEmpty { transition: color .7s ease, border-color .7s ease; }
 #statsEmpty.is-scanning { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
 
 /* Neon (default): rotating HUD rings, corner brackets and a scan beam. */
@@ -1262,9 +1263,8 @@ html[data-theme="neon"] .idle-reticle { display: block; }
 .idle-reticle .dot { position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 10px 2px var(--accent-2); animation: reticleBreathe 1.2s ease-in-out infinite; }
 @keyframes reticleBeam { 0%, 100% { transform: translateY(8px); opacity: 0; } 12%, 88% { opacity: 1; } 50% { transform: translateY(130px); } }
 @keyframes reticleBreathe { 50% { transform: scale(.82); opacity: .55; } }
-#statsEmpty.is-scanning .idle-reticle .r1 { animation-duration: 3s; }
-#statsEmpty.is-scanning .idle-reticle .r2 { animation-duration: .9s; }
-#statsEmpty.is-scanning .idle-reticle .beam { animation-duration: .8s; }
+#statsEmpty.is-scanning .idle-reticle { filter: drop-shadow(0 0 8px var(--accent-soft)) brightness(1.2); }
+.idle-reticle { transition: filter .7s ease; }
 
 /* Case Files: a magnifying glass drifting over a latent fingerprint. */
 html[data-theme="casefiles"] .idle-print { display: block; }
@@ -1277,9 +1277,9 @@ html[data-theme="casefiles"] .idle-print { display: block; }
   50% { transform: translate(52px, 62px) rotate(2deg); }
   75% { transform: translate(14px, 52px) rotate(-6deg); }
 }
-#statsEmpty.is-scanning .idle-print .glass { animation-duration: 1.8s; stroke: var(--accent-2); }
-#statsEmpty.is-scanning .idle-print .print { stroke: var(--accent-2); opacity: .8; animation: printDevelop 1s ease-in-out infinite; }
-@keyframes printDevelop { 50% { opacity: .35; } }
+.idle-print .glass, .idle-print .print { transition: stroke .7s ease, opacity .7s ease; }
+#statsEmpty.is-scanning .idle-print .glass { stroke: var(--accent-2); }
+#statsEmpty.is-scanning .idle-print .print { stroke: var(--accent-2); opacity: .85; }
 
 /* Private Bank: a brushed-steel combination dial working through a code. */
 html[data-theme="ledger"] .idle-dial { display: block; }
@@ -1299,14 +1299,18 @@ html[data-theme="ledger"] .idle-dial { display: block; }
   52%, 60% { transform: rotate(-150deg); }
   82%, 100% { transform: rotate(-240deg); }
 }
-#statsEmpty.is-scanning .idle-dial .spin { animation: radarSpin 1.1s linear infinite; }
-#statsEmpty.is-scanning .idle-dial .index { filter: drop-shadow(0 0 4px var(--gold)); }
+.idle-dial .index { transition: filter .7s ease; }
+#statsEmpty.is-scanning .idle-dial .index { filter: drop-shadow(0 0 5px var(--gold)); }
 
-/* Deep Current: sonar sweep with a contact blip. */
+/* Deep Current: sonar sweep with a contact blip. The rings and the blip
+   stay put; only the sweep turns, and the blip lights at 12.5% of the
+   turn, the moment the leading edge reaches its 45deg bearing. */
 html[data-theme="deepcurrent"] .idle-sonar { display: block; }
-.idle-sonar {
+.idle-sonar s {
+  position: absolute;
+  inset: 0;
   border-radius: 50%;
-  background: conic-gradient(from 0deg, transparent 0 290deg, color-mix(in srgb, var(--accent) 55%, transparent) 355deg, transparent 360deg);
+  background: conic-gradient(from 0deg, transparent 0 280deg, color-mix(in srgb, var(--accent) 45%, transparent) 356deg, var(--accent) 359deg, transparent 360deg);
   -webkit-mask: radial-gradient(closest-side, #000 99%, transparent 100%);
   mask: radial-gradient(closest-side, #000 99%, transparent 100%);
   animation: radarSpin 4s linear infinite;
@@ -1314,10 +1318,19 @@ html[data-theme="deepcurrent"] .idle-sonar { display: block; }
 .idle-sonar i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); }
 .idle-sonar i:nth-child(2) { inset: 20%; }
 .idle-sonar i:nth-child(3) { inset: 40%; }
-.idle-sonar b { position: absolute; left: 72%; top: 24%; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: sonarBlip 4s linear infinite; }
-@keyframes sonarBlip { 0%, 9% { opacity: 0; } 11% { opacity: 1; } 60%, 100% { opacity: 0; } }
-#statsEmpty.is-scanning .idle-sonar,
-#statsEmpty.is-scanning .idle-sonar b { animation-duration: 1.1s; }
+.idle-sonar b { position: absolute; left: 72.6%; top: 27.4%; width: 8px; height: 8px; margin: -4px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); opacity: 0; animation: sonarBlip 4s linear infinite; }
+.idle-sonar b::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 1px solid var(--accent); opacity: 0; animation: sonarPing 4s linear infinite; }
+@keyframes sonarBlip {
+  0%, 12.4% { opacity: 0; transform: scale(.4); }
+  12.5% { opacity: 1; transform: scale(1.6); }
+  18% { opacity: 1; transform: scale(1); }
+  75%, 100% { opacity: 0; transform: scale(1); }
+}
+@keyframes sonarPing {
+  0%, 12.4% { opacity: 0; transform: scale(.5); }
+  12.5% { opacity: .9; transform: scale(.5); }
+  38%, 100% { opacity: 0; transform: scale(2.6); }
+}
 @keyframes radarSpin { to { transform: rotate(360deg); } }
 
 /* Skin on a glowing stage that tilts toward the cursor. */
@@ -6243,17 +6256,13 @@ html[data-theme="deepcurrent"] .exhibit-tag-lookup::before { content: "Dive Log 
 html[data-theme="deepcurrent"] .exhibit-tag-results::before { content: "Dive Log B"; }
 html[data-theme="deepcurrent"] .exhibit-tag-denick::before { content: "Dive Log C"; }
 
-/* Lookup form's left column gets a faint teal edge-glow instead of a plain
-   border, echoing the porthole-glass light elsewhere in this theme. */
+/* Lookup form's left column divider in the stronger teal border. No glow:
+   a box-shadow here haloed the whole column, not just the divider. */
 html[data-theme="deepcurrent"] .dash-left {
   border-right-color: var(--border-strong);
-  box-shadow: 1px 0 12px -4px rgba(53,230,196,0.25);
 }
 @media (max-width: 700px) {
-  html[data-theme="deepcurrent"] .dash-left {
-    border-right: none;
-    box-shadow: 0 1px 12px -4px rgba(53,230,196,0.25);
-  }
+  html[data-theme="deepcurrent"] .dash-left { border-right: none; border-bottom-color: var(--border-strong); }
 }
 
 /* Sweat Lookup panel recast as a submarine instrument console instead of
@@ -6670,7 +6679,7 @@ html[data-theme="deepcurrent"] .pill.boost {
           <div class="dash-preview-frame">
             <div id="statsEmpty" class="dash-empty">
               <div class="dash-idle" aria-hidden="true">
-                <div class="idle-sonar"><i></i><i></i><i></i><b></b></div>
+                <div class="idle-sonar"><i></i><i></i><i></i><s></s><b></b></div>
                 <div class="idle-reticle"><i class="r1"></i><i class="r2"></i><i class="r3"></i><span class="br"></span><span class="beam"></span><span class="dot"></span></div>
                 <div class="idle-print">
                   <svg viewBox="0 0 100 110" class="print"><ellipse cx="50" cy="56" rx="4.0" ry="6.0" stroke-dasharray="16 5 9 7" stroke-dashoffset="0" transform="rotate(-10.0 50 56)"/><ellipse cx="50" cy="56" rx="8.2" ry="11.1" stroke-dasharray="31 8 17 7" stroke-dashoffset="23" transform="rotate(-8.4 50 56)"/><ellipse cx="50" cy="56" rx="12.4" ry="16.2" stroke-dasharray="45 11 25 7" stroke-dashoffset="46" transform="rotate(-6.8 50 56)"/><ellipse cx="50" cy="56" rx="16.6" ry="21.3" stroke-dasharray="60 5 34 7" stroke-dashoffset="19" transform="rotate(-5.2 50 56)"/><ellipse cx="50" cy="56" rx="20.8" ry="26.4" stroke-dasharray="75 8 42 7" stroke-dashoffset="42" transform="rotate(-3.6 50 56)"/><ellipse cx="50" cy="56" rx="25.0" ry="31.5" stroke-dasharray="89 11 50 7" stroke-dashoffset="15" transform="rotate(-2.0 50 56)"/><ellipse cx="50" cy="56" rx="29.2" ry="36.6" stroke-dasharray="104 5 58 7" stroke-dashoffset="38" transform="rotate(-0.4 50 56)"/><ellipse cx="50" cy="56" rx="33.4" ry="41.7" stroke-dasharray="119 8 66 7" stroke-dashoffset="11" transform="rotate(1.2 50 56)"/><ellipse cx="50" cy="56" rx="37.6" ry="46.8" stroke-dasharray="133 11 75 7" stroke-dashoffset="34" transform="rotate(2.8 50 56)"/></svg>
@@ -8223,10 +8232,41 @@ function showStatsEmpty() {
 // While a lookup is in flight the empty preview speeds up its idle scene
 // and names who it is looking for.
 const STATS_EMPTY_TEXT = "Search a player, then Preview to see their card here before you log it.";
+// The idle scene doesn't swap to a different animation when a lookup
+// starts; its running animations are eased up to a faster playbackRate
+// (and back down), which keeps every ring, beam and dial in phase.
+// The Bank dial swings through big arcs, so it speeds up less.
+const IDLE_SCAN_RATE = { ledger: 2 };
+let idleRateFrame = 0;
+function rampIdleScene(target) {
+  cancelAnimationFrame(idleRateFrame);
+  const anims = statsEmpty.getAnimations({ subtree: true }).filter(a => a instanceof CSSAnimation);
+  if (!anims.length) return;
+  const from = anims[0].playbackRate;
+  if (from === target) return;
+  const start = performance.now(), duration = 700;
+  const step = now => {
+    const k = Math.min(1, (now - start) / duration);
+    const eased = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    const rate = from + (target - from) * eased;
+    anims.forEach(a => { a.playbackRate = rate; });
+    if (k < 1) idleRateFrame = requestAnimationFrame(step);
+  };
+  idleRateFrame = requestAnimationFrame(step);
+}
 function setStatsScanning(name) {
   const text = document.getElementById("statsEmptyText");
-  statsEmpty.classList.toggle("is-scanning", !!name);
-  if (text) text.textContent = name ? `Scanning Hypixel for ${name}…` : STATS_EMPTY_TEXT;
+  const scanning = !!name;
+  const wasScanning = statsEmpty.classList.contains("is-scanning");
+  statsEmpty.classList.toggle("is-scanning", scanning);
+  rampIdleScene(scanning ? (IDLE_SCAN_RATE[document.documentElement.dataset.theme] || 3.5) : 1);
+  if (!text) return;
+  const next = scanning ? `Scanning Hypixel for ${name}…` : STATS_EMPTY_TEXT;
+  if (text.textContent === next) return;
+  text.textContent = next;
+  if (scanning !== wasScanning && text.animate && !statsEmpty.hidden) {
+    text.animate([{ opacity: 0, transform: "translateY(4px)" }, { opacity: 1, transform: "none" }], { duration: 350, easing: "ease-out" });
+  }
 }
 
 const statWins = document.getElementById('statWins');

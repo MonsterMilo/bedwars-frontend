@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Bedwars Sweat Tracker</title>
+<link rel="icon" id="siteFavicon" type="image/svg+xml">
 <script>
   // Applied here (before the stylesheet paints anything) so a returning
   // visitor's saved theme takes effect immediately instead of flashing the
@@ -8344,6 +8345,29 @@ function playThemeTransition(themeId, swapFn, origin) {
   });
 }
 
+// Favicon: a pixel-art Bedwars bed on a tile in the current theme's
+// colors, built as an SVG data URI (no extra file) and swapped by
+// applyTheme() so the browser tab matches the site.
+const FAVICON_TILES = {
+  neon: { bg: "#0b0e1a", edge: "#00d9ff" },
+  casefiles: { bg: "#efe6cc", edge: "#2a241c" },
+  ledger: { bg: "#16233a", edge: "#a9822e" },
+  deepcurrent: { bg: "#062033", edge: "#35e6c4" },
+};
+function faviconHref(themeId) {
+  const t = FAVICON_TILES[themeId] || FAVICON_TILES.neon;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+    <rect x="0.5" y="0.5" width="15" height="15" rx="3" fill="${t.bg}" stroke="${t.edge}"/>
+    <rect x="2" y="5" width="4" height="3" fill="#e9e9e9"/><rect x="2" y="5" width="4" height="1" fill="#fff"/>
+    <rect x="6" y="5" width="8" height="3" fill="#b3312c"/><rect x="6" y="5" width="8" height="1" fill="#e0504a"/>
+    <rect x="2" y="8" width="12" height="2" fill="#8e2622"/>
+    <rect x="2" y="10" width="12" height="1" fill="#9c7440"/>
+    <rect x="2" y="11" width="2" height="2" fill="#6b4f2a"/><rect x="12" y="11" width="2" height="2" fill="#6b4f2a"/>
+  </svg>`;
+  return "data:image/svg+xml," + encodeURIComponent(svg);
+}
+const siteFavicon = document.getElementById("siteFavicon");
+
 function currentThemeId() {
   return document.documentElement.getAttribute("data-theme") || "neon";
 }
@@ -8359,6 +8383,7 @@ function applyTheme(themeId, opts = {}) {
       document.documentElement.setAttribute("data-theme", themeId);
     }
     themeDropdownLabel.textContent = THEME_LABELS[themeId];
+    siteFavicon.href = faviconHref(themeId);
     themeOptions.forEach(li => li.setAttribute("aria-selected", li.dataset.themeValue === themeId ? "true" : "false"));
     try { localStorage.setItem(THEME_STORAGE_KEY, themeId); } catch (e) {}
   };
@@ -12901,16 +12926,6 @@ usernameField.addEventListener("input", () => {
     if (!reducedMotionQuery.matches) themedBurst(r.left + r.width * 0.7, r.top + r.height / 2, true);
   }
   technoShown = isTechno;
-});
-
-// Leaving the tab changes its title.
-const baseDocTitle = document.title;
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    document.title = "\u{1F6CF} Protect your bed!";
-  } else {
-    document.title = baseDocTitle;
-  }
 });
 
 console.log(

@@ -6831,6 +6831,7 @@ html[data-theme="casefiles"] .note-signer { font-family: 'Courier Prime', monosp
 html[data-theme="ledger"] .note-signer { font-family: 'EB Garamond', serif; font-style: italic; font-weight: 600; }
 html[data-theme="ledger"] .note-signer::before { box-shadow: none; }
 html[data-theme="deepcurrent"] .note-signer { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; }
+.key-admin-badge { color: var(--gold); font-size: 0.85em; margin-left: -2px; text-shadow: 0 0 8px color-mix(in srgb, var(--gold) 60%, transparent); }
 </style>
 </head>
 <body>
@@ -8107,11 +8108,13 @@ function adminHeaders(extra = {}) {
 
 // Each person has their own key (KEY_MILO, KEY_POTAT, ... plus KEY_ADMIN on
 // the backend), so the key says who you are: it signs your notes and, for
-// personal keys, allows edits/deletes on things from the last 10 days.
+// personal keys, allows edits on things from the last 30 days and deletes
+// on things from the last 10. KEY_ADMIN and KEY_MILO have full access.
 // keyOwner is the roster id, "admin", or null (no key / not recognised /
 // not checked yet); refreshed from GET /whoami whenever the key changes.
 let keyOwner = null;
-let keyEditWindowDays = 10;
+let keyFullAccess = false;
+let keyWindowDays = { edit: 30, delete: 10 };
 async function refreshKeyOwner() {
   const key = getAdminKey();
   if (!key) { keyOwner = null; updateKeyIdentityUi(); return null; }
@@ -8119,7 +8122,8 @@ async function refreshKeyOwner() {
     const res = await fetch(`${backendBaseURL}/whoami`, { headers: adminHeaders() });
     const data = res.ok ? await res.json() : null;
     keyOwner = data && data.who ? data.who : null;
-    if (data && data.editWindowDays !== undefined) keyEditWindowDays = data.editWindowDays;
+    keyFullAccess = !!(data && data.admin);
+    if (data && data.editWindowDays !== undefined) keyWindowDays = { edit: data.editWindowDays, delete: data.deleteWindowDays };
   } catch {
     // Backend asleep/unreachable: keep whatever we knew; writes still send
     // the key and the backend decides.
@@ -8127,11 +8131,14 @@ async function refreshKeyOwner() {
   updateKeyIdentityUi();
   return keyOwner;
 }
-function canChangeNote(note) {
+// action is "edit" or "delete"; mirrors the backend's windows so buttons
+// only show where they'd work (the backend still has the final say).
+function canChangeNote(note, action) {
   if (!getAdminKey()) return false;
-  if (keyOwner === "admin" || keyEditWindowDays == null) return true;
+  const days = keyWindowDays[action];
+  if (keyFullAccess || days == null) return true;
   const created = note.createdAt ? new Date(note.createdAt).getTime() : 0;
-  return Date.now() - created <= keyEditWindowDays * 86400000;
+  return Date.now() - created <= days * 86400000;
 }
 function updateKeyIdentityUi() {
   const btn = document.getElementById("setAdminKeyBtn");
@@ -8141,6 +8148,13 @@ function updateKeyIdentityUi() {
       ? `<span class="key-owner-chip beaten-avatar" aria-hidden="true"></span><span class="key-owner-name"></span>`
       : `&#128273; <span class="key-owner-name"></span>`;
     btn.querySelector(".key-owner-name").textContent = label;
+    if (keyFullAccess && keyOwner !== "admin") {
+      const badge = document.createElement("span");
+      badge.className = "key-admin-badge";
+      badge.textContent = "\u2605";
+      badge.title = "Full access";
+      btn.appendChild(badge);
+    }
     const chip = btn.querySelector(".key-owner-chip");
     if (chip) {
       chip.textContent = keyOwner === "admin" ? "\u2605" : BEATEN_BY[keyOwner].initials;
@@ -10681,7 +10695,8 @@ function renderModalNotesList() {
   modalNotesEmpty.hidden = all.length !== 0;
   modalNotesList.innerHTML = "";
   all.forEach(({ note, sweat }, i) => {
-    const canChange = canChangeNote(note);
+    const canEdit = canChangeNote(note, "edit");
+    const canDelete = canChangeNote(note, "delete");
     const li = document.createElement("li");
     li.className = "note-item";
     li.style.setProperty("--note-author-color", noteAuthorColor(note.author));
@@ -10691,9 +10706,9 @@ function renderModalNotesList() {
         <span class="note-item-avatar beaten-avatar" aria-hidden="true"></span>
         <span class="note-item-author"></span>
         <span class="note-item-date"></span>
-        ${canChange ? `<span class="note-item-actions">
-          <button type="button" class="icon-btn edit note-edit" data-tooltip="Edit note">&#9998;</button>
-          <button type="button" class="icon-btn danger note-delete" data-tooltip="Delete note">&#10005;</button>
+        ${canEdit || canDelete ? `<span class="note-item-actions">
+          ${canEdit ? `<button type="button" class="icon-btn edit note-edit" data-tooltip="Edit note">&#9998;</button>` : ""}
+          ${canDelete ? `<button type="button" class="icon-btn danger note-delete" data-tooltip="Delete note">&#10005;</button>` : ""}
         </span>` : ""}
       </div>
       <p class="note-item-text"></p>`;
@@ -10714,10 +10729,8 @@ function renderModalNotesList() {
     dateEl.textContent = (when + (note.editedAt ? " · edited" : "")) +
       (modalNoteSweats.length > 1 ? ` · entry from ${formatNoteDate(sweat.dateAdded) || "?"}` : "");
     li.querySelector(".note-item-text").textContent = note.text;
-    if (canChange) {
-      li.querySelector(".note-edit").addEventListener("click", () => startEditNote(li, note, sweat));
-      li.querySelector(".note-delete").addEventListener("click", (e) => deleteNote(e.currentTarget, note, sweat));
-    }
+    if (canEdit) li.querySelector(".note-edit").addEventListener("click", () => startEditNote(li, note, sweat));
+    if (canDelete) li.querySelector(".note-delete").addEventListener("click", (e) => deleteNote(e.currentTarget, note, sweat));
     modalNotesList.appendChild(li);
   });
   modalNotesList.scrollTop = modalNotesList.scrollHeight;

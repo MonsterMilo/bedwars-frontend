@@ -6836,213 +6836,70 @@ html[data-theme="deepcurrent"] .note-signer { font-family: 'JetBrains Mono', mon
 
 /* ============================================================
    ACTIVITY LOG (KEY_ADMIN only)
-   One row per change: who (roster chip), what, which sweat, when, plus
-   the field diffs / note text underneath. Each theme restyles it as its
-   own kind of record: Neon a terminal feed, Case Files an evidence log,
-   Private Bank a transaction ledger, Deep Current a dive log.
+   Deliberately plain: a readable list, one line per change with a colored
+   dot for the kind of change, details underneath. It picks up each
+   theme's fonts and colors from the usual tokens rather than getting its
+   own scene. Collapsed until opened with the Show button.
    ============================================================ */
 [data-admin-only][hidden] { display: none !important; }
-.activity-toolbar { display: flex; flex-direction: column; gap: 12px; }
-#activityStatus:empty { min-height: 0; margin-top: 8px; }
-.activity-toolbar-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.activity-toolbar-row .denick-mode-toggle { margin: 0; flex-wrap: wrap; }
-.activity-toolbar-row .denick-mode-btn { padding: 7px 14px; font-size: 0.84em; }
-.activity-who { display: flex; flex-wrap: wrap; gap: 6px; }
-.activity-who-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 11px 4px 4px;
+#activitySection > div:nth-child(2) { flex: 1; min-width: 0; }
+.activity-toggle { flex: none; }
+.activity-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.activity-toolbar select {
+  font: inherit; font-size: 0.85em;
+  padding: 7px 10px;
   border: 1px solid var(--border);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text-dim);
-  font: inherit; font-size: 0.82em; font-weight: 700;
-  cursor: pointer;
-  transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease);
-}
-.activity-who-btn.is-all { padding-left: 11px; }
-.activity-who-btn .beaten-avatar { width: 20px; height: 20px; }
-.activity-who-btn:hover { color: var(--text); border-color: var(--border-strong); }
-.activity-who-btn.active {
+  border-radius: 8px;
+  background: var(--panel-2);
   color: var(--text);
-  border-color: var(--chip-color, var(--accent));
-  background: color-mix(in srgb, var(--chip-color, var(--accent)) 14%, transparent);
 }
+.activity-toolbar .btn { margin-left: auto; padding: 7px 14px; font-size: 0.85em; }
+#activityStatus:empty { min-height: 0; margin-top: 8px; }
 
-.activity-list { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.activity-list { list-style: none; margin: 4px 0 0; padding: 0; }
 .activity-row {
   --act-color: var(--accent);
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 4px 12px;
-  align-items: start;
-  padding: 11px 14px;
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--act-color);
-  border-radius: 10px;
-  background: var(--panel-2);
-  animation: activityIn 0.35s var(--ease) both;
+  grid-template-columns: 10px 1fr auto;
+  gap: 2px 12px;
+  align-items: baseline;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--border);
 }
+.activity-row:last-child { border-bottom: 0; }
 .activity-row[data-action="sweat.add"] { --act-color: var(--good); }
 .activity-row[data-action="sweat.delete"] { --act-color: var(--bad); }
 .activity-row[data-action="sweat.restore"] { --act-color: var(--gold); }
 .activity-row[data-action^="note."] { --act-color: var(--accent-2); }
-.activity-row .beaten-avatar { width: 28px; height: 28px; font-size: 0.72em; margin-top: 1px; }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--act-color); align-self: start; margin-top: 0.5em; }
 .activity-main { min-width: 0; }
-.activity-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 7px; color: var(--text-dim); line-height: 1.45; }
-.activity-who-name { font-weight: 800; color: var(--text); }
+.activity-line { color: var(--text-dim); line-height: 1.45; }
+.activity-who-name { font-weight: 700; }
 .activity-player { font-weight: 700; color: var(--text); }
-.activity-tag {
-  font-size: 0.66em; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 2px 7px; border-radius: 999px;
-  color: var(--act-color);
-  background: color-mix(in srgb, var(--act-color) 14%, transparent);
-  border: 1px solid color-mix(in srgb, var(--act-color) 40%, transparent);
-  align-self: center;
-}
-.activity-time { font-size: 0.78em; color: var(--text-faint); white-space: nowrap; margin-top: 3px; }
-.activity-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-.activity-details { margin: 6px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 5px; }
-.activity-diff {
-  font-size: 0.8em; padding: 3px 8px; border-radius: 6px;
-  background: var(--panel); border: 1px solid var(--border); color: var(--text-dim);
-}
-.activity-diff b { color: var(--text); font-weight: 700; margin-right: 4px; }
-.activity-diff .was { text-decoration: line-through; opacity: 0.7; }
-.activity-diff .now { color: var(--text); font-weight: 700; }
-.activity-diff.is-plus { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); }
-.activity-diff.is-minus { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
-.activity-note {
-  margin: 6px 0 0; padding: 6px 10px;
-  border-left: 2px solid var(--accent-2);
-  background: var(--panel);
-  border-radius: 0 6px 6px 0;
-  font-size: 0.86em; color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere;
-}
-.activity-note.was { color: var(--text-faint); text-decoration: line-through; border-left-color: var(--text-faint); }
-.activity-note-by { display: inline-block; width: 100%; font-size: 0.78em; color: var(--text-faint); margin-top: 2px; font-style: normal; text-decoration: none; }
-.activity-restore-btn { padding: 6px 14px; font-size: 0.82em; border-color: var(--gold); color: var(--gold); }
-.activity-restore-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--gold) 16%, transparent); }
-.activity-restored { font-size: 0.74em; font-weight: 700; color: var(--good); white-space: nowrap; }
-.activity-row.is-restored-now { animation: activityRestored 1.2s var(--ease); }
-.activity-more { display: block; margin: 14px auto 0; }
-@keyframes activityIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-@keyframes activityRestored {
-  0% { box-shadow: 0 0 0 0 var(--gold); }
-  40% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 45%, transparent); }
-  100% { box-shadow: 0 0 0 0 transparent; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .activity-row, .activity-row.is-restored-now { animation: none; }
-}
+.activity-time { font-size: 0.8em; color: var(--text-faint); white-space: nowrap; }
+.activity-side { display: flex; align-items: center; gap: 10px; }
+.activity-details { margin: 2px 0 0; font-size: 0.85em; color: var(--text-dim); }
+.activity-details .was { text-decoration: line-through; opacity: 0.7; }
+.activity-details .now { color: var(--text); font-weight: 700; }
+.activity-details .plus { color: var(--good); }
+.activity-details .minus { color: var(--bad); }
+.activity-note { margin: 3px 0 0; font-size: 0.88em; color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere; }
+.activity-note::before { content: "\201C"; }
+.activity-note::after { content: "\201D"; }
+.activity-note.was { color: var(--text-faint); text-decoration: line-through; }
+.activity-note-by { font-size: 0.85em; color: var(--text-faint); margin-left: 6px; }
+.activity-restore-btn { padding: 4px 12px; font-size: 0.8em; }
+.activity-restored { font-size: 0.78em; color: var(--good); white-space: nowrap; }
+.activity-more { display: block; margin: 12px auto 0; }
 @media (max-width: 560px) {
-  .activity-row { grid-template-columns: auto 1fr; }
-  .activity-side { grid-column: 2; flex-direction: row; align-items: center; justify-content: space-between; }
-  .activity-toolbar-row .denick-mode-toggle { width: 100%; border-radius: 16px; }
-  .activity-toolbar-row .denick-mode-btn { flex: 1 0 auto; }
+  .activity-row { grid-template-columns: 10px 1fr; }
+  .activity-side { grid-column: 2; }
 }
-
-/* Neon: a terminal feed - mono timestamps, a glowing rail, cyan prompt. */
-html:not([data-theme]) .activity-list,
-html[data-theme="neon"] .activity-list { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.92em; }
-html:not([data-theme]) .activity-row,
-html[data-theme="neon"] .activity-row {
-  background: rgba(0,0,0,0.25);
-  box-shadow: inset 3px 0 12px -6px var(--act-color);
-}
-html:not([data-theme]) .activity-line::before,
-html[data-theme="neon"] .activity-line::before { content: ">"; color: var(--act-color); font-weight: 800; text-shadow: 0 0 6px var(--act-color); }
-html:not([data-theme]) .activity-tag,
-html[data-theme="neon"] .activity-tag { border-radius: 3px; text-shadow: 0 0 6px var(--act-color); }
-
-/* Case Files: an evidence log - typed entries, dashed rules, rubber stamps. */
-html[data-theme="casefiles"] .activity-list { gap: 0; border-top: 1.5px solid var(--border); }
-html[data-theme="casefiles"] .activity-row {
-  background: transparent; border: 0; border-bottom: 1px dashed var(--border); border-radius: 0;
-  padding: 12px 6px;
-  font-family: 'Courier Prime', monospace;
-}
-html[data-theme="casefiles"] .activity-row .beaten-avatar { border-radius: 0; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--border); }
-html[data-theme="casefiles"] .activity-tag {
-  border-radius: 2px; background: transparent; border: 2px solid var(--act-color);
-  transform: rotate(-3deg); letter-spacing: 0.14em; opacity: 0.9;
-}
-html[data-theme="casefiles"] .activity-diff,
-html[data-theme="casefiles"] .activity-note { border-radius: 0; background: #fffbe6; }
-html[data-theme="casefiles"] .activity-who-btn { border-radius: 2px; font-family: 'Courier Prime', monospace; }
-html[data-theme="casefiles"] .activity-who-btn .beaten-avatar { border-radius: 0; }
-
-/* Private Bank: a transaction ledger - ruled rows, serif, red ink for
-   removals, gold for reinstatements. */
-html[data-theme="ledger"] .activity-list { gap: 0; border-top: 2px solid var(--accent-2); border-bottom: 2px solid var(--accent-2); }
-html[data-theme="ledger"] .activity-row {
-  background: transparent; border: 0; border-bottom: 1px solid var(--border); border-radius: 0;
-  padding: 12px 8px;
-  font-family: 'EB Garamond', serif; font-size: 1.05em;
-}
-html[data-theme="ledger"] .activity-row:nth-child(even) { background: color-mix(in srgb, var(--panel-2) 60%, transparent); }
-html[data-theme="ledger"] .activity-tag {
-  border: 0; border-radius: 0; background: transparent; padding: 0;
-  font-family: 'EB Garamond', serif; font-style: italic; text-transform: none; letter-spacing: 0.02em; font-size: 0.85em; font-weight: 600;
-}
-html[data-theme="ledger"] .activity-time { font-variant-numeric: tabular-nums; font-family: 'EB Garamond', serif; }
-html[data-theme="ledger"] .activity-diff,
-html[data-theme="ledger"] .activity-note { border-radius: 0; font-variant-numeric: tabular-nums; }
-html[data-theme="ledger"] .activity-restore-btn { border-radius: 0; font-family: 'EB Garamond', serif; font-style: italic; }
-html[data-theme="ledger"] .activity-who-btn { border-radius: 0; font-family: 'EB Garamond', serif; font-size: 0.95em; }
-
-/* Deep Current: a dive log - depth markers strung on a line down the left. */
-html[data-theme="deepcurrent"] .activity-list { position: relative; padding-left: 16px; gap: 10px; }
-html[data-theme="deepcurrent"] .activity-list::before {
-  content: ""; position: absolute; left: 4px; top: 6px; bottom: 6px; width: 1px;
-  background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent-2) 60%, transparent));
-}
-html[data-theme="deepcurrent"] .activity-row {
-  position: relative;
-  background: linear-gradient(160deg, var(--panel), var(--panel-2));
-  border-left-width: 1px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.9em;
-}
-html[data-theme="deepcurrent"] .activity-row::before {
-  content: ""; position: absolute; left: -16px; top: 18px; width: 9px; height: 9px; border-radius: 50%;
-  background: var(--act-color); box-shadow: 0 0 10px var(--act-color);
-}
-html[data-theme="deepcurrent"] .activity-tag { border-radius: 4px; }
-
 html[data-theme="casefiles"] .panel-icon-activity::before { content: "\270E"; }
 html[data-theme="ledger"] .panel-icon-activity::before { content: "\2630"; }
 html[data-theme="ledger"] .exhibit-tag-activity::before { content: "Schedule D"; }
 html[data-theme="deepcurrent"] .panel-icon-activity::before { content: "\2248"; }
 html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Log D"; }
-
-/* Action tag wording, per theme (the tag itself is empty in the markup). */
-.activity-tag[data-action="sweat.add"]::before { content: "Add"; }
-.activity-tag[data-action="sweat.edit"]::before { content: "Edit"; }
-.activity-tag[data-action="sweat.delete"]::before { content: "Delete"; }
-.activity-tag[data-action="sweat.restore"]::before { content: "Restore"; }
-.activity-tag[data-action="note.add"]::before { content: "Note +"; }
-.activity-tag[data-action="note.edit"]::before { content: "Note edit"; }
-.activity-tag[data-action="note.delete"]::before { content: "Note −"; }
-html[data-theme="casefiles"] .activity-tag[data-action="sweat.add"]::before { content: "Filed"; }
-html[data-theme="casefiles"] .activity-tag[data-action="sweat.edit"]::before { content: "Amended"; }
-html[data-theme="casefiles"] .activity-tag[data-action="sweat.delete"]::before { content: "Shredded"; }
-html[data-theme="casefiles"] .activity-tag[data-action="sweat.restore"]::before { content: "Recovered"; }
-html[data-theme="casefiles"] .activity-tag[data-action="note.add"]::before { content: "Memo filed"; }
-html[data-theme="casefiles"] .activity-tag[data-action="note.edit"]::before { content: "Memo amended"; }
-html[data-theme="casefiles"] .activity-tag[data-action="note.delete"]::before { content: "Memo pulled"; }
-html[data-theme="ledger"] .activity-tag[data-action="sweat.add"]::before { content: "Deposit"; }
-html[data-theme="ledger"] .activity-tag[data-action="sweat.edit"]::before { content: "Adjustment"; }
-html[data-theme="ledger"] .activity-tag[data-action="sweat.delete"]::before { content: "Withdrawal"; }
-html[data-theme="ledger"] .activity-tag[data-action="sweat.restore"]::before { content: "Reinstated"; }
-html[data-theme="ledger"] .activity-tag[data-action="note.add"]::before { content: "Memo"; }
-html[data-theme="ledger"] .activity-tag[data-action="note.edit"]::before { content: "Memo revised"; }
-html[data-theme="ledger"] .activity-tag[data-action="note.delete"]::before { content: "Memo voided"; }
-html[data-theme="deepcurrent"] .activity-tag[data-action="sweat.add"]::before { content: "Logged"; }
-html[data-theme="deepcurrent"] .activity-tag[data-action="sweat.edit"]::before { content: "Recalibrated"; }
-html[data-theme="deepcurrent"] .activity-tag[data-action="sweat.delete"]::before { content: "Lost"; }
-html[data-theme="deepcurrent"] .activity-tag[data-action="sweat.restore"]::before { content: "Salvaged"; }
-html[data-theme="deepcurrent"] .activity-tag[data-action="note.add"]::before { content: "Log entry"; }
-html[data-theme="deepcurrent"] .activity-tag[data-action="note.edit"]::before { content: "Log revised"; }
-html[data-theme="deepcurrent"] .activity-tag[data-action="note.delete"]::before { content: "Log cut"; }
 </style>
 </head>
 <body>
@@ -7491,27 +7348,26 @@ html[data-theme="deepcurrent"] .activity-tag[data-action="note.delete"]::before 
     <div>
       <span class="exhibit-tag exhibit-tag-activity">Exhibit D</span>
       <h2>Activity</h2>
-      <p>Every add, edit and delete, and who did it. Deleted sweats can be restored from here.</p>
+      <p>Who added, edited and deleted what. Deleted sweats can be restored here.</p>
     </div>
+    <button type="button" id="activityToggle" class="btn btn-ghost activity-toggle" aria-expanded="false" aria-controls="activityContainer">Show</button>
   </div>
 
-  <div id="activityContainer" class="card" data-admin-only hidden>
+  <div id="activityContainer" class="card" hidden>
     <div class="activity-toolbar">
-      <div id="activityWho" class="activity-who" role="group" aria-label="Filter by person"></div>
-      <div class="activity-toolbar-row">
-        <div id="activityAction" class="denick-mode-toggle activity-action-toggle" role="group" aria-label="Filter by action">
-          <button type="button" class="denick-mode-btn active" data-action="" aria-pressed="true">All</button>
-          <button type="button" class="denick-mode-btn" data-action="sweat.add" aria-pressed="false">Added</button>
-          <button type="button" class="denick-mode-btn" data-action="sweat.edit" aria-pressed="false">Edited</button>
-          <button type="button" class="denick-mode-btn" data-action="sweat.delete" aria-pressed="false">Deleted</button>
-          <button type="button" class="denick-mode-btn" data-action="sweat.restore" aria-pressed="false">Restored</button>
-          <button type="button" class="denick-mode-btn" data-action="note.add,note.edit,note.delete" aria-pressed="false">Notes</button>
-        </div>
-        <button type="button" id="activityRefreshBtn" class="btn btn-ghost">
-          <span class="fetch-btn-label">Refresh</span>
-          <span class="fetch-btn-spinner" aria-hidden="true"></span>
-        </button>
-      </div>
+      <select id="activityWho" aria-label="Filter by person"><option value="">Everyone</option></select>
+      <select id="activityAction" aria-label="Filter by action">
+        <option value="">All changes</option>
+        <option value="sweat.add">Added</option>
+        <option value="sweat.edit">Edited</option>
+        <option value="sweat.delete">Deleted</option>
+        <option value="sweat.restore">Restored</option>
+        <option value="note.add,note.edit,note.delete">Notes</option>
+      </select>
+      <button type="button" id="activityRefreshBtn" class="btn btn-ghost">
+        <span class="fetch-btn-label">Refresh</span>
+        <span class="fetch-btn-spinner" aria-hidden="true"></span>
+      </button>
     </div>
     <div id="activityStatus" class="denick-status" role="status" aria-live="polite"></div>
     <ol id="activityList" class="activity-list"></ol>
@@ -11880,20 +11736,22 @@ restoreStateFromUrl();
 
 // ============================================================
 // ACTIVITY LOG (KEY_ADMIN only - not KEY_MILO)
-// Lists every add/edit/delete of a sweat or note from GET /activity,
-// newest first, and lets the admin bring a deleted sweat back exactly as
-// it was (POST /sweats/:id/restore). The section and its nav link only
-// show for the admin key; the backend refuses everyone else anyway.
-// Usernames and note text are player-written: textContent only.
+// A plain list of every add/edit/delete of a sweat or note from
+// GET /activity, newest first, with Restore on deleted sweats
+// (POST /sweats/:id/restore). The heading only shows for the admin key;
+// the list itself stays collapsed until opened with Show, and that choice
+// is remembered. Usernames and note text are player-written: textContent only.
 // ============================================================
 const activityContainer = document.getElementById("activityContainer");
+const activityToggle = document.getElementById("activityToggle");
 const activityList = document.getElementById("activityList");
 const activityStatus = document.getElementById("activityStatus");
 const activityEmpty = document.getElementById("activityEmpty");
 const activityMoreBtn = document.getElementById("activityMoreBtn");
 const activityRefreshBtn = document.getElementById("activityRefreshBtn");
-const activityWhoBar = document.getElementById("activityWho");
-const activityActionBar = document.getElementById("activityAction");
+const activityWhoSelect = document.getElementById("activityWho");
+const activityActionSelect = document.getElementById("activityAction");
+const ACTIVITY_OPEN_STORAGE = "activityOpen";
 const ACTIVITY_PAGE = 40;
 const ACTIVITY_FIELD_LABELS = {
   star: "Stars", fkdr: "FKDR", wlr: "WLR", bblr: "BBLR", kdr: "KDR",
@@ -11909,7 +11767,8 @@ const ACTIVITY_VERBS = {
   "note.edit": "edited a note on",
   "note.delete": "removed a note from"
 };
-let activityFilter = { who: "", action: "" };
+let activityOpen = false;
+try { activityOpen = localStorage.getItem(ACTIVITY_OPEN_STORAGE) === "1"; } catch {}
 let activityNextBefore = null;
 let activityLoadedAt = 0;
 let activityRequest = 0;
@@ -11917,120 +11776,77 @@ let activityRequest = 0;
 function activityWhoLabel(who) {
   return noteAuthorLabel(who) || "Someone";
 }
-function activityAvatar(who) {
-  const chip = document.createElement("span");
-  chip.className = "beaten-avatar";
-  chip.setAttribute("aria-hidden", "true");
-  chip.textContent = who === "admin" || BEATEN_BY[who] ? noteAuthorInitials(who) : "?";
-  chip.style.setProperty("--chip-color", who === "admin" || BEATEN_BY[who] ? noteAuthorColor(who) : "var(--text-faint)");
-  return chip;
-}
 function formatActivityValue(v) {
   if (v === null || v === undefined || v === "") return "—";
-  if (typeof v === "boolean") return v ? "yes" : "no";
   const n = Number(v);
   return Number.isFinite(n) && !Number.isInteger(n) ? String(Math.round(n * 100) / 100) : String(v);
 }
-
-// Edit diffs: stats read "FKDR 5.2 -> 6.1"; roster ticks read "Beaten by +Zoiv"
-// / "-Zoiv"; flags read "+Cheating" / "-Cheating".
-function activityDiffs(changes) {
-  const out = [];
-  Object.entries(changes || {}).forEach(([field, pair]) => {
-    const [was, now] = Array.isArray(pair) ? pair : [null, pair];
-    const li = document.createElement("li");
-    li.className = "activity-diff";
-    if (BEATEN_BY[field] || field === "cheating" || field === "boosting") {
-      const on = !!now;
-      li.classList.add(on ? "is-plus" : "is-minus");
-      li.textContent = BEATEN_BY[field]
-        ? `Beaten by ${on ? "+" : "−"}${BEATEN_BY[field].label}`
-        : `${on ? "+" : "−"}${ACTIVITY_FIELD_LABELS[field]}`;
-    } else {
-      const b = document.createElement("b");
-      b.textContent = ACTIVITY_FIELD_LABELS[field] || field;
-      const w = document.createElement("span");
-      w.className = "was";
-      w.textContent = formatActivityValue(was);
-      const n = document.createElement("span");
-      n.className = "now";
-      n.textContent = formatActivityValue(now);
-      li.append(b, w, " → ", n);
-    }
-    out.push(li);
-  });
-  return out;
+function activitySpan(cls, text) {
+  const el = document.createElement("span");
+  if (cls) el.className = cls;
+  el.textContent = text;
+  return el;
 }
 
-function activityNoteBlock(text, cls, by) {
-  const q = document.createElement("blockquote");
-  q.className = "activity-note" + (cls ? " " + cls : "");
-  q.textContent = text;
-  if (by) {
-    const s = document.createElement("span");
-    s.className = "activity-note-by";
-    s.textContent = by;
-    q.appendChild(s);
-  }
-  return q;
+// Edit details as one line: "FKDR 12.8 -> 14.2 · Beaten by +Zoiv · -Cheating".
+function activityDiffLine(changes) {
+  const div = document.createElement("div");
+  div.className = "activity-details";
+  Object.entries(changes || {}).forEach(([field, pair], i) => {
+    const [was, now] = Array.isArray(pair) ? pair : [null, pair];
+    if (i) div.append(" · ");
+    if (BEATEN_BY[field] || field === "cheating" || field === "boosting") {
+      const name = BEATEN_BY[field] ? BEATEN_BY[field].label : ACTIVITY_FIELD_LABELS[field];
+      div.append(activitySpan(now ? "plus" : "minus", `${BEATEN_BY[field] ? "Beaten by " : ""}${now ? "+" : "−"}${name}`));
+    } else {
+      div.append(`${ACTIVITY_FIELD_LABELS[field] || field} `, activitySpan("was", formatActivityValue(was)), " → ", activitySpan("now", formatActivityValue(now)));
+    }
+  });
+  return div.childNodes.length ? div : null;
+}
+function activityNote(text, was, by) {
+  const p = document.createElement("div");
+  p.className = "activity-note" + (was ? " was" : "");
+  p.textContent = text;
+  if (!by) return p;
+  const wrap = document.createElement("div");
+  wrap.append(p, activitySpan("activity-note-by", by));
+  p.style.display = "inline";
+  return wrap;
 }
 
 function renderActivityRow(e) {
   const li = document.createElement("li");
   li.className = "activity-row";
   li.dataset.action = e.action;
-  li.dataset.id = e._id;
-  li.appendChild(activityAvatar(e.who));
+  li.dataset.sweatId = String(e.sweatId || "");
+  li.appendChild(activitySpan("activity-dot", ""));
 
   const main = document.createElement("div");
   main.className = "activity-main";
   const line = document.createElement("div");
   line.className = "activity-line";
-  const who = document.createElement("span");
-  who.className = "activity-who-name";
-  who.textContent = activityWhoLabel(e.who);
-  who.style.color = e.who === "admin" || BEATEN_BY[e.who] ? noteAuthorColor(e.who) : "";
-  const verb = document.createElement("span");
-  verb.textContent = ACTIVITY_VERBS[e.action] || e.action;
-  const player = document.createElement("span");
-  player.className = "activity-player";
-  player.textContent = e.username || "a sweat";
-  const tag = document.createElement("span");
-  tag.className = "activity-tag";
-  tag.dataset.action = e.action;
-  line.append(who, " ", verb, " ", player, " ", tag);
+  const who = activitySpan("activity-who-name", activityWhoLabel(e.who));
+  if (e.who === "admin" || BEATEN_BY[e.who]) who.style.color = noteAuthorColor(e.who);
+  line.append(who, ` ${ACTIVITY_VERBS[e.action] || e.action} `, activitySpan("activity-player", e.username || "a sweat"));
   main.appendChild(line);
 
   if (e.action === "sweat.edit") {
-    const diffs = activityDiffs(e.changes);
-    if (diffs.length) {
-      const ul = document.createElement("ul");
-      ul.className = "activity-details";
-      ul.append(...diffs);
-      main.appendChild(ul);
-    }
+    const diff = activityDiffLine(e.changes);
+    if (diff) main.appendChild(diff);
   } else if (e.action === "note.edit") {
-    if (e.noteBefore) main.appendChild(activityNoteBlock(e.noteBefore, "was"));
-    if (e.noteText) main.appendChild(activityNoteBlock(e.noteText));
+    if (e.noteBefore) main.appendChild(activityNote(e.noteBefore, true));
+    if (e.noteText) main.appendChild(activityNote(e.noteText));
   } else if (e.action === "note.delete") {
-    const by = e.noteAuthor && e.noteAuthor !== e.who ? `written by ${activityWhoLabel(e.noteAuthor)}` : "";
-    if (e.noteText) main.appendChild(activityNoteBlock(e.noteText, "was", by));
-  } else if ((e.action === "note.add" || e.action === "sweat.add") && e.noteText) {
-    main.appendChild(activityNoteBlock(e.noteText));
+    const by = e.noteAuthor && e.noteAuthor !== e.who ? `by ${activityWhoLabel(e.noteAuthor)}` : "";
+    if (e.noteText) main.appendChild(activityNote(e.noteText, true, by));
+  } else if (e.noteText) {
+    main.appendChild(activityNote(e.noteText));
   }
   li.appendChild(main);
 
   const side = document.createElement("div");
   side.className = "activity-side";
-  const time = document.createElement("time");
-  time.className = "activity-time";
-  const at = e.at ? new Date(e.at) : null;
-  if (at && !isNaN(at)) {
-    time.dateTime = at.toISOString();
-    time.textContent = relativeNoteDate(at);
-    time.dataset.tooltip = at.toLocaleString();
-  }
-  side.appendChild(time);
   if (e.action === "sweat.delete") {
     if (e.restorable) {
       const btn = document.createElement("button");
@@ -12041,22 +11857,24 @@ function renderActivityRow(e) {
       btn.addEventListener("click", () => restoreSweat(e, btn));
       side.appendChild(btn);
     } else {
-      side.appendChild(activityRestoredBadge());
+      side.appendChild(activitySpan("activity-restored", "✓ Restored"));
     }
+  }
+  const at = e.at ? new Date(e.at) : null;
+  if (at && !isNaN(at)) {
+    const time = document.createElement("time");
+    time.className = "activity-time";
+    time.dateTime = at.toISOString();
+    time.textContent = relativeNoteDate(at);
+    time.dataset.tooltip = at.toLocaleString();
+    side.appendChild(time);
   }
   li.appendChild(side);
   return li;
 }
-function activityRestoredBadge() {
-  const s = document.createElement("span");
-  s.className = "activity-restored";
-  s.textContent = "✓ Back on the list";
-  return s;
-}
 
 async function restoreSweat(entry, btn) {
   btn.disabled = true;
-  btn.classList.add("loading");
   activityStatus.textContent = "";
   try {
     const res = await fetch(`${backendBaseURL}/sweats/${encodeURIComponent(entry.sweatId)}/restore`, {
@@ -12064,47 +11882,33 @@ async function restoreSweat(entry, btn) {
       headers: adminHeaders()
     });
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Couldn't restore that sweat."));
-    const row = btn.closest(".activity-row");
-    // Every delete entry for this sweat is now restored, not just this one.
-    activityList.querySelectorAll(".activity-row[data-action='sweat.delete']").forEach(r => {
-      if (r.dataset.sweatId === String(entry.sweatId)) {
-        const b = r.querySelector(".activity-restore-btn");
-        if (b) b.replaceWith(activityRestoredBadge());
-      }
-    });
-    if (row) row.classList.add("is-restored-now");
     activityStatus.textContent = `${entry.username || "Sweat"} is back, with all its stats and notes.`;
     await loadSweats();
     loadActivity({ reset: true, quiet: true });
   } catch (err) {
     activityStatus.textContent = err.message;
     btn.disabled = false;
-    btn.classList.remove("loading");
   }
 }
 
 async function loadActivity({ reset = false, quiet = false } = {}) {
-  if (keyOwner !== "admin") return;
+  if (keyOwner !== "admin" || !activityOpen) return;
   const req = ++activityRequest;
   const params = new URLSearchParams({ limit: String(ACTIVITY_PAGE) });
-  if (activityFilter.who) params.set("who", activityFilter.who);
-  if (activityFilter.action) params.set("action", activityFilter.action);
+  if (activityWhoSelect.value) params.set("who", activityWhoSelect.value);
+  if (activityActionSelect.value) params.set("action", activityActionSelect.value);
   if (!reset && activityNextBefore) params.set("before", activityNextBefore);
   const busyBtn = reset ? activityRefreshBtn : activityMoreBtn;
   busyBtn.disabled = true;
   busyBtn.classList.add("loading");
-  if (!quiet) activityStatus.textContent = reset ? "Loading activity…" : "";
+  if (!quiet) activityStatus.textContent = reset && !activityList.children.length ? "Loading…" : "";
   try {
     const res = await fetch(`${backendBaseURL}/activity?${params}`, { headers: adminHeaders() });
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Couldn't load activity."));
     const data = await res.json();
     if (req !== activityRequest) return;
     if (reset) activityList.textContent = "";
-    (data.entries || []).forEach(e => {
-      const row = renderActivityRow(e);
-      row.dataset.sweatId = String(e.sweatId || "");
-      activityList.appendChild(row);
-    });
+    (data.entries || []).forEach(e => activityList.appendChild(renderActivityRow(e)));
     activityNextBefore = data.nextBefore || null;
     activityMoreBtn.hidden = !activityNextBefore;
     activityEmpty.hidden = activityList.children.length > 0;
@@ -12118,60 +11922,34 @@ async function loadActivity({ reset = false, quiet = false } = {}) {
   }
 }
 
-function buildActivityWhoFilter() {
-  const people = [["", "Everyone"], ...BEATEN_BY_KEYS.map(k => [k, BEATEN_BY[k].label]), ["admin", "Admin"]];
-  people.forEach(([id, label]) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "activity-who-btn" + (id ? "" : " is-all active");
-    b.dataset.who = id;
-    b.setAttribute("aria-pressed", id ? "false" : "true");
-    if (id) {
-      b.style.setProperty("--chip-color", noteAuthorColor(id));
-      b.appendChild(activityAvatar(id));
-    }
-    b.append(label);
-    activityWhoBar.appendChild(b);
-  });
+function syncActivityVisibility() {
+  const show = keyOwner === "admin" && activityOpen;
+  activityContainer.hidden = !show;
+  activityToggle.textContent = activityOpen ? "Hide" : "Show";
+  activityToggle.setAttribute("aria-expanded", activityOpen ? "true" : "false");
+  if (show && Date.now() - activityLoadedAt > 20000) loadActivity({ reset: true });
 }
-function selectActivityButton(bar, btn) {
-  bar.querySelectorAll("button").forEach(b => {
-    const on = b === btn;
-    b.classList.toggle("active", on);
-    b.setAttribute("aria-pressed", on ? "true" : "false");
-  });
-}
-activityWhoBar.addEventListener("click", (e) => {
-  const btn = e.target.closest(".activity-who-btn");
-  if (!btn) return;
-  selectActivityButton(activityWhoBar, btn);
-  activityFilter.who = btn.dataset.who;
-  loadActivity({ reset: true });
+activityToggle.addEventListener("click", () => {
+  activityOpen = !activityOpen;
+  try { localStorage.setItem(ACTIVITY_OPEN_STORAGE, activityOpen ? "1" : "0"); } catch {}
+  syncActivityVisibility();
 });
-activityActionBar.addEventListener("click", (e) => {
-  const btn = e.target.closest(".denick-mode-btn");
-  if (!btn) return;
-  selectActivityButton(activityActionBar, btn);
-  activityFilter.action = btn.dataset.action;
-  loadActivity({ reset: true });
+[...BEATEN_BY_KEYS.map(k => [k, BEATEN_BY[k].label]), ["admin", "Admin"]].forEach(([id, label]) => {
+  activityWhoSelect.add(new Option(label, id));
 });
+activityWhoSelect.addEventListener("change", () => loadActivity({ reset: true }));
+activityActionSelect.addEventListener("change", () => loadActivity({ reset: true }));
 activityRefreshBtn.addEventListener("click", () => loadActivity({ reset: true }));
 activityMoreBtn.addEventListener("click", () => loadActivity());
-buildActivityWhoFilter();
-
-// Load when the admin key is recognised, and refresh whenever the section
-// scrolls back into view after a while, so changes made on the page since
-// show up without a manual refresh.
-document.addEventListener("keyownerchange", () => {
-  if (keyOwner === "admin") loadActivity({ reset: true });
-  else { activityList.textContent = ""; activityNextBefore = null; activityLoadedAt = 0; }
+// The Activity quick-nav link opens the list if it's collapsed.
+document.querySelector('.quick-nav-link[data-target="activitySection"]').addEventListener("click", () => {
+  if (!activityOpen) activityToggle.click();
 });
-new IntersectionObserver((entries) => {
-  if (entries.some(en => en.isIntersecting) && keyOwner === "admin" && Date.now() - activityLoadedAt > 20000) {
-    loadActivity({ reset: true, quiet: true });
-  }
-}).observe(activityContainer);
-if (keyOwner === "admin") loadActivity({ reset: true });
+document.addEventListener("keyownerchange", () => {
+  if (keyOwner !== "admin") { activityList.textContent = ""; activityNextBefore = null; activityLoadedAt = 0; }
+  syncActivityVisibility();
+});
+syncActivityVisibility();
 </script>
 
 </body>

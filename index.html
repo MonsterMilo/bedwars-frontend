@@ -6953,6 +6953,300 @@ html[data-theme="ledger"] .panel-icon-activity::before { content: "\2630"; }
 html[data-theme="ledger"] .exhibit-tag-activity::before { content: "Schedule D"; }
 html[data-theme="deepcurrent"] .panel-icon-activity::before { content: "\2248"; }
 html[data-theme="deepcurrent"] .exhibit-tag-activity::before { content: "Dive Log D"; }
+
+/* ============================================================
+   Click effects + easter eggs. Everything is drawn into one fixed,
+   click-through #fxLayer (created by the script) so none of it can shift
+   layout or block a real click. Each theme gets its own burst - Neon
+   pixels, Case Files red-pen circle, Private Bank coins, Deep Current
+   bubbles - so no theme borrows another's motif. Particle motion is
+   WAAPI (random per particle); the CSS here is just the look.
+   z-index sits above the theme wipe (5000) and tooltips (6000).
+   ============================================================ */
+#fxLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 7000;
+  pointer-events: none;
+  overflow: hidden;
+}
+.fx {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Neon - glitchy square pixels and a spinning HUD diamond. */
+.fx-px {
+  width: 6px;
+  height: 6px;
+  background: var(--c);
+  box-shadow: 0 0 8px var(--c), 0 0 2px #fff;
+}
+.fx-diamond {
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border: 2px solid #00d9ff;
+  box-shadow: 0 0 12px rgba(0,217,255,0.8), inset 0 0 8px rgba(168,85,247,0.7);
+}
+
+/* Case Files - a red-pen circle scribbled around the click, plus ink flecks. */
+.fx-pen {
+  width: 64px;
+  height: 46px;
+  margin: -23px 0 0 -32px;
+  overflow: visible;
+}
+.fx-pen path {
+  fill: none;
+  stroke: #a32f1d;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+.fx-ink {
+  width: var(--s);
+  height: var(--s);
+  border-radius: 46% 54% 60% 40% / 50% 42% 58% 50%;
+  background: #2a241c;
+  opacity: 0.8;
+}
+
+/* Private Bank - minted gold coins with a milled rim, plus glints. */
+.fx-coin {
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #fff4c9 0 12%, #e8c162 35%, #b88a2c 70%, #7d5b18 100%);
+  box-shadow: inset 0 0 0 1.5px rgba(125,91,24,0.85), inset 0 0 0 3px rgba(255,236,170,0.5), 0 2px 3px rgba(22,35,58,0.3);
+}
+.fx-glint {
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  background: #fff1b8;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  filter: drop-shadow(0 0 3px #e8c162);
+}
+
+/* Deep Current - bubbles and a flattened surface ripple. */
+.fx-bubble {
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  border: 1.5px solid rgba(53,230,196,0.85);
+  background: radial-gradient(circle at 30% 28%, rgba(255,255,255,0.7) 0 14%, rgba(53,230,196,0.12) 45%, transparent 70%);
+}
+.fx-ripple {
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  border: 2px solid rgba(53,230,196,0.7);
+}
+.fx-fish {
+  width: 38px;
+  height: 20px;
+  margin: -10px 0 0 -19px;
+  overflow: visible;
+  filter: drop-shadow(0 0 6px rgba(53,230,196,0.7));
+}
+
+/* Rare "jackpot" words and the combo counter share one text element,
+   restyled per theme. */
+.fx-word {
+  z-index: 2; /* above coins/bubbles spawned after it */
+  white-space: nowrap;
+  font-weight: 700;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+}
+html:not([data-theme]) .fx-word {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 26px;
+  color: #eaffff;
+  letter-spacing: 2px;
+  text-shadow: -2px 0 #ff3ec8, 2px 0 #00d9ff, 0 0 14px rgba(0,217,255,0.9);
+}
+html[data-theme="casefiles"] .fx-word {
+  font-family: 'Courier Prime', monospace;
+  font-size: 22px;
+  color: #a32f1d;
+  letter-spacing: 3px;
+  padding: 4px 10px;
+  border: 3px double #a32f1d;
+  border-radius: 4px;
+  background: rgba(251,246,230,0.55);
+  mix-blend-mode: multiply;
+}
+html[data-theme="ledger"] .fx-word {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-style: italic;
+  color: #a9822e;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 0 #fff6d8, 0 0 8px #fff, 0 0 16px #fff;
+}
+html[data-theme="deepcurrent"] .fx-word {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  color: #35e6c4;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(53,230,196,0.8);
+}
+.fx-word small {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.5em;
+  letter-spacing: 3px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+/* Title stunt overlay for Case Files: a black marker bar over the h1. */
+.fx-redact {
+  background: #16120c;
+  color: #efe6cc;
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  letter-spacing: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: left center;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.25);
+}
+
+/* ---------- "BED DESTROYED!" scene (Konami code) ---------- */
+#eggScene {
+  position: fixed;
+  inset: 0;
+  z-index: 6900; /* under #fxLayer so the bed debris and bursts draw on top */
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+}
+.egg-scene-bg {
+  position: absolute;
+  inset: 0;
+}
+html:not([data-theme]) .egg-scene-bg {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,217,255,0.06) 0 2px, transparent 2px 4px),
+    radial-gradient(ellipse at center, rgba(168,85,247,0.35), rgba(4,5,10,0.92) 70%);
+}
+html[data-theme="casefiles"] .egg-scene-bg {
+  background: radial-gradient(ellipse at center, rgba(239,230,204,0.92), rgba(92,83,64,0.85) 90%);
+}
+html[data-theme="ledger"] .egg-scene-bg {
+  background: radial-gradient(ellipse at center, rgba(22,35,58,0.88), rgba(10,16,28,0.96) 80%);
+}
+html[data-theme="deepcurrent"] .egg-scene-bg {
+  background: radial-gradient(ellipse at 50% 30%, rgba(14,42,60,0.85), rgba(2,8,14,0.97) 80%);
+}
+.egg-bed {
+  position: relative;
+  width: 288px;
+  height: 90px;
+}
+.egg-bed svg {
+  position: absolute;
+  top: 0;
+  width: 144px;
+  height: 90px;
+  shape-rendering: crispEdges;
+  overflow: visible;
+}
+.egg-bed .egg-bed-head { left: 0; }
+.egg-bed .egg-bed-foot { left: 144px; }
+html[data-theme="casefiles"] .egg-bed { filter: sepia(0.55) contrast(1.05); padding: 10px; background: #fbf6e6; box-shadow: 0 6px 18px rgba(0,0,0,0.3); transform: rotate(-3deg); box-sizing: content-box; }
+html[data-theme="ledger"] .egg-bed { padding: 12px; border: 2px solid #a9822e; outline: 1px solid rgba(169,130,46,0.5); outline-offset: 5px; box-sizing: content-box; }
+html[data-theme="deepcurrent"] .egg-bed { filter: saturate(0.8) hue-rotate(-10deg) drop-shadow(0 0 18px rgba(53,230,196,0.35)); }
+.egg-title {
+  position: relative;
+  font-size: clamp(34px, 7vw, 76px);
+  line-height: 1;
+  margin: 0;
+}
+.egg-sub {
+  position: relative;
+  font-size: clamp(14px, 2.2vw, 20px);
+  margin: 0;
+}
+html:not([data-theme]) .egg-title {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  color: #ff5c72;
+  letter-spacing: 4px;
+  text-shadow: -3px 0 #ff3ec8, 3px 0 #00d9ff, 0 0 28px rgba(255,92,114,0.8);
+}
+html:not([data-theme]) .egg-sub { font-family: 'Chakra Petch', sans-serif; color: #eef0f6; letter-spacing: 2px; }
+html[data-theme="casefiles"] .egg-title {
+  font-family: 'Anton', sans-serif;
+  color: #2a241c;
+  letter-spacing: 3px;
+  padding: 8px 18px;
+  border-top: 4px double #2a241c;
+  border-bottom: 4px double #2a241c;
+}
+html[data-theme="casefiles"] .egg-sub { font-family: 'Courier Prime', monospace; color: #a32f1d; font-weight: 700; letter-spacing: 2px; }
+html[data-theme="ledger"] .egg-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  color: #e8c162;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 0 #7d5b18, 0 0 30px rgba(232,193,98,0.35);
+}
+html[data-theme="ledger"] .egg-sub { font-family: 'Pinyon Script', cursive; font-size: clamp(22px, 3vw, 32px); color: #fff4c9; }
+html[data-theme="deepcurrent"] .egg-title {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  color: #e6f6f4;
+  letter-spacing: 3px;
+  text-shadow: 0 0 24px rgba(53,230,196,0.7);
+}
+html[data-theme="deepcurrent"] .egg-sub { font-family: 'JetBrains Mono', monospace; color: #35e6c4; letter-spacing: 2px; }
+
+/* ---------- Chat-style toasts ("gg", Technoblade, etc.) ---------- */
+#eggToasts {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 7050;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+  max-width: calc(100vw - 32px);
+}
+.egg-toast {
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-s);
+  box-shadow: var(--shadow-card);
+  max-width: 420px;
+}
+html:not([data-theme]) .egg-toast { font-family: 'Chakra Petch', sans-serif; background: rgba(4,5,10,0.78); backdrop-filter: blur(6px); }
+html[data-theme="casefiles"] .egg-toast { font-family: 'Courier Prime', monospace; border-radius: 2px; transform: rotate(-0.6deg); }
+html[data-theme="ledger"] .egg-toast { font-family: 'EB Garamond', serif; font-size: 16px; border-color: #c9bf9e; }
+html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: rgba(10,33,48,0.88); }
+.egg-toast b { font-weight: 700; }
+
+/* The click-effects on/off switch next to Admin Key. */
+#clickFxBtn[aria-pressed="false"] { opacity: 0.55; }
 </style>
 </head>
 <body>
@@ -12098,6 +12392,525 @@ new IntersectionObserver((entries) => {
   if (entries.some(en => en.isIntersecting)) refreshActivityIfStale();
 }).observe(document.getElementById("activitySection"));
 refreshActivityIfStale();
+
+// ============================================================
+// Click effects + easter eggs. See the #fxLayer block in <style>.
+//
+//  - Every click/tap bursts a themed effect at the pointer (Neon pixels,
+//    Case Files red-pen circle, Private Bank coins, Deep Current bubbles),
+//    with a ~1 in 18 chance of a rarer version. Clicking fast builds a
+//    combo counter. #clickFxBtn turns the bursts off (remembered).
+//  - Konami code, typing "bedwars", or tapping the title 10 times plays
+//    the BED DESTROYED! scene. 5 title taps plays a smaller title stunt.
+//  - Typing "gg" or "ez" (outside a text box) pops a Hypixel-style chat
+//    line; searching Technoblade gets a tribute.
+// Everything here is decoration: nothing touches data or other handlers.
+// ============================================================
+const fxLayer = document.createElement("div");
+fxLayer.id = "fxLayer";
+fxLayer.setAttribute("aria-hidden", "true");
+document.body.appendChild(fxLayer);
+
+const eggToasts = document.createElement("div");
+eggToasts.id = "eggToasts";
+eggToasts.setAttribute("role", "status");
+eggToasts.setAttribute("aria-live", "polite");
+document.body.appendChild(eggToasts);
+
+const CLICK_FX_STORAGE = "clickFx";
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let clickFxOn = true;
+try { clickFxOn = localStorage.getItem(CLICK_FX_STORAGE) !== "off"; } catch (e) {}
+
+const rand = (min, max) => Math.random() * (max - min) + min;
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+function fxEl(className, x, y, html) {
+  const el = document.createElement("div");
+  el.className = `fx ${className}`;
+  el.style.left = `${x}px`;
+  el.style.top = `${y}px`;
+  if (html) el.innerHTML = html;
+  fxLayer.appendChild(el);
+  return el;
+}
+
+// Plays keyframes on an effect element and removes it when done.
+function fxPlay(el, keyframes, opts) {
+  const anim = el.animate(keyframes, { fill: "forwards", ...opts });
+  anim.onfinish = () => el.remove();
+  anim.oncancel = () => el.remove();
+  return anim;
+}
+
+// A thrown particle: launches at (vx, vy) px/s and falls under gravity g,
+// sampled into keyframes so WAAPI can play a real arc.
+function arcFrames(vx, vy, g, secs, extra) {
+  const frames = [];
+  const steps = 8;
+  for (let i = 0; i <= steps; i++) {
+    const t = (secs * i) / steps;
+    const x = vx * t;
+    const y = vy * t + 0.5 * g * t * t;
+    frames.push({ transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) ${extra ? extra(i / steps) : ""}`, opacity: i < steps * 0.6 ? 1 : 1 - (i - steps * 0.6) / (steps * 0.4) });
+  }
+  return frames;
+}
+
+// ---------- Per-theme bursts ----------
+const NEON_COLORS = ["#00d9ff", "#a855f7", "#35e6ff", "#c084fc", "#ff3ec8", "#ffffff"];
+
+function burstNeon(x, y, big, quiet) {
+  const n = big ? 22 : 10;
+  for (let i = 0; i < n; i++) {
+    const el = fxEl("fx-px", x - 3, y - 3);
+    el.style.setProperty("--c", pick(NEON_COLORS));
+    const a = (Math.PI * 2 * i) / n + rand(-0.3, 0.3);
+    const d = rand(28, big ? 110 : 60);
+    // Snaps along its path in a few hard steps instead of gliding, so it
+    // reads as digital rather than as sparks.
+    fxPlay(el, [
+      { transform: "translate(0,0) scale(1)", opacity: 1 },
+      { transform: `translate(${Math.cos(a) * d * 0.5}px, ${Math.sin(a) * d * 0.5}px) scale(1.2)`, opacity: 1 },
+      { transform: `translate(${Math.cos(a) * d}px, ${Math.sin(a) * d}px) scale(0.4)`, opacity: 0 },
+    ], { duration: rand(380, 620), easing: "steps(6, end)" });
+  }
+  const dia = fxEl("fx-diamond", x, y);
+  fxPlay(dia, [
+    { transform: "rotate(45deg) scale(0.3)", opacity: 1 },
+    { transform: "rotate(135deg) scale(1.8)", opacity: 0 },
+  ], { duration: 460, easing: "cubic-bezier(.2,.8,.3,1)" });
+  if (big && !quiet) fxWord(x, y, "CRIT!");
+}
+
+// A wobbly hand-drawn loop that overshoots its start, like circling
+// something on a photo with a red pen.
+function penLoopPath() {
+  const cx = 32, cy = 23, rx = rand(24, 29), ry = rand(15, 19);
+  const start = rand(0, Math.PI * 2);
+  const pts = [];
+  const steps = 26;
+  for (let i = 0; i <= steps; i++) {
+    const t = start + (Math.PI * 2.25 * i) / steps;
+    const wob = 1 + Math.sin(i * 1.7) * 0.05 + (i / steps) * 0.12;
+    pts.push(`${(cx + Math.cos(t) * rx * wob).toFixed(1)},${(cy + Math.sin(t) * ry * wob).toFixed(1)}`);
+  }
+  return `M${pts.join(" L")}`;
+}
+
+function burstCaseFiles(x, y, big, quiet) {
+  const wrap = fxEl("", x, y);
+  wrap.innerHTML = `<svg class="fx-pen" viewBox="0 0 64 46"><path d="${penLoopPath()}"/></svg>`;
+  const svg = wrap.firstChild;
+  svg.style.transform = `rotate(${rand(-18, 18)}deg)`;
+  const path = svg.firstChild;
+  const len = path.getTotalLength();
+  path.style.strokeDasharray = len;
+  path.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: 320, easing: "cubic-bezier(.4,.1,.3,1)", fill: "forwards" });
+  fxPlay(wrap, [{ opacity: 1 }, { opacity: 1, offset: 0.65 }, { opacity: 0 }], { duration: 900 });
+  for (let i = 0; i < (big ? 9 : 4); i++) {
+    const s = rand(2, 5);
+    const el = fxEl("fx-ink", x + rand(-26, 26), y + rand(-18, 18));
+    el.style.setProperty("--s", `${s}px`);
+    fxPlay(el, [
+      { transform: "scale(0)", opacity: 0.85 },
+      { transform: "scale(1.3)", opacity: 0.85, offset: 0.2 },
+      { transform: "scale(1)", opacity: 0 },
+    ], { duration: rand(700, 1000), delay: rand(80, 260) });
+  }
+  if (big && !quiet) fxWord(x, y - 34, "CLUE", { stamp: true });
+}
+
+function burstLedger(x, y, big, quiet) {
+  const n = big ? 16 : 5;
+  for (let i = 0; i < n; i++) {
+    const el = fxEl("fx-coin", x, y);
+    const vx = rand(-140, 140) * (big ? 1.6 : 1);
+    const vy = rand(-360, -220) * (big ? 1.25 : 1);
+    const spins = rand(2, 4);
+    // scaleX follows cos() so the coin looks like it's flipping edge-on.
+    fxPlay(el, arcFrames(vx, vy, 900, 0.85, (p) => `scaleX(${Math.cos(p * Math.PI * 2 * spins).toFixed(2)})`), { duration: 850, easing: "linear" });
+  }
+  for (let i = 0; i < (big ? 5 : 2); i++) {
+    const el = fxEl("fx-glint", x + rand(-22, 22), y + rand(-22, 10));
+    fxPlay(el, [
+      { transform: "scale(0) rotate(0deg)", opacity: 1 },
+      { transform: "scale(1) rotate(45deg)", opacity: 1, offset: 0.4 },
+      { transform: "scale(0) rotate(90deg)", opacity: 0 },
+    ], { duration: 520, delay: rand(0, 200) });
+  }
+  if (big && !quiet) fxWord(x, y - 30, "Jackpot");
+}
+
+function burstDeepCurrent(x, y, big, quiet) {
+  const n = big ? 14 : 6;
+  for (let i = 0; i < n; i++) {
+    const s = rand(5, 14);
+    const el = fxEl("fx-bubble", x - s / 2, y - s / 2);
+    el.style.setProperty("--s", `${s}px`);
+    const rise = rand(60, big ? 170 : 110);
+    const sway = rand(8, 18) * (Math.random() < 0.5 ? -1 : 1);
+    const dx = rand(-16, 16);
+    fxPlay(el, [
+      { transform: `translate(${dx}px, 0) scale(0.3)`, opacity: 0 },
+      { transform: `translate(${dx + sway}px, ${-rise * 0.33}px) scale(1)`, opacity: 1, offset: 0.3 },
+      { transform: `translate(${dx - sway}px, ${-rise * 0.66}px) scale(1)`, opacity: 0.9, offset: 0.65 },
+      { transform: `translate(${dx + sway * 0.5}px, ${-rise}px) scale(1.15)`, opacity: 0 },
+    ], { duration: rand(900, 1400), delay: rand(0, 160), easing: "ease-out" });
+  }
+  // Flattened into an ellipse so it reads as a ripple on the water's
+  // surface rather than a sonar ping.
+  const ripple = fxEl("fx-ripple", x, y);
+  fxPlay(ripple, [
+    { transform: "scale(0.4, 0.14)", opacity: 0.9 },
+    { transform: "scale(3.4, 1.1)", opacity: 0 },
+  ], { duration: 700, easing: "ease-out" });
+  if (big && !quiet) spawnFish(x, y);
+}
+
+function spawnFish(x, y) {
+  const dir = Math.random() < 0.5 ? -1 : 1;
+  const el = fxEl("", x, y);
+  el.innerHTML = `<svg class="fx-fish" viewBox="0 0 38 20" style="transform:scaleX(${-dir})">
+    <path d="M4 10 C10 1, 24 1, 30 10 C24 19, 10 19, 4 10 Z" fill="#35e6c4" opacity="0.85"/>
+    <path d="M30 10 L38 3 L36 10 L38 17 Z" fill="#9b6bff"/>
+    <circle cx="10" cy="8.5" r="1.6" fill="#030c14"/></svg>`;
+  const dist = rand(180, 280) * dir;
+  const frames = [];
+  for (let i = 0; i <= 10; i++) {
+    const p = i / 10;
+    frames.push({ transform: `translate(${(dist * p).toFixed(1)}px, ${(Math.sin(p * Math.PI * 3) * 10 - p * 30).toFixed(1)}px)`, opacity: p < 0.75 ? 1 : 1 - (p - 0.75) / 0.25 });
+  }
+  fxPlay(el, frames, { duration: 1400, easing: "ease-in-out" });
+}
+
+function fxWord(x, y, text, opts = {}) {
+  const el = fxEl("fx-word", x, y, text);
+  if (opts.stamp) {
+    fxPlay(el, [
+      { transform: "translate(-50%, -50%) rotate(-12deg) scale(2.4)", opacity: 0 },
+      { transform: "translate(-50%, -50%) rotate(-12deg) scale(1)", opacity: 1, offset: 0.18 },
+      { transform: "translate(-50%, -50%) rotate(-12deg) scale(1)", opacity: 1, offset: 0.75 },
+      { transform: "translate(-50%, -50%) rotate(-12deg) scale(1)", opacity: 0 },
+    ], { duration: 1100, easing: "ease-out" });
+  } else {
+    fxPlay(el, [
+      { transform: "translate(-50%, -50%) scale(0.4)", opacity: 0 },
+      { transform: "translate(-50%, -80%) scale(1.15)", opacity: 1, offset: 0.2 },
+      { transform: "translate(-50%, -130%) scale(1)", opacity: 1, offset: 0.7 },
+      { transform: "translate(-50%, -170%) scale(1)", opacity: 0 },
+    ], { duration: 1000, easing: "ease-out" });
+  }
+  return el;
+}
+
+const THEME_BURSTS = { neon: burstNeon, casefiles: burstCaseFiles, ledger: burstLedger, deepcurrent: burstDeepCurrent };
+// quiet = the big burst without its rare word/fish, for when something else
+// (the combo counter, a title stunt) is already putting text on screen.
+function themedBurst(x, y, big, quiet) {
+  if (fxLayer.childElementCount > 260) return; // someone's autoclicking - don't melt the page
+  (THEME_BURSTS[currentThemeId()] || burstNeon)(x, y, big, quiet);
+}
+
+// ---------- Click combo ----------
+const COMBO_LABELS = {
+  neon: ["COMBO", "KILLSTREAK", "RAMPAGE", "UNSTOPPABLE", "GODLIKE"],
+  casefiles: ["COUNTS", "REPEAT OFFENDER", "CRIME SPREE", "MOST WANTED", "PUBLIC ENEMY #1"],
+  ledger: ["deposits", "compound interest", "bull market", "hostile takeover", "old money"],
+  deepcurrent: ["DEPTH", "PRESSURE RISING", "THE TRENCH", "ABYSSAL", "LEVIATHAN"],
+};
+const COMBO_TIERS = [5, 10, 20, 35, 50];
+let comboCount = 0;
+let comboLast = 0;
+let comboEl = null;
+
+function bumpCombo(x, y) {
+  const now = performance.now();
+  comboCount = now - comboLast < 420 ? comboCount + 1 : 1;
+  comboLast = now;
+  if (comboCount < COMBO_TIERS[0]) return;
+  let tier = 0;
+  while (tier + 1 < COMBO_TIERS.length && comboCount >= COMBO_TIERS[tier + 1]) tier++;
+  const label = (COMBO_LABELS[currentThemeId()] || COMBO_LABELS.neon)[tier];
+  if (comboEl) comboEl.remove();
+  const text = currentThemeId() === "ledger" ? `&times;${comboCount}` : `x${comboCount}`;
+  comboEl = fxWord(x, y - 40, `${text}<small>${label}</small>`);
+  comboEl.style.fontSize = `${Math.min(20 + tier * 5, 42)}px`;
+  if (COMBO_TIERS.includes(comboCount)) themedBurst(x, y, true, true);
+}
+
+// ---------- Click listener ----------
+function isTypingTarget(el) {
+  return !!(el && el.closest && el.closest("input, textarea, select, [contenteditable='true']"));
+}
+
+document.addEventListener("pointerdown", (e) => {
+  if (!clickFxOn || reducedMotionQuery.matches) return;
+  if (e.button !== 0 || isTypingTarget(e.target)) return;
+  // No rare rolls mid-combo - the counter is already the show.
+  const rare = comboCount < COMBO_TIERS[0] - 1 && Math.random() < 1 / 18;
+  themedBurst(e.clientX, e.clientY, rare);
+  // Title taps have their own counter (see titleStunt) - no combo on top.
+  if (!e.target.closest(".hero h1")) bumpCombo(e.clientX, e.clientY);
+}, { passive: true });
+
+// On/off switch lives next to Admin Key.
+const clickFxBtn = document.createElement("button");
+clickFxBtn.type = "button";
+clickFxBtn.id = "clickFxBtn";
+clickFxBtn.className = "btn btn-ghost";
+clickFxBtn.innerHTML = "&#10024; FX";
+clickFxBtn.setAttribute("aria-label", "Click effects");
+function syncClickFxBtn() {
+  clickFxBtn.setAttribute("aria-pressed", clickFxOn ? "true" : "false");
+  clickFxBtn.setAttribute("data-tooltip", clickFxOn ? "Click effects on" : "Click effects off");
+}
+syncClickFxBtn();
+clickFxBtn.addEventListener("click", () => {
+  clickFxOn = !clickFxOn;
+  try { localStorage.setItem(CLICK_FX_STORAGE, clickFxOn ? "on" : "off"); } catch (e) {}
+  syncClickFxBtn();
+  if (clickFxOn) {
+    const r = clickFxBtn.getBoundingClientRect();
+    themedBurst(r.left + r.width / 2, r.top + r.height / 2, false);
+  }
+});
+document.getElementById("setAdminKeyBtn").before(clickFxBtn);
+
+// ---------- Toasts ----------
+function eggToast(html, ms = 4200) {
+  const el = document.createElement("div");
+  el.className = "egg-toast";
+  el.innerHTML = html;
+  eggToasts.appendChild(el);
+  while (eggToasts.children.length > 4) eggToasts.firstChild.remove();
+  el.animate([{ transform: "translateX(-24px)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 260, easing: "cubic-bezier(.2,.8,.3,1)" });
+  setTimeout(() => {
+    const out = el.animate([{ opacity: 1 }, { transform: "translateX(-24px)", opacity: 0 }], { duration: 260, fill: "forwards" });
+    out.onfinish = () => el.remove();
+  }, ms);
+}
+
+const CHAT_RANKS = [
+  ["[MVP++]", "var(--rank-mvpplusplus)"],
+  ["[MVP+]", "var(--rank-mvpplus)"],
+  ["[VIP+]", "var(--rank-vipplus)"],
+  ["[MVP]", "var(--rank-mvp)"],
+];
+function chatLine(msg) {
+  const name = pick(Object.values(BEATEN_BY)).label;
+  const [rank, color] = pick(CHAT_RANKS);
+  eggToast(`<b style="color:${color}">${rank} ${name}</b>: ${msg}`);
+}
+
+// Hypixel swaps "ez" in chat for one of these, so typing it here does too.
+const EZ_REPLACEMENTS = [
+  "Wait... This isn't what I typed!",
+  "Please go easy on me, this is my first game!",
+  "I like long walks on the beach and playing Hypixel",
+  "Anyone else really like Rick Astley?",
+  "Your personality shines brighter than the sun.",
+  "Why can't the Ender Dragon read a book? Because he always starts at the End.",
+  "I need help, teach me how to play!",
+  "You're a great person! Do you want to play some Hypixel games with me?",
+];
+
+// ---------- BED DESTROYED! scene ----------
+const BED_HALF_SVG = (foot) => `<svg class="${foot ? "egg-bed-foot" : "egg-bed-head"}" viewBox="0 6 16 10">
+  ${foot ? "" : '<rect x="0" y="7" width="7" height="3" fill="#e9e9e9"/><rect x="0" y="7" width="7" height="1" fill="#ffffff"/>'}
+  <rect x="${foot ? 0 : 7}" y="7" width="${foot ? 16 : 9}" height="3" fill="#b3312c"/>
+  <rect x="${foot ? 0 : 7}" y="7" width="${foot ? 16 : 9}" height="1" fill="#d8443d"/>
+  <rect x="0" y="10" width="16" height="2" fill="#8e2622"/>
+  <rect x="0" y="12" width="16" height="1" fill="#9c7440"/>
+  <rect x="${foot ? 13 : 0}" y="13" width="3" height="3" fill="#6b4f2a"/>
+</svg>`;
+const BED_DEBRIS = ["#b3312c", "#d8443d", "#8e2622", "#e9e9e9", "#9c7440", "#6b4f2a"];
+let eggSceneBusy = false;
+
+function playBedDestroyed() {
+  if (eggSceneBusy) return;
+  eggSceneBusy = true;
+  const reduce = reducedMotionQuery.matches;
+  const scene = document.createElement("div");
+  scene.id = "eggScene";
+  scene.setAttribute("aria-hidden", "true");
+  scene.innerHTML = `<div class="egg-scene-bg"></div>
+    <div class="egg-bed">${BED_HALF_SVG(false)}${BED_HALF_SVG(true)}</div>
+    <h2 class="egg-title">BED DESTROYED!</h2>
+    <p class="egg-sub">You will no longer respawn!</p>`;
+  document.body.appendChild(scene);
+  eggToast(`<b style="color:var(--bad)">BED DESTRUCTION &gt;</b> Your Bed was destroyed by <b>Milo</b>!`, 5000);
+  const done = () => { scene.remove(); eggSceneBusy = false; };
+  if (reduce) { setTimeout(done, 2400); return; }
+
+  const bg = scene.querySelector(".egg-scene-bg");
+  const bed = scene.querySelector(".egg-bed");
+  const head = scene.querySelector(".egg-bed-head");
+  const foot = scene.querySelector(".egg-bed-foot");
+  const title = scene.querySelector(".egg-title");
+  const sub = scene.querySelector(".egg-sub");
+  bg.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, fill: "forwards" });
+  bed.animate([
+    { transform: "translateY(-60vh)", opacity: 0 },
+    { transform: "translateY(0)", opacity: 1, offset: 0.7 },
+    { transform: "translateY(-14px)", offset: 0.85 },
+    { transform: "translateY(0)", opacity: 1 },
+  ], { duration: 600, easing: "ease-in", fill: "backwards" });
+  title.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 750, fill: "backwards" });
+  sub.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 1050, fill: "backwards" });
+
+  setTimeout(() => {
+    head.animate([{ transform: "none" }, { transform: "translate(-120px, 60px) rotate(-38deg)", opacity: 0 }], { duration: 900, easing: "cubic-bezier(.2,.7,.4,1)", fill: "forwards" });
+    foot.animate([{ transform: "none" }, { transform: "translate(120px, 70px) rotate(42deg)", opacity: 0 }], { duration: 900, easing: "cubic-bezier(.2,.7,.4,1)", fill: "forwards" });
+    // The Case Files photo / Private Bank frame around the bed goes too.
+    bed.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, delay: 350, fill: "forwards" });
+    const r = bed.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height * 0.6;
+    for (let i = 0; i < 26; i++) {
+      const el = fxEl("fx-px", cx + rand(-40, 40), cy + rand(-10, 10));
+      el.style.setProperty("--c", pick(BED_DEBRIS));
+      el.style.boxShadow = "none";
+      el.style.width = el.style.height = `${Math.round(rand(5, 10))}px`;
+      fxPlay(el, arcFrames(rand(-260, 260), rand(-420, -160), 1100, 1.1, (p) => `rotate(${Math.round(p * rand(-360, 360))}deg)`), { duration: 1100, easing: "linear" });
+    }
+    const spread = Math.min(160, window.innerWidth / 2 - 70);
+    themedBurst(cx - spread, cy - 40, true);
+    themedBurst(cx + spread, cy - 60, true);
+    const tr = title.getBoundingClientRect();
+    title.animate([
+      { transform: "scale(1.8)", opacity: 0 },
+      { transform: "scale(0.94)", opacity: 1, offset: 0.35 },
+      { transform: "translate(-6px, 2px)", offset: 0.5 },
+      { transform: "translate(5px, -3px)", offset: 0.65 },
+      { transform: "translate(-3px, 1px)", offset: 0.8 },
+      { transform: "none", opacity: 1 },
+    ], { duration: 520, easing: "ease-out" });
+    setTimeout(() => themedBurst(tr.left + tr.width / 2, tr.top + tr.height / 2, false), 180);
+    sub.animate([{ transform: "translateY(10px)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 400, delay: 300, easing: "ease-out", fill: "backwards" });
+  }, 700);
+
+  setTimeout(() => {
+    const out = scene.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 500, fill: "forwards" });
+    out.onfinish = done;
+  }, 2900);
+}
+
+// ---------- Title stunts ----------
+const heroTitle = document.querySelector(".hero h1");
+let titleTaps = 0;
+let titleTapTimer = null;
+let titleStuntBusy = false;
+
+function titleStunt() {
+  if (titleStuntBusy || reducedMotionQuery.matches) return;
+  titleStuntBusy = true;
+  const release = () => { titleStuntBusy = false; };
+  const r = heroTitle.getBoundingClientRect();
+  const theme = currentThemeId();
+  if (theme === "casefiles") {
+    const range = document.createRange();
+    range.selectNodeContents(heroTitle);
+    const lines = Array.from(range.getClientRects());
+    if (!lines.length) { release(); return; }
+    lines.forEach((lr, i) => {
+      const bar = fxEl("fx-redact", lr.left - 6, lr.top + lr.height * 0.12, i === 0 ? "REDACTED" : "");
+      bar.style.width = `${lr.width + 12}px`;
+      bar.style.height = `${lr.height * 0.78}px`;
+      bar.style.fontSize = `${Math.max(12, lr.height * 0.32)}px`;
+      bar.style.transform = `rotate(${rand(-1.5, 1.5)}deg)`;
+      const a = fxPlay(bar, [
+        { clipPath: "inset(0 100% 0 0)" },
+        { clipPath: "inset(0 0 0 0)", offset: 0.18 },
+        { clipPath: "inset(0 0 0 0)", offset: 0.82 },
+        { clipPath: "inset(0 0 0 100%)" },
+      ], { duration: 1900, delay: i * 120, easing: "ease-in-out" });
+      a.finished.then(release, release);
+    });
+  } else if (theme === "ledger") {
+    heroTitle.animate([
+      { transform: "perspective(600px) rotateX(0)", filter: "brightness(1)" },
+      { transform: "perspective(600px) rotateX(360deg) translateY(-18px)", filter: "brightness(1.35)", offset: 0.5 },
+      { transform: "perspective(600px) rotateX(720deg)", filter: "brightness(1)" },
+    ], { duration: 1200, easing: "cubic-bezier(.3,.1,.3,1)" }).finished.then(release, release);
+    for (let i = 0; i < 6; i++) setTimeout(() => burstLedger(r.left + rand(0, r.width), r.bottom, false), i * 110);
+  } else if (theme === "deepcurrent") {
+    heroTitle.animate([
+      { transform: "none", filter: "blur(0)", opacity: 1 },
+      { transform: "translateY(46px) rotate(-2deg)", filter: "blur(2px)", opacity: 0.35, offset: 0.4 },
+      { transform: "translateY(40px) rotate(2deg)", filter: "blur(2px)", opacity: 0.35, offset: 0.55 },
+      { transform: "translateY(-8px) rotate(-1deg)", filter: "blur(0)", opacity: 1, offset: 0.85 },
+      { transform: "none", filter: "blur(0)", opacity: 1 },
+    ], { duration: 1800, easing: "ease-in-out" }).finished.then(release, release);
+    for (let i = 0; i < 5; i++) setTimeout(() => burstDeepCurrent(r.left + rand(0, r.width), r.bottom + 30, false), 300 + i * 140);
+  } else {
+    const frames = [];
+    for (let i = 0; i < 14; i++) {
+      const top = Math.round(rand(0, 70)), bottom = Math.round(rand(0, 100 - top - 10));
+      frames.push({
+        transform: `translate(${rand(-9, 9).toFixed(1)}px, ${rand(-3, 3).toFixed(1)}px) skewX(${rand(-14, 14).toFixed(1)}deg)`,
+        filter: `drop-shadow(${rand(-6, -2).toFixed(1)}px 0 #ff3ec8) drop-shadow(${rand(2, 6).toFixed(1)}px 0 #00d9ff)`,
+        clipPath: i % 3 === 2 ? "inset(0 0 0 0)" : `inset(${top}% 0 ${bottom}% 0)`,
+      });
+    }
+    frames.push({ transform: "none", filter: "none", clipPath: "inset(0 0 0 0)" });
+    heroTitle.animate(frames, { duration: 900, easing: "steps(15, end)" }).finished.then(release, release);
+    burstNeon(r.left + r.width / 2, r.top + r.height / 2, true, true);
+  }
+}
+
+heroTitle.addEventListener("click", () => {
+  titleTaps++;
+  clearTimeout(titleTapTimer);
+  titleTapTimer = setTimeout(() => { titleTaps = 0; }, 1600);
+  if (titleTaps === 5) titleStunt();
+  if (titleTaps >= 10) { titleTaps = 0; playBedDestroyed(); }
+});
+
+// ---------- Typed secrets ----------
+const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+let konamiPos = 0;
+let typedBuffer = "";
+
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey || isTypingTarget(e.target)) return;
+  const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  konamiPos = key === KONAMI[konamiPos] ? konamiPos + 1 : (key === KONAMI[0] ? 1 : 0);
+  if (konamiPos === KONAMI.length) { konamiPos = 0; playBedDestroyed(); return; }
+  if (key.length !== 1) return;
+  typedBuffer = (typedBuffer + key).slice(-12);
+  if (typedBuffer.endsWith("bedwars")) { typedBuffer = ""; playBedDestroyed(); }
+  else if (typedBuffer.endsWith("gg")) { typedBuffer = ""; chatLine(pick(["gg", "gg wp", "ggs", "gg go next", "gg that was close"])); }
+  else if (typedBuffer.endsWith("ez")) { typedBuffer = ""; chatLine(pick(EZ_REPLACEMENTS)); }
+});
+
+// Searching Technoblade gets a tribute.
+const usernameField = document.getElementById("username");
+let technoShown = false;
+usernameField.addEventListener("input", () => {
+  const isTechno = usernameField.value.trim().toLowerCase() === "technoblade";
+  if (isTechno && !technoShown) {
+    eggToast(`&#128081; <b>Technoblade never dies.</b> Blood for the Blood God.`, 5500);
+    const r = usernameField.getBoundingClientRect();
+    if (!reducedMotionQuery.matches) themedBurst(r.left + r.width * 0.7, r.top + r.height / 2, true);
+  }
+  technoShown = isTechno;
+});
+
+// Leaving the tab changes its title.
+const baseDocTitle = document.title;
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    document.title = "\u{1F6CF} Protect your bed!";
+  } else {
+    document.title = baseDocTitle;
+  }
+});
+
+console.log(
+  "%cBedwars Sweat Tracker%c\nLooking for secrets? Try the Konami code, or tap the title a few times.",
+  "font: 700 18px 'Chakra Petch', sans-serif; color: #00d9ff; text-shadow: 0 0 6px #a855f7;",
+  "color: inherit;"
+);
 </script>
 
 </body>

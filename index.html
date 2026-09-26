@@ -952,16 +952,23 @@ html[data-theme="deepcurrent"] .denick-row .pill { font-family: 'JetBrains Mono'
 /* Clears the previewed player (or stops a lookup that's still scanning)
    without adding them. */
 .dash-label-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+/* Sized to the label's own line (negative margins) so showing it never
+   pushes Preview lower than the Player label beside it. */
 .preview-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font: inherit;
-  font-size: 0.95em;
+  font-size: 0.9em;
+  line-height: 1;
   letter-spacing: inherit;
   text-transform: inherit;
   color: var(--text-dim);
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 3px 10px;
+  padding: 4px 9px;
+  margin: -5px 0;
   cursor: pointer;
   transition: color 0.15s var(--ease), border-color 0.15s var(--ease), background 0.15s var(--ease);
 }
@@ -7919,7 +7926,7 @@ html[data-theme="skyisles"] {
   --px-wool: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffffff' d='M0 0h8v1H0zM0 1h1v1H0zM2 1h4v1H2zM7 1h1v1H7zM0 2h4v1H0zM5 2h3v1H5zM0 3h2v1H0zM3 3h5v1H3zM0 4h6v1H0zM7 4h1v1H7zM0 5h1v1H0zM2 5h2v1H2zM5 5h3v1H5zM0 6h8v1H0zM0 7h2v1H0zM3 7h3v1H3zM7 7h1v1H7z'/%3E%3Cpath fill='%23d9eeff' d='M1 1h1v1H1zM6 1h1v1H6zM4 2h1v1H4zM2 3h1v1H2zM6 4h1v1H6zM1 5h1v1H1zM4 5h1v1H4zM2 7h1v1H2zM6 7h1v1H6z'/%3E%3C/svg%3E");
   --px-isle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 18' shape-rendering='crispEdges'%3E%3Cpath fill='%235cb83a' d='M8 0h4v1H8zM7 1h2v1H7zM10 1h3v1H10zM6 2h2v1H6zM9 2h2v1H9zM12 2h2v1H12zM6 3h1v1H6zM8 3h3v1H8zM12 3h2v1H12zM7 4h1v1H7zM9 4h2v1H9zM12 4h1v1H12zM4 7h1v1H4zM6 7h1v1H6zM12 7h2v1H12zM18 7h1v1H18zM21 7h2v1H21zM29 7h1v1H29zM1 8h2v1H1zM4 8h5v1H4zM11 8h1v1H11zM13 8h2v1H13zM17 8h9v1H17zM27 8h1v1H27zM29 8h2v1H29z'/%3E%3Cpath fill='%238fdc5a' d='M9 1h1v1H9zM8 2h1v1H8zM0 7h4v1H0zM5 7h1v1H5zM7 7h5v1H7zM14 7h4v1H14zM19 7h2v1H19zM23 7h6v1H23zM30 7h2v1H30z'/%3E%3Cpath fill='%233f8a24' d='M11 2h1v1H11zM7 3h1v1H7zM11 3h1v1H11zM8 4h1v1H8zM11 4h1v1H11zM0 8h1v1H0zM3 8h1v1H3zM9 8h2v1H9zM12 8h1v1H12zM15 8h2v1H15zM26 8h1v1H26zM28 8h1v1H28zM31 8h1v1H31z'/%3E%3Cpath fill='%237a4a22' d='M9 5h2v1H9zM9 6h2v1H9z'/%3E%3Cpath fill='%236e4526' d='M1 9h1v1H1zM3 9h1v1H3zM16 9h2v1H16zM21 9h1v1H21zM25 9h2v1H25zM30 9h1v1H30zM12 10h1v1H12zM21 10h4v1H21zM27 10h1v1H27zM4 11h1v1H4zM9 11h1v1H9zM12 11h1v1H12zM16 11h1v1H16zM20 11h1v1H20zM26 11h1v1H26zM13 12h1v1H13zM23 12h1v1H23zM9 13h1v1H9zM14 13h1v1H14z'/%3E%3Cpath fill='%238a5a33' d='M2 9h1v1H2zM4 9h12v1H4zM18 9h3v1H18zM22 9h3v1H22zM27 9h3v1H27zM2 10h10v1H2zM13 10h8v1H13zM25 10h2v1H25zM28 10h2v1H28zM5 11h4v1H5zM10 11h2v1H10zM13 11h3v1H13zM17 11h3v1H17zM21 11h5v1H21zM27 11h1v1H27zM5 12h8v1H5zM14 12h9v1H14zM24 12h3v1H24zM7 13h2v1H7zM10 13h4v1H10zM15 13h10v1H15zM9 14h1v1H9zM12 14h2v1H12zM15 14h1v1H15zM17 14h1v1H17zM18 15h2v1H18zM14 16h1v1H14z'/%3E%3Cpath fill='%236f777c' d='M10 14h1v1H10zM22 14h1v1H22zM11 15h1v1H11zM15 15h1v1H15zM20 15h1v1H20zM16 16h1v1H16zM14 17h1v1H14z'/%3E%3Cpath fill='%239aa3a8' d='M11 14h1v1H11zM14 14h1v1H14zM16 14h1v1H16zM18 14h4v1H18zM12 15h3v1H12zM16 15h2v1H16zM13 16h1v1H13zM15 16h1v1H15zM17 16h2v1H17zM15 17h3v1H15z'/%3E%3C/svg%3E");
   --px-idleisle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 11' shape-rendering='crispEdges'%3E%3Cpath fill='%235cb83a' d='M0 0h1v1H0zM2 0h2v1H2zM9 0h1v1H9zM14 0h2v1H14zM23 0h2v1H23zM1 1h1v1H1zM3 1h1v1H3zM5 1h5v1H5zM11 1h4v1H11zM16 1h1v1H16zM18 1h1v1H18zM20 1h3v1H20zM24 1h2v1H24zM27 1h1v1H27z'/%3E%3Cpath fill='%238fdc5a' d='M1 0h1v1H1zM4 0h5v1H4zM10 0h4v1H10zM16 0h7v1H16zM25 0h3v1H25z'/%3E%3Cpath fill='%233f8a24' d='M0 1h1v1H0zM2 1h1v1H2zM4 1h1v1H4zM10 1h1v1H10zM15 1h1v1H15zM17 1h1v1H17zM19 1h1v1H19zM23 1h1v1H23zM26 1h1v1H26z'/%3E%3Cpath fill='%236e4526' d='M1 2h1v1H1zM10 2h1v1H10zM13 2h1v1H13zM20 2h4v1H20zM7 3h1v1H7zM14 3h2v1H14zM18 3h1v1H18zM21 3h2v1H21zM24 3h2v1H24zM10 4h1v1H10zM15 4h1v1H15zM20 4h1v1H20zM9 5h1v1H9zM11 5h1v1H11zM13 5h1v1H13zM22 5h1v1H22zM6 6h1v1H6zM8 6h1v1H8zM15 6h1v1H15zM17 6h2v1H17zM10 7h1v1H10zM18 7h2v1H18z'/%3E%3Cpath fill='%238a5a33' d='M2 2h8v1H2zM11 2h2v1H11zM14 2h6v1H14zM24 2h3v1H24zM2 3h5v1H2zM8 3h6v1H8zM16 3h2v1H16zM19 3h2v1H19zM23 3h1v1H23zM3 4h7v1H3zM11 4h4v1H11zM16 4h4v1H16zM21 4h4v1H21zM5 5h4v1H5zM10 5h1v1H10zM12 5h1v1H12zM14 5h8v1H14zM7 6h1v1H7zM9 6h6v1H9zM16 6h1v1H16zM19 6h3v1H19zM8 7h2v1H8zM11 7h7v1H11zM14 8h2v1H14zM12 9h1v1H12zM15 9h1v1H15z'/%3E%3Cpath fill='%236f777c' d='M10 8h1v1H10zM13 8h1v1H13zM16 8h1v1H16zM13 9h1v1H13zM13 10h1v1H13z'/%3E%3Cpath fill='%239aa3a8' d='M11 8h2v1H11zM17 8h1v1H17zM14 9h1v1H14zM14 10h1v1H14z'/%3E%3C/svg%3E");
-  --px-gen: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M0 0h10v1H0zM0 1h1v1H0zM9 1h1v1H9zM0 2h1v1H0zM9 2h1v1H9zM0 3h1v1H0zM2 3h6v1H2zM9 3h1v1H9zM0 4h1v1H0zM2 4h1v1H2zM7 4h1v1H7zM9 4h1v1H9zM0 5h1v1H0zM2 5h6v1H2zM9 5h1v1H9zM0 6h1v1H0zM9 6h1v1H9zM0 7h10v1H0z'/%3E%3Cpath fill='%236f777c' d='M1 1h1v1H1zM3 1h1v1H3zM5 1h1v1H5zM7 1h1v1H7z'/%3E%3Cpath fill='%239aa3a8' d='M2 1h1v1H2zM4 1h1v1H4zM6 1h1v1H6zM8 1h1v1H8z'/%3E%3Cpath fill='%238b8b8b' d='M1 2h1v1H1zM3 2h1v1H3zM5 2h1v1H5zM7 2h1v1H7zM1 6h1v1H1zM8 6h1v1H8z'/%3E%3Cpath fill='%23c6c6c6' d='M2 2h1v1H2zM4 2h1v1H4zM6 2h1v1H6zM8 2h1v1H8zM1 3h1v1H1zM8 3h1v1H8zM1 4h1v1H1zM8 4h1v1H8zM1 5h1v1H1zM8 5h1v1H8zM2 6h6v1H2z'/%3E%3Cpath fill='%2311807b' d='M3 4h4v1H3z'/%3E%3C/svg%3E");
+  --px-gen: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 9' shape-rendering='crispEdges'%3E%3Cpath fill='%231e2a33' d='M0 0h10v1H0zM0 1h1v1H0zM9 1h1v1H9zM0 2h1v1H0zM9 2h1v1H9zM0 3h1v1H0zM9 3h1v1H9zM0 4h1v1H0zM9 4h1v1H9zM0 5h1v1H0zM9 5h1v1H9zM0 6h1v1H0zM9 6h1v1H9zM0 7h1v1H0zM9 7h1v1H9zM0 8h10v1H0z'/%3E%3Cpath fill='%23ffffff' d='M1 1h1v1H1z'/%3E%3Cpath fill='%23b5fff0' d='M2 1h6v1H2zM1 2h1v1H1zM3 2h2v1H3zM6 2h2v1H6zM1 3h2v1H1zM4 3h1v1H4zM6 3h1v1H6zM1 4h1v1H1zM3 4h3v1H3zM7 4h1v1H7zM1 5h3v1H1zM5 5h3v1H5zM1 6h1v1H1zM3 6h1v1H3zM5 6h2v1H5z'/%3E%3Cpath fill='%2327c2bb' d='M8 1h1v1H8zM8 2h1v1H8zM3 3h1v1H3zM8 3h1v1H8zM6 4h1v1H6zM8 4h1v1H8zM8 5h1v1H8zM4 6h1v1H4zM8 6h1v1H8zM1 7h7v1H1z'/%3E%3Cpath fill='%236ff2ea' d='M2 2h1v1H2zM5 2h1v1H5zM5 3h1v1H5zM7 3h1v1H7zM2 4h1v1H2zM4 5h1v1H4zM2 6h1v1H2zM7 6h1v1H7z'/%3E%3Cpath fill='%23145a52' d='M8 7h1v1H8z'/%3E%3C/svg%3E");
   --px-isle-small: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 8' shape-rendering='crispEdges'%3E%3Cpath fill='%238fdc5a' d='M0 0h1v1H0zM2 0h1v1H2zM4 0h5v1H4zM10 0h5v1H10zM17 0h1v1H17z'/%3E%3Cpath fill='%235cb83a' d='M1 0h1v1H1zM3 0h1v1H3zM9 0h1v1H9zM15 0h2v1H15zM0 1h1v1H0zM2 1h1v1H2zM4 1h2v1H4zM7 1h8v1H7zM17 1h1v1H17z'/%3E%3Cpath fill='%233f8a24' d='M1 1h1v1H1zM3 1h1v1H3zM6 1h1v1H6zM15 1h2v1H15z'/%3E%3Cpath fill='%238a5a33' d='M1 2h14v1H1zM16 2h1v1H16zM2 3h2v1H2zM5 3h11v1H5zM3 4h1v1H3zM5 4h2v1H5zM9 4h5v1H9zM5 5h1v1H5zM7 5h1v1H7zM9 5h1v1H9zM11 5h2v1H11zM10 6h2v1H10zM8 7h1v1H8z'/%3E%3Cpath fill='%236e4526' d='M15 2h1v1H15zM4 3h1v1H4zM4 4h1v1H4zM7 4h2v1H7zM14 4h1v1H14zM6 5h1v1H6zM8 5h1v1H8zM10 5h1v1H10z'/%3E%3Cpath fill='%236f777c' d='M6 6h1v1H6zM8 6h1v1H8z'/%3E%3Cpath fill='%239aa3a8' d='M7 6h1v1H7zM9 6h1v1H9zM9 7h1v1H9z'/%3E%3C/svg%3E");
   --px-far1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 11' shape-rendering='crispEdges'%3E%3Cpath fill='%23a6d3f2' d='M0 0h40v1H0zM0 1h40v1H0zM1 2h38v1H1zM2 3h36v1H2zM4 4h32v1H4zM6 5h28v1H6zM8 6h24v1H8zM11 7h18v1H11zM13 8h14v1H13zM15 9h10v1H15zM17 10h6v1H17z'/%3E%3C/svg%3E");
   --px-far2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 8' shape-rendering='crispEdges'%3E%3Cpath fill='%238cc3ea' d='M0 0h26v1H0zM0 1h26v1H0zM1 2h24v1H1zM2 3h22v1H2zM4 4h18v1H4zM6 5h14v1H6zM8 6h10v1H8zM11 7h4v1H11z'/%3E%3C/svg%3E");
@@ -8998,20 +9005,21 @@ html[data-theme="skyisles"] .idle-isle { display: block; }
 .idle-isle .isle-cloud { left: 0; top: 10px; width: 64px; height: 20px; background-image: var(--px-cloud2); opacity: 0.9; animation: isleCloud 9s steps(36) infinite; }
 .idle-isle .isle-land { left: 14px; top: 62px; width: 112px; height: 56px; background-image: var(--px-idleisle); animation: isleBob 2.4s steps(2) infinite; }
 .idle-isle .isle-bed { left: 26px; top: 45px; width: 40px; height: 22px; background-image: var(--px-bed); animation: isleBob 2.4s steps(2) infinite; }
-.idle-isle .isle-gen { left: 86px; top: 51px; width: 25px; height: 20px; background-image: var(--px-gen); animation: isleBob 2.4s steps(2) infinite; }
-.idle-isle .isle-gem { left: 91px; top: 38px; width: 15px; height: 12px; background-image: var(--px-diamond); opacity: 0; animation: isleGem 3s steps(12) infinite; }
-.idle-isle .isle-gem.g2 { animation-delay: 1.5s; }
+.idle-isle .isle-gen { left: 86px; top: 50px; width: 22px; height: 20px; background-image: var(--px-gen); animation: isleBob 2.4s steps(2) infinite; }
+/* A Bedwars diamond generator: the diamond floats and turns above its
+   diamond-block base, the way the in-game one does. */
+.idle-isle .isle-gem { left: 88px; top: 29px; width: 18px; height: 15px; background-image: var(--px-diamond); animation: isleGemSpin 1.6s steps(8) infinite, isleGemFloat 2.4s steps(4) infinite; }
+.idle-isle .isle-gem.g2 { display: none; }
 @keyframes isleBob { 50% { transform: translateY(-4px); } }
 @keyframes isleCloud { from { transform: translateX(-70px); } to { transform: translateX(150px); } }
-@keyframes isleGem {
-  0% { opacity: 0; transform: translateY(8px) scaleX(1); }
-  15% { opacity: 1; }
-  25% { transform: translateY(-6px) scaleX(-1); }
-  50% { transform: translateY(-12px) scaleX(1); }
-  75% { opacity: 1; transform: translateY(-18px) scaleX(-1); }
-  100% { opacity: 0; transform: translateY(-26px) scaleX(1); }
+@keyframes isleGemSpin {
+  0%, 100% { scale: 1 1; }
+  25% { scale: 0.35 1; }
+  50% { scale: -1 1; }
+  75% { scale: -0.35 1; }
 }
-html[data-theme="skyisles"] #statsEmpty.is-scanning .isle-gem { filter: drop-shadow(0 0 0 #fff) brightness(1.2); }
+@keyframes isleGemFloat { 50% { transform: translateY(-5px); } }
+html[data-theme="skyisles"] #statsEmpty.is-scanning .isle-gem { filter: brightness(1.25); animation-duration: 0.6s, 1.2s; }
 
 /* Lookup result: the skin on a grass block pedestal, the gauge as an XP
    ring, tier text in the arcade font. */
@@ -10928,6 +10936,12 @@ window.siteAudio = (function () {
   // sweat someone else just added, arriving live.
   const EXTRA = {
     neon: {
+      // Passing over a grid card: a tiny rising HUD blip.
+      hover(t) {
+        const f = rnd(1750, 1950);
+        tone(t, { type: "triangle", f, f2: f * 1.25, glide: 0.04, dur: 0.06, gain: 0.03 });
+        tone(t, { type: "sawtooth", f: f / 2, dur: 0.04, gain: 0.004, lp: 2600 });
+      },
       chime(t, place) {
         const root = [84, 79, 76][place - 1];
         [0, 4, 7, 12].slice(0, 5 - place).forEach((iv, i) => {
@@ -10942,6 +10956,11 @@ window.siteAudio = (function () {
       },
     },
     casefiles: {
+      // Passing over a grid card: a file card slid a finger's width across the desk.
+      hover(t) {
+        noise(t, { type: "bandpass", f: rnd(1300, 1600), f2: 900, q: 0.9, dur: 0.09, swell: 0.4, gain: 0.03 });
+        tone(t, { type: "triangle", f: rnd(180, 220), dur: 0.04, gain: 0.015, lp: 900 });
+      },
       chime(t, place) {
         // Soft vibraphone, in the same key as the office jazz.
         [[74, 78, 81], [69, 72, 76], [65, 69, 72]][place - 1].forEach((n, i) => {
@@ -10956,6 +10975,10 @@ window.siteAudio = (function () {
       },
     },
     ledger: {
+      // Passing over a grid card: one small coin touching another.
+      hover(t) {
+        metal(t, rnd(2300, 2700), { dur: 0.12, gain: 0.02 });
+      },
       chime(t, place) {
         metal(t, midi([88, 84, 79][place - 1]), { ratios: [1, 2, 3.01, 4.16], gain: 0.045, dur: 1.1 });
         if (place === 1) coin(t + 0.08, { gain: 0.03 });
@@ -10967,6 +10990,10 @@ window.siteAudio = (function () {
       },
     },
     deepcurrent: {
+      // Passing over a grid card: a single small bubble.
+      hover(t) {
+        bubble(t, { gain: 0.03, f: rnd(700, 1000) });
+      },
       chime(t, place) {
         const n = [81, 76, 72][place - 1];
         tone(t, { f: midi(n), dur: 1.1, gain: 0.05, lp: 2200 });
@@ -10979,6 +11006,12 @@ window.siteAudio = (function () {
       },
     },
     skyisles: {
+      // Passing over a grid card: the two-note menu-cursor chirp.
+      hover(t) {
+        const r = choose([84, 86, 88]);
+        tone(t, { type: "square", f: midi(r), dur: 0.03, gain: 0.012, a: 0.002, lp: 3500 });
+        tone(t + 0.035, { type: "square", f: midi(r + 7), dur: 0.04, gain: 0.01, a: 0.002, lp: 3500 });
+      },
       // Minecraft note-block chime: triangle "harp", brighter for 1st place.
       chime(t, place) {
         [[84, 88, 91], [79, 83], [76]][place - 1].forEach((n, i) => {
@@ -11052,30 +11085,67 @@ window.siteAudio = (function () {
   // layers are plain nodes; the occasional events (raindrops, clock ticks,
   // arpeggio glints, whale calls) are scheduled by a timer that looks a
   // little ahead so they stay sample-accurate.
+  // ---- Songs ----
+  // Melodies are written as bars of "note:beats" tokens ("E5:1.5",
+  // "-:1" for a rest), bars split by "|". song() parses them once and
+  // hands each bar to the theme's own player, so every theme loops a real
+  // tune in its own instruments.
+  const NOTE_STEPS = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  const noteNum = (n) => {
+    const m = /^([A-G])(#|b)?(\d)$/.exec(n);
+    return 12 * (+m[3] + 1) + NOTE_STEPS[m[1]] + (m[2] === "#" ? 1 : m[2] === "b" ? -1 : 0);
+  };
+  const parseBars = (src) => src.split("|").map(bar => {
+    let at = 0;
+    return bar.trim().split(/\s+/).filter(Boolean).map(tok => {
+      const [n, len] = tok.split(":");
+      const ev = n === "-" ? null : { at, n: noteNum(n), len: +len };
+      at += +len;
+      return ev;
+    }).filter(Boolean);
+  });
+  const chordNums = (src) => src.split("|").map(c => c.trim().split(/\s+/).map(noteNum));
+  function song({ beat, beats, chords, melody, play }) {
+    const bars = parseBars(melody), chs = chordNums(chords);
+    let bar = 0;
+    return (t) => {
+      const i = bar % bars.length;
+      play(t, { i, chord: chs[i], notes: bars[i], beat, bar });
+      bar++;
+      return beat * beats;
+    };
+  }
+
+  // ---- Ambience ----
+  // One looping song per theme, crossfaded on theme change. Continuous
+  // layers are plain nodes; notes are scheduled bar by bar by a timer that
+  // looks a little ahead so they stay sample-accurate. Scrolling deeper and
+  // a lookup in progress still colour each one.
   const AMBIENCES = {
     neon(bus, add) {
+      // Night-drive synthwave in A minor: warm saw pads through a filter
+      // that opens as you scroll, a pulsing bass, and a glassy triangle lead
+      // with an echo. A lookup adds a quick arpeggio on top.
       const lp = ctx.createBiquadFilter();
-      lp.type = "lowpass"; lp.frequency.value = 520; lp.Q.value = 4;
+      lp.type = "lowpass"; lp.frequency.value = 900; lp.Q.value = 2;
       lp.connect(gainNode(0.8, bus));
-      [[55, -7], [55, 7], [82.4, 0], [110, 4]].forEach(([f, dt]) => {
-        const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = dt;
-        o.connect(gainNode(0.07, lp)); add(o);
+      return song({
+        beat: 0.6, beats: 4,
+        chords: "A3 C4 E4|F3 A3 C4|C4 E4 G4|G3 B3 D4|A3 C4 E4|F3 A3 C4|C4 E4 G4|G3 B3 D4|" +
+                "F3 A3 C4|G3 B3 D4|A3 C4 E4|E3 G3 B3|F3 A3 C4|G3 B3 D4|A3 C4 E4|A3 C4 E4",
+        melody: "E5:1.5 D5:.5 C5:1 A4:1|C5:1.5 A4:.5 F4:1 A4:1|G4:1 C5:1 E5:1 G5:1|F5:1.5 E5:.5 D5:2|" +
+                "E5:1.5 D5:.5 C5:1 E5:1|A5:2 G5:1 F5:1|E5:1 G5:1 C5:1 E5:1|D5:3 -:1|" +
+                "A5:1 G5:.5 F5:.5 E5:2|D5:1 E5:.5 F5:.5 G5:2|E5:1 C5:1 A4:2|B4:1 E5:1 G5:2|" +
+                "A5:1.5 G5:.5 F5:1 C5:1|B4:1 D5:1 G5:2|A5:1 E5:1 C5:1 E5:1|A4:3 -:1",
+        play(t, { chord, notes, beat }) {
+          const bar = beat * 4;
+          lp.frequency.setTargetAtTime(900 + mood.depth * 900 + (mood.busy ? 500 : 0), t, 1.2);
+          chord.forEach((n, k) => [-7, 7].forEach(dt => tone(t, { type: "sawtooth", f: midi(n), detune: dt, dur: bar * 0.5, hold: bar * 0.6, a: 0.35, gain: 0.018, dest: lp })));
+          for (let k = 0; k < 8; k++) tone(t + k * beat / 2, { type: "sawtooth", f: midi(chord[0] - 24), dur: beat * 0.42, gain: 0.05, a: 0.01, lp: 380, dest: bus });
+          notes.forEach(ev => [0, 0.3].forEach((e, j) => tone(t + ev.at * beat + e, { type: "triangle", f: midi(ev.n), dur: ev.len * beat * 0.9, a: 0.02, gain: 0.05 * (j ? 0.3 : 1), pan: j ? 0.4 : 0, dest: bus })));
+          if (mood.busy) for (let k = 0; k < 16; k++) tone(t + k * beat / 4, { type: "square", f: midi(chord[k % 3] + 24), dur: beat * 0.2, gain: 0.008, lp: 2600, dest: bus });
+        },
       });
-      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.06;
-      lfo.connect(gainNode(280, lp.frequency)); add(lfo);
-      return (t) => {
-        // Brighter the further down the page, and busier during a lookup.
-        lp.frequency.setTargetAtTime(520 + mood.depth * 650 + (mood.busy ? 400 : 0), t, 1.2);
-        // A soft pentatonic glint now and then, echoing.
-        if (Math.random() < 0.12 + mood.depth * 0.1 + (mood.busy ? 0.35 : 0)) {
-          const root = choose([69, 72, 76]);
-          for (let i = 0; i < 4; i++) {
-            const n = pentaNote(root, Math.floor(rnd(0, 7)));
-            [0, 0.28].forEach((e, j) => tone(t + i * 0.18 + e, { type: "triangle", f: midi(n), dur: 0.5, gain: 0.05 * (j ? 0.35 : 1), dest: bus }));
-          }
-        }
-        return mood.busy ? rnd(0.8, 1.4) : rnd(1.5, 3);
-      };
     },
     casefiles(bus, add) {
       // A late-night detective's office: a warm, muffled room tone, a slow
@@ -11084,7 +11154,7 @@ window.siteAudio = (function () {
       // soft and low-passed - no hiss or sharp edges.
       const room = ctx.createBufferSource(); room.buffer = ambNoise; room.loop = true; room.playbackRate.value = 0.3;
       const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 160;
-      room.connect(lp); lp.connect(gainNode(0.18, bus)); add(room);
+      room.connect(lp); lp.connect(gainNode(0.07, bus)); add(room);
       // Rain on the office window, heavier the further down the page you go.
       const rain = ctx.createBufferSource(); rain.buffer = ambNoise; rain.loop = true; rain.playbackRate.value = 0.9;
       const rainBp = ctx.createBiquadFilter(); rainBp.type = "bandpass"; rainBp.frequency.value = 2200; rainBp.Q.value = 0.5;
@@ -11111,9 +11181,9 @@ window.siteAudio = (function () {
         if (bar % 2 === 1) epiano(t + beat * 2.5, choose(c.keys) + 12, 0.02, beat * 2);
         // Upright bass: soft plucked walk, one note a beat.
         c.bass.forEach((n, i) => tone(t + i * beat, { type: "triangle", f: midi(n), dur: beat * 0.95, gain: 0.11, a: 0.012, lp: 420, dest: bus }));
-        rainG.gain.setTargetAtTime(0.01 + mood.depth * 0.08, t, 2);
+        rainG.gain.setTargetAtTime(0.002 + mood.depth * 0.022, t, 2);
         if (mood.depth > 0.35) for (let i = 0; i < Math.round(mood.depth * 8); i++) {
-          noise(t + rnd(0, beat * 4), { type: "highpass", f: 4500, dur: 0.015, gain: 0.012 * mood.depth, pan: rnd(-0.9, 0.9), dest: bus });
+          noise(t + rnd(0, beat * 4), { type: "highpass", f: 4500, dur: 0.015, gain: 0.004 * mood.depth, pan: rnd(-0.9, 0.9), dest: bus });
         }
         // Now and then a page turns somewhere in the room - often, while a lookup digs through the files.
         if (Math.random() < (mood.busy ? 0.6 : 0.18)) noise(t + rnd(0.5, beat * 3), { type: "lowpass", f: 900, f2: 1600, q: 0.5, dur: 0.45, gain: 0.05, swell: 0.45, dest: bus });
@@ -11122,67 +11192,108 @@ window.siteAudio = (function () {
       };
     },
     ledger(bus, add) {
-      // A hushed bank hall: warm low room tone and a grandfather clock.
+      // A hushed bank hall with a stately little minuet in G, played on a
+      // soft keyboard over a bowed-sounding bass, the grandfather clock
+      // ticking the beat underneath. The clock races while a lookup runs.
       const room = ctx.createBufferSource(); room.buffer = ambNoise; room.loop = true; room.playbackRate.value = 0.5;
       const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 260;
-      room.connect(lp); lp.connect(gainNode(0.35, bus)); add(room);
-      const humG = gainNode(0.03, bus);
+      room.connect(lp); lp.connect(gainNode(0.2, bus)); add(room);
+      const humG = gainNode(0.02, bus);
       const hum = ctx.createOscillator(); hum.frequency.value = 55; hum.connect(humG); add(hum);
       let tick = true;
-      return (t) => {
-        // The vault hum grows the further down you go; the clock races while a lookup runs.
-        humG.gain.setTargetAtTime(0.03 + mood.depth * 0.05, t, 2);
-        noise(t, { type: "bandpass", f: tick ? 2600 : 1900, q: 9, dur: 0.03, gain: 0.12, dest: bus });
-        tone(t, { f: tick ? 880 : 660, dur: 0.05, gain: 0.02, dest: bus });
-        tick = !tick;
-        return mood.busy ? 0.5 : 1.2;
+      const key = (t, n, dur, g) => {
+        tone(t, { type: "triangle", f: midi(n), dur, gain: g, a: 0.006, lp: 2600, dest: bus });
+        tone(t, { f: midi(n + 12), dur: dur * 0.4, gain: g * 0.25, a: 0.004, dest: bus });
       };
+      return song({
+        beat: 0.8, beats: 3,
+        chords: "G3 B3 D4|F#3 A3 D4|E3 G3 B3|E3 G3 C4|G3 B3 D4|A3 C4 E4|F#3 A3 D4|F#3 A3 D4|" +
+                "E3 G3 C4|G3 B3 D4|A3 C4 E4|E3 G3 B3|E3 G3 C4|G3 B3 D4|F#3 A3 D4|G3 B3 D4",
+        melody: "B4:1 D5:1 G5:1|F#5:2 E5:.5 D5:.5|E5:1 G5:1 B4:1|C5:2 E5:1|D5:1.5 C5:.5 B4:1|C5:1 E5:1 A5:1|F#5:1 E5:1 D5:1|D5:2 -:1|" +
+                "E5:1 G5:1 C6:1|B5:2 A5:.5 G5:.5|A5:1 E5:1 C5:1|B4:2 G5:1|E5:1.5 D5:.5 C5:1|D5:1 B4:1 G4:1|A4:1 D5:1 F#5:1|G5:2 -:1",
+        play(t, { chord, notes, beat }) {
+          humG.gain.setTargetAtTime(0.02 + mood.depth * 0.04, t, 2);
+          const b = mood.busy ? beat / 2 : beat;
+          for (let k = 0; k < 3 * beat / b; k++) {
+            noise(t + k * b, { type: "bandpass", f: tick ? 2600 : 1900, q: 9, dur: 0.03, gain: 0.07, dest: bus });
+            tick = !tick;
+          }
+          // Bass on the downbeat, the chord's upper notes on beats 2 and 3.
+          tone(t, { type: "triangle", f: midi(chord[0] - 12), dur: beat * 2.6, hold: beat * 0.4, a: 0.08, gain: 0.09, lp: 500, dest: bus });
+          [1, 2].forEach(k => chord.slice(1).forEach(n => key(t + k * beat, n, beat * 0.8, 0.014)));
+          notes.forEach(ev => key(t + ev.at * beat, ev.n, ev.len * beat * 1.1, 0.045));
+        },
+      });
     },
     deepcurrent(bus, add) {
-      // Deep water swell, stray bubbles, and a whale somewhere far off.
+      // The open sea: a deep, moving undertow with waves rolling in and
+      // breaking one after another, drifting left and right. Every layer is
+      // low-passed so it reads as water, not hiss. Stray bubbles and a
+      // far-off whale stay; deeper down the page the water gets darker and
+      // calmer and the whales come more often, and a lookup stirs it up.
       const sea = ctx.createBufferSource(); sea.buffer = ambNoise; sea.loop = true; sea.playbackRate.value = 0.4;
-      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 280; lp.Q.value = 2;
-      const g = gainNode(0.36, bus);
+      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 280; lp.Q.value = 1;
+      const g = gainNode(0.3, bus);
       sea.connect(lp); lp.connect(g); add(sea);
       const lfo = ctx.createOscillator(); lfo.frequency.value = 0.08;
-      lfo.connect(gainNode(140, lp.frequency)); lfo.connect(gainNode(0.2, g.gain)); add(lfo);
+      lfo.connect(gainNode(120, lp.frequency)); lfo.connect(gainNode(0.12, g.gain)); add(lfo);
+      let side = 1;
+      const wave = (t, size) => {
+        const len = rnd(5.5, 8) * (0.8 + size * 0.3), pan = side * rnd(0.2, 0.6);
+        const top = (900 + size * 500) * (1 - mood.depth * 0.45);
+        // The swell: water gathering and rising, filter opening as it builds.
+        noise(t, { type: "lowpass", f: 220, f2: top, fDur: len * 0.55, q: 0.7, dur: len, swell: 0.55, gain: 0.16 * size, rate: 0.5, pan, dest: bus });
+        // The break: a rushing wash that tumbles in at the crest and fades
+        // back down the shore.
+        noise(t + len * 0.5, { type: "bandpass", f: top * 1.1, f2: 260, fDur: len * 0.6, q: 0.6, dur: len * 0.65, swell: 0.12, gain: 0.12 * size, rate: 0.6, pan: pan * 0.6, dest: bus });
+        // A low thump as it lands.
+        noise(t + len * 0.5, { type: "lowpass", f: 160, dur: 1.4, swell: 0.15, gain: 0.09 * size, rate: 0.35, pan, dest: bus });
+        side = -side;
+        return len;
+      };
       return (t) => {
-        // Scrolling down is diving deeper: darker water, fewer bubbles, more whales.
         lp.frequency.setTargetAtTime(300 - mood.depth * 140, t, 2);
-        if (Math.random() < 0.35 - mood.depth * 0.2) for (let i = 0; i < 1 + Math.floor(rnd(0, 3)); i++) bubble(t + i * rnd(0.05, 0.12), { gain: 0.04, f: rnd(300, 700), pan: rnd(-0.8, 0.8), dest: bus });
-        if (Math.random() < 0.025 + mood.depth * 0.05) {
-          const k = 1 - mood.depth * 0.25;
-          tone(t, { f: 190 * k, f2: 290 * k, glide: 1.4, dur: 1.4, hold: 1, gain: 0.08, a: 0.6, lp: 700, vib: [4, 8], dest: bus });
-          tone(t + 2.6, { f: 260 * k, f2: 150 * k, glide: 1.8, dur: 1.2, hold: 0.8, gain: 0.06, a: 0.4, lp: 600, vib: [3, 6], dest: bus });
+        const size = Math.max(0.35, rnd(0.6, 1.1) - mood.depth * 0.35 + (mood.busy ? 0.25 : 0));
+        const len = wave(t, size);
+        if (Math.random() < 0.3 - mood.depth * 0.15 + (mood.busy ? 0.3 : 0)) for (let i = 0; i < 1 + Math.floor(rnd(0, 3)); i++) bubble(t + rnd(0.5, len * 0.8) + i * rnd(0.05, 0.12), { gain: 0.035, f: rnd(300, 700), pan: rnd(-0.8, 0.8), dest: bus });
+        if (Math.random() < 0.05 + mood.depth * 0.1) {
+          const k = 1 - mood.depth * 0.25, w = t + len * 0.2;
+          tone(w, { f: 190 * k, f2: 290 * k, glide: 1.4, dur: 1.4, hold: 1, gain: 0.06, a: 0.6, lp: 700, vib: [4, 8], dest: bus });
+          tone(w + 2.6, { f: 260 * k, f2: 150 * k, glide: 1.8, dur: 1.2, hold: 0.8, gain: 0.045, a: 0.4, lp: 600, vib: [3, 6], dest: bus });
         }
-        return rnd(0.8, 1.8);
+        // The next wave starts rolling in before this one has fully drained.
+        return len * rnd(0.6, 0.75);
       };
     },
     skyisles(bus, add) {
-      // A calm daytime sky: no noise bed at all, just a soft chiptune
-      // arpeggio drifting by now and then, a triangle bass note under it,
-      // and birds chirping. Deeper down the page it gets sparser and
-      // lower; a lookup in progress speeds it up.
+      // A bouncy overworld tune in C major on retro chip voices: a soft
+      // square lead, a triangle bass hopping between root and fifth, a
+      // quiet pulse arpeggio, and birds chirping between phrases. Deeper
+      // down the page the lead drops out to just the backing; a lookup
+      // brings in a little noise-hat beat.
       const lp = ctx.createBiquadFilter();
-      lp.type = "lowpass"; lp.frequency.value = 2200; lp.Q.value = 0.5;
+      lp.type = "lowpass"; lp.frequency.value = 2400; lp.Q.value = 0.5;
       lp.connect(gainNode(1, bus));
-      let bar = 0;
-      const chords = [[60, 64, 67, 72], [57, 60, 64, 69], [53, 57, 60, 65], [55, 59, 62, 67]];
-      return (t) => {
-        bar++;
-        const low = Math.round(mood.depth * 2) * -2;
-        if (Math.random() < 0.55 + (mood.busy ? 0.3 : 0) - mood.depth * 0.2) {
-          const ch = chords[bar % chords.length];
-          tone(t, { type: "triangle", f: midi(ch[0] - 12 + low), dur: 1.4, hold: 0.3, gain: 0.07, a: 0.02, dest: lp });
-          const pattern = choose([[0, 1, 2, 3, 2, 1], [0, 2, 1, 3], [3, 2, 1, 0, 1, 2]]);
-          pattern.forEach((k, i) => tone(t + 0.1 + i * 0.16, { type: "square", f: midi(ch[k] + 12 + low), dur: 0.14, gain: 0.012, a: 0.004, lp: 1800, dest: lp }));
-        }
-        if (Math.random() < 0.3 - mood.depth * 0.15) {
-          const f = rnd(2600, 3600), n = 2 + Math.floor(rnd(0, 3)), pan = rnd(-0.8, 0.8);
-          for (let i = 0; i < n; i++) tone(t + 1.2 + i * 0.11, { f, f2: f * rnd(1.15, 1.35), glide: 0.06, dur: 0.07, gain: 0.018, pan, dest: bus });
-        }
-        return mood.busy ? rnd(1.1, 1.5) : rnd(2.2, 3.4);
-      };
+      return song({
+        beat: 0.4, beats: 4,
+        chords: "C4 E4 G4|A3 C4 E4|F3 A3 C4|G3 B3 D4|C4 E4 G4|A3 C4 E4|F3 A3 C4|G3 B3 D4|" +
+                "F3 A3 C4|G3 B3 D4|E3 G3 B3|A3 C4 E4|F3 A3 C4|G3 B3 D4|C4 E4 G4|C4 E4 G4",
+        melody: "E5:.5 G5:.5 C6:1 G5:.5 E5:.5 G5:1|A5:1.5 G5:.5 E5:1 C5:1|F5:.5 A5:.5 C6:1 A5:1 F5:1|G5:1.5 F5:.5 E5:1 D5:1|" +
+                "E5:.5 G5:.5 C6:1 D6:.5 C6:.5 G5:1|A5:1 C6:1 B5:.5 A5:.5 G5:1|F5:1 E5:.5 F5:.5 A5:1 G5:1|D5:1 B4:1 G4:2|" +
+                "A5:1 C6:1 A5:1 F5:1|B5:1 D6:1 B5:1 G5:1|G5:.5 E5:.5 B4:1 E5:1 G5:1|A5:2 E5:1 C5:1|" +
+                "F5:.5 G5:.5 A5:1 C6:1 A5:1|G5:1 B5:1 D6:1 B5:1|C6:1.5 G5:.5 E5:1 G5:1|C6:2 -:2",
+        play(t, { chord, notes, beat, i }) {
+          const lead = mood.depth < 0.6 ? 1 : 0.35;
+          [0, 1, 2, 3].forEach(k => tone(t + k * beat, { type: "triangle", f: midi(chord[0] - 12 + (k % 2 ? 7 : 0)), dur: beat * 0.8, gain: 0.08, a: 0.005, dest: lp }));
+          for (let k = 0; k < 8; k++) tone(t + k * beat / 2, { type: "square", f: midi(chord[k % 3] + (k > 3 ? 12 : 0)), dur: beat * 0.35, gain: 0.006, a: 0.004, lp: 1800, dest: lp });
+          notes.forEach(ev => tone(t + ev.at * beat, { type: "square", f: midi(ev.n), dur: ev.len * beat * 0.85, gain: 0.014 * lead, a: 0.005, lp: 3000, vib: ev.len > 1 ? [6, 4] : null, dest: lp }));
+          if (mood.busy) for (let k = 0; k < 8; k++) noise(t + k * beat / 2, { type: "highpass", f: 7000, dur: 0.03, gain: k % 2 ? 0.01 : 0.02, dest: bus });
+          if (i % 4 === 3 && Math.random() < 0.6 - mood.depth * 0.3) {
+            const f = rnd(2600, 3600), n = 2 + Math.floor(rnd(0, 3)), pan = rnd(-0.8, 0.8);
+            for (let k = 0; k < n; k++) tone(t + beat * 3 + k * 0.11, { f, f2: f * rnd(1.15, 1.35), glide: 0.06, dur: 0.07, gain: 0.016, pan, dest: bus });
+          }
+        },
+      });
     },
   };
 
@@ -11297,11 +11408,11 @@ window.siteAudio = (function () {
   // loudness so each kind of moment sits at the same level in every theme
   // (clicks ~-28dB, rare clicks ~-22, flips ~-27, switch scenes ~-14...).
   const TRIM = {
-    neon: { view: 3, save: 3, delete: 5, type: 4, combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -2 },
-    casefiles: { view: -7, toggle: 6, save: -5, delete: 11, slide: 2, ambience: 2.5, click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
-    ledger: { view: 4, toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
-    deepcurrent: { toggle: -2, save: 2, delete: -2, slide: 3, type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -4 },
-    skyisles: { click: 10, rare: -9, combo: 9.5, ui: 5, toggle: -1, save: 8, delete: 2.5, slide: 8.5, page: 6, view: 3, type: 10, switch: 6, flipOpen: 8, flipClose: 4, scan: 6.5, found: 4, error: 3, success: 1, stunt: 7, arrive: 7.5, ambience: 9 },
+    neon: { hover: 10, view: 3, save: 3, delete: 5, type: 4, combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: 8 },
+    casefiles: { hover: 13, view: -7, toggle: 6, save: -5, delete: 11, slide: 2, ambience: 2.5, click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
+    ledger: { hover: 8, view: 4, toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2, ambience: 1.5 },
+    deepcurrent: { hover: 8, toggle: -2, save: 2, delete: -2, slide: 3, type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -1 },
+    skyisles: { hover: 12, click: 10, rare: -9, combo: 9.5, ui: 5, toggle: -1, save: 8, delete: 2.5, slide: 8.5, page: 6, view: 3, type: 10, switch: 6, flipOpen: 8, flipClose: 4, scan: 6.5, found: 4, error: 3, success: 1, stunt: 7, arrive: 7.5, ambience: 11 },
     shared: { bed: -5, chat: -2 },
   };
   const SHARED = { chat: (t) => pling(t, [78, 85]), techno: fanfare, bed: bedDestroyed };
@@ -11327,6 +11438,7 @@ window.siteAudio = (function () {
         toggle: () => s.toggle(t, !!opts.on), save: () => s.save(t), delete: () => s.del(t), slide: () => s.slide(t, !!opts.open),
         page: () => s.page(t, !!opts.next), view: () => s.view(t),
         chime: () => extra(theme).chime(t, Math.min(3, Math.max(1, opts.place || 1))),
+        hover: () => extra(theme).hover(t),
         arrive: () => extra(theme).arrive(t),
         scanStart: () => s.scanStart(t), scanTick: () => s.scanTick(t),
       })[name]();
@@ -11347,7 +11459,7 @@ window.siteAudio = (function () {
   }
   const DUCK = { switch: 2, bed: 3.2, techno: 1.2 };
 
-  let lastClick = 0, lastType = 0;
+  let lastClick = 0, lastType = 0, lastHover = 0;
   function play(name, opts = {}) {
     if (!ready()) return;
     const theme = opts.theme || themeNow();
@@ -11362,6 +11474,11 @@ window.siteAudio = (function () {
     if (name === "type") {
       if (t - lastType < 0.025) return;
       lastType = t;
+    }
+    // Sweeping the mouse across the grid shouldn't turn into a drumroll.
+    if (name === "hover") {
+      if (t - lastHover < 0.09) return;
+      lastHover = t;
     }
     if (DUCK[name]) duck(t, DUCK[name]);
     try { schedule(name, theme, t, { ...opts, trim, pan: panFor(opts.x) }); } catch (e) {}
@@ -17324,6 +17441,15 @@ async function pollLiveSweats() {
 initialSweatsLoad.then(() => setInterval(pollLiveSweats, LIVE_POLL_MS));
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden && Date.now() - lastLivePoll > LIVE_POLL_MS / 2) pollLiveSweats();
+});
+
+// A small themed sound when the mouse passes onto a grid card.
+cardGrid.addEventListener("pointerover", (e) => {
+  if (e.pointerType !== "mouse") return;
+  const card = e.target.closest(".sweat-card");
+  if (!card || card.contains(e.relatedTarget)) return;
+  const r = card.getBoundingClientRect();
+  siteAudio.play("hover", { x: r.left + r.width / 2 });
 });
 
 // Podium hover chimes: 1st place rings brightest.

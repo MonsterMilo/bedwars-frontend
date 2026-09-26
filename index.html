@@ -6575,9 +6575,9 @@ html[data-theme="deepcurrent"] .pill.boost {
 .note-input {
   width: 100%;
   box-sizing: border-box;
-  resize: vertical;
-  min-height: 52px;
-  max-height: 200px;
+  resize: none;
+  overflow: hidden;
+  min-height: 38px;
   font: inherit;
   font-size: 0.92em;
   line-height: 1.4;
@@ -6591,15 +6591,6 @@ html[data-theme="deepcurrent"] .pill.boost {
 .note-input::placeholder { color: var(--text-faint); }
 .note-input:focus { outline: none; border-color: var(--border-strong); box-shadow: 0 0 0 3px var(--accent-soft); }
 .note-compose-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.8em; color: var(--text-faint); }
-.note-author-field { display: inline-flex; align-items: center; gap: 6px; }
-.note-author-select {
-  font: inherit;
-  color: var(--text);
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 3px 6px;
-}
 .note-count { margin-left: auto; font-variant-numeric: tabular-nums; }
 .note-count.near-limit { color: var(--bad); font-weight: 700; }
 .note-btn-small { padding: 6px 12px; font-size: 13px; }
@@ -6830,6 +6821,16 @@ html[data-theme="deepcurrent"] .sweat-card:hover .sweat-card-note { border-color
 @media (prefers-reduced-motion: reduce) {
   .sweat-card-note, .note-item, .note-item-new { transition: none; animation: none; }
 }
+
+/* Personal keys: who you're signed in as */
+#setAdminKeyBtn { display: inline-flex; align-items: center; gap: 7px; }
+.key-owner-chip { width: 22px; height: 22px; font-size: 10px; }
+.note-signer { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--note-author-color, var(--text-faint)); }
+.note-signer::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+html[data-theme="casefiles"] .note-signer { font-family: 'Courier Prime', monospace; text-transform: uppercase; font-size: 0.95em; }
+html[data-theme="ledger"] .note-signer { font-family: 'EB Garamond', serif; font-style: italic; font-weight: 600; }
+html[data-theme="ledger"] .note-signer::before { box-shadow: none; }
+html[data-theme="deepcurrent"] .note-signer { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; }
 </style>
 </head>
 <body>
@@ -6895,7 +6896,7 @@ html[data-theme="deepcurrent"] .sweat-card:hover .sweat-card-note { border-color
         <li role="option" data-theme-value="deepcurrent" aria-selected="false" tabindex="0">Deep Current</li>
       </ul>
     </div>
-    <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; Admin Key</button>
+    <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; <span class="key-owner-name">Your Key</span></button>
   </div>
 
   <nav id="quickNav" class="quick-nav" aria-label="Jump to section">
@@ -6941,9 +6942,9 @@ html[data-theme="deepcurrent"] .sweat-card:hover .sweat-card-note { border-color
 
           <div class="dash-label">Note <span class="dash-label-optional">optional</span></div>
           <div class="note-compose">
-            <textarea id="sweatNote" class="note-input" rows="2" maxlength="280" placeholder="Anything worth remembering? Playstyle, alts, who they party with..." aria-label="Note about this sweat (optional)"></textarea>
+            <textarea id="sweatNote" class="note-input" rows="1" maxlength="280" placeholder="Add an optional note" aria-label="Note about this sweat (optional)"></textarea>
             <div class="note-compose-meta">
-              <label class="note-author-field">By <select id="sweatNoteAuthor" class="note-author-select" aria-label="Note written by"></select></label>
+              <span class="note-signer" data-note-signer></span>
               <span class="note-count" id="sweatNoteCount">0/280</span>
             </div>
           </div>
@@ -7301,9 +7302,9 @@ html[data-theme="deepcurrent"] .sweat-card:hover .sweat-card-note { border-color
         <ol id="modalNotesList" class="note-list"></ol>
         <div id="modalNotesEmpty" class="modal-notes-empty">No notes yet.</div>
         <form id="modalNoteForm" class="note-compose modal-note-form" autocomplete="off" hidden>
-          <textarea id="modalNoteText" class="note-input" rows="3" maxlength="280" placeholder="Add a note about this player..." aria-label="New note"></textarea>
+          <textarea id="modalNoteText" class="note-input" rows="1" maxlength="280" placeholder="Add a note" aria-label="New note"></textarea>
           <div class="note-compose-meta">
-            <label class="note-author-field">By <select id="modalNoteAuthor" class="note-author-select" aria-label="Note written by"></select></label>
+            <span class="note-signer" data-note-signer></span>
             <span class="note-hint" aria-hidden="true">Ctrl+Enter to save</span>
             <span class="note-count" id="modalNoteCount">0/280</span>
             <button type="button" id="modalNoteCancel" class="btn btn-ghost note-btn-small">Cancel</button>
@@ -7360,9 +7361,9 @@ html[data-theme="deepcurrent"] .sweat-card:hover .sweat-card-note { border-color
       <span class="modal-folder-tab">Case File &middot; Clearance</span>
       <div class="modal-content admin-key-modal-content">
       <button type="button" id="closeAdminKeyModal" class="modal-close" aria-label="Close">&times;</button>
-      <h2 class="edit-modal-title">Admin Key</h2>
-      <p class="admin-key-desc">Only needed to add, edit, or remove sweats. Leave blank to browse read-only.</p>
-      <input type="text" id="adminKeyInput" placeholder="Enter admin key" autocomplete="off" aria-label="Admin key" />
+      <h2 class="edit-modal-title">Your Key</h2>
+      <p class="admin-key-desc">Everyone has their own key. It signs your notes and lets you add, edit or remove sweats. Leave blank to browse read-only.</p>
+      <input type="text" id="adminKeyInput" placeholder="Enter your key" autocomplete="off" aria-label="Your key" />
       <div id="adminKeyStatus" role="alert" aria-live="assertive"></div>
       <div class="edit-modal-actions">
         <button type="button" id="clearAdminKeyBtn" class="btn btn-ghost">Clear</button>
@@ -8104,6 +8105,56 @@ function adminHeaders(extra = {}) {
   return key ? { ...extra, "x-admin-key": key } : extra;
 }
 
+// Each person has their own key (KEY_MILO, KEY_POTAT, ... plus KEY_ADMIN on
+// the backend), so the key says who you are: it signs your notes and, for
+// personal keys, allows edits/deletes on things from the last 10 days.
+// keyOwner is the roster id, "admin", or null (no key / not recognised /
+// not checked yet); refreshed from GET /whoami whenever the key changes.
+let keyOwner = null;
+let keyEditWindowDays = 10;
+async function refreshKeyOwner() {
+  const key = getAdminKey();
+  if (!key) { keyOwner = null; updateKeyIdentityUi(); return null; }
+  try {
+    const res = await fetch(`${backendBaseURL}/whoami`, { headers: adminHeaders() });
+    const data = res.ok ? await res.json() : null;
+    keyOwner = data && data.who ? data.who : null;
+    if (data && data.editWindowDays !== undefined) keyEditWindowDays = data.editWindowDays;
+  } catch {
+    // Backend asleep/unreachable: keep whatever we knew; writes still send
+    // the key and the backend decides.
+  }
+  updateKeyIdentityUi();
+  return keyOwner;
+}
+function canChangeNote(note) {
+  if (!getAdminKey()) return false;
+  if (keyOwner === "admin" || keyEditWindowDays == null) return true;
+  const created = note.createdAt ? new Date(note.createdAt).getTime() : 0;
+  return Date.now() - created <= keyEditWindowDays * 86400000;
+}
+function updateKeyIdentityUi() {
+  const btn = document.getElementById("setAdminKeyBtn");
+  const label = keyOwner ? (keyOwner === "admin" ? "Admin" : (BEATEN_BY[keyOwner] ? BEATEN_BY[keyOwner].label : "Your Key")) : "Your Key";
+  if (btn) {
+    btn.innerHTML = keyOwner
+      ? `<span class="key-owner-chip beaten-avatar" aria-hidden="true"></span><span class="key-owner-name"></span>`
+      : `&#128273; <span class="key-owner-name"></span>`;
+    btn.querySelector(".key-owner-name").textContent = label;
+    const chip = btn.querySelector(".key-owner-chip");
+    if (chip) {
+      chip.textContent = keyOwner === "admin" ? "\u2605" : BEATEN_BY[keyOwner].initials;
+      chip.style.setProperty("--chip-color", keyOwner === "admin" ? "var(--gold)" : `var(--roster-${keyOwner})`);
+    }
+    btn.setAttribute("aria-label", keyOwner ? `Signed in as ${label}. Change key` : "Enter your key");
+  }
+  document.querySelectorAll("[data-note-signer]").forEach(el => {
+    el.textContent = keyOwner ? `Signed as ${label}` : (getAdminKey() ? "Signed with your key" : "Needs your key to save");
+    el.style.setProperty("--note-author-color", keyOwner ? noteAuthorColor(keyOwner) : "var(--text-faint)");
+  });
+  if (typeof renderModalNotesList === "function" && document.getElementById("playerModal").style.display === "flex") renderModalNotesList();
+}
+
 // ============================================================
 // DENICKING
 // Looks up a nick or player across two sources and merges them the same
@@ -8420,10 +8471,9 @@ async function runDenickSearch() {
 denickSearchBtn.addEventListener("click", runDenickSearch);
 denickInput.addEventListener("keydown", (e) => { if (e.key === "Enter") runDenickSearch(); });
 
-// The backend has three key tiers (tier1/tier2/tier3 - see server.js), and
-// a tier2 key gets a specific, genuinely useful 403 reason when it tries to
-// touch something older than 7 days ("Trusted key can only edit or remove
-// entries added in the last 7 days"). Surfacing that instead of a
+// Personal keys get a specific, genuinely useful 403 reason when they try to
+// touch something older than 10 days ("Personal keys can only edit or
+// remove entries added in the last 10 days" - see server.js). Surfacing that instead of a
 // generic "Failed to..." is the whole point of the backend bothering to send
 // a real message - falls back to the generic one if the body isn't the
 // { error } shape (or isn't JSON at all).
@@ -8463,17 +8513,25 @@ closeAdminKeyModal.addEventListener('click', closeAdminKeyModalFn);
 clearAdminKeyBtn.addEventListener('click', () => {
   try { localStorage.removeItem(ADMIN_KEY_STORAGE); } catch {}
   adminKeyInput.value = "";
-  adminKeyStatus.textContent = "Admin key cleared.";
+  adminKeyStatus.textContent = "Key cleared.";
+  refreshKeyOwner();
   adminKeyInput.focus();
 });
 
-function saveAdminKey() {
+async function saveAdminKey() {
   const next = adminKeyInput.value.trim();
   try {
     if (next) localStorage.setItem(ADMIN_KEY_STORAGE, next);
     else localStorage.removeItem(ADMIN_KEY_STORAGE);
   } catch {}
-  adminKeyStatus.textContent = next ? "Admin key saved." : "Admin key cleared.";
+  if (!next) { adminKeyStatus.textContent = "Key cleared."; refreshKeyOwner(); return; }
+  adminKeyStatus.textContent = "Checking key...";
+  const who = await refreshKeyOwner();
+  if (who) {
+    adminKeyStatus.textContent = `Key saved. You're signed in as ${noteAuthorLabel(who)}.`;
+  } else {
+    adminKeyStatus.textContent = "Key saved, but the server didn't recognise it. Check it's typed right.";
+  }
 }
 saveAdminKeyBtn.addEventListener('click', saveAdminKey);
 adminKeyInput.addEventListener('keydown', e => {
@@ -8962,10 +9020,7 @@ form.addEventListener('submit', async e => {
       dateAdded: todayDate
     };
     const noteText = sweatNoteInput.value.trim();
-    if (noteText) {
-      newSweat.note = noteText;
-      newSweat.noteAuthor = sweatNoteAuthor.value;
-    }
+    if (noteText) newSweat.note = noteText;
 
     const res = await fetch(`${backendBaseURL}/sweats`, {
       method: "POST",
@@ -8973,13 +9028,12 @@ form.addEventListener('submit', async e => {
       body: JSON.stringify(newSweat)
     });
     if (res.status === 401 || res.status === 503) {
-      throw new Error("Admin key missing or incorrect — click \"Admin Key\" above");
+      throw new Error("Your key is missing or wrong. Click \"Your Key\" at the top.");
     }
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to add sweat"));
 
     await loadSweats();
     form.reset();
-    sweatNoteAuthor.value = getNoteAuthor();
     updateNoteCount(sweatNoteInput, sweatNoteCount);
     currentUUID = null;
     currentStats = null;
@@ -10265,7 +10319,7 @@ async function removeSweat(id, rowEl) {
     const fetchPromise = fetch(`${backendBaseURL}/sweats/${id}`, { method: "DELETE", headers: adminHeaders() });
     const [res] = await Promise.all([fetchPromise, exitAnim]);
     if (res.status === 401 || res.status === 503) {
-      throw new Error("Admin key missing or incorrect — click \"Admin Key\" above");
+      throw new Error("Your key is missing or wrong. Click \"Your Key\" at the top.");
     }
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to remove sweat"));
     await loadSweats();
@@ -10352,7 +10406,7 @@ saveEditBtn.addEventListener("click", async () => {
       body: JSON.stringify(payload)
     });
     if (res.status === 401 || res.status === 503) {
-      throw new Error("Admin key missing or incorrect — click \"Admin Key\" above");
+      throw new Error("Your key is missing or wrong. Click \"Your Key\" at the top.");
     }
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to save changes"));
 
@@ -10492,9 +10546,7 @@ const modalRecord = document.getElementById("modalRecord");
 // a sweat, enforced by the backend. Note text is player-written and never
 // goes through innerHTML - always textContent or setAttribute.
 const NOTE_MAX = 280;
-const NOTE_AUTHOR_STORAGE = "bedwarsNoteAuthor";
 const sweatNoteInput = document.getElementById("sweatNote");
-const sweatNoteAuthor = document.getElementById("sweatNoteAuthor");
 const sweatNoteCount = document.getElementById("sweatNoteCount");
 
 function sweatNotes(s) {
@@ -10503,14 +10555,19 @@ function sweatNotes(s) {
 function noteMatches(s, q) {
   return !!q && sweatNotes(s).some(n => String(n.text).toLowerCase().includes(q));
 }
-function getNoteAuthor() {
-  try { return localStorage.getItem(NOTE_AUTHOR_STORAGE) || ""; } catch { return ""; }
-}
-function setNoteAuthor(v) {
-  try { localStorage.setItem(NOTE_AUTHOR_STORAGE, v); } catch {}
-}
+// Note authors are roster ids or "admin" (KEY_ADMIN), set by the backend
+// from whichever key wrote the note. Older notes may have none.
 function noteAuthorLabel(author) {
+  if (author === "admin") return "Admin";
   return BEATEN_BY[author] ? BEATEN_BY[author].label : "";
+}
+function noteAuthorColor(author) {
+  if (author === "admin") return "var(--gold)";
+  return BEATEN_BY[author] ? `var(--roster-${author})` : "var(--accent)";
+}
+function noteAuthorInitials(author) {
+  if (author === "admin") return "\u2605";
+  return BEATEN_BY[author] ? BEATEN_BY[author].initials : "?";
 }
 function formatNoteDate(d) {
   const date = d ? new Date(d) : null;
@@ -10527,23 +10584,22 @@ function relativeNoteDate(d) {
   if (mins < 60 * 24 * 7) return `${Math.round(mins / 1440)}d ago`;
   return date.toLocaleDateString();
 }
-// Both "By" pickers remember the last name used, so whoever is on this
-// browser picks themselves once.
-function fillNoteAuthorSelect(select) {
-  select.innerHTML = `<option value="">Anonymous</option>` +
-    BEATEN_BY_KEYS.map(k => `<option value="${k}">${BEATEN_BY[k].label}</option>`).join("");
-  select.value = getNoteAuthor();
-  select.addEventListener("change", () => {
-    setNoteAuthor(select.value);
-    document.querySelectorAll(".note-author-select").forEach(o => { if (o !== select) o.value = select.value; });
-  });
+// Note boxes have no scrollbar: they start one line tall and grow with
+// whatever is typed (and shrink back when it's cleared).
+function autosizeNote(el) {
+  if (!el.isConnected || el.offsetParent === null) { el.style.height = ""; return; }
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + (el.offsetHeight - el.clientHeight) + "px";
 }
+document.addEventListener("input", (e) => {
+  if (e.target.classList && e.target.classList.contains("note-input")) autosizeNote(e.target);
+});
 function updateNoteCount(input, counter) {
+  autosizeNote(input);
   const len = input.value.length;
   counter.textContent = `${len}/${NOTE_MAX}`;
   counter.classList.toggle("near-limit", len > NOTE_MAX - 30);
 }
-fillNoteAuthorSelect(sweatNoteAuthor);
 sweatNoteInput.addEventListener("input", () => updateNoteCount(sweatNoteInput, sweatNoteCount));
 
 // Latest note on a grid card, clamped to two lines by CSS; the rest live in
@@ -10556,7 +10612,7 @@ function fillCardNote(el, s) {
   const who = noteAuthorLabel(latest.author);
   el.querySelector(".note-meta").textContent =
     (who ? `— ${who}` : "") + (notes.length > 1 ? `${who ? " · " : ""}+${notes.length - 1} more` : "");
-  el.style.setProperty("--note-author-color", latest.author && BEATEN_BY[latest.author] ? `var(--roster-${latest.author})` : "var(--accent)");
+  el.style.setProperty("--note-author-color", noteAuthorColor(latest.author));
 }
 
 const modalNotes = document.getElementById("modalNotes");
@@ -10566,12 +10622,10 @@ const modalNotesCount = document.getElementById("modalNotesCount");
 const modalNoteAddBtn = document.getElementById("modalNoteAddBtn");
 const modalNoteForm = document.getElementById("modalNoteForm");
 const modalNoteText = document.getElementById("modalNoteText");
-const modalNoteAuthor = document.getElementById("modalNoteAuthor");
 const modalNoteCount = document.getElementById("modalNoteCount");
 const modalNoteCancel = document.getElementById("modalNoteCancel");
 const modalNoteSave = document.getElementById("modalNoteSave");
 const modalNoteStatus = document.getElementById("modalNoteStatus");
-fillNoteAuthorSelect(modalNoteAuthor);
 modalNoteText.addEventListener("input", () => {
   updateNoteCount(modalNoteText, modalNoteCount);
   modalNoteSave.disabled = !modalNoteText.value.trim();
@@ -10593,7 +10647,7 @@ function sweatsForModalItem(item) {
 }
 
 function noteErrorMessage(res, fallback) {
-  if (res.status === 401 || res.status === 503) return Promise.resolve('Admin key missing or incorrect — click "Admin Key" above');
+  if (res.status === 401 || res.status === 503) return Promise.resolve('Your key is missing or wrong. Click "Your Key" at the top.');
   return extractErrorMessage(res, fallback);
 }
 
@@ -10625,12 +10679,12 @@ function renderModalNotesList() {
   all.sort((a, b) => new Date(a.note.createdAt || 0) - new Date(b.note.createdAt || 0));
   modalNotesCount.textContent = all.length ? String(all.length) : "";
   modalNotesEmpty.hidden = all.length !== 0;
-  const canChange = !!getAdminKey();
   modalNotesList.innerHTML = "";
   all.forEach(({ note, sweat }, i) => {
+    const canChange = canChangeNote(note);
     const li = document.createElement("li");
     li.className = "note-item";
-    li.style.setProperty("--note-author-color", note.author && BEATEN_BY[note.author] ? `var(--roster-${note.author})` : "var(--accent)");
+    li.style.setProperty("--note-author-color", noteAuthorColor(note.author));
     li.style.animationDelay = Math.min(i * 0.04, 0.4) + "s";
     li.innerHTML = `
       <div class="note-item-head">
@@ -10648,8 +10702,8 @@ function renderModalNotesList() {
     authorEl.textContent = who || "Anonymous";
     const avatarEl = li.querySelector(".note-item-avatar");
     if (who) {
-      avatarEl.textContent = BEATEN_BY[note.author].initials;
-      avatarEl.style.setProperty("--chip-color", `var(--roster-${note.author})`);
+      avatarEl.textContent = noteAuthorInitials(note.author);
+      avatarEl.style.setProperty("--chip-color", noteAuthorColor(note.author));
     } else {
       avatarEl.textContent = "?";
       avatarEl.classList.add("anon");
@@ -10682,6 +10736,9 @@ modalNoteCancel.addEventListener("click", () => {
   modalNoteText.value = "";
   updateNoteCount(modalNoteText, modalNoteCount);
 });
+updateKeyIdentityUi();
+refreshKeyOwner();
+
 modalNoteText.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); modalNoteForm.requestSubmit(); }
 });
@@ -10696,7 +10753,7 @@ modalNoteForm.addEventListener("submit", async (e) => {
     const res = await fetch(`${backendBaseURL}/sweats/${target._id}/notes`, {
       method: "POST",
       headers: adminHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ text, author: modalNoteAuthor.value })
+      body: JSON.stringify({ text })
     });
     if (!res.ok) throw new Error(await noteErrorMessage(res, "Failed to save note"));
     const updated = await res.json();
@@ -10720,7 +10777,7 @@ function startEditNote(li, note, sweat) {
   const form = document.createElement("form");
   form.className = "note-compose note-edit-form";
   form.innerHTML = `
-    <textarea class="note-input" rows="3" maxlength="${NOTE_MAX}" aria-label="Edit note"></textarea>
+    <textarea class="note-input" rows="1" maxlength="${NOTE_MAX}" aria-label="Edit note"></textarea>
     <div class="note-compose-meta">
       <span class="note-count"></span>
       <button type="button" class="btn btn-ghost note-btn-small note-edit-cancel">Cancel</button>
@@ -10737,6 +10794,7 @@ function startEditNote(li, note, sweat) {
   });
   textEl.hidden = true;
   li.appendChild(form);
+  autosizeNote(input);
   input.focus();
   form.querySelector(".note-edit-cancel").addEventListener("click", () => {
     form.remove();

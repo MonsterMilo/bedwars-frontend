@@ -7978,7 +7978,8 @@ window.siteAudio = (function () {
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(settings)); } catch (e) {} };
 
   const AMBIENCE_LEVEL = 0.32;
-  let ctx = null, live = null, master = null, sfxBus = null, ambBus = null, noiseBuf = null;
+  let ctx = null, live = null, master = null, sfxBus = null, ambBus = null, noiseBuf = null, ambNoise = null;
+  let curOut = null;
   let voices = 0;
   const MAX_VOICES = 160;
 
@@ -7988,8 +7989,8 @@ window.siteAudio = (function () {
   const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
   const masterLevel = () => (settings.muted ? 0 : Math.pow(settings.volume, 1.4));
 
-  function makeNoise(c) {
-    const len = c.sampleRate * 2;
+  function makeNoise(c, secs = 2) {
+    const len = c.sampleRate * secs;
     const buf = c.createBuffer(1, len, c.sampleRate);
     const d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
@@ -8003,10 +8004,15 @@ window.siteAudio = (function () {
     const comp = c.createDynamicsCompressor();
     comp.threshold.value = -16; comp.knee.value = 14; comp.ratio.value = 5;
     comp.attack.value = 0.003; comp.release.value = 0.25;
+    // A fast brickwall-ish limiter last, so stacked sounds at full volume
+    // squash instead of clipping.
+    const lim = c.createDynamicsCompressor();
+    lim.threshold.value = -4; lim.knee.value = 0; lim.ratio.value = 20;
+    lim.attack.value = 0.001; lim.release.value = 0.1;
     const m = c.createGain(); m.gain.value = level;
     const s = c.createGain(); s.gain.value = 1;
     const a = c.createGain(); a.gain.value = 0;
-    s.connect(m); a.connect(m); m.connect(comp); comp.connect(c.destination);
+    s.connect(m); a.connect(m); m.connect(comp); comp.connect(lim); lim.connect(c.destination);
     return { m, s, a };
   }
 
@@ -8016,6 +8022,9 @@ window.siteAudio = (function () {
     const w = wire(ctx, masterLevel());
     master = w.m; sfxBus = w.s; ambBus = w.a;
     noiseBuf = makeNoise(ctx);
+    // Ambience beds loop a long buffer (25s+ at their slowed rates) so the
+    // noise never audibly repeats.
+    ambNoise = makeNoise(ctx, 10);
     return true;
   }
 
@@ -8054,7 +8063,7 @@ window.siteAudio = (function () {
   function tone(t, o) {
     const dur = o.dur || 0.2;
     const a = o.a != null ? o.a : 0.005;
-    const out = panNode(o.pan, o.dest || sfxBus);
+    const out = panNode(o.pan, o.dest || curOut);
     const g = gainNode(0, out);
     let head = g;
     if (o.lp || o.bp || o.hp) {
@@ -8102,7 +8111,7 @@ window.siteAudio = (function () {
   // for whooshes and waves instead of hits.
   function noise(t, o) {
     const dur = o.dur || 0.2;
-    const out = panNode(o.pan, o.dest || sfxBus);
+    const out = panNode(o.pan, o.dest || curOut);
     const g = gainNode(0, out);
     const f = ctx.createBiquadFilter();
     f.type = o.type || "bandpass";
@@ -8249,9 +8258,9 @@ window.siteAudio = (function () {
     casefiles: {
       click(t, pan) {
         // Camera shutter (two leaf clicks), then the evidence marker set down.
-        noise(t, { type: "highpass", f: 2800, dur: 0.012, gain: 0.25, pan });
-        noise(t + 0.05, { type: "highpass", f: 2200, dur: 0.016, gain: 0.2, pan });
-        tone(t, { f: 200, f2: 110, dur: 0.04, gain: 0.08, pan });
+        noise(t, { type: "bandpass", f: 3200, q: 0.9, dur: 0.014, gain: 0.16, pan });
+        noise(t + 0.05, { type: "bandpass", f: 2400, q: 0.9, dur: 0.018, gain: 0.13, pan });
+        tone(t, { f: 200, f2: 110, dur: 0.045, gain: 0.12, pan });
         tone(t + 0.2, { type: "triangle", f: 720, f2: 480, dur: 0.05, gain: 0.07, pan });
       },
       rare(t, pan) {
@@ -8436,7 +8445,7 @@ window.siteAudio = (function () {
     noise(t, { type: "bandpass", f: 2500, f2: 300, q: 0.7, dur: 0.42, gain: 0.12, swell: 0.8 });
     thud(t + 0.42, { f: 140, f2: 50, gain: 0.5 });
     const b = t + 0.7;
-    const out = gainNode(0, sfxBus);
+    const out = gainNode(0, curOut);
     out.gain.setValueAtTime(0.0001, b);
     out.gain.linearRampToValueAtTime(0.16, b + 0.06);
     out.gain.setValueAtTime(0.16, b + 0.7);
@@ -8495,7 +8504,7 @@ window.siteAudio = (function () {
     },
     casefiles(bus, add) {
       // Rain against the office window, with the odd roll of thunder.
-      const rain = ctx.createBufferSource(); rain.buffer = noiseBuf; rain.loop = true;
+      const rain = ctx.createBufferSource(); rain.buffer = ambNoise; rain.loop = true;
       const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 500;
       const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 3200;
       rain.connect(hp); hp.connect(lp); lp.connect(gainNode(0.22, bus)); add(rain);
@@ -8507,7 +8516,7 @@ window.siteAudio = (function () {
     },
     ledger(bus, add) {
       // A hushed bank hall: warm low room tone and a grandfather clock.
-      const room = ctx.createBufferSource(); room.buffer = noiseBuf; room.loop = true; room.playbackRate.value = 0.5;
+      const room = ctx.createBufferSource(); room.buffer = ambNoise; room.loop = true; room.playbackRate.value = 0.5;
       const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 260;
       room.connect(lp); lp.connect(gainNode(0.35, bus)); add(room);
       const hum = ctx.createOscillator(); hum.frequency.value = 55; hum.connect(gainNode(0.03, bus)); add(hum);
@@ -8521,7 +8530,7 @@ window.siteAudio = (function () {
     },
     deepcurrent(bus, add) {
       // Deep water swell, stray bubbles, and a whale somewhere far off.
-      const sea = ctx.createBufferSource(); sea.buffer = noiseBuf; sea.loop = true; sea.playbackRate.value = 0.4;
+      const sea = ctx.createBufferSource(); sea.buffer = ambNoise; sea.loop = true; sea.playbackRate.value = 0.4;
       const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 280; lp.Q.value = 2;
       const g = gainNode(0.36, bus);
       sea.connect(lp); lp.connect(g); add(sea);
@@ -8538,6 +8547,7 @@ window.siteAudio = (function () {
     },
   };
 
+  const ambienceTrim = (id) => Math.pow(10, ((TRIM[id] || {}).ambience || 0) / 20);
   let amb = null;
   function stopAmbience(fade = 1.2) {
     if (!amb) return;
@@ -8563,7 +8573,7 @@ window.siteAudio = (function () {
     const next = (AMBIENCES[themeId] || AMBIENCES.neon)(bus, add);
     const t = ctx.currentTime;
     bus.gain.setValueAtTime(0, t);
-    bus.gain.linearRampToValueAtTime(1, t + 2.5);
+    bus.gain.linearRampToValueAtTime(ambienceTrim(themeId), t + 2.5);
     const a = { theme: themeId, bus, nodes, timer: 0, at: t + 1 };
     // Look-ahead scheduler: events are queued up to 1s ahead so a
     // throttled background-tab timer can't make them stutter.
@@ -8625,16 +8635,15 @@ window.siteAudio = (function () {
     clearTimeout(scanTimer);
     if (!on) { scanTheme = null; return; }
     if (!ready()) return;
-    const s = set(themeNow());
     scanTheme = themeNow();
-    s.scanStart(T());
-    scanAt = T() + s.scanEvery;
+    schedule("scanStart", scanTheme, T(), { trim: (TRIM[scanTheme] || {}).scan || 0 });
+    scanAt = T() + set(scanTheme).scanEvery;
     const pump = () => {
       if (!scanTheme || !ctx) return;
-      const cur = set(scanTheme);
+      const every = set(scanTheme).scanEvery;
       while (scanAt < ctx.currentTime + 0.3) {
-        if (ready()) cur.scanTick(Math.max(scanAt, T()));
-        scanAt += cur.scanEvery;
+        if (ready()) schedule("scanTick", scanTheme, Math.max(scanAt, T()), { trim: (TRIM[scanTheme] || {}).scan || 0 });
+        scanAt += every;
       }
       scanTimer = setTimeout(pump, 120);
     };
@@ -8644,35 +8653,69 @@ window.siteAudio = (function () {
   // ---- Public API ----
   // x is the screen x of the thing that made the sound, used to pan it.
   const panFor = (x) => (x == null ? 0 : ((x / window.innerWidth) * 2 - 1) * 0.6);
+  // Per-sound level trims in dB, set by measuring every sound's short-term
+  // loudness so each kind of moment sits at the same level in every theme
+  // (clicks ~-28dB, rare clicks ~-22, flips ~-27, switch scenes ~-14...).
+  const TRIM = {
+    neon: { combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -2 },
+    casefiles: { click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
+    ledger: { rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2 },
+    deepcurrent: { rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -4 },
+    shared: { bed: -5, chat: -2 },
+  };
+  const SHARED = { chat: (t) => pling(t, [78, 85]), techno: fanfare, bed: bedDestroyed };
+
+  // Runs one sound with its trim applied. Everything a sound set makes
+  // lands on curOut unless it names its own destination.
+  function schedule(name, theme, t, opts = {}) {
+    const s = set(theme);
+    const key = name === "click" && opts.rare ? "rare" : name;
+    const db = (SHARED[name] ? TRIM.shared[key] : (TRIM[theme] || TRIM.neon)[key]) || 0;
+    const prev = curOut;
+    curOut = gainNode(Math.pow(10, (db + (opts.trim || 0)) / 20), sfxBus);
+    try {
+      if (SHARED[name]) SHARED[name](t);
+      else ({
+        click: () => (opts.rare ? s.rare(t, opts.pan || 0) : s.click(t, opts.pan || 0, opts.step)),
+        combo: () => s.tier(t, opts.tier || 0),
+        switch: () => s.switchTo(t),
+        flipOpen: () => s.flipOpen(t, (opts.duration || 600) / 1000),
+        flipClose: () => s.flipClose(t),
+        found: () => s.found(t), error: () => s.error(t), success: () => s.success(t),
+        stunt: () => s.stunt(t), ui: () => s.ui(t),
+        scanStart: () => s.scanStart(t), scanTick: () => s.scanTick(t),
+      })[name]();
+    } finally {
+      curOut = prev;
+    }
+  }
+
+  // Big scenes pull the ambience down under them, then let it back up.
+  function duck(t, secs) {
+    if (!ambBus || !settings.ambience) return;
+    const g = ambBus.gain;
+    g.cancelScheduledValues(t);
+    g.setValueAtTime(g.value, t);
+    g.linearRampToValueAtTime(AMBIENCE_LEVEL * 0.3, t + 0.15);
+    g.setValueAtTime(AMBIENCE_LEVEL * 0.3, t + secs);
+    g.linearRampToValueAtTime(AMBIENCE_LEVEL, t + secs + 1.2);
+  }
+  const DUCK = { switch: 2, bed: 3.2, techno: 1.2 };
+
   let lastClick = 0;
   function play(name, opts = {}) {
     if (!ready()) return;
     const theme = opts.theme || themeNow();
-    const s = set(theme);
     const t = T() + (opts.delay || 0);
-    try {
-      switch (name) {
-        case "click": {
-          if (t - lastClick < 0.03) return;
-          lastClick = t;
-          if (opts.rare) s.rare(t, panFor(opts.x));
-          else s.click(t, panFor(opts.x), opts.step);
-          break;
-        }
-        case "combo": s.tier(t, opts.tier || 0); break;
-        case "switch": s.switchTo(t); break;
-        case "flipOpen": s.flipOpen(t, (opts.duration || 600) / 1000); break;
-        case "flipClose": s.flipClose(t); break;
-        case "found": s.found(t); break;
-        case "error": s.error(t); break;
-        case "success": s.success(t); break;
-        case "stunt": s.stunt(t); break;
-        case "ui": s.ui(t); break;
-        case "chat": pling(t, [78, 85]); break;
-        case "techno": fanfare(t); break;
-        case "bed": bedDestroyed(t); break;
-      }
-    } catch (e) {}
+    let trim = 0;
+    if (name === "click") {
+      if (t - lastClick < 0.03) return;
+      // A fast flurry of clicks gets a little quieter so it doesn't pile up.
+      if (t - lastClick < 0.18) trim = -4;
+      lastClick = t;
+    }
+    if (DUCK[name]) duck(t, DUCK[name]);
+    try { schedule(name, theme, t, { ...opts, trim, pan: panFor(opts.x) }); } catch (e) {}
   }
 
   // Renders one sound into a WAV-ready AudioBuffer without touching the
@@ -8680,34 +8723,34 @@ window.siteAudio = (function () {
   async function renderOffline(name, opts = {}, seconds = 3) {
     const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
     const off = new OAC(2, Math.ceil(44100 * seconds), 44100);
-    const saved = { ctx, master, sfxBus, ambBus, noiseBuf, muted: settings.muted };
+    const saved = { ctx, master, sfxBus, ambBus, noiseBuf, ambNoise, muted: settings.muted };
     ctx = off;
-    const w = wire(off, 0.5);
+    const w = wire(off, opts.level != null ? opts.level : 0.5);
     master = w.m; sfxBus = w.s; ambBus = w.a;
     noiseBuf = makeNoise(off);
+    ambNoise = makeNoise(off, 10);
     settings.muted = false;
     try {
       if (name === "ambience") {
         ambBus.gain.value = AMBIENCE_LEVEL;
-        const bus = gainNode(1, ambBus);
+        const bus = gainNode(ambienceTrim(opts.theme || "neon"), ambBus);
         const nodes = [];
         const next = AMBIENCES[opts.theme || "neon"](bus, (n) => { n.start(); nodes.push(n); });
         for (let at = 0.2; at < seconds;) at += next(at);
       } else {
-        const s = set(opts.theme || "neon");
+        const theme = opts.theme || "neon";
         const t = 0.05;
-        ({
-          click: () => (opts.rare ? s.rare(t, 0) : s.click(t, 0, opts.step)),
-          combo: () => s.tier(t, opts.tier || 0), switch: () => s.switchTo(t),
-          flipOpen: () => s.flipOpen(t, (opts.duration || 600) / 1000), flipClose: () => s.flipClose(t),
-          found: () => s.found(t), error: () => s.error(t), success: () => s.success(t), stunt: () => s.stunt(t),
-          ui: () => s.ui(t), chat: () => pling(t, [78, 85]), techno: () => fanfare(t), bed: () => bedDestroyed(t),
-          scan: () => { s.scanStart(t); for (let k = t + s.scanEvery; k < seconds - 0.5; k += s.scanEvery) s.scanTick(k); },
-        })[name]();
+        if (name === "scan") {
+          const trim = (TRIM[theme] || {}).scan || 0;
+          schedule("scanStart", theme, t, { trim });
+          for (let k = t + set(theme).scanEvery; k < seconds - 0.5; k += set(theme).scanEvery) schedule("scanTick", theme, k, { trim });
+        } else {
+          schedule(name, theme, t, opts);
+        }
       }
     } finally {
       ctx = saved.ctx; master = saved.master; sfxBus = saved.sfxBus; ambBus = saved.ambBus;
-      noiseBuf = saved.noiseBuf; settings.muted = saved.muted;
+      noiseBuf = saved.noiseBuf; ambNoise = saved.ambNoise; settings.muted = saved.muted;
     }
     return off.startRendering();
   }

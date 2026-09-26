@@ -11123,27 +11123,35 @@ window.siteAudio = (function () {
   // a lookup in progress still colour each one.
   const AMBIENCES = {
     neon(bus, add) {
-      // Night-drive synthwave in A minor: warm saw pads through a filter
-      // that opens as you scroll, a pulsing bass, and a glassy triangle lead
-      // with an echo. A lookup adds a quick arpeggio on top.
+      // Night-drive synthwave, kept low and bassy like the original bed:
+      // a detuned saw drone on A under dark saw pads, all through one
+      // slowly breathing low-pass that opens as you scroll, a sub bass
+      // pulse, and a soft triangle lead down in the low octave with an
+      // echo. A lookup adds a quick arpeggio on top.
       const lp = ctx.createBiquadFilter();
-      lp.type = "lowpass"; lp.frequency.value = 900; lp.Q.value = 2;
+      lp.type = "lowpass"; lp.frequency.value = 520; lp.Q.value = 4;
       lp.connect(gainNode(0.8, bus));
+      [[55, -7], [55, 7], [110, 4]].forEach(([f, dt]) => {
+        const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = dt;
+        o.connect(gainNode(0.06, lp)); add(o);
+      });
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.06;
+      lfo.connect(gainNode(220, lp.frequency)); add(lfo);
       return song({
         beat: 0.6, beats: 4,
-        chords: "A3 C4 E4|F3 A3 C4|C4 E4 G4|G3 B3 D4|A3 C4 E4|F3 A3 C4|C4 E4 G4|G3 B3 D4|" +
-                "F3 A3 C4|G3 B3 D4|A3 C4 E4|E3 G3 B3|F3 A3 C4|G3 B3 D4|A3 C4 E4|A3 C4 E4",
-        melody: "E5:1.5 D5:.5 C5:1 A4:1|C5:1.5 A4:.5 F4:1 A4:1|G4:1 C5:1 E5:1 G5:1|F5:1.5 E5:.5 D5:2|" +
-                "E5:1.5 D5:.5 C5:1 E5:1|A5:2 G5:1 F5:1|E5:1 G5:1 C5:1 E5:1|D5:3 -:1|" +
-                "A5:1 G5:.5 F5:.5 E5:2|D5:1 E5:.5 F5:.5 G5:2|E5:1 C5:1 A4:2|B4:1 E5:1 G5:2|" +
-                "A5:1.5 G5:.5 F5:1 C5:1|B4:1 D5:1 G5:2|A5:1 E5:1 C5:1 E5:1|A4:3 -:1",
+        chords: "A2 C3 E3|F2 A2 C3|C3 E3 G3|G2 B2 D3|A2 C3 E3|F2 A2 C3|C3 E3 G3|G2 B2 D3|" +
+                "F2 A2 C3|G2 B2 D3|A2 C3 E3|E2 G2 B2|F2 A2 C3|G2 B2 D3|A2 C3 E3|A2 C3 E3",
+        melody: "E4:1.5 D4:.5 C4:1 A3:1|C4:1.5 A3:.5 F3:1 A3:1|G3:1 C4:1 E4:1 G4:1|F4:1.5 E4:.5 D4:2|" +
+                "E4:1.5 D4:.5 C4:1 E4:1|A4:2 G4:1 F4:1|E4:1 G4:1 C4:1 E4:1|D4:3 -:1|" +
+                "A4:1 G4:.5 F4:.5 E4:2|D4:1 E4:.5 F4:.5 G4:2|E4:1 C4:1 A3:2|B3:1 E4:1 G4:2|" +
+                "A4:1.5 G4:.5 F4:1 C4:1|B3:1 D4:1 G4:2|A4:1 E4:1 C4:1 E4:1|A3:3 -:1",
         play(t, { chord, notes, beat }) {
           const bar = beat * 4;
-          lp.frequency.setTargetAtTime(900 + mood.depth * 900 + (mood.busy ? 500 : 0), t, 1.2);
-          chord.forEach((n, k) => [-7, 7].forEach(dt => tone(t, { type: "sawtooth", f: midi(n), detune: dt, dur: bar * 0.5, hold: bar * 0.6, a: 0.35, gain: 0.018, dest: lp })));
-          for (let k = 0; k < 8; k++) tone(t + k * beat / 2, { type: "sawtooth", f: midi(chord[0] - 24), dur: beat * 0.42, gain: 0.05, a: 0.01, lp: 380, dest: bus });
-          notes.forEach(ev => [0, 0.3].forEach((e, j) => tone(t + ev.at * beat + e, { type: "triangle", f: midi(ev.n), dur: ev.len * beat * 0.9, a: 0.02, gain: 0.05 * (j ? 0.3 : 1), pan: j ? 0.4 : 0, dest: bus })));
-          if (mood.busy) for (let k = 0; k < 16; k++) tone(t + k * beat / 4, { type: "square", f: midi(chord[k % 3] + 24), dur: beat * 0.2, gain: 0.008, lp: 2600, dest: bus });
+          lp.frequency.setTargetAtTime(520 + mood.depth * 650 + (mood.busy ? 400 : 0), t, 1.2);
+          chord.forEach(n => [-7, 7].forEach(dt => tone(t, { type: "sawtooth", f: midi(n), detune: dt, dur: bar * 0.5, hold: bar * 0.6, a: 0.4, gain: 0.03, dest: lp })));
+          for (let k = 0; k < 8; k++) tone(t + k * beat / 2, { type: "sawtooth", f: midi(chord[0] - 12), dur: beat * 0.42, gain: 0.07, a: 0.01, lp: 240, dest: bus });
+          notes.forEach(ev => [0, 0.3].forEach((e, j) => tone(t + ev.at * beat + e, { type: "triangle", f: midi(ev.n), dur: ev.len * beat * 0.9, a: 0.03, gain: 0.06 * (j ? 0.3 : 1), pan: j ? 0.4 : 0, lp: 1400, dest: bus })));
+          if (mood.busy) for (let k = 0; k < 16; k++) tone(t + k * beat / 4, { type: "square", f: midi(chord[k % 3] + 24), dur: beat * 0.2, gain: 0.006, lp: 1600, dest: bus });
         },
       });
     },
@@ -11192,36 +11200,39 @@ window.siteAudio = (function () {
       };
     },
     ledger(bus, add) {
-      // A hushed bank hall with a stately little minuet in G, played on a
-      // soft keyboard over a bowed-sounding bass, the grandfather clock
-      // ticking the beat underneath. The clock races while a lookup runs.
+      // A hushed bank hall with a small string ensemble playing a stately
+      // minuet in G: bowed violin melody, a viola holding the harmony and a
+      // cello on the downbeat, with the grandfather clock ticking softly
+      // underneath. The clock races while a lookup runs.
       const room = ctx.createBufferSource(); room.buffer = ambNoise; room.loop = true; room.playbackRate.value = 0.5;
       const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 260;
       room.connect(lp); lp.connect(gainNode(0.2, bus)); add(room);
-      const humG = gainNode(0.02, bus);
+      const humG = gainNode(0.015, bus);
       const hum = ctx.createOscillator(); hum.frequency.value = 55; hum.connect(humG); add(hum);
-      let tick = true;
-      const key = (t, n, dur, g) => {
-        tone(t, { type: "triangle", f: midi(n), dur, gain: g, a: 0.006, lp: 2600, dest: bus });
-        tone(t, { f: midi(n + 12), dur: dur * 0.4, gain: g * 0.25, a: 0.004, dest: bus });
+      // A bowed string: two slightly detuned saws, a soft bow attack, gentle
+      // vibrato and a warm low-pass so it never buzzes.
+      const bow = (t, n, len, g, o = {}) => {
+        const f = midi(n);
+        [-5, 5].forEach(dt => tone(t, { type: "sawtooth", f, detune: dt, a: o.a || 0.16, hold: len * 0.75, dur: 0.35 + len * 0.2, gain: g, lp: o.lp || 1500, q: 0.6, vib: [5.2, f * 0.004], pan: o.pan || 0, dest: bus }));
       };
+      let tick = true;
       return song({
-        beat: 0.8, beats: 3,
+        beat: 0.9, beats: 3,
         chords: "G3 B3 D4|F#3 A3 D4|E3 G3 B3|E3 G3 C4|G3 B3 D4|A3 C4 E4|F#3 A3 D4|F#3 A3 D4|" +
                 "E3 G3 C4|G3 B3 D4|A3 C4 E4|E3 G3 B3|E3 G3 C4|G3 B3 D4|F#3 A3 D4|G3 B3 D4",
         melody: "B4:1 D5:1 G5:1|F#5:2 E5:.5 D5:.5|E5:1 G5:1 B4:1|C5:2 E5:1|D5:1.5 C5:.5 B4:1|C5:1 E5:1 A5:1|F#5:1 E5:1 D5:1|D5:2 -:1|" +
                 "E5:1 G5:1 C6:1|B5:2 A5:.5 G5:.5|A5:1 E5:1 C5:1|B4:2 G5:1|E5:1.5 D5:.5 C5:1|D5:1 B4:1 G4:1|A4:1 D5:1 F#5:1|G5:2 -:1",
         play(t, { chord, notes, beat }) {
-          humG.gain.setTargetAtTime(0.02 + mood.depth * 0.04, t, 2);
+          humG.gain.setTargetAtTime(0.015 + mood.depth * 0.03, t, 2);
           const b = mood.busy ? beat / 2 : beat;
           for (let k = 0; k < 3 * beat / b; k++) {
-            noise(t + k * b, { type: "bandpass", f: tick ? 2600 : 1900, q: 9, dur: 0.03, gain: 0.07, dest: bus });
+            noise(t + k * b, { type: "bandpass", f: tick ? 2200 : 1700, q: 9, dur: 0.025, gain: 0.04, dest: bus });
             tick = !tick;
           }
-          // Bass on the downbeat, the chord's upper notes on beats 2 and 3.
-          tone(t, { type: "triangle", f: midi(chord[0] - 12), dur: beat * 2.6, hold: beat * 0.4, a: 0.08, gain: 0.09, lp: 500, dest: bus });
-          [1, 2].forEach(k => chord.slice(1).forEach(n => key(t + k * beat, n, beat * 0.8, 0.014)));
-          notes.forEach(ev => key(t + ev.at * beat, ev.n, ev.len * beat * 1.1, 0.045));
+          // Cello on the downbeat, viola sustaining the harmony through the bar.
+          bow(t, chord[0] - 12, beat * 2.2, 0.045, { a: 0.12, lp: 700, pan: 0.3 });
+          chord.slice(1).forEach(n => bow(t + 0.05, n, beat * 2.6, 0.016, { a: 0.35, lp: 1100, pan: -0.25 }));
+          notes.forEach(ev => bow(t + ev.at * beat, ev.n, ev.len * beat, 0.03, { a: ev.len < 1 ? 0.06 : 0.14, lp: 2200, pan: -0.1 }));
         },
       });
     },
@@ -11408,9 +11419,9 @@ window.siteAudio = (function () {
   // loudness so each kind of moment sits at the same level in every theme
   // (clicks ~-28dB, rare clicks ~-22, flips ~-27, switch scenes ~-14...).
   const TRIM = {
-    neon: { hover: 10, view: 3, save: 3, delete: 5, type: 4, combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: 8 },
+    neon: { hover: 10, view: 3, save: 3, delete: 5, type: 4, combo: 3, switch: -5, flipOpen: -2, found: 4, error: 5, success: 5, stunt: 4, ambience: -0.5 },
     casefiles: { hover: 13, view: -7, toggle: 6, save: -5, delete: 11, slide: 2, ambience: 2.5, click: 2, rare: -11, combo: -1, switch: -4, flipOpen: 2, flipClose: 1, found: -2, error: -7, success: -7, stunt: 6 },
-    ledger: { hover: 8, view: 4, toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2, ambience: 1.5 },
+    ledger: { hover: 8, view: 4, toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2, ambience: 2.5 },
     deepcurrent: { hover: 8, toggle: -2, save: 2, delete: -2, slide: 3, type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -1 },
     skyisles: { hover: 12, click: 10, rare: -9, combo: 9.5, ui: 5, toggle: -1, save: 8, delete: 2.5, slide: 8.5, page: 6, view: 3, type: 10, switch: 6, flipOpen: 8, flipClose: 4, scan: 6.5, found: 4, error: 3, success: 1, stunt: 7, arrive: 7.5, ambience: 11 },
     shared: { bed: -5, chat: -2 },

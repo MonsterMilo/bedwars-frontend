@@ -21,7 +21,7 @@
   // Adding a theme means adding its families here too.
   window.THEME_FONT_FAMILIES = {
     neon: "family=Manrope:wght@400;500;600;700;800",
-    casefiles: "family=Courier+Prime:wght@400;700&family=Anton",
+    casefiles: "family=Courier+Prime:wght@400;700&family=Anton&family=Caveat:wght@500;700",
     ledger: "family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Pinyon+Script",
     deepcurrent: "family=Sora:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700"
   };
@@ -3575,8 +3575,9 @@ html[data-theme="deepcurrent"] .flip-sheen { --sheen: rgba(80,255,220,0.3); }
       "live live"
       "skin stats"
       "record urchin"
-      "record seraph";
-    grid-template-rows: auto auto auto auto 1fr;
+      "record seraph"
+      "notes notes";
+    grid-template-rows: auto auto auto auto 1fr auto;
     column-gap: 22px;
     align-items: start;
   }
@@ -3589,6 +3590,7 @@ html[data-theme="deepcurrent"] .flip-sheen { --sheen: rgba(80,255,220,0.3); }
   #playerModal .modal-record-beaten { margin-left: 0; align-items: flex-start; }
   #playerModal .modal-tags-urchin { grid-area: urchin; }
   #playerModal .modal-tags-seraph { grid-area: seraph; }
+  #playerModal .modal-notes { grid-area: notes; }
   #playerModal .modal-record[hidden] + .modal-tags-urchin { grid-column: 1 / -1; }
   #playerModal .modal-record[hidden] ~ .modal-tags-seraph { grid-column: 1 / -1; }
   #playerModal .modal-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -6510,6 +6512,258 @@ html[data-theme="deepcurrent"] .pill.boost {
   50% { filter: brightness(1.18); }
 }
 
+
+/* ============================================================
+   SWEAT NOTES - a running log of notes per sweat: an optional one on
+   the Add form, the latest one on each grid card (two lines max), a
+   pencil in the table's name cell, and the full log in the popup.
+   Shared layout first, then each theme's own treatment: Neon an
+   "// INTEL" terminal readout, Case Files a paper-clipped sticky note
+   in handwriting, Private Bank a gold-ruled italic "Memo", Deep
+   Current a sonar "LOG" bubble.
+   ============================================================ */
+.dash-label-optional { font-weight: 600; color: var(--text-faint); text-transform: none; letter-spacing: 0; margin-left: 4px; }
+.note-compose { display: flex; flex-direction: column; gap: 6px; }
+.note-input {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 52px;
+  max-height: 200px;
+  font: inherit;
+  font-size: 0.92em;
+  line-height: 1.4;
+  color: var(--text);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-s);
+  padding: 9px 11px;
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.note-input::placeholder { color: var(--text-faint); }
+.note-input:focus { outline: none; border-color: var(--border-strong); box-shadow: 0 0 0 3px var(--accent-soft); }
+.note-compose-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.8em; color: var(--text-faint); }
+.note-author-field { display: inline-flex; align-items: center; gap: 6px; }
+.note-author-select {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 6px;
+}
+.note-count { margin-left: auto; font-variant-numeric: tabular-nums; }
+.note-count.near-limit { color: var(--bad); font-weight: 700; }
+.note-btn-small { padding: 6px 12px; font-size: 13px; }
+
+/* Grid card */
+.sweat-card-note {
+  position: relative;
+  margin: -4px 0 14px;
+  padding: 8px 10px;
+  border-radius: var(--radius-s);
+  font-size: 0.84em;
+  line-height: 1.4;
+  color: var(--text-dim);
+  background: var(--accent-soft);
+  border-left: 2px solid var(--note-author-color, var(--accent));
+}
+.sweat-card-note .note-text {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+.sweat-card-note .note-meta { display: block; margin-top: 3px; font-size: 0.82em; color: var(--text-faint); }
+.sweat-card-note .note-meta:empty { display: none; }
+
+/* Table */
+.row-note-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.78em;
+  color: var(--accent);
+  background: var(--accent-soft);
+  cursor: help;
+  flex-shrink: 0;
+}
+.row-note-icon b { font-size: 0.9em; }
+.row-note-icon svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; }
+
+/* Popup */
+.modal-notes { margin-top: 16px; animation: modalTileIn 0.45s 0.28s var(--ease) both; }
+.modal-notes[hidden] { display: none; }
+.modal-notes-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.modal-notes-head .modal-tags-label { margin: 0; }
+.modal-notes-count {
+  display: inline-block;
+  min-width: 18px;
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: 999px;
+  text-align: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.modal-notes-count:empty { display: none; }
+.note-add-btn { padding: 5px 12px; font-size: 13px; }
+.note-add-btn[hidden] { display: none; }
+.modal-notes-empty { font-size: 0.86em; color: var(--text-faint); }
+.modal-notes-empty[hidden] { display: none; }
+.note-list { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; }
+.note-item {
+  position: relative;
+  padding: 9px 12px 10px;
+  border-radius: var(--radius-s);
+  background: var(--accent-soft);
+  border-left: 3px solid var(--note-author-color, var(--accent));
+  animation: modalTileIn 0.35s var(--ease) both;
+}
+.note-item-new { animation: noteArrive 0.6s var(--ease) both; }
+@keyframes noteArrive {
+  0% { opacity: 0; transform: translateY(8px) scale(0.97); box-shadow: 0 0 0 0 var(--accent-soft); }
+  60% { opacity: 1; transform: none; box-shadow: 0 0 0 6px var(--accent-soft); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.note-item-head { display: flex; align-items: center; gap: 8px; font-size: 0.78em; margin-bottom: 4px; }
+.note-item-author { font-weight: 800; color: var(--note-author-color, var(--accent)); }
+.note-item-date { color: var(--text-faint); }
+.note-item-actions { margin-left: auto; display: inline-flex; gap: 4px; }
+.note-item-actions .icon-btn { width: 24px; height: 24px; font-size: 11px; }
+.note-item-actions .icon-btn.confirming { width: auto; padding: 0 8px; border-radius: 999px; color: var(--bad); border-color: var(--bad); background: var(--bad-soft); font-weight: 700; }
+.note-item-text { margin: 0; font-size: 0.9em; line-height: 1.45; color: var(--text); white-space: pre-line; overflow-wrap: anywhere; }
+.note-item-text[hidden] { display: none; }
+.note-edit-form { margin-top: 4px; }
+.modal-note-form { margin-top: 4px; }
+.modal-note-form[hidden] { display: none; }
+.modal-note-status { min-height: 0; font-size: 0.85em; font-weight: 600; color: var(--bad); }
+.modal-note-status:not(:empty) { margin-top: 6px; }
+
+/* --- Neon: terminal intel readout --- */
+html:not([data-theme]) .sweat-card-note,
+html:not([data-theme]) .note-item {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  background: linear-gradient(90deg, rgba(0,217,255,0.09), rgba(0,217,255,0.02));
+  border-left-color: var(--accent);
+  color: #a9f3ff;
+  text-shadow: 0 0 6px rgba(0,217,255,0.35);
+}
+html:not([data-theme]) .sweat-card-note::before {
+  content: "// INTEL";
+  display: block;
+  font-size: 0.78em;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--accent-2);
+  text-shadow: 0 0 8px rgba(168,85,247,0.6);
+  margin-bottom: 2px;
+}
+html:not([data-theme]) .note-item-text { color: #c8f7ff; }
+html:not([data-theme]) .note-item-author::before { content: "> "; color: var(--accent-2); }
+html:not([data-theme]) .note-input:focus { box-shadow: 0 0 0 3px var(--accent-soft), 0 0 18px rgba(0,217,255,0.25); }
+
+/* --- Case Files: sticky note with a paper clip --- */
+html[data-theme="casefiles"] .sweat-card-note,
+html[data-theme="casefiles"] .note-item {
+  font-family: 'Caveat', 'Segoe Print', cursive;
+  font-size: 1.12em;
+  line-height: 1.2;
+  color: #2d2716;
+  background: #fbe98a;
+  border: none;
+  border-radius: 1px;
+  box-shadow: 2px 3px 6px rgba(60,40,10,0.22);
+}
+html[data-theme="casefiles"] .sweat-card-note { transform: rotate(-1.4deg); margin-top: 2px; padding: 10px 12px 8px; }
+html[data-theme="casefiles"] .note-item:nth-child(even) { background: #fde3a0; transform: rotate(0.5deg); }
+html[data-theme="casefiles"] .note-item:nth-child(odd) { transform: rotate(-0.4deg); }
+html[data-theme="casefiles"] .sweat-card-note::after,
+html[data-theme="casefiles"] .note-item::after {
+  content: "";
+  position: absolute;
+  top: -9px;
+  right: 18px;
+  width: 9px;
+  height: 22px;
+  border: 2px solid #8b8f96;
+  border-radius: 6px;
+  border-bottom-color: transparent;
+}
+html[data-theme="casefiles"] .note-item::after { right: auto; left: 46%; }
+html[data-theme="casefiles"] .note-list { padding: 12px 4px 4px; gap: 14px; }
+html[data-theme="casefiles"] .sweat-card-note .note-meta,
+html[data-theme="casefiles"] .note-item-date { color: #6b5d38; }
+html[data-theme="casefiles"] .note-item-author { font-family: 'Courier Prime', monospace; font-size: 0.8em; text-transform: uppercase; color: var(--accent-2); }
+html[data-theme="casefiles"] .note-item-text { color: #2d2716; font-size: 1.05em; }
+html[data-theme="casefiles"] .note-input { font-family: 'Courier Prime', monospace; background: #fffdf4; border-radius: 2px; }
+html[data-theme="casefiles"] .row-note-icon { background: #fbe98a; color: #5a4a1a; border-radius: 2px; }
+html[data-theme="casefiles"] .modal-notes-count { background: var(--accent-2); color: #fff8e6; border-radius: 2px; }
+
+/* --- Private Bank: gold-ruled ledger memo --- */
+html[data-theme="ledger"] .sweat-card-note,
+html[data-theme="ledger"] .note-item {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 0.98em;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--accent);
+  border-bottom: 1px solid var(--accent);
+  border-radius: 0;
+  padding: 7px 2px;
+  color: var(--text);
+}
+html[data-theme="ledger"] .sweat-card-note::before,
+html[data-theme="ledger"] .note-item-author::after {
+  font-family: 'Playfair Display', serif;
+  font-style: normal;
+  font-size: 0.7em;
+  letter-spacing: 0.24em;
+  color: var(--accent);
+}
+html[data-theme="ledger"] .sweat-card-note::before { content: "MEMO \2014"; margin-right: 6px; }
+html[data-theme="ledger"] .note-item { border-top: none; border-bottom: 1px dashed var(--border-strong); padding: 8px 2px 10px; }
+html[data-theme="ledger"] .note-item:first-child { border-top: 1px solid var(--accent); }
+html[data-theme="ledger"] .note-item-author { font-family: 'Pinyon Script', cursive; font-style: normal; font-weight: 400; font-size: 1.5em; color: var(--accent-2); }
+html[data-theme="ledger"] .note-item-date { font-style: normal; font-family: 'Playfair Display', serif; }
+html[data-theme="ledger"] .note-input { font-family: 'EB Garamond', serif; font-size: 1.02em; border-radius: 0; background: var(--panel); }
+html[data-theme="ledger"] .row-note-icon { background: none; border: 1px solid var(--accent); border-radius: 0; color: var(--accent); }
+html[data-theme="ledger"] .modal-notes-count { border-radius: 0; background: var(--accent-2); color: #fff; }
+
+/* --- Deep Current: sonar log bubble --- */
+html[data-theme="deepcurrent"] .sweat-card-note,
+html[data-theme="deepcurrent"] .note-item {
+  background: rgba(53,230,196,0.07);
+  border: 1px solid rgba(53,230,196,0.22);
+  border-radius: 12px;
+  color: #b8ece3;
+}
+html[data-theme="deepcurrent"] .sweat-card-note::before {
+  content: "\25C9  LOG";
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  margin-bottom: 2px;
+  animation: notePing 2.4s ease-in-out infinite;
+}
+@keyframes notePing { 50% { opacity: 0.45; } }
+html[data-theme="deepcurrent"] .note-item-author { font-family: 'Chakra Petch', sans-serif; letter-spacing: 0.04em; }
+html[data-theme="deepcurrent"] .note-item-date { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; }
+html[data-theme="deepcurrent"] .note-item-text { color: #d6f6f0; }
+html[data-theme="deepcurrent"] .note-input { background: rgba(3,12,20,0.5); border-radius: 12px; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="deepcurrent"] .sweat-card-note::before { animation: none; }
+}
 </style>
 </head>
 <body>
@@ -6618,6 +6872,15 @@ html[data-theme="deepcurrent"] .pill.boost {
           <div class="chip-group">
             <label class="chip cheat-chip"><input type="checkbox" id="cheating" /><span>Cheating</span></label>
             <label class="chip boost-chip"><input type="checkbox" id="boosting" /><span>Boosting</span></label>
+          </div>
+
+          <div class="dash-label">Note <span class="dash-label-optional">optional</span></div>
+          <div class="note-compose">
+            <textarea id="sweatNote" class="note-input" rows="2" maxlength="280" placeholder="Anything worth remembering? Playstyle, alts, who they party with..." aria-label="Note about this sweat (optional)"></textarea>
+            <div class="note-compose-meta">
+              <label class="note-author-field">By <select id="sweatNoteAuthor" class="note-author-select" aria-label="Note written by"></select></label>
+              <span class="note-count" id="sweatNoteCount">0/280</span>
+            </div>
           </div>
 
           <div id="status" role="alert" aria-live="assertive"></div>
@@ -6739,7 +7002,7 @@ html[data-theme="deepcurrent"] .pill.boost {
     <div class="toolbar-top">
       <div id="searchContainer" class="search-box">
         <svg class="search-box-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2" /><line x1="15.5" y1="15.5" x2="20.5" y2="20.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
-        <input type="text" id="searchInput" placeholder="Search username..." aria-label="Search sweat players" aria-keyshortcuts="/" />
+        <input type="text" id="searchInput" placeholder="Search username or notes..." aria-label="Search sweat players and notes" aria-keyshortcuts="/" />
         <kbd class="search-box-kbd" aria-hidden="true">/</kbd>
         <button type="button" id="searchClearBtn" class="search-box-clear" aria-label="Clear search" hidden>&times;</button>
       </div>
@@ -6953,6 +7216,24 @@ html[data-theme="deepcurrent"] .pill.boost {
         <div class="modal-tags-label">Seraph Tags</div>
         <div id="modalSeraphTags" class="modal-tags-row">Checking...</div>
         <div id="modalSeraphTagsReason" class="urchin-reason-text" hidden></div>
+      </div>
+      <div id="modalNotes" class="modal-notes" hidden>
+        <div class="modal-notes-head">
+          <div class="modal-tags-label">Notes <span id="modalNotesCount" class="modal-notes-count"></span></div>
+          <button type="button" id="modalNoteAddBtn" class="btn btn-ghost note-add-btn">+ Note</button>
+        </div>
+        <ol id="modalNotesList" class="note-list"></ol>
+        <div id="modalNotesEmpty" class="modal-notes-empty">No notes yet.</div>
+        <form id="modalNoteForm" class="note-compose modal-note-form" autocomplete="off" hidden>
+          <textarea id="modalNoteText" class="note-input" rows="3" maxlength="280" placeholder="Add a note about this player..." aria-label="New note"></textarea>
+          <div class="note-compose-meta">
+            <label class="note-author-field">By <select id="modalNoteAuthor" class="note-author-select" aria-label="Note written by"></select></label>
+            <span class="note-count" id="modalNoteCount">0/280</span>
+            <button type="button" id="modalNoteCancel" class="btn btn-ghost note-btn-small">Cancel</button>
+            <button type="submit" id="modalNoteSave" class="btn btn-primary note-btn-small">Save note</button>
+          </div>
+        </form>
+        <div id="modalNoteStatus" class="modal-note-status" role="alert" aria-live="assertive"></div>
       </div>
       </div>
     </div>
@@ -8572,6 +8853,11 @@ form.addEventListener('submit', async e => {
       uuid: currentUUID,
       dateAdded: todayDate
     };
+    const noteText = sweatNoteInput.value.trim();
+    if (noteText) {
+      newSweat.note = noteText;
+      newSweat.noteAuthor = sweatNoteAuthor.value;
+    }
 
     const res = await fetch(`${backendBaseURL}/sweats`, {
       method: "POST",
@@ -8585,6 +8871,8 @@ form.addEventListener('submit', async e => {
 
     await loadSweats();
     form.reset();
+    sweatNoteAuthor.value = getNoteAuthor();
+    updateNoteCount(sweatNoteInput, sweatNoteCount);
     currentUUID = null;
     currentStats = null;
     showStatsEmpty();
@@ -9103,7 +9391,7 @@ function identityKeyFor(s) {
 // Applies the search box, numeric filters, dedupe toggle, and sort - shared by
 // both the card grid and table views so they always agree on ordering/content.
 function getProcessedSweats() {
-  let filteredSweats = sweats.filter(s => s.username.toLowerCase().includes(currentFilter));
+  let filteredSweats = sweats.filter(s => s.username.toLowerCase().includes(currentFilter) || noteMatches(s, currentFilter));
 
   const minFkdr = (filterFkdr && filterFkdr.value.trim() !== "") ? parseFloat(filterFkdr.value) : null;
   const minIndex = (filterIndex && filterIndex.value.trim() !== "") ? parseFloat(filterIndex.value) : null;
@@ -9415,6 +9703,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
     const card = document.createElement("div");
     card.className = "sweat-card";
     card.dataset.username = s.username;
+    card.dataset.sweatId = s._id || "";
     card.dataset.uuid = s.uuid;
     setLoggedStatsDataset(card, s);
     card.tabIndex = 0;
@@ -9448,6 +9737,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
         ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
         ${s.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}
       </div>
+      ${sweatNotes(s).length ? '<div class="sweat-card-note"><p class="note-text"></p><span class="note-meta"></span></div>' : ""}
       <div class="sweat-card-footer">
         <div class="beaten-by-avatars">${beatenByHtml}</div>
         <div class="sweat-card-footer-right">
@@ -9463,6 +9753,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
     // this field, so the frontend has to treat it as untrusted.
     withRetryingAvatar(card.querySelector(".sweat-card-avatar"), s.uuid, s.username);
     card.querySelector(".name-text").textContent = s.username;
+    fillCardNote(card.querySelector(".sweat-card-note"), s);
     const count = usernameCounts[identityKeyFor(s)];
     if (hideDuplicatesCheckbox.checked && count > 1) {
       card.querySelector(".sweat-card-dupe").textContent = `x${count}`;
@@ -9585,6 +9876,7 @@ function buildSweatRow(s, { usernameCounts }) {
   const tr = document.createElement("tr");
   tr.className = "sweat-row";
   tr.dataset.username = s.username;
+  tr.dataset.sweatId = s._id || "";
   tr.dataset.uuid = s.uuid;
   setLoggedStatsDataset(tr, s);
   tr.tabIndex = 0;
@@ -9615,6 +9907,16 @@ function buildSweatRow(s, { usernameCounts }) {
 
   userCellDiv.appendChild(avatarImg);
   userCellDiv.appendChild(usernameText);
+  const rowNotes = sweatNotes(s);
+  if (rowNotes.length) {
+    const noteIcon = document.createElement("span");
+    noteIcon.className = "row-note-icon";
+    const latest = rowNotes[rowNotes.length - 1];
+    noteIcon.setAttribute("data-tooltip", (rowNotes.length > 1 ? `(${rowNotes.length} notes) ` : "") + latest.text);
+    noteIcon.setAttribute("aria-label", `${rowNotes.length} ${rowNotes.length === 1 ? "note" : "notes"}`);
+    noteIcon.innerHTML = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1.5h7v9h-7z M4.2 4h3.6 M4.2 6h3.6 M4.2 8h2.2" /></svg>${rowNotes.length > 1 ? `<b>${rowNotes.length}</b>` : ""}`;
+    userCellDiv.appendChild(noteIcon);
+  }
   usernameTd.appendChild(userCellDiv);
   tr.appendChild(usernameTd);
 
@@ -10075,6 +10377,287 @@ function trackedStandingHtml(field, live) {
 // Hidden for players opened from somewhere with no record, e.g. a denick
 // result for someone who was never logged.
 const modalRecord = document.getElementById("modalRecord");
+// --- Notes ---
+// Each sweat carries a running log of notes ({ _id, text, author, createdAt,
+// editedAt }), oldest first. Any key can add one (from the Add form or the
+// popup's "+ Note"); editing/deleting follows the same tier rules as editing
+// a sweat, enforced by the backend. Note text is player-written and never
+// goes through innerHTML - always textContent or setAttribute.
+const NOTE_MAX = 280;
+const NOTE_AUTHOR_STORAGE = "bedwarsNoteAuthor";
+const sweatNoteInput = document.getElementById("sweatNote");
+const sweatNoteAuthor = document.getElementById("sweatNoteAuthor");
+const sweatNoteCount = document.getElementById("sweatNoteCount");
+
+function sweatNotes(s) {
+  return Array.isArray(s && s.notes) ? s.notes.filter(n => n && n.text) : [];
+}
+function noteMatches(s, q) {
+  return !!q && sweatNotes(s).some(n => String(n.text).toLowerCase().includes(q));
+}
+function getNoteAuthor() {
+  try { return localStorage.getItem(NOTE_AUTHOR_STORAGE) || ""; } catch { return ""; }
+}
+function setNoteAuthor(v) {
+  try { localStorage.setItem(NOTE_AUTHOR_STORAGE, v); } catch {}
+}
+function noteAuthorLabel(author) {
+  return BEATEN_BY[author] ? BEATEN_BY[author].label : "";
+}
+function formatNoteDate(d) {
+  const date = d ? new Date(d) : null;
+  return date && !isNaN(date) ? date.toLocaleDateString() : "";
+}
+// Both "By" pickers remember the last name used, so whoever is on this
+// browser picks themselves once.
+function fillNoteAuthorSelect(select) {
+  select.innerHTML = `<option value="">Anonymous</option>` +
+    BEATEN_BY_KEYS.map(k => `<option value="${k}">${BEATEN_BY[k].label}</option>`).join("");
+  select.value = getNoteAuthor();
+  select.addEventListener("change", () => {
+    setNoteAuthor(select.value);
+    document.querySelectorAll(".note-author-select").forEach(o => { if (o !== select) o.value = select.value; });
+  });
+}
+function updateNoteCount(input, counter) {
+  const len = input.value.length;
+  counter.textContent = `${len}/${NOTE_MAX}`;
+  counter.classList.toggle("near-limit", len > NOTE_MAX - 30);
+}
+fillNoteAuthorSelect(sweatNoteAuthor);
+sweatNoteInput.addEventListener("input", () => updateNoteCount(sweatNoteInput, sweatNoteCount));
+
+// Latest note on a grid card, clamped to two lines by CSS; the rest live in
+// the popup. Each theme styles .sweat-card-note its own way.
+function fillCardNote(el, s) {
+  if (!el) return;
+  const notes = sweatNotes(s);
+  const latest = notes[notes.length - 1];
+  el.querySelector(".note-text").textContent = latest.text;
+  const who = noteAuthorLabel(latest.author);
+  el.querySelector(".note-meta").textContent =
+    (who ? `— ${who}` : "") + (notes.length > 1 ? `${who ? " · " : ""}+${notes.length - 1} more` : "");
+  el.style.setProperty("--note-author-color", latest.author && BEATEN_BY[latest.author] ? `var(--roster-${latest.author})` : "var(--accent)");
+}
+
+const modalNotes = document.getElementById("modalNotes");
+const modalNotesList = document.getElementById("modalNotesList");
+const modalNotesEmpty = document.getElementById("modalNotesEmpty");
+const modalNotesCount = document.getElementById("modalNotesCount");
+const modalNoteAddBtn = document.getElementById("modalNoteAddBtn");
+const modalNoteForm = document.getElementById("modalNoteForm");
+const modalNoteText = document.getElementById("modalNoteText");
+const modalNoteAuthor = document.getElementById("modalNoteAuthor");
+const modalNoteCount = document.getElementById("modalNoteCount");
+const modalNoteCancel = document.getElementById("modalNoteCancel");
+const modalNoteSave = document.getElementById("modalNoteSave");
+const modalNoteStatus = document.getElementById("modalNoteStatus");
+fillNoteAuthorSelect(modalNoteAuthor);
+modalNoteText.addEventListener("input", () => updateNoteCount(modalNoteText, modalNoteCount));
+
+// The sweat entries the open popup is about: every logged entry for this
+// player (the same player can be logged more than once), with the one that
+// was clicked - or else the newest - first, since that's where "+ Note" goes.
+let modalNoteSweats = [];
+let modalNotesItem = null;
+
+function sweatsForModalItem(item) {
+  const clean = u => String(u || "").replace(/-/g, "").toLowerCase();
+  const uuid = clean(item.dataset.uuid);
+  const name = String(item.dataset.username || "").toLowerCase();
+  const matches = sweats.filter(s => (uuid && clean(s.uuid) === uuid) || (!uuid && s.username && s.username.toLowerCase() === name));
+  const clicked = item.dataset.sweatId && matches.find(s => s._id === item.dataset.sweatId);
+  return clicked ? [clicked, ...matches.filter(s => s !== clicked)] : matches;
+}
+
+function noteErrorMessage(res, fallback) {
+  if (res.status === 401 || res.status === 503) return Promise.resolve('Admin key missing or incorrect — click "Admin Key" above');
+  return extractErrorMessage(res, fallback);
+}
+
+// Swaps a sweat the backend just returned into the local list, so the popup
+// and the grid/table update without re-fetching everything.
+function replaceSweat(updated) {
+  const i = sweats.findIndex(s => s._id === updated._id);
+  if (i !== -1) sweats[i] = updated;
+  modalNoteSweats = modalNoteSweats.map(s => (s._id === updated._id ? updated : s));
+  renderTable();
+  renderModalNotesList();
+}
+
+function renderModalNotes(item) {
+  modalNotesItem = item;
+  modalNoteSweats = sweatsForModalItem(item);
+  modalNotes.hidden = modalNoteSweats.length === 0;
+  modalNoteForm.hidden = true;
+  modalNoteAddBtn.hidden = false;
+  modalNoteText.value = "";
+  modalNoteStatus.textContent = "";
+  updateNoteCount(modalNoteText, modalNoteCount);
+  renderModalNotesList();
+}
+
+function renderModalNotesList() {
+  const all = modalNoteSweats.flatMap(s => sweatNotes(s).map(n => ({ note: n, sweat: s })));
+  all.sort((a, b) => new Date(a.note.createdAt || 0) - new Date(b.note.createdAt || 0));
+  modalNotesCount.textContent = all.length ? String(all.length) : "";
+  modalNotesEmpty.hidden = all.length !== 0;
+  const canChange = !!getAdminKey();
+  modalNotesList.innerHTML = "";
+  all.forEach(({ note, sweat }, i) => {
+    const li = document.createElement("li");
+    li.className = "note-item";
+    li.style.setProperty("--note-author-color", note.author && BEATEN_BY[note.author] ? `var(--roster-${note.author})` : "var(--accent)");
+    li.style.animationDelay = Math.min(i * 0.04, 0.4) + "s";
+    li.innerHTML = `
+      <div class="note-item-head">
+        <span class="note-item-author"></span>
+        <span class="note-item-date"></span>
+        ${canChange ? `<span class="note-item-actions">
+          <button type="button" class="icon-btn edit note-edit" data-tooltip="Edit note">&#9998;</button>
+          <button type="button" class="icon-btn danger note-delete" data-tooltip="Delete note">&#10005;</button>
+        </span>` : ""}
+      </div>
+      <p class="note-item-text"></p>`;
+    const who = noteAuthorLabel(note.author);
+    const authorEl = li.querySelector(".note-item-author");
+    authorEl.textContent = who || "Anonymous";
+    if (who) authorEl.setAttribute("data-initials", BEATEN_BY[note.author].initials);
+    const when = formatNoteDate(note.createdAt);
+    li.querySelector(".note-item-date").textContent = (when + (note.editedAt ? " · edited" : "")) +
+      (modalNoteSweats.length > 1 ? ` · entry from ${formatNoteDate(sweat.dateAdded) || "?"}` : "");
+    li.querySelector(".note-item-text").textContent = note.text;
+    if (canChange) {
+      li.querySelector(".note-edit").addEventListener("click", () => startEditNote(li, note, sweat));
+      li.querySelector(".note-delete").addEventListener("click", (e) => deleteNote(e.currentTarget, note, sweat));
+    }
+    modalNotesList.appendChild(li);
+  });
+}
+
+modalNoteAddBtn.addEventListener("click", () => {
+  modalNoteForm.hidden = false;
+  modalNoteAddBtn.hidden = true;
+  modalNoteStatus.textContent = "";
+  modalNoteText.focus();
+});
+modalNoteCancel.addEventListener("click", () => {
+  modalNoteForm.hidden = true;
+  modalNoteAddBtn.hidden = false;
+  modalNoteText.value = "";
+  updateNoteCount(modalNoteText, modalNoteCount);
+});
+modalNoteText.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); modalNoteForm.requestSubmit(); }
+});
+modalNoteForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const target = modalNoteSweats[0];
+  const text = modalNoteText.value.trim();
+  if (!target || !text) { modalNoteStatus.textContent = "Write something first."; return; }
+  modalNoteSave.disabled = true;
+  modalNoteStatus.textContent = "";
+  try {
+    const res = await fetch(`${backendBaseURL}/sweats/${target._id}/notes`, {
+      method: "POST",
+      headers: adminHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ text, author: modalNoteAuthor.value })
+    });
+    if (!res.ok) throw new Error(await noteErrorMessage(res, "Failed to save note"));
+    const updated = await res.json();
+    modalNoteText.value = "";
+    updateNoteCount(modalNoteText, modalNoteCount);
+    modalNoteForm.hidden = true;
+    modalNoteAddBtn.hidden = false;
+    replaceSweat(updated);
+    const last = modalNotesList.lastElementChild;
+    if (last) last.classList.add("note-item-new");
+  } catch (err) {
+    modalNoteStatus.textContent = err.message;
+  } finally {
+    modalNoteSave.disabled = false;
+  }
+});
+
+function startEditNote(li, note, sweat) {
+  const textEl = li.querySelector(".note-item-text");
+  if (li.querySelector(".note-edit-form")) return;
+  const form = document.createElement("form");
+  form.className = "note-compose note-edit-form";
+  form.innerHTML = `
+    <textarea class="note-input" rows="3" maxlength="${NOTE_MAX}" aria-label="Edit note"></textarea>
+    <div class="note-compose-meta">
+      <span class="note-count"></span>
+      <button type="button" class="btn btn-ghost note-btn-small note-edit-cancel">Cancel</button>
+      <button type="submit" class="btn btn-primary note-btn-small">Save</button>
+    </div>`;
+  const input = form.querySelector("textarea");
+  const counter = form.querySelector(".note-count");
+  input.value = note.text;
+  updateNoteCount(input, counter);
+  input.addEventListener("input", () => updateNoteCount(input, counter));
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); form.requestSubmit(); }
+  });
+  textEl.hidden = true;
+  li.appendChild(form);
+  input.focus();
+  form.querySelector(".note-edit-cancel").addEventListener("click", () => { form.remove(); textEl.hidden = false; });
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    const saveBtn = form.querySelector('[type="submit"]');
+    saveBtn.disabled = true;
+    try {
+      const res = await fetch(`${backendBaseURL}/sweats/${sweat._id}/notes/${note._id}`, {
+        method: "PATCH",
+        headers: adminHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ text })
+      });
+      if (!res.ok) throw new Error(await noteErrorMessage(res, "Failed to edit note"));
+      replaceSweat(await res.json());
+    } catch (err) {
+      modalNoteStatus.textContent = err.message;
+      saveBtn.disabled = false;
+    }
+  });
+}
+
+// Two-step delete right on the note: the first click turns the button into
+// a "Delete?" confirm, which reverts on its own after a few seconds.
+async function deleteNote(btn, note, sweat) {
+  if (!btn.classList.contains("confirming")) {
+    btn.classList.add("confirming");
+    btn.textContent = "Delete?";
+    btn.setAttribute("data-tooltip", "Click again to delete");
+    setTimeout(() => {
+      if (!btn.isConnected) return;
+      btn.classList.remove("confirming");
+      btn.innerHTML = "&#10005;";
+      btn.setAttribute("data-tooltip", "Delete note");
+    }, 3500);
+    return;
+  }
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${backendBaseURL}/sweats/${sweat._id}/notes/${note._id}`, {
+      method: "DELETE",
+      headers: adminHeaders()
+    });
+    if (!res.ok) throw new Error(await noteErrorMessage(res, "Failed to delete note"));
+    const updated = await res.json();
+    const li = btn.closest(".note-item");
+    if (li && li.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      await li.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateX(16px)" }], { duration: 220, easing: "ease-in" }).finished.catch(() => {});
+    }
+    replaceSweat(updated);
+  } catch (err) {
+    modalNoteStatus.textContent = err.message;
+    btn.disabled = false;
+  }
+}
+
 function renderModalRecord(uuid, item) {
   const clean = u => String(u || "").replace(/-/g, "").toLowerCase();
   const record = sweats.find(s => uuid && clean(s.uuid) === clean(uuid))
@@ -10113,6 +10696,7 @@ async function openPlayerModal(item) {
   modalStats.innerHTML = ["stat-star", "stat-fkdr", "stat-wlr", "stat-finals", "stat-wins"]
     .map(c => `<div class="modal-stat-tile ${c} modal-stat-skeleton" aria-hidden="true"><span class="skeleton-block"></span><span class="skeleton-block"></span></div>`).join("");
   modalRecord.hidden = true;
+  renderModalNotes(item);
   modalTags.textContent = "Checking...";
   modalTagsReason.hidden = true;
   modalSeraphTags.textContent = "Checking...";

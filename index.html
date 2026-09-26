@@ -2956,6 +2956,22 @@ tbody tr:hover .user-cell span {
   position: relative;
   max-width: 100%;
 }
+/* Light glint that sweeps across the popup as it finishes its card flip
+   (see addFlipSheen() in the script). */
+.flip-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: var(--radius-l);
+  background: linear-gradient(105deg, transparent 35%, var(--sheen, rgba(140,240,255,0.35)) 50%, transparent 65%);
+  background-size: 300% 100%;
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+html[data-theme="ledger"] .flip-sheen { --sheen: rgba(201,162,74,0.22); mix-blend-mode: normal; }
+html[data-theme="casefiles"] .flip-sheen { --sheen: rgba(255,250,235,0.5); mix-blend-mode: soft-light; }
+html[data-theme="deepcurrent"] .flip-sheen { --sheen: rgba(80,255,220,0.3); }
 
 .modal-content {
   background: rgba(14,18,28,0.94);
@@ -6632,7 +6648,10 @@ const THEME_REVEALS = {
     const easing = "cubic-bezier(.65,0,.3,1)";
     return {
       duration,
-      newFrames: [{ clipPath: `circle(0px at ${x}px ${y}px)` }, { clipPath: `circle(${r}px at ${x}px ${y}px)` }],
+      newFrames: [
+        { clipPath: `circle(0px at ${x}px ${y}px)`, transform: "scale(1.08)", filter: "brightness(1.6) saturate(1.4)", transformOrigin: `${x}px ${y}px` },
+        { clipPath: `circle(${r}px at ${x}px ${y}px)`, transform: "scale(1)", filter: "brightness(1) saturate(1)", transformOrigin: `${x}px ${y}px` },
+      ],
       newOpts: { duration, easing },
       oldFrames: [{ filter: "brightness(1)" }, { filter: "brightness(.55) saturate(1.3)" }],
       oldOpts: { duration, easing },
@@ -6652,20 +6671,21 @@ const THEME_REVEALS = {
     };
   },
   casefiles() {
-    const duration = 760;
+    const duration = 820;
     return {
       duration,
       newFrames: [
-        { transform: "translateY(-104%) rotate(-3deg) scale(1.04)", filter: "drop-shadow(0 30px 40px rgba(0,0,0,.45))" },
-        { transform: "translateY(0) rotate(0.8deg) scale(1.04)", filter: "drop-shadow(0 12px 18px rgba(0,0,0,.35))", offset: 0.62, easing: "cubic-bezier(.3,0,.5,1)" },
-        { transform: "translateY(0) rotate(-0.4deg) scale(1.02)", filter: "drop-shadow(0 4px 8px rgba(0,0,0,.2))", offset: 0.8 },
+        { transform: "translateY(-104%) rotate(-3deg) scale(1.04)", filter: "drop-shadow(0 30px 40px rgba(0,0,0,.45))", easing: "cubic-bezier(.5,0,.9,.55)" },
+        { transform: "translateY(0) rotate(0.9deg) scale(1.04, 1.01)", filter: "drop-shadow(0 10px 16px rgba(0,0,0,.35))", offset: 0.52, easing: "cubic-bezier(.3,0,.4,1)" },
+        { transform: "translateY(0) rotate(-0.45deg) scale(1.025)", filter: "drop-shadow(0 5px 10px rgba(0,0,0,.25))", offset: 0.72, easing: "ease-in-out" },
+        { transform: "translateY(0) rotate(0.15deg) scale(1.01)", filter: "drop-shadow(0 2px 4px rgba(0,0,0,.15))", offset: 0.86, easing: "ease-out" },
         { transform: "none", filter: "drop-shadow(0 0 0 rgba(0,0,0,0))" },
-      ],
-      newOpts: { duration, easing: "cubic-bezier(.55,0,.75,.6)", transformOrigin: "50% 0" },
+      ].map(f => ({ ...f, transformOrigin: "50% 0" })),
+      newOpts: { duration },
       oldFrames: [
-        { transform: "none", filter: "brightness(1)" },
-        { transform: "none", filter: "brightness(.7) sepia(.25)", offset: 0.62 },
-        { transform: "translateY(4px) scale(.99)", filter: "brightness(.6) sepia(.3)", offset: 0.7 },
+        { transform: "none", filter: "brightness(1)", easing: "ease-in" },
+        { transform: "none", filter: "brightness(.72) sepia(.25)", offset: 0.52, easing: "ease-out" },
+        { transform: "translateY(5px) scale(.99)", filter: "brightness(.6) sepia(.3)", offset: 0.6, easing: "ease-in-out" },
         { transform: "none", filter: "brightness(.6) sepia(.3)" },
       ],
       oldOpts: { duration },
@@ -6676,7 +6696,10 @@ const THEME_REVEALS = {
     const easing = "cubic-bezier(.7,0,.25,1)";
     return {
       duration,
-      newFrames: [{ clipPath: "inset(0 0 0 100%)" }, { clipPath: "inset(0 0 0 0)" }],
+      newFrames: [
+        { clipPath: "inset(0 0 0 100%)", filter: "brightness(.8) sepia(.2)" },
+        { clipPath: "inset(0 0 0 0)", filter: "brightness(1) sepia(0)" },
+      ],
       newOpts: { duration, easing },
       oldFrames: [{ filter: "brightness(1)" }, { filter: "brightness(.65)" }],
       oldOpts: { duration, easing },
@@ -9406,10 +9429,28 @@ function flipDeltas(sourceRect, target) {
   };
 }
 
+// A glint of light slides across the popup just as it lands, timed to
+// start once the flip has turned face-on again.
+function addFlipSheen(card, duration) {
+  card.querySelectorAll(".flip-sheen").forEach(el => el.remove());
+  const sheen = document.createElement("div");
+  sheen.className = "flip-sheen";
+  card.appendChild(sheen);
+  sheen.animate([
+    { opacity: 0, backgroundPosition: "100% 0" },
+    { opacity: 0, backgroundPosition: "100% 0", offset: 0.5 },
+    { opacity: 1, offset: 0.62 },
+    { opacity: 0, backgroundPosition: "0% 0" },
+  ], { duration: duration + 250, easing: "ease-out" }).onfinish = () => sheen.remove();
+}
+
 function stopModalAnimations(modalEl) {
   const card = modalEl.querySelector(".modal-card");
   [modalEl, card].forEach(el => el && el.getAnimations().forEach(a => a.cancel()));
-  if (card) card.style.transformOrigin = "";
+  if (card) {
+    card.style.transformOrigin = "";
+    card.querySelectorAll(".flip-sheen").forEach(el => el.remove());
+  }
   delete modalEl.dataset.closing;
 }
 
@@ -9427,6 +9468,7 @@ function animateModalIn(modalEl, sourceRect, sourceEl) {
     card.animate(motion.frames, { duration: motion.duration, easing: "linear" }).onfinish = () => {
       card.style.transformOrigin = "";
     };
+    addFlipSheen(card, motion.duration);
     return;
   }
   modalEl._flipSource = null;

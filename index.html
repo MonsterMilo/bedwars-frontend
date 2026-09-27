@@ -10462,7 +10462,10 @@ window.siteAudio = (function () {
     return true;
   }
 
-  const ready = () => ctx && ctx.state !== "closed" && !settings.muted && voices < MAX_VOICES;
+  // Only while the context is actually running: it now exists (suspended)
+  // from page load, and sounds queued before the first click would all
+  // burst out at once when it resumes.
+  const ready = () => ctx && ctx.state === "running" && !settings.muted && voices < MAX_VOICES;
   const T = () => ctx.currentTime + 0.005;
 
   // ---- Primitives ----
@@ -11422,6 +11425,9 @@ window.siteAudio = (function () {
   function startAmbience(themeId) {
     if (!ctx || !settings.ambience || settings.muted) return;
     if (amb && amb.theme === themeId) return;
+    // The very first start (page load / first click) comes in quickly;
+    // a theme change still crossfades slowly under the switch scene.
+    const firstStart = !amb;
     stopAmbience();
     const bus = gainNode(0, ambBus);
     const nodes = [];
@@ -11429,8 +11435,8 @@ window.siteAudio = (function () {
     const next = (AMBIENCES[themeId] || AMBIENCES.neon)(bus, add);
     const t = ctx.currentTime;
     bus.gain.setValueAtTime(0, t);
-    bus.gain.linearRampToValueAtTime(ambienceTrim(themeId), t + 2.5);
-    const a = { theme: themeId, bus, nodes, timer: 0, at: t + 1 };
+    bus.gain.linearRampToValueAtTime(ambienceTrim(themeId), t + (firstStart ? 0.6 : 2.5));
+    const a = { theme: themeId, bus, nodes, timer: 0, at: t + (firstStart ? 0.05 : 0.6) };
     // Look-ahead scheduler: events are queued up to 1s ahead so a
     // throttled background-tab timer can't make them stutter.
     const pump = () => {
@@ -11471,6 +11477,16 @@ window.siteAudio = (function () {
     else go();
   }
   ["pointerdown", "keydown", "touchstart"].forEach(ev => document.addEventListener(ev, unlock, { capture: true, passive: true }));
+  // Build the audio graph as soon as the page loads, so the first click
+  // only has to resume it. Browsers block sound until the visitor clicks or
+  // presses a key, but some (Chrome, on sites you visit often) allow it
+  // straight away - in that case the music starts right on load.
+  // (Deferred so the rest of this block, like TRIM, is defined first.)
+  setTimeout(() => {
+    if (!init()) return;
+    if (ctx.state === "running") unlock();
+    ctx.addEventListener("statechange", () => { if (ctx.state === "running" && !unlocked) unlock(); });
+  }, 0);
 
   // Pause everything while the tab is hidden, pick back up on return.
   document.addEventListener("visibilitychange", () => {

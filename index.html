@@ -9777,6 +9777,538 @@ html[data-theme="skyisles"] .leaderboard-person-title {
 }
 
 /* @@END-SKYISLES@@ */
+
+/* ============================================================
+   LOOKTHROUGH POLISH (2026-09-27)
+   Fixes and touches from a pass over every theme on desktop, tablet and
+   phone. Lives after the theme blocks so same-specificity rules win.
+   ============================================================ */
+
+/* ---------- Table: flags as pills, a quiet dash for "no" ---------- */
+.flag-cell .pill { display: inline-block; font-size: 0.72em; padding: 3px 8px; white-space: nowrap; }
+.flag-cell .flag-short { display: none; }
+.flag-none { color: var(--text-faint); opacity: 0.55; }
+
+/* Narrow desktops and landscape tablets: the fixed columns were too thin
+   for a name plus its note badge, and the star tag spilled into FKDR. */
+@media (max-width: 1180px) and (min-width: 901px) {
+  .table-wrap th, .table-wrap td { padding-left: 9px; padding-right: 9px; }
+  .table-wrap th { white-space: nowrap; letter-spacing: 0.3px; }
+  .table-wrap th:nth-child(1), .table-wrap td:nth-child(1) { width: 20%; }
+  .table-wrap th:nth-child(2), .table-wrap td:nth-child(2) { width: 10%; }
+  .table-wrap th:nth-child(3), .table-wrap td:nth-child(3) { width: 8%; }
+  .table-wrap th:nth-child(4), .table-wrap td:nth-child(4) { width: 11%; }
+  .table-wrap th:nth-child(5), .table-wrap td:nth-child(5) { width: 8%; }
+  .table-wrap th:nth-child(6), .table-wrap td:nth-child(6) { width: 8%; }
+  .table-wrap th:nth-child(7), .table-wrap td:nth-child(7) { width: 10%; }
+  .table-wrap th:nth-child(8), .table-wrap td:nth-child(8) { width: 15%; }
+  .table-wrap th:nth-child(9), .table-wrap td:nth-child(9) { width: 10%; }
+  .table-wrap .user-cell { gap: 9px; }
+  .table-wrap .user-cell > span:not(.row-note-icon) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
+  .flag-cell .flag-long { display: none; }
+  .flag-cell .flag-short { display: inline; }
+  html[data-theme="skyisles"] .table-wrap thead th { font-size: 0.66em; letter-spacing: 0; }
+}
+
+/* Phones and portrait tablets: nine squeezed columns overlapped each other,
+   so each row becomes a short entry instead and the column headers turn
+   into a row of sort chips. Tablets get two lines (name, star, FKDR, index
+   and buttons, then who beat them and the date); phones get three. */
+@media (max-width: 900px) {
+  .table-wrap table { display: block; min-width: 0; }
+  .table-wrap thead, .table-wrap tbody { display: block; }
+  .table-wrap thead tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-wrap thead tr::before {
+    content: "Sort";
+    margin-right: 2px;
+    font-size: 0.68em;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .table-wrap thead th { display: none; }
+  .table-wrap thead th.sortable {
+    display: inline-flex;
+    align-items: center;
+    width: auto;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.68em;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .table-wrap thead th.sortable.sort-active { border-color: var(--accent); background: var(--accent-soft); }
+  .table-wrap tbody tr {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 10px;
+    /* Half the gap between lines: each zero-height line break below is a
+       flex line of its own, so it adds a second row-gap. */
+    row-gap: 4px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  /* Zero-height, full-width flex items used as the line breaks. */
+  .table-wrap tbody tr::before,
+  .table-wrap tbody tr::after { content: ""; flex-basis: 100%; height: 0; }
+  .table-wrap tbody td { display: block; width: auto; padding: 0; border: 0; }
+  .table-wrap td.user-td { flex: 1 1 0; min-width: 0; }
+  .table-wrap .user-cell > span:not(.row-note-icon) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; font-weight: 700; }
+  .table-wrap td.index-cell { text-align: right; font-weight: 700; }
+  .table-wrap td.index-cell .row-tier-pill { margin: 4px 0 0 auto; }
+  .table-wrap td.fkdr-cell { font-weight: 700; white-space: nowrap; }
+  .table-wrap td.fkdr-cell::after { content: " FKDR"; font-size: 0.78em; font-weight: 600; color: var(--text-faint); }
+  .table-wrap td.flag-no { display: none; }
+  .table-wrap td.date-cell { margin-left: auto; font-size: 0.8em; color: var(--text-faint); white-space: nowrap; }
+  .table-wrap td.beaten-by-cell { min-width: 0; font-size: 0.8em; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .table-wrap td.beaten-by-cell:not(:empty)::before { content: "Beaten by "; color: var(--text-faint); }
+  /* The Demon/Final Boss stripe runs the full height of the entry. */
+  .table-wrap .sweat-row.tier-row > td:first-child { position: static; }
+  .table-wrap .sweat-row.tier-row > td:first-child::before { top: 6px; bottom: 6px; }
+}
+/* Tablet: one main line with fixed-width stat slots so they line up from
+   row to row, and a quieter second line indented under the name. */
+@media (min-width: 700px) and (max-width: 900px) {
+  .table-wrap td.user-td { order: 1; }
+  .table-wrap td.star-cell { order: 2; width: 88px; }
+  .table-wrap td.fkdr-cell { order: 3; width: 104px; }
+  .table-wrap td.index-cell { order: 4; width: 116px; }
+  .table-wrap td.actions-cell { order: 5; margin-left: 6px; }
+  .table-wrap tbody tr::before { order: 6; }
+  .table-wrap tbody tr::after { display: none; }
+  .table-wrap td.beaten-by-cell { order: 7; flex: 1 1 0; margin-left: 48px; }
+  .table-wrap td.flag-cell { order: 8; }
+  .table-wrap td.date-cell { order: 9; }
+}
+/* Phone: name and index, then the stats and buttons, then who beat them
+   and the date. */
+@media (max-width: 699px) {
+  .table-wrap td.user-td { order: 1; }
+  .table-wrap td.index-cell { order: 2; }
+  .table-wrap tbody tr::before { order: 3; }
+  .table-wrap td.star-cell { order: 4; }
+  .table-wrap td.fkdr-cell { order: 5; }
+  .table-wrap td.flag-cell { order: 6; }
+  .table-wrap td.actions-cell { order: 7; margin-left: auto; }
+  .table-wrap tbody tr::after { order: 8; }
+  .table-wrap td.beaten-by-cell { order: 9; flex: 1 1 0; }
+  .table-wrap td.beaten-by-cell:empty { display: none; }
+  .table-wrap td.date-cell { order: 10; }
+}
+@media (min-width: 480px) and (max-width: 699px) {
+  /* Room to indent the detail lines under the name, past the avatar. */
+  .table-wrap td.star-cell, .table-wrap td.beaten-by-cell { margin-left: 48px; }
+}
+@media (max-width: 900px) {
+  html[data-theme="casefiles"] .table-wrap thead th.sortable { border-radius: 2px; border-style: dashed; border-color: var(--border-strong); }
+  html[data-theme="casefiles"] .table-wrap thead th.sortable.sort-active { border-style: solid; border-color: var(--accent-2); color: var(--accent-2); }
+  html[data-theme="casefiles"] .table-wrap thead tr::before { font-family: 'Courier Prime', monospace; }
+  html[data-theme="casefiles"] .table-wrap tbody tr { border-bottom-style: dashed; }
+  html[data-theme="ledger"] .table-wrap thead th.sortable { border-radius: 0; border-color: var(--border-strong); }
+  html[data-theme="ledger"] .table-wrap thead th.sortable.sort-active { border-color: var(--gold); color: var(--gold); background: none; box-shadow: inset 0 -2px 0 var(--gold); }
+  html[data-theme="ledger"] .table-wrap thead tr::before { content: "Sort by"; font-family: 'EB Garamond', serif; font-style: italic; text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 0.9em; }
+  html[data-theme="ledger"] .table-wrap td.fkdr-cell::after,
+  html[data-theme="ledger"] .table-wrap td.beaten-by-cell::before { font-family: 'EB Garamond', serif; font-style: italic; }
+  html[data-theme="deepcurrent"] .table-wrap thead th.sortable { font-family: 'JetBrains Mono', monospace; background: rgba(3,12,20,0.4); }
+  html[data-theme="deepcurrent"] .table-wrap thead th.sortable.sort-active { box-shadow: 0 0 10px rgba(53,230,196,0.3); background: rgba(53,230,196,0.12); }
+  html[data-theme="deepcurrent"] .table-wrap td.fkdr-cell,
+  html[data-theme="deepcurrent"] .table-wrap td.index-cell,
+  html[data-theme="deepcurrent"] .table-wrap td.date-cell { font-family: 'JetBrains Mono', monospace; }
+  html[data-theme="skyisles"] .table-wrap thead tr::before { color: #e7e7e7; font-family: var(--font-label); font-size-adjust: none; text-shadow: 1px 1px 0 #1e1e1e; }
+  html[data-theme="skyisles"] .table-wrap thead th.sortable {
+    border: 0;
+    border-radius: 0;
+    background: #7a7a7a;
+    box-shadow: inset 2px 2px 0 #a0a0a0, inset -2px -2px 0 #4a4a4a;
+    padding: 6px 10px 5px;
+  }
+  html[data-theme="skyisles"] .table-wrap thead th.sortable.sort-active { background: #8f8f8f; color: #ffffa0; box-shadow: inset 2px 2px 0 #4a4a4a, inset -2px -2px 0 #b8b8b8; }
+  html[data-theme="skyisles"] .table-wrap td.fkdr-cell::after,
+  html[data-theme="skyisles"] .table-wrap td.beaten-by-cell::before { color: #6b7f8f; }
+}
+
+/* ---------- Grid cards: an "add a note" slot where a note would sit ----------
+   Cards in a row stretch to the tallest one, so a card without a note had a
+   blank gap between its stats and its footer. The slot fills that gap and
+   opens the popup with the note box ready. Phones show one card per row,
+   so there's no gap to fill there. */
+.card-note-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1 0 auto;
+  min-height: 42px;
+  margin: -4px 0 14px;
+  padding: 8px 10px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-s);
+  font-size: 0.78em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  opacity: 0.5;
+  transition: opacity 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.card-note-ghost::before { content: "+"; font-size: 1.35em; font-weight: 400; line-height: 1; }
+.card-note-ghost::after { content: "Add a note"; }
+.sweat-card:hover .card-note-ghost,
+.sweat-card:focus-visible .card-note-ghost { opacity: 0.85; }
+.sweat-card .card-note-ghost:hover { opacity: 1; color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+@media (max-width: 560px) { .card-note-ghost { display: none; } }
+
+html:not([data-theme]) .card-note-ghost {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  letter-spacing: 0.14em;
+  color: #7fe9ff;
+  border-color: rgba(0,217,255,0.35);
+}
+html:not([data-theme]) .card-note-ghost::after { content: "ADD INTEL"; }
+html:not([data-theme]) .sweat-card .card-note-ghost:hover { text-shadow: 0 0 8px rgba(0,217,255,0.6); box-shadow: inset 0 0 14px rgba(0,217,255,0.12); }
+
+html[data-theme="casefiles"] .card-note-ghost {
+  margin-top: 2px;
+  font-family: 'Caveat', 'Segoe Print', cursive;
+  font-size: 1.12em;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #6b5d38;
+  border: 1.5px dashed #b9a66c;
+  border-radius: 1px;
+  transform: rotate(-1.4deg);
+}
+html[data-theme="casefiles"] .card-note-ghost::after { content: "pin a note here"; }
+html[data-theme="casefiles"] .sweat-card .card-note-ghost:hover { color: #2d2716; background: rgba(251,233,138,0.6); border-color: #c9b04e; transform: rotate(0deg); }
+
+html[data-theme="ledger"] .card-note-ghost {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 0.98em;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-dim);
+  border: none;
+  border-top: 1px dashed rgba(169,130,46,0.55);
+  border-bottom: 1px dashed rgba(169,130,46,0.55);
+  border-radius: 0;
+}
+html[data-theme="ledger"] .card-note-ghost::before {
+  content: "MEMO \2014";
+  font-family: 'Playfair Display', serif;
+  font-style: normal;
+  font-size: 0.7em;
+  letter-spacing: 0.24em;
+  color: var(--accent);
+}
+html[data-theme="ledger"] .card-note-ghost::after { content: "add a memo"; }
+html[data-theme="ledger"] .sweat-card .card-note-ghost:hover { color: var(--text); border-color: var(--accent); background: linear-gradient(90deg, transparent, var(--accent-soft), transparent); }
+
+html[data-theme="deepcurrent"] .card-note-ghost {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72em;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  border-color: rgba(53,230,196,0.3);
+  border-radius: 12px;
+}
+html[data-theme="deepcurrent"] .card-note-ghost::before { content: "\25CC"; font-size: 1.25em; }
+html[data-theme="deepcurrent"] .card-note-ghost::after { content: "NO LOG \00B7  ADD ONE"; }
+html[data-theme="deepcurrent"] .sweat-card .card-note-ghost:hover { background: rgba(53,230,196,0.08); border-color: rgba(53,230,196,0.6); box-shadow: inset 0 0 18px rgba(53,230,196,0.15); }
+
+html[data-theme="skyisles"] .card-note-ghost {
+  margin-top: 12px;
+  font-family: var(--font-pixel);
+  font-size: 0.9em;
+  letter-spacing: 0;
+  color: #6b4a22;
+  background: rgba(200,154,92,0.14);
+  border: 2px dashed #a07a48;
+  border-radius: 0;
+}
+html[data-theme="skyisles"] .card-note-ghost::after { content: "Add note"; }
+html[data-theme="skyisles"] .sweat-card .card-note-ghost:hover { color: #3b2410; background: #c89a5c; border-style: solid; border-color: #8a6232; }
+
+/* ---------- Page footer: a themed end-cap with a way back up ---------- */
+.site-footer { margin: 72px 0 30px; }
+.site-footer-end {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.72em;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.site-footer-end::before,
+.site-footer-end::after { content: ""; flex: 1; height: 1px; background: var(--border-strong); }
+.site-footer-end-text { white-space: nowrap; }
+.site-footer-end-text::before { content: "End of the list"; }
+.site-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 16px;
+}
+.site-footer-meta { margin: 0; font-size: 0.82em; color: var(--text-faint); }
+.site-footer-name { font-weight: 700; color: var(--text-dim); }
+.site-footer-top { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; font-size: 13px; }
+.site-footer-top svg { width: 14px; height: 14px; flex: none; }
+@media (max-width: 560px) {
+  .site-footer { margin-top: 56px; }
+  .site-footer-row { flex-direction: column; text-align: center; }
+}
+/* Neon: the arcade's stage-clear banner between two glowing rails. */
+html:not([data-theme]) .site-footer-end {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(0,217,255,0.7);
+}
+html:not([data-theme]) .site-footer-end::before { background: linear-gradient(90deg, transparent, var(--accent)); box-shadow: 0 0 8px rgba(0,217,255,0.8); }
+html:not([data-theme]) .site-footer-end::after { background: linear-gradient(90deg, var(--accent-2), transparent); box-shadow: 0 0 8px rgba(168,85,247,0.8); }
+html:not([data-theme]) .site-footer-end-text::before { content: "\25B8  Stage clear  \25C2"; }
+/* Case Files: the last page of the file gets its red stamp. */
+html[data-theme="casefiles"] .site-footer-end::before,
+html[data-theme="casefiles"] .site-footer-end::after { height: 0; background: none; border-top: 1.5px dashed var(--border-strong); }
+html[data-theme="casefiles"] .site-footer-end-text {
+  padding: 6px 14px 5px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 1.15em;
+  letter-spacing: 0.3em;
+  color: var(--accent-2);
+  border: 2.5px solid var(--accent-2);
+  border-radius: 3px;
+  transform: rotate(-3deg);
+  opacity: 0.85;
+}
+html[data-theme="casefiles"] .site-footer-end-text::before { content: "End of file"; }
+html[data-theme="casefiles"] .site-footer-meta { font-family: 'Courier Prime', monospace; }
+/* Private Bank: a ledger page closes with its balance carried forward. */
+html[data-theme="ledger"] .site-footer-end {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  color: var(--accent);
+}
+html[data-theme="ledger"] .site-footer-end::before,
+html[data-theme="ledger"] .site-footer-end::after { height: 3px; background: none; border-top: 1px solid var(--gold); border-bottom: 1px solid var(--gold); }
+html[data-theme="ledger"] .site-footer-end-text::before { content: "\2766  Balance carried forward  \2766"; }
+html[data-theme="ledger"] .site-footer-meta { font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.95em; }
+/* Deep Current: the dive bottoms out on the seafloor. */
+html[data-theme="deepcurrent"] .site-footer-end {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+}
+html[data-theme="deepcurrent"] .site-footer-end::before { background: linear-gradient(90deg, transparent, rgba(53,230,196,0.55)); }
+html[data-theme="deepcurrent"] .site-footer-end::after { background: linear-gradient(90deg, rgba(53,230,196,0.55), transparent); }
+html[data-theme="deepcurrent"] .site-footer-end-text::before { content: "\25C9  Seafloor reached"; }
+html[data-theme="deepcurrent"] .site-footer-end-text { animation: notePing 2.4s ease-in-out infinite; }
+html[data-theme="deepcurrent"] .site-footer-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.74em; }
+/* Sky Isles: dig all the way down and you hit bedrock. */
+html[data-theme="skyisles"] .site-footer-end {
+  font-family: var(--font-label); font-size-adjust: none;
+  font-size: 0.7em;
+  letter-spacing: 0.08em;
+  color: #fff;
+  text-shadow: 2px 2px 0 var(--ink);
+}
+html[data-theme="skyisles"] .site-footer-end::before,
+html[data-theme="skyisles"] .site-footer-end::after {
+  height: 12px;
+  background:
+    linear-gradient(90deg, #2e2e2e 0 25%, transparent 25% 50%, #6b6b6b 50% 62%, transparent 62%) 0 0 / 24px 6px,
+    linear-gradient(90deg, #6b6b6b 0 18%, #2e2e2e 18% 44%, transparent 44% 70%, #3a3a3a 70%) 0 6px / 30px 6px,
+    #565656;
+  background-repeat: repeat-x;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+html[data-theme="skyisles"] .site-footer-end-text::before { content: "You hit bedrock"; }
+html[data-theme="skyisles"] .site-footer-meta { color: #2e4a5f; }
+html[data-theme="skyisles"] .site-footer-name { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="deepcurrent"] .site-footer-end-text { animation: none; }
+}
+
+/* ---------- Section icons: drawn icons instead of emoji and font glyphs ---------- */
+html:not([data-theme]) .panel-icon { position: relative; font-size: 0; }
+html:not([data-theme]) .panel-icon::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  background: var(--panel-icon) center / contain no-repeat;
+  filter: drop-shadow(0 0 3px rgba(0,217,255,0.75));
+  transition: transform 0.25s var(--ease), filter 0.25s var(--ease);
+}
+html:not([data-theme]) .panel-header:hover .panel-icon::before { transform: scale(1.08); filter: drop-shadow(0 0 6px rgba(0,217,255,0.95)); }
+html:not([data-theme]) .panel-icon-lookup { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300d9ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='7'/%3E%3Cpath d='M12 2.2v4.2M12 17.6v4.2M2.2 12h4.2M17.6 12h4.2'/%3E%3Ccircle cx='12' cy='12' r='1.8' fill='%23ec4899' stroke='none'/%3E%3C/svg%3E"); }
+html:not([data-theme]) .panel-icon-results { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300d9ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 17.5 3 7.5l5 4L12 4.5l4 7 5-4-1 10z'/%3E%3Cpath d='M4.5 20.5h15'/%3E%3Ccircle cx='12' cy='14' r='1.1' fill='%23ec4899' stroke='none'/%3E%3C/svg%3E"); }
+html:not([data-theme]) .panel-icon-denick { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300d9ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 9.2c2.6-1.7 6.2-1.9 9.5-.1 3.3-1.8 6.9-1.6 9.5.1-.3 4-2.1 6.4-4.7 6.4-2 0-3.3-1.3-4.8-3.1-1.5 1.8-2.8 3.1-4.8 3.1-2.6 0-4.4-2.4-4.7-6.4z'/%3E%3Cpath d='M6.4 11.6c.9-.7 2.2-.7 3.1 0M14.5 11.6c.9-.7 2.2-.7 3.1 0' stroke='%23ec4899'/%3E%3C/svg%3E"); }
+html:not([data-theme]) .panel-icon-activity { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300d9ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 12.5h4.2l2.3-6 4.3 11.5 3-8 1.7 2.5H22'/%3E%3C/svg%3E"); }
+html[data-theme="casefiles"] .panel-icon::before { content: ""; inset: 9px; background: var(--panel-icon) center / contain no-repeat; }
+html[data-theme="casefiles"] .panel-icon-lookup { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235c5340' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10' cy='10' r='6.3'/%3E%3Cpath d='M14.7 14.7 21 21' stroke-width='2.8'/%3E%3Cpath d='M7.1 9a3.2 3.2 0 0 1 2.4-2.2' stroke-width='1.4'/%3E%3C/svg%3E"); }
+html[data-theme="casefiles"] .panel-icon-results { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235c5340' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.8 6.2v12.6c0 .7.5 1.2 1.2 1.2h16c.7 0 1.2-.5 1.2-1.2V9c0-.7-.5-1.2-1.2-1.2h-7.6L10.3 5H4c-.7 0-1.2.5-1.2 1.2z'/%3E%3Cpath d='M8.3 13.8l2.5 2.5 5-5.3' stroke='%23a32f1d' stroke-width='2.2'/%3E%3C/svg%3E"); }
+html[data-theme="casefiles"] .panel-icon-denick { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235c5340' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.2 16.8A9.5 9.5 0 0 1 4.6 13v-2a7.4 7.4 0 0 1 14.8 0v1'/%3E%3Cpath d='M8.4 19.6A11 11 0 0 1 7.6 15v-4a4.4 4.4 0 0 1 8.8 0v3.2'/%3E%3Cpath d='M12 11v3.8c0 2.1.5 4 1.4 5.6'/%3E%3Cpath d='M16.3 17.4a14 14 0 0 1-.7 3'/%3E%3Cpath d='M19.2 14.8a15 15 0 0 1-.6 3'/%3E%3C/svg%3E"); }
+html[data-theme="casefiles"] .panel-icon-activity { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235c5340' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5.5' y='3.5' width='14' height='17' rx='1'/%3E%3Cpath d='M9 8.5h7M9 12h7M9 15.5h4.5'/%3E%3Cpath d='M3.5 6.5h3.5M3.5 10.5h3.5M3.5 14.5h3.5M3.5 18.5h3.5' stroke='%23a32f1d'/%3E%3C/svg%3E"); }
+html[data-theme="deepcurrent"] .panel-icon::before { content: ""; inset: 10px; background: var(--panel-icon) center / contain no-repeat; text-shadow: none; filter: drop-shadow(0 0 4px rgba(53,230,196,0.55)); }
+html[data-theme="deepcurrent"] .panel-icon-results::before { filter: drop-shadow(0 0 4px rgba(155,107,255,0.6)); }
+html[data-theme="deepcurrent"] .panel-icon-lookup { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2335e6c4' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9' stroke-opacity='.35'/%3E%3Ccircle cx='12' cy='12' r='5.6' stroke-opacity='.65'/%3E%3Cpath d='M12 12 18.4 5.6'/%3E%3Ccircle cx='12' cy='12' r='1.9' fill='%2335e6c4' stroke='none'/%3E%3Ccircle cx='16.6' cy='14.6' r='1.1' fill='%2335e6c4' stroke='none'/%3E%3C/svg%3E"); }
+html[data-theme="deepcurrent"] .panel-icon-results { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239b6bff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='4.8' r='2'/%3E%3Cpath d='M12 6.8v13.7M8.2 10h7.6M4.2 13.6c.4 4 3.7 6.9 7.8 6.9s7.4-2.9 7.8-6.9'/%3E%3Cpath d='M2.6 15.3l1.6-1.7 2 1.2M21.4 15.3l-1.6-1.7-2 1.2'/%3E%3C/svg%3E"); }
+html[data-theme="deepcurrent"] .panel-icon-denick { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2335e6c4' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 18.5V11a7 7 0 0 1 14 0v7.5'/%3E%3Cpath d='M3.5 20.5h17'/%3E%3Ccircle cx='12' cy='11.5' r='3.6'/%3E%3Cpath d='M12 4.3v.01M6.2 8.2v.01M17.8 8.2v.01M5.4 14.8v.01M18.6 14.8v.01' stroke-width='2.2'/%3E%3C/svg%3E"); }
+html[data-theme="deepcurrent"] .panel-icon-activity { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2335e6c4' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 7.5c1.6-1.4 3.2-1.4 4.8 0s3.2 1.4 4.8 0 3.2-1.4 4.8 0 3.2 1.4 4.8 0'/%3E%3Cpath d='M2.5 12.5c1.6-1.4 3.2-1.4 4.8 0s3.2 1.4 4.8 0 3.2-1.4 4.8 0 3.2 1.4 4.8 0' stroke-opacity='.7'/%3E%3Cpath d='M2.5 17.5c1.6-1.4 3.2-1.4 4.8 0s3.2 1.4 4.8 0 3.2-1.4 4.8 0 3.2 1.4 4.8 0' stroke-opacity='.4'/%3E%3C/svg%3E"); }
+
+/* ---------- Header controls ---------- */
+/* "Private Bank" was breaking onto two lines inside the theme button. */
+.theme-dropdown-btn { white-space: nowrap; }
+
+/* ---------- Sweat Lookup ---------- */
+/* Case Files' dashed divider rule re-enabled the side border that the
+   stacked phone layout turns off, leaving a thick dashed line down the
+   right of the form. */
+@media (max-width: 700px) {
+  html[data-theme="casefiles"] .dash-left { border-right: none; }
+}
+
+/* ---------- Sky Isles: readable control text and prestige colours ---------- */
+/* Buttons and text fields reset font-size-adjust through the browser's
+   own font shorthand, so their pixel text came out far smaller than the
+   text around them. Label/arcade-font rules keep their own "none". */
+html[data-theme="skyisles"] :is(button, input, select, textarea) { font-size-adjust: 0.56; }
+/* The darkest chat colours were near-invisible on the dark star tag. */
+html[data-theme="skyisles"] .pill.prestige-tag {
+  --mc-0: #8a8a8a;
+  --mc-1: #6f7dff;
+  --mc-2: #3ccf3c;
+  --mc-4: #ff4a3d;
+  --mc-5: #e04ce0;
+  --mc-8: #9a9a9a;
+}
+
+/* ---------- Player popup: empty tag rows collapse to one line ---------- */
+.modal-tags-section:not(:has(.tag-badge)) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.modal-tags-section:not(:has(.tag-badge)) .modal-tags-label { margin-bottom: 0; }
+.modal-tags-section:not(:has(.tag-badge)) .modal-tags-row { justify-content: flex-end; text-align: right; }
+.modal-tags-section:not(:has(.tag-badge)) + .modal-tags-section:not(:has(.tag-badge)) { margin-top: 8px; }
+
+/* ---------- Edit popup: Save and Cancel stay in view ---------- */
+/* The popup scrolls inside itself once notes are open; the buttons now
+   ride along the bottom edge instead of sitting below the fold. */
+#editModal .edit-modal-actions {
+  position: sticky;
+  bottom: -26px;
+  z-index: 2;
+  margin: 18px -28px -26px;
+  padding: 14px 28px 16px;
+  background: inherit;
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- Denicking: mode switch fits on one line on phones ---------- */
+@media (max-width: 480px) {
+  .denick-mode-btn { white-space: nowrap; padding: 8px 4px; gap: 4px; }
+  .denick-mode-extra { display: none; }
+  html[data-theme="ledger"] .denick-mode-btn { font-size: 0.92em; }
+}
+/* Smaller phones: the wider theme fonts (and the Bank's deeper frame) get a
+   little tighter so both labels still fit side by side. */
+@media (max-width: 400px) {
+  html[data-theme="casefiles"] .denick-mode-btn { font-size: 0.74em; }
+  html[data-theme="deepcurrent"] .denick-mode-btn { font-size: 0.76em; }
+  html[data-theme="ledger"] .denick-mode-btn { font-size: 0.88em; }
+  html[data-theme="ledger"] .denick-mode-btn svg { display: none; }
+}
+
+/* ---------- Defeated Sweats: filters fold away on phones ---------- */
+.toolbar-search-row { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.filters-toggle { display: none; }
+@media (max-width: 760px) {
+  .filters-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    background: rgba(255,255,255,0.03);
+    color: var(--text-dim);
+    font: inherit;
+    font-size: 0.85em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+  .filters-toggle svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+  .filters-toggle[aria-expanded="true"],
+  .filters-toggle.has-active { color: var(--accent); border-color: var(--border-strong); background: var(--accent-soft); }
+  .filters-toggle-count:not(:empty) {
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 0.85em;
+    line-height: 18px;
+    text-align: center;
+  }
+  .toolbar:not(.filters-open) .toolbar-row { display: none; }
+  .toolbar.filters-open .toolbar-row { animation: filtersDrop 0.22s var(--ease) both; }
+}
+@keyframes filtersDrop { from { opacity: 0; transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .toolbar.filters-open .toolbar-row { animation: none; } }
+html[data-theme="casefiles"] .filters-toggle { border-radius: 2px; border-style: dashed; background: #fffdf4; font-family: 'Courier Prime', monospace; text-transform: uppercase; }
+html[data-theme="casefiles"] .filters-toggle-count:not(:empty) { border-radius: 2px; background: var(--accent-2); color: #fbf6e6; }
+html[data-theme="ledger"] .filters-toggle { border-radius: 0; background: none; border-color: var(--border-strong); font-family: 'EB Garamond', serif; font-size: 1em; }
+html[data-theme="deepcurrent"] .filters-toggle { border-radius: 12px; background: rgba(3,12,20,0.5); }
+html[data-theme="skyisles"] .filters-toggle {
+  border: none;
+  border-radius: 0;
+  background: #c6c6c6;
+  color: #2a2a2a;
+  text-shadow: 1px 1px 0 #ffffff;
+  box-shadow: inset 3px 3px 0 0 #ffffff, inset -3px -3px 0 0 #7d7d7d, var(--pxb2);
+}
+html[data-theme="skyisles"] .filters-toggle[aria-expanded="true"],
+html[data-theme="skyisles"] .filters-toggle.has-active { color: #173247; background: #d8e6f0; }
+html[data-theme="skyisles"] .filters-toggle-count:not(:empty) { border-radius: 0; background: #4fae2e; color: #fff; text-shadow: 1px 1px 0 #1f5a10; }
+
+/* ---------- Small follow-ups from the phone pass ---------- */
+/* Neon and Deep Current popups are a hair see-through, which let notes
+   show through the pinned Save/Cancel bar. */
+html:not([data-theme]) #editModal .edit-modal-actions,
+html[data-theme="deepcurrent"] #editModal .edit-modal-actions { background: #0e121c; }
+/* Sky Isles: the end-cap words sit on a stone plate so they read against the sky. */
+html[data-theme="skyisles"] .site-footer-end-text {
+  padding: 7px 12px 6px;
+  background: #3a3a3a;
+  box-shadow: inset 2px 2px 0 0 #5c5c5c, inset -2px -2px 0 0 #242424, var(--pxb2);
+}
+/* Touch screens have no "/" shortcut, and on phones the hint cut the placeholder short. */
+@media (hover: none), (max-width: 760px) {
+  .search-box-kbd { display: none; }
+  .toolbar #searchInput { padding-right: 38px; }
+}
 </style>
 </head>
 <body>
@@ -9948,25 +10480,25 @@ html[data-theme="skyisles"] .leaderboard-person-title {
                     <div class="stat-hero fkdr">
                       <div class="stat-hero-label">FKDR</div>
                       <div class="stat-hero-value" id="statFKDR">0</div>
-                      <div class="stat-hero-sub"><span id="statFinals">0</span>F &middot; <span id="statFinalDeaths">0</span>FD</div>
+                      <div class="stat-hero-sub"><span id="statFinals">0</span>&thinsp;F &middot; <span id="statFinalDeaths">0</span>&thinsp;FD</div>
                       <div class="stat-standing" data-field="fkdr"></div>
                     </div>
                     <div class="stat-hero wlr">
                       <div class="stat-hero-label">WLR</div>
                       <div class="stat-hero-value" id="statWLR">0</div>
-                      <div class="stat-hero-sub"><span id="statWins">0</span>W &middot; <span id="statLosses">0</span>L</div>
+                      <div class="stat-hero-sub"><span id="statWins">0</span>&thinsp;W &middot; <span id="statLosses">0</span>&thinsp;L</div>
                       <div class="stat-standing" data-field="wlr"></div>
                     </div>
                     <div class="stat-hero kdr">
                       <div class="stat-hero-label">KDR</div>
                       <div class="stat-hero-value" id="statKDR">0</div>
-                      <div class="stat-hero-sub"><span id="statKills">0</span>K &middot; <span id="statDeaths">0</span>D</div>
+                      <div class="stat-hero-sub"><span id="statKills">0</span>&thinsp;K &middot; <span id="statDeaths">0</span>&thinsp;D</div>
                       <div class="stat-standing" data-field="kdr"></div>
                     </div>
                     <div class="stat-hero bblr">
                       <div class="stat-hero-label">BBLR</div>
                       <div class="stat-hero-value" id="statBBLR">0</div>
-                      <div class="stat-hero-sub"><span id="statBeds">0</span>B &middot; <span id="statBedsLost">0</span>BL</div>
+                      <div class="stat-hero-sub"><span id="statBeds">0</span>&thinsp;B &middot; <span id="statBedsLost">0</span>&thinsp;BL</div>
                       <div class="stat-standing" data-field="bblr"></div>
                     </div>
 
@@ -10012,11 +10544,14 @@ html[data-theme="skyisles"] .leaderboard-person-title {
 
   <div class="toolbar card">
     <div class="toolbar-top">
+      <div class="toolbar-search-row">
       <div id="searchContainer" class="search-box">
         <svg class="search-box-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2" /><line x1="15.5" y1="15.5" x2="20.5" y2="20.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
         <input type="text" id="searchInput" placeholder="Search username or notes..." aria-label="Search sweat players and notes" aria-keyshortcuts="/" />
         <kbd class="search-box-kbd" aria-hidden="true">/</kbd>
         <button type="button" id="searchClearBtn" class="search-box-clear" aria-label="Clear search" hidden>&times;</button>
+      </div>
+      <button type="button" id="filtersToggle" class="filters-toggle" aria-expanded="false" aria-controls="toolbarFilters"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11M4.5 8h7M6.5 12h3"/></svg>Filters<span class="filters-toggle-count" id="filtersToggleCount"></span></button>
       </div>
       <div class="view-toggle" role="group" aria-label="Result view">
         <button type="button" id="viewGridBtn" class="view-btn active"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2" /><rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2" /><rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2" /><rect x="9" y="9" width="5.5" height="5.5" rx="1.2" /></svg><span>Grid</span></button>
@@ -10026,7 +10561,7 @@ html[data-theme="skyisles"] .leaderboard-person-title {
       <button id="exportCsvBtn" type="button" class="toolbar-export" data-tooltip="Download the sweats in this view as a spreadsheet (CSV)"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg>Export</button>
     </div>
 
-    <div class="toolbar-row">
+    <div class="toolbar-row" id="toolbarFilters">
       <div class="filter-fields" role="group" aria-label="Minimum stat filters">
         <label class="filter-field" for="minStars"><span class="filter-prefix">Stars &ge;</span><input id="minStars" type="number" step="1" placeholder="100"></label>
         <label class="filter-field" for="minFkdr"><span class="filter-prefix">FKDR &ge;</span><input id="minFkdr" type="number" step="0.1" placeholder="2.5"></label>
@@ -10188,7 +10723,7 @@ html[data-theme="skyisles"] .leaderboard-person-title {
   <div id="denickContainer" class="card">
     <div class="denick-mode-toggle" role="tablist" aria-label="Denick lookup mode">
       <button type="button" class="denick-mode-btn active" data-mode="nick" role="tab" aria-selected="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5.5c0-1.5 2.2-2.5 5-2.5s5 1 5 2.5v1.2c0 2.8-2.2 5.8-5 6.3-2.8-.5-5-3.5-5-6.3z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="10" cy="7" r="1" fill="currentColor"/></svg>Nick &rarr; Owners</button>
-      <button type="button" class="denick-mode-btn" data-mode="player" role="tab" aria-selected="false"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2.8 14c.6-2.8 2.7-4.3 5.2-4.3s4.6 1.5 5.2 4.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Player &rarr; Nicks Used</button>
+      <button type="button" class="denick-mode-btn" data-mode="player" role="tab" aria-selected="false"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2.8 14c.6-2.8 2.7-4.3 5.2-4.3s4.6 1.5 5.2 4.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Player &rarr; Nicks<span class="denick-mode-extra"> Used</span></span></button>
     </div>
     <div class="lookup-row">
       <input type="text" id="denickInput" placeholder="Enter a nick" aria-label="Nick or player to search" />
@@ -10260,6 +10795,14 @@ html[data-theme="skyisles"] .leaderboard-person-title {
   </div>
 
   </div>
+
+  <footer class="site-footer">
+    <div class="site-footer-end" aria-hidden="true"><span class="site-footer-end-text"></span></div>
+    <div class="site-footer-row">
+      <p class="site-footer-meta"><span class="site-footer-name">Bedwars Sweat Tracker</span><span id="footerTally"></span></p>
+      <button type="button" id="backToTopBtn" class="btn btn-ghost site-footer-top"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3.5M3.8 7.7 8 3.5l4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to top</button>
+    </div>
+  </footer>
 
   <!-- PLAYER MODAL -->
   <div id="playerModal" class="modal">
@@ -12422,7 +12965,14 @@ function hideTooltip() {
   customTooltip.classList.remove("visible");
 }
 
+// A tap fires its own mouseover and moves focus too, and on a phone there's
+// no mouseout afterwards to clear the tooltip, so they were left stuck on
+// screen (e.g. "Edit" after closing the Edit popup). Tooltips now come from
+// real mouse hover and keyboard focus only.
+let lastPointerType = "mouse";
+["pointerover", "pointerdown"].forEach(type => document.addEventListener(type, (e) => { lastPointerType = e.pointerType || "mouse"; }, true));
 document.addEventListener("mouseover", (e) => {
+  if (lastPointerType === "touch") return;
   const target = e.target.closest("[data-tooltip]");
   if (!target || target === tooltipTarget) return;
   clearTimeout(tooltipShowTimer);
@@ -12435,7 +12985,10 @@ document.addEventListener("mouseout", (e) => {
 });
 document.addEventListener("focusin", (e) => {
   const target = e.target.closest("[data-tooltip]");
-  if (target) { clearTimeout(tooltipShowTimer); showTooltip(target); }
+  if (!target) return;
+  let fromKeyboard = true;
+  try { fromKeyboard = e.target.matches(":focus-visible"); } catch (err) {}
+  if (fromKeyboard) { clearTimeout(tooltipShowTimer); showTooltip(target); }
 });
 document.addEventListener("focusout", (e) => {
   const target = e.target.closest("[data-tooltip]");
@@ -13106,6 +13659,7 @@ const leaderboardTableBody = document.getElementById('leaderboardTableBody');
 const leaderboardTableWrap = document.getElementById('leaderboardTableWrap');
 const leaderboardEmptyState = document.getElementById('leaderboardEmptyState');
 const resultCount = document.getElementById('resultCount');
+const footerTally = document.getElementById('footerTally');
 const viewGridBtn = document.getElementById('viewGridBtn');
 const viewTableBtn = document.getElementById('viewTableBtn');
 const viewLeaderboardBtn = document.getElementById('viewLeaderboardBtn');
@@ -13703,6 +14257,15 @@ resetFiltersBtn.addEventListener('click', () => {
 // Runs from renderTable, so URL-restored filters light up too.
 const searchClearBtn = document.getElementById("searchClearBtn");
 const activeFilterCount = document.getElementById("activeFilterCount");
+// Phones fold the filter row away behind a Filters button next to search;
+// the button counts the filters that are on while the row is closed.
+const filtersToggle = document.getElementById("filtersToggle");
+const filtersToggleCount = document.getElementById("filtersToggleCount");
+filtersToggle.addEventListener("click", () => {
+  const open = filtersToggle.getAttribute("aria-expanded") !== "true";
+  filtersToggle.setAttribute("aria-expanded", String(open));
+  filtersToggle.closest(".toolbar").classList.toggle("filters-open", open);
+});
 searchClearBtn.addEventListener("click", () => {
   searchInput.value = "";
   currentFilter = "";
@@ -13728,6 +14291,10 @@ function updateFilterIndicators() {
   });
   [hideDuplicatesCheckbox, cheatersOnlyCheckbox, boostersOnlyCheckbox].forEach(cb => { if (cb.checked) active++; });
   activeFilterCount.textContent = active ? String(active) : "";
+  const folded = active - (searchInput.value.trim() ? 1 : 0);
+  filtersToggleCount.textContent = folded ? String(folded) : "";
+  filtersToggle.classList.toggle("has-active", folded > 0);
+  filtersToggle.setAttribute("aria-label", folded ? `Filters, ${folded} on` : "Filters");
   resetFiltersBtn.disabled = active === 0;
   resetFiltersBtn.setAttribute("aria-label", active ? `Reset ${active} active filter${active > 1 ? "s" : ""}` : "No filters to reset");
 }
@@ -14016,15 +14583,17 @@ function updateStatsDisplay(stats) {
   statsStar.innerHTML = prestigeTagHtml(stats.star);
   statsStar.setAttribute("aria-label", `${Number(stats.star) || 0} stars`);
 
-  statWins.textContent = stats.wins;
-  statFinals.textContent = stats.finals;
-  statKills.textContent = stats.kills;
-  statBeds.textContent = stats.beds;
+  // Grouped like every other count on the site (14,200 K, not 14200K).
+  const count = n => (Number(n) || 0).toLocaleString();
+  statWins.textContent = count(stats.wins);
+  statFinals.textContent = count(stats.finals);
+  statKills.textContent = count(stats.kills);
+  statBeds.textContent = count(stats.beds);
 
-  statLosses.textContent = stats.losses;
-  statFinalDeaths.textContent = stats.finalDeaths;
-  statDeaths.textContent = stats.deaths;
-  statBedsLost.textContent = stats.bedsLost;
+  statLosses.textContent = count(stats.losses);
+  statFinalDeaths.textContent = count(stats.finalDeaths);
+  statDeaths.textContent = count(stats.deaths);
+  statBedsLost.textContent = count(stats.bedsLost);
 
   statWLR.textContent = stats.wlr.toFixed(2);
   statFKDR.textContent = stats.fkdr.toFixed(2);
@@ -14392,6 +14961,7 @@ function renderTable() {
   resultCount.textContent = filteredSweats.length === total
     ? `${total.toLocaleString()} tracked ${plural(total)}`
     : `${filteredSweats.length.toLocaleString()} of ${total.toLocaleString()} ${plural(total)} match`;
+  footerTally.textContent = ` \u00b7 ${total.toLocaleString()} ${plural(total)} tracked`;
   updateFilterIndicators();
   updateSortHeaders();
 
@@ -14544,7 +15114,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
         ${s.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}
       </div>
       <div class="sweat-card-stats">${cardStatCellsHtml(s)}</div>
-      ${sweatNotes(s).length ? '<div class="sweat-card-note"><p class="note-text"></p><span class="note-meta"></span></div>' : ""}
+      ${sweatNotes(s).length ? '<div class="sweat-card-note"><p class="note-text"></p><span class="note-meta"></span></div>' : '<div class="card-note-ghost" data-add-note aria-hidden="true"></div>'}
       <div class="sweat-card-footer">
         <div class="beaten-by-avatars">${beatenByHtml}</div>
         <div class="sweat-card-footer-right">
@@ -14695,6 +15265,7 @@ function buildSweatRow(s, { usernameCounts }) {
   // for table-layout:fixed's column-width algorithm (it shrank to ~58px
   // regardless of the 22% width rule, which the <th> above it still honored).
   const usernameTd = document.createElement("td");
+  usernameTd.className = "user-td";
   const userCellDiv = document.createElement("div");
   userCellDiv.classList.add('user-cell');
 
@@ -14736,15 +15307,18 @@ function buildSweatRow(s, { usernameCounts }) {
   const fkdrVal = Number(s.fkdr) || 0;
 
   const starTd = document.createElement("td");
+  starTd.className = "star-cell";
   starTd.innerHTML = `<span class="pill prestige-tag" aria-label="${starVal} stars">${prestigeTagHtml(starVal)}</span>`;
   tr.appendChild(starTd);
 
   const fkdrTd = document.createElement("td");
+  fkdrTd.className = "fkdr-cell";
   fkdrTd.textContent = fkdrVal.toFixed(2);
   tr.appendChild(fkdrTd);
 
   const indexValue = fkdrVal * fkdrVal * starVal;
   const indexTd = document.createElement("td");
+  indexTd.className = "index-cell";
   indexTd.textContent = Math.round(indexValue).toLocaleString();
   // Same Demon/Final Boss call-out the grid cards get: a themed stripe down
   // the row's left edge plus the tier pill under the index number.
@@ -14755,15 +15329,21 @@ function buildSweatRow(s, { usernameCounts }) {
   }
   tr.appendChild(indexTd);
 
-  const cheatingTd = document.createElement("td");
-  cheatingTd.textContent = s.cheating ? "Yes" : "No";
-  tr.appendChild(cheatingTd);
-
-  const boostingTd = document.createElement("td");
-  boostingTd.textContent = s.boosting ? "Yes" : "No";
-  tr.appendChild(boostingTd);
+  // A flag that's set gets the same themed warning pill the cards use; an
+  // unset one is a faint dash instead of a column full of "No".
+  const flagCell = (on, pillClass, label) => {
+    const td = document.createElement("td");
+    td.className = `flag-cell ${on ? "flag-yes" : "flag-no"}`;
+    td.innerHTML = on
+      ? `<span class="pill ${pillClass}"><span aria-hidden="true">&#9888;</span> <span class="flag-long">${label}</span><span class="flag-short">Yes</span></span>`
+      : `<span class="flag-none" aria-label="No">&ndash;</span>`;
+    return td;
+  };
+  tr.appendChild(flagCell(s.cheating, "cheat", "Cheater"));
+  tr.appendChild(flagCell(s.boosting, "boost", "Booster"));
 
   const dateTd = document.createElement("td");
+  dateTd.className = "date-cell";
   dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
   tr.appendChild(dateTd);
 
@@ -14777,6 +15357,7 @@ function buildSweatRow(s, { usernameCounts }) {
 
   // Same reasoning as .user-cell above: flex row lives on an inner div, not the <td>.
   const actionsTd = document.createElement("td");
+  actionsTd.className = "actions-cell";
   const actionsInner = document.createElement("div");
   actionsInner.style.display = "flex";
   actionsInner.style.gap = "6px";
@@ -15409,12 +15990,16 @@ function renderModalNotesList() {
   modalNotesList.scrollTop = modalNotesList.scrollHeight;
 }
 
-modalNoteAddBtn.addEventListener("click", () => {
+// Opened from a card's "add a note" slot, the popup is still flipping in,
+// so the box is brought into view once it has landed.
+function openModalNoteForm({ fromCard = false } = {}) {
   modalNoteForm.hidden = false;
   modalNoteAddBtn.hidden = true;
   modalNoteStatus.textContent = "";
-  modalNoteText.focus();
-});
+  modalNoteText.focus({ preventScroll: fromCard });
+  if (fromCard) setTimeout(() => modalNoteForm.scrollIntoView({ block: "nearest", behavior: "smooth" }), 700);
+}
+modalNoteAddBtn.addEventListener("click", () => openModalNoteForm());
 modalNoteCancel.addEventListener("click", () => {
   modalNoteForm.hidden = true;
   modalNoteAddBtn.hidden = false;
@@ -15685,6 +16270,12 @@ document.addEventListener("click", (e) => {
   const flipFrom = item.getBoundingClientRect();
   openPlayerModal(item);
   if (flipFrom) requestAnimationFrame(() => playCardFlipExpand(flipFrom, modal.querySelector(".modal-card"), item));
+  if (e.target.closest("[data-add-note]")) openModalNoteForm({ fromCard: true });
+});
+
+// Footer: back up to the top of the page.
+document.getElementById("backToTopBtn").addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: reducedMotion.matches ? "auto" : "smooth" });
 });
 
 // Modal open/close transitions, shared by all four modals and all four

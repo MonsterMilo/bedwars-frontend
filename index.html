@@ -3689,6 +3689,20 @@ html[data-theme="deepcurrent"] .flip-sheen { --sheen: rgba(80,255,220,0.3); }
 
 .modal-stat-value { font-size: 1.3em; font-weight: 800; line-height: 1.1; }
 
+/* Shown in place of live stats when they can't be fetched right now. */
+#modalTitle.is-saved .modal-live-dot { animation: none !important; background: var(--text-faint); box-shadow: none; }
+.modal-stats-fallback {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px 2px;
+  text-align: center;
+  font-size: 0.85em;
+  color: var(--text-faint);
+}
+
 .modal-stat-tile.stat-star { grid-column: 1 / -1; }
 .modal-stat-tile.stat-star .modal-stat-value { color: var(--gold); text-shadow: 0 0 8px rgba(255,209,102,0.5); }
 .modal-stat-tile.stat-fkdr .modal-stat-value { color: var(--accent-2); text-shadow: 0 0 8px rgba(168,85,247,0.5); }
@@ -16151,8 +16165,8 @@ function renderModalRecord(uuid, item) {
     ${record.cheating || record.boosting ? `<div class="modal-record-flags">${record.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}${record.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}</div>` : ""}`;
 }
 
-async function openPlayerModal(item) {
-  rememberFocusBeforeModal();
+async function openPlayerModal(item, { retry = false } = {}) {
+  if (!retry) rememberFocusBeforeModal();
   const username = item.dataset.username;
   const uuid = item.dataset.uuid;
   openPlayerName = username;
@@ -16162,10 +16176,15 @@ async function openPlayerModal(item) {
   // from a previous click can't clobber a newer one if the user clicks fast.
   modal.dataset.activeUuid = uuid || "";
 
-  modal.style.display = "flex";
-  animateModalIn(modal);
-  closeModal.focus();
+  // A retry (the fallback's Try again button) refetches in the already-open
+  // popup, without replaying the open animation or moving focus.
+  if (!retry) {
+    modal.style.display = "flex";
+    animateModalIn(modal);
+    closeModal.focus();
+  }
   modalUsername.textContent = "Loading...";
+  setModalTitleSaved(false);
   // Skeleton tiles in the same grid shape as the real stats, instead of a
   // line of text that jumps to a full grid when the data lands.
   modalStats.innerHTML = ["stat-star", "stat-fkdr", "stat-wlr", "stat-finals", "stat-wins"]
@@ -16250,11 +16269,55 @@ async function openPlayerModal(item) {
     renderTagBadges(modalSeraphTags, modalSeraphTagsReason, seraphResult.tags, SERAPH_TAG_ICONS);
   } catch (err) {
     if (modal.dataset.activeUuid === uuid) {
-      modalStats.textContent = err.message || "Failed to load stats.";
+      showSavedStatsFallback(item, err.message || "Failed to load stats.");
       modalTags.textContent = "Unavailable";
       modalSeraphTags.textContent = "Unavailable";
+      // Seraph only needs the uuid, so it may still have answered fine.
+      seraphPromise.then(r => {
+        if (modal.dataset.activeUuid === uuid && r && !r.error) renderTagBadges(modalSeraphTags, modalSeraphTagsReason, r.tags, SERAPH_TAG_ICONS);
+      }).catch(() => {});
     }
   }
+}
+
+// When live stats can't be fetched (usually the stats service being slow or
+// down for that one player, not anything wrong with the entry), show the
+// stats saved when the sweat was logged instead of a dead end, with a retry.
+// The "Live Stats" label over the popup reads "Saved Stats" (dot stilled)
+// while the saved-stats fallback below is showing.
+function setModalTitleSaved(saved) {
+  const title = document.getElementById("modalTitle");
+  if (!title) return;
+  title.classList.toggle("is-saved", saved);
+  title.lastChild.textContent = saved ? "Saved Stats" : "Live Stats";
+}
+
+function showSavedStatsFallback(item, message) {
+  setModalTitleSaved(true);
+  const username = item.dataset.username || "";
+  modalUsername.textContent = username;
+  if (item.dataset.uuid) modalSkin.src = `https://visage.surgeplay.com/full/256/${item.dataset.uuid}`;
+  const star = Number(item.dataset.loggedStar);
+  const fkdr = Number(item.dataset.loggedFkdr);
+  const wlr = Number(item.dataset.loggedWlr);
+  const tile = (cls, label, value) => `
+      <div class="modal-stat-tile ${cls}"><div class="modal-stat-label">${label}</div><div class="modal-stat-value">${value}</div></div>`;
+  const tiles =
+    (Number.isFinite(star) && item.dataset.loggedStar !== undefined ? tile("stat-star", "Star (saved)", `<span class="pill prestige-tag">${prestigeTagHtml(star)}</span>`) : "") +
+    (Number.isFinite(fkdr) && item.dataset.loggedFkdr !== undefined ? tile("stat-fkdr", "FKDR (saved)", fkdr.toFixed(2)) : "") +
+    (Number.isFinite(wlr) && item.dataset.loggedWlr !== undefined ? tile("stat-wlr", "WLR (saved)", wlr.toFixed(2)) : "");
+  modalStats.innerHTML = tiles + `
+      <div class="modal-stats-fallback">
+        <span class="modal-stats-fallback-msg"></span>
+        <button type="button" class="load-retry-btn modal-stats-retry">Try again</button>
+      </div>`;
+  modalStats.querySelector(".modal-stats-fallback-msg").textContent =
+    `${message} ${tiles ? "Showing the stats saved when they were added." : ""}`.trim();
+  modalStats.querySelector(".modal-stats-retry").addEventListener("click", () => {
+    if (modal.dataset.activeUuid !== (item.dataset.uuid || "")) return;
+    closeModal.focus();
+    openPlayerModal(item, { retry: true });
+  });
 }
 
 // Any clicked card, stats tile, podium entry or table row, all four

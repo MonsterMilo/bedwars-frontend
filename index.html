@@ -13222,7 +13222,7 @@ let keyFullAccess = false;
 let keyWindowDays = { edit: 30, delete: 10 };
 async function refreshKeyOwner() {
   const key = getAdminKey();
-  if (!key) { keyOwner = null; updateKeyIdentityUi(); return null; }
+  if (!key) { keyOwner = null; keyFullAccess = false; updateKeyIdentityUi(); rerenderForKey(); return null; }
   try {
     const res = await fetch(`${backendBaseURL}/whoami`, { headers: adminHeaders() });
     const data = res.ok ? await res.json() : null;
@@ -13234,7 +13234,23 @@ async function refreshKeyOwner() {
     // the key and the backend decides.
   }
   updateKeyIdentityUi();
+  rerenderForKey();
   return keyOwner;
+}
+// Remove buttons depend on whose key it is, so redraw the list when it changes.
+function rerenderForKey() {
+  if (typeof sweats !== "undefined" && sweats.length) renderTable();
+}
+// Removing a sweat mirrors the backend: full-access keys can remove any;
+// everyone else only ones they added themselves, within their delete window.
+function canRemoveSweat(s) {
+  if (!getAdminKey()) return false;
+  if (keyFullAccess) return true;
+  if (!keyOwner || !s.addedBy || s.addedBy !== keyOwner) return false;
+  const days = keyWindowDays.delete;
+  if (days == null) return true;
+  const created = s.createdAt ? new Date(s.createdAt).getTime() : 0;
+  return Date.now() - created <= days * 86400000;
 }
 // action is "edit" or "delete"; mirrors the backend's windows so buttons
 // only show where they'd work (the backend still has the final say).
@@ -15086,7 +15102,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
         <div class="sweat-card-footer-right">
           <span class="sweat-card-date"></span>
           <button type="button" class="icon-btn edit edit-btn" data-tooltip="Edit">&#9998;</button>
-          <button type="button" class="icon-btn danger remove-btn" data-tooltip="Remove">&#10005;</button>
+          ${canRemoveSweat(s) ? '<button type="button" class="icon-btn danger remove-btn" data-tooltip="Remove">&#10005;</button>' : ""}
         </div>
       </div>
     `;
@@ -15114,7 +15130,7 @@ function renderCardGrid(filteredSweats, usernameCounts) {
       requestAnimationFrame(() => playCardFlipExpand(flipFrom, editModal.querySelector(".modal-card"), card));
     });
 
-    card.querySelector(".remove-btn").addEventListener("click", (e) => {
+    card.querySelector(".remove-btn")?.addEventListener("click", (e) => {
       e.stopPropagation();
       removeSweat(s._id, card);
     });
@@ -15335,12 +15351,14 @@ function buildSweatRow(s, { usernameCounts }) {
   editBtn.addEventListener("click", (e) => { e.stopPropagation(); openEditModal(s); });
   actionsInner.appendChild(editBtn);
 
-  const removeBtn = document.createElement("button");
-  removeBtn.className = "icon-btn danger";
-  removeBtn.setAttribute("data-tooltip", "Remove");
-  removeBtn.textContent = "✖";
-  removeBtn.addEventListener("click", (e) => { e.stopPropagation(); removeSweat(s._id, tr); });
-  actionsInner.appendChild(removeBtn);
+  if (canRemoveSweat(s)) {
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "icon-btn danger";
+    removeBtn.setAttribute("data-tooltip", "Remove");
+    removeBtn.textContent = "✖";
+    removeBtn.addEventListener("click", (e) => { e.stopPropagation(); removeSweat(s._id, tr); });
+    actionsInner.appendChild(removeBtn);
+  }
 
   actionsTd.appendChild(actionsInner);
   tr.appendChild(actionsTd);

@@ -3608,11 +3608,27 @@ html[data-theme="deepcurrent"] .flip-sheen { --sheen: rgba(80,255,220,0.3); }
 
 #modalUsername {
   text-align: center;
-  font-size: 1.5em;
+  font-size: clamp(1.3em, 6.5vw, 1.9em);
   font-weight: 800;
   margin: 4px 0 2px;
   text-shadow: 0 0 12px rgba(0,217,255,0.5);
 }
+/* The name and its prestige tag, side by side like an in-game nametag. */
+.modal-nameplate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  max-width: 100%;
+}
+.modal-name-tag {
+  font-size: 0.6em;
+  line-height: 1.2;
+  padding: 3px 9px;
+  text-shadow: none;
+}
+.modal-nameplate .modal-copy-name { overflow-wrap: anywhere; }
 
 .modal-username-sub {
   font-size: 14px;
@@ -9446,7 +9462,31 @@ html[data-theme="skyisles"] .modal-content {
 }
 html[data-theme="skyisles"] .modal-content h2,
 html[data-theme="skyisles"] .modal-content h3 { color: #3f3f3f; }
-html[data-theme="skyisles"] #modalUsername { color: #3f3f3f; font-size: 1.4em; text-shadow: none; }
+html[data-theme="skyisles"] #modalUsername { color: #3f3f3f; font-size: clamp(1.15em, 5.5vw, 1.85em); text-shadow: none; }
+/* A Minecraft nametag: dark see-through box, white name with the game's
+   hard drop shadow, and the star tag in full chat colours in front. */
+html[data-theme="skyisles"] .modal-nameplate {
+  background: rgba(24,24,24,0.8);
+  padding: 6px 16px 9px;
+  box-shadow: 0 0 0 3px #1e1e1e, 6px 6px 0 3px rgba(0,0,0,0.22);
+  gap: 0.4em;
+}
+html[data-theme="skyisles"] .modal-nameplate .modal-copy-name {
+  color: #ffffff;
+  text-shadow: 3px 3px 0 #3f3f3f;
+}
+html[data-theme="skyisles"] .modal-nameplate .modal-copy-name.copied { color: #55ff55; }
+/* Phones: clear the Copy link / close buttons above it, and slimmer padding. */
+@media (max-width: 560px) {
+  html[data-theme="skyisles"] .modal-nameplate { margin-top: 30px; padding: 4px 10px 6px; }
+}
+html[data-theme="skyisles"] .modal-nameplate .pill.prestige-tag.modal-name-tag {
+  font-size: 1em;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+html[data-theme="skyisles"] .modal-nameplate .modal-name-tag span { text-shadow: 3px 3px 0 rgba(0,0,0,0.6); }
 html[data-theme="skyisles"] #modalSkin {
   border-radius: 0;
   border: none;
@@ -16138,9 +16178,19 @@ function renderModalRecord(uuid, item) {
 // The copied name is the current one, since that's what works in-game.
 // Built with DOM nodes, not innerHTML - names come from player-submitted data.
 const COPY_ICON_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>';
-function renderModalName(shownName, currentName, uuid) {
+// star (optional): shown as the player's prestige tag in front of the name,
+// in the same themed colours as the cards and the Star tile.
+function renderModalName(shownName, currentName, uuid, star) {
   modalUsername.textContent = "";
   const copyName = currentName || shownName;
+  const plate = document.createElement("div");
+  plate.className = "modal-nameplate";
+  if (Number.isFinite(Number(star)) && star !== null && star !== undefined && star !== "") {
+    const tag = document.createElement("span");
+    tag.className = "pill prestige-tag modal-name-tag";
+    tag.innerHTML = prestigeTagHtml(Number(star));
+    plate.appendChild(tag);
+  }
   const nameBtn = document.createElement("button");
   nameBtn.type = "button";
   nameBtn.className = "modal-copy-name";
@@ -16148,7 +16198,8 @@ function renderModalName(shownName, currentName, uuid) {
   nameBtn.title = `Click to copy ${copyName}`;
   nameBtn.setAttribute("aria-label", `Copy username ${copyName}`);
   nameBtn.addEventListener("click", () => copyWithFeedback(nameBtn, copyName, "Username"));
-  modalUsername.appendChild(nameBtn);
+  plate.appendChild(nameBtn);
+  modalUsername.appendChild(plate);
 
   if (currentName && currentName.toLowerCase() !== shownName.toLowerCase()) {
     const sub = document.createElement("div");
@@ -16235,7 +16286,7 @@ async function openPlayerModal(item, { retry = false } = {}) {
     const currentName = data.currentName;
     const originalName = data.originalName;
 
-    renderModalName(originalName, currentName, uuid);
+    renderModalName(originalName, currentName, uuid, data.star);
 
     modalSkin.src = `https://visage.surgeplay.com/full/256/${uuid}`;
 
@@ -16289,7 +16340,7 @@ function setModalTitleSaved(saved) {
 function showSavedStatsFallback(item, message) {
   setModalTitleSaved(true);
   const username = item.dataset.username || "";
-  renderModalName(username, null, item.dataset.uuid || null);
+  renderModalName(username, null, item.dataset.uuid || null, item.dataset.loggedStar);
   if (item.dataset.uuid) modalSkin.src = `https://visage.surgeplay.com/full/256/${item.dataset.uuid}`;
   const star = Number(item.dataset.loggedStar);
   const fkdr = Number(item.dataset.loggedFkdr);

@@ -10919,7 +10919,7 @@ html[data-theme="hollowgrave"] .fx-word {
 .fx-mound { width: 70px; height: 18px; margin-left: -35px; border-radius: 50% 50% 0 0; background: radial-gradient(ellipse at 50% 100%, #2e2218 30%, #1a130e 70%); }
 .fx-hand-wrap { width: 40px; height: 60px; margin: -60px 0 0 -20px; overflow: hidden; }
 .fx-hand { position: absolute; left: 0; top: 0; width: 40px; height: 60px; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 60%22%3E%3Cpath d=%22M14 60 L13 34 C11 30 8 26 6 21 C5 18 8 17 10 20 L14 26 L13 10 C13 7 17 7 17 10 L18 22 L19 6 C19 3 23 3 23 6 L23 22 L25 9 C25 6 29 6 29 9 L28 25 L31 16 C32 13 35 14 35 17 L32 33 C31 38 29 41 28 44 L28 60 Z%22 fill=%22%237d9a5a%22 stroke=%22%233c4f2a%22 stroke-width=%221.5%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M16 46 L26 48 M17 52 L25 53%22 stroke=%22%233c4f2a%22 stroke-width=%221.4%22/%3E%3Cpath d=%22M14 40 L28 42 L28 60 L14 60 Z%22 fill=%22%234a3a5a%22 opacity=%22.85%22/%3E%3Cpath d=%22M14 40 L17 44 L20 40 L23 45 L26 41 L28 43%22 stroke=%22%232c2236%22 stroke-width=%221.2%22 fill=%22none%22/%3E%3C/svg%3E") center bottom / contain no-repeat; transform-origin: 50% 100%; }
-.fx-gbat { width: 30px; height: 14px; margin: -7px 0 0 -15px; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 18%22%3E%3Cpath d=%22M20 6 C18 3 17 3 16.5 5 C13 3 9 2 3 5 C6 6 7 8 6.5 10 C9 8.5 12 9 14 11 C15.5 9.5 17 9.5 18 11.5 L20 13 L22 11.5 C23 9.5 24.5 9.5 26 11 C28 9 31 8.5 33.5 10 C33 8 34 6 37 5 C31 2 27 3 23.5 5 C23 3 22 3 20 6 Z%22 fill=%22%230d0a12%22/%3E%3Ccircle cx=%2219%22 cy=%227.5%22 r=%22.6%22 fill=%22%23ff9b3d%22/%3E%3Ccircle cx=%2221%22 cy=%227.5%22 r=%22.6%22 fill=%22%23ff9b3d%22/%3E%3C/svg%3E") center / contain no-repeat; }
+.fx-gbat { width: 36px; height: 17px; margin: -8px 0 0 -18px; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 18%22%3E%3Cpath d=%22M20 6 C18 3 17 3 16.5 5 C13 3 9 2 3 5 C6 6 7 8 6.5 10 C9 8.5 12 9 14 11 C15.5 9.5 17 9.5 18 11.5 L20 13 L22 11.5 C23 9.5 24.5 9.5 26 11 C28 9 31 8.5 33.5 10 C33 8 34 6 37 5 C31 2 27 3 23.5 5 C23 3 22 3 20 6 Z%22 fill=%22%230d0a12%22/%3E%3Ccircle cx=%2219%22 cy=%227.5%22 r=%22.6%22 fill=%22%23ff9b3d%22/%3E%3Ccircle cx=%2221%22 cy=%227.5%22 r=%22.6%22 fill=%22%23ff9b3d%22/%3E%3C/svg%3E") center / contain no-repeat; filter: drop-shadow(0 0 1px rgba(241,216,138,0.9)) drop-shadow(0 0 6px rgba(242,140,40,0.45)); }
 
 /* ---------- Add-sweat flourish: a headstone rises, a ghost leaves it ---------- */
 .flourish-grave-stone {
@@ -10989,6 +10989,75 @@ html[data-theme="hollowgrave"] .egg-toast { font-family: 'Crimson Pro', serif; f
 .tto-grave-mask { position: absolute; left: 0; right: 0; overflow: hidden; }
 .tto-grave-dirt { position: absolute; width: 7px; height: 7px; border-radius: 2px; background: var(--c, #3b2a1e); }
 
+/* ---------- Live edits: a candle flares on the stone ---------- */
+html[data-theme="hollowgrave"] .card-grid .sweat-card.live-edit { animation: graveLiveEdit 1.4s ease-out 1; }
+html[data-theme="hollowgrave"] .sweat-row.live-edit { animation: graveLiveEditRow 1.6s ease-out 1; }
+@keyframes graveLiveEdit {
+  0% { box-shadow: 0 0 0 2px rgba(242,140,40,0.95), 0 0 34px rgba(242,140,40,0.65), 0 18px 28px -16px rgba(0,0,0,0.95); filter: brightness(1.18); }
+  100% { box-shadow: 0 0 0 2px rgba(242,140,40,0), 0 0 0 rgba(242,140,40,0), 0 18px 28px -16px rgba(0,0,0,0.95); filter: none; }
+}
+@keyframes graveLiveEditRow {
+  0% { background: rgba(242,140,40,0.2); }
+  100% { background: transparent; }
+}
+
+/* ---------- Phone bottom nav: a carved stone slab ----------
+   Grenze labels cut into the stone; the current section is lit by a
+   small candle flame that flickers above its icon. */
+@media (max-width: 620px) {
+  html[data-theme="hollowgrave"] .bottom-nav {
+    border-radius: 14px;
+    background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"), linear-gradient(180deg, rgba(58,53,68,0.96), rgba(34,30,42,0.96));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top-color: rgba(255,255,255,0.16);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.06), inset 0 -3px 0 rgba(0,0,0,0.35), 0 0 30px -10px rgba(242,140,40,0.35), 0 16px 34px -10px rgba(0,0,0,0.9);
+  }
+  html[data-theme="hollowgrave"] .bnav-link {
+    border-radius: 9px;
+    color: #a99fb7;
+    font-family: var(--font-label);
+    font-weight: 600;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.06), 0 -1px 0 rgba(0,0,0,0.6);
+  }
+  html[data-theme="hollowgrave"] .bnav-link svg { stroke-width: 1.6; filter: drop-shadow(0 -1px 0 rgba(0,0,0,0.5)); }
+  html[data-theme="hollowgrave"] .bnav-link.active {
+    color: var(--accent);
+    background: radial-gradient(ellipse at 50% 20%, rgba(242,140,40,0.2), transparent 70%);
+    text-shadow: 0 0 8px rgba(242,140,40,0.6);
+  }
+  html[data-theme="hollowgrave"] .bnav-link.active svg { filter: drop-shadow(0 0 4px rgba(242,140,40,0.75)); }
+  html[data-theme="hollowgrave"] .bnav-link::before {
+    content: "";
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    width: 8px;
+    height: 13px;
+    margin-left: -4px;
+    border-radius: 50% 50% 45% 45% / 62% 62% 38% 38%;
+    background: radial-gradient(ellipse at 50% 70%, #fff3c4 0%, #ffb347 45%, rgba(242,140,40,0.85) 70%, rgba(242,140,40,0) 100%);
+    box-shadow: 0 0 10px 2px rgba(242,140,40,0.55);
+    opacity: 0;
+    transform: scale(0.4);
+    transform-origin: 50% 100%;
+    transition: opacity 0.2s ease, transform 0.25s var(--ease);
+  }
+  html[data-theme="hollowgrave"] .bnav-link.active::before { opacity: 1; transform: none; animation: graveNavFlame 1.7s steps(1) infinite; }
+  html[data-theme="hollowgrave"] .bnav-link:active { transform: translateY(1px); }
+}
+@keyframes graveNavFlame {
+  0%, 100% { transform: none; opacity: 1; }
+  23% { transform: scale(0.92, 1.08) rotate(-4deg); opacity: 0.9; }
+  51% { transform: scale(1.05, 0.94) rotate(3deg); opacity: 1; }
+  74% { transform: scale(0.96, 1.04); opacity: 0.85; }
+}
+@media (max-width: 620px) and (prefers-reduced-motion: reduce) {
+  html[data-theme="hollowgrave"] .bnav-link.active::before { animation: none; }
+}
+
 /* ---------- Phones ---------- */
 @media (max-width: 700px) {
   html[data-theme="hollowgrave"] h1 { font-size: 2.6em; }
@@ -10996,6 +11065,10 @@ html[data-theme="hollowgrave"] .egg-toast { font-family: 'Crimson Pro', serif; f
   html[data-theme="hollowgrave"] #gravefield .gf-hills { height: 150px; background-size: auto 150px; }
   html[data-theme="hollowgrave"] .sweat-card { border-radius: 50% 50% 8px 8px / 56px 56px 8px 8px; padding-top: 46px; }
   html[data-theme="hollowgrave"] .sweat-card-index { top: 48px; }
+}
+@media (max-width: 480px) {
+  /* Small and high, clear of the eyebrow line under it. */
+  html[data-theme="hollowgrave"] .hero-pin { top: -36px; left: -8px; width: 50px; height: 50px; }
 }
 /* @@END-HOLLOWGRAVE@@ */
 
@@ -14579,14 +14652,23 @@ const THEME_REVEALS = {
         const all = { duration, fill: "both" };
         const night = ttoEl("tto-grave-night");
         night.animate([{ opacity: 0 }, { opacity: 1, offset: 0.25 }, { opacity: 1, offset: 0.6 }, { opacity: 0, offset: 0.88 }, { opacity: 0 }], all);
-        const md = small ? 80 : 140;
-        const moon = ttoEl("tto-grave-moon", { width: `${md}px`, height: `${md}px`, left: `${w * 0.7}px`, top: `${h * 0.1}px` });
+        // The moon rises where the page's own moon (beside the title) will
+        // be, then stays put while the page fades in under it, so the two
+        // hand over without a second moon showing. Scrolled down past the
+        // title, it rises in the sky and fades as usual.
+        const pin = document.querySelector(".hero-pin");
+        const pr = pin ? pin.getBoundingClientRect() : null;
+        const onPin = pr && pr.width > 0 && pr.bottom > 0 && pr.top < h;
+        const md = onPin ? pr.width : small ? 80 : 140;
+        const moon = ttoEl("tto-grave-moon", onPin
+          ? { width: `${md}px`, height: `${md}px`, left: `${pr.left}px`, top: `${pr.top}px` }
+          : { width: `${md}px`, height: `${md}px`, left: `${w * 0.7}px`, top: `${h * 0.1}px` });
         moon.animate([
           { opacity: 0, transform: "translateY(40px)", easing: "ease-out" },
           { opacity: 1, transform: "translateY(0)", offset: 0.3 },
-          { opacity: 1, transform: "translateY(0)", offset: 0.62 },
-          { opacity: 0, transform: "translateY(-10px)", offset: 0.86 },
-          { opacity: 0, transform: "translateY(-10px)" },
+          { opacity: 1, transform: "translateY(0)", offset: onPin ? 0.86 : 0.62 },
+          onPin ? { opacity: 0, transform: "translateY(0)", offset: 0.96 } : { opacity: 0, transform: "translateY(-10px)", offset: 0.86 },
+          { opacity: 0, transform: onPin ? "translateY(0)" : "translateY(-10px)" },
         ], all);
         const hill = ttoEl("tto-grave-hill");
         hill.animate([

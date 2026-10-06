@@ -12093,12 +12093,13 @@ html[data-theme="hollowgrave"] #hgFlash { display: block; }
 
 /* Fog parts around the cursor (or a finger) and drifts back in behind it.
    The two background banks sit in .gf-fogwrap; #hgMist is a thinner bank
-   drifting over the bottom of the page itself. */
+   drifting over the bottom of the page itself. The mask is written by
+   partingFog() below: a soft, uneven opening with a wake that fills back in. */
 #gravefield .gf-fogwrap { inset: 0; }
 #gravefield .gf-fogwrap,
 #hgMist {
-  -webkit-mask-image: radial-gradient(circle var(--fog-r, 0px) at var(--fog-x, -999px) var(--fog-y, -999px), transparent 0%, transparent 35%, rgba(0,0,0,0.55) 70%, #000 100%);
-  mask-image: radial-gradient(circle var(--fog-r, 0px) at var(--fog-x, -999px) var(--fog-y, -999px), transparent 0%, transparent 35%, rgba(0,0,0,0.55) 70%, #000 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
 }
 #hgMist {
   display: none;
@@ -22039,10 +22040,12 @@ const hgRnd = (a, b) => a + Math.random() * (b - a);
     clearTimeout(timer);
     if (!hgOn()) return;
     timer = setTimeout(() => {
-      strike();
-      if (Math.random() < 0.3) setTimeout(strike, hgRnd(2200, 4000));
+      if (!document.hidden) {
+        strike();
+        if (Math.random() < 0.35) setTimeout(strike, hgRnd(2200, 4000));
+      }
       plan(false);
-    }, soon ? hgRnd(8000, 16000) : hgRnd(30000, 70000));
+    }, soon ? hgRnd(4000, 9000) : hgRnd(12000, 28000));
   }
   document.addEventListener("themechange", () => plan(true));
   plan(true);
@@ -22054,32 +22057,75 @@ const hgRnd = (a, b) => a + Math.random() * (b - a);
 // slowly closes again.
 (function partingFog() {
   const layers = [document.querySelector("#gravefield .gf-fogwrap"), document.getElementById("hgMist")];
-  let tx = 0, ty = 0, x = 0, y = 0, r = 0, swell = 120, raf = 0, last = 0, touch = false, out = true;
-  function paint() {
+  // Fog never clears completely: a thin veil stays even at the center,
+  // and the edge eases out over a long smooth falloff so there's no ring.
+  const STOPS = [0, 0.25, 0.5, 0.7, 0.87, 1];
+  function hole(x, y, r, floor, ry = r * 0.82) {
+    const stops = STOPS.map(t => {
+      const e = t * t * (3 - 2 * t);
+      return `rgba(0,0,0,${(floor + (1 - floor) * e).toFixed(3)}) ${(t * 100).toFixed(0)}%`;
+    }).join(",");
+    return `radial-gradient(${r.toFixed(0)}px ${ry.toFixed(0)}px at ${x.toFixed(0)}px ${y.toFixed(0)}px,${stops})`;
+  }
+  let tx = 0, ty = 0, x = 0, y = 0, r = 0, swell = 130, raf = 0, last = 0, touch = false, out = true, bare = true;
+  // Two trailing points chase the cursor more slowly, so a moving cursor
+  // leaves a continuous wake in the fog that closes up behind it.
+  const tails = [{ x: 0, y: 0, k: 0.06, floor: 0.3 }, { x: 0, y: 0, k: 0.03, floor: 0.6 }];
+  function paint(now) {
+    const parts = [];
+    if (r > 2) {
+      const t = now / 1000;
+      parts.push(hole(x, y, r, 0.1));
+      // A slow lobe wanders around the edge so the opening is never a
+      // perfect circle, the way real fog tears unevenly.
+      const a = t * 0.4, d = r * (0.36 + 0.08 * Math.sin(t * 0.9));
+      parts.push(hole(x + Math.cos(a) * d, y + Math.sin(a) * d * 0.8, r * (0.64 + 0.06 * Math.sin(t * 1.3)), 0.25));
+      // Each wake segment is an oval stretched between a point and the
+      // one ahead of it, so the trail stays one unbroken channel.
+      let lead = { x, y };
+      tails.forEach(p => {
+        const dx = lead.x - p.x, dy = lead.y - p.y;
+        const k = Math.min(1, Math.hypot(dx, dy) / (r * 0.4));
+        if (k > 0.05) parts.push(hole((lead.x + p.x) / 2, (lead.y + p.y) / 2, Math.min(r * 1.6, r * 0.7 + Math.abs(dx) * 0.55), 1 - (1 - p.floor) * k, Math.min(r * 1.4, r * 0.58 + Math.abs(dy) * 0.55)));
+        lead = p;
+      });
+    }
+    const mask = parts.join(",");
+    if (!mask && bare) return;
+    bare = !mask;
     layers.forEach(el => {
-      el.style.setProperty("--fog-x", x.toFixed(1) + "px");
-      el.style.setProperty("--fog-y", y.toFixed(1) + "px");
-      el.style.setProperty("--fog-r", Math.max(0, r).toFixed(1) + "px");
+      el.style.webkitMaskImage = mask;
+      el.style.maskImage = mask;
     });
   }
   function tick(now) {
     raf = 0;
-    x += (tx - x) * 0.14;
-    y += (ty - y) * 0.14;
+    x += (tx - x) * 0.12;
+    y += (ty - y) * 0.12;
+    let lead = { x, y }, moving = Math.abs(tx - x) > 0.5 || Math.abs(ty - y) > 0.5;
+    tails.forEach(p => {
+      p.x += (lead.x - p.x) * p.k;
+      p.y += (lead.y - p.y) * p.k;
+      if (Math.abs(lead.x - p.x) > 0.5 || Math.abs(lead.y - p.y) > 0.5) moving = true;
+      lead = p;
+    });
     const rest = now - last;
-    swell += (120 - swell) * 0.04;
-    const goal = out ? 0 : touch ? (rest < 1200 ? 160 : 0) : (rest > 3500 ? 75 : swell);
-    r += (goal - r) * (goal < r ? 0.03 : 0.12);
-    paint();
-    if (Math.abs(tx - x) > 0.5 || Math.abs(ty - y) > 0.5 || Math.abs(goal - r) > 0.5 || (!touch && rest < 3600)) raf = requestAnimationFrame(tick);
+    swell += (130 - swell) * 0.035;
+    const goal = out ? 0 : touch ? (rest < 1400 ? 170 : 0) : (rest > 3500 ? 85 : swell);
+    r += (goal - r) * (goal < r ? 0.025 : 0.08);
+    paint(now);
+    if (moving || Math.abs(goal - r) > 0.5 || (!touch && rest < 3600)) raf = requestAnimationFrame(tick);
   }
   function move(e) {
     if (!hgOn() || hgCalm()) return;
     touch = e.pointerType !== "mouse";
-    if (out) { x = e.clientX; y = e.clientY; }
+    if (out) {
+      x = e.clientX; y = e.clientY;
+      tails.forEach(p => { p.x = x; p.y = y; });
+    }
     out = false;
     const speed = Math.hypot(e.clientX - tx, e.clientY - ty);
-    swell = Math.min(240, Math.max(swell, 120 + speed * 1.6));
+    swell = Math.min(230, Math.max(swell, 130 + speed * 1.2));
     tx = e.clientX;
     ty = e.clientY;
     last = performance.now();
@@ -22091,6 +22137,7 @@ const hgRnd = (a, b) => a + Math.random() * (b - a);
     out = true;
     if (!raf) raf = requestAnimationFrame(tick);
   });
+  document.addEventListener("themechange", () => { if (!hgOn()) { out = true; r = 0; paint(performance.now()); } });
 })();
 
 // Crows: one on roughly every fourth headstone (never on a Final Boss

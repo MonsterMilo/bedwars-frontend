@@ -8050,8 +8050,66 @@ html[data-theme="deepcurrent"] .sweat-card.live-new { animation: cardIn 0.4s var
   0% { box-shadow: inset 0 0 30px rgba(53,230,196,0.5), 0 0 0 0 rgba(53,230,196,0.6); }
   100% { box-shadow: inset 0 0 0 rgba(53,230,196,0), 0 0 0 22px rgba(53,230,196,0); }
 }
+/* Edited by someone else while the page was open: the card/row is swapped
+   in place (no entry animation) with one short flash in the theme's own
+   language, so it's clear what just changed without it reading as new. */
+html .sweat-card.live-edit { animation: liveEditNeon 1.3s ease-out 1; }
+html .sweat-row.live-edit { animation: liveEditRowNeon 1.6s ease-out 1; }
+@keyframes liveEditNeon {
+  0% { box-shadow: 0 0 0 2px rgba(0,217,255,0.9), 0 0 26px rgba(168,85,247,0.7); }
+  100% { box-shadow: 0 0 0 2px rgba(0,217,255,0), 0 0 0 rgba(168,85,247,0); }
+}
+@keyframes liveEditRowNeon {
+  0% { background: rgba(0,217,255,0.2); }
+  100% { background: transparent; }
+}
+/* Case Files: the page gets re-inked, a brief red-pencil tint. */
+html[data-theme="casefiles"] .sweat-card.live-edit { animation: liveEditCase 1.1s ease-out 1; }
+html[data-theme="casefiles"] .sweat-row.live-edit { animation: liveEditRowCase 1.4s ease-out 1; }
+@keyframes liveEditCase {
+  0% { filter: sepia(0.9) saturate(2.2) hue-rotate(-25deg) brightness(1.1); }
+  100% { filter: none; }
+}
+@keyframes liveEditRowCase {
+  0% { background: rgba(163,47,29,0.18); }
+  100% { background: transparent; }
+}
+/* Private Bank: a single gilt-edge gleam. */
+html[data-theme="ledger"] .sweat-card.live-edit { animation: liveEditLedger 1.4s ease-out 1; }
+html[data-theme="ledger"] .sweat-row.live-edit { animation: liveEditRowLedger 1.6s ease-out 1; }
+@keyframes liveEditLedger {
+  0% { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--gold), 0 0 18px rgba(169,130,46,0.55); }
+  100% { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--border-strong), 0 0 0 rgba(169,130,46,0); }
+}
+@keyframes liveEditRowLedger {
+  0% { background: rgba(226,199,125,0.3); }
+  100% { background: transparent; }
+}
+/* Deep Current: a sonar ping from inside the glass. */
+html[data-theme="deepcurrent"] .sweat-card.live-edit { animation: liveEditDeep 1.5s ease-out 1; }
+html[data-theme="deepcurrent"] .sweat-row.live-edit { animation: liveEditRowDeep 1.8s ease-out 1; }
+@keyframes liveEditDeep {
+  0% { box-shadow: inset 0 0 0 2px rgba(53,230,196,0.8), inset 0 0 26px rgba(53,230,196,0.45); }
+  100% { box-shadow: inset 0 0 0 2px rgba(53,230,196,0), inset 0 0 0 rgba(53,230,196,0); }
+}
+@keyframes liveEditRowDeep {
+  0% { background: rgba(53,230,196,0.18); }
+  100% { background: transparent; }
+}
+/* Sky Isles: a blocky gold outline that blinks twice, then settles. */
+html[data-theme="skyisles"] .sweat-card.live-edit { animation: liveEditSky 0.9s steps(1) 1, skyBob 3.2s steps(2) 0.9s infinite; }
+html[data-theme="skyisles"] .sweat-row.live-edit { animation: liveEditRowSky 0.9s steps(1) 1; }
+@keyframes liveEditSky {
+  0%, 50% { box-shadow: inset 0 -4px 0 0 #e1ecd8, 0 0 0 2px var(--ink), 0 0 0 5px #ffd84a, 0 0 0 7px var(--ink); }
+  25%, 75%, 100% { box-shadow: inset 0 -4px 0 0 #e1ecd8, 0 -2px 0 0 var(--ink), 0 2px 0 0 var(--ink), -2px 0 0 0 var(--ink), 2px 0 0 0 var(--ink); }
+}
+@keyframes liveEditRowSky {
+  0%, 50% { background: rgba(255,216,74,0.35); }
+  25%, 75% { background: transparent; }
+}
 @media (prefers-reduced-motion: reduce) {
   .sweat-card.live-new, .sweat-row.live-new { animation: none !important; }
+  html .sweat-card.live-edit, html .sweat-row.live-edit { animation: none !important; }
 }
 /* @@SKYISLES@@ */
 /* Generated pixel sprites (see icons.py in the theme notes). */
@@ -13885,6 +13943,9 @@ addSweatBtn.addEventListener('click', () => {
 let sweats = [];
 // Sweats that just arrived through a live update, highlighted on the next render.
 let liveNewIds = new Set();
+// Sweats someone else just edited, flashed on the next render when they
+// couldn't be swapped in place.
+let liveEditIds = new Set();
 // When this browser last added or restored a sweat, so the live check
 // doesn't announce your own entry back to you.
 let localWriteAt = 0;
@@ -15087,96 +15148,98 @@ function cardStatCellsHtml(s) {
 function renderCardGrid(filteredSweats, usernameCounts) {
   cardGrid.innerHTML = "";
   emptyState.hidden = filteredSweats.length !== 0;
+  filteredSweats.forEach((s, i) => cardGrid.appendChild(buildSweatCard(s, i, usernameCounts)));
+}
 
-  filteredSweats.forEach((s, i) => {
-    const card = document.createElement("div");
-    card.className = "sweat-card";
-    card.dataset.username = s.username;
-    card.dataset.sweatId = s._id || "";
-    card.dataset.uuid = s.uuid;
-    setLoggedStatsDataset(card, s);
-    card.tabIndex = 0;
-    card.setAttribute("role", "button");
-    card.setAttribute("aria-label", `View ${s.username}'s stats`);
-    card.style.animationDelay = Math.min(i * 0.03, 0.6) + "s";
+function buildSweatCard(s, i, usernameCounts) {
+  const card = document.createElement("div");
+  card.className = "sweat-card";
+  card.dataset.username = s.username;
+  card.dataset.sweatId = s._id || "";
+  card.dataset.uuid = s.uuid;
+  setLoggedStatsDataset(card, s);
+  card.tabIndex = 0;
+  card.setAttribute("role", "button");
+  card.setAttribute("aria-label", `View ${s.username}'s stats`);
+  card.style.animationDelay = Math.min(i * 0.03, 0.6) + "s";
 
-    // Coerced, not read raw off s - same defensive treatment getProcessedSweats()
-    // already gives these two fields, needed here too since an older/malformed
-    // record missing them would otherwise throw out of toFixed() (aborting the
-    // whole render) or, for star, splice a non-numeric value straight into
-    // innerHTML unescaped.
-    const starVal = Number(s.star) || 0;
-    const fkdrVal = Number(s.fkdr) || 0;
-    const indexValue = fkdrVal * fkdrVal * starVal;
-    // Demon and Final Boss sweats get a themed frame and tier pill (same
-    // tiers as the Sweat Lookup gauge).
-    const tier = SWEAT_TIERS.find(t => indexValue < t.max);
-    const standout = tier.key === "t4" || tier.key === "t5";
-    if (standout) card.classList.add(`tier-${tier.key}`);
-    const isLiveNew = liveNewIds.has(s._id);
-    if (isLiveNew) card.classList.add("live-new");
+  // Coerced, not read raw off s - same defensive treatment getProcessedSweats()
+  // already gives these two fields, needed here too since an older/malformed
+  // record missing them would otherwise throw out of toFixed() (aborting the
+  // whole render) or, for star, splice a non-numeric value straight into
+  // innerHTML unescaped.
+  const starVal = Number(s.star) || 0;
+  const fkdrVal = Number(s.fkdr) || 0;
+  const indexValue = fkdrVal * fkdrVal * starVal;
+  // Demon and Final Boss sweats get a themed frame and tier pill (same
+  // tiers as the Sweat Lookup gauge).
+  const tier = SWEAT_TIERS.find(t => indexValue < t.max);
+  const standout = tier.key === "t4" || tier.key === "t5";
+  if (standout) card.classList.add(`tier-${tier.key}`);
+  const isLiveNew = liveNewIds.has(s._id);
+  if (isLiveNew) card.classList.add("live-new");
+  else if (liveEditIds.has(s._id)) card.classList.add("live-edit");
 
-    const beatenByHtml = BEATEN_BY_KEYS
-      .filter(k => s[k])
-      .map(k => `<span class="beaten-avatar" style="--chip-color:var(--roster-${k})" data-tooltip="${BEATEN_BY[k].label}">${BEATEN_BY[k].initials}</span>`)
-      .join("");
+  const beatenByHtml = BEATEN_BY_KEYS
+    .filter(k => s[k])
+    .map(k => `<span class="beaten-avatar" style="--chip-color:var(--roster-${k})" data-tooltip="${BEATEN_BY[k].label}">${BEATEN_BY[k].initials}</span>`)
+    .join("");
 
-    card.innerHTML = `
-      ${standout ? '<span class="sweat-card-frame" aria-hidden="true"></span>' : ""}
-      <span class="sweat-card-index">${Math.round(indexValue).toLocaleString()}</span>
-      <div class="sweat-card-top">
-        <img class="sweat-card-avatar" alt="" />
-        <div class="sweat-card-name"><span class="name-text"></span><span class="sweat-card-dupe"></span></div>
+  card.innerHTML = `
+    ${standout ? '<span class="sweat-card-frame" aria-hidden="true"></span>' : ""}
+    <span class="sweat-card-index">${Math.round(indexValue).toLocaleString()}</span>
+    <div class="sweat-card-top">
+      <img class="sweat-card-avatar" alt="" />
+      <div class="sweat-card-name"><span class="name-text"></span><span class="sweat-card-dupe"></span></div>
+    </div>
+    <div class="sweat-card-pills">
+      <span class="pill prestige-tag" aria-label="${starVal} stars">${prestigeTagHtml(starVal)}</span>
+      <span class="pill fkdr">${fkdrVal.toFixed(2)} FKDR</span>
+      ${isLiveNew ? '<span class="pill live-pill">New</span>' : ""}
+      ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
+      ${s.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}
+    </div>
+    <div class="sweat-card-stats">${cardStatCellsHtml(s)}</div>
+    ${sweatNotes(s).length ? '<div class="sweat-card-note"><p class="note-text"></p><span class="note-meta"></span></div>' : '<div class="card-note-ghost" data-add-note aria-hidden="true"></div>'}
+    <div class="sweat-card-footer">
+      <div class="beaten-by-avatars">${beatenByHtml}</div>
+      <div class="sweat-card-footer-right">
+        <span class="sweat-card-date"></span>
+        <button type="button" class="icon-btn edit edit-btn" data-tooltip="Edit">&#9998;</button>
+        ${canRemoveSweat(s) ? '<button type="button" class="icon-btn danger remove-btn" data-tooltip="Remove">&#10005;</button>' : ""}
       </div>
-      <div class="sweat-card-pills">
-        <span class="pill prestige-tag" aria-label="${starVal} stars">${prestigeTagHtml(starVal)}</span>
-        <span class="pill fkdr">${fkdrVal.toFixed(2)} FKDR</span>
-        ${isLiveNew ? '<span class="pill live-pill">New</span>' : ""}
-        ${s.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}
-        ${s.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}
-      </div>
-      <div class="sweat-card-stats">${cardStatCellsHtml(s)}</div>
-      ${sweatNotes(s).length ? '<div class="sweat-card-note"><p class="note-text"></p><span class="note-meta"></span></div>' : '<div class="card-note-ghost" data-add-note aria-hidden="true"></div>'}
-      <div class="sweat-card-footer">
-        <div class="beaten-by-avatars">${beatenByHtml}</div>
-        <div class="sweat-card-footer-right">
-          <span class="sweat-card-date"></span>
-          <button type="button" class="icon-btn edit edit-btn" data-tooltip="Edit">&#9998;</button>
-          ${canRemoveSweat(s) ? '<button type="button" class="icon-btn danger remove-btn" data-tooltip="Remove">&#10005;</button>' : ""}
-        </div>
-      </div>
-    `;
+    </div>
+  `;
 
-    // Set user-controlled text via textContent/property assignment (never innerHTML)
-    // so a malicious username can't inject markup - the backend doesn't validate
-    // this field, so the frontend has to treat it as untrusted.
-    withRetryingAvatar(card.querySelector(".sweat-card-avatar"), s.uuid, s.username);
-    card.querySelector(".name-text").textContent = s.username;
-    fillCardNote(card.querySelector(".sweat-card-note"), s);
-    const count = usernameCounts[identityKeyFor(s)];
-    if (hideDuplicatesCheckbox.checked && count > 1) {
-      card.querySelector(".sweat-card-dupe").textContent = `x${count}`;
-    }
-    card.querySelector(".sweat-card-date").textContent = new Date(s.dateAdded).toLocaleDateString();
+  // Set user-controlled text via textContent/property assignment (never innerHTML)
+  // so a malicious username can't inject markup - the backend doesn't validate
+  // this field, so the frontend has to treat it as untrusted.
+  withRetryingAvatar(card.querySelector(".sweat-card-avatar"), s.uuid, s.username);
+  card.querySelector(".name-text").textContent = s.username;
+  fillCardNote(card.querySelector(".sweat-card-note"), s);
+  const count = usernameCounts[identityKeyFor(s)];
+  if (hideDuplicatesCheckbox.checked && count > 1) {
+    card.querySelector(".sweat-card-dupe").textContent = `x${count}`;
+  }
+  card.querySelector(".sweat-card-date").textContent = new Date(s.dateAdded).toLocaleDateString();
 
-    card.querySelector(".edit-btn").addEventListener("click", (e) => {
-      e.stopPropagation();
-      // Same grow-out-of-the-card open as the player modal (see
-      // animateModalIn near the bottom of this script) - captured here
-      // since this button stops propagation to keep its click from also
-      // opening the player modal underneath it.
-      const flipFrom = card.getBoundingClientRect();
-      openEditModal(s);
-      requestAnimationFrame(() => playCardFlipExpand(flipFrom, editModal.querySelector(".modal-card"), card));
-    });
-
-    card.querySelector(".remove-btn")?.addEventListener("click", (e) => {
-      e.stopPropagation();
-      removeSweat(s._id, card);
-    });
-
-    cardGrid.appendChild(card);
+  card.querySelector(".edit-btn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    // Same grow-out-of-the-card open as the player modal (see
+    // animateModalIn near the bottom of this script) - captured here
+    // since this button stops propagation to keep its click from also
+    // opening the player modal underneath it.
+    const flipFrom = card.getBoundingClientRect();
+    openEditModal(s);
+    requestAnimationFrame(() => playCardFlipExpand(flipFrom, editModal.querySelector(".modal-card"), card));
   });
+
+  card.querySelector(".remove-btn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    removeSweat(s._id, card);
+  });
+
+  return card;
 }
 
 // Deep Current only - cursor-tracked porthole tilt + glass glare on the
@@ -15273,7 +15336,7 @@ cardGrid.addEventListener("click", (e) => {
 // too since it shows who ELSE beat this player) so their widths line up.
 function buildSweatRow(s, { usernameCounts }) {
   const tr = document.createElement("tr");
-  tr.className = "sweat-row" + (liveNewIds.has(s._id) ? " live-new" : "");
+  tr.className = "sweat-row" + (liveNewIds.has(s._id) ? " live-new" : liveEditIds.has(s._id) ? " live-edit" : "");
   tr.dataset.username = s.username;
   tr.dataset.sweatId = s._id || "";
   tr.dataset.uuid = s.uuid;
@@ -18240,48 +18303,173 @@ document.addEventListener("keydown", (e) => {
 
 // ============================================================
 // LIVE UPDATES
-// While the page is open and visible, checks for sweats added by anyone
-// else every LIVE_POLL_MS. New ones drop into the list with a themed
-// highlight, a toast and the theme's "arrive" sound. Only the newest page
-// is fetched each time, which is cheap; if the total no longer matches
-// (someone deleted or restored an entry) the full list is quietly
-// re-synced instead.
+// While the page is open and visible, checks for changes made by anyone
+// else every LIVE_POLL_MS. New sweats drop into the list with a themed
+// highlight, a toast and the theme's "arrive" sound. Edits (stats, flags,
+// beaten-by, notes, from the site or the Discord bot) swap the changed card
+// or row in place with a short themed flash, and refresh the notes in an
+// open popup. The backend's changedSince answer carries only what changed;
+// if the total still doesn't match (or too much changed at once) the full
+// list is quietly re-synced instead.
 // ============================================================
 const LIVE_POLL_MS = 40000;
 const LIVE_PAGE = 25;
 let livePollBusy = false;
 let lastLivePoll = Date.now();
-function sweatBrief(s) {
-  const esc = v => String(v).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-  return `<b>${esc(s.username)}</b> (${Number(s.star) || 0}&#9733;, ${(Number(s.fkdr) || 0).toFixed(2)} FKDR)`;
+// Backend time to ask "what changed since" next. Starts from the newest
+// change already loaded, then follows the backend's own changedAt, so
+// clock differences between this computer and the server don't matter.
+let liveChangedSince = null;
+function newestChangeTime(list) {
+  let max = 0;
+  list.forEach(s => {
+    const t = Date.parse(s.updatedAt || s.createdAt || "");
+    if (t > max) max = t;
+  });
+  return max ? new Date(max).toISOString() : null;
 }
+function liveEsc(v) {
+  return String(v).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+}
+function sweatBrief(s) {
+  return `<b>${liveEsc(s.username)}</b> (${Number(s.star) || 0}&#9733;, ${(Number(s.fkdr) || 0).toFixed(2)} FKDR)`;
+}
+// One line for the toast about an edit someone else just made.
+function liveEditBrief(before, after) {
+  const name = `<b>${liveEsc(after.username)}</b>`;
+  const was = sweatNotes(before), now = sweatNotes(after);
+  if (now.length > was.length) {
+    const text = String(now[now.length - 1].text || "");
+    return `New note on ${name}: &ldquo;${liveEsc(text.length > 70 ? text.slice(0, 70) + "…" : text)}&rdquo;`;
+  }
+  if (now.length !== was.length || now.some((n, i) => n.text !== (was[i] && was[i].text))) return `Notes changed on ${name}`;
+  const newly = BEATEN_BY_KEYS.filter(k => after[k] && !before[k]);
+  if (newly.length) return `${name} marked beaten by ${newly.map(k => liveEsc(BEATEN_BY[k].label)).join(", ")}`;
+  if (after.cheating && !before.cheating) return `${name} flagged as a cheater`;
+  if (after.boosting && !before.boosting) return `${name} flagged as boosting`;
+  return `${name} was just updated`;
+}
+
+// Swaps just the edited cards/rows on the current page for fresh ones,
+// when the page would otherwise show exactly the same entries in the same
+// order. Returns false when it can't (an edit moved something in the sort,
+// in or out of the filters, or changed the leaderboard counts), so the
+// caller does a normal re-render instead.
+function patchLiveEdits(editedIds, editedFlags) {
+  let container, selector, build;
+  const { filteredSweats, usernameCounts } = getProcessedSweats();
+  let list = filteredSweats;
+  if (viewMode === "grid") {
+    container = cardGrid; selector = ".sweat-card"; build = buildSweatCard;
+  } else if (viewMode === "table") {
+    container = tableBody; selector = ".sweat-row"; build = (s, i, counts) => buildSweatRow(s, { usernameCounts: counts });
+  } else {
+    if (editedFlags || !leaderboardPerson) return false;
+    container = leaderboardTableBody; selector = ".sweat-row"; build = (s, i, counts) => buildSweatRow(s, { usernameCounts: counts });
+    list = filteredSweats.filter(s => s[leaderboardPerson]);
+  }
+  const shown = [...container.querySelectorAll(selector)];
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = list.slice(pageStart, pageStart + PAGE_SIZE);
+  if (shown.length !== pageItems.length || shown.some((el, i) => el.dataset.sweatId !== pageItems[i]._id)) return false;
+  // The summary strip and counts can still move (a stat record, a filter
+  // match off this page), so refresh those without touching the list.
+  const total = sweats.length;
+  const plural = n => (n === 1 ? "player" : "players");
+  resultCount.textContent = filteredSweats.length === total
+    ? `${total.toLocaleString()} tracked ${plural(total)}`
+    : `${filteredSweats.length.toLocaleString()} of ${total.toLocaleString()} ${plural(total)} match`;
+  if (viewMode === "leaderboard") renderSweatStats(list, BEATEN_BY[leaderboardPerson].label);
+  else renderSweatStats(filteredSweats);
+  shown.forEach((el, i) => {
+    const s = pageItems[i];
+    if (!editedIds.has(s._id)) return;
+    hideTooltip();
+    const fresh = build(s, i, usernameCounts);
+    fresh.style.animationDelay = "";
+    fresh.classList.add("live-edit");
+    const hadFocus = el.contains(document.activeElement);
+    el.replaceWith(fresh);
+    if (hadFocus) fresh.focus({ preventScroll: true });
+  });
+  return true;
+}
+
+// Re-renders the notes in an open player/edit popup when someone else
+// changed one of the sweats it's showing - unless a note is being written
+// or edited there right now, so nobody loses what they're typing.
+function refreshOpenNotes(editedIds) {
+  if (!modalNoteSweats.some(s => editedIds.has(s._id))) return;
+  modalNoteSweats = modalNoteSweats.map(s => sweats.find(x => x._id === s._id) || s);
+  if (!modalNoteForm.hidden || modalNotesList.querySelector(".note-edit-form")) return;
+  renderModalNotesList();
+}
+
 async function pollLiveSweats() {
   if (document.hidden || livePollBusy || !sweats.length) return;
   livePollBusy = true;
   lastLivePoll = Date.now();
   try {
-    const res = await fetch(`${backendBaseURL}/sweats?paged=1&limit=${LIVE_PAGE}`);
+    if (!liveChangedSince) liveChangedSince = newestChangeTime(sweats);
+    const params = new URLSearchParams({ paged: "1", limit: String(LIVE_PAGE) });
+    if (liveChangedSince) params.set("changedSince", liveChangedSince);
+    const res = await fetch(`${backendBaseURL}/sweats?${params}`);
     if (!res.ok) return;
     const data = await res.json();
     if (!data || !Array.isArray(data.sweats)) return;
+    if (data.changedAt) liveChangedSince = data.changedAt;
     const known = new Set(sweats.map(s => s._id));
     const fresh = data.sweats.filter(s => s && s._id && !known.has(s._id));
     let changed = fresh.length > 0;
     if (changed) sweats = [...fresh, ...sweats];
-    if (typeof data.total === "number" && data.total !== sweats.length) {
+
+    // Edits and removals since the last check (newer backends only).
+    const edits = [];
+    if (Array.isArray(data.removed) && data.removed.length) {
+      const gone = new Set(data.removed);
+      const before = sweats.length;
+      sweats = sweats.filter(s => !gone.has(s._id));
+      if (sweats.length !== before) changed = true;
+    }
+    if (Array.isArray(data.changed)) {
+      data.changed.forEach(doc => {
+        if (!doc || !doc._id) return;
+        const i = sweats.findIndex(s => s._id === doc._id);
+        if (i === -1 || sweats[i].updatedAt === doc.updatedAt) return;
+        edits.push({ before: sweats[i], after: doc });
+        sweats[i] = doc;
+      });
+    }
+
+    let resynced = false;
+    if (data.changedTruncated || (typeof data.total === "number" && data.total !== sweats.length)) {
       sweats = await fetchAllSweats();
       changed = true;
+      resynced = true;
     }
     // Nothing new: leave the page alone rather than re-rendering it.
-    if (!changed) return;
+    if (!changed && !edits.length) return;
+
+    const editedIds = new Set(edits.map(e => e.after._id));
+    if (edits.length) refreshOpenNotes(editedIds);
     if (fresh.length && Date.now() - localWriteAt > 20000) {
       liveNewIds = new Set(fresh.map(s => s._id));
       siteAudio.play("arrive");
       eggToast(fresh.length === 1
         ? `New sweat just added: ${sweatBrief(fresh[0])}`
         : `<b>${fresh.length}</b> new sweats just added: ${fresh.slice(0, 3).map(sweatBrief).join(", ")}${fresh.length > 3 ? "&hellip;" : ""}`, 6000);
+    } else if (edits.length) {
+      eggToast(edits.length === 1
+        ? liveEditBrief(edits[0].before, edits[0].after)
+        : `<b>${edits.length}</b> sweats were just updated`, 5000);
     }
-    renderTable();
+
+    const editedFlags = edits.some(({ before, after }) => BEATEN_BY_KEYS.some(k => !!before[k] !== !!after[k]));
+    if (changed || resynced || !patchLiveEdits(editedIds, editedFlags)) {
+      liveEditIds = editedIds;
+      renderTable();
+      liveEditIds = new Set();
+    }
     liveNewIds = new Set();
   } catch {
     // A missed poll is harmless; the next one tries again.

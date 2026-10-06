@@ -2246,6 +2246,109 @@ li[data-theme-value="skyisles"] .theme-swatch i { left: 4px; top: 5px; width: 12
 li[data-theme-value="hollowgrave"] .theme-swatch { background: radial-gradient(circle 6px at 33px 9px, #fff4cf, #f1d88a 70%, transparent 76%), radial-gradient(circle 13px at 33px 9px, rgba(241,216,138,0.28), transparent), radial-gradient(130% 70% at 50% 120%, #2b1d3d, #120d1a 60%, #07060a); }
 li[data-theme-value="hollowgrave"] .theme-swatch b { left: 9px; bottom: 7px; width: 11px; height: 14px; border-radius: 6px 6px 1px 1px; background: linear-gradient(180deg, #5a5268, #3a3544); box-shadow: 0 0 6px rgba(184,255,92,0.35); z-index: 1; }
 li[data-theme-value="hollowgrave"] .theme-swatch i { left: -6px; right: -6px; bottom: -8px; height: 16px; border-radius: 50%; background: #0c0a12; box-shadow: 0 -2px 6px rgba(242,140,40,0.35); z-index: 2; }
+/* The seasonal section: Hollow Grave sits under its own "Seasonal" header
+   as a small night-sky card that looks the same in every theme. Through
+   October it glows and carries a countdown (updateSeasonalTheme). */
+#themeDropdownMenu li.theme-season-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 6px 2px 4px;
+  padding: 9px 2px 2px;
+  border-top: 1px dashed rgba(242,140,40,0.35);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  cursor: default;
+  font-family: 'Grenze', Georgia, serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f28c28;
+  white-space: nowrap;
+  /* Sized by the theme rows above it, never wider. */
+  contain: inline-size;
+  text-shadow: none;
+}
+.theme-season-pill {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(242,140,40,0.7);
+  background: #1d1428;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: #ffc58a;
+}
+.theme-dropdown:not(.season-on) .theme-season-pill { color: #a99fb7; border-color: rgba(169,159,183,0.5); }
+#themeDropdownMenu li.theme-opt-seasonal {
+  position: relative;
+  margin-top: 11px;
+  border-radius: 9px;
+  color: #efe6f4;
+  font-family: 'Grenze', Georgia, serif;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  text-shadow: none;
+  background:
+    radial-gradient(80% 120% at 0% 50%, rgba(242,140,40,0.2), transparent 60%),
+    linear-gradient(135deg, #1d1428, #0f0b15);
+  box-shadow: inset 0 0 0 1px rgba(242,140,40,0.4);
+}
+#themeDropdownMenu li.theme-opt-seasonal:hover,
+#themeDropdownMenu li.theme-opt-seasonal:focus-visible {
+  color: #fff;
+  background:
+    radial-gradient(80% 120% at 0% 50%, rgba(242,140,40,0.32), transparent 65%),
+    linear-gradient(135deg, #251a33, #120d1a);
+  box-shadow: inset 0 0 0 1px rgba(242,140,40,0.7), 0 0 14px rgba(242,140,40,0.25);
+}
+#themeDropdownMenu li.theme-opt-seasonal[aria-selected="true"] { box-shadow: inset 0 0 0 2px #f28c28, 0 0 16px rgba(242,140,40,0.3); }
+.theme-dropdown.season-on #themeDropdownMenu li.theme-opt-seasonal { animation: seasonGlow 2.8s ease-in-out infinite; }
+@keyframes seasonGlow {
+  0%, 100% { box-shadow: inset 0 0 0 1px rgba(242,140,40,0.45), 0 0 8px rgba(242,140,40,0.12); }
+  50% { box-shadow: inset 0 0 0 1px rgba(242,140,40,0.8), 0 0 18px rgba(242,140,40,0.32); }
+}
+.theme-opt-seasonal .theme-opt-name { font-size: 15px; }
+/* A tab on the card's corner, so the badge doesn't widen the whole menu
+   (on phones that pushed it off the left edge). */
+.theme-opt-badge {
+  position: absolute;
+  top: -7px;
+  right: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #f6a04a, #d9661a);
+  color: #1a0f06;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.theme-opt-seasonal .theme-opt-tag { color: #f6b26b; opacity: 1; font-family: 'Crimson Pro', Georgia, serif; font-style: italic; font-size: 12px; }
+.theme-dropdown:not(.season-on) .theme-opt-seasonal .theme-opt-tag { color: #a99fb7; }
+/* An ember on the theme button in October until Hollow Grave's been tried. */
+.theme-dropdown-btn.season-ember { position: relative; }
+.theme-dropdown-btn.season-ember::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #ffe0a8, #f28c28 60%, #b8460c);
+  box-shadow: 0 0 8px rgba(242,140,40,0.9);
+  animation: seasonEmber 1.8s ease-in-out infinite;
+}
+@keyframes seasonEmber { 0%, 100% { transform: scale(0.85); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .theme-dropdown.season-on #themeDropdownMenu li.theme-opt-seasonal, .theme-dropdown-btn.season-ember::after { animation: none; }
+}
 li[data-theme-value="deepcurrent"] .theme-swatch i { left: 28px; top: 16px; width: 7px; height: 7px; border-radius: 50%; border: 1px solid rgba(160,255,240,0.8); box-shadow: -12px 5px 0 -1.5px rgba(53,230,196,0.6); }
 @media (prefers-reduced-motion: reduce) {
   .theme-dropdown-menu li:hover .theme-swatch { transform: none; }
@@ -12855,7 +12958,8 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
         <li role="option" data-theme-value="ledger" data-label="Private Bank" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Private Bank</span><span class="theme-opt-tag">Old-money vault</span></span></li>
         <li role="option" data-theme-value="deepcurrent" data-label="Deep Current" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Deep Current</span><span class="theme-opt-tag">Abyssal sonar</span></span></li>
         <li role="option" data-theme-value="skyisles" data-label="Sky Isles" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Sky Isles</span><span class="theme-opt-tag">Retro pixel skies</span></span></li>
-        <li role="option" data-theme-value="hollowgrave" data-label="Hollow Grave" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Hollow Grave</span><span class="theme-opt-tag">Moonlit graveyard</span></span></li>
+        <li class="theme-season-head" role="presentation" aria-hidden="true"><span class="theme-season-title">&#127875; Seasonal</span><span class="theme-season-pill">Limited time</span></li>
+        <li role="option" class="theme-opt-seasonal" data-theme-value="hollowgrave" data-label="Hollow Grave" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Hollow Grave <span class="theme-opt-badge">Halloween</span></span><span class="theme-opt-tag" id="seasonTag">Moonlit graveyard</span></span></li>
       </ul>
     </div>
     <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; <span class="key-owner-name">Your Key</span></button>
@@ -15026,7 +15130,7 @@ const themeDropdown = document.getElementById("themeDropdown");
 const themeDropdownBtn = document.getElementById("themeDropdownBtn");
 const themeDropdownMenu = document.getElementById("themeDropdownMenu");
 const themeDropdownLabel = document.getElementById("themeDropdownLabel");
-const themeOptions = Array.from(themeDropdownMenu.querySelectorAll("li"));
+const themeOptions = Array.from(themeDropdownMenu.querySelectorAll("li[data-theme-value]"));
 const THEME_IDS = themeOptions.map(li => li.dataset.themeValue);
 const THEME_LABELS = Object.fromEntries(themeOptions.map(li => [li.dataset.themeValue, li.dataset.label]));
 
@@ -15038,6 +15142,47 @@ function closeThemeDropdown() {
 function openThemeDropdown() {
   themeDropdownMenu.hidden = false;
   themeDropdownBtn.setAttribute("aria-expanded", "true");
+  loadSeasonFonts();
+  updateSeasonalTheme();
+  // On phones the list runs past the bottom nav, which would hide the
+  // featured seasonal entry at the end, so nudge the page up until it fits.
+  const nav = document.getElementById("bottomNav");
+  const navH = nav && getComputedStyle(nav).display !== "none" ? nav.offsetHeight : 0;
+  // offsetHeight, not the rect: Sky Isles pops the menu in from a smaller scale.
+  const over = themeDropdownMenu.getBoundingClientRect().top + themeDropdownMenu.offsetHeight - (window.innerHeight - navH - 12);
+  if (over > 0) window.scrollBy({ top: over, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
+
+// Hollow Grave is the seasonal theme: it stays pickable all year, but
+// through October it's featured in the menu as a limited-time Halloween
+// theme with a countdown to the end of the month (and a little ember on
+// the menu button until you've tried it). The rest of the year it reads
+// "Returns every October".
+const seasonTag = document.getElementById("seasonTag");
+function updateSeasonalTheme() {
+  const now = new Date();
+  const inSeason = now.getMonth() === 9;
+  themeDropdown.classList.toggle("season-on", inSeason);
+  themeDropdownBtn.classList.toggle("season-ember", inSeason && currentThemeId() !== "hollowgrave" && !seasonTried());
+  if (!seasonTag) return;
+  if (!inSeason) { seasonTag.textContent = "Returns every October"; return; }
+  const left = new Date(now.getFullYear(), 10, 1) - now;
+  const days = Math.floor(left / 86400000), hours = Math.floor(left / 3600000) % 24, mins = Math.floor(left / 60000) % 60;
+  seasonTag.textContent = days >= 2 ? `Leaves in ${days} days` : days === 1 ? `Leaves in 1 day ${hours}h` : `Last night! ${hours}h ${mins}m left`;
+}
+// The seasonal entry is lettered in Hollow Grave's Grenze/Crimson Pro in
+// every theme, so fetch just those two faces the first time the menu opens.
+function loadSeasonFonts() {
+  if (document.getElementById("theme-fonts-hollowgrave") || document.getElementById("season-fonts")) return;
+  const link = document.createElement("link");
+  link.id = "season-fonts";
+  link.rel = "stylesheet";
+  link.crossOrigin = "anonymous";
+  link.href = "https://fonts.googleapis.com/css2?family=Grenze:wght@700&family=Crimson+Pro:ital,wght@1,400&display=swap";
+  document.head.appendChild(link);
+}
+function seasonTried() {
+  try { return localStorage.getItem("seasonTried") === String(new Date().getFullYear()); } catch { return false; }
 }
 
 // Theme switching reveals the new theme over a snapshot of the old one
@@ -15786,6 +15931,8 @@ function applyTheme(themeId, opts = {}) {
     themeOptions.forEach(li => li.setAttribute("aria-selected", li.dataset.themeValue === themeId ? "true" : "false"));
     if (themeId === "skyisles") pickSkySplash();
     try { localStorage.setItem(THEME_STORAGE_KEY, themeId); } catch (e) {}
+    if (themeId === "hollowgrave") { try { localStorage.setItem("seasonTried", String(new Date().getFullYear())); } catch (e) {} }
+    updateSeasonalTheme();
   };
   if (opts.animate === false || themeId === currentThemeId()) {
     swap();

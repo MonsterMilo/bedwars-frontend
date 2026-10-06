@@ -33,7 +33,8 @@
     casefiles: "family=Courier+Prime:wght@400;700&family=Anton&family=Caveat:wght@500;700",
     ledger: "family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Pinyon+Script",
     deepcurrent: "family=Sora:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700",
-    skyisles: "family=Jersey+10&family=Press+Start+2P&family=Silkscreen:wght@400;700"
+    skyisles: "family=Jersey+10&family=Press+Start+2P&family=Silkscreen:wght@400;700",
+    hollowgrave: "family=Grenze+Gotisch:wght@500;600;700&family=Grenze:wght@500;600;700&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500"
   };
   window.loadThemeFonts = function (themeId) {
     const families = window.THEME_FONT_FAMILIES[themeId] || window.THEME_FONT_FAMILIES.neon;
@@ -341,6 +342,65 @@ html[data-theme="skyisles"] {
   --rank-mvpplus: #1a8fb0;
   --rank-vip: #3f9a26;
   --rank-vipplus: #3f9a26;
+}
+
+/* "Hollow Grave" theme - a moonlit graveyard for spooky season. Every
+   card is a headstone with R.I.P. carved across its arched top, the page
+   sits under a full moon with ground fog drifting past a crooked fence
+   line, and the light comes from jack-o'-lantern orange and ectoplasm
+   green. Component overrides live in the HOLLOW GRAVE block near the end
+   of this stylesheet. */
+html[data-theme="hollowgrave"] {
+  --bg: #07060a;
+  --panel: #18141f;
+  --panel-2: #1f1a28;
+  --border: rgba(232,224,240,0.09);
+  --border-strong: rgba(242,140,40,0.45);
+  --accent: #f28c28;
+  --accent-2: #b8ff5c;
+  --accent-soft: rgba(242,140,40,0.13);
+  --accent-2-soft: rgba(184,255,92,0.11);
+  --text: #ece4f2;
+  --text-dim: #aa9fb9;
+  --text-faint: #716780;
+  --good: #9ee05a;
+  --good-soft: rgba(158,224,90,0.12);
+  --bad: #ff5468;
+  --bad-soft: rgba(255,84,104,0.12);
+  --neutral: #a99cff;
+  --neutral-soft: rgba(169,156,255,0.12);
+  --gold: #f1d88a;
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 14px;
+  --shadow-card: 0 18px 36px -16px rgba(0,0,0,0.85);
+  --stone: #3a3544;
+  --stone-dark: #2a2632;
+  --moon: #f1d88a;
+  --ecto: #b8ff5c;
+  --font-grave: 'Grenze Gotisch', 'Old English Text MT', serif;
+  --font-label: 'Grenze', 'Crimson Pro', Georgia, serif;
+
+  /* The 9 identities as candle flames, ghost lights and potion colors -
+     warm and witchy rather than the neon set filtered down. */
+  --roster-milo: #f28c28;
+  --roster-potat: #b47cff;
+  --roster-aballs: #ffcf5a;
+  --roster-zoiv: #ff6f9e;
+  --roster-max: #b8ff5c;
+  --roster-sqoz: #7fb4ff;
+  --roster-kermit: #5ee0a8;
+  --roster-ssent: #e2533a;
+  --roster-key: #f1d88a;
+
+  --rank-admin: var(--bad);
+  --rank-mod: var(--good);
+  --rank-youtube: var(--bad);
+  --rank-mvpplusplus: #ffb347;
+  --rank-mvp: #7fd8ff;
+  --rank-mvpplus: #7fd8ff;
+  --rank-vip: #9ee05a;
+  --rank-vipplus: #9ee05a;
 }
 
 * { box-sizing: border-box; }
@@ -2182,6 +2242,10 @@ li[data-theme-value="skyisles"] .theme-swatch { background: linear-gradient(180d
 li[data-theme-value="skyisles"] .theme-swatch b { left: 12px; top: 15px; width: 20px; height: 4px; background: #5cb83a; box-shadow: 0 4px 0 #8a5a33, 4px 8px 0 -0px #6e4526, -4px 4px 0 -0px transparent; }
 li[data-theme-value="skyisles"] .theme-swatch b::after { content: ""; position: absolute; left: 4px; top: 8px; width: 12px; height: 4px; background: #6e4526; box-shadow: 4px 4px 0 -0px #5a381e; }
 li[data-theme-value="skyisles"] .theme-swatch i { left: 4px; top: 5px; width: 12px; height: 4px; background: #fff; box-shadow: 4px -3px 0 -0px #fff, 22px 2px 0 -0px rgba(255,255,255,0.85); }
+/* Hollow Grave: a full moon over a little headstone on a dark hill */
+li[data-theme-value="hollowgrave"] .theme-swatch { background: radial-gradient(circle 6px at 33px 9px, #fff4cf, #f1d88a 70%, transparent 76%), radial-gradient(circle 13px at 33px 9px, rgba(241,216,138,0.28), transparent), radial-gradient(130% 70% at 50% 120%, #2b1d3d, #120d1a 60%, #07060a); }
+li[data-theme-value="hollowgrave"] .theme-swatch b { left: 9px; bottom: 7px; width: 11px; height: 14px; border-radius: 6px 6px 1px 1px; background: linear-gradient(180deg, #5a5268, #3a3544); box-shadow: 0 0 6px rgba(184,255,92,0.35); z-index: 1; }
+li[data-theme-value="hollowgrave"] .theme-swatch i { left: -6px; right: -6px; bottom: -8px; height: 16px; border-radius: 50%; background: #0c0a12; box-shadow: 0 -2px 6px rgba(242,140,40,0.35); z-index: 2; }
 li[data-theme-value="deepcurrent"] .theme-swatch i { left: 28px; top: 16px; width: 7px; height: 7px; border-radius: 50%; border: 1px solid rgba(160,255,240,0.8); box-shadow: -12px 5px 0 -1.5px rgba(53,230,196,0.6); }
 @media (prefers-reduced-motion: reduce) {
   .theme-dropdown-menu li:hover .theme-swatch { transform: none; }
@@ -2258,6 +2322,7 @@ html[data-theme="casefiles"] .audio-switch::after { border-radius: 2px; }
 html[data-theme="casefiles"] { --medal-1: #b8912f; --medal-2: #7b776b; --medal-3: #9a5a33; }
 html[data-theme="ledger"] { --medal-1: #a9822e; --medal-2: #8a8e96; --medal-3: #9c6238; }
 html[data-theme="deepcurrent"] { --medal-1: #ffe066; --medal-2: #bfe3ea; --medal-3: #ff9f6b; }
+html[data-theme="hollowgrave"] { --medal-1: #f1d88a; --medal-2: #c9c0d8; --medal-3: #f28c28; }
 
 .leaderboard-ranking {
   max-width: 1200px;
@@ -2658,6 +2723,7 @@ html[data-theme="casefiles"] .empty-icon-casefiles { display: block; color: var(
 html[data-theme="ledger"] .empty-icon-ledger { display: block; color: var(--gold); }
 html[data-theme="deepcurrent"] .empty-icon-deepcurrent { display: block; color: var(--accent); }
 html[data-theme="skyisles"] .empty-icon-skyisles { display: block; }
+html[data-theme="hollowgrave"] .empty-icon-hollowgrave { display: block; color: #8d849c; }
 
 /* Neon: a slowly rotating radar sweep, echoing "still scanning, nothing
    found" rather than a static dead icon - the one empty state in this set
@@ -2697,7 +2763,9 @@ html[data-theme="ledger"] #leaderboardEmptyState .empty-state-text,
 html[data-theme="deepcurrent"] #emptyState .empty-state-text,
 html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text,
 html[data-theme="skyisles"] #emptyState .empty-state-text,
-html[data-theme="skyisles"] #leaderboardEmptyState .empty-state-text {
+html[data-theme="skyisles"] #leaderboardEmptyState .empty-state-text,
+html[data-theme="hollowgrave"] #emptyState .empty-state-text,
+html[data-theme="hollowgrave"] #leaderboardEmptyState .empty-state-text {
   font-size: 0;
 }
 html[data-theme="casefiles"] #emptyState .empty-state-text::before,
@@ -2707,7 +2775,9 @@ html[data-theme="ledger"] #leaderboardEmptyState .empty-state-text::before,
 html[data-theme="deepcurrent"] #emptyState .empty-state-text::before,
 html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text::before,
 html[data-theme="skyisles"] #emptyState .empty-state-text::before,
-html[data-theme="skyisles"] #leaderboardEmptyState .empty-state-text::before {
+html[data-theme="skyisles"] #leaderboardEmptyState .empty-state-text::before,
+html[data-theme="hollowgrave"] #emptyState .empty-state-text::before,
+html[data-theme="hollowgrave"] #leaderboardEmptyState .empty-state-text::before {
   font-size: 16px;
 }
 html[data-theme="casefiles"] #emptyState .empty-state-text::before { content: "No exhibits on file match this search."; }
@@ -2718,6 +2788,8 @@ html[data-theme="ledger"] #leaderboardEmptyState .empty-state-text::before { con
 html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text::before { content: "No catches match these filters."; }
 html[data-theme="skyisles"] #emptyState .empty-state-text::before { content: "Nothing but empty sky out here. Try another search."; }
 html[data-theme="skyisles"] #leaderboardEmptyState .empty-state-text::before { content: "No islands conquered that match these filters."; }
+html[data-theme="hollowgrave"] #emptyState .empty-state-text::before { content: "No graves match this search. The dead stay buried."; }
+html[data-theme="hollowgrave"] #leaderboardEmptyState .empty-state-text::before { content: "No souls collected that match these filters."; }
 
 .pagination {
   max-width: 1200px;
@@ -9941,6 +10013,1065 @@ html[data-theme="skyisles"] .leaderboard-person-title {
 
 /* @@END-SKYISLES@@ */
 
+/* @@HOLLOWGRAVE@@ */
+/* ============================================================
+   HOLLOW GRAVE THEME - component overrides
+   A moonlit graveyard for spooky season. Defeated sweats are headstones
+   with R.I.P. carved into their arched tops; the page sits under a full
+   moon with clouds drifting across it, a hill of graves and a crooked
+   iron fence along the bottom of the screen, ground fog rolling past and
+   will-o'-wisps floating in the dark. Light comes from jack-o'-lantern
+   orange (the accent) and ectoplasm green (the second accent), with
+   Grenze Gotisch for names and titles, Grenze for numbers and labels,
+   and Crimson Pro for running text. Everything in the backdrop moves
+   with transform/opacity only, and all of it stops for reduced motion.
+   ============================================================ */
+
+/* ---------- Backdrop ---------- */
+html[data-theme="hollowgrave"] #starfield { display: none; }
+html[data-theme="hollowgrave"] #nebula {
+  display: block;
+  background: radial-gradient(120% 70% at 50% 110%, #2b1d3d 0%, #120d1a 55%, #07060a 100%);
+  opacity: 1;
+  animation: none;
+}
+#gravefield {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+html[data-theme="hollowgrave"] #gravefield { display: block; }
+#gravefield i { position: absolute; display: block; }
+/* The full moon hangs in the sky above the title (it is .hero-pin, so it
+   scrolls away with the header instead of sitting behind the cards). */
+html[data-theme="hollowgrave"] .hero-pin {
+  display: block;
+  position: absolute;
+  top: 6px;
+  left: -26px;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 38%, rgba(150,118,62,0.32) 0 9px, transparent 10px),
+    radial-gradient(circle at 63% 60%, rgba(150,118,62,0.28) 0 13px, transparent 14px),
+    radial-gradient(circle at 60% 27%, rgba(150,118,62,0.24) 0 5px, transparent 6px),
+    radial-gradient(circle at 30% 68%, rgba(150,118,62,0.2) 0 4px, transparent 5px),
+    radial-gradient(circle at 40% 38%, #fff7d6, #f1d88a 60%, #c9a04a);
+  box-shadow: 0 0 36px 6px rgba(241,216,138,0.32), 0 0 110px 34px rgba(241,216,138,0.1);
+  pointer-events: none;
+}
+html[data-theme="hollowgrave"] .hero-pin::after {
+  content: "";
+  position: absolute;
+  inset: -70px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(241,216,138,0.16), transparent 62%);
+  animation: gfMoonGlow 9s ease-in-out infinite;
+}
+@keyframes gfMoonGlow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+/* Thin night clouds drifting across the moon, left to right. */
+#gravefield .gf-cloud {
+  left: 0;
+  width: 420px;
+  height: 46px;
+  background:
+    radial-gradient(ellipse 34% 48% at 30% 60%, rgba(16,11,24,0.92), transparent 72%),
+    radial-gradient(ellipse 30% 40% at 58% 44%, rgba(16,11,24,0.85), transparent 72%),
+    radial-gradient(ellipse 26% 36% at 80% 62%, rgba(16,11,24,0.8), transparent 72%);
+  will-change: transform;
+}
+#gravefield .gf-cloud.c1 { top: 66px; animation: gfCloud 84s linear infinite; animation-delay: -30s; }
+#gravefield .gf-cloud.c2 { top: 112px; width: 300px; opacity: 0.8; animation: gfCloud 120s linear infinite; animation-delay: -95s; }
+@keyframes gfCloud {
+  from { transform: translateX(-460px); }
+  to { transform: translateX(calc(100vw + 40px)); }
+}
+#gravefield .gf-hills {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 240px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1600 240%22 preserveAspectRatio=%22xMidYMax slice%22%3E%3Cpath d=%22M0 186 C200 160 380 178 560 170 S900 150 1100 168 S1400 182 1600 170 V240 H0 Z%22 fill=%22%23120d1a%22/%3E%3Cpath d=%22M0 168 C120 140 240 128 380 146 S640 172 800 150 S1080 120 1240 142 S1480 170 1600 150 V240 H0 Z%22 fill=%22%230a0810%22/%3E%3Cpath d=%22M110 152.89473684210526 V133.89473684210526 a11.0 11.0 0 0 1 22 0 V152.89473684210526 Z%22 fill=%22%230a0810%22 transform=%22rotate(-4 121.0 152.89473684210526)%22/%3E%3Cpath d=%22M176 142.94736842105263 V128.94736842105263 a8.0 8.0 0 0 1 16 0 V142.94736842105263 Z%22 fill=%22%230a0810%22 transform=%22rotate(3 184.0 142.94736842105263)%22/%3E%3Cpath d=%22M337.0 148.31578947368422 V127.23578947368422 h-7.0 v-6 h7.0 v-6.92 h6 v6.92 h7.0 v6 h-7.0 V148.31578947368422 Z%22 fill=%22%230a0810%22 transform=%22rotate(0 340.0 148.31578947368422)%22/%3E%3Cpath d=%22M470 159.27272727272728 V143.27272727272728 a12.0 12.0 0 0 1 24 0 V159.27272727272728 Z%22 fill=%22%230a0810%22 transform=%22rotate(5 482.0 159.27272727272728)%22/%3E%3Cpath d=%22M540 165.1818181818182 V154.1818181818182 a7.0 7.0 0 0 1 14 0 V165.1818181818182 Z%22 fill=%22%230a0810%22 transform=%22rotate(-6 547.0 165.1818181818182)%22/%3E%3Cpath d=%22M1010 133.34166666666667 V110.34166666666667 a13.0 13.0 0 0 1 26 0 V133.34166666666667 Z%22 fill=%22%230a0810%22 transform=%22rotate(-3 1023.0 133.34166666666667)%22/%3E%3Cpath d=%22M1081.0 136.9 V122.02000000000001 h-6.0 v-6 h6.0 v-3.120000000000001 h6 v3.120000000000001 h6.0 v6 h-6.0 V136.9 Z%22 fill=%22%230a0810%22 transform=%22rotate(4 1084.0 136.9)%22/%3E%3Cpath d=%22M1180 143.14166666666668 V124.14166666666668 a11.0 11.0 0 0 1 22 0 V143.14166666666668 Z%22 fill=%22%230a0810%22 transform=%22rotate(2 1191.0 143.14166666666668)%22/%3E%3Cpath d=%22M1450 163.2 V143.2 a12.0 12.0 0 0 1 24 0 V163.2 Z%22 fill=%22%230a0810%22 transform=%22rotate(-5 1462.0 163.2)%22/%3E%3Cpath d=%22M1520 158.8 V146.8 a8.0 8.0 0 0 1 16 0 V158.8 Z%22 fill=%22%230a0810%22 transform=%22rotate(6 1528.0 158.8)%22/%3E%3Cpath d=%22M624 170.08 V132.08 l-2.5 4 h5 l-2.5-4 M635 169.2 V135.2 l-2.5 4 h5 l-2.5-4 M646 168.32 V134.32 l-2.5 4 h5 l-2.5-4 M657 167.44 V133.44 l-2.5 4 h5 l-2.5-4 M668 166.56 V128.56 l-2.5 4 h5 l-2.5-4 M679 165.68 V131.68 l-2.5 4 h5 l-2.5-4 M690 164.8 V130.8 l-2.5 4 h5 l-2.5-4 M701 163.92 V129.92 l-2.5 4 h5 l-2.5-4 M712 163.04 V125.03999999999999 l-2.5 4 h5 l-2.5-4 M723 162.16 V128.16 l-2.5 4 h5 l-2.5-4 M734 161.28 V127.28 l-2.5 4 h5 l-2.5-4 M745 160.4 V126.4 l-2.5 4 h5 l-2.5-4 M756 159.52 V121.52000000000001 l-2.5 4 h5 l-2.5-4 M767 158.64 V124.63999999999999 l-2.5 4 h5 l-2.5-4 M778 157.76 V123.75999999999999 l-2.5 4 h5 l-2.5-4 M789 156.88 V122.88 l-2.5 4 h5 l-2.5-4 M800 156.0 V118.0 l-2.5 4 h5 l-2.5-4 M811 154.79 V120.78999999999999 l-2.5 4 h5 l-2.5-4 M822 153.58 V119.58000000000001 l-2.5 4 h5 l-2.5-4 M833 152.37 V118.37 l-2.5 4 h5 l-2.5-4 M844 151.16 V113.16 l-2.5 4 h5 l-2.5-4 M855 149.95 V115.94999999999999 l-2.5 4 h5 l-2.5-4 M866 148.74 V114.74000000000001 l-2.5 4 h5 l-2.5-4 M877 147.53 V113.53 l-2.5 4 h5 l-2.5-4 M888 146.32 V108.32 l-2.5 4 h5 l-2.5-4 M899 145.11 V111.11000000000001 l-2.5 4 h5 l-2.5-4%22 stroke=%22%230a0810%22 stroke-width=%222.2%22 fill=%22%230a0810%22/%3E%3Cpath d=%22M620 150.4 L902 124.78 M620 138.4 L902 112.78%22 stroke=%22%230a0810%22 stroke-width=%222.4%22/%3E%3Cpath d=%22M1302 155.77777777777777 C1306 115.77777777777777 1300 85.77777777777777 1308 51.77777777777777 M1306 89.77777777777777 C1324 75.77777777777777 1340 69.77777777777777 1356 47.77777777777777 M1332 69.77777777777777 C1340 59.77777777777777 1338 51.77777777777777 1344 41.77777777777777 M1304 71.77777777777777 C1288 59.77777777777777 1276 57.77777777777777 1262 35.77777777777777 M1280 57.77777777777777 C1270 51.77777777777777 1260 55.77777777777777 1250 51.77777777777777 M1308 51.77777777777777 C1312 37.77777777777777 1306 29.77777777777777 1310 19.77777777777777%22 stroke=%22%230a0810%22 stroke-width=%225%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M1296 155.77777777777777 C1301 125.77777777777777 1302 105.77777777777777 1304 95.77777777777777 L1312 95.77777777777777 C1310 115.77777777777777 1312 135.77777777777777 1318 155.77777777777777 Z%22 fill=%22%230a0810%22/%3E%3Cpath d=%22M0 168 C120 140 240 128 380 146 S640 172 800 150 S1080 120 1240 142 S1480 170 1600 150%22 stroke=%22rgba(170,150,210,0.18)%22 stroke-width=%221.2%22 fill=%22none%22/%3E%3C/svg%3E") center bottom / auto 240px repeat-x;
+}
+/* Ground fog: two wide banks of soft ellipses, each twice the screen
+   width and tiled every 100vw, sliding sideways at different speeds so
+   the drift never visibly loops. */
+#gravefield .gf-fog {
+  left: 0;
+  bottom: -30px;
+  width: 200vw;
+  height: 46vh;
+  background:
+    radial-gradient(ellipse 18% 34% at 12% 78%, rgba(190,180,220,0.13), transparent 70%),
+    radial-gradient(ellipse 24% 28% at 46% 86%, rgba(190,180,220,0.11), transparent 70%),
+    radial-gradient(ellipse 16% 30% at 78% 74%, rgba(190,180,220,0.12), transparent 70%);
+  background-size: 100vw 100%;
+  background-repeat: repeat-x;
+  will-change: transform;
+}
+#gravefield .gf-fog.f1 { animation: gfFog 70s linear infinite; }
+#gravefield .gf-fog.f2 {
+  bottom: -60px;
+  height: 34vh;
+  opacity: 0.85;
+  background-position: 33vw 0;
+  animation: gfFog 110s linear infinite reverse;
+}
+@keyframes gfFog {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100vw); }
+}
+/* Will-o'-wisps: little green ghost lights bobbing over the graves. */
+#gravefield .gf-wisp {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e6ffc2;
+  box-shadow: 0 0 8px 3px rgba(184,255,92,0.55), 0 0 22px 8px rgba(184,255,92,0.18);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+#gravefield .gf-wisp.w1 { left: 8%; bottom: 22vh; animation: gfWisp 11s ease-in-out infinite; }
+#gravefield .gf-wisp.w2 { left: 34%; bottom: 14vh; animation: gfWisp 14s ease-in-out infinite -5s; }
+#gravefield .gf-wisp.w3 { left: 71%; bottom: 26vh; animation: gfWisp 12s ease-in-out infinite -8s; }
+#gravefield .gf-wisp.w4 { left: 90%; bottom: 12vh; animation: gfWisp 16s ease-in-out infinite -2s; }
+@keyframes gfWisp {
+  0% { transform: translate(0, 0); opacity: 0; }
+  15% { opacity: 0.9; }
+  35% { transform: translate(26px, -34px); opacity: 0.5; }
+  55% { transform: translate(-14px, -58px); opacity: 0.95; }
+  80% { transform: translate(18px, -90px); opacity: 0.4; }
+  100% { transform: translate(4px, -120px); opacity: 0; }
+}
+/* Bats: each flies across now and then (translate) while flapping
+   (scale), two separate properties so the animations don't fight. */
+#gravefield .gf-bat {
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 18%22%3E%3Cpath d=%22M20 6 C18 3 17 3 16.5 5 C13 3 9 2 3 5 C6 6 7 8 6.5 10 C9 8.5 12 9 14 11 C15.5 9.5 17 9.5 18 11.5 L20 13 L22 11.5 C23 9.5 24.5 9.5 26 11 C28 9 31 8.5 33.5 10 C33 8 34 6 37 5 C31 2 27 3 23.5 5 C23 3 22 3 20 6 Z%22 fill=%22%230d0a12%22/%3E%3Ccircle cx=%2219%22 cy=%227.5%22 r=%22.6%22 fill=%22%23ff9b3d%22/%3E%3Ccircle cx=%2221%22 cy=%227.5%22 r=%22.6%22 fill=%22%23ff9b3d%22/%3E%3C/svg%3E") center / contain no-repeat;
+  translate: -80px 24vh;
+  will-change: translate, scale;
+}
+#gravefield .gf-bat.b1 { animation: gfBatFly1 23s linear infinite, gfBatFlap 0.22s ease-in-out infinite alternate; animation-delay: -4s, 0s; }
+#gravefield .gf-bat.b2 { width: 28px; height: 13px; animation: gfBatFly2 31s linear infinite, gfBatFlap 0.18s ease-in-out infinite alternate; animation-delay: -17s, -0.1s; }
+#gravefield .gf-bat.b3 { width: 22px; height: 10px; animation: gfBatFly1 37s linear infinite, gfBatFlap 0.16s ease-in-out infinite alternate; animation-delay: -27s, -0.05s; }
+@keyframes gfBatFlap {
+  from { scale: 1 1; }
+  to { scale: 0.9 -0.35; }
+}
+@keyframes gfBatFly1 {
+  0% { translate: -80px 26vh; }
+  8% { translate: 22vw 18vh; }
+  16% { translate: 44vw 24vh; }
+  24% { translate: 66vw 14vh; }
+  32%, 100% { translate: calc(100vw + 80px) 20vh; }
+}
+@keyframes gfBatFly2 {
+  0% { translate: calc(100vw + 80px) 12vh; }
+  10% { translate: 70vw 20vh; }
+  20% { translate: 40vw 10vh; }
+  30% { translate: 12vw 16vh; }
+  38%, 100% { translate: -80px 8vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #gravefield *, html[data-theme="hollowgrave"] .hero-pin::after { animation: none !important; }
+  #gravefield .gf-bat, #gravefield .gf-wisp { display: none; }
+}
+
+/* ---------- Type ---------- */
+html[data-theme="hollowgrave"] body {
+  font-family: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+  font-size: 16.5px;
+}
+html[data-theme="hollowgrave"] h1,
+html[data-theme="hollowgrave"] .panel-header h2,
+html[data-theme="hollowgrave"] .leaderboard-person-title,
+html[data-theme="hollowgrave"] .edit-modal-title,
+html[data-theme="hollowgrave"] .shortcuts-title {
+  font-family: var(--font-grave);
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+/* Player names in Grenze: the same gothic flavor, but every letter of a
+   Minecraft name (xX_, digits, mixed case) stays readable. */
+html[data-theme="hollowgrave"] .sweat-card-name,
+html[data-theme="hollowgrave"] #modalUsername,
+html[data-theme="hollowgrave"] #statsUsername,
+html[data-theme="hollowgrave"] .leaderboard-name,
+html[data-theme="hollowgrave"] .user-cell span,
+html[data-theme="hollowgrave"] #modalTitle,
+html[data-theme="hollowgrave"] .modal-content h2 {
+  font-family: var(--font-label);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+html[data-theme="hollowgrave"] .stat-hero-value,
+html[data-theme="hollowgrave"] .modal-stat-value,
+html[data-theme="hollowgrave"] .card-stat-value,
+html[data-theme="hollowgrave"] .sweat-card-index,
+html[data-theme="hollowgrave"] .ss-value,
+html[data-theme="hollowgrave"] .lb-place,
+html[data-theme="hollowgrave"] .lb-step-count,
+html[data-theme="hollowgrave"] .leaderboard-count,
+html[data-theme="hollowgrave"] .leaderboard-rank,
+html[data-theme="hollowgrave"] #statsStar,
+html[data-theme="hollowgrave"] .modal-record-value,
+html[data-theme="hollowgrave"] .pill,
+html[data-theme="hollowgrave"] .sweat-gauge-value {
+  font-family: var(--font-label);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+html[data-theme="hollowgrave"] .card-stat-label,
+html[data-theme="hollowgrave"] .form-label,
+html[data-theme="hollowgrave"] .field-label,
+html[data-theme="hollowgrave"] .ss-label,
+html[data-theme="hollowgrave"] .modal-stat-label,
+html[data-theme="hollowgrave"] .stat-hero-label,
+html[data-theme="hollowgrave"] .edit-section-label,
+html[data-theme="hollowgrave"] .filter-prefix,
+html[data-theme="hollowgrave"] .quick-nav-link,
+html[data-theme="hollowgrave"] .btn,
+html[data-theme="hollowgrave"] .view-btn,
+html[data-theme="hollowgrave"] .theme-dropdown-btn,
+html[data-theme="hollowgrave"] .section-toggle {
+  font-family: var(--font-label);
+  font-variant-numeric: lining-nums;
+}
+html[data-theme="hollowgrave"] ::selection { background: var(--accent-2); color: #0b0a0e; }
+
+/* ---------- Hero ---------- */
+html[data-theme="hollowgrave"] h1 {
+  font-size: 3.7em;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: var(--accent);
+  filter: none;
+  text-shadow: 0 0 18px rgba(242,140,40,0.55), 0 0 44px rgba(242,140,40,0.22), 0 3px 0 #4a2306;
+  animation: graveTitleFlicker 7s linear infinite;
+}
+/* A candle guttering: steady most of the time, with a short stutter. */
+@keyframes graveTitleFlicker {
+  0%, 88%, 100% { opacity: 1; }
+  89% { opacity: 0.74; }
+  90% { opacity: 1; }
+  92% { opacity: 0.82; }
+  93.5% { opacity: 1; }
+}
+html[data-theme="hollowgrave"] .hero-eyebrow {
+  font-family: var(--font-label);
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: var(--accent-2);
+  text-shadow: 0 0 10px rgba(184,255,92,0.45);
+}
+html[data-theme="hollowgrave"] .hero-flourish {
+  display: block;
+  width: 240px;
+  height: 26px;
+  margin: 10px auto 2px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 240 26%22%3E%3Cdefs%3E%3ClinearGradient id=%22l%22 x1=%220%22 x2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23f28c28%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%23f28c28%22 stop-opacity=%22.7%22/%3E%3C/linearGradient%3E%3ClinearGradient id=%22r%22 x1=%221%22 x2=%220%22%3E%3Cstop offset=%220%22 stop-color=%22%23f28c28%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%23f28c28%22 stop-opacity=%22.7%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d=%22M10 14 H96%22 stroke=%22url(%23l)%22 stroke-width=%221.2%22/%3E%3Cpath d=%22M144 14 H230%22 stroke=%22url(%23r)%22 stroke-width=%221.2%22/%3E%3Ccircle cx=%22100%22 cy=%2214%22 r=%221.6%22 fill=%22%23f28c28%22 opacity=%22.8%22/%3E%3Ccircle cx=%22140%22 cy=%2214%22 r=%221.6%22 fill=%22%23f28c28%22 opacity=%22.8%22/%3E%3Cpath d=%22M120 4 q1 -3 4 -3%22 stroke=%22%236b8f3a%22 stroke-width=%222%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3Cellipse cx=%22112%22 cy=%2215%22 rx=%228%22 ry=%229.5%22 fill=%22%23d9661a%22/%3E%3Cellipse cx=%22128%22 cy=%2215%22 rx=%228%22 ry=%229.5%22 fill=%22%23d9661a%22/%3E%3Cellipse cx=%22120%22 cy=%2215%22 rx=%229%22 ry=%2210.5%22 fill=%22%23f28c28%22/%3E%3Cpath d=%22M114 12 l3 -3 l3 3 z M120 12 l3 -3 l3 3 z%22 fill=%22%23ffe08a%22/%3E%3Cpath d=%22M112 17 q8 6 16 0 l-2 2 l-2 -2 l-2 2 l-2 -2 l-2 2 l-2 -2 l-2 2 z%22 fill=%22%23ffe08a%22/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: gravePumpkinGlow 2.8s ease-in-out infinite;
+}
+@keyframes gravePumpkinGlow {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(242,140,40,0.45)); }
+  50% { filter: drop-shadow(0 0 9px rgba(242,140,40,0.85)); }
+}
+html[data-theme="hollowgrave"] #credits { font-style: italic; color: var(--text-dim); letter-spacing: 0.3px; }
+html[data-theme="hollowgrave"] .credits-shortcuts-btn kbd { font-style: normal; }
+
+/* ---------- Surfaces ---------- */
+html[data-theme="hollowgrave"] .card {
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(241,216,138,0.05), transparent 60%),
+    linear-gradient(180deg, rgba(31,26,40,0.96), rgba(19,15,25,0.97));
+  border: 1px solid rgba(232,224,240,0.08);
+  box-shadow: inset 0 1px 0 rgba(241,216,138,0.07), var(--shadow-card);
+}
+/* A cobweb strung across the lookup panel's top-left corner. */
+html[data-theme="hollowgrave"] #form-container::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: -1px;
+  width: 92px;
+  height: 92px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 90 90%22 fill=%22none%22 stroke=%22rgba(220,210,235,0.22)%22 stroke-width=%22.8%22%3E%3Cpath d=%22M0 0 L90 8 M0 0 L80 40 M0 0 L58 66 M0 0 L32 84 M0 0 L6 90%22/%3E%3Cpath d=%22M22 2 Q20 10 19 9 Q14 14 16 18 Q9 20 8 22 Q4 22 2 22%22/%3E%3Cpath d=%22M44 4 Q38 16 38 18 Q28 28 31 34 Q18 38 16 44 Q8 44 3 44%22/%3E%3Cpath d=%22M68 6 Q58 22 58 28 Q44 42 46 50 Q28 56 24 64 Q12 64 4 66%22/%3E%3Cpath d=%22M86 8 Q74 30 76 38 Q58 56 57 64 Q36 74 31 82 Q16 84 6 88%22/%3E%3Cpath d=%22M60 52 v14%22 stroke-width=%22.6%22/%3E%3Ccircle cx=%2260%22 cy=%2268%22 r=%222.2%22 fill=%22rgba(20,16,26,0.9)%22 stroke=%22none%22/%3E%3C/svg%3E") left top / contain no-repeat;
+  pointer-events: none;
+  border-top-left-radius: var(--radius-l);
+}
+html[data-theme="hollowgrave"] .quick-nav {
+  background: rgba(16,12,21,0.88);
+  backdrop-filter: blur(6px);
+  border-color: rgba(232,224,240,0.08);
+}
+html[data-theme="hollowgrave"] .quick-nav-link { font-size: 0.9em; letter-spacing: 0.5px; }
+html[data-theme="hollowgrave"] .quick-nav-link.active {
+  color: var(--accent);
+  border-color: rgba(242,140,40,0.7);
+  background: rgba(242,140,40,0.08);
+  box-shadow: 0 0 12px rgba(242,140,40,0.2);
+}
+html[data-theme="hollowgrave"] .theme-dropdown-btn {
+  background: rgba(19,15,25,0.85);
+  border-color: rgba(232,224,240,0.12);
+}
+html[data-theme="hollowgrave"] .theme-dropdown-btn:hover,
+html[data-theme="hollowgrave"] .theme-dropdown-btn[aria-expanded="true"] { border-color: var(--accent); box-shadow: 0 0 14px rgba(242,140,40,0.25); }
+html[data-theme="hollowgrave"] .theme-dropdown-menu { background: #15111b; border-color: rgba(232,224,240,0.1); }
+
+/* Section headers: a headstone-shaped stone badge, and a little iron
+   fence running along the bottom of the header. */
+html[data-theme="hollowgrave"] .panel-header {
+  position: relative;
+  padding-bottom: 18px;
+}
+html[data-theme="hollowgrave"] .panel-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 14 18%22%3E%3Cpath d=%22M7 18 V5 M5 6 L7 1 L9 6 Z%22 stroke=%22%233a3346%22 stroke-width=%222%22 fill=%22%233a3346%22/%3E%3Cpath d=%22M0 13 H14%22 stroke=%22%233a3346%22 stroke-width=%221.6%22/%3E%3C/svg%3E") left bottom / 17px 18px repeat-x;
+  opacity: 0.85;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  pointer-events: none;
+}
+html[data-theme="hollowgrave"] .panel-header h2 { font-size: 1.65em; color: #f4ecf8; text-shadow: 0 2px 0 rgba(0,0,0,0.5); }
+html[data-theme="hollowgrave"] .panel-header p { font-style: italic; color: var(--text-dim); font-size: 0.95em; }
+html[data-theme="hollowgrave"] .panel-icon {
+  position: relative;
+  font-size: 0;
+  width: 46px;
+  height: 50px;
+  border-radius: 23px 23px 5px 5px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #4a4456, #2c2834);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.08), 0 6px 14px -6px rgba(0,0,0,0.8), 0 0 18px -4px rgba(242,140,40,0.3);
+}
+html[data-theme="hollowgrave"] .panel-icon::before {
+  content: "";
+  position: absolute;
+  inset: 12px 11px 10px;
+  background: var(--panel-icon) center / contain no-repeat;
+  filter: drop-shadow(0 0 4px rgba(242,140,40,0.6));
+}
+html[data-theme="hollowgrave"] .panel-icon-lookup { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23f28c28%22 stroke-width=%221.6%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M9 4h6M10 4V2.5h4V4%22/%3E%3Crect x=%227%22 y=%226%22 width=%2210%22 height=%2213%22 rx=%222%22/%3E%3Cpath d=%22M6 19h12%22/%3E%3Cpath d=%22M12 9.5c1.7 1.5 1.7 3.6 0 5.1c-1.7-1.5-1.7-3.6 0-5.1z%22 fill=%22%23f28c28%22 fill-opacity=%22.35%22/%3E%3C/svg%3E"); }
+html[data-theme="hollowgrave"] .panel-icon-results { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23f28c28%22 stroke-width=%221.6%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 21V10a6 6 0 0 1 12 0v11%22/%3E%3Cpath d=%22M3 21h18M9.5 12h5M9.5 15h5%22/%3E%3C/svg%3E"); }
+html[data-theme="hollowgrave"] .panel-icon-denick { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23f28c28%22 stroke-width=%221.6%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 20V11a6 6 0 0 1 12 0v9l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5z%22/%3E%3Ccircle cx=%2210%22 cy=%2211.5%22 r=%22.9%22 fill=%22%23f28c28%22/%3E%3Ccircle cx=%2214%22 cy=%2211.5%22 r=%22.9%22 fill=%22%23f28c28%22/%3E%3C/svg%3E"); }
+html[data-theme="hollowgrave"] .panel-icon-activity { --panel-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23f28c28%22 stroke-width=%221.6%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M8.5 21h7M10 21V11h4v10%22/%3E%3Cpath d=%22M12 3.5c1.6 2 1.6 3.6 0 5.2c-1.6-1.6-1.6-3.2 0-5.2z%22 fill=%22%23f28c28%22 fill-opacity=%22.35%22/%3E%3Cpath d=%22M10 13.5h1%22/%3E%3C/svg%3E"); }
+/* Section tags read as the plot number on a cemetery map. */
+html[data-theme="hollowgrave"] .exhibit-tag {
+  display: inline-block;
+  font-size: 0;
+  margin-bottom: 4px;
+  padding: 2px 9px 1px;
+  border: 1px solid rgba(184,255,92,0.35);
+  border-radius: 9px 9px 2px 2px;
+  background: rgba(184,255,92,0.06);
+}
+html[data-theme="hollowgrave"] .exhibit-tag::before {
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  text-shadow: 0 0 6px rgba(184,255,92,0.4);
+}
+html[data-theme="hollowgrave"] .exhibit-tag-lookup::before { content: "Plot I"; }
+html[data-theme="hollowgrave"] .exhibit-tag-results::before { content: "Plot II"; }
+html[data-theme="hollowgrave"] .exhibit-tag-denick::before { content: "Plot III"; }
+html[data-theme="hollowgrave"] .exhibit-tag-activity::before { content: "Plot IV"; }
+html[data-theme="hollowgrave"] .section-toggle { border-radius: 999px; background: rgba(7,6,10,0.4); }
+
+/* ---------- Controls ---------- */
+html[data-theme="hollowgrave"] .btn-primary {
+  position: relative;
+  background: radial-gradient(120% 150% at 50% 0%, #ffb766, #f28c28 45%, #c35c10);
+  color: #1d0b00;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  box-shadow: inset 0 1px 0 rgba(255,232,190,0.6), inset 0 -2px 0 rgba(90,35,0,0.45), 0 0 18px rgba(242,140,40,0.32);
+}
+html[data-theme="hollowgrave"] .btn-primary:hover:not(:disabled) {
+  box-shadow: inset 0 1px 0 rgba(255,232,190,0.7), inset 0 -2px 0 rgba(90,35,0,0.45), 0 0 30px rgba(242,140,40,0.55);
+  filter: brightness(1.06);
+}
+/* Clicking a main button lets a little ghost slip out of it. */
+html[data-theme="hollowgrave"] .btn-primary::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -6px;
+  width: 22px;
+  height: 26px;
+  margin-left: -11px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 30 36%22%3E%3Cdefs%3E%3CradialGradient id=%22g%22 cx=%2245%25%22 cy=%2235%25%22 r=%2270%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23ffffff%22/%3E%3Cstop offset=%22.7%22 stop-color=%22%23e9f2ff%22/%3E%3Cstop offset=%221%22 stop-color=%22%23c8d4f0%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d=%22M3 32 V15 a12 12 0 0 1 24 0 V32 l-4 -3 l-4 3.5 l-4 -3.5 l-4 3.5 l-4 -3.5 z%22 fill=%22url(%23g)%22 opacity=%22.92%22/%3E%3Cellipse cx=%2211%22 cy=%2215%22 rx=%222%22 ry=%223%22 fill=%22%231b1424%22/%3E%3Cellipse cx=%2219%22 cy=%2215%22 rx=%222%22 ry=%223%22 fill=%22%231b1424%22/%3E%3Cellipse cx=%2215%22 cy=%2222%22 rx=%222.2%22 ry=%222.6%22 fill=%22%231b1424%22 opacity=%22.85%22/%3E%3C/svg%3E") center / contain no-repeat;
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-theme="hollowgrave"] .btn-primary.stamp-flourish::after { animation: graveBtnGhost 0.9s ease-out; }
+@keyframes graveBtnGhost {
+  0% { opacity: 0; transform: translateY(14px) scale(0.5); }
+  25% { opacity: 0.9; transform: translate(-3px, -6px) scale(1); }
+  60% { opacity: 0.7; transform: translate(4px, -24px) scale(1.05); }
+  100% { opacity: 0; transform: translate(-2px, -42px) scale(1.1); }
+}
+html[data-theme="hollowgrave"] .btn-ghost {
+  background: rgba(7,6,10,0.45);
+  border-color: rgba(232,224,240,0.16);
+}
+html[data-theme="hollowgrave"] .btn-ghost:hover { border-color: rgba(242,140,40,0.6); color: var(--accent); }
+html[data-theme="hollowgrave"] input:focus,
+html[data-theme="hollowgrave"] textarea:focus,
+html[data-theme="hollowgrave"] select:focus {
+  background: rgba(242,140,40,0.04);
+  box-shadow: 0 0 0 3px rgba(242,140,40,0.14);
+}
+html[data-theme="hollowgrave"] .chip input:checked + span { box-shadow: 0 0 12px rgba(242,140,40,0.3); }
+html[data-theme="hollowgrave"] .view-btn.active {
+  background: radial-gradient(120% 150% at 50% 0%, #ffb766, #f28c28 50%, #c35c10);
+  color: #1d0b00;
+  box-shadow: 0 0 14px rgba(242,140,40,0.35);
+}
+html[data-theme="hollowgrave"] .filter-field { background: rgba(7,6,10,0.45); }
+html[data-theme="hollowgrave"] .filter-field.is-set { box-shadow: 0 0 12px rgba(242,140,40,0.22); }
+html[data-theme="hollowgrave"] .toolbar #searchInput { background: rgba(7,6,10,0.45); }
+html[data-theme="hollowgrave"] .filters-toggle { background: rgba(7,6,10,0.45); }
+/* Roster faces as candle-lit lanterns: the color glows up from below. */
+html[data-theme="hollowgrave"] .chip-group.roster .roster-avatar {
+  background: radial-gradient(circle at 50% 78%, color-mix(in srgb, var(--chip-color) 85%, #fff) 0%, var(--chip-color) 45%, color-mix(in srgb, var(--chip-color) 45%, #0b0910) 100%);
+  border-color: rgba(0,0,0,0.35);
+  color: #120d16;
+  box-shadow: inset 0 -3px 6px rgba(255,240,200,0.25), 0 0 10px -3px var(--chip-color);
+}
+html[data-theme="hollowgrave"] .chip-group.roster .chip input:checked + .roster-avatar {
+  border-color: var(--panel);
+  box-shadow: 0 0 0 1px var(--panel), 0 0 0 3px var(--chip-color), 0 0 18px 0 var(--chip-color);
+}
+html[data-theme="hollowgrave"] .beaten-avatar {
+  background: radial-gradient(circle at 50% 75%, color-mix(in srgb, var(--chip-color) 80%, #fff), var(--chip-color) 55%, color-mix(in srgb, var(--chip-color) 50%, #0b0910));
+  color: #120d16;
+  box-shadow: 0 0 6px -1px var(--chip-color);
+}
+html[data-theme="hollowgrave"] thead tr { background: rgba(242,140,40,0.06); }
+html[data-theme="hollowgrave"] th.sortable:hover { background: rgba(242,140,40,0.1); }
+html[data-theme="hollowgrave"] tbody tr:hover { background: rgba(184,255,92,0.04); }
+html[data-theme="hollowgrave"] tbody tr:hover .user-cell span { text-shadow: 0 0 8px rgba(184,255,92,0.5); }
+html[data-theme="hollowgrave"] #customTooltip {
+  background: #1a1520;
+  border: 1px solid rgba(242,140,40,0.55);
+  border-radius: 6px;
+  color: var(--text);
+  box-shadow: 0 0 14px rgba(242,140,40,0.2), 0 6px 16px rgba(0,0,0,0.6);
+}
+html[data-theme="hollowgrave"] #customTooltip::after {
+  background: #1a1520;
+  border-right: 1px solid rgba(242,140,40,0.55);
+  border-bottom: 1px solid rgba(242,140,40,0.55);
+  bottom: -5px;
+}
+html[data-theme="hollowgrave"] #customTooltip.tooltip-below::after {
+  top: -5px;
+  bottom: auto;
+  border-right: none;
+  border-bottom: none;
+  border-left: 1px solid rgba(242,140,40,0.55);
+  border-top: 1px solid rgba(242,140,40,0.55);
+}
+
+/* ---------- Headstone cards ---------- */
+html[data-theme="hollowgrave"] .card-grid { row-gap: 34px; padding-top: 14px; }
+html[data-theme="hollowgrave"] .sweat-card {
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 50% 50% 8px 8px / 64px 64px 8px 8px;
+  padding: 50px 18px 16px;
+  background:
+    radial-gradient(130% 46% at 50% 0%, rgba(241,216,138,0.08), transparent 62%),
+    radial-gradient(90% 26% at 50% 106%, rgba(96,128,62,0.26), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, var(--stone), var(--stone-dark));
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.07), inset 0 -16px 22px -14px rgba(0,0,0,0.6), 0 18px 28px -16px rgba(0,0,0,0.95);
+  animation: graveRise 0.75s cubic-bezier(.2,.8,.3,1) backwards;
+  transition: transform 0.3s cubic-bezier(.2,.8,.3,1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+/* R.I.P. carved across the arch. */
+html[data-theme="hollowgrave"] .sweat-card::before {
+  content: "R.I.P.";
+  position: absolute;
+  top: 17px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-grave);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  color: #9f95ad;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.08), 0 -1px 0 rgba(0,0,0,0.6);
+  pointer-events: none;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+/* A mound of dark earth heaped against the foot of the stone. */
+html[data-theme="hollowgrave"] .sweat-card::after {
+  content: "";
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  bottom: -12px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 50% 70% at 50% 100%, #0d0a12 55%, rgba(13,10,18,0.7) 75%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+html[data-theme="hollowgrave"] .sweat-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(184,255,92,0.28);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -16px 22px -14px rgba(0,0,0,0.6), 0 24px 34px -16px rgba(0,0,0,0.95), 0 10px 30px -8px rgba(184,255,92,0.28);
+}
+html[data-theme="hollowgrave"] .sweat-card:hover::before { color: #d6f7b0; text-shadow: 0 0 10px rgba(184,255,92,0.6); }
+html[data-theme="hollowgrave"] .sweat-card:active { transform: translateY(-2px) scale(0.99); }
+/* Stones rise out of the ground: the card slides up while everything
+   below a fixed ground line stays hidden (clip and translate use the
+   same percentage, so the line doesn't move). The negative insets leave
+   room for the tier candles and glow. backwards fill only, so hover can
+   still move the card once it has landed. */
+@keyframes graveRise {
+  0% { opacity: 0; transform: translateY(55%); clip-path: inset(-60px -40px 55% -40px); }
+  15% { opacity: 1; }
+  75% { transform: translateY(-2%); clip-path: inset(-60px -40px 0% -40px); }
+  100% { opacity: 1; transform: translateY(0); clip-path: inset(-60px -40px 0% -40px); }
+}
+@keyframes graveSink {
+  0% { opacity: 1; transform: translateY(0) rotate(0deg); clip-path: inset(-60px -40px 0% -40px); }
+  20% { transform: translateY(-3%) rotate(-1deg); }
+  100% { opacity: 0.6; transform: translateY(70%) rotate(1.5deg); clip-path: inset(-60px -40px 70% -40px); }
+}
+html[data-theme="hollowgrave"] .sweat-card.row-exit { animation: graveSink 0.5s cubic-bezier(.5,0,.8,.4) forwards; }
+@keyframes graveRowIn {
+  0% { opacity: 0; transform: translateX(-8px); }
+  30% { opacity: 0.8; }
+  40% { opacity: 0.3; }
+  60% { opacity: 1; }
+  70% { opacity: 0.6; }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes graveRowOut {
+  0% { opacity: 1; filter: blur(0); }
+  100% { opacity: 0; filter: blur(3px); transform: translateY(6px); }
+}
+html[data-theme="hollowgrave"] .sweat-row { animation: graveRowIn 0.55s ease-out both; }
+html[data-theme="hollowgrave"] .sweat-row.row-exit { animation: graveRowOut 0.35s ease-in forwards; }
+html[data-theme="hollowgrave"] .sweat-card-index {
+  top: 54px;
+  right: 14px;
+  font-size: 0.74em;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(10,8,14,0.45);
+  border: 1px solid rgba(242,140,40,0.32);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}
+html[data-theme="hollowgrave"] .sweat-card-name {
+  font-size: 1.32em;
+  color: #f4ecf8;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.6), 0 0 14px rgba(0,0,0,0.4);
+}
+html[data-theme="hollowgrave"] .sweat-card-avatar {
+  border-color: rgba(0,0,0,0.4);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 3px 8px rgba(0,0,0,0.5);
+  filter: saturate(0.85);
+}
+html[data-theme="hollowgrave"] .sweat-card-stats {
+  background: rgba(10,8,14,0.38);
+  border-color: rgba(0,0,0,0.35);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.05);
+}
+html[data-theme="hollowgrave"] .card-stat + .card-stat { border-left-color: rgba(255,255,255,0.06); }
+html[data-theme="hollowgrave"] .card-stat-label { letter-spacing: 0.14em; color: #a99fb7; }
+html[data-theme="hollowgrave"] .card-stat-value { font-weight: 600; font-size: 1.08em; }
+html[data-theme="hollowgrave"] .sweat-card-date { font-style: italic; color: #b4aac0; }
+html[data-theme="hollowgrave"] .icon-btn { background: rgba(10,8,14,0.4); border-color: rgba(255,255,255,0.08); }
+html[data-theme="hollowgrave"] .icon-btn.edit:hover { color: var(--accent); border-color: rgba(242,140,40,0.6); }
+html[data-theme="hollowgrave"] .pill { letter-spacing: 0.3px; }
+html[data-theme="hollowgrave"] .pill.fkdr {
+  color: #ffc58a;
+  background: rgba(242,140,40,0.13);
+  border-color: rgba(242,140,40,0.42);
+}
+html[data-theme="hollowgrave"] .pill.level { color: var(--moon); background: rgba(241,216,138,0.1); border-color: rgba(241,216,138,0.35); }
+html[data-theme="hollowgrave"] .pill.cheat {
+  color: #ffd2d8;
+  background: rgba(255,84,104,0.18);
+  border-color: rgba(255,84,104,0.55);
+  text-shadow: 0 0 6px rgba(255,84,104,0.6);
+}
+html[data-theme="hollowgrave"] .pill.boost {
+  color: #e2d4ff;
+  background: rgba(180,124,255,0.18);
+  border-color: rgba(180,124,255,0.55);
+}
+html[data-theme="hollowgrave"] .pill.prestige-tag { background: rgba(10,8,14,0.62); border-color: rgba(255,255,255,0.1); }
+/* Notes on a stone read as a carved epitaph. */
+html[data-theme="hollowgrave"] .sweat-card-note,
+html[data-theme="hollowgrave"] .note-item {
+  background: rgba(10,8,14,0.3);
+  border: 1px solid rgba(0,0,0,0.3);
+  border-radius: 6px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.04);
+}
+html[data-theme="hollowgrave"] .sweat-card-note .note-text,
+html[data-theme="hollowgrave"] .note-item-text { font-style: italic; color: #e2d9ea; font-size: 1.04em; }
+html[data-theme="hollowgrave"] .sweat-card:hover .sweat-card-note { border-color: rgba(184,255,92,0.3); }
+html[data-theme="hollowgrave"] .note-item-author,
+html[data-theme="hollowgrave"] .note-signer { font-family: var(--font-label); letter-spacing: 0.04em; }
+html[data-theme="hollowgrave"] .note-input { background: rgba(7,6,10,0.5); }
+html[data-theme="hollowgrave"] .card-note-ghost {
+  color: #9a90a8;
+  border-color: rgba(255,255,255,0.12);
+  background: rgba(10,8,14,0.18);
+  font-family: var(--font-label);
+  letter-spacing: 0.05em;
+}
+html[data-theme="hollowgrave"] .card-note-ghost::after { content: "Carve an epitaph"; }
+html[data-theme="hollowgrave"] .sweat-card .card-note-ghost:hover { color: var(--accent-2); border-color: rgba(184,255,92,0.45); background: rgba(184,255,92,0.05); }
+html[data-theme="hollowgrave"] .sweat-card.live-new { animation: graveRise 0.75s cubic-bezier(.2,.8,.3,1) backwards, graveLiveArrive 1.8s ease-out 0.5s 2; }
+@keyframes graveLiveArrive {
+  0%, 100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.07), 0 18px 28px -16px rgba(0,0,0,0.95); }
+  40% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.07), 0 0 0 2px rgba(184,255,92,0.7), 0 0 34px rgba(184,255,92,0.5); }
+}
+html[data-theme="hollowgrave"] .pill.live-pill { color: #10180a; background: var(--accent-2); border-color: var(--accent-2); }
+
+/* ---------- Tier marks (grid cards show no tier pills) ----------
+   Demon: the stone glows ectoplasm green, with ectoplasm dripping off
+   the arch. Final Boss: a cracked headstone lit from inside, crowned
+   with a ring of candles. */
+html[data-theme="hollowgrave"] .sweat-card.tier-t4 .sweat-card-frame,
+html[data-theme="hollowgrave"] .sweat-card.tier-t5 .sweat-card-frame {
+  inset: -2px;
+  padding: 0;
+  background: none;
+  -webkit-mask: none;
+  mask: none;
+  filter: none;
+  border-radius: inherit;
+}
+html[data-theme="hollowgrave"] .sweat-card.tier-t4 .sweat-card-frame {
+  border: 2px solid rgba(184,255,92,0.85);
+  animation: graveEcto 3.4s ease-in-out infinite;
+}
+@keyframes graveEcto {
+  0%, 100% { box-shadow: 0 0 12px rgba(184,255,92,0.35), inset 0 0 18px rgba(184,255,92,0.16); }
+  50% { box-shadow: 0 0 28px rgba(184,255,92,0.6), inset 0 0 34px rgba(184,255,92,0.3); }
+}
+html[data-theme="hollowgrave"] .sweat-card.tier-t4 .sweat-card-frame::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 28%;
+  width: 44%;
+  height: 20px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 26%22%3E%3Cpath d=%22M0 0 H120 V3 C112 3 110 5 108 9 C106 13 102 13 101 9 C99 4 92 4 86 5 C80 6 79 18 75 18 C71 18 72 6 66 5 C58 4 52 4 48 6 C44 8 45 23 40 23 C35 23 37 8 32 5 C26 3 20 4 17 6 C14 8 15 12 12 12 C9 12 9 4 0 3 Z%22 fill=%22%23b8ff5c%22 opacity=%22.85%22/%3E%3Ccircle cx=%2240%22 cy=%2225%22 r=%221.6%22 fill=%22%23b8ff5c%22 opacity=%22.8%22/%3E%3C/svg%3E") center top / 100% 100% no-repeat;
+  transform-origin: 50% 0;
+  animation: graveDrip 4.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px rgba(184,255,92,0.6));
+}
+@keyframes graveDrip {
+  0%, 100% { transform: scaleY(0.85); }
+  50% { transform: scaleY(1.12); }
+}
+html[data-theme="hollowgrave"] .sweat-card.tier-t4 { box-shadow: inset 0 2px 0 rgba(255,255,255,0.07), 0 18px 28px -16px rgba(0,0,0,0.95), 0 0 30px -8px rgba(184,255,92,0.45); }
+html[data-theme="hollowgrave"] .sweat-card.tier-t5 .sweat-card-frame {
+  border: 2px solid rgba(242,140,40,0.9);
+  animation: graveCandleGlow 2.2s ease-in-out infinite;
+}
+@keyframes graveCandleGlow {
+  0%, 100% { box-shadow: 0 0 16px rgba(242,140,40,0.45), inset 0 0 20px rgba(242,140,40,0.18); }
+  30% { box-shadow: 0 0 26px rgba(255,170,70,0.65), inset 0 0 30px rgba(242,140,40,0.28); }
+  55% { box-shadow: 0 0 14px rgba(242,140,40,0.4), inset 0 0 18px rgba(242,140,40,0.15); }
+  75% { box-shadow: 0 0 30px rgba(255,170,70,0.7), inset 0 0 34px rgba(242,140,40,0.3); }
+}
+html[data-theme="hollowgrave"] .sweat-card.tier-t5 .sweat-card-frame::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 44%;
+  width: 64px;
+  height: 56px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 70 60%22%3E%3Cpath d=%22M22 0 L26 9 L19 16 L28 24 L23 33 L31 41 L27 50 L33 60%22 stroke=%22%23ff9b3d%22 stroke-width=%223.4%22 fill=%22none%22 stroke-linejoin=%22round%22 opacity=%22.35%22/%3E%3Cpath d=%22M22 0 L26 9 L19 16 L28 24 L23 33 L31 41 L27 50 L33 60 M28 24 L40 27 L46 35 M23 33 L14 38 M26 9 L34 8%22 stroke=%22%23120e17%22 stroke-width=%221.6%22 fill=%22none%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M22 0 L26 9 L19 16 L28 24 L23 33%22 stroke=%22%23ffb35c%22 stroke-width=%22.6%22 fill=%22none%22 opacity=%22.8%22/%3E%3C/svg%3E") left top / contain no-repeat;
+}
+html[data-theme="hollowgrave"] .sweat-card.tier-t5 .sweat-card-frame::after {
+  content: "";
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  width: 118px;
+  height: 43px;
+  margin-left: -59px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 44%22%3E%3Crect x=%2210%22 y=%2226%22 width=%228%22 height=%2214%22 rx=%221.5%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M10 28 q2 4 3 0 q1 6 3 1 q1 3 2 -1%22 fill=%22%23fff8e6%22/%3E%3Crect x=%2210%22 y=%2226%22 width=%222.5%22 height=%2214%22 fill=%22%23000%22 opacity=%22.12%22/%3E%3Cpath d=%22M14 26 v-2%22 stroke=%22%232a2018%22 stroke-width=%221%22/%3E%3Cellipse cx=%2214%22 cy=%2220%22 rx=%226%22 ry=%227%22 fill=%22%23ffb347%22 opacity=%22.25%22/%3E%3Cpath d=%22M14 13 C17.5 18 17 22 14 24 C11 22 10.5 18 14 13 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M14 17 C15.6 20 15.4 22 14 23 C12.6 22 12.4 20 14 17 Z%22 fill=%22%23fff3c4%22/%3E%3Crect x=%2232%22 y=%2217%22 width=%228%22 height=%2220%22 rx=%221.5%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M32 19 q2 4 3 0 q1 6 3 1 q1 3 2 -1%22 fill=%22%23fff8e6%22/%3E%3Crect x=%2232%22 y=%2217%22 width=%222.5%22 height=%2220%22 fill=%22%23000%22 opacity=%22.12%22/%3E%3Cpath d=%22M36 17 v-2%22 stroke=%22%232a2018%22 stroke-width=%221%22/%3E%3Cellipse cx=%2236%22 cy=%2211%22 rx=%226%22 ry=%227%22 fill=%22%23ffb347%22 opacity=%22.25%22/%3E%3Cpath d=%22M36 4 C39.5 9 39 13 36 15 C33 13 32.5 9 36 4 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M36 8 C37.6 11 37.4 13 36 14 C34.6 13 34.4 11 36 8 Z%22 fill=%22%23fff3c4%22/%3E%3Crect x=%2256%22 y=%2212%22 width=%228%22 height=%2224%22 rx=%221.5%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M56 14 q2 4 3 0 q1 6 3 1 q1 3 2 -1%22 fill=%22%23fff8e6%22/%3E%3Crect x=%2256%22 y=%2212%22 width=%222.5%22 height=%2224%22 fill=%22%23000%22 opacity=%22.12%22/%3E%3Cpath d=%22M60 12 v-2%22 stroke=%22%232a2018%22 stroke-width=%221%22/%3E%3Cellipse cx=%2260%22 cy=%226%22 rx=%226%22 ry=%227%22 fill=%22%23ffb347%22 opacity=%22.25%22/%3E%3Cpath d=%22M60 -1 C63.5 4 63 8 60 10 C57 8 56.5 4 60 -1 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M60 3 C61.6 6 61.4 8 60 9 C58.6 8 58.4 6 60 3 Z%22 fill=%22%23fff3c4%22/%3E%3Crect x=%2280%22 y=%2217%22 width=%228%22 height=%2220%22 rx=%221.5%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M80 19 q2 4 3 0 q1 6 3 1 q1 3 2 -1%22 fill=%22%23fff8e6%22/%3E%3Crect x=%2280%22 y=%2217%22 width=%222.5%22 height=%2220%22 fill=%22%23000%22 opacity=%22.12%22/%3E%3Cpath d=%22M84 17 v-2%22 stroke=%22%232a2018%22 stroke-width=%221%22/%3E%3Cellipse cx=%2284%22 cy=%2211%22 rx=%226%22 ry=%227%22 fill=%22%23ffb347%22 opacity=%22.25%22/%3E%3Cpath d=%22M84 4 C87.5 9 87 13 84 15 C81 13 80.5 9 84 4 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M84 8 C85.6 11 85.4 13 84 14 C82.6 13 82.4 11 84 8 Z%22 fill=%22%23fff3c4%22/%3E%3Crect x=%22102%22 y=%2226%22 width=%228%22 height=%2214%22 rx=%221.5%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M102 28 q2 4 3 0 q1 6 3 1 q1 3 2 -1%22 fill=%22%23fff8e6%22/%3E%3Crect x=%22102%22 y=%2226%22 width=%222.5%22 height=%2214%22 fill=%22%23000%22 opacity=%22.12%22/%3E%3Cpath d=%22M106 26 v-2%22 stroke=%22%232a2018%22 stroke-width=%221%22/%3E%3Cellipse cx=%22106%22 cy=%2220%22 rx=%226%22 ry=%227%22 fill=%22%23ffb347%22 opacity=%22.25%22/%3E%3Cpath d=%22M106 13 C109.5 18 109 22 106 24 C103 22 102.5 18 106 13 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M106 17 C107.6 20 107.4 22 106 23 C104.6 22 104.4 20 106 17 Z%22 fill=%22%23fff3c4%22/%3E%3C/svg%3E") center / contain no-repeat;
+  animation: graveCandleFlicker 1.7s steps(1) infinite;
+}
+@keyframes graveCandleFlicker {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(255,170,70,0.75)) brightness(1); }
+  25% { filter: drop-shadow(0 0 9px rgba(255,170,70,0.9)) brightness(1.1); }
+  50% { filter: drop-shadow(0 0 5px rgba(255,170,70,0.6)) brightness(0.95); }
+  75% { filter: drop-shadow(0 0 8px rgba(255,170,70,0.85)) brightness(1.06); }
+}
+html[data-theme="hollowgrave"] .sweat-card.tier-t5 { box-shadow: inset 0 2px 0 rgba(255,255,255,0.07), 0 18px 28px -16px rgba(0,0,0,0.95), 0 0 36px -8px rgba(242,140,40,0.55); }
+html[data-theme="hollowgrave"] .pill.tier-pill.t4 { color: #dcffb0; background: rgba(184,255,92,0.12); border-color: rgba(184,255,92,0.5); text-shadow: 0 0 6px rgba(184,255,92,0.5); }
+html[data-theme="hollowgrave"] .pill.tier-pill.t5 { color: #ffd9a8; background: rgba(242,140,40,0.16); border-color: rgba(242,140,40,0.6); text-shadow: 0 0 6px rgba(242,140,40,0.7); }
+html[data-theme="hollowgrave"] .sweat-row.tier-t4 > td:first-child::before { background: var(--accent-2); box-shadow: 0 0 10px rgba(184,255,92,0.8); }
+html[data-theme="hollowgrave"] .sweat-row.tier-t5 > td:first-child::before { background: var(--accent); animation: graveRowCandle 1.7s steps(1) infinite; }
+@keyframes graveRowCandle {
+  0%, 100% { box-shadow: 0 0 8px rgba(242,140,40,0.8); }
+  33% { box-shadow: 0 0 14px rgba(255,170,70,1); }
+  66% { box-shadow: 0 0 6px rgba(242,140,40,0.6); }
+}
+html[data-theme="hollowgrave"] .sweat-row.tier-t5 { background: linear-gradient(90deg, rgba(242,140,40,0.1), transparent 45%); }
+html[data-theme="hollowgrave"] .sweat-row.tier-t4 { background: linear-gradient(90deg, rgba(184,255,92,0.06), transparent 45%); }
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="hollowgrave"] .sweat-card.tier-t4 .sweat-card-frame::after,
+  html[data-theme="hollowgrave"] .sweat-card.tier-t5 .sweat-card-frame::after,
+  html[data-theme="hollowgrave"] h1,
+  html[data-theme="hollowgrave"] .hero-flourish { animation: none; }
+}
+
+/* ---------- Lookup panel and stats ---------- */
+html[data-theme="hollowgrave"] .dash-left { border-right-color: rgba(232,224,240,0.1); }
+@media (max-width: 700px) {
+  html[data-theme="hollowgrave"] .dash-left { border-right: none; border-bottom-color: rgba(232,224,240,0.1); }
+}
+html[data-theme="hollowgrave"] .dash-empty {
+  border-color: rgba(232,224,240,0.14);
+  background: radial-gradient(circle at 50% 40%, rgba(184,255,92,0.05), transparent 70%);
+}
+html[data-theme="hollowgrave"] .stat-hero,
+html[data-theme="hollowgrave"] .stats-tag-panel,
+html[data-theme="hollowgrave"] .modal-stat-tile,
+html[data-theme="hollowgrave"] .modal-tags-section {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #2b2733, #211d28);
+  border-color: rgba(255,255,255,0.07);
+  border-radius: 10px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.04);
+}
+html[data-theme="hollowgrave"] .stat-hero-value,
+html[data-theme="hollowgrave"] .modal-stat-value { font-weight: 700; text-shadow: 0 0 12px color-mix(in srgb, currentColor 35%, transparent); }
+html[data-theme="hollowgrave"] .modal-stat-delta { font-family: var(--font-label); border-radius: 4px; }
+html[data-theme="hollowgrave"] .edit-stats-grid .edit-field {
+  background: linear-gradient(180deg, #2b2733, #211d28);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 8px 9px 9px;
+}
+html[data-theme="hollowgrave"] .edit-stats-grid input { font-family: var(--font-label); font-variant-numeric: lining-nums; background: rgba(7,6,10,0.55); }
+html[data-theme="hollowgrave"] .edit-section-label { letter-spacing: 0.1em; color: var(--accent); border-bottom-color: rgba(242,140,40,0.3); }
+html[data-theme="hollowgrave"] .ss-tile {
+  background: linear-gradient(180deg, rgba(43,39,51,0.92), rgba(30,26,36,0.94));
+  border-color: rgba(255,255,255,0.07);
+}
+html[data-theme="hollowgrave"] .ss-value { font-weight: 700; }
+html[data-theme="hollowgrave"] .ss-label { color: var(--accent-2); letter-spacing: 0.12em; opacity: 0.85; }
+html[data-theme="hollowgrave"] .ss-spark span { background: var(--accent); box-shadow: 0 0 8px rgba(242,140,40,0.5); }
+/* The live preview's skin and the player popup's skin float like a
+   ghost in a soft green haze. */
+html[data-theme="hollowgrave"] #statsAvatar,
+html[data-theme="hollowgrave"] #modalSkin { border-color: rgba(184,255,92,0.5); }
+html[data-theme="hollowgrave"] #modalSkin { background: radial-gradient(circle, rgba(184,255,92,0.12), transparent 70%); }
+html[data-theme="hollowgrave"] .skin-aura { background: radial-gradient(circle, rgba(184,255,92,0.28), transparent 65%); }
+html[data-theme="hollowgrave"] #statsContent.stats-pop { animation: graveStatsPop 0.7s ease-out both; }
+@keyframes graveStatsPop {
+  0% { opacity: 0; filter: blur(6px); transform: translateY(16px); }
+  60% { opacity: 1; filter: blur(1px); transform: translateY(-3px); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+/* Status messages catch like a candle wick: a few stuttering flashes,
+   then steady. */
+html[data-theme="hollowgrave"] #status,
+html[data-theme="hollowgrave"] #editStatus,
+html[data-theme="hollowgrave"] #adminKeyStatus { display: inline-block; }
+html[data-theme="hollowgrave"] #status.typewriter-play,
+html[data-theme="hollowgrave"] #editStatus.typewriter-play,
+html[data-theme="hollowgrave"] #adminKeyStatus.typewriter-play { animation: graveWick 0.7s linear both; }
+html[data-theme="hollowgrave"] #status.typewriter-dismiss,
+html[data-theme="hollowgrave"] #editStatus.typewriter-dismiss,
+html[data-theme="hollowgrave"] #adminKeyStatus.typewriter-dismiss { animation: graveSnuff 0.45s ease-in both; }
+@keyframes graveWick {
+  0% { opacity: 0; text-shadow: 0 0 0 transparent; }
+  15% { opacity: 0.7; text-shadow: 0 0 12px rgba(242,140,40,0.9); }
+  25% { opacity: 0.15; }
+  45% { opacity: 0.9; text-shadow: 0 0 10px rgba(242,140,40,0.8); }
+  55% { opacity: 0.5; }
+  100% { opacity: 1; text-shadow: 0 0 0 transparent; }
+}
+@keyframes graveSnuff {
+  0% { opacity: 1; filter: blur(0); transform: translateY(0); }
+  100% { opacity: 0; filter: blur(4px); transform: translateY(-10px); }
+}
+html[data-theme="hollowgrave"] .confirm-icon { position: relative; filter: drop-shadow(0 0 8px rgba(255,84,104,0.5)); }
+
+/* ---------- Popups ---------- */
+html[data-theme="hollowgrave"] .modal { background: radial-gradient(ellipse at 50% 100%, rgba(43,29,61,0.55), rgba(4,3,7,0.82) 70%); }
+html[data-theme="hollowgrave"] .modal-content {
+  background:
+    radial-gradient(120% 50% at 50% -10%, rgba(241,216,138,0.06), transparent 60%),
+    linear-gradient(180deg, #1f1a27, #15111b);
+  border: 1px solid rgba(232,224,240,0.1);
+  box-shadow: 0 0 40px rgba(242,140,40,0.1), 0 30px 70px rgba(0,0,0,0.75);
+}
+html[data-theme="hollowgrave"] #modalUsername {
+  color: var(--accent);
+  font-size: 1.9em;
+  text-shadow: 0 0 16px rgba(242,140,40,0.5), 0 2px 0 #3f1e05;
+}
+html[data-theme="hollowgrave"] .modal-record { border-color: rgba(184,255,92,0.22); background: rgba(184,255,92,0.04); }
+html[data-theme="hollowgrave"] .modal-standing-bar > span { box-shadow: 0 0 6px currentColor; }
+html[data-theme="hollowgrave"] .flip-sheen { --sheen: rgba(184,255,92,0.22); }
+html[data-theme="hollowgrave"] #editModal .edit-modal-actions { background: #17131d; }
+html[data-theme="hollowgrave"] .shortcuts-sheet {
+  background: linear-gradient(180deg, #1f1a27, #15111b);
+  border-color: rgba(232,224,240,0.12);
+}
+html[data-theme="hollowgrave"] .shortcuts-title::before { content: "\263E  "; color: var(--moon); }
+html[data-theme="hollowgrave"] .shortcuts-list kbd { font-family: var(--font-label); border-radius: 8px 8px 3px 3px; }
+html[data-theme="hollowgrave"] .denick-mode-btn.active { box-shadow: inset 0 0 0 1px var(--border-strong), 0 0 12px rgba(242,140,40,0.2); }
+html[data-theme="hollowgrave"] .denick-row { background: linear-gradient(180deg, rgba(43,39,51,0.6), rgba(30,26,36,0.7)); }
+html[data-theme="hollowgrave"] .activity-chip { font-family: var(--font-label); }
+
+/* ---------- Leaderboard ---------- */
+html[data-theme="hollowgrave"] .lb-avatar { color: #120d16; }
+html[data-theme="hollowgrave"] .lb-block {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #3a3544, #25212c);
+  border-color: rgba(255,255,255,0.07);
+  border-radius: 40px 40px 4px 4px / 24px 24px 4px 4px;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.07), 0 0 26px -10px var(--medal);
+}
+html[data-theme="hollowgrave"] .lb-place { color: var(--medal); text-shadow: 0 0 14px color-mix(in srgb, var(--medal) 60%, transparent); }
+html[data-theme="hollowgrave"] .lb-crown span { font-size: 0; }
+html[data-theme="hollowgrave"] .lb-crown span::before {
+  content: "";
+  display: inline-block;
+  width: 30px;
+  height: 22px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 30 24%22%3E%3Cpath d=%22M15 4 q1 -3 4 -3.5%22 stroke=%22%236b8f3a%22 stroke-width=%222%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3Cellipse cx=%229%22 cy=%2214%22 rx=%227%22 ry=%229%22 fill=%22%23d9661a%22/%3E%3Cellipse cx=%2221%22 cy=%2214%22 rx=%227%22 ry=%229%22 fill=%22%23d9661a%22/%3E%3Cellipse cx=%2215%22 cy=%2214%22 rx=%228%22 ry=%229.8%22 fill=%22%23f28c28%22/%3E%3Cpath d=%22M9 11 l3 -3.5 l3 3.5 z M15 11 l3 -3.5 l3 3.5 z%22 fill=%22%23ffe08a%22/%3E%3Cpath d=%22M8 16 q7 6.5 14 0 l-2 2 l-2 -2 l-2 2.2 l-1 -2 l-2 2.2 l-2 -2.2 l-1.5 2 z%22 fill=%22%23ffe08a%22/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 0 6px rgba(242,140,40,0.8));
+}
+html[data-theme="hollowgrave"] .lb-row { background: linear-gradient(180deg, rgba(43,39,51,0.6), rgba(30,26,36,0.7)); }
+html[data-theme="hollowgrave"] .lb-row.active { box-shadow: 0 0 14px rgba(242,140,40,0.2); }
+html[data-theme="hollowgrave"] .lb-bar > span { box-shadow: 0 0 8px var(--chip-color); }
+
+/* ---------- Footer ---------- */
+html[data-theme="hollowgrave"] .site-footer-end::before { background: linear-gradient(90deg, transparent, rgba(242,140,40,0.5)); }
+html[data-theme="hollowgrave"] .site-footer-end::after { background: linear-gradient(90deg, rgba(242,140,40,0.5), transparent); }
+html[data-theme="hollowgrave"] .site-footer-end-text { font-family: var(--font-grave); font-size: 1.2em; color: var(--accent); text-shadow: 0 0 10px rgba(242,140,40,0.45); }
+html[data-theme="hollowgrave"] .site-footer-end-text::before { content: "Six feet under"; }
+html[data-theme="hollowgrave"] .site-footer-meta { font-style: italic; }
+
+/* ---------- Idle preview: a ghost rising out of a fresh grave ---------- */
+html[data-theme="hollowgrave"] .idle-grave { display: block; }
+.idle-grave i { position: absolute; display: block; background: center / contain no-repeat; }
+.idle-grave .grave-moon { right: 6px; top: 4px; width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #fff7d6, #f1d88a 60%, #c9a04a); box-shadow: 0 0 16px rgba(241,216,138,0.45); }
+.idle-grave .grave-stone { left: 44px; top: 46px; width: 52px; height: 62px; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 50 60%22%3E%3Cpath d=%22M4 60 V24 a21 21 0 0 1 42 0 V60 Z%22 fill=%22%233a3544%22 stroke=%22%234d465a%22 stroke-width=%221.2%22/%3E%3Ctext x=%2225%22 y=%2224%22 text-anchor=%22middle%22 font-family=%22serif%22 font-size=%229%22 letter-spacing=%221.5%22 fill=%22%231d1924%22%3ER.I.P.%3C/text%3E%3Cpath d=%22M14 34 h22 M16 40 h18%22 stroke=%22%2325212d%22 stroke-width=%221.4%22/%3E%3C/svg%3E"); }
+.idle-grave .grave-mound { left: 0; right: 0; bottom: 4px; height: 30px; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 140 30%22%3E%3Cpath d=%22M0 30 C20 10 50 4 70 4 C92 4 120 10 140 30 Z%22 fill=%22%23141019%22/%3E%3Cpath d=%22M8 26 C30 12 52 8 70 8 C90 8 112 12 132 26%22 stroke=%22rgba(170,150,210,0.25)%22 stroke-width=%221%22 fill=%22none%22/%3E%3Cpath d=%22M104 22 L114 2 M110 3 h8%22 stroke=%22%236b6274%22 stroke-width=%222.2%22 stroke-linecap=%22round%22/%3E%3C/svg%3E"); }
+.idle-grave .grave-candle { left: 24px; bottom: 18px; width: 12px; height: 26px; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 14 30%22%3E%3Crect x=%224%22 y=%2212%22 width=%226%22 height=%2218%22 rx=%221%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M7 2 C10 6 10 9 7 11 C4 9 4 6 7 2 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M7 5 C8.3 7 8.2 8.5 7 9.6 C5.8 8.5 5.7 7 7 5 Z%22 fill=%22%23fff3c4%22/%3E%3C/svg%3E"); animation: graveCandleFlicker 1.7s steps(1) infinite; }
+.idle-grave .grave-ghost { left: 50px; top: 40px; width: 40px; height: 48px; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 30 36%22%3E%3Cdefs%3E%3CradialGradient id=%22g%22 cx=%2245%25%22 cy=%2235%25%22 r=%2270%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23ffffff%22/%3E%3Cstop offset=%22.7%22 stop-color=%22%23e9f2ff%22/%3E%3Cstop offset=%221%22 stop-color=%22%23c8d4f0%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d=%22M3 32 V15 a12 12 0 0 1 24 0 V32 l-4 -3 l-4 3.5 l-4 -3.5 l-4 3.5 l-4 -3.5 z%22 fill=%22url(%23g)%22 opacity=%22.92%22/%3E%3Cellipse cx=%2211%22 cy=%2215%22 rx=%222%22 ry=%223%22 fill=%22%231b1424%22/%3E%3Cellipse cx=%2219%22 cy=%2215%22 rx=%222%22 ry=%223%22 fill=%22%231b1424%22/%3E%3Cellipse cx=%2215%22 cy=%2222%22 rx=%222.2%22 ry=%222.6%22 fill=%22%231b1424%22 opacity=%22.85%22/%3E%3C/svg%3E"); opacity: 0; animation: idleGhost 5.5s ease-in-out infinite; }
+@keyframes idleGhost {
+  0%, 12% { opacity: 0; transform: translateY(30px) scale(0.7); }
+  35% { opacity: 0.9; transform: translate(-6px, -18px) scale(1); }
+  55% { opacity: 0.85; transform: translate(8px, -30px) scale(1); }
+  80% { opacity: 0.4; transform: translate(-4px, -44px) scale(1.04); }
+  100% { opacity: 0; transform: translate(2px, -54px) scale(1.06); }
+}
+#statsEmpty.is-scanning .idle-grave .grave-ghost { animation-duration: 2.4s; }
+#statsEmpty.is-scanning .idle-grave .grave-stone { filter: drop-shadow(0 0 8px rgba(184,255,92,0.6)); }
+
+/* ---------- Click effects ---------- */
+html[data-theme="hollowgrave"] .fx-word {
+  font-family: var(--font-grave);
+  font-size: 30px;
+  color: var(--accent);
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 12px rgba(242,140,40,0.85), 0 2px 0 #3f1e05;
+}
+.fx-ghost { width: 26px; height: 31px; margin: -16px 0 0 -13px; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 30 36%22%3E%3Cdefs%3E%3CradialGradient id=%22g%22 cx=%2245%25%22 cy=%2235%25%22 r=%2270%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23ffffff%22/%3E%3Cstop offset=%22.7%22 stop-color=%22%23e9f2ff%22/%3E%3Cstop offset=%221%22 stop-color=%22%23c8d4f0%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d=%22M3 32 V15 a12 12 0 0 1 24 0 V32 l-4 -3 l-4 3.5 l-4 -3.5 l-4 3.5 l-4 -3.5 z%22 fill=%22url(%23g)%22 opacity=%22.92%22/%3E%3Cellipse cx=%2211%22 cy=%2215%22 rx=%222%22 ry=%223%22 fill=%22%231b1424%22/%3E%3Cellipse cx=%2219%22 cy=%2215%22 rx=%222%22 ry=%223%22 fill=%22%231b1424%22/%3E%3Cellipse cx=%2215%22 cy=%2222%22 rx=%222.2%22 ry=%222.6%22 fill=%22%231b1424%22 opacity=%22.85%22/%3E%3C/svg%3E") center / contain no-repeat; filter: drop-shadow(0 0 6px rgba(220,235,255,0.55)); }
+.fx-ecto { width: 5px; height: 5px; border-radius: 50%; background: #e6ffc2; box-shadow: 0 0 6px 2px rgba(184,255,92,0.7); }
+.fx-dirt { width: 6px; height: 6px; border-radius: 2px; background: var(--c, #3b2a1e); }
+.fx-mound { width: 70px; height: 18px; margin-left: -35px; border-radius: 50% 50% 0 0; background: radial-gradient(ellipse at 50% 100%, #2e2218 30%, #1a130e 70%); }
+.fx-hand-wrap { width: 40px; height: 60px; margin: -60px 0 0 -20px; overflow: hidden; }
+.fx-hand { position: absolute; left: 0; top: 0; width: 40px; height: 60px; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 60%22%3E%3Cpath d=%22M14 60 L13 34 C11 30 8 26 6 21 C5 18 8 17 10 20 L14 26 L13 10 C13 7 17 7 17 10 L18 22 L19 6 C19 3 23 3 23 6 L23 22 L25 9 C25 6 29 6 29 9 L28 25 L31 16 C32 13 35 14 35 17 L32 33 C31 38 29 41 28 44 L28 60 Z%22 fill=%22%237d9a5a%22 stroke=%22%233c4f2a%22 stroke-width=%221.5%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M16 46 L26 48 M17 52 L25 53%22 stroke=%22%233c4f2a%22 stroke-width=%221.4%22/%3E%3Cpath d=%22M14 40 L28 42 L28 60 L14 60 Z%22 fill=%22%234a3a5a%22 opacity=%22.85%22/%3E%3Cpath d=%22M14 40 L17 44 L20 40 L23 45 L26 41 L28 43%22 stroke=%22%232c2236%22 stroke-width=%221.2%22 fill=%22none%22/%3E%3C/svg%3E") center bottom / contain no-repeat; transform-origin: 50% 100%; }
+.fx-gbat { width: 36px; height: 17px; margin: -8px 0 0 -18px; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 18%22%3E%3Cpath d=%22M20 6 C18 3 17 3 16.5 5 C13 3 9 2 3 5 C6 6 7 8 6.5 10 C9 8.5 12 9 14 11 C15.5 9.5 17 9.5 18 11.5 L20 13 L22 11.5 C23 9.5 24.5 9.5 26 11 C28 9 31 8.5 33.5 10 C33 8 34 6 37 5 C31 2 27 3 23.5 5 C23 3 22 3 20 6 Z%22 fill=%22%230d0a12%22/%3E%3Ccircle cx=%2219%22 cy=%227.5%22 r=%22.6%22 fill=%22%23ff9b3d%22/%3E%3Ccircle cx=%2221%22 cy=%227.5%22 r=%22.6%22 fill=%22%23ff9b3d%22/%3E%3C/svg%3E") center / contain no-repeat; filter: drop-shadow(0 0 1px rgba(241,216,138,0.9)) drop-shadow(0 0 6px rgba(242,140,40,0.45)); }
+
+/* ---------- Add-sweat flourish: a headstone rises, a ghost leaves it ---------- */
+.flourish-grave-stone {
+  position: absolute;
+  left: 50%;
+  bottom: calc(50% + 24px);
+  width: 70px;
+  height: 84px;
+  margin-left: -35px;
+  border-radius: 35px 35px 4px 4px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"), linear-gradient(180deg, #4a4456, #2c2834);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 0 22px rgba(184,255,92,0.35);
+  color: #a99fb7;
+  font-family: var(--font-grave);
+  font-size: 13px;
+  letter-spacing: 0.25em;
+  text-align: center;
+  padding-top: 18px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.08), 0 -1px 0 rgba(0,0,0,0.6);
+}
+.flourish-grave-ghost { position: absolute; left: 50%; bottom: calc(50% + 60px); width: 34px; height: 40px; margin-left: -17px; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 30 36%22%3E%3Cdefs%3E%3CradialGradient id=%22g%22 cx=%2245%25%22 cy=%2235%25%22 r=%2270%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23ffffff%22/%3E%3Cstop offset=%22.7%22 stop-color=%22%23e9f2ff%22/%3E%3Cstop offset=%221%22 stop-color=%22%23c8d4f0%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d=%22M3 32 V15 a12 12 0 0 1 24 0 V32 l-4 -3 l-4 3.5 l-4 -3.5 l-4 3.5 l-4 -3.5 z%22 fill=%22url(%23g)%22 opacity=%22.92%22/%3E%3Cellipse cx=%2211%22 cy=%2215%22 rx=%222%22 ry=%223%22 fill=%22%231b1424%22/%3E%3Cellipse cx=%2219%22 cy=%2215%22 rx=%222%22 ry=%223%22 fill=%22%231b1424%22/%3E%3Cellipse cx=%2215%22 cy=%2222%22 rx=%222.2%22 ry=%222.6%22 fill=%22%231b1424%22 opacity=%22.85%22/%3E%3C/svg%3E") center / contain no-repeat; filter: drop-shadow(0 0 8px rgba(220,235,255,0.6)); }
+.flourish-grave-dirt { position: absolute; left: 50%; bottom: calc(50% + 24px); width: 6px; height: 6px; border-radius: 2px; background: var(--c, #3b2a1e); }
+html[data-theme="hollowgrave"] .add-sweat-row .btn.success-pulse { animation: graveBtnPulse 0.7s ease-out; }
+@keyframes graveBtnPulse {
+  0% { box-shadow: 0 0 0 0 rgba(184,255,92,0.8), 0 0 18px rgba(242,140,40,0.3); }
+  60% { box-shadow: 0 0 0 14px rgba(184,255,92,0), 0 0 18px rgba(242,140,40,0.3); }
+  100% { box-shadow: 0 0 0 0 rgba(184,255,92,0), 0 0 18px rgba(242,140,40,0.3); }
+}
+
+/* ---------- BED DESTROYED and chat toasts ---------- */
+html[data-theme="hollowgrave"] .egg-scene-bg { background: radial-gradient(ellipse at 50% 70%, rgba(43,29,61,0.88), rgba(4,3,7,0.97) 75%); }
+html[data-theme="hollowgrave"] .egg-bed { filter: saturate(0.7) drop-shadow(0 0 22px rgba(184,255,92,0.4)); }
+html[data-theme="hollowgrave"] .egg-title {
+  font-family: var(--font-grave);
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-shadow: 0 0 26px rgba(242,140,40,0.75), 0 4px 0 #3f1e05;
+}
+html[data-theme="hollowgrave"] .egg-sub { font-family: 'Crimson Pro', serif; font-style: italic; color: var(--accent-2); letter-spacing: 1px; text-shadow: 0 0 10px rgba(184,255,92,0.5); }
+html[data-theme="hollowgrave"] .egg-toast { font-family: 'Crimson Pro', serif; font-size: 15px; background: rgba(21,17,27,0.92); border-color: rgba(242,140,40,0.4); }
+
+/* ---------- Theme switch scene ---------- */
+.tto-grave-night { position: absolute; inset: 0; background: radial-gradient(120% 80% at 50% 100%, rgba(43,29,61,0.85), rgba(7,6,10,0.95) 70%); }
+.tto-grave-moon { position: absolute; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #fff7d6, #f1d88a 60%, #c9a04a); box-shadow: 0 0 60px 14px rgba(241,216,138,0.35); }
+.tto-grave-fog { position: absolute; height: 60%; width: 90%; bottom: -10%; background: radial-gradient(ellipse 50% 45% at 50% 60%, rgba(200,190,230,0.55), rgba(200,190,230,0.22) 45%, transparent 72%); filter: blur(6px); }
+.tto-grave-hill { position: absolute; left: -5%; right: -5%; bottom: 0; height: 26%; background: #0a0810; border-radius: 50% 50% 0 0 / 60% 60% 0 0; box-shadow: 0 -2px 18px rgba(170,150,210,0.18); }
+.tto-grave-stone {
+  position: absolute;
+  border-radius: 50% 50% 8px 8px / 34% 34% 8px 8px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"), linear-gradient(180deg, #4a4456, #2c2834);
+  border: 2px solid rgba(255,255,255,0.08);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,0.08), 0 0 50px rgba(184,255,92,0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  color: #a99fb7;
+  text-align: center;
+  font-family: 'Grenze Gotisch', serif;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.08), 0 -1px 0 rgba(0,0,0,0.6);
+}
+.tto-grave-stone b { font-weight: 600; letter-spacing: 0.3em; font-size: 0.8em; margin-top: 18%; }
+.tto-grave-stone span { color: #f28c28; font-size: 1.15em; margin-top: 8%; line-height: 1.05; text-shadow: 0 0 14px rgba(242,140,40,0.6); }
+.tto-grave-bat { position: absolute; width: 46px; height: 21px; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 18%22%3E%3Cpath d=%22M20 6 C18 3 17 3 16.5 5 C13 3 9 2 3 5 C6 6 7 8 6.5 10 C9 8.5 12 9 14 11 C15.5 9.5 17 9.5 18 11.5 L20 13 L22 11.5 C23 9.5 24.5 9.5 26 11 C28 9 31 8.5 33.5 10 C33 8 34 6 37 5 C31 2 27 3 23.5 5 C23 3 22 3 20 6 Z%22 fill=%22%230d0a12%22/%3E%3Ccircle cx=%2219%22 cy=%227.5%22 r=%22.6%22 fill=%22%23ff9b3d%22/%3E%3Ccircle cx=%2221%22 cy=%227.5%22 r=%22.6%22 fill=%22%23ff9b3d%22/%3E%3C/svg%3E") center / contain no-repeat; }
+.tto-grave-mask { position: absolute; left: 0; right: 0; overflow: hidden; }
+.tto-grave-dirt { position: absolute; width: 7px; height: 7px; border-radius: 2px; background: var(--c, #3b2a1e); }
+
+/* ---------- Live edits: a candle flares on the stone ---------- */
+html[data-theme="hollowgrave"] .card-grid .sweat-card.live-edit { animation: graveLiveEdit 1.4s ease-out 1; }
+html[data-theme="hollowgrave"] .sweat-row.live-edit { animation: graveLiveEditRow 1.6s ease-out 1; }
+@keyframes graveLiveEdit {
+  0% { box-shadow: 0 0 0 2px rgba(242,140,40,0.95), 0 0 34px rgba(242,140,40,0.65), 0 18px 28px -16px rgba(0,0,0,0.95); filter: brightness(1.18); }
+  100% { box-shadow: 0 0 0 2px rgba(242,140,40,0), 0 0 0 rgba(242,140,40,0), 0 18px 28px -16px rgba(0,0,0,0.95); filter: none; }
+}
+@keyframes graveLiveEditRow {
+  0% { background: rgba(242,140,40,0.2); }
+  100% { background: transparent; }
+}
+
+/* ---------- Phone bottom nav: a carved stone slab ----------
+   Grenze labels cut into the stone; the current section is lit by a
+   small candle flame that flickers above its icon. */
+@media (max-width: 620px) {
+  html[data-theme="hollowgrave"] .bottom-nav {
+    border-radius: 14px;
+    background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"), linear-gradient(180deg, rgba(58,53,68,0.96), rgba(34,30,42,0.96));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top-color: rgba(255,255,255,0.16);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.06), inset 0 -3px 0 rgba(0,0,0,0.35), 0 0 30px -10px rgba(242,140,40,0.35), 0 16px 34px -10px rgba(0,0,0,0.9);
+  }
+  html[data-theme="hollowgrave"] .bnav-link {
+    border-radius: 9px;
+    color: #a99fb7;
+    font-family: var(--font-label);
+    font-weight: 600;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.06), 0 -1px 0 rgba(0,0,0,0.6);
+  }
+  html[data-theme="hollowgrave"] .bnav-link svg { stroke-width: 1.6; filter: drop-shadow(0 -1px 0 rgba(0,0,0,0.5)); }
+  html[data-theme="hollowgrave"] .bnav-link.active {
+    color: var(--accent);
+    background: radial-gradient(ellipse at 50% 20%, rgba(242,140,40,0.2), transparent 70%);
+    text-shadow: 0 0 8px rgba(242,140,40,0.6);
+  }
+  html[data-theme="hollowgrave"] .bnav-link.active svg { filter: drop-shadow(0 0 4px rgba(242,140,40,0.75)); }
+  html[data-theme="hollowgrave"] .bnav-link::before {
+    content: "";
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    width: 8px;
+    height: 13px;
+    margin-left: -4px;
+    border-radius: 50% 50% 45% 45% / 62% 62% 38% 38%;
+    background: radial-gradient(ellipse at 50% 70%, #fff3c4 0%, #ffb347 45%, rgba(242,140,40,0.85) 70%, rgba(242,140,40,0) 100%);
+    box-shadow: 0 0 10px 2px rgba(242,140,40,0.55);
+    opacity: 0;
+    transform: scale(0.4);
+    transform-origin: 50% 100%;
+    transition: opacity 0.2s ease, transform 0.25s var(--ease);
+  }
+  html[data-theme="hollowgrave"] .bnav-link.active::before { opacity: 1; transform: none; animation: graveNavFlame 1.7s steps(1) infinite; }
+  html[data-theme="hollowgrave"] .bnav-link:active { transform: translateY(1px); }
+}
+@keyframes graveNavFlame {
+  0%, 100% { transform: none; opacity: 1; }
+  23% { transform: scale(0.92, 1.08) rotate(-4deg); opacity: 0.9; }
+  51% { transform: scale(1.05, 0.94) rotate(3deg); opacity: 1; }
+  74% { transform: scale(0.96, 1.04); opacity: 0.85; }
+}
+@media (max-width: 620px) and (prefers-reduced-motion: reduce) {
+  html[data-theme="hollowgrave"] .bnav-link.active::before { animation: none; }
+}
+
+/* ---------- Phones ---------- */
+@media (max-width: 700px) {
+  html[data-theme="hollowgrave"] h1 { font-size: 2.6em; }
+  html[data-theme="hollowgrave"] .hero-pin { top: -18px; left: -6px; width: 64px; height: 64px; }
+  html[data-theme="hollowgrave"] #gravefield .gf-hills { height: 150px; background-size: auto 150px; }
+  html[data-theme="hollowgrave"] .sweat-card { border-radius: 50% 50% 8px 8px / 56px 56px 8px 8px; padding-top: 46px; }
+  html[data-theme="hollowgrave"] .sweat-card-index { top: 48px; }
+}
+@media (max-width: 480px) {
+  /* Small and high, clear of the eyebrow line under it. */
+  html[data-theme="hollowgrave"] .hero-pin { top: -36px; left: -8px; width: 50px; height: 50px; }
+}
+/* @@END-HOLLOWGRAVE@@ */
+
 /* ============================================================
    LOOKTHROUGH POLISH (2026-09-27)
    Fixes and touches from a pass over every theme on desktop, tablet and
@@ -10831,6 +11962,7 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
 <div id="nebula"><div id="nebulaGlow2" aria-hidden="true"></div></div>
 <div id="starfield"></div>
 <div id="bubblefield"></div>
+<div id="gravefield" aria-hidden="true"><i class="gf-cloud c1"></i><i class="gf-cloud c2"></i><i class="gf-hills"></i><i class="gf-fog f1"></i><i class="gf-fog f2"></i><i class="gf-wisp w1"></i><i class="gf-wisp w2"></i><i class="gf-wisp w3"></i><i class="gf-wisp w4"></i><i class="gf-bat b1"></i><i class="gf-bat b2"></i><i class="gf-bat b3"></i></div>
 <div id="themeTransitionOverlay" aria-hidden="true"></div>
 <div id="customTooltip" role="tooltip" aria-hidden="true"></div>
 
@@ -10865,6 +11997,7 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
         <li role="option" data-theme-value="ledger" data-label="Private Bank" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Private Bank</span><span class="theme-opt-tag">Old-money vault</span></span></li>
         <li role="option" data-theme-value="deepcurrent" data-label="Deep Current" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Deep Current</span><span class="theme-opt-tag">Abyssal sonar</span></span></li>
         <li role="option" data-theme-value="skyisles" data-label="Sky Isles" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Sky Isles</span><span class="theme-opt-tag">Retro pixel skies</span></span></li>
+        <li role="option" data-theme-value="hollowgrave" data-label="Hollow Grave" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Hollow Grave</span><span class="theme-opt-tag">Moonlit graveyard</span></span></li>
       </ul>
     </div>
     <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; <span class="key-owner-name">Your Key</span></button>
@@ -10952,6 +12085,7 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
                   </svg>
                 </div>
                 <div class="idle-isle"><i class="isle-cloud"></i><i class="isle-land"></i><i class="isle-bed"></i><i class="isle-gen"></i><i class="isle-gem"></i><i class="isle-gem g2"></i></div>
+                <div class="idle-grave"><i class="grave-moon"></i><i class="grave-ghost"></i><i class="grave-stone"></i><i class="grave-mound"></i><i class="grave-candle"></i></div>
               </div>
               <p id="statsEmptyText">Search a player, then Preview to see their card here before you log it.</p>
             </div>
@@ -11121,6 +12255,13 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
       <circle cx="41" cy="29" r="1.6" fill="currentColor" opacity="0.5" />
     </svg>
     <span class="empty-icon empty-icon-skyisles" aria-hidden="true"></span>
+    <svg class="empty-icon empty-icon-hollowgrave" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <path d="M18 54 V26 a14 14 0 0 1 28 0 V54 Z" fill="none" stroke="currentColor" stroke-width="1.6" />
+      <path d="M24 30 h16 M24 36 h12" stroke="currentColor" stroke-width="1.2" opacity="0.55" />
+      <path d="M6 56 Q20 50 32 54 T58 55" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.7" />
+      <path d="M50 52 L56 30 M53 30 h6 M55 27 v6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.6" />
+      <circle cx="50" cy="12" r="5" fill="none" stroke="#f1d88a" stroke-width="1.2" opacity="0.7" />
+    </svg>
     <div class="empty-state-text">No sweats match these filters yet.</div>
   </div>
 
@@ -11205,6 +12346,13 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
         <circle cx="41" cy="29" r="1.6" fill="currentColor" opacity="0.5" />
       </svg>
       <span class="empty-icon empty-icon-skyisles" aria-hidden="true"></span>
+      <svg class="empty-icon empty-icon-hollowgrave" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <path d="M18 54 V26 a14 14 0 0 1 28 0 V54 Z" fill="none" stroke="currentColor" stroke-width="1.6" />
+        <path d="M24 30 h16 M24 36 h12" stroke="currentColor" stroke-width="1.2" opacity="0.55" />
+        <path d="M6 56 Q20 50 32 54 T58 55" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.7" />
+        <path d="M50 52 L56 30 M53 30 h6 M55 27 v6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.6" />
+        <circle cx="50" cy="12" r="5" fill="none" stroke="#f1d88a" stroke-width="1.2" opacity="0.7" />
+      </svg>
       <div class="empty-state-text">This person hasn't beaten anyone matching the current filters.</div>
     </div>
     <div id="leaderboardPagination" class="pagination" hidden>
@@ -11453,7 +12601,8 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
 // files to load or license). Each theme has its own palette: Neon is
 // synth blips and lasers, Case Files is camera shutters, typewriters and
 // rubber stamps over rain, Private Bank is coins, vault steel and a
-// grandfather clock, Deep Current is bubbles, sonar and whale song.
+// grandfather clock, Deep Current is bubbles, sonar and whale song,
+// Hollow Grave is a church organ, celesta, creaking gates and shovels.
 // Browsers won't start audio before the first click/key, so the context
 // is created on that first gesture. Settings (sound on, volume, ambience)
 // persist in localStorage under "siteAudio".
@@ -11701,6 +12850,32 @@ window.siteAudio = (function () {
     const f = o.f || rnd(1500, 2300);
     tone(t, { type: "triangle", f, f2: f * 1.12, glide: 0.05, dur: 0.1, gain: o.gain || 0.05, a: 0.002, pan: o.pan, dest: o.dest });
     tone(t, { f: f * 2, dur: 0.06, gain: (o.gain || 0.05) * 0.3, a: 0.002, pan: o.pan, dest: o.dest });
+  }
+
+  // Hollow Grave: a small reed/church organ (stacked sine drawbars with a
+  // slow wobble), a soft celesta, creaking hinges, a shovel biting into
+  // earth and an owl.
+  function organ(t, n, o = {}) {
+    const f = midi(n), g = o.gain || 0.04;
+    const bars = o.lite ? [[1, 1], [2, 0.45], [3, 0.2]] : [[1, 1], [2, 0.5], [3, 0.28], [4, 0.16], [0.5, 0.3]];
+    bars.forEach(([r, k]) => tone(t, { f: f * r, a: o.a || 0.025, hold: o.len || 0.3, dur: o.rel || 0.2, gain: g * k, lp: o.lp || 3200, vib: o.lite ? null : [5.6, f * r * 0.003], pan: o.pan, dest: o.dest }));
+  }
+  function celesta(t, n, o = {}) {
+    const f = midi(n), g = o.gain || 0.03, len = o.len || 0.6;
+    tone(t, { f, dur: len, gain: g, a: 0.003, pan: o.pan, dest: o.dest });
+    tone(t, { f: f * 4, dur: len * 0.22, gain: g * 0.18, a: 0.002, pan: o.pan, dest: o.dest });
+  }
+  function creak(t, o = {}) {
+    const dur = o.dur || 0.4;
+    tone(t, { type: "sawtooth", f: o.f || 170, f2: o.f2 || 240, glide: dur, dur: dur * 0.5, hold: dur * 0.5, gain: o.gain || 0.05, bp: o.bp || 1100, q: 4, vib: [o.rate || 32, o.depth || 28], a: 0.03, pan: o.pan, dest: o.dest });
+  }
+  function shovel(t, o = {}) {
+    noise(t, { type: "lowpass", f: 1600, f2: 300, dur: 0.16, gain: (o.gain || 1) * 0.16, pan: o.pan });
+    thud(t + 0.02, { f: 120, f2: 42, gain: (o.gain || 1) * 0.42, nf: 600, pan: o.pan });
+    metal(t, 1750, { ratios: [1, 2.3, 3.9], dur: 0.16, gain: (o.gain || 1) * 0.022, pan: o.pan });
+  }
+  function owl(t, g = 0.04, dest, pan = 0) {
+    [[0, 0.14], [0.5, 0.05], [0.68, 0.16]].forEach(([k, hold]) => tone(t + k, { f: 410, f2: 365, glide: hold + 0.12, a: 0.05, hold, dur: 0.16, gain: g, lp: 1000, pan, dest }));
   }
 
   const SETS = {
@@ -12077,6 +13252,85 @@ window.siteAudio = (function () {
         for (let i = 0; i < 6; i++) xpOrb(t + 0.9 + i * 0.07, { gain: 0.035 });
       },
     },
+    hollowgrave: {
+      // A ghost puffing up: a breathy little "ooo" with a celesta glint.
+      click(t, pan, step) {
+        const n = step != null ? pentaNote(62, step) : choose([62, 65, 67, 69, 72]);
+        tone(t, { f: midi(n + 12), f2: midi(n + 15), glide: 0.12, dur: 0.22, gain: 0.07, a: 0.03, vib: [7, 10], lp: 2000, pan });
+        celesta(t + 0.02, n + 24, { gain: 0.03, len: 0.4, pan });
+      },
+      // Zombie hand or bats: a low organ stab on a diminished chord, a
+      // groan sliding down, and dirt crumbling.
+      rare(t, pan) {
+        [38, 41, 44, 47].forEach(n => organ(t, n, { len: 0.35, rel: 0.5, gain: 0.05, pan, lite: true }));
+        tone(t + 0.1, { type: "sawtooth", f: 140, f2: 80, glide: 0.7, dur: 0.5, hold: 0.25, gain: 0.05, lp: 600, vib: [5, 6], a: 0.08, pan });
+        for (let i = 0; i < 4; i++) noise(t + 0.15 + i * 0.07, { type: "lowpass", f: 900, f2: 300, dur: 0.08, gain: 0.08, pan });
+      },
+      tier(t, tier) {
+        // Each combo tier climbs further up a D minor organ arpeggio.
+        [62, 65, 69, 74, 77, 81].slice(0, 3 + Math.min(3, tier)).forEach((n, i) => organ(t + i * 0.07, n, { len: 0.08, rel: 0.2, gain: 0.03, lite: true }));
+      },
+      // A knock on wood.
+      ui(t) { tone(t, { type: "triangle", f: 740, f2: 520, dur: 0.05, gain: 0.04, lp: 2400 }); },
+      toggle(t, on) { celesta(t, on ? 81 : 76, { gain: 0.035, len: 0.3 }); celesta(t + 0.06, on ? 86 : 72, { gain: 0.03, len: 0.35 }); },
+      save(t) { shovel(t); },
+      // A coffin lid creaking down and dropping shut.
+      del(t) { creak(t, { dur: 0.3, f: 150, f2: 110, gain: 0.04 }); thud(t + 0.3, { f: 90, f2: 35, gain: 0.45, nf: 500 }); },
+      slide(t, open) { creak(t, { dur: 0.32, f: open ? 160 : 230, f2: open ? 230 : 160, gain: 0.035 }); },
+      page(t, next) { creak(t, { dur: 0.18, f: next ? 200 : 260, f2: next ? 260 : 200, gain: 0.03, bp: 1500 }); celesta(t + 0.12, next ? 81 : 77, { gain: 0.02, len: 0.3 }); },
+      view(t) { celesta(t, 74, { gain: 0.03, len: 0.4 }); celesta(t + 0.07, 81, { gain: 0.03, len: 0.5 }); },
+      // Keys knock like knuckles on a coffin lid; Enter rings a little bell.
+      type(t, kind) {
+        if (kind === "enter") { celesta(t, 86, { gain: 0.03, len: 0.5 }); celesta(t + 0.06, 93, { gain: 0.02, len: 0.6 }); return; }
+        const f = kind === "back" ? 260 : kind === "space" ? 320 : rnd(420, 560);
+        tone(t, { type: "triangle", f, f2: f * 0.6, dur: 0.04, gain: 0.06, a: 0.001, lp: 1800 });
+        noise(t, { type: "bandpass", f: 1800, q: 2, dur: 0.015, gain: 0.03 });
+      },
+      // Fog rolling in on an organ chord, the stone grinding up out of the
+      // ground and landing, bats flapping off, then the chord resolving
+      // with a celesta run as the fog clears.
+      switchTo(t) {
+        const d = 2.3;
+        [50, 53, 57, 62].forEach((n, i) => organ(t + i * 0.03, n, { len: 0.5 * d, rel: 0.5, gain: 0.035, a: 0.15 }));
+        organ(t, 38, { len: 0.5 * d, rel: 0.5, gain: 0.05, a: 0.2, lite: true });
+        noise(t + 0.05, { type: "lowpass", f: 300, f2: 900, dur: 0.6 * d, gain: 0.06, swell: 0.6, rate: 0.5 });
+        noise(t + 0.2 * d, { type: "lowpass", f: 220, f2: 520, dur: 0.26 * d, gain: 0.18, swell: 0.7, rate: 0.5 });
+        tone(t + 0.2 * d, { type: "sawtooth", f: 55, f2: 70, dur: 0.13 * d, hold: 0.13 * d, gain: 0.05, lp: 300, vib: [18, 6], a: 0.1 });
+        thud(t + 0.45 * d, { f: 80, f2: 32, gain: 0.35 });
+        for (let i = 0; i < 9; i++) noise(t + 0.48 * d + i * 0.045, { type: "bandpass", f: rnd(900, 1600), q: 1.2, dur: 0.04, gain: 0.06, pan: rnd(-0.7, 0.7) });
+        for (let i = 0; i < 3; i++) tone(t + 0.5 * d + i * 0.09, { f: rnd(5200, 6400), f2: 4200, dur: 0.04, gain: 0.012, pan: rnd(-0.6, 0.6) });
+        [50, 53, 57, 62, 65].forEach((n, i) => organ(t + 0.62 * d + i * 0.02, n, { len: 0.5, rel: 0.9, gain: 0.03 }));
+        [74, 77, 81, 86].forEach((n, i) => celesta(t + 0.64 * d + i * 0.08, n, { gain: 0.035, len: 0.8 }));
+      },
+      // An old cemetery gate creaking open, then its latch.
+      flipOpen(t, dur) {
+        creak(t, { dur: Math.max(0.35, dur * 0.7), f: 150, f2: 260, gain: 0.05 });
+        tone(t + dur * 0.8, { type: "triangle", f: 1300, f2: 900, dur: 0.05, gain: 0.04, lp: 3000 });
+        tone(t + dur * 0.8, { type: "triangle", f: 300, f2: 180, dur: 0.07, gain: 0.05 });
+      },
+      flipClose(t) { creak(t, { dur: 0.22, f: 260, f2: 170, gain: 0.04 }); thud(t + 0.22, { f: 140, f2: 70, gain: 0.16, ndur: 0.04 }); },
+      // A slow heartbeat while a lookup digs.
+      scanStart(t) { celesta(t, 74, { gain: 0.03, len: 0.4 }); },
+      scanTick(t) { tone(t, { f: 62, f2: 40, dur: 0.16, gain: 0.3, a: 0.004 }); tone(t + 0.2, { f: 55, f2: 36, dur: 0.18, gain: 0.22, a: 0.004 }); },
+      scanEvery: 0.95,
+      found(t) { [62, 65, 69, 74].forEach((n, i) => celesta(t + i * 0.07, n + 12, { gain: 0.035, len: 0.6 })); organ(t, 50, { len: 0.3, rel: 0.5, gain: 0.03, lite: true }); },
+      // A sour low minor second on the organ.
+      error(t) { organ(t, 37, { len: 0.35, rel: 0.4, gain: 0.05 }); organ(t, 38, { len: 0.35, rel: 0.4, gain: 0.05 }); },
+      // Laid to rest: the shovel, then an organ cadence, A7 to D minor.
+      success(t) {
+        shovel(t);
+        [57, 61, 64, 67].forEach(n => organ(t + 0.25, n, { len: 0.3, rel: 0.2, gain: 0.028 }));
+        [62, 65, 69, 74].forEach(n => organ(t + 0.6, n, { len: 0.6, rel: 0.8, gain: 0.03 }));
+        celesta(t + 0.62, 86, { gain: 0.03, len: 1 });
+      },
+      // The famous organ opening (a quick mordent, then the run down to a
+      // held low note) while bats pour out of the title.
+      stunt(t) {
+        [[81, 0, 0.07], [79, 0.09, 0.07], [81, 0.18, 0.5], [79, 0.9, 0.07], [77, 1.0, 0.07], [76, 1.1, 0.07], [74, 1.2, 0.07], [73, 1.3, 0.25], [74, 1.6, 0.8]]
+          .forEach(([n, k, len]) => { organ(t + k, n - 12, { len, rel: 0.25, gain: 0.03 }); organ(t + k, n - 24, { len, rel: 0.25, gain: 0.02, lite: true }); });
+        for (let i = 0; i < 12; i++) noise(t + 0.6 + i * 0.05, { type: "bandpass", f: rnd(900, 1600), q: 1.2, dur: 0.04, gain: 0.05, pan: rnd(-0.7, 0.7) });
+      },
+    },
   };
 
   const set = (id) => SETS[id] || SETS.neon;
@@ -12174,6 +13428,19 @@ window.siteAudio = (function () {
         block(t + 0.27, { gain: 0.14, knock: 100 });
         [[76, 0], [79, 0.1], [84, 0.2]].forEach(([n, k]) => chip(t + 0.42 + k, n, { dur: 0.09, gain: 0.03 }));
         xpOrb(t + 0.75, { gain: 0.05 });
+      },
+    },
+    hollowgrave: {
+      // Passing over a headstone: the faint breath of a ghost.
+      hover(t) { tone(t, { f: rnd(560, 640), f2: rnd(700, 760), glide: 0.12, dur: 0.14, gain: 0.02, a: 0.03, vib: [6, 8], lp: 1500 }); },
+      // Celesta in the waltz's D minor, brightest for 1st place.
+      chime(t, place) {
+        [[86, 89, 93], [81, 86], [77]][place - 1].forEach((n, i) => celesta(t + i * 0.07, n, { gain: 0.045, len: 0.9 }));
+      },
+      // A fresh grave: an owl calls, then the shovel goes in.
+      arrive(t) {
+        owl(t, 0.05);
+        shovel(t + 0.95);
       },
     },
   };
@@ -12460,6 +13727,44 @@ window.siteAudio = (function () {
         },
       });
     },
+    hollowgrave(bus, add) {
+      // A slow minor-key waltz drifting over the graveyard: a soft reed
+      // organ holding the chords, a plucked bass on each downbeat, the
+      // "pah-pah" on beats two and three, and a celesta carrying the tune.
+      // An owl calls now and then. Further down the page it gets darker
+      // (the celesta drops an octave and softens, the owl calls more); a
+      // lookup adds a slow heartbeat underneath. Tones only, no noise.
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass"; lp.frequency.value = 2600; lp.Q.value = 0.4;
+      lp.connect(gainNode(1, bus));
+      const pad = ctx.createBiquadFilter();
+      pad.type = "lowpass"; pad.frequency.value = 900;
+      pad.connect(gainNode(1, bus));
+      return song({
+        beat: 0.56, beats: 3,
+        chords: "D3 F3 A3|D3 F3 A3|G2 Bb2 D3|A2 C#3 E3|D3 F3 A3|Bb2 D3 F3|G2 Bb2 E3|A2 C#3 E3|" +
+                "F2 A2 C3|C3 E3 G3|D3 F3 A3|A2 C#3 E3|Bb2 D3 F3|G2 Bb2 D3|A2 C#3 G3|D3 F3 A3",
+        melody: "A4:1 D5:1 F5:1|E5:2 D5:1|Bb4:1 D5:1 G5:1|F5:1.5 E5:.5 C#5:1|D5:1 F5:1 A5:1|G5:2 F5:1|E5:1 G5:1 Bb4:1|A4:3|" +
+                "C5:1 F5:1 A5:1|G5:2 E5:1|F5:1 E5:1 D5:1|C#5:2 A4:1|D5:1 F5:1 Bb5:1|A5:1.5 G5:.5 D5:1|C#5:1 E5:1 G5:1|D5:3",
+        play(t, { chord, notes, beat, i }) {
+          const dark = mood.depth;
+          const shift = dark > 0.66 ? -12 : 0;
+          chord.forEach(n => tone(t, { type: "triangle", f: midi(n + 12), a: 0.25, hold: beat * 2.4, dur: beat * 0.9, gain: 0.011, dest: pad }));
+          tone(t, { type: "triangle", f: midi(chord[0] - 12), dur: beat * 1.1, gain: 0.12, a: 0.008, lp: 500, dest: bus });
+          [1, 2].forEach(k => chord.forEach(n => tone(t + k * beat, { f: midi(n + 12), dur: beat * 0.45, gain: 0.014, a: 0.012, dest: lp })));
+          notes.forEach(ev => {
+            const f = midi(ev.n + shift);
+            tone(t + ev.at * beat, { f, dur: Math.max(0.6, ev.len * beat * 1.4), gain: 0.03 * (1 - dark * 0.35), a: 0.004, dest: lp });
+            tone(t + ev.at * beat, { f: f * 4, dur: 0.18, gain: 0.004 * (1 - dark * 0.5), a: 0.002, dest: lp });
+          });
+          if (mood.busy) [0, 1, 2].forEach(k => {
+            tone(t + k * beat, { f: 60, f2: 40, dur: 0.14, gain: 0.08, a: 0.004, dest: bus });
+            tone(t + k * beat + 0.18, { f: 54, f2: 36, dur: 0.14, gain: 0.06, a: 0.004, dest: bus });
+          });
+          if (i % 4 === 3 && Math.random() < 0.35 + dark * 0.3) owl(t + beat * rnd(0.5, 1.5), 0.02, bus, rnd(-0.7, 0.7));
+        },
+      });
+    },
   };
 
   const ambienceTrim = (id) => Math.pow(10, ((TRIM[id] || {}).ambience || 0) / 20);
@@ -12591,6 +13896,7 @@ window.siteAudio = (function () {
     ledger: { hover: 8, view: 4, toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2, ambience: 0.5 },
     deepcurrent: { hover: 8, toggle: -2, save: 2, delete: -2, slide: 3, type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -1 },
     skyisles: { hover: 12, click: 10, rare: -9, combo: 9.5, ui: 5, toggle: -1, save: 8, delete: 2.5, slide: 8.5, page: 6, view: 3, type: 10, switch: 6, flipOpen: 8, flipClose: 4, scan: 6.5, found: 4, error: 3, success: 1, stunt: 7, arrive: 7.5, ambience: 11 },
+    hollowgrave: { click: -1.5, rare: -8.5, combo: 1, ui: 0.5, toggle: -8, save: -6.5, delete: -12.5, slide: 6, page: 2.5, view: -5, type: 3, switch: -2, flipOpen: 7.5, flipClose: -9, scan: -13, error: -11, success: -4.5, stunt: -3.5, hover: 4, chime: -2.5, arrive: -7, ambience: 5.5 },
     shared: { bed: -5, chat: -2 },
   };
   const SHARED = { chat: (t) => pling(t, [78, 85]), techno: fanfare, bed: bedDestroyed };
@@ -13320,6 +14626,128 @@ const THEME_REVEALS = {
       },
     };
   },
+  // Hollow Grave: night falls over the old page while fog rolls in from
+  // both sides and a full moon comes up. A headstone pushes up out of a
+  // dark hill (kicking up dirt), a flock of bats bursts out from behind
+  // it, and then the fog thins away to show the new theme.
+  hollowgrave(x, y, w, h) {
+    const duration = 2300;
+    const small = w < 600;
+    return {
+      duration,
+      newFrames: [
+        { opacity: 0, filter: "blur(10px) brightness(.6)" },
+        { opacity: 0, filter: "blur(10px) brightness(.6)", offset: 0.6, easing: "ease-out" },
+        { opacity: 1, filter: "blur(0px) brightness(1)", offset: 0.9 },
+        { opacity: 1, filter: "blur(0px) brightness(1)" },
+      ],
+      newOpts: { duration },
+      oldFrames: [
+        { filter: "brightness(1) saturate(1) blur(0px)", easing: "ease-out" },
+        { filter: "brightness(.4) saturate(.35) blur(2px)", offset: 0.3 },
+        { filter: "brightness(.3) saturate(.3) blur(3px)" },
+      ],
+      oldOpts: { duration },
+      fx() {
+        const all = { duration, fill: "both" };
+        const night = ttoEl("tto-grave-night");
+        night.animate([{ opacity: 0 }, { opacity: 1, offset: 0.25 }, { opacity: 1, offset: 0.6 }, { opacity: 0, offset: 0.88 }, { opacity: 0 }], all);
+        // The moon rises where the page's own moon (beside the title) will
+        // be, then stays put while the page fades in under it, so the two
+        // hand over without a second moon showing. Scrolled down past the
+        // title, it rises in the sky and fades as usual.
+        const pin = document.querySelector(".hero-pin");
+        const pr = pin ? pin.getBoundingClientRect() : null;
+        const onPin = pr && pr.width > 0 && pr.bottom > 0 && pr.top < h;
+        const md = onPin ? pr.width : small ? 80 : 140;
+        const moon = ttoEl("tto-grave-moon", onPin
+          ? { width: `${md}px`, height: `${md}px`, left: `${pr.left}px`, top: `${pr.top}px` }
+          : { width: `${md}px`, height: `${md}px`, left: `${w * 0.7}px`, top: `${h * 0.1}px` });
+        moon.animate([
+          { opacity: 0, transform: "translateY(40px)", easing: "ease-out" },
+          { opacity: 1, transform: "translateY(0)", offset: 0.3 },
+          { opacity: 1, transform: "translateY(0)", offset: onPin ? 0.86 : 0.62 },
+          onPin ? { opacity: 0, transform: "translateY(0)", offset: 0.96 } : { opacity: 0, transform: "translateY(-10px)", offset: 0.86 },
+          { opacity: 0, transform: onPin ? "translateY(0)" : "translateY(-10px)" },
+        ], all);
+        const hill = ttoEl("tto-grave-hill");
+        hill.animate([
+          { transform: "translateY(100%)", easing: "ease-out" },
+          { transform: "translateY(0)", offset: 0.2 },
+          { transform: "translateY(0)", offset: 0.62, easing: "ease-in" },
+          { transform: "translateY(100%)", offset: 0.88 },
+          { transform: "translateY(100%)" },
+        ], all);
+
+        // Fog banks drifting in from each side, then thinning out.
+        [[-1, 0.55, 0], [-1, 0.75, 0.04], [1, 0.6, 0.02], [1, 0.8, 0.06]].forEach(([side, top, lag]) => {
+          const fog = ttoEl("tto-grave-fog", { top: `${h * top - h * 0.35}px`, left: side < 0 ? "-10%" : "20%" });
+          const from = side * w * 0.9, mid = side * w * 0.12, out = side * -w * 0.25;
+          fog.animate([
+            { transform: `translateX(${from}px)`, opacity: 0 },
+            { transform: `translateX(${from}px)`, opacity: 0, offset: lag, easing: "cubic-bezier(.2,.6,.3,1)" },
+            { transform: `translateX(${mid}px)`, opacity: 1, offset: 0.4 + lag, easing: "linear" },
+            { transform: `translateX(${mid * 0.3}px)`, opacity: 1, offset: 0.62 },
+            { transform: `translateX(${out}px)`, opacity: 0, offset: 0.92 },
+            { transform: `translateX(${out}px)`, opacity: 0 },
+          ], all);
+        });
+
+        // The headstone, inside a box whose bottom edge is the ground line.
+        const sw = small ? 150 : 230, sh = sw * 1.3;
+        const ground = h * 0.84;
+        const mask = ttoEl("tto-grave-mask", { top: `${ground - sh - 40}px`, height: `${sh + 40}px` });
+        const stone = document.createElement("div");
+        stone.className = "tto-grave-stone";
+        Object.assign(stone.style, { left: `${(w - sw) / 2}px`, top: "40px", width: `${sw}px`, height: `${sh}px`, fontSize: `${(sw * 0.17).toFixed(1)}px` });
+        stone.innerHTML = "<b>R.I.P.</b><span>Hollow<br>Grave</span>";
+        mask.appendChild(stone);
+        const down = `translateY(${sh + 40}px)`;
+        stone.animate([
+          { transform: down },
+          { transform: down, offset: 0.2, easing: "cubic-bezier(.3,.7,.4,1)" },
+          { transform: "translate(-3px, 10px) rotate(-1.5deg)", offset: 0.36 },
+          { transform: "translate(3px, 4px) rotate(1deg)", offset: 0.4 },
+          { transform: "translate(0, 0) rotate(0deg)", offset: 0.46 },
+          { transform: "translate(0, 0)", opacity: 1, offset: 0.64, easing: "ease-in" },
+          { transform: "translate(0, 20px)", opacity: 0, offset: 0.86 },
+          { transform: "translate(0, 20px)", opacity: 0 },
+        ], all);
+        // Dirt kicked up around its base while it pushes through.
+        const dirt = ["#3b2a1e", "#4a3626", "#2a1e15", "#5a4430"];
+        for (let i = 0; i < 22; i++) {
+          const d = ttoEl("tto-grave-dirt", { left: `${w / 2 + (Math.random() - 0.5) * sw * 1.1}px`, top: `${ground - 4}px` });
+          d.style.setProperty("--c", dirt[i % dirt.length]);
+          const vx = (Math.random() - 0.5) * 360, vy = -(160 + Math.random() * 260), g = 900, life = 0.7 + Math.random() * 0.3;
+          const frames = [];
+          for (let k = 0; k <= 8; k++) {
+            const t = (k / 8) * life;
+            frames.push({ transform: `translate(${(vx * t).toFixed(1)}px, ${(vy * t + 0.5 * g * t * t).toFixed(1)}px) rotate(${k * 40}deg)`, opacity: k === 0 ? 0 : k === 8 ? 0 : 1 });
+          }
+          d.animate(frames, { duration: life * 1000, delay: duration * (0.24 + Math.random() * 0.16), easing: "linear", fill: "both" });
+        }
+
+        // A flock of bats bursting out from behind the stone, flapping.
+        const bx = w / 2, by = ground - sh * 0.75;
+        for (let i = 0; i < (small ? 7 : 11); i++) {
+          const bat = ttoEl("tto-grave-bat", { left: `${bx - 23}px`, top: `${by - 10}px` });
+          const side = i % 2 ? 1 : -1;
+          const dx = side * (w * (0.35 + Math.random() * 0.4)), dy = -(h * (0.25 + Math.random() * 0.5));
+          const size = 0.55 + Math.random() * 0.7;
+          const frames = [];
+          for (let k = 0; k <= 14; k++) {
+            const p = k / 14;
+            const flap = k % 2 ? -0.35 : 1;
+            frames.push({
+              transform: `translate(${(dx * p + Math.sin(p * 9 + i) * 24).toFixed(1)}px, ${(dy * p * p + Math.sin(p * 7 + i) * 18).toFixed(1)}px) scale(${(size * (0.4 + p * 0.8)).toFixed(2)}, ${(size * (0.4 + p * 0.8) * flap).toFixed(2)})`,
+              opacity: k === 0 ? 0 : k > 11 ? 1 - (k - 11) / 3 : 1,
+            });
+          }
+          bat.animate(frames, { duration: 900 + Math.random() * 300, delay: duration * 0.46 + i * 30, easing: "linear", fill: "both" });
+        }
+      },
+    };
+  },
 };
 
 function playThemeTransition(themeId, swapFn, origin) {
@@ -13367,6 +14795,8 @@ function playThemeTransition(themeId, swapFn, origin) {
 // applyTheme() so the browser tab matches the site.
 const FAVICON_TILES = {
   neon: { bg: "#0b0e1a", edge: "#00d9ff" },
+  // Night-purple tile with orange edge and a little full moon over the bed.
+  hollowgrave: { bg: "#160f20", edge: "#f28c28", extra: '<circle cx="12.4" cy="3" r="1.7" fill="#f1d88a"/>' },
   casefiles: { bg: "#efe6cc", edge: "#2a241c" },
   ledger: { bg: "#16233a", edge: "#a9822e" },
   deepcurrent: { bg: "#062033", edge: "#35e6c4" },
@@ -16988,6 +18418,20 @@ function cardFlipOpen(theme, f) {
       ],
     };
   }
+  if (theme === "hollowgrave") {
+    // The popup rises out of its headstone like a spirit leaving the
+    // grave: it floats up faint and blurred, sways once and settles.
+    return {
+      duration: 900,
+      origin: "50% 100%",
+      frames: [
+        { transform: start, opacity: 0.15, filter: "blur(10px) brightness(1.4)", easing: "cubic-bezier(.25,.7,.3,1)" },
+        { transform: `translate(${f.dx * 0.08}px, ${f.dy * 0.08 - 26}px) scale(1.02) rotate(-1.5deg)`, opacity: 0.9, filter: "blur(2px) brightness(1.15)", offset: 0.55, easing: "ease-in-out" },
+        { transform: "translateY(6px) rotate(0.8deg)", filter: "blur(0px) brightness(1)", offset: 0.8, easing: "ease-in-out" },
+        { transform: "none", opacity: 1, filter: "blur(0px) brightness(1)" },
+      ],
+    };
+  }
   if (theme === "skyisles") {
     // A platformer jump: the card hops up out of the grid in a stepped
     // arc, lands in the middle with a squash, and settles.
@@ -17029,6 +18473,9 @@ function cardFlipClose(theme, f) {
   }
   if (theme === "deepcurrent") {
     return { duration: 280, frames: [{ transform: "none", filter: "blur(0px)", opacity: 1 }, { transform: `${toward} translateY(30px)`, filter: "blur(10px)", opacity: 0 }] };
+  }
+  if (theme === "hollowgrave") {
+    return { duration: 320, frames: [{ transform: "none", filter: "blur(0px)", opacity: 1 }, { transform: `${toward} translateY(26px)`, filter: "blur(8px)", opacity: 0 }] };
   }
   if (theme === "skyisles") {
     return {
@@ -17278,7 +18725,8 @@ const SUCCESS_MESSAGES = {
   casefiles: "Case filed.",
   ledger: "Entry recorded.",
   deepcurrent: "Sweat logged.",
-  skyisles: "Sweat defeated! +XP"
+  skyisles: "Sweat defeated! +XP",
+  hollowgrave: "Laid to rest."
 };
 
 function buildNeonFlourish(container) {
@@ -17602,6 +19050,59 @@ function buildSkyIslesFlourish(container) {
   return 1900;
 }
 
+// Hollow Grave: a little headstone pushes up out of the ground over the
+// button, kicking up dirt, then a ghost drifts up out of it and away.
+function buildHollowGraveFlourish(container) {
+  const stone = document.createElement("div");
+  stone.className = "flourish-grave-stone";
+  stone.textContent = "R.I.P.";
+  container.appendChild(stone);
+  const ghost = document.createElement("div");
+  ghost.className = "flourish-grave-ghost";
+  container.appendChild(ghost);
+  const total = 2200;
+  if (reducedMotion.matches) {
+    ghost.remove();
+    stone.animate([{ opacity: 0 }, { opacity: 1, offset: 0.15 }, { opacity: 1, offset: 0.8 }, { opacity: 0 }], { duration: total, fill: "both" });
+    return total;
+  }
+  stone.animate([
+    { transform: "translateY(50px)", clipPath: "inset(-40px -40px 100% -40px)", opacity: 1, easing: "cubic-bezier(.25,.8,.35,1)" },
+    { transform: "translateY(-4px)", clipPath: "inset(-40px -40px 0% -40px)", offset: 0.2 },
+    { transform: "translateY(0) rotate(-2deg)", offset: 0.25 },
+    { transform: "translateY(0) rotate(1deg)", offset: 0.29 },
+    { transform: "translateY(0) rotate(0deg)", opacity: 1, offset: 0.78, easing: "ease-in" },
+    { transform: "translateY(40px)", clipPath: "inset(-40px -40px 50% -40px)", opacity: 0 },
+  ], { duration: total, fill: "both" });
+  ghost.animate([
+    { transform: "translateY(0) scale(.4)", opacity: 0 },
+    { transform: "translateY(0) scale(.4)", opacity: 0, offset: 0.28, easing: "ease-out" },
+    { transform: "translate(-8px, -50px) scale(1)", opacity: 0.95, offset: 0.5, easing: "ease-in-out" },
+    { transform: "translate(10px, -84px) scale(1)", opacity: 0.8, offset: 0.7, easing: "ease-in-out" },
+    { transform: "translate(-4px, -120px) scale(1.1)", opacity: 0 },
+  ], { duration: total, fill: "both" });
+  const dirt = ["#3b2a1e", "#4a3626", "#2a1e15", "#5a4430"];
+  for (let i = 0; i < 12; i++) {
+    const d = document.createElement("div");
+    d.className = "flourish-grave-dirt";
+    d.style.setProperty("--c", dirt[i % dirt.length]);
+    container.appendChild(d);
+    const vx = rand(-140, 140), vy = rand(-260, -140), frames = [];
+    for (let k = 0; k <= 8; k++) {
+      const t = k / 8 * 0.65;
+      frames.push({ transform: `translate(${(vx * t).toFixed(0)}px, ${(vy * t + 0.5 * 900 * t * t).toFixed(0)}px) rotate(${k * 45}deg)`, opacity: k < 7 ? 1 : 0 });
+    }
+    d.animate(frames, { duration: 650, delay: 60 + i * 15, easing: "linear", fill: "both" });
+  }
+  const btn = document.getElementById("addSweatBtn");
+  if (btn) {
+    btn.classList.remove("success-pulse");
+    void btn.offsetWidth;
+    btn.classList.add("success-pulse");
+  }
+  return total;
+}
+
 function playSuccessFlourish() {
   // Anchored to the Add Sweat button's own row, not the whole (much
   // taller) #form-container - centering within the full card put the
@@ -17620,6 +19121,7 @@ function playSuccessFlourish() {
     : theme === "ledger" ? buildLedgerFlourish
     : theme === "deepcurrent" ? buildDeepCurrentFlourish
     : theme === "skyisles" ? buildSkyIslesFlourish
+    : theme === "hollowgrave" ? buildHollowGraveFlourish
     : buildNeonFlourish;
   const duration = build(wrap);
 
@@ -18263,7 +19765,79 @@ function burstSkyIsles(x, y, big, quiet) {
   }
 }
 
-const THEME_BURSTS = { neon: burstNeon, casefiles: burstCaseFiles, ledger: burstLedger, deepcurrent: burstDeepCurrent, skyisles: burstSkyIsles };
+// Hollow Grave: a small ghost puffs up out of the click and fades away
+// with a few ectoplasm sparks. The rare one is a zombie hand clawing up
+// out of a dirt mound ("BRAINS..."), or a little swarm of bats.
+function graveGhost(x, y, big) {
+  const el = fxEl("fx-ghost", x, y);
+  const s = big ? 1.5 : rand(0.8, 1.1);
+  const sway = rand(10, 18) * (Math.random() < 0.5 ? -1 : 1);
+  fxPlay(el, [
+    { transform: `translate(0, 6px) scale(${s * 0.3})`, opacity: 0 },
+    { transform: `translate(${sway * 0.4}px, -14px) scale(${s})`, opacity: 0.95, offset: 0.25 },
+    { transform: `translate(${-sway}px, -38px) scale(${s})`, opacity: 0.75, offset: 0.6 },
+    { transform: `translate(${sway * 0.6}px, -64px) scale(${s * 1.1})`, opacity: 0 },
+  ], { duration: rand(900, 1200), easing: "ease-out" });
+}
+function graveSparks(x, y, n) {
+  for (let i = 0; i < n; i++) {
+    const el = fxEl("fx-ecto", x - 2.5, y - 2.5);
+    const a = rand(0, Math.PI * 2), d = rand(14, 40);
+    fxPlay(el, [
+      { transform: "translate(0, 0) scale(1)", opacity: 1 },
+      { transform: `translate(${Math.cos(a) * d}px, ${Math.sin(a) * d - 16}px) scale(0.3)`, opacity: 0 },
+    ], { duration: rand(500, 800), delay: rand(0, 120), easing: "ease-out" });
+  }
+}
+function graveBats(x, y, n) {
+  for (let i = 0; i < n; i++) {
+    const el = fxEl("fx-gbat", x, y);
+    const dx = rand(90, 220) * (i % 2 ? 1 : -1), dy = -rand(70, 200), s = rand(0.6, 1.1), frames = [];
+    for (let k = 0; k <= 12; k++) {
+      const p = k / 12;
+      frames.push({ transform: `translate(${(dx * p).toFixed(1)}px, ${(dy * p + Math.sin(p * 8 + i) * 12).toFixed(1)}px) scale(${s.toFixed(2)}, ${(k % 2 ? -0.35 * s : s).toFixed(2)})`, opacity: p < 0.75 ? 1 : 1 - (p - 0.75) / 0.25 });
+    }
+    fxPlay(el, frames, { duration: rand(700, 1000), delay: i * 40, easing: "linear" });
+  }
+}
+function burstHollowGrave(x, y, big, quiet) {
+  if (!big) {
+    graveGhost(x, y, false);
+    graveSparks(x, y, 4);
+    return;
+  }
+  if (Math.random() < 0.55 || quiet) {
+    const mound = fxEl("fx-mound", x, y - 2);
+    fxPlay(mound, [{ transform: "scale(0.3, 0.2)", opacity: 0 }, { transform: "scale(1)", opacity: 1, offset: 0.12 }, { transform: "scale(1)", opacity: 1, offset: 0.8 }, { transform: "scale(0.6, 0.3)", opacity: 0 }], { duration: 1500, easing: "ease-out" });
+    const wrap = fxEl("fx-hand-wrap", x, y + 2);
+    const hand = document.createElement("div");
+    hand.className = "fx-hand";
+    wrap.appendChild(hand);
+    fxPlay(wrap, [{ opacity: 1 }, { opacity: 1 }], { duration: 1500 });
+    hand.animate([
+      { transform: "translateY(62px) rotate(0deg)" },
+      { transform: "translateY(4px) rotate(-6deg)", offset: 0.22, easing: "ease-out" },
+      { transform: "translateY(0) rotate(8deg)", offset: 0.38 },
+      { transform: "translateY(2px) rotate(-7deg)", offset: 0.52 },
+      { transform: "translateY(0) rotate(5deg)", offset: 0.64 },
+      { transform: "translateY(4px) rotate(0deg)", offset: 0.76, easing: "ease-in" },
+      { transform: "translateY(62px) rotate(0deg)" },
+    ], { duration: 1500, fill: "forwards" });
+    for (let i = 0; i < 10; i++) {
+      const d = fxEl("fx-dirt", x - 3, y - 3);
+      d.style.setProperty("--c", pick(["#3b2a1e", "#4a3626", "#2a1e15", "#5a4430"]));
+      fxPlay(d, arcFrames(rand(-130, 130), rand(-280, -140), 900, 0.6, (p) => `rotate(${Math.round(p * 300)}deg)`), { duration: 600, delay: rand(100, 260), easing: "linear" });
+    }
+    if (!quiet) fxWord(x, y - 70, "BRAINS...");
+  } else {
+    graveBats(x, y, 7);
+    graveGhost(x, y, true);
+    if (!quiet) fxWord(x, y - 50, "BOO!");
+  }
+  graveSparks(x, y, 8);
+}
+
+const THEME_BURSTS = { neon: burstNeon, casefiles: burstCaseFiles, ledger: burstLedger, deepcurrent: burstDeepCurrent, skyisles: burstSkyIsles, hollowgrave: burstHollowGrave };
 // quiet = the big burst without its rare word/fish, for when something else
 // (the combo counter, a title stunt) is already putting text on screen.
 function themedBurst(x, y, big, quiet) {
@@ -18278,6 +19852,7 @@ const COMBO_LABELS = {
   ledger: ["deposits", "compound interest", "bull market", "hostile takeover", "old money"],
   deepcurrent: ["DEPTH", "PRESSURE RISING", "THE TRENCH", "ABYSSAL", "LEVIATHAN"],
   skyisles: ["+XP", "LEVEL UP!", "DIAMONDS!", "NETHERITE", "DRAGON SLAYER"],
+  hollowgrave: ["Boo!", "Haunting", "Possessed", "Undead Horde", "The Reaper"],
 };
 const COMBO_TIERS = [5, 10, 20, 35, 50];
 let comboCount = 0;
@@ -18543,6 +20118,20 @@ function titleStunt() {
       heroTitle.innerHTML = saved;
       release();
     });
+  } else if (theme === "hollowgrave") {
+    // The title is possessed: it shudders and turns ectoplasm green, the
+    // candlelight drops out for a beat, and bats pour out of it.
+    heroTitle.animate([
+      { transform: "none", color: "#f28c28", textShadow: "0 0 18px rgba(242,140,40,0.55)" },
+      { transform: "translate(-3px, 1px) rotate(-0.6deg)", color: "#b8ff5c", textShadow: "0 0 26px rgba(184,255,92,0.9)", offset: 0.12 },
+      { transform: "translate(3px, -1px) rotate(0.6deg)", offset: 0.2 },
+      { transform: "translate(-2px, 0) rotate(-0.4deg)", offset: 0.28 },
+      { transform: "translate(2px, 1px)", color: "#b8ff5c", opacity: 1, offset: 0.36 },
+      { transform: "none", color: "#3a2a4a", textShadow: "0 0 0 transparent", opacity: 0.4, offset: 0.5 },
+      { transform: "none", color: "#3a2a4a", textShadow: "0 0 0 transparent", opacity: 0.4, offset: 0.66 },
+      { transform: "none", color: "#f28c28", textShadow: "0 0 18px rgba(242,140,40,0.55)", opacity: 1 },
+    ], { duration: 1700, easing: "steps(1, end)" }).finished.then(release, release);
+    setTimeout(() => graveBats(r.left + r.width / 2, r.top + r.height / 2, 10), 600);
   } else if (theme === "deepcurrent") {
     heroTitle.animate([
       { transform: "none", filter: "blur(0)", opacity: 1 },
@@ -18592,6 +20181,22 @@ document.addEventListener("keydown", (e) => {
   else if (typedBuffer.endsWith("gg")) { typedBuffer = ""; chatLine(pick(["gg", "gg wp", "ggs", "gg go next", "gg that was close"])); }
   else if (typedBuffer.endsWith("ez")) { typedBuffer = ""; chatLine(pick(EZ_REPLACEMENTS)); }
 });
+
+// Spooky season: from October 1 until November 1, anyone on another theme
+// gets one quiet nudge a day pointing them at Hollow Grave.
+(function spookySeasonNudge() {
+  const now = new Date();
+  if (now.getMonth() !== 9 || currentThemeId() === "hollowgrave") return;
+  const today = now.toDateString();
+  try {
+    if (localStorage.getItem("spookyNudge") === today) return;
+    localStorage.setItem("spookyNudge", today);
+  } catch (e) { return; }
+  const key = THEME_IDS.indexOf("hollowgrave") + 1;
+  setTimeout(() => {
+    if (currentThemeId() !== "hollowgrave") eggToast(`&#127875; <b>It's spooky season.</b> Press <b>${key}</b> for the Hollow Grave theme.`, 6500);
+  }, 3500);
+})();
 
 // Searching Technoblade gets a tribute.
 const usernameField = document.getElementById("username");

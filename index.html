@@ -21,6 +21,7 @@
   try {
     const savedTheme = localStorage.getItem("siteTheme");
     if (savedTheme && savedTheme !== "neon") document.documentElement.setAttribute("data-theme", savedTheme);
+    if (localStorage.getItem("hgBloodMoon") === "on") document.documentElement.classList.add("blood-moon");
   } catch (e) {}
 
   // Each theme only pulls in the Google Fonts it actually uses, instead of
@@ -12032,6 +12033,537 @@ html[data-theme="hollowgrave"] .grave-crawl-clod {
   html[data-theme="hollowgrave"] .lb-bar > span::after { animation: none; }
 }
 /* @@END-HOLLOWGRAVE@@ */
+/* @@HG-EVENT@@ */
+/* ---------- October extras: storm, parting fog, crows, the séance,
+   the pumpkin hunt and the Blood Moon ---------- */
+/* A ruined chapel on the horizon, barely there against the sky until
+   lightning lights the clouds behind it. One window still burns. */
+#gravefield .gf-sky {
+  inset: 0;
+  opacity: 0;
+  background:
+    radial-gradient(46% 42% at var(--bx, 50%) 26%, rgba(226,218,255,0.6), rgba(170,150,230,0.22) 48%, transparent 76%),
+    linear-gradient(180deg, rgba(150,135,210,0.16), transparent 70%);
+  will-change: opacity;
+}
+#gravefield .gf-chapel {
+  left: max(4px, calc(50% - 790px));
+  bottom: 58px;
+  width: 150px;
+  height: 172px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 230%22%3E %3Cpath d=%22M0 230 V176 L5 170 L9 178 L14 166 L19 173 L22 168 V230 Z%22 fill=%22%230b0811%22/%3E %3Cpath d=%22M20 230 V128 L14 128 L48 99 L53 104 L58 95 L63 99 L70 90 L126 128 L120 128 V230 Z%22 fill=%22%230b0811%22/%3E %3Cpath d=%22M118 230 V66 L114 66 L131 20 L136 27 L139 19 L160 66 L156 66 V230 Z%22 fill=%22%230b0811%22/%3E %3Cpath d=%22M131.5 20 L128.5 4 M124 9 L133 7.5%22 stroke=%22%230b0811%22 stroke-width=%222.6%22 stroke-linecap=%22round%22 transform=%22rotate(14 131 20)%22/%3E %3Cpath d=%22M156 230 V150 L164 150 L170 158 L176 152 L180 160 V230 Z%22 fill=%22%230b0811%22/%3E %3Cpath d=%22M33 168 V152 A6 9 0 0 1 45 152 V168 Z M63 168 V152 A6 9 0 0 1 75 152 V168 Z M93 168 V152 A6 9 0 0 1 105 152 V168 Z%22 fill=%22%231c1528%22/%3E %3Cpath d=%22M131 112 V98 A6 9 0 0 1 143 98 V112 Z%22 fill=%22%231c1528%22/%3E %3Ccircle cx=%22137%22 cy=%22134%22 r=%227.5%22 fill=%22%231c1528%22/%3E %3Cpath d=%22M137 126.5 V141.5 M129.5 134 H144.5 M131.7 128.7 L142.3 139.3 M142.3 128.7 L131.7 139.3%22 stroke=%22%230b0811%22 stroke-width=%221.4%22/%3E %3Cpath d=%22M60 230 V196 A10 14 0 0 1 80 196 V230 Z%22 fill=%22%231c1528%22/%3E %3C/svg%3E") center bottom / contain no-repeat;
+}
+#gravefield .gf-chapel b {
+  position: absolute;
+  left: 65.5%;
+  top: 40.5%;
+  width: 6%;
+  height: 7.5%;
+  border-radius: 50% 50% 0 0;
+  background: radial-gradient(circle at 50% 60%, #ffcf7a, #f28c28 55%, rgba(242,140,40,0) 100%);
+  box-shadow: 0 0 10px 3px rgba(242,140,40,0.35);
+  animation: gfLamp 3.4s steps(1) infinite;
+}
+@keyframes gfLamp {
+  0%, 100% { opacity: 0.85; }
+  12% { opacity: 0.55; }
+  14% { opacity: 0.95; }
+  47% { opacity: 0.7; }
+  49% { opacity: 1; }
+  78% { opacity: 0.4; }
+  80% { opacity: 0.9; }
+}
+#gravefield .gf-bolt { inset: 0; opacity: 0; }
+#gravefield .gf-bolt svg { width: 100%; height: 100%; overflow: visible; }
+#gravefield .gf-bolt path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+#gravefield .gf-bolt .core { stroke: #fbf8ff; stroke-width: 2.2; }
+#gravefield .gf-bolt .glow { stroke: rgba(200,185,255,0.55); stroke-width: 9; filter: blur(4px); }
+#gravefield .gf-bolt .twig { stroke: rgba(240,235,255,0.75); stroke-width: 1.1; }
+/* The whole page catches a little of each flash. */
+#hgFlash {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at var(--bx, 50%) 0%, rgba(235,228,255,1), rgba(200,190,240,0.5) 60%, rgba(180,170,230,0.2));
+  opacity: 0;
+}
+html[data-theme="hollowgrave"] #hgFlash { display: block; }
+
+/* Fog parts around the cursor (or a finger) and drifts back in behind it.
+   The two background banks sit in .gf-fogwrap; #hgMist is a thinner bank
+   drifting over the bottom of the page itself. */
+#gravefield .gf-fogwrap { inset: 0; }
+#gravefield .gf-fogwrap,
+#hgMist {
+  -webkit-mask-image: radial-gradient(circle var(--fog-r, 0px) at var(--fog-x, -999px) var(--fog-y, -999px), transparent 0%, transparent 35%, rgba(0,0,0,0.55) 70%, #000 100%);
+  mask-image: radial-gradient(circle var(--fog-r, 0px) at var(--fog-x, -999px) var(--fog-y, -999px), transparent 0%, transparent 35%, rgba(0,0,0,0.55) 70%, #000 100%);
+}
+#hgMist {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+html[data-theme="hollowgrave"] #hgMist { display: block; }
+#hgMist::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 24vh;
+  background: linear-gradient(to top, rgba(200,190,230,0.13), rgba(200,190,230,0.05) 55%, transparent);
+}
+#hgMist i {
+  position: absolute;
+  left: 0;
+  bottom: -40px;
+  width: 200vw;
+  height: 40vh;
+  background:
+    radial-gradient(ellipse 22% 40% at 14% 84%, rgba(205,195,232,0.2), transparent 70%),
+    radial-gradient(ellipse 28% 34% at 52% 92%, rgba(205,195,232,0.17), transparent 70%),
+    radial-gradient(ellipse 20% 36% at 82% 80%, rgba(205,195,232,0.19), transparent 70%);
+  background-size: 100vw 100%;
+  background-repeat: repeat-x;
+  will-change: transform;
+  animation: gfFog 95s linear infinite;
+}
+#hgMist i + i {
+  bottom: -70px;
+  height: 30vh;
+  opacity: 0.8;
+  background-position: 40vw 0;
+  animation: gfFog 140s linear infinite reverse;
+}
+
+/* Crows perched on some of the headstones. Hovering the stone sends
+   the crow flapping off; it comes back a while later. */
+.hg-crow { display: none; }
+html[data-theme="hollowgrave"] .hg-crow {
+  display: block;
+  position: absolute;
+  z-index: 3;
+  top: -39px;
+  left: calc(50% + var(--cx, 0px) - 25px);
+  width: 50px;
+  height: 41px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 44 36%22%3E %3Cpath d=%22M2 27 L13 20.5 L16.5 24.5 L4 30.5 Z%22 fill=%22%2309070d%22/%3E %3Cpath d=%22M3 29.5 L14 22.8 M5.5 30.2 L15.2 24%22 stroke=%22rgba(150,130,190,.38)%22 stroke-width=%22.5%22 fill=%22none%22/%3E %3Cpath d=%22M11 21 C13 14 20 11.5 26 13 C28 10 29 7.5 32 7 C35.5 6.5 37.5 8.5 38 10.5 L43 12.3 L37.6 13.4 C37 15.5 35 17 33 18.5 C32 23 27 27.5 20 27.5 C15.5 27.5 12 25 11 21 Z%22 fill=%22%2309070d%22/%3E %3Cpath d=%22M14 21 C17 17 22 15.5 27 16.5 C24 19.5 20 22.5 14 23.5%22 fill=%22none%22 stroke=%22rgba(150,130,190,.38)%22 stroke-width=%22.7%22/%3E %3Cpath d=%22M16.5 24 C20 23 24 21 27 18.5%22 fill=%22none%22 stroke=%22rgba(150,130,190,.38)%22 stroke-width=%22.5%22/%3E %3Cpath d=%22M33.5 9.5 C35 9 36.5 9.6 37.5 10.6%22 fill=%22none%22 stroke=%22rgba(150,130,190,.38)%22 stroke-width=%22.5%22/%3E %3Ccircle cx=%2234.3%22 cy=%2210.4%22 r=%221.05%22 fill=%22%23f28c28%22/%3E%3Ccircle cx=%2234.6%22 cy=%2210.1%22 r=%22.35%22 fill=%22%23ffe2b0%22/%3E %3Cpath d=%22M19.5 27 L18.6 33.5 M23 26.8 L23.6 33.5 M16.5 33.8 L20.5 33.8 M21.6 33.8 L25.6 33.8%22 stroke=%22%2309070d%22 stroke-width=%221.1%22 stroke-linecap=%22round%22/%3E %3C/svg%3E") center bottom / contain no-repeat;
+  /* Moonlight catching its back, so it reads against the dark. */
+  filter: drop-shadow(0 -1px 0 rgba(241,216,138,0.45)) drop-shadow(0 0 1px rgba(210,200,240,0.55));
+  pointer-events: none;
+  transform: scaleX(var(--dir, 1));
+  transform-origin: 50% 100%;
+  animation: crowIdle 7s ease-in-out infinite;
+  animation-delay: var(--cd, 0s);
+}
+@keyframes crowIdle {
+  0%, 86%, 100% { transform: scaleX(var(--dir, 1)); }
+  88% { transform: scaleX(var(--dir, 1)) rotate(-7deg); }
+  91% { transform: scaleX(var(--dir, 1)) rotate(3deg) translateY(-1px); }
+  94% { transform: scaleX(var(--dir, 1)); }
+  96% { transform: scaleX(var(--dir, 1)) translateY(-3px); }
+}
+html[data-theme="hollowgrave"] .hg-crow.gone { visibility: hidden; animation: none; }
+/* In flight the crow is lifted out of its stone into a layer above the
+   page, so it can cross panels and cards on its way off. */
+.hg-crow-flyer {
+  position: fixed;
+  z-index: 6900;
+  width: 58px;
+  height: 36px;
+  margin-left: -4px;
+  margin-top: 5px;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 30%22%3E %3Cpath d=%22M2 14 L11 15 L11 19 L2 21 Z%22 fill=%22%2309070d%22/%3E %3Cpath d=%22M9 16.5 C12 13.5 20 13 28 14 C31 12 33 11.5 36 12 C38.5 12.3 40 13.5 40.5 14.8 L45 16 L40.3 16.8 C39.5 18.3 37.5 19.2 35 19.2 C29 20.5 18 21 9 18.5 Z%22 fill=%22%2309070d%22/%3E %3Cpath d=%22M18 15 C16 9 12 4 6 1 C9 6 9 8 8 10 C11 9.5 12.5 11 13 13 Z%22 fill=%22%2309070d%22/%3E %3Cpath d=%22M22 14.5 C24 8 28 3 35 0.5 C33 5 32 7.5 33 10 C30 9.5 28 11 27.5 14 Z%22 fill=%22%2309070d%22/%3E %3Ccircle cx=%2237.2%22 cy=%2214.3%22 r=%22.8%22 fill=%22%23f28c28%22/%3E %3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 -1px 0 rgba(241,216,138,0.45)) drop-shadow(0 0 1px rgba(210,200,240,0.55));
+  animation: crowFlap 0.17s steps(1) infinite, crowAway 1.7s cubic-bezier(.35,0,.75,.45) forwards;
+}
+.hg-crow-flyer.land { animation: crowFlap 0.17s steps(1) infinite, crowLand 1.5s cubic-bezier(.2,.6,.35,1) forwards; }
+@keyframes crowFlap {
+  0% { background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 30%22%3E %3Cpath d=%22M2 14 L11 15 L11 19 L2 21 Z%22 fill=%22%2309070d%22/%3E %3Cpath d=%22M9 16.5 C12 13.5 20 13 28 14 C31 12 33 11.5 36 12 C38.5 12.3 40 13.5 40.5 14.8 L45 16 L40.3 16.8 C39.5 18.3 37.5 19.2 35 19.2 C29 20.5 18 21 9 18.5 Z%22 fill=%22%2309070d%22/%3E %3Cpath d=%22M18 15 C16 9 12 4 6 1 C9 6 9 8 8 10 C11 9.5 12.5 11 13 13 Z%22 fill=%22%2309070d%22/%3E %3Cpath d=%22M22 14.5 C24 8 28 3 35 0.5 C33 5 32 7.5 33 10 C30 9.5 28 11 27.5 14 Z%22 fill=%22%2309070d%22/%3E %3Ccircle cx=%2237.2%22 cy=%2214.3%22 r=%22.8%22 fill=%22%23f28c28%22/%3E %3C/svg%3E"); }
+  50% { background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 30%22%3E %3Cpath d=%22M2 14 L11 15 L11 19 L2 21 Z%22 fill=%22%2309070d%22/%3E %3Cpath d=%22M9 16.5 C12 13.5 20 13 28 14 C31 12 33 11.5 36 12 C38.5 12.3 40 13.5 40.5 14.8 L45 16 L40.3 16.8 C39.5 18.3 37.5 19.2 35 19.2 C29 20.5 18 21 9 18.5 Z%22 fill=%22%2309070d%22/%3E %3Cpath d=%22M18 18 C15 22 11 26 5 28.5 C8 24.5 8.5 23 8 21 C11 21.5 13 19.5 13.5 17.5 Z%22 fill=%22%2309070d%22/%3E %3Cpath d=%22M23 18.5 C26 23 30 27 36 29 C33 25 32.5 23 33 21 C30 21.5 28 20 27.5 17.5 Z%22 fill=%22%2309070d%22/%3E %3Ccircle cx=%2237.2%22 cy=%2214.3%22 r=%22.8%22 fill=%22%23f28c28%22/%3E %3C/svg%3E"); }
+}
+@keyframes crowAway {
+  0% { transform: translate(0, 0) scaleX(var(--dir, 1)); opacity: 1; }
+  14% { transform: translate(calc(var(--dir, 1) * 10px), -18px) scaleX(var(--dir, 1)); }
+  100% { transform: translate(calc(var(--dir, 1) * 280px), -340px) scaleX(var(--dir, 1)) scale(0.55); opacity: 0; }
+}
+@keyframes crowLand {
+  0% { transform: translate(calc(var(--dir, 1) * -260px), -320px) scaleX(var(--dir, 1)) scale(0.55); opacity: 0; }
+  30% { opacity: 1; }
+  85% { transform: translate(calc(var(--dir, 1) * -6px), -8px) scaleX(var(--dir, 1)); }
+  100% { transform: translate(0, 0) scaleX(var(--dir, 1)); opacity: 1; }
+}
+
+/* The séance: in Hollow Grave a lookup is a Ouija board. The planchette
+   spells the name out while Hypixel is asked, then slides to YES (or NO)
+   and the board sinks away as the card appears. */
+html[data-theme="hollowgrave"] #statsEmpty.seance-on .dash-idle,
+html[data-theme="hollowgrave"] #statsEmpty.seance-on #statsEmptyText { visibility: hidden; }
+.seance {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  animation: seanceIn 0.5s cubic-bezier(.2,.8,.3,1);
+}
+.seance.leaving { animation: seanceOut 0.5s cubic-bezier(.5,0,.8,.4) forwards; pointer-events: none; }
+@keyframes seanceIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); filter: blur(3px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes seanceOut {
+  to { opacity: 0; transform: translateY(14px) scale(0.96); filter: blur(4px); }
+}
+.ouija {
+  position: relative;
+  width: min(100%, 470px);
+  flex-shrink: 0;
+  aspect-ratio: 1.55;
+  container-type: inline-size;
+  border-radius: 16px;
+  background:
+    radial-gradient(70% 60% at 50% 45%, rgba(242,140,40,0.1), transparent 70%),
+    repeating-linear-gradient(94deg, rgba(0,0,0,0.12) 0 2px, transparent 2px 9px, rgba(255,220,170,0.03) 9px 10px, transparent 10px 17px),
+    linear-gradient(160deg, #3a2414, #24150b 55%, #170d06);
+  box-shadow: inset 0 0 0 1px rgba(201,160,74,0.25), inset 0 0 40px rgba(0,0,0,0.7), 0 18px 34px -14px rgba(0,0,0,0.9);
+  overflow: hidden;
+}
+.ouija::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 310 200%22 preserveAspectRatio=%22none%22%3E %3Crect x=%225%22 y=%225%22 width=%22300%22 height=%22190%22 rx=%2214%22 fill=%22none%22 stroke=%22%23c9a04a%22 stroke-opacity=%22.55%22 stroke-width=%221.4%22/%3E %3Crect x=%2210%22 y=%2210%22 width=%22290%22 height=%22180%22 rx=%2210%22 fill=%22none%22 stroke=%22%23c9a04a%22 stroke-opacity=%22.25%22 stroke-width=%22.8%22/%3E %3C/svg%3E") center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+.ouija .oj {
+  position: absolute;
+  transform: translate(-50%, -50%) rotate(var(--r, 0deg));
+  font-family: var(--font-grave);
+  font-size: 6.4cqw;
+  font-weight: 600;
+  line-height: 1;
+  color: rgba(214,178,104,0.82);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.7);
+  transition: color 0.25s ease, text-shadow 0.25s ease;
+  white-space: nowrap;
+}
+.ouija .oj.num { font-size: 5cqw; }
+.ouija .oj.word { font-size: 5.4cqw; letter-spacing: 0.12em; }
+.ouija .oj.word small { display: block; font-size: 5cqw; text-align: center; margin-bottom: 1cqw; letter-spacing: 0; }
+.ouija .oj.lit {
+  color: #e6ffc2;
+  text-shadow: 0 0 6px rgba(184,255,92,0.95), 0 0 16px rgba(184,255,92,0.55);
+}
+.ouija .planchette {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  width: 15cqw;
+  aspect-ratio: 60 / 66;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 60 66%22%3E %3Cdefs%3E%3ClinearGradient id=%22w%22 x1=%220%22 x2=%221%22 y1=%220%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%235a3b22%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%233d2716%22/%3E%3Cstop offset=%221%22 stop-color=%22%2322150b%22/%3E%3C/linearGradient%3E %3CradialGradient id=%22l%22 cx=%2240%25%22 cy=%2235%25%22 r=%2270%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23fff4cf%22 stop-opacity=%22.28%22/%3E%3Cstop offset=%221%22 stop-color=%22%23f1d88a%22 stop-opacity=%22.05%22/%3E%3C/radialGradient%3E%3C/defs%3E %3Cpath fill-rule=%22evenodd%22 d=%22M30 2 C39 13 58 21 58 41 C58 55 46 64 34 60 L30 57 L26 60 C14 64 2 55 2 41 C2 21 21 13 30 2 Z M30 27 A11 11 0 1 0 30.01 27 Z%22 fill=%22url(%23w)%22 stroke=%22%23120a05%22 stroke-width=%221.2%22/%3E %3Cpath d=%22M30 6 C38 16 54 23 54.5 40%22 stroke=%22%238a6a46%22 stroke-width=%22.8%22 fill=%22none%22 opacity=%22.55%22/%3E %3Ccircle cx=%2230%22 cy=%2238%22 r=%2211%22 fill=%22url(%23l)%22 stroke=%22%23c9a04a%22 stroke-width=%222%22/%3E %3Ccircle cx=%2230%22 cy=%2238%22 r=%2212.6%22 fill=%22none%22 stroke=%22%23120a05%22 stroke-width=%22.8%22/%3E %3Cpath d=%22M30 9.5 L31.5 13 L30 16.5 L28.5 13 Z%22 fill=%22%23c9a04a%22 opacity=%22.85%22/%3E %3C/svg%3E") center / contain no-repeat;
+  transform: translate(-50%, -57.6%) rotate(var(--pr, 0deg));
+  transition: left var(--pt, 0.26s) cubic-bezier(.45,.05,.35,1), top var(--pt, 0.26s) cubic-bezier(.45,.05,.35,1), transform var(--pt, 0.26s) ease;
+  filter: drop-shadow(0 6px 5px rgba(0,0,0,0.65));
+  z-index: 2;
+}
+.ouija .planchette::after {
+  content: "";
+  position: absolute;
+  left: 31%;
+  top: 40%;
+  width: 38%;
+  height: 35%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(184,255,92,0.28), transparent 70%);
+  animation: ojGlow 1.6s ease-in-out infinite;
+}
+@keyframes ojGlow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.seance-kicker {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.seance-msg {
+  min-height: 1.2em;
+  font-family: var(--font-grave);
+  font-size: 24px;
+  letter-spacing: 0.3em;
+  color: #e6ffc2;
+  text-shadow: 0 0 10px rgba(184,255,92,0.55);
+}
+.seance-msg span { display: inline-block; animation: ojLetter 0.4s ease-out; }
+@keyframes ojLetter {
+  from { opacity: 0; transform: translateY(-6px); filter: blur(3px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@media (max-width: 560px) {
+  .seance { gap: 8px; padding: 10px; }
+  .seance-msg { font-size: 19px; }
+}
+
+/* The pumpkin hunt: ten jack-o'-lanterns tucked around the graveyard. */
+.hg-pumpkin { display: none; }
+html[data-theme="hollowgrave"] .hg-pumpkin {
+  display: block;
+  position: absolute;
+  z-index: 4;
+  width: 19px;
+  height: 17px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 40%;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 34 30%22%3E %3Cdefs%3E%3CradialGradient id=%22g%22 cx=%2245%25%22 cy=%2238%25%22 r=%2270%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23ffa23d%22/%3E%3Cstop offset=%22.6%22 stop-color=%22%23e2680f%22/%3E%3Cstop offset=%221%22 stop-color=%22%238f3a06%22/%3E%3C/radialGradient%3E %3CradialGradient id=%22f%22 cx=%2250%25%22 cy=%2250%25%22 r=%2260%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23fff2b0%22/%3E%3Cstop offset=%22.7%22 stop-color=%22%23ffc24a%22/%3E%3Cstop offset=%221%22 stop-color=%22%23ff8c1a%22/%3E%3C/radialGradient%3E%3C/defs%3E %3Cpath d=%22M16 6 C15 3.5 15.5 1.5 18 0.6 C18.6 1.4 18 2.4 17.6 3.4 C17.3 4.4 17.8 5.4 18.4 6.2 Z%22 fill=%22%234a3a1c%22/%3E %3Cellipse cx=%229.5%22 cy=%2217.5%22 rx=%228%22 ry=%2211%22 fill=%22url(%23g)%22/%3E %3Cellipse cx=%2224.5%22 cy=%2217.5%22 rx=%228%22 ry=%2211%22 fill=%22url(%23g)%22/%3E %3Cellipse cx=%2217%22 cy=%2217.5%22 rx=%229%22 ry=%2211.8%22 fill=%22url(%23g)%22/%3E %3Cpath d=%22M12.5 7.5 C9.5 12 9.5 23 12.5 28 M21.5 7.5 C24.5 12 24.5 23 21.5 28%22 stroke=%22%239a420a%22 stroke-width=%22.8%22 fill=%22none%22 opacity=%22.7%22/%3E %3Cpath d=%22M8 14 L12.5 12 L12 17 Z M26 14 L21.5 12 L22 17 Z%22 fill=%22url(%23f)%22/%3E %3Cpath d=%22M15.5 16 L17 13.5 L18.5 16 Z%22 fill=%22url(%23f)%22/%3E %3Cpath d=%22M7.5 19.5 C10 23.5 24 23.5 26.5 19.5 L24 20.6 L23 22.6 L21 21.2 L19.3 23.3 L17 21.6 L14.7 23.3 L13 21.2 L11 22.6 L10 20.6 Z%22 fill=%22url(%23f)%22/%3E %3C/svg%3E") center / contain no-repeat;
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0.6;
+  animation: pkFlicker 9s ease-in-out infinite;
+  animation-delay: var(--pd, 0s);
+  transition: transform 0.25s cubic-bezier(.2,.8,.3,1.4);
+}
+html[data-theme="hollowgrave"] .hg-pumpkin:hover,
+html[data-theme="hollowgrave"] .hg-pumpkin:focus-visible { opacity: 1; transform: scale(1.35) rotate(-6deg); outline: none; animation-play-state: paused; filter: drop-shadow(0 0 6px rgba(255,160,50,0.85)); }
+/* Mostly a dull, unlit lump; every so often its candle gutters up. */
+@keyframes pkFlicker {
+  0%, 64%, 82%, 100% { filter: brightness(0.6) saturate(0.7); }
+  68% { filter: brightness(1.1) drop-shadow(0 0 6px rgba(255,160,50,0.75)); }
+  71% { filter: brightness(0.7) saturate(0.8); }
+  75% { filter: brightness(1.05) drop-shadow(0 0 5px rgba(255,160,50,0.6)); }
+}
+html[data-theme="hollowgrave"] .hg-pumpkin.found { opacity: 1; pointer-events: none; animation: pkFound 0.9s cubic-bezier(.3,.7,.4,1) forwards; }
+@keyframes pkFound {
+  0% { transform: none; filter: drop-shadow(0 0 6px #ffb347); }
+  30% { transform: scale(1.6) translateY(-8px); filter: drop-shadow(0 0 18px #ffc067) brightness(1.5); }
+  100% { transform: scale(0.4) translateY(-46px); opacity: 0; filter: drop-shadow(0 0 4px #ffb347); }
+}
+.hg-ember {
+  position: fixed;
+  z-index: 7000;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffcf7a;
+  box-shadow: 0 0 6px 2px rgba(242,140,40,0.75);
+  pointer-events: none;
+}
+/* Where each one hides. */
+html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="moon"] { right: 4px; bottom: 2px; }
+html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="fence"] { right: 62px; top: -15px; }
+html[data-theme="hollowgrave"] #bottomNav .hg-pumpkin[data-pk="fence"] { right: 30%; top: -14px; }
+html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="plot"] { right: -12px; bottom: -6px; }
+html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="idle"] { left: calc(50% + 46px); bottom: 3px; width: 15px; height: 13px; }
+html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="panel"] { left: 18px; bottom: 16px; }
+html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="tablet"] { left: 10px; bottom: 4px; }
+html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="stone"] { left: 13%; top: 30px; width: 15px; height: 13px; }
+html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="denick"] { right: 16px; bottom: 12px; }
+html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="footer"] { left: 23%; bottom: 22px; width: 16px; height: 14px; }
+html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="coffin"] { left: 16px; bottom: 14px; }
+.hg-pk-host { position: relative; }
+
+/* Theme menu: the Blood Moon row appears once all ten are found. */
+#themeDropdownMenu li.theme-opt-bloodmoon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px 8px 8px;
+  position: relative;
+  margin-top: 6px;
+  border-radius: 9px;
+  color: #ffe2dc;
+  font-family: 'Grenze', Georgia, serif;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  text-shadow: none;
+  background:
+    radial-gradient(80% 120% at 0% 50%, rgba(255,60,50,0.24), transparent 60%),
+    linear-gradient(135deg, #2a1014, #12080a);
+  box-shadow: inset 0 0 0 1px rgba(255,80,70,0.45);
+}
+#themeDropdownMenu li.theme-opt-bloodmoon:hover,
+#themeDropdownMenu li.theme-opt-bloodmoon:focus-visible { color: #fff; box-shadow: inset 0 0 0 1px rgba(255,90,80,0.8), 0 0 14px rgba(255,60,50,0.3); }
+#themeDropdownMenu li.theme-opt-bloodmoon[aria-selected="true"] { box-shadow: inset 0 0 0 2px #ff4a3d, 0 0 16px rgba(255,60,50,0.35); }
+#themeDropdownMenu li.theme-opt-bloodmoon .theme-swatch {
+  background: radial-gradient(circle at 62% 38%, #ff8a6a 0 12%, #c8231c 13% 22%, transparent 23%), linear-gradient(180deg, #2a0c10, #120507);
+}
+#themeDropdownMenu li.theme-opt-bloodmoon .theme-swatch i,
+#themeDropdownMenu li.theme-opt-bloodmoon .theme-swatch b { display: none; }
+#themeDropdownMenu li.theme-opt-bloodmoon .theme-opt-name { font-size: 15px; }
+#themeDropdownMenu li.theme-opt-bloodmoon .theme-opt-tag { color: #ff8f80; opacity: 1; font-family: 'Crimson Pro', Georgia, serif; font-style: italic; font-size: 12px; }
+
+/* ---------- Blood Moon ----------
+   Unlocked by finding every pumpkin: the moon turns red, the sky and fog
+   pick up the color, and every ectoplasm-green glow turns to blood. */
+html[data-theme="hollowgrave"].blood-moon {
+  --accent-2: #ff4a4a;
+  --accent-2-soft: rgba(255,74,74,0.12);
+  --ecto: #ff4a4a;
+  --moon: #ff7a5c;
+  --gold: #ffb09a;
+  --border-strong: rgba(255,90,60,0.5);
+}
+html[data-theme="hollowgrave"].blood-moon #nebula {
+  background: radial-gradient(120% 70% at 50% 110%, #4a1418 0%, #1d0a0e 55%, #0a0506 100%);
+}
+html[data-theme="hollowgrave"].blood-moon .hero-pin {
+  background:
+    radial-gradient(circle at 34% 38%, rgba(90,10,10,0.38) 0 9px, transparent 10px),
+    radial-gradient(circle at 63% 60%, rgba(90,10,10,0.34) 0 13px, transparent 14px),
+    radial-gradient(circle at 60% 27%, rgba(90,10,10,0.3) 0 5px, transparent 6px),
+    radial-gradient(circle at 30% 68%, rgba(90,10,10,0.26) 0 4px, transparent 5px),
+    radial-gradient(circle at 40% 38%, #ffb59a, #e2442e 58%, #8e1a14);
+  box-shadow: 0 0 40px 8px rgba(255,70,50,0.38), 0 0 120px 40px rgba(255,50,40,0.14);
+}
+html[data-theme="hollowgrave"].blood-moon .hero-pin::after { background: radial-gradient(circle, rgba(255,80,60,0.2), transparent 62%); }
+html[data-theme="hollowgrave"].blood-moon #gravefield .gf-fog,
+html[data-theme="hollowgrave"].blood-moon #hgMist i {
+  filter: sepia(1) hue-rotate(-50deg) saturate(2.4);
+}
+html[data-theme="hollowgrave"].blood-moon #gravefield .gf-wisp {
+  background: #ffd0c8;
+  box-shadow: 0 0 8px 3px rgba(255,74,74,0.6), 0 0 22px 8px rgba(255,74,74,0.2);
+}
+html[data-theme="hollowgrave"].blood-moon #gravefield .gf-sky {
+  background:
+    radial-gradient(46% 42% at var(--bx, 50%) 26%, rgba(255,214,206,0.6), rgba(230,120,110,0.22) 48%, transparent 76%),
+    linear-gradient(180deg, rgba(210,110,100,0.16), transparent 70%);
+}
+html[data-theme="hollowgrave"].blood-moon #gravefield .gf-bolt .glow { stroke: rgba(255,170,160,0.55); }
+html[data-theme="hollowgrave"].blood-moon #hgFlash { background: radial-gradient(120% 90% at var(--bx, 50%) 0%, rgba(255,226,220,1), rgba(240,180,170,0.5) 60%, rgba(230,160,150,0.2)); }
+html[data-theme="hollowgrave"].blood-moon .ouija .oj.lit { color: #ffd0c8; text-shadow: 0 0 6px rgba(255,74,74,0.95), 0 0 16px rgba(255,74,74,0.55); }
+html[data-theme="hollowgrave"].blood-moon .seance-msg { color: #ffd0c8; text-shadow: 0 0 10px rgba(255,74,74,0.55); }
+html[data-theme="hollowgrave"].blood-moon .ouija .planchette::after { background: radial-gradient(circle, rgba(255,74,74,0.3), transparent 70%); }
+/* Every ectoplasm-green glow in the theme, turned to blood (generated). */
+@keyframes graveLiveArrive-bm {
+  0%, 100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.07), 0 18px 28px -16px rgba(0,0,0,0.95); }
+  40% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.07), 0 0 0 2px rgba(255,74,74,0.7), 0 0 34px rgba(255,74,74,0.5); }
+}
+@keyframes graveEcto-bm {
+  0%, 100% { box-shadow: 0 0 12px rgba(255,74,74,0.35), inset 0 0 18px rgba(255,74,74,0.16); }
+  50% { box-shadow: 0 0 28px rgba(255,74,74,0.6), inset 0 0 34px rgba(255,74,74,0.3); }
+}
+@keyframes graveBtnPulse-bm {
+  0% { box-shadow: 0 0 0 0 rgba(255,74,74,0.8), 0 0 18px rgba(242,140,40,0.3); }
+  60% { box-shadow: 0 0 0 14px rgba(255,74,74,0), 0 0 18px rgba(242,140,40,0.3); }
+  100% { box-shadow: 0 0 0 0 rgba(255,74,74,0), 0 0 18px rgba(242,140,40,0.3); }
+}
+html[data-theme="hollowgrave"].blood-moon #gravefield .gf-wisp { background: #ffd0c8; box-shadow: 0 0 8px 3px rgba(255,74,74,0.55), 0 0 22px 8px rgba(255,74,74,0.18); }
+html[data-theme="hollowgrave"].blood-moon .hero-eyebrow { text-shadow: 0 0 10px rgba(255,74,74,0.45); }
+html[data-theme="hollowgrave"].blood-moon #form-container::before { background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 90 90%22 fill=%22none%22 stroke=%22rgba(220,210,235,0.22)%22 stroke-width=%22.8%22%3E%3Cpath d=%22M0 0 L90 8 M0 0 L80 40 M0 0 L58 66 M0 0 L32 84 M0 0 L6 90%22/%3E%3Cpath d=%22M22 2 Q20 10 19 9 Q14 14 16 18 Q9 20 8 22 Q4 22 2 22%22/%3E%3Cpath d=%22M44 4 Q38 16 38 18 Q28 28 31 34 Q18 38 16 44 Q8 44 3 44%22/%3E%3Cpath d=%22M68 6 Q58 22 58 28 Q44 42 46 50 Q28 56 24 64 Q12 64 4 66%22/%3E%3Cpath d=%22M86 8 Q74 30 76 38 Q58 56 57 64 Q36 74 31 82 Q16 84 6 88%22/%3E%3Cpath d=%22M60 52 v14%22 stroke-width=%22.6%22/%3E%3Ccircle cx=%2260%22 cy=%2268%22 r=%222.2%22 fill=%22rgba(20,16,26,0.9)%22 stroke=%22none%22/%3E%3C/svg%3E") left top / contain no-repeat; }
+html[data-theme="hollowgrave"].blood-moon .exhibit-tag { border: 1px solid rgba(255,74,74,0.35); background: rgba(255,74,74,0.06); }
+html[data-theme="hollowgrave"].blood-moon .exhibit-tag::before { text-shadow: 0 0 6px rgba(255,74,74,0.4); }
+html[data-theme="hollowgrave"].blood-moon tbody tr:hover { background: rgba(255,74,74,0.04); }
+html[data-theme="hollowgrave"].blood-moon tbody tr:hover .user-cell span { text-shadow: 0 0 8px rgba(255,74,74,0.5); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card { background:
+    radial-gradient(130% 46% at 50% 0%, rgba(241,216,138,0.08), transparent 62%),
+    var(--lichen),
+    radial-gradient(34% 16% at 2% 100%, rgba(120,55,48,0.38), transparent 70%),
+    radial-gradient(22% 10% at 99% 100%, rgba(120,55,48,0.26), transparent 70%),
+    radial-gradient(90% 26% at 50% 106%, rgba(120,60,50,0.2), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, var(--stone), var(--stone-dark)); --lichen: radial-gradient(34px 22px at 86% 24%, rgba(170,90,80,0.11), transparent), radial-gradient(22px 30px at 6% 58%, rgba(170,90,80,0.08), transparent); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card::after { background: radial-gradient(ellipse 50% 70% at 50% 100%, #0d0a12 55%, rgba(13,10,18,0.7) 75%, transparent 100%); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card:hover { border-color: rgba(255,74,74,0.28); box-shadow: inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -16px 22px -14px rgba(0,0,0,0.6), 0 24px 34px -16px rgba(0,0,0,0.95), 0 10px 30px -8px rgba(255,74,74,0.28); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card:hover::before { color: #ffc8be; text-shadow: 0 0 10px rgba(255,74,74,0.6); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card:hover .sweat-card-note { border-color: rgba(255,74,74,0.3); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card .card-note-ghost:hover { border-color: rgba(255,74,74,0.45); background: rgba(255,74,74,0.05); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card.live-new { animation: graveRise 0.75s cubic-bezier(.2,.8,.3,1) backwards, graveLiveArrive-bm 1.8s ease-out 0.5s 2; }
+html[data-theme="hollowgrave"].blood-moon .sweat-card.tier-t4 .sweat-card-frame, html[data-theme="hollowgrave"].blood-moon .sweat-card.tier-t5 .sweat-card-frame { background: none; }
+html[data-theme="hollowgrave"].blood-moon .sweat-card.tier-t4 .sweat-card-frame { border: 2px solid rgba(255,74,74,0.85); animation: graveEcto-bm 3.4s ease-in-out infinite; }
+html[data-theme="hollowgrave"].blood-moon .sweat-card.tier-t4 .sweat-card-frame::after { background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 26%22%3E%3Cpath d=%22M0 0 H120 V3 C112 3 110 5 108 9 C106 13 102 13 101 9 C99 4 92 4 86 5 C80 6 79 18 75 18 C71 18 72 6 66 5 C58 4 52 4 48 6 C44 8 45 23 40 23 C35 23 37 8 32 5 C26 3 20 4 17 6 C14 8 15 12 12 12 C9 12 9 4 0 3 Z%22 fill=%22%23ff4a4a%22 opacity=%22.85%22/%3E%3Ccircle cx=%2240%22 cy=%2225%22 r=%221.6%22 fill=%22%23ff4a4a%22 opacity=%22.8%22/%3E%3C/svg%3E") center top / 100% 100% no-repeat; animation: graveDrip 4.2s ease-in-out infinite; filter: drop-shadow(0 0 4px rgba(255,74,74,0.6)); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card.tier-t4 { box-shadow: inset 0 2px 0 rgba(255,255,255,0.07), 0 18px 28px -16px rgba(0,0,0,0.95), 0 0 30px -8px rgba(255,74,74,0.45); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card.tier-t5 .sweat-card-frame::before { background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 70 60%22%3E%3Cpath d=%22M22 0 L26 9 L19 16 L28 24 L23 33 L31 41 L27 50 L33 60%22 stroke=%22%23ff9b3d%22 stroke-width=%223.4%22 fill=%22none%22 stroke-linejoin=%22round%22 opacity=%22.35%22/%3E%3Cpath d=%22M22 0 L26 9 L19 16 L28 24 L23 33 L31 41 L27 50 L33 60 M28 24 L40 27 L46 35 M23 33 L14 38 M26 9 L34 8%22 stroke=%22%23120e17%22 stroke-width=%221.6%22 fill=%22none%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M22 0 L26 9 L19 16 L28 24 L23 33%22 stroke=%22%23ffb35c%22 stroke-width=%22.6%22 fill=%22none%22 opacity=%22.8%22/%3E%3C/svg%3E") left top / contain no-repeat; }
+html[data-theme="hollowgrave"].blood-moon .sweat-card.tier-t5 .sweat-card-frame::after { background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 44%22%3E%3Crect x=%2210%22 y=%2226%22 width=%228%22 height=%2214%22 rx=%221.5%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M10 28 q2 4 3 0 q1 6 3 1 q1 3 2 -1%22 fill=%22%23fff8e6%22/%3E%3Crect x=%2210%22 y=%2226%22 width=%222.5%22 height=%2214%22 fill=%22%23000%22 opacity=%22.12%22/%3E%3Cpath d=%22M14 26 v-2%22 stroke=%22%232a2018%22 stroke-width=%221%22/%3E%3Cellipse cx=%2214%22 cy=%2220%22 rx=%226%22 ry=%227%22 fill=%22%23ffb347%22 opacity=%22.25%22/%3E%3Cpath d=%22M14 13 C17.5 18 17 22 14 24 C11 22 10.5 18 14 13 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M14 17 C15.6 20 15.4 22 14 23 C12.6 22 12.4 20 14 17 Z%22 fill=%22%23fff3c4%22/%3E%3Crect x=%2232%22 y=%2217%22 width=%228%22 height=%2220%22 rx=%221.5%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M32 19 q2 4 3 0 q1 6 3 1 q1 3 2 -1%22 fill=%22%23fff8e6%22/%3E%3Crect x=%2232%22 y=%2217%22 width=%222.5%22 height=%2220%22 fill=%22%23000%22 opacity=%22.12%22/%3E%3Cpath d=%22M36 17 v-2%22 stroke=%22%232a2018%22 stroke-width=%221%22/%3E%3Cellipse cx=%2236%22 cy=%2211%22 rx=%226%22 ry=%227%22 fill=%22%23ffb347%22 opacity=%22.25%22/%3E%3Cpath d=%22M36 4 C39.5 9 39 13 36 15 C33 13 32.5 9 36 4 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M36 8 C37.6 11 37.4 13 36 14 C34.6 13 34.4 11 36 8 Z%22 fill=%22%23fff3c4%22/%3E%3Crect x=%2256%22 y=%2212%22 width=%228%22 height=%2224%22 rx=%221.5%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M56 14 q2 4 3 0 q1 6 3 1 q1 3 2 -1%22 fill=%22%23fff8e6%22/%3E%3Crect x=%2256%22 y=%2212%22 width=%222.5%22 height=%2224%22 fill=%22%23000%22 opacity=%22.12%22/%3E%3Cpath d=%22M60 12 v-2%22 stroke=%22%232a2018%22 stroke-width=%221%22/%3E%3Cellipse cx=%2260%22 cy=%226%22 rx=%226%22 ry=%227%22 fill=%22%23ffb347%22 opacity=%22.25%22/%3E%3Cpath d=%22M60 -1 C63.5 4 63 8 60 10 C57 8 56.5 4 60 -1 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M60 3 C61.6 6 61.4 8 60 9 C58.6 8 58.4 6 60 3 Z%22 fill=%22%23fff3c4%22/%3E%3Crect x=%2280%22 y=%2217%22 width=%228%22 height=%2220%22 rx=%221.5%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M80 19 q2 4 3 0 q1 6 3 1 q1 3 2 -1%22 fill=%22%23fff8e6%22/%3E%3Crect x=%2280%22 y=%2217%22 width=%222.5%22 height=%2220%22 fill=%22%23000%22 opacity=%22.12%22/%3E%3Cpath d=%22M84 17 v-2%22 stroke=%22%232a2018%22 stroke-width=%221%22/%3E%3Cellipse cx=%2284%22 cy=%2211%22 rx=%226%22 ry=%227%22 fill=%22%23ffb347%22 opacity=%22.25%22/%3E%3Cpath d=%22M84 4 C87.5 9 87 13 84 15 C81 13 80.5 9 84 4 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M84 8 C85.6 11 85.4 13 84 14 C82.6 13 82.4 11 84 8 Z%22 fill=%22%23fff3c4%22/%3E%3Crect x=%22102%22 y=%2226%22 width=%228%22 height=%2214%22 rx=%221.5%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M102 28 q2 4 3 0 q1 6 3 1 q1 3 2 -1%22 fill=%22%23fff8e6%22/%3E%3Crect x=%22102%22 y=%2226%22 width=%222.5%22 height=%2214%22 fill=%22%23000%22 opacity=%22.12%22/%3E%3Cpath d=%22M106 26 v-2%22 stroke=%22%232a2018%22 stroke-width=%221%22/%3E%3Cellipse cx=%22106%22 cy=%2220%22 rx=%226%22 ry=%227%22 fill=%22%23ffb347%22 opacity=%22.25%22/%3E%3Cpath d=%22M106 13 C109.5 18 109 22 106 24 C103 22 102.5 18 106 13 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M106 17 C107.6 20 107.4 22 106 23 C104.6 22 104.4 20 106 17 Z%22 fill=%22%23fff3c4%22/%3E%3C/svg%3E") center / contain no-repeat; }
+html[data-theme="hollowgrave"].blood-moon .pill.tier-pill.t4 { background: rgba(255,74,74,0.12); border-color: rgba(255,74,74,0.5); text-shadow: 0 0 6px rgba(255,74,74,0.5); }
+html[data-theme="hollowgrave"].blood-moon .sweat-row.tier-t4 > td:first-child::before { background: var(--accent-2); box-shadow: 0 0 10px rgba(255,74,74,0.8); }
+html[data-theme="hollowgrave"].blood-moon .sweat-row.tier-t4 { background: linear-gradient(90deg, rgba(255,74,74,0.06), transparent 45%); }
+@media (prefers-reduced-motion: reduce) { html[data-theme="hollowgrave"].blood-moon .sweat-card.tier-t4 .sweat-card-frame::after, html[data-theme="hollowgrave"].blood-moon .sweat-card.tier-t5 .sweat-card-frame::after, html[data-theme="hollowgrave"].blood-moon h1, html[data-theme="hollowgrave"].blood-moon .hero-flourish { animation: none; } }
+html[data-theme="hollowgrave"].blood-moon .dash-empty { background:
+    radial-gradient(circle at 10px 10px, #4a4456 0 4px, #2c2834 5px, transparent 5.6px),
+    radial-gradient(circle at calc(100% - 10px) 10px, #4a4456 0 4px, #2c2834 5px, transparent 5.6px),
+    radial-gradient(circle at 10px calc(100% - 10px), #4a4456 0 4px, #2c2834 5px, transparent 5.6px),
+    radial-gradient(circle at calc(100% - 10px) calc(100% - 10px), #4a4456 0 4px, #2c2834 5px, transparent 5.6px),
+    radial-gradient(circle at 50% 42%, rgba(255,74,74,0.06), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #17121c, #1d1620); }
+html[data-theme="hollowgrave"].blood-moon .ss-tile { background:
+    radial-gradient(70% 34% at 50% 0%, rgba(241,216,138,0.08), transparent 70%),
+    radial-gradient(38% 30% at 0% 100%, rgba(120,55,48,0.32), transparent 70%),
+    radial-gradient(26% 22% at 100% 100%, rgba(120,55,48,0.2), transparent 70%),
+    radial-gradient(circle at 84% 34%, rgba(176,186,128,0.09) 0 5px, transparent 6px),
+    radial-gradient(circle at 12% 46%, rgba(176,186,128,0.07) 0 4px, transparent 5px),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #3d3747, #2a2632); }
+html[data-theme="hollowgrave"].blood-moon #statsAvatar, html[data-theme="hollowgrave"].blood-moon #modalSkin { border-color: rgba(255,74,74,0.5); }
+html[data-theme="hollowgrave"].blood-moon .skin-aura { background: radial-gradient(closest-side, rgba(255,74,74,0.22), transparent); }
+html[data-theme="hollowgrave"].blood-moon .modal-content { background:
+    radial-gradient(120% 50% at 50% -10%, rgba(241,216,138,0.06), transparent 60%),
+    radial-gradient(30% 14% at 0% 100%, rgba(120,55,48,0.2), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #221d2a, #15111b); }
+html[data-theme="hollowgrave"].blood-moon .modal-record { border-color: rgba(255,74,74,0.22); }
+html[data-theme="hollowgrave"].blood-moon .flip-sheen { --sheen: rgba(255,74,74,0.22); }
+html[data-theme="hollowgrave"].blood-moon .lb-block { background:
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 16%22 preserveAspectRatio=%22none%22%3E%3Cpath d=%22M-0.1 16 Q1.1 9.6 2.4 5.4 Q2.1 10.7 2.1 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M3.3 16 Q2.3 7.9 1.4 2.4 Q3.7 9.2 5.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M7.2 16 Q6.0 8.2 4.8 3.1 Q7.4 9.5 9.4 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M9.1 16 Q10.3 9.8 11.5 5.6 Q11.3 10.8 11.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M13.9 16 Q13.7 10.6 13.6 7.0 Q15.0 11.5 16.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M17.4 16 Q16.1 8.0 14.7 2.7 Q17.5 9.3 19.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M19.5 16 Q18.1 11.5 16.7 8.6 Q19.5 12.3 21.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M23.3 16 Q22.4 9.5 21.5 5.1 Q23.7 10.5 25.5 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M27.6 16 Q28.1 10.0 28.6 6.0 Q29.2 11.0 29.8 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M31.1 16 Q31.2 10.6 31.4 6.9 Q32.4 11.5 33.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M34.6 16 Q33.8 11.1 33.0 7.8 Q35.2 11.9 36.8 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M36.0 16 Q34.8 9.6 33.6 5.4 Q36.2 10.7 38.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M41.8 16 Q43.2 10.7 44.6 7.1 Q44.1 11.6 44.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M43.3 16 Q42.0 7.4 40.7 1.7 Q43.5 8.9 45.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M49.0 16 Q47.8 10.6 46.5 7.0 Q49.2 11.5 51.2 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M51.8 16 Q50.6 11.4 49.4 8.3 Q52.0 12.2 54.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M52.9 16 Q54.2 10.5 55.5 6.9 Q55.2 11.4 55.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M57.0 16 Q55.7 12.4 54.4 10.0 Q57.2 13.0 59.2 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M60.2 16 Q60.1 9.6 59.9 5.4 Q61.3 10.7 62.4 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M66.1 16 Q65.8 8.4 65.6 3.3 Q67.1 9.7 68.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M66.8 16 Q66.0 10.5 65.1 6.8 Q67.4 11.4 69.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M72.5 16 Q72.8 7.2 73.0 1.3 Q73.9 8.6 74.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M73.9 16 Q75.0 10.6 76.1 7.1 Q76.0 11.5 76.1 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M76.8 16 Q76.7 12.1 76.5 9.5 Q77.9 12.8 79.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M82.4 16 Q81.8 11.0 81.2 7.7 Q83.1 11.9 84.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M83.7 16 Q84.1 11.7 84.5 8.9 Q85.3 12.5 85.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M88.7 16 Q88.6 10.8 88.4 7.3 Q89.8 11.6 90.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M92.8 16 Q92.5 12.2 92.1 9.6 Q93.7 12.8 95.0 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M94.6 16 Q95.0 11.6 95.3 8.7 Q96.1 12.4 96.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M97.6 16 Q97.7 9.2 97.9 4.7 Q98.9 10.4 99.8 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M103.1 16 Q102.9 9.4 102.7 5.0 Q104.2 10.5 105.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M104.2 16 Q103.5 9.9 102.8 5.9 Q104.8 10.9 106.4 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M108.1 16 Q108.4 8.1 108.6 2.8 Q109.5 9.4 110.3 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M112.3 16 Q113.7 7.4 115.1 1.7 Q114.6 8.9 114.5 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M114.8 16 Q115.8 9.6 116.9 5.4 Q116.8 10.7 117.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M118.3 16 Q117.5 7.5 116.6 1.8 Q118.8 8.9 120.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M121.1 16 Q120.4 10.5 119.6 6.9 Q121.7 11.4 123.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M124.8 16 Q125.0 10.8 125.3 7.3 Q126.2 11.7 127.0 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M128.0 16 Q127.8 12.2 127.7 9.6 Q129.1 12.8 130.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M133.1 16 Q133.3 8.9 133.6 4.1 Q134.5 10.0 135.3 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M136.3 16 Q136.2 7.5 136.1 1.8 Q137.4 8.9 138.5 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M140.0 16 Q138.6 7.2 137.1 1.4 Q140.1 8.7 142.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M142.7 16 Q142.2 8.6 141.7 3.7 Q143.5 9.8 144.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M144.9 16 Q145.6 9.7 146.3 5.5 Q146.7 10.8 147.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M150.5 16 Q150.0 7.5 149.6 1.8 Q151.3 8.9 152.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M154.2 16 Q154.0 7.8 153.7 2.3 Q155.2 9.1 156.4 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M157.5 16 Q157.9 9.6 158.2 5.3 Q159.0 10.6 159.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M159.4 16 Q158.2 12.9 156.9 10.9 Q159.6 13.4 161.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M163.6 16 Q164.8 7.0 165.9 1.1 Q165.7 8.5 165.8 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M166.3 16 Q166.5 8.6 166.8 3.6 Q167.7 9.8 168.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M169.9 16 Q169.9 9.8 170.0 5.6 Q171.1 10.8 172.1 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M172.8 16 Q171.4 12.5 170.0 10.1 Q172.9 13.1 175.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M176.8 16 Q178.1 9.3 179.3 4.9 Q179.0 10.4 179.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M181.4 16 Q180.3 10.8 179.2 7.3 Q181.7 11.7 183.6 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M183.7 16 Q183.2 8.5 182.7 3.5 Q184.5 9.7 185.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M187.0 16 Q186.7 11.6 186.4 8.6 Q188.0 12.3 189.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M189.5 16 Q190.4 10.4 191.3 6.7 Q191.4 11.3 191.7 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M194.9 16 Q195.2 10.7 195.4 7.2 Q196.3 11.6 197.1 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M196.3 16 Q195.9 12.2 195.4 9.7 Q197.2 12.8 198.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M201.2 16 Q200.6 7.3 199.9 1.5 Q201.9 8.7 203.4 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M202.8 16 Q204.1 10.2 205.4 6.3 Q205.1 11.1 205.0 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M207.0 16 Q207.6 9.9 208.1 5.8 Q208.7 10.9 209.2 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M210.3 16 Q209.6 8.0 208.9 2.7 Q210.9 9.4 212.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M214.7 16 Q214.3 11.3 213.9 8.2 Q215.6 12.1 216.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M218.0 16 Q217.1 10.6 216.2 6.9 Q218.5 11.5 220.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M220.2 16 Q218.9 12.2 217.5 9.6 Q220.3 12.8 222.4 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M224.2 16 Q224.7 9.2 225.2 4.7 Q225.8 10.4 226.4 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M229.2 16 Q228.3 8.9 227.4 4.2 Q229.7 10.1 231.4 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M230.5 16 Q231.2 8.7 232.0 3.9 Q232.3 9.9 232.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M233.6 16 Q233.2 11.4 232.7 8.3 Q234.5 12.1 235.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M237.7 16 Q238.9 8.2 240.1 3.1 Q239.9 9.5 239.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M241.1 16 Q240.8 7.6 240.5 2.1 Q242.1 9.0 243.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M244.7 16 Q245.9 9.2 247.1 4.7 Q246.8 10.4 246.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M248.4 16 Q248.4 9.1 248.4 4.5 Q249.6 10.2 250.6 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M251.5 16 Q250.6 9.1 249.7 4.5 Q252.0 10.2 253.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M254.1 16 Q255.6 7.6 257.0 2.0 Q256.5 9.0 256.3 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M258.5 16 Q258.0 8.3 257.4 3.1 Q259.3 9.5 260.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M261.3 16 Q261.2 12.5 261.0 10.2 Q262.4 13.1 263.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M266.0 16 Q264.6 10.1 263.2 6.1 Q266.1 11.1 268.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M268.4 16 Q268.5 12.8 268.6 10.6 Q269.7 13.3 270.6 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M271.9 16 Q273.1 7.0 274.3 1.0 Q274.1 8.5 274.1 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M276.7 16 Q278.1 10.0 279.4 6.1 Q279.0 11.0 278.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M279.6 16 Q279.7 10.4 279.9 6.6 Q280.9 11.3 281.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M282.3 16 Q282.4 7.9 282.6 2.6 Q283.6 9.3 284.5 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M286.1 16 Q287.2 7.3 288.3 1.5 Q288.2 8.7 288.3 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M288.4 16 Q288.5 12.2 288.7 9.6 Q289.7 12.8 290.6 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M292.6 16 Q292.7 11.8 292.8 9.0 Q293.9 12.5 294.8 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M296.1 16 Q297.5 12.8 298.9 10.7 Q298.4 13.4 298.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M299.3 16 Q298.2 7.1 297.1 1.1 Q299.6 8.6 301.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M303.2 16 Q303.3 12.6 303.4 10.3 Q304.5 13.2 305.4 16 Z%22 fill=%22%234a6436%22/%3E%3C/svg%3E") left bottom / 100% 11px no-repeat,
+    radial-gradient(34% 30% at 0% 100%, rgba(120,55,48,0.3), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #3a3544, #25212c); }
+html[data-theme="hollowgrave"].blood-moon #statsEmpty.is-scanning .idle-grave .grave-stone { filter: drop-shadow(0 0 8px rgba(255,74,74,0.6)); }
+html[data-theme="hollowgrave"].blood-moon .fx-ecto { background: #ffd0c8; box-shadow: 0 0 6px 2px rgba(255,74,74,0.7); }
+html[data-theme="hollowgrave"].blood-moon .flourish-grave-stone { box-shadow: 0 0 22px rgba(255,74,74,0.35); }
+html[data-theme="hollowgrave"].blood-moon .add-sweat-row .btn.success-pulse { animation: graveBtnPulse-bm 0.7s ease-out; }
+html[data-theme="hollowgrave"].blood-moon .egg-bed { filter: saturate(0.7) drop-shadow(0 0 22px rgba(255,74,74,0.4)); }
+html[data-theme="hollowgrave"].blood-moon .egg-sub { text-shadow: 0 0 10px rgba(255,74,74,0.5); }
+html[data-theme="hollowgrave"].blood-moon .tto-grave-stone { box-shadow: inset 0 3px 0 rgba(255,255,255,0.08), 0 0 50px rgba(255,74,74,0.25); }
+html[data-theme="hollowgrave"].blood-moon .ss-tile::after { background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 16%22 preserveAspectRatio=%22none%22%3E%3Cpath d=%22M-0.1 16 Q1.1 9.6 2.4 5.4 Q2.1 10.7 2.1 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M3.3 16 Q2.3 7.9 1.4 2.4 Q3.7 9.2 5.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M7.2 16 Q6.0 8.2 4.8 3.1 Q7.4 9.5 9.4 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M9.1 16 Q10.3 9.8 11.5 5.6 Q11.3 10.8 11.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M13.9 16 Q13.7 10.6 13.6 7.0 Q15.0 11.5 16.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M17.4 16 Q16.1 8.0 14.7 2.7 Q17.5 9.3 19.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M19.5 16 Q18.1 11.5 16.7 8.6 Q19.5 12.3 21.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M23.3 16 Q22.4 9.5 21.5 5.1 Q23.7 10.5 25.5 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M27.6 16 Q28.1 10.0 28.6 6.0 Q29.2 11.0 29.8 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M31.1 16 Q31.2 10.6 31.4 6.9 Q32.4 11.5 33.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M34.6 16 Q33.8 11.1 33.0 7.8 Q35.2 11.9 36.8 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M36.0 16 Q34.8 9.6 33.6 5.4 Q36.2 10.7 38.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M41.8 16 Q43.2 10.7 44.6 7.1 Q44.1 11.6 44.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M43.3 16 Q42.0 7.4 40.7 1.7 Q43.5 8.9 45.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M49.0 16 Q47.8 10.6 46.5 7.0 Q49.2 11.5 51.2 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M51.8 16 Q50.6 11.4 49.4 8.3 Q52.0 12.2 54.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M52.9 16 Q54.2 10.5 55.5 6.9 Q55.2 11.4 55.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M57.0 16 Q55.7 12.4 54.4 10.0 Q57.2 13.0 59.2 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M60.2 16 Q60.1 9.6 59.9 5.4 Q61.3 10.7 62.4 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M66.1 16 Q65.8 8.4 65.6 3.3 Q67.1 9.7 68.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M66.8 16 Q66.0 10.5 65.1 6.8 Q67.4 11.4 69.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M72.5 16 Q72.8 7.2 73.0 1.3 Q73.9 8.6 74.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M73.9 16 Q75.0 10.6 76.1 7.1 Q76.0 11.5 76.1 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M76.8 16 Q76.7 12.1 76.5 9.5 Q77.9 12.8 79.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M82.4 16 Q81.8 11.0 81.2 7.7 Q83.1 11.9 84.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M83.7 16 Q84.1 11.7 84.5 8.9 Q85.3 12.5 85.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M88.7 16 Q88.6 10.8 88.4 7.3 Q89.8 11.6 90.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M92.8 16 Q92.5 12.2 92.1 9.6 Q93.7 12.8 95.0 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M94.6 16 Q95.0 11.6 95.3 8.7 Q96.1 12.4 96.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M97.6 16 Q97.7 9.2 97.9 4.7 Q98.9 10.4 99.8 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M103.1 16 Q102.9 9.4 102.7 5.0 Q104.2 10.5 105.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M104.2 16 Q103.5 9.9 102.8 5.9 Q104.8 10.9 106.4 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M108.1 16 Q108.4 8.1 108.6 2.8 Q109.5 9.4 110.3 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M112.3 16 Q113.7 7.4 115.1 1.7 Q114.6 8.9 114.5 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M114.8 16 Q115.8 9.6 116.9 5.4 Q116.8 10.7 117.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M118.3 16 Q117.5 7.5 116.6 1.8 Q118.8 8.9 120.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M121.1 16 Q120.4 10.5 119.6 6.9 Q121.7 11.4 123.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M124.8 16 Q125.0 10.8 125.3 7.3 Q126.2 11.7 127.0 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M128.0 16 Q127.8 12.2 127.7 9.6 Q129.1 12.8 130.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M133.1 16 Q133.3 8.9 133.6 4.1 Q134.5 10.0 135.3 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M136.3 16 Q136.2 7.5 136.1 1.8 Q137.4 8.9 138.5 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M140.0 16 Q138.6 7.2 137.1 1.4 Q140.1 8.7 142.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M142.7 16 Q142.2 8.6 141.7 3.7 Q143.5 9.8 144.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M144.9 16 Q145.6 9.7 146.3 5.5 Q146.7 10.8 147.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M150.5 16 Q150.0 7.5 149.6 1.8 Q151.3 8.9 152.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M154.2 16 Q154.0 7.8 153.7 2.3 Q155.2 9.1 156.4 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M157.5 16 Q157.9 9.6 158.2 5.3 Q159.0 10.6 159.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M159.4 16 Q158.2 12.9 156.9 10.9 Q159.6 13.4 161.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M163.6 16 Q164.8 7.0 165.9 1.1 Q165.7 8.5 165.8 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M166.3 16 Q166.5 8.6 166.8 3.6 Q167.7 9.8 168.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M169.9 16 Q169.9 9.8 170.0 5.6 Q171.1 10.8 172.1 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M172.8 16 Q171.4 12.5 170.0 10.1 Q172.9 13.1 175.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M176.8 16 Q178.1 9.3 179.3 4.9 Q179.0 10.4 179.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M181.4 16 Q180.3 10.8 179.2 7.3 Q181.7 11.7 183.6 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M183.7 16 Q183.2 8.5 182.7 3.5 Q184.5 9.7 185.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M187.0 16 Q186.7 11.6 186.4 8.6 Q188.0 12.3 189.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M189.5 16 Q190.4 10.4 191.3 6.7 Q191.4 11.3 191.7 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M194.9 16 Q195.2 10.7 195.4 7.2 Q196.3 11.6 197.1 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M196.3 16 Q195.9 12.2 195.4 9.7 Q197.2 12.8 198.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M201.2 16 Q200.6 7.3 199.9 1.5 Q201.9 8.7 203.4 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M202.8 16 Q204.1 10.2 205.4 6.3 Q205.1 11.1 205.0 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M207.0 16 Q207.6 9.9 208.1 5.8 Q208.7 10.9 209.2 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M210.3 16 Q209.6 8.0 208.9 2.7 Q210.9 9.4 212.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M214.7 16 Q214.3 11.3 213.9 8.2 Q215.6 12.1 216.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M218.0 16 Q217.1 10.6 216.2 6.9 Q218.5 11.5 220.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M220.2 16 Q218.9 12.2 217.5 9.6 Q220.3 12.8 222.4 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M224.2 16 Q224.7 9.2 225.2 4.7 Q225.8 10.4 226.4 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M229.2 16 Q228.3 8.9 227.4 4.2 Q229.7 10.1 231.4 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M230.5 16 Q231.2 8.7 232.0 3.9 Q232.3 9.9 232.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M233.6 16 Q233.2 11.4 232.7 8.3 Q234.5 12.1 235.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M237.7 16 Q238.9 8.2 240.1 3.1 Q239.9 9.5 239.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M241.1 16 Q240.8 7.6 240.5 2.1 Q242.1 9.0 243.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M244.7 16 Q245.9 9.2 247.1 4.7 Q246.8 10.4 246.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M248.4 16 Q248.4 9.1 248.4 4.5 Q249.6 10.2 250.6 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M251.5 16 Q250.6 9.1 249.7 4.5 Q252.0 10.2 253.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M254.1 16 Q255.6 7.6 257.0 2.0 Q256.5 9.0 256.3 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M258.5 16 Q258.0 8.3 257.4 3.1 Q259.3 9.5 260.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M261.3 16 Q261.2 12.5 261.0 10.2 Q262.4 13.1 263.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M266.0 16 Q264.6 10.1 263.2 6.1 Q266.1 11.1 268.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M268.4 16 Q268.5 12.8 268.6 10.6 Q269.7 13.3 270.6 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M271.9 16 Q273.1 7.0 274.3 1.0 Q274.1 8.5 274.1 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M276.7 16 Q278.1 10.0 279.4 6.1 Q279.0 11.0 278.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M279.6 16 Q279.7 10.4 279.9 6.6 Q280.9 11.3 281.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M282.3 16 Q282.4 7.9 282.6 2.6 Q283.6 9.3 284.5 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M286.1 16 Q287.2 7.3 288.3 1.5 Q288.2 8.7 288.3 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M288.4 16 Q288.5 12.2 288.7 9.6 Q289.7 12.8 290.6 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M292.6 16 Q292.7 11.8 292.8 9.0 Q293.9 12.5 294.8 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M296.1 16 Q297.5 12.8 298.9 10.7 Q298.4 13.4 298.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M299.3 16 Q298.2 7.1 297.1 1.1 Q299.6 8.6 301.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M303.2 16 Q303.3 12.6 303.4 10.3 Q304.5 13.2 305.4 16 Z%22 fill=%22%234a6436%22/%3E%3C/svg%3E") left bottom / 100% 100% no-repeat; }
+html[data-theme="hollowgrave"].blood-moon .ss-tile[data-username]:hover { border-color: rgba(255,74,74,0.25); box-shadow: inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -16px 20px -14px rgba(0,0,0,0.6), 0 20px 26px -14px rgba(0,0,0,0.95), 0 0 24px -8px rgba(255,74,74,0.35); }
+html[data-theme="hollowgrave"].blood-moon .ss-tile[data-username]:hover::before { border-color: rgba(255,74,74,0.35); }
+html[data-theme="hollowgrave"].blood-moon .ss-tile-fkdr .ss-value { text-shadow: 0 -1px 1px rgba(0,0,0,0.85), 0 0 16px rgba(255,74,74,0.35); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card:nth-child(3n+2) { --lichen: radial-gradient(28px 20px at 14% 20%, rgba(170,90,80,0.1), transparent), radial-gradient(26px 40px at 96% 62%, rgba(170,90,80,0.09), transparent); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card:nth-child(3n) { --lichen: radial-gradient(30px 18px at 70% 14%, rgba(170,90,80,0.09), transparent), radial-gradient(30px 44px at 4% 80%, rgba(170,90,80,0.11), transparent); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card::before { background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 10%22%3E%3Cg fill=%22none%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M8 6 C28 6 36 3 52 5 M112 6 C92 6 84 3 68 5%22 stroke=%22%230e0b13%22 stroke-width=%221.6%22 opacity=%22.6%22 transform=%22translate(0 .7)%22/%3E%3Cpath d=%22M8 6 C28 6 36 3 52 5 M112 6 C92 6 84 3 68 5%22 stroke=%22%238f86a0%22 stroke-width=%221.1%22/%3E%3Cpath d=%22M60 1.5 L63 5 L60 8.5 L57 5 Z%22 fill=%22%238f86a0%22 stroke=%22none%22/%3E%3Ccircle cx=%225%22 cy=%226%22 r=%221.3%22 fill=%22%238f86a0%22/%3E%3Ccircle cx=%22115%22 cy=%226%22 r=%221.3%22 fill=%22%238f86a0%22/%3E%3C/g%3E%3C/svg%3E") center bottom / 112px 9px no-repeat; }
+html[data-theme="hollowgrave"].blood-moon .sweat-card:hover .sweat-card-top::before { border-color: rgba(255,74,74,0.3); }
+html[data-theme="hollowgrave"].blood-moon .sweat-card:nth-child(4n+1) .sweat-card-footer::before, html[data-theme="hollowgrave"].blood-moon .sweat-card:nth-child(4n+3) .sweat-card-footer::before { background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-4 0 46 124%22%3E%3Cg%3E%3Cpath d=%22M6 120 C14 104 4 94 12 80 C20 66 10 56 18 42 C24 32 18 22 26 10%22 stroke=%22%233a5228%22 stroke-width=%221.8%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M12 80 C20 82 26 78 30 72 M18 42 C26 46 32 44 36 38 M8 100 C2 98 -2 94 -2 90%22 stroke=%22%233a5228%22 stroke-width=%221.2%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3Cg transform=%22translate(6 118) rotate(-20) scale(1.1)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(10 104) rotate(30) scale(1.0)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(5 92) rotate(-40) scale(0.9)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(14 82) rotate(25) scale(1.05)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(30 72) rotate(60) scale(0.85)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(9 66) rotate(-30) scale(0.95)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(17 54) rotate(20) scale(1.0)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(36 38) rotate(55) scale(0.8)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(16 40) rotate(-35) scale(0.9)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(22 28) rotate(15) scale(0.85)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(25 12) rotate(-10) scale(0.75)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(-1 90) rotate(-70) scale(0.8)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") left bottom / contain no-repeat; }
+html[data-theme="hollowgrave"].blood-moon { --hg-coffin: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 220%22%3E%3Cdefs%3E%3ClinearGradient id=%22w%22 x1=%220%22 x2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%231a110a%22/%3E%3Cstop offset=%22.25%22 stop-color=%22%233b2717%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%23301f12%22/%3E%3Cstop offset=%22.75%22 stop-color=%22%233b2717%22/%3E%3Cstop offset=%221%22 stop-color=%22%231a110a%22/%3E%3C/linearGradient%3E%3CradialGradient id=%22s%22 cx=%2250%25%22 cy=%2242%25%22 r=%2265%25%22%3E%3Cstop offset=%220%22 stop-color=%22%232e2436%22/%3E%3Cstop offset=%22.6%22 stop-color=%22%23211a29%22/%3E%3Cstop offset=%221%22 stop-color=%22%23120d17%22/%3E%3C/radialGradient%3E%3CradialGradient id=%22p%22 cx=%2250%25%22 cy=%2235%25%22 r=%2265%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23433850%22/%3E%3Cstop offset=%221%22 stop-color=%22%232a2233%22/%3E%3C/radialGradient%3E%3CradialGradient id=%22e%22 cx=%2250%25%22 cy=%2240%25%22 r=%2245%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23ff4a4a%22 stop-opacity=%22.07%22/%3E%3Cstop offset=%221%22 stop-color=%22%23ff4a4a%22 stop-opacity=%220%22/%3E%3C/radialGradient%3E%3CclipPath id=%22c%22%3E%3Cpath d=%22M42.5 12 L77.5 12 L106 53.5 L84 208 L36 208 L14 53.5 Z%22/%3E%3C/clipPath%3E%3CclipPath id=%22o%22%3E%3Cpath d=%22M38 3 L82 3 L116 52 L91 217 L29 217 L4 52 Z%22/%3E%3C/clipPath%3E%3C/defs%3E%3Cpath d=%22M38 3 L82 3 L116 52 L91 217 L29 217 L4 52 Z%22 fill=%22url(%23w)%22 stroke=%22%23080503%22 stroke-width=%222%22 stroke-linejoin=%22round%22/%3E%3Cg clip-path=%22url(%23o)%22%3E%3Cpath d=%22M8 4 C5 60 12 130 6 218%22 stroke=%22%230e0805%22 stroke-width=%22.8%22 opacity=%22.5%22 fill=%22none%22/%3E%3Cpath d=%22M15 4 C12 60 19 130 13 218%22 stroke=%22%230e0805%22 stroke-width=%22.8%22 opacity=%22.5%22 fill=%22none%22/%3E%3Cpath d=%22M23 4 C20 60 27 130 21 218%22 stroke=%22%230e0805%22 stroke-width=%22.8%22 opacity=%22.5%22 fill=%22none%22/%3E%3Cpath d=%22M97 4 C94 60 101 130 95 218%22 stroke=%22%230e0805%22 stroke-width=%22.8%22 opacity=%22.5%22 fill=%22none%22/%3E%3Cpath d=%22M105 4 C102 60 109 130 103 218%22 stroke=%22%230e0805%22 stroke-width=%22.8%22 opacity=%22.5%22 fill=%22none%22/%3E%3Cpath d=%22M112 4 C109 60 116 130 110 218%22 stroke=%22%230e0805%22 stroke-width=%22.8%22 opacity=%22.5%22 fill=%22none%22/%3E%3C/g%3E%3Cpath d=%22M38.8 4.8 L81.2 4.8 L114 52 L90 215.5%22 stroke=%22%235a3e2a%22 stroke-width=%22.8%22 fill=%22none%22 opacity=%22.55%22/%3E%3Cpath d=%22M40.3 7.6 L79.7 7.6 L111 52.8 L87.6 212.4 L32.4 212.4 L9 52.8 Z%22 fill=%22none%22 stroke=%22%230a0604%22 stroke-width=%22.8%22 opacity=%22.7%22/%3E%3Cpath d=%22M42.5 12 L77.5 12 L106 53.5 L84 208 L36 208 L14 53.5 Z%22 fill=%22url(%23s)%22 stroke=%22%230a0604%22 stroke-width=%222%22 stroke-linejoin=%22round%22/%3E%3Cg clip-path=%22url(%23c)%22%3E%3Cpath d=%22M30 14 C34 70 26 140 32 210%22 stroke=%22%236a5878%22 stroke-width=%221.4%22 opacity=%22.09%22 fill=%22none%22/%3E%3Cpath d=%22M44 14 C48 70 40 140 46 210%22 stroke=%22%236a5878%22 stroke-width=%221.4%22 opacity=%22.09%22 fill=%22none%22/%3E%3Cpath d=%22M60 14 C64 70 56 140 62 210%22 stroke=%22%236a5878%22 stroke-width=%221.4%22 opacity=%22.09%22 fill=%22none%22/%3E%3Cpath d=%22M76 14 C80 70 72 140 78 210%22 stroke=%22%236a5878%22 stroke-width=%221.4%22 opacity=%22.09%22 fill=%22none%22/%3E%3Cpath d=%22M90 14 C94 70 86 140 92 210%22 stroke=%22%236a5878%22 stroke-width=%221.4%22 opacity=%22.09%22 fill=%22none%22/%3E%3Crect width=%22120%22 height=%22220%22 fill=%22url(%23e)%22/%3E%3Cellipse cx=%2260%22 cy=%2229%22 rx=%2224%22 ry=%2210%22 fill=%22url(%23p)%22/%3E%3Cpath d=%22M40 31 C50 35 70 35 80 31%22 stroke=%22%230e0a13%22 stroke-width=%22.8%22 fill=%22none%22 opacity=%22.6%22/%3E%3Cpath d=%22M42.5 12 L77.5 12 L106 53.5 L84 208 L36 208 L14 53.5 Z%22 fill=%22none%22 stroke=%22%23000%22 stroke-width=%226%22 opacity=%22.35%22/%3E%3C/g%3E%3Ccircle cx=%2240.5%22 cy=%228%22 r=%221.7%22 fill=%22%232a2430%22 stroke=%22%235f5668%22 stroke-width=%22.5%22/%3E%3Cpath d=%22M39.4 8 h2.2%22 stroke=%22%230e0b12%22 stroke-width=%22.5%22/%3E%3Ccircle cx=%2279.5%22 cy=%228%22 r=%221.7%22 fill=%22%232a2430%22 stroke=%22%235f5668%22 stroke-width=%22.5%22/%3E%3Cpath d=%22M78.4 8 h2.2%22 stroke=%22%230e0b12%22 stroke-width=%22.5%22/%3E%3Ccircle cx=%2234%22 cy=%22212.5%22 r=%221.7%22 fill=%22%232a2430%22 stroke=%22%235f5668%22 stroke-width=%22.5%22/%3E%3Cpath d=%22M32.9 212.5 h2.2%22 stroke=%22%230e0b12%22 stroke-width=%22.5%22/%3E%3Ccircle cx=%2286%22 cy=%22212.5%22 r=%221.7%22 fill=%22%232a2430%22 stroke=%22%235f5668%22 stroke-width=%22.5%22/%3E%3Cpath d=%22M84.9 212.5 h2.2%22 stroke=%22%230e0b12%22 stroke-width=%22.5%22/%3E%3C/svg%3E"); }
+html[data-theme="hollowgrave"].blood-moon .sweat-meter, html[data-theme="hollowgrave"].blood-moon .stat-hero, html[data-theme="hollowgrave"].blood-moon .stats-tag-panel { background:
+    radial-gradient(60% 30% at 50% 0%, rgba(241,216,138,0.07), transparent 70%),
+    radial-gradient(30% 24% at 0% 100%, rgba(120,55,48,0.24), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #3a3544, #29252f); }
+html[data-theme="hollowgrave"].blood-moon #form-container, html[data-theme="hollowgrave"].blood-moon #denickContainer { background:
+    radial-gradient(120% 60% at 50% -10%, rgba(241,216,138,0.05), transparent 60%),
+    radial-gradient(40% 30% at 100% 100%, rgba(120,55,48,0.10), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, rgba(36,31,45,0.97), rgba(20,16,26,0.98)); }
+html[data-theme="hollowgrave"].blood-moon #form-container::after, html[data-theme="hollowgrave"].blood-moon #denickContainer::after { background:
+    linear-gradient(#5a5168, #5a5168) left top / 18px 3px no-repeat,
+    linear-gradient(#5a5168, #5a5168) left top / 3px 18px no-repeat,
+    linear-gradient(#5a5168, #5a5168) right top / 18px 3px no-repeat,
+    linear-gradient(#5a5168, #5a5168) right top / 3px 18px no-repeat,
+    linear-gradient(#5a5168, #5a5168) left bottom / 18px 3px no-repeat,
+    linear-gradient(#5a5168, #5a5168) left bottom / 3px 18px no-repeat,
+    linear-gradient(#5a5168, #5a5168) right bottom / 18px 3px no-repeat,
+    linear-gradient(#5a5168, #5a5168) right bottom / 3px 18px no-repeat; }
+
+@media (prefers-reduced-motion: reduce) {
+  #gravefield .gf-chapel b, html[data-theme="hollowgrave"] .hg-crow, html[data-theme="hollowgrave"] .hg-pumpkin, #hgMist i, .ouija .planchette::after { animation: none !important; }
+}
+html[data-theme="hollowgrave"] #statsEmpty { position: relative; }
+/* @@END-HG-EVENT@@ */
 
 /* ============================================================
    LOOKTHROUGH POLISH (2026-09-27)
@@ -12923,7 +13455,9 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
 <div id="nebula"><div id="nebulaGlow2" aria-hidden="true"></div></div>
 <div id="starfield"></div>
 <div id="bubblefield"></div>
-<div id="gravefield" aria-hidden="true"><i class="gf-cloud c1"></i><i class="gf-cloud c2"></i><i class="gf-hills"></i><i class="gf-fog f1"></i><i class="gf-fog f2"></i><i class="gf-wisp w1"></i><i class="gf-wisp w2"></i><i class="gf-wisp w3"></i><i class="gf-wisp w4"></i><i class="gf-bat b1"></i><i class="gf-bat b2"></i><i class="gf-bat b3"></i></div>
+<div id="gravefield" aria-hidden="true"><i class="gf-sky"></i><i class="gf-cloud c1"></i><i class="gf-cloud c2"></i><i class="gf-bolt"></i><i class="gf-chapel"><b></b></i><i class="gf-hills"></i><i class="gf-fogwrap"><i class="gf-fog f1"></i><i class="gf-fog f2"></i></i><i class="gf-wisp w1"></i><i class="gf-wisp w2"></i><i class="gf-wisp w3"></i><i class="gf-wisp w4"></i><i class="gf-bat b1"></i><i class="gf-bat b2"></i><i class="gf-bat b3"></i></div>
+<div id="hgFlash" aria-hidden="true"></div>
+<div id="hgMist" aria-hidden="true"><i></i><i></i></div>
 <div id="themeTransitionOverlay" aria-hidden="true"></div>
 <div id="customTooltip" role="tooltip" aria-hidden="true"></div>
 
@@ -12960,6 +13494,7 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
         <li role="option" data-theme-value="skyisles" data-label="Sky Isles" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Sky Isles</span><span class="theme-opt-tag">Retro pixel skies</span></span></li>
         <li class="theme-season-head" role="presentation" aria-hidden="true"><span class="theme-season-title">&#127875; Seasonal</span><span class="theme-season-pill">Limited time</span></li>
         <li role="option" class="theme-opt-seasonal" data-theme-value="hollowgrave" data-label="Hollow Grave" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Hollow Grave <span class="theme-opt-badge">Halloween</span></span><span class="theme-opt-tag" id="seasonTag">Moonlit graveyard</span></span></li>
+        <li role="option" class="theme-opt-bloodmoon" data-label="Blood Moon" aria-selected="false" tabindex="0" hidden><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Blood Moon</span><span class="theme-opt-tag">All ten pumpkins found</span></span></li>
       </ul>
     </div>
     <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; <span class="key-owner-name">Your Key</span></button>
@@ -14339,6 +14874,52 @@ window.siteAudio = (function () {
         [62, 65, 69, 74].forEach(n => organ(t + 0.6, n, { len: 0.6, rel: 0.8, gain: 0.03 }));
         knell(t + 0.62, 50, { gain: 0.05, len: 1.6 });
       },
+      // October extras. Thunder: a sharp crack when the strike is close,
+      // then a long low roll that grumbles off across the hills.
+      thunder(t, o = {}) {
+        const near = o.near != null ? o.near : 0.5;
+        if (near > 0.55) {
+          noise(t, { type: "highpass", f: 1400, dur: 0.09, gain: 0.1 * near });
+          noise(t + 0.01, { type: "lowpass", f: 2600, f2: 380, dur: 0.4, gain: 0.3 * near });
+        }
+        let k = 0.04;
+        for (let i = 0; i < 6; i++) {
+          noise(t + k, { type: "lowpass", f: rnd(170, 280), f2: rnd(70, 110), dur: rnd(1.2, 2.3), gain: rnd(0.3, 0.45) * (1 - i * 0.1) * (0.55 + near * 0.45), swell: 0.18, rate: 0.4, pan: rnd(-0.5, 0.5) });
+          k += rnd(0.3, 0.6);
+        }
+        tone(t + 0.05, { f: 44, f2: 30, dur: 2.6, hold: 0.4, gain: 0.28 * (0.55 + near * 0.45), a: 0.25, vib: [6, 4] });
+      },
+      // A crow: two hoarse, low caws and its wings beating as it lifts off.
+      crow(t, o = {}) {
+        const pan = o.pan || 0;
+        [0, 0.27].forEach((k, i) => {
+          tone(t + k, { type: "sawtooth", f: 330 - i * 25, f2: 250 - i * 20, glide: 0.16, dur: 0.1, hold: 0.06, gain: 0.07, bp: 950, q: 2.2, vib: [42, 30], a: 0.012, pan });
+          noise(t + k, { type: "bandpass", f: 1300, q: 1.2, dur: 0.15, gain: 0.025, pan });
+        });
+        for (let i = 0; i < 7; i++) noise(t + 0.05 + i * 0.075, { type: "lowpass", f: 760, f2: 300, dur: 0.06, gain: 0.08 - i * 0.008, pan });
+      },
+      // The planchette sliding over the wooden board.
+      planchette(t) {
+        noise(t, { type: "bandpass", f: 650, f2: 420, q: 1.3, dur: 0.2, gain: 0.05, swell: 0.4 });
+        tone(t, { type: "triangle", f: 96, f2: 80, dur: 0.12, gain: 0.03, a: 0.03 });
+      },
+      // A pumpkin found: a hollow knock, its candle catching, and one organ
+      // note that climbs a step with each one found.
+      pumpkin(t, o = {}) {
+        const n = Math.max(1, Math.min(10, o.n || 1));
+        thud(t, { f: 150, f2: 70, gain: 0.3, nf: 650 });
+        noise(t + 0.04, { type: "lowpass", f: 200, f2: 560, dur: 0.38, gain: 0.14, swell: 0.3, rate: 0.6 });
+        organ(t + 0.06, [50, 52, 53, 55, 57, 58, 60, 62, 64, 65][n - 1], { len: 0.3, rel: 0.7, gain: 0.04 });
+        knell(t + 0.08, 38, { gain: 0.03, len: 1.1 });
+      },
+      // All ten found: the ground rumbles, a long minor organ chord swells
+      // and a bell tolls three times as the moon turns red.
+      bloodmoon(t) {
+        noise(t, { type: "lowpass", f: 120, f2: 260, dur: 2.4, gain: 0.25, swell: 0.5, rate: 0.4 });
+        tone(t, { f: 36, f2: 32, dur: 1.4, hold: 1.8, gain: 0.2, a: 0.6, vib: [5, 2] });
+        graveOrgan(t + 0.3, { root: 45, chord: [0, 3, 7, 12, 15], len: 2.2, rel: 1.6, gain: 0.9, a: 0.6 });
+        [0.4, 1.5, 2.6].forEach(k => knell(t + k, 38, { gain: 0.06, len: 1.8 }));
+      },
       // The famous organ opening (a quick mordent, then the run down to a
       // held low note) while bats pour out of the title.
       stunt(t) {
@@ -14918,7 +15499,7 @@ window.siteAudio = (function () {
     ledger: { hover: 8, view: 4, toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2, ambience: 0.5 },
     deepcurrent: { hover: 8, toggle: -2, save: 2, delete: -2, slide: 3, type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -1 },
     skyisles: { hover: 12, click: 10, rare: -9, combo: 9.5, ui: 5, toggle: -1, save: 8, delete: 2.5, slide: 8.5, page: 6, view: 3, type: 10, switch: 6, flipOpen: 8, flipClose: 4, scan: 6.5, found: 4, error: 3, success: 1, stunt: 7, arrive: 7.5, ambience: 11 },
-    hollowgrave: { click: -8, rare: -8.5, combo: -0.5, ui: -3.5, toggle: -8, save: -9, delete: -13.5, slide: 1, page: -3.5, view: -10.5, type: 3, switch: -2, flipOpen: 3.5, flipClose: -9, scan: -13, found: -3, error: -11, success: -4.5, stunt: -3.5, hover: -9.5, chime: -4.5, arrive: -7.5, ambience: 5 },
+    hollowgrave: { thunder: -11, crow: 4, planchette: 3, pumpkin: -2.5, bloodmoon: -2, click: -8, rare: -8.5, combo: -0.5, ui: -3.5, toggle: -8, save: -9, delete: -13.5, slide: 1, page: -3.5, view: -10.5, type: 3, switch: -2, flipOpen: 3.5, flipClose: -9, scan: -13, found: -3, error: -11, success: -4.5, stunt: -3.5, hover: -9.5, chime: -4.5, arrive: -7.5, ambience: 5 },
     shared: { bed: -5, chat: -2 },
   };
   const SHARED = { chat: (t) => pling(t, [78, 85]), techno: fanfare, bed: bedDestroyed };
@@ -14933,7 +15514,7 @@ window.siteAudio = (function () {
     curOut = gainNode(Math.pow(10, (db + (opts.trim || 0)) / 20), sfxBus);
     try {
       if (SHARED[name]) SHARED[name](t);
-      else ({
+      else (({
         click: () => (opts.rare ? s.rare(t, opts.pan || 0) : s.click(t, opts.pan || 0, opts.step)),
         combo: () => s.tier(t, opts.tier || 0),
         switch: () => s.switchTo(t),
@@ -14947,7 +15528,7 @@ window.siteAudio = (function () {
         hover: () => extra(theme).hover(t),
         arrive: () => extra(theme).arrive(t),
         scanStart: () => s.scanStart(t), scanTick: () => s.scanTick(t),
-      })[name]();
+      })[name] || (() => s[name] && s[name](t, opts)))();
     } finally {
       curOut = prev;
     }
@@ -14963,14 +15544,14 @@ window.siteAudio = (function () {
     g.setValueAtTime(AMBIENCE_LEVEL * 0.3, t + secs);
     g.linearRampToValueAtTime(AMBIENCE_LEVEL, t + secs + 1.2);
   }
-  const DUCK = { switch: 2, bed: 3.2, techno: 1.2 };
+  const DUCK = { switch: 2, bed: 3.2, techno: 1.2, bloodmoon: 3 };
 
   let lastClick = 0, lastType = 0, lastHover = 0;
   function play(name, opts = {}) {
     if (!ready()) return;
     const theme = opts.theme || themeNow();
     const t = T() + (opts.delay || 0);
-    let trim = 0;
+    let trim = opts.trim || 0;
     if (name === "click") {
       if (t - lastClick < 0.03) return;
       // A fast flurry of clicks gets a little quieter so it doesn't pile up.
@@ -15169,6 +15750,8 @@ function updateSeasonalTheme() {
   const left = new Date(now.getFullYear(), 10, 1) - now;
   const days = Math.floor(left / 86400000), hours = Math.floor(left / 3600000) % 24, mins = Math.floor(left / 60000) % 60;
   seasonTag.textContent = days >= 2 ? `Leaves in ${days} days` : days === 1 ? `Leaves in 1 day ${hours}h` : `Last night! ${hours}h ${mins}m left`;
+  const pumpkins = hgPumpkinsFound().length;
+  if (pumpkins || currentThemeId() === "hollowgrave") seasonTag.textContent += pumpkins >= 10 ? " \u00b7 Blood Moon" : ` \u00b7 \u{1F383} ${pumpkins}/10`;
 }
 // The seasonal entry is lettered in Hollow Grave's Grenze/Crimson Pro in
 // every theme, so fetch just those two faces the first time the menu opens.
@@ -15933,6 +16516,7 @@ function applyTheme(themeId, opts = {}) {
     try { localStorage.setItem(THEME_STORAGE_KEY, themeId); } catch (e) {}
     if (themeId === "hollowgrave") { try { localStorage.setItem("seasonTried", String(new Date().getFullYear())); } catch (e) {} }
     updateSeasonalTheme();
+    document.dispatchEvent(new CustomEvent("themechange", { detail: { theme: themeId } }));
   };
   if (opts.animate === false || themeId === currentThemeId()) {
     swap();
@@ -16864,6 +17448,7 @@ clearPreviewBtn.addEventListener("click", () => {
   currentStats = null;
   usernameInput.value = "";
   status.textContent = "";
+  window.hgSeance?.cancel();
   showStatsEmpty();
   fetchBtn.disabled = false;
   fetchBtn.classList.remove("loading");
@@ -17493,54 +18078,63 @@ async function fetchAndDisplayStats() {
   status.textContent = "Fetching stats...";
   showStatsEmpty();
   setStatsScanning(usernameRaw);
+  window.hgSeance?.start(usernameRaw);
   clearPreviewBtn.hidden = false;
 
-  // Fetch UUID
-  const resMojang = await fetch(`${backendBaseURL}/mojang/${encodeURIComponent(usernameRaw)}`, { headers: adminHeaders() });
-  if (!resMojang.ok) throw new Error("Username not found");
-  const mojangData = await resMojang.json();
-  if (isStale()) return;
-  currentUUID = mojangData.id;
-  usernameInput.value = mojangData.name;
+  try {
+    // Fetch UUID
+    const resMojang = await fetch(`${backendBaseURL}/mojang/${encodeURIComponent(usernameRaw)}`, { headers: adminHeaders() });
+    if (!resMojang.ok) throw new Error("Username not found");
+    const mojangData = await resMojang.json();
+    if (isStale()) return;
+    currentUUID = mojangData.id;
+    usernameInput.value = mojangData.name;
 
-  // Player stats and the tag lookup only depend on the UUID/name we just
-  // resolved above, not on each other - they used to run as two sequential
-  // stages (stats, then Urchin once stats finished) for no reason, costing
-  // a full extra round trip. Firing both together instead.
-  const [data, urchinResult] = await Promise.all([
-    getPlayerStats(currentUUID),
-    fetchUrchinTags(mojangData.name)
-  ]);
-  if (isStale()) return;
-  currentStats = {
-    username: mojangData.name,
-    star: data.star,
-    fkdr: data.fkdr,
-    wlr: data.wlr,
-    bblr: data.bblr,
-    kdr: data.kdr,
-    finals: data.finals,
-    finalDeaths: data.finalDeaths,
-    beds: data.beds,
-    bedsLost: data.bedsLost,
-    kills: data.kills,
-    deaths: data.deaths,
-    rank: getHypixelRank(data.player),
-    wins: data.wins,
-    losses: data.losses,
-    urchinTagsData: urchinResult.tags,
-  };
+    // Player stats and the tag lookup only depend on the UUID/name we just
+    // resolved above, not on each other - they used to run as two sequential
+    // stages (stats, then Urchin once stats finished) for no reason, costing
+    // a full extra round trip. Firing both together instead.
+    const [data, urchinResult] = await Promise.all([
+      getPlayerStats(currentUUID),
+      fetchUrchinTags(mojangData.name)
+    ]);
+    if (isStale()) return;
+    currentStats = {
+      username: mojangData.name,
+      star: data.star,
+      fkdr: data.fkdr,
+      wlr: data.wlr,
+      bblr: data.bblr,
+      kdr: data.kdr,
+      finals: data.finals,
+      finalDeaths: data.finalDeaths,
+      beds: data.beds,
+      bedsLost: data.bedsLost,
+      kills: data.kills,
+      deaths: data.deaths,
+      rank: getHypixelRank(data.player),
+      wins: data.wins,
+      losses: data.losses,
+      urchinTagsData: urchinResult.tags,
+    };
 
-  // Auto-flag as Cheating when Urchin confirms it - only ever turns it on,
-  // never off, so it doesn't undo a flag someone set manually for other
-  // reasons.
-  if (urchinResult.isCheaterTagged) {
-    cheatingCheckbox.checked = true;
+    // Auto-flag as Cheating when Urchin confirms it - only ever turns it on,
+    // never off, so it doesn't undo a flag someone set manually for other
+    // reasons.
+    if (urchinResult.isCheaterTagged) {
+      cheatingCheckbox.checked = true;
+    }
+  } catch (err) {
+    if (!isStale()) window.hgSeance?.finish(false);
+    throw err;
   }
 
+  // In Hollow Grave the planchette has to finish its answer first.
+  await window.hgSeance?.finish(true);
+  if (isStale()) return;
   updateStatsDisplay(currentStats);
   status.textContent = "";
-  rememberLookup(mojangData.name, currentUUID);
+  rememberLookup(currentStats.username, currentUUID);
 }
 
 async function getPlayerStats(uuid) {
@@ -21386,6 +21980,447 @@ document.addEventListener("keydown", (e) => {
     if (currentThemeId() !== "hollowgrave") eggToast(`&#127875; <b>It's spooky season.</b> Press <b>${key}</b> for the Hollow Grave theme.`, 6500);
   }, 3500);
 })();
+
+// @@HG-EVENT-JS@@
+// ---- Hollow Grave: the October extras ----
+// A storm over a ruined chapel, fog that parts around the cursor, crows on
+// the headstones, a Ouija-board séance for lookups, and ten pumpkins
+// hidden around the page that unlock the Blood Moon. Everything here
+// checks the theme first and sits still for reduced motion.
+const hgOn = () => currentThemeId() === "hollowgrave";
+const hgCalm = () => reducedMotionQuery.matches;
+const hgWait = (ms) => new Promise(r => setTimeout(r, ms));
+const hgRnd = (a, b) => a + Math.random() * (b - a);
+
+// Lightning: the sky behind the chapel lights up twice, a bolt forks down
+// to the hills, the page catches a faint flash, and the thunder follows
+// (sooner and sharper the closer the strike). Two flashes at most per
+// strike, well under three a second.
+(function graveStorm() {
+  const field = document.getElementById("gravefield");
+  const sky = field.querySelector(".gf-sky");
+  const boltBox = field.querySelector(".gf-bolt");
+  const flash = document.getElementById("hgFlash");
+  let timer = 0;
+  function jag(x, y, y1, w, h, step, spread) {
+    let d = `M${x.toFixed(1)} ${y.toFixed(1)}`;
+    const forks = [];
+    while (y < y1) {
+      y += hgRnd(h * step * 0.5, h * step);
+      x += hgRnd(-w * spread, w * spread);
+      d += ` L${x.toFixed(1)} ${Math.min(y, y1).toFixed(1)}`;
+      forks.push([x, y]);
+    }
+    return { d, forks };
+  }
+  function strike() {
+    if (!hgOn() || hgCalm() || document.hidden) return;
+    const w = window.innerWidth, h = window.innerHeight;
+    const near = Math.random();
+    const bx = hgRnd(0.12, 0.88);
+    const main = jag(w * bx, -10, h - hgRnd(90, 150), w, h, 0.07, 0.022);
+    let twigs = "";
+    main.forks.forEach(([x, y]) => {
+      if (Math.random() > 0.22 || y > h * 0.7) return;
+      const t = jag(x, y, y + hgRnd(h * 0.08, h * 0.2), w, h, 0.035, 0.018);
+      twigs += `<path class="twig" d="${t.d}"/>`;
+    });
+    boltBox.innerHTML = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path class="glow" d="${main.d}"/>${twigs}<path class="core" d="${main.d}"/></svg>`;
+    const pct = (bx * 100).toFixed(0) + "%";
+    field.style.setProperty("--bx", pct);
+    flash.style.setProperty("--bx", pct);
+    sky.animate([{ opacity: 0 }, { opacity: 1, offset: 0.05 }, { opacity: 0.2, offset: 0.17 }, { opacity: 0.85, offset: 0.28 }, { opacity: 0 }], { duration: 1500, easing: "ease-out" });
+    boltBox.animate([{ opacity: 0 }, { opacity: 1, offset: 0.04 }, { opacity: 0.1, offset: 0.2 }, { opacity: 1, offset: 0.3 }, { opacity: 0, offset: 0.6 }, { opacity: 0 }], { duration: 900 });
+    const peak = 0.06 + near * 0.05;
+    flash.animate([{ opacity: 0 }, { opacity: peak, offset: 0.05 }, { opacity: 0.01, offset: 0.2 }, { opacity: peak * 0.7, offset: 0.3 }, { opacity: 0 }], { duration: 1300, easing: "ease-out" });
+    siteAudio.play("thunder", { delay: 0.3 + (1 - near) * 1.4, near, x: w * bx });
+  }
+  function plan(soon) {
+    clearTimeout(timer);
+    if (!hgOn()) return;
+    timer = setTimeout(() => {
+      strike();
+      if (Math.random() < 0.3) setTimeout(strike, hgRnd(2200, 4000));
+      plan(false);
+    }, soon ? hgRnd(8000, 16000) : hgRnd(30000, 70000));
+  }
+  document.addEventListener("themechange", () => plan(true));
+  plan(true);
+  window.hgStrike = strike;
+})();
+
+// The fog parts around the cursor, swells open when it moves fast and
+// creeps back in once it rests. A tap on a phone clears a patch that
+// slowly closes again.
+(function partingFog() {
+  const layers = [document.querySelector("#gravefield .gf-fogwrap"), document.getElementById("hgMist")];
+  let tx = 0, ty = 0, x = 0, y = 0, r = 0, swell = 120, raf = 0, last = 0, touch = false, out = true;
+  function paint() {
+    layers.forEach(el => {
+      el.style.setProperty("--fog-x", x.toFixed(1) + "px");
+      el.style.setProperty("--fog-y", y.toFixed(1) + "px");
+      el.style.setProperty("--fog-r", Math.max(0, r).toFixed(1) + "px");
+    });
+  }
+  function tick(now) {
+    raf = 0;
+    x += (tx - x) * 0.14;
+    y += (ty - y) * 0.14;
+    const rest = now - last;
+    swell += (120 - swell) * 0.04;
+    const goal = out ? 0 : touch ? (rest < 1200 ? 160 : 0) : (rest > 3500 ? 75 : swell);
+    r += (goal - r) * (goal < r ? 0.03 : 0.12);
+    paint();
+    if (Math.abs(tx - x) > 0.5 || Math.abs(ty - y) > 0.5 || Math.abs(goal - r) > 0.5 || (!touch && rest < 3600)) raf = requestAnimationFrame(tick);
+  }
+  function move(e) {
+    if (!hgOn() || hgCalm()) return;
+    touch = e.pointerType !== "mouse";
+    if (out) { x = e.clientX; y = e.clientY; }
+    out = false;
+    const speed = Math.hypot(e.clientX - tx, e.clientY - ty);
+    swell = Math.min(240, Math.max(swell, 120 + speed * 1.6));
+    tx = e.clientX;
+    ty = e.clientY;
+    last = performance.now();
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+  window.addEventListener("pointermove", move, { passive: true });
+  window.addEventListener("pointerdown", move, { passive: true });
+  document.documentElement.addEventListener("mouseleave", () => {
+    out = true;
+    if (!raf) raf = requestAnimationFrame(tick);
+  });
+})();
+
+// Crows: one on roughly every fourth headstone (never on a Final Boss
+// stone, whose top is crowned with candles). Hovering or tapping a stone
+// scares its crow off with a caw, and maybe its neighbors too; each one
+// comes back to the same stone half a minute later.
+(function graveCrows() {
+  const away = new Map();
+  const hash = (s) => { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };
+  const idOf = (card) => card.dataset.sweatId || card.dataset.username || "";
+  function perch() {
+    if (!hgOn()) return;
+    cardGrid.querySelectorAll(".sweat-card").forEach(card => {
+      if (card.querySelector(".hg-crow") || card.classList.contains("tier-t5")) return;
+      const id = idOf(card), h = hash(id);
+      if (h % 4 !== 1) return;
+      const crow = document.createElement("i");
+      crow.className = "hg-crow";
+      crow.setAttribute("aria-hidden", "true");
+      crow.style.setProperty("--cx", ((h >> 3) % 80 - 40) + "px");
+      crow.style.setProperty("--dir", (h >> 6) % 2 ? 1 : -1);
+      crow.style.setProperty("--cd", -((h >> 8) % 70) / 10 + "s");
+      if (away.has(id)) crow.classList.add("gone");
+      card.appendChild(crow);
+    });
+  }
+  // A stand-in crow that flies in the top layer, from or to a perch.
+  function flight(crow, kind, done) {
+    const r = crow.getBoundingClientRect();
+    const f = document.createElement("i");
+    f.className = "hg-crow-flyer" + (kind === "land" ? " land" : "");
+    f.setAttribute("aria-hidden", "true");
+    f.style.left = r.left + "px";
+    f.style.top = r.top + "px";
+    f.style.setProperty("--dir", crow.style.getPropertyValue("--dir") || 1);
+    document.body.appendChild(f);
+    f.addEventListener("animationend", (e) => {
+      if (e.animationName !== "crowAway" && e.animationName !== "crowLand") return;
+      f.remove();
+      if (done) done();
+    });
+  }
+  function land(id) {
+    away.delete(id);
+    const card = cardGrid.querySelector(`.sweat-card[data-sweat-id="${CSS.escape(id)}"]`);
+    const crow = card && card.querySelector(".hg-crow.gone");
+    if (!crow) return;
+    if (hgCalm() || !hgOn() || !crow.getClientRects().length) { crow.classList.remove("gone"); return; }
+    flight(crow, "land", () => crow.classList.remove("gone"));
+  }
+  function scare(card, loud) {
+    const crow = card.querySelector(".hg-crow");
+    if (!crow || crow.classList.contains("gone")) return false;
+    const id = idOf(card);
+    away.set(id, Date.now());
+    if (!hgCalm()) flight(crow, "away");
+    crow.classList.add("gone");
+    const r = card.getBoundingClientRect();
+    siteAudio.play("crow", { x: r.left + r.width / 2, trim: loud ? 0 : -7 });
+    setTimeout(() => land(id), hgRnd(26000, 40000));
+    return true;
+  }
+  function startle(e) {
+    if (!hgOn()) return;
+    const card = e.target.closest(".sweat-card");
+    if (!card || !scare(card, true)) return;
+    // The rest of the murder takes off too, if they're close.
+    const r = card.getBoundingClientRect();
+    cardGrid.querySelectorAll(".sweat-card").forEach(other => {
+      if (other === card || Math.random() < 0.4) return;
+      const o = other.getBoundingClientRect();
+      if (Math.hypot(o.left - r.left, o.top - r.top) < 420) setTimeout(() => scare(other, false), hgRnd(140, 420));
+    });
+  }
+  cardGrid.addEventListener("mouseover", startle);
+  cardGrid.addEventListener("touchstart", startle, { passive: true });
+  new MutationObserver(perch).observe(cardGrid, { childList: true });
+  document.addEventListener("themechange", perch);
+  perch();
+})();
+
+// The séance. While a lookup runs, the planchette spells the name across
+// the board; when the stats arrive it glides to YES (NO if the lookup
+// failed) and the board sinks away before the card appears.
+window.hgSeance = (function () {
+  const ROW1 = "ABCDEFGHIJKLM", ROW2 = "NOPQRSTUVWXYZ", NUMS = "1234567890";
+  let cur = null;
+  function build() {
+    const wrap = document.createElement("div");
+    wrap.className = "seance";
+    wrap.setAttribute("aria-hidden", "true");
+    const board = document.createElement("div");
+    board.className = "ouija";
+    const spots = {};
+    const add = (key, html, x, y, r, cls) => {
+      const s = document.createElement("span");
+      s.className = "oj" + (cls ? " " + cls : "");
+      s.innerHTML = html;
+      s.style.left = x + "%";
+      s.style.top = y + "%";
+      s.style.setProperty("--r", r.toFixed(1) + "deg");
+      board.appendChild(s);
+      spots[key] = { el: s, x, y };
+    };
+    const arc = (chars, x0, x1, yc, drop) => {
+      const half = (x1 - x0) / 2;
+      [...chars].forEach((c, i) => {
+        const x = x0 + (x1 - x0) * i / (chars.length - 1);
+        const u = (x - 50) / half;
+        add(c, c, x, yc + drop * u * u, Math.atan((2 * drop * u / half) / 1.55) * 180 / Math.PI);
+      });
+    };
+    arc(ROW1, 11, 89, 33, 15);
+    arc(ROW2, 14, 86, 54, 11);
+    [...NUMS].forEach((c, i) => add(c, c, 24 + 52 * i / 9, 74, 0, "num"));
+    add("YES", "<small>&#9790;</small>YES", 12, 15, -6, "word");
+    add("NO", "<small>&#10038;</small>NO", 88, 15, 6, "word");
+    add("BYE", "GOOD BYE", 50, 89, 0, "word");
+    const pl = document.createElement("i");
+    pl.className = "planchette";
+    board.appendChild(pl);
+    const kicker = document.createElement("div");
+    kicker.className = "seance-kicker";
+    kicker.textContent = "The spirits are spelling…";
+    const msg = document.createElement("div");
+    msg.className = "seance-msg";
+    wrap.append(board, kicker, msg);
+    return { wrap, spots, pl, msg, lit: null };
+  }
+  function glide(c, key, ms) {
+    const s = c.spots[key];
+    if (c.lit) c.lit.classList.remove("lit");
+    c.lit = null;
+    c.pl.style.setProperty("--pt", ms + "ms");
+    c.pl.style.setProperty("--pr", hgRnd(-14, 14).toFixed(1) + "deg");
+    c.pl.style.left = (s ? s.x : hgRnd(40, 60)) + "%";
+    c.pl.style.top = (s ? s.y : hgRnd(60, 66)) + "%";
+    siteAudio.play("planchette", { trim: ms < 120 ? -6 : 0 });
+    return hgWait(ms * 0.9).then(() => { if (s) { s.el.classList.add("lit"); c.lit = s.el; } });
+  }
+  async function spell(c, name) {
+    const letters = [...name.toUpperCase()].slice(0, 16);
+    const base = Math.max(110, Math.min(230, 1500 / Math.max(1, letters.length)));
+    await hgWait(260);
+    for (const ch of letters) {
+      if (c.dead) return;
+      const ms = c.finishing ? 80 : base;
+      await glide(c, ch, ms);
+      await hgWait(c.finishing ? 30 : 90);
+      const span = document.createElement("span");
+      span.textContent = ch;
+      c.msg.appendChild(span);
+    }
+  }
+  function cancel() {
+    if (!cur) return;
+    cur.dead = true;
+    cur.wrap.remove();
+    statsEmpty.classList.remove("seance-on");
+    cur = null;
+  }
+  function start(name) {
+    cancel();
+    if (!hgOn() || hgCalm()) return;
+    const c = build();
+    cur = c;
+    // The board fills the plot, leaving room under it for the spelled name.
+    const room = Math.min(470, statsEmpty.clientWidth - 28, (statsEmpty.clientHeight - 84) * 1.55);
+    c.wrap.firstChild.style.width = Math.max(220, room) + "px";
+    statsEmpty.appendChild(c.wrap);
+    statsEmpty.classList.add("seance-on");
+    c.done = spell(c, name);
+  }
+  async function finish(ok) {
+    const c = cur;
+    if (!c) return;
+    c.finishing = true;
+    await c.done;
+    if (c.dead) return;
+    await glide(c, ok ? "YES" : "NO", 420);
+    await hgWait(ok ? 380 : 900);
+    if (c.dead) return;
+    c.wrap.classList.add("leaving");
+    await hgWait(480);
+    if (cur === c) cancel();
+  }
+  return { start, finish, cancel };
+})();
+
+// The pumpkin hunt. Ten jack-o'-lanterns hide around the page (one only
+// shows up inside a player's popup); each one found is remembered for the
+// year, and finding all ten raises the Blood Moon.
+function hgPumpkinsFound() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("hgPumpkins") || "null");
+    return saved && saved.year === new Date().getFullYear() ? saved.found : [];
+  } catch (e) { return []; }
+}
+function hgBloodMoonState() {
+  try { return localStorage.getItem("hgBloodMoon") || ""; } catch (e) { return ""; }
+}
+(function pumpkinHunt() {
+  const TOTAL = 10;
+  const shown = (el) => (el && el.getClientRects().length ? el : null);
+  const SPOTS = [
+    ["moon", () => document.querySelector(".hero-pin")],
+    ["fence", () => shown(document.getElementById("quickNav")) || shown(document.getElementById("bottomNav"))],
+    ["plot", () => document.querySelector("#sweatLookupSection .panel-icon")],
+    ["idle", () => document.querySelector("#statsEmpty .idle-grave")],
+    ["panel", () => document.getElementById("form-container")],
+    ["tablet", () => document.querySelector("#sweatStats > :last-child")],
+    ["stone", () => cardGrid.querySelector(".sweat-card:nth-child(6)")],
+    ["denick", () => document.getElementById("denickEmpty")],
+    ["footer", () => document.querySelector(".site-footer-end")],
+    ["coffin", () => document.querySelector("#playerModal .modal-card")],
+  ];
+  const bmOpt = document.querySelector("#themeDropdownMenu .theme-opt-bloodmoon");
+  const hgOpt = document.querySelector('#themeDropdownMenu li[data-theme-value="hollowgrave"]');
+  function save(found) {
+    try { localStorage.setItem("hgPumpkins", JSON.stringify({ year: new Date().getFullYear(), found })); } catch (e) {}
+  }
+  function place() {
+    const found = hgPumpkinsFound();
+    document.querySelectorAll(".hg-pumpkin").forEach(b => {
+      if (!hgOn() || found.includes(b.dataset.pk)) b.remove();
+    });
+    if (!hgOn()) return;
+    SPOTS.forEach(([pk, get], i) => {
+      if (found.includes(pk)) return;
+      const host = get();
+      const existing = document.querySelector(`.hg-pumpkin[data-pk="${pk}"]`);
+      if (existing && existing.parentElement === host) return;
+      if (existing) existing.remove();
+      if (!host) return;
+      if (getComputedStyle(host).position === "static") host.classList.add("hg-pk-host");
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "hg-pumpkin";
+      b.dataset.pk = pk;
+      b.tabIndex = -1;
+      b.setAttribute("aria-label", "A hidden jack-o'-lantern");
+      b.style.setProperty("--pd", (-i * 0.37).toFixed(2) + "s");
+      host.appendChild(b);
+    });
+  }
+  function embers(x, y) {
+    if (hgCalm()) return;
+    for (let i = 0; i < 12; i++) {
+      const e = document.createElement("i");
+      e.className = "hg-ember";
+      e.style.left = x + "px";
+      e.style.top = y + "px";
+      document.body.appendChild(e);
+      const a = hgRnd(-Math.PI, 0), d = hgRnd(30, 90);
+      e.animate([{ transform: "translate(-50%,-50%) scale(1)", opacity: 1 }, { transform: `translate(calc(-50% + ${Math.cos(a) * d}px), calc(-50% + ${Math.sin(a) * d - 30}px)) scale(0.2)`, opacity: 0 }],
+        { duration: hgRnd(700, 1200), easing: "cubic-bezier(.2,.7,.4,1)" }).onfinish = () => e.remove();
+    }
+  }
+  function collect(b) {
+    const found = hgPumpkinsFound();
+    if (found.includes(b.dataset.pk)) return;
+    found.push(b.dataset.pk);
+    save(found);
+    const r = b.getBoundingClientRect();
+    embers(r.left + r.width / 2, r.top + r.height / 2);
+    b.classList.add("found");
+    setTimeout(() => b.remove(), 950);
+    const n = found.length;
+    siteAudio.play("pumpkin", { n, x: r.left });
+    if (n >= TOTAL) setTimeout(raiseBloodMoon, 900);
+    else if (n === 1) eggToast(`&#127875; <b>You found a jack-o'-lantern!</b> ${TOTAL - 1} more are hidden around the graveyard.`, 6000);
+    else eggToast(`&#127875; <b>${n} of ${TOTAL}</b> jack-o'-lanterns found.${n === TOTAL - 1 ? " One left…" : ""}`, 3800);
+    updateSeasonalTheme();
+  }
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest(".hg-pumpkin");
+    if (!b) return;
+    e.preventDefault();
+    e.stopPropagation();
+    collect(b);
+  }, true);
+  function syncMenu() {
+    const state = hgBloodMoonState();
+    const on = state === "on";
+    document.documentElement.classList.toggle("blood-moon", on);
+    if (bmOpt) {
+      bmOpt.hidden = !state;
+      bmOpt.setAttribute("aria-selected", hgOn() && on ? "true" : "false");
+    }
+    if (hgOpt) hgOpt.setAttribute("aria-selected", hgOn() && !on ? "true" : "false");
+    if (hgOn()) themeDropdownLabel.textContent = on ? "Blood Moon" : THEME_LABELS.hollowgrave;
+  }
+  function setBloodMoon(on) {
+    try { localStorage.setItem("hgBloodMoon", on ? "on" : "off"); } catch (e) {}
+    syncMenu();
+  }
+  function raiseBloodMoon() {
+    const first = !hgBloodMoonState();
+    siteAudio.play("bloodmoon");
+    const moon = document.querySelector(".hero-pin");
+    if (moon && !hgCalm()) {
+      moon.animate([{ filter: "none", transform: "none" }, { filter: "brightness(1.7) saturate(1.6)", transform: "scale(1.12)", offset: 0.45 }, { filter: "none", transform: "none" }], { duration: 2600, easing: "ease-in-out" });
+      setTimeout(() => setBloodMoon(true), 1100);
+    } else setBloodMoon(true);
+    eggToast(`&#129656; <b>The Blood Moon rises.</b> You found all ten. ${first ? "Turn it on or off any time from the theme menu." : ""}`, 8000);
+    updateSeasonalTheme();
+  }
+  if (bmOpt) {
+    const pickBlood = () => {
+      const r = bmOpt.getBoundingClientRect();
+      setBloodMoon(true);
+      applyTheme("hollowgrave", { origin: { x: r.left + r.width / 2, y: r.top + r.height / 2 } });
+      closeThemeDropdown();
+      themeDropdownBtn.focus();
+    };
+    bmOpt.addEventListener("click", pickBlood);
+    bmOpt.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pickBlood(); } });
+  }
+  if (hgOpt) hgOpt.addEventListener("click", () => { if (hgBloodMoonState() === "on") setBloodMoon(false); });
+  let resizeTimer = 0;
+  window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(place, 300); });
+  new MutationObserver(place).observe(cardGrid, { childList: true });
+  const tablets = document.getElementById("sweatStats");
+  if (tablets) new MutationObserver(place).observe(tablets, { childList: true });
+  document.addEventListener("themechange", () => { syncMenu(); place(); });
+  syncMenu();
+  place();
+  window.hgPumpkins = { place, collect, raiseBloodMoon, setBloodMoon };
+})();
+// @@END-HG-EVENT-JS@@
 
 // Searching Technoblade gets a tribute.
 const usernameField = document.getElementById("username");

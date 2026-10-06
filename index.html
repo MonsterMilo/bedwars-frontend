@@ -11070,6 +11070,728 @@ html[data-theme="hollowgrave"] .sweat-row.live-edit { animation: graveLiveEditRo
   /* Small and high, clear of the eyebrow line under it. */
   html[data-theme="hollowgrave"] .hero-pin { top: -36px; left: -8px; width: 50px; height: 50px; }
 }
+/* ================= Graveyard furniture =================
+   Every block gets a shape of its own: the stats strip is a row of
+   carved grave tablets, the search bar is a cemetery gate between two
+   stone pillars, filters are coffins, toggles are candles, the nav is an
+   iron fence rail, and the headstones carry ivy, offerings, a cameo
+   portrait and an engraved border. */
+
+/* ---------- Jump-to nav: an iron fence rail ---------- */
+html[data-theme="hollowgrave"] .quick-nav {
+  border-radius: 3px;
+  border: 1px solid #2e2838;
+  border-top: 2px solid #3d3649;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 20px, rgba(61,54,73,0.22) 20px 22px),
+    linear-gradient(180deg, rgba(29,24,36,0.96), rgba(16,12,21,0.96));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 12px 26px -12px rgba(0,0,0,0.95);
+}
+html[data-theme="hollowgrave"] .quick-nav::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: -21px;
+  height: 21px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 22 22%22%3E%3Cpath d=%22M11 22 V9%22 stroke=%22%233d3649%22 stroke-width=%222.4%22/%3E%3Cpath d=%22M11 1.5 L14.2 8.5 L11 10.5 L7.8 8.5 Z%22 fill=%22%233d3649%22/%3E%3Cpath d=%22M11 3.2 L12.8 8.2%22 stroke=%22%236d6480%22 stroke-width=%22.8%22 fill=%22none%22/%3E%3Ccircle cx=%2211%22 cy=%2213%22 r=%221.9%22 fill=%22%233d3649%22/%3E%3Cpath d=%22M0 19.5 H22%22 stroke=%22%233d3649%22 stroke-width=%222.2%22/%3E%3C/svg%3E") left bottom / 22px 21px repeat-x;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  pointer-events: none;
+}
+html[data-theme="hollowgrave"] .quick-nav-link {
+  border-radius: 3px;
+  background: linear-gradient(180deg, #2a2433, #1a1520);
+  border: 1px solid #3a3346;
+  color: #b9afc6;
+  text-shadow: 0 -1px 0 rgba(0,0,0,0.7);
+}
+html[data-theme="hollowgrave"] .quick-nav-link:hover { color: #ece4f2; border-color: #574e66; }
+/* The section you're in hangs a lit lantern: warm glass and a flame. */
+html[data-theme="hollowgrave"] .quick-nav-link.active {
+  color: #ffd9a8;
+  border-color: rgba(242,140,40,0.75);
+  background: radial-gradient(ellipse 90% 120% at 50% 100%, rgba(242,140,40,0.32), rgba(42,36,51,0.9) 70%);
+  box-shadow: 0 0 16px rgba(242,140,40,0.3), inset 0 1px 0 rgba(255,220,160,0.18);
+  text-shadow: 0 0 8px rgba(242,140,40,0.7);
+}
+html[data-theme="hollowgrave"] .quick-nav-link.active::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 11px;
+  margin-right: 7px;
+  vertical-align: -1px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 10 14%22%3E%3Cpath d=%22M5 .5 C8.5 4.5 8.6 8 5 13.5 C1.4 8 1.5 4.5 5 .5 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M5 5 C6.6 7 6.5 9 5 11.5 C3.5 9 3.4 7 5 5 Z%22 fill=%22%23fff3c4%22/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 0 4px rgba(242,140,40,0.9));
+  animation: graveNavFlame 1.7s steps(1) infinite;
+  transform-origin: 50% 100%;
+}
+
+/* ---------- Stats strip: a row of carved grave tablets ---------- */
+html[data-theme="hollowgrave"] .sweat-stats { padding-top: 6px; row-gap: 22px; }
+html[data-theme="hollowgrave"] .ss-tile {
+  overflow: visible;
+  align-items: center;
+  text-align: center;
+  gap: 5px;
+  padding: 13px 16px 17px;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 50% 50% 6px 6px / 30px 30px 6px 6px;
+  background:
+    radial-gradient(70% 34% at 50% 0%, rgba(241,216,138,0.08), transparent 70%),
+    radial-gradient(38% 30% at 0% 100%, rgba(92,122,58,0.32), transparent 70%),
+    radial-gradient(26% 22% at 100% 100%, rgba(92,122,58,0.2), transparent 70%),
+    radial-gradient(circle at 84% 34%, rgba(176,186,128,0.09) 0 5px, transparent 6px),
+    radial-gradient(circle at 12% 46%, rgba(176,186,128,0.07) 0 4px, transparent 5px),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #3d3747, #2a2632);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -16px 20px -14px rgba(0,0,0,0.6), 0 16px 22px -14px rgba(0,0,0,0.95);
+}
+/* The engraved groove that follows the tablet's outline. */
+html[data-theme="hollowgrave"] .ss-tile::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(0,0,0,0.42);
+  border-radius: 50% 50% 4px 4px / 25px 25px 4px 4px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05);
+  pointer-events: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+/* Grass growing at the foot of each tablet. */
+html[data-theme="hollowgrave"] .ss-tile::after {
+  content: "";
+  position: absolute;
+  left: -5px;
+  right: -5px;
+  bottom: -4px;
+  height: 11px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 16%22 preserveAspectRatio=%22none%22%3E%3Cpath d=%22M-0.1 16 Q1.1 9.6 2.4 5.4 Q2.1 10.7 2.1 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M3.3 16 Q2.3 7.9 1.4 2.4 Q3.7 9.2 5.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M7.2 16 Q6.0 8.2 4.8 3.1 Q7.4 9.5 9.4 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M9.1 16 Q10.3 9.8 11.5 5.6 Q11.3 10.8 11.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M13.9 16 Q13.7 10.6 13.6 7.0 Q15.0 11.5 16.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M17.4 16 Q16.1 8.0 14.7 2.7 Q17.5 9.3 19.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M19.5 16 Q18.1 11.5 16.7 8.6 Q19.5 12.3 21.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M23.3 16 Q22.4 9.5 21.5 5.1 Q23.7 10.5 25.5 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M27.6 16 Q28.1 10.0 28.6 6.0 Q29.2 11.0 29.8 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M31.1 16 Q31.2 10.6 31.4 6.9 Q32.4 11.5 33.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M34.6 16 Q33.8 11.1 33.0 7.8 Q35.2 11.9 36.8 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M36.0 16 Q34.8 9.6 33.6 5.4 Q36.2 10.7 38.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M41.8 16 Q43.2 10.7 44.6 7.1 Q44.1 11.6 44.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M43.3 16 Q42.0 7.4 40.7 1.7 Q43.5 8.9 45.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M49.0 16 Q47.8 10.6 46.5 7.0 Q49.2 11.5 51.2 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M51.8 16 Q50.6 11.4 49.4 8.3 Q52.0 12.2 54.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M52.9 16 Q54.2 10.5 55.5 6.9 Q55.2 11.4 55.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M57.0 16 Q55.7 12.4 54.4 10.0 Q57.2 13.0 59.2 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M60.2 16 Q60.1 9.6 59.9 5.4 Q61.3 10.7 62.4 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M66.1 16 Q65.8 8.4 65.6 3.3 Q67.1 9.7 68.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M66.8 16 Q66.0 10.5 65.1 6.8 Q67.4 11.4 69.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M72.5 16 Q72.8 7.2 73.0 1.3 Q73.9 8.6 74.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M73.9 16 Q75.0 10.6 76.1 7.1 Q76.0 11.5 76.1 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M76.8 16 Q76.7 12.1 76.5 9.5 Q77.9 12.8 79.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M82.4 16 Q81.8 11.0 81.2 7.7 Q83.1 11.9 84.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M83.7 16 Q84.1 11.7 84.5 8.9 Q85.3 12.5 85.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M88.7 16 Q88.6 10.8 88.4 7.3 Q89.8 11.6 90.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M92.8 16 Q92.5 12.2 92.1 9.6 Q93.7 12.8 95.0 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M94.6 16 Q95.0 11.6 95.3 8.7 Q96.1 12.4 96.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M97.6 16 Q97.7 9.2 97.9 4.7 Q98.9 10.4 99.8 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M103.1 16 Q102.9 9.4 102.7 5.0 Q104.2 10.5 105.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M104.2 16 Q103.5 9.9 102.8 5.9 Q104.8 10.9 106.4 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M108.1 16 Q108.4 8.1 108.6 2.8 Q109.5 9.4 110.3 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M112.3 16 Q113.7 7.4 115.1 1.7 Q114.6 8.9 114.5 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M114.8 16 Q115.8 9.6 116.9 5.4 Q116.8 10.7 117.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M118.3 16 Q117.5 7.5 116.6 1.8 Q118.8 8.9 120.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M121.1 16 Q120.4 10.5 119.6 6.9 Q121.7 11.4 123.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M124.8 16 Q125.0 10.8 125.3 7.3 Q126.2 11.7 127.0 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M128.0 16 Q127.8 12.2 127.7 9.6 Q129.1 12.8 130.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M133.1 16 Q133.3 8.9 133.6 4.1 Q134.5 10.0 135.3 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M136.3 16 Q136.2 7.5 136.1 1.8 Q137.4 8.9 138.5 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M140.0 16 Q138.6 7.2 137.1 1.4 Q140.1 8.7 142.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M142.7 16 Q142.2 8.6 141.7 3.7 Q143.5 9.8 144.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M144.9 16 Q145.6 9.7 146.3 5.5 Q146.7 10.8 147.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M150.5 16 Q150.0 7.5 149.6 1.8 Q151.3 8.9 152.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M154.2 16 Q154.0 7.8 153.7 2.3 Q155.2 9.1 156.4 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M157.5 16 Q157.9 9.6 158.2 5.3 Q159.0 10.6 159.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M159.4 16 Q158.2 12.9 156.9 10.9 Q159.6 13.4 161.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M163.6 16 Q164.8 7.0 165.9 1.1 Q165.7 8.5 165.8 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M166.3 16 Q166.5 8.6 166.8 3.6 Q167.7 9.8 168.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M169.9 16 Q169.9 9.8 170.0 5.6 Q171.1 10.8 172.1 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M172.8 16 Q171.4 12.5 170.0 10.1 Q172.9 13.1 175.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M176.8 16 Q178.1 9.3 179.3 4.9 Q179.0 10.4 179.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M181.4 16 Q180.3 10.8 179.2 7.3 Q181.7 11.7 183.6 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M183.7 16 Q183.2 8.5 182.7 3.5 Q184.5 9.7 185.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M187.0 16 Q186.7 11.6 186.4 8.6 Q188.0 12.3 189.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M189.5 16 Q190.4 10.4 191.3 6.7 Q191.4 11.3 191.7 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M194.9 16 Q195.2 10.7 195.4 7.2 Q196.3 11.6 197.1 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M196.3 16 Q195.9 12.2 195.4 9.7 Q197.2 12.8 198.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M201.2 16 Q200.6 7.3 199.9 1.5 Q201.9 8.7 203.4 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M202.8 16 Q204.1 10.2 205.4 6.3 Q205.1 11.1 205.0 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M207.0 16 Q207.6 9.9 208.1 5.8 Q208.7 10.9 209.2 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M210.3 16 Q209.6 8.0 208.9 2.7 Q210.9 9.4 212.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M214.7 16 Q214.3 11.3 213.9 8.2 Q215.6 12.1 216.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M218.0 16 Q217.1 10.6 216.2 6.9 Q218.5 11.5 220.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M220.2 16 Q218.9 12.2 217.5 9.6 Q220.3 12.8 222.4 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M224.2 16 Q224.7 9.2 225.2 4.7 Q225.8 10.4 226.4 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M229.2 16 Q228.3 8.9 227.4 4.2 Q229.7 10.1 231.4 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M230.5 16 Q231.2 8.7 232.0 3.9 Q232.3 9.9 232.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M233.6 16 Q233.2 11.4 232.7 8.3 Q234.5 12.1 235.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M237.7 16 Q238.9 8.2 240.1 3.1 Q239.9 9.5 239.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M241.1 16 Q240.8 7.6 240.5 2.1 Q242.1 9.0 243.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M244.7 16 Q245.9 9.2 247.1 4.7 Q246.8 10.4 246.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M248.4 16 Q248.4 9.1 248.4 4.5 Q249.6 10.2 250.6 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M251.5 16 Q250.6 9.1 249.7 4.5 Q252.0 10.2 253.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M254.1 16 Q255.6 7.6 257.0 2.0 Q256.5 9.0 256.3 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M258.5 16 Q258.0 8.3 257.4 3.1 Q259.3 9.5 260.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M261.3 16 Q261.2 12.5 261.0 10.2 Q262.4 13.1 263.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M266.0 16 Q264.6 10.1 263.2 6.1 Q266.1 11.1 268.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M268.4 16 Q268.5 12.8 268.6 10.6 Q269.7 13.3 270.6 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M271.9 16 Q273.1 7.0 274.3 1.0 Q274.1 8.5 274.1 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M276.7 16 Q278.1 10.0 279.4 6.1 Q279.0 11.0 278.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M279.6 16 Q279.7 10.4 279.9 6.6 Q280.9 11.3 281.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M282.3 16 Q282.4 7.9 282.6 2.6 Q283.6 9.3 284.5 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M286.1 16 Q287.2 7.3 288.3 1.5 Q288.2 8.7 288.3 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M288.4 16 Q288.5 12.2 288.7 9.6 Q289.7 12.8 290.6 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M292.6 16 Q292.7 11.8 292.8 9.0 Q293.9 12.5 294.8 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M296.1 16 Q297.5 12.8 298.9 10.7 Q298.4 13.4 298.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M299.3 16 Q298.2 7.1 297.1 1.1 Q299.6 8.6 301.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M303.2 16 Q303.3 12.6 303.4 10.3 Q304.5 13.2 305.4 16 Z%22 fill=%22%234a6436%22/%3E%3C/svg%3E") left bottom / 100% 100% no-repeat;
+  pointer-events: none;
+}
+html[data-theme="hollowgrave"] .ss-tile[data-username]:hover {
+  transform: translateY(-3px);
+  border-color: rgba(184,255,92,0.25);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -16px 20px -14px rgba(0,0,0,0.6), 0 20px 26px -14px rgba(0,0,0,0.95), 0 0 24px -8px rgba(184,255,92,0.35);
+}
+html[data-theme="hollowgrave"] .ss-tile[data-username]:hover::before { border-color: rgba(184,255,92,0.35); }
+html[data-theme="hollowgrave"] .ss-label {
+  font-family: var(--font-label);
+  font-size: 0.7em;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: #b4aac2;
+  opacity: 1;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.07), 0 -1px 0 rgba(0,0,0,0.75);
+}
+/* A small carved emblem in the arch of each tablet. */
+html[data-theme="hollowgrave"] .ss-label::before {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin: 0 auto 5px;
+  background: var(--ss-icon, none) center / contain no-repeat;
+}
+html[data-theme="hollowgrave"] .ss-tile-total { --ss-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cg transform=%22translate(0 .8)%22 fill=%22none%22 stroke=%22%230e0b13%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%22.7%22%3E%3Cpath d=%22M15 3 L21 9 M18 6 L9.5 14.5%22/%3E%3Cpath d=%22M9.5 14.5 L5 13 C3 15 2.5 19 3 21 C5 21.5 9 21 11 19 L9.5 14.5%22/%3E%3C/g%3E%3Cg fill=%22none%22 stroke=%22%23c2b8cf%22 stroke-width=%221.6%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M15 3 L21 9 M18 6 L9.5 14.5%22/%3E%3Cpath d=%22M9.5 14.5 L5 13 C3 15 2.5 19 3 21 C5 21.5 9 21 11 19 L9.5 14.5%22/%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="hollowgrave"] .ss-tile-star { --ss-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cg transform=%22translate(0 .8)%22 fill=%22none%22 stroke=%22%230e0b13%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%22.7%22%3E%3Cpath d=%22M12 3 L14.6 9.1 L21 9.6 L16.1 13.8 L17.6 20.2 L12 16.8 L6.4 20.2 L7.9 13.8 L3 9.6 L9.4 9.1 Z%22/%3E%3C/g%3E%3Cg fill=%22none%22 stroke=%22%23c2b8cf%22 stroke-width=%221.6%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 3 L14.6 9.1 L21 9.6 L16.1 13.8 L17.6 20.2 L12 16.8 L6.4 20.2 L7.9 13.8 L3 9.6 L9.4 9.1 Z%22/%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="hollowgrave"] .ss-tile-fkdr { --ss-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cg transform=%22translate(0 .8)%22 fill=%22none%22 stroke=%22%230e0b13%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%22.7%22%3E%3Cpath d=%22M17 21 L9 3%22/%3E%3Cpath d=%22M9.6 4.5 C6 3 2.5 5 2 9 C5 7 8 7 11.2 8%22/%3E%3C/g%3E%3Cg fill=%22none%22 stroke=%22%23c2b8cf%22 stroke-width=%221.6%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M17 21 L9 3%22/%3E%3Cpath d=%22M9.6 4.5 C6 3 2.5 5 2 9 C5 7 8 7 11.2 8%22/%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="hollowgrave"] .ss-tile-index { --ss-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cg transform=%22translate(0 .8)%22 fill=%22none%22 stroke=%22%230e0b13%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%22.7%22%3E%3Cpath d=%22M12 3 C7 3 4 6.3 4 10 C4 12.4 5.3 13.8 7 14.4 V18 H17 V14.4 C18.7 13.8 20 12.4 20 10 C20 6.3 17 3 12 3 Z%22/%3E%3Ccircle cx=%229%22 cy=%2210.2%22 r=%221.6%22/%3E%3Ccircle cx=%2215%22 cy=%2210.2%22 r=%221.6%22/%3E%3Cpath d=%22M10 18 V21 M14 18 V21%22/%3E%3C/g%3E%3Cg fill=%22none%22 stroke=%22%23c2b8cf%22 stroke-width=%221.6%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 3 C7 3 4 6.3 4 10 C4 12.4 5.3 13.8 7 14.4 V18 H17 V14.4 C18.7 13.8 20 12.4 20 10 C20 6.3 17 3 12 3 Z%22/%3E%3Ccircle cx=%229%22 cy=%2210.2%22 r=%221.6%22/%3E%3Ccircle cx=%2215%22 cy=%2210.2%22 r=%221.6%22/%3E%3Cpath d=%22M10 18 V21 M14 18 V21%22/%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="hollowgrave"] .ss-tile-flags { --ss-icon: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cg transform=%22translate(0 .8)%22 fill=%22none%22 stroke=%22%230e0b13%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%22.7%22%3E%3Cpath d=%22M5 5 L19 19 M19 5 L5 19%22/%3E%3Cpath d=%22M3.5 6.5 a1.6 1.6 0 1 1 2 -3 a1.6 1.6 0 1 1 3 2 M20.5 17.5 a1.6 1.6 0 1 1 -2 3 a1.6 1.6 0 1 1 -3 -2 M17.5 3.5 a1.6 1.6 0 1 1 3 2 a1.6 1.6 0 1 1 -2 3 M6.5 20.5 a1.6 1.6 0 1 1 -3 -2 a1.6 1.6 0 1 1 2 -3%22/%3E%3C/g%3E%3Cg fill=%22none%22 stroke=%22%23c2b8cf%22 stroke-width=%221.6%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M5 5 L19 19 M19 5 L5 19%22/%3E%3Cpath d=%22M3.5 6.5 a1.6 1.6 0 1 1 2 -3 a1.6 1.6 0 1 1 3 2 M20.5 17.5 a1.6 1.6 0 1 1 -2 3 a1.6 1.6 0 1 1 -3 -2 M17.5 3.5 a1.6 1.6 0 1 1 3 2 a1.6 1.6 0 1 1 -2 3 M6.5 20.5 a1.6 1.6 0 1 1 -3 -2 a1.6 1.6 0 1 1 2 -3%22/%3E%3C/g%3E%3C/svg%3E"); }
+html[data-theme="hollowgrave"] .ss-value {
+  font-size: 1.85em;
+  color: #f4ead6;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.1), 0 -1px 1px rgba(0,0,0,0.85), 0 0 18px rgba(242,140,40,0.16);
+}
+html[data-theme="hollowgrave"] .ss-tile-fkdr .ss-value { color: var(--accent-2); text-shadow: 0 -1px 1px rgba(0,0,0,0.85), 0 0 16px rgba(184,255,92,0.35); }
+html[data-theme="hollowgrave"] .ss-tile-index .ss-value { color: #ffc58a; text-shadow: 0 -1px 1px rgba(0,0,0,0.85), 0 0 16px rgba(242,140,40,0.35); }
+html[data-theme="hollowgrave"] .ss-sub { font-style: italic; color: #b4aac2; font-weight: 500; }
+html[data-theme="hollowgrave"] .ss-sub b { color: var(--accent-2); font-style: normal; }
+html[data-theme="hollowgrave"] .ss-total-row { justify-content: center; align-items: flex-end; gap: 20px; }
+/* The six-month history as a little row of headstones; this month's
+   is lit by a candle. */
+html[data-theme="hollowgrave"] .ss-spark {
+  height: 38px;
+  gap: 5px;
+  padding: 0 4px;
+  border-bottom: 3px solid #15111b;
+  border-radius: 0 0 3px 3px;
+}
+html[data-theme="hollowgrave"] .ss-spark span {
+  width: 10px;
+  min-height: 6px;
+  opacity: 1;
+  border-radius: 5px 5px 1px 1px;
+  background: linear-gradient(180deg, #776d88, #4a4456);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+}
+html[data-theme="hollowgrave"] .ss-spark span:last-child {
+  background: linear-gradient(180deg, #ffd08a, #f28c28 45%, #b8540c);
+  box-shadow: 0 0 10px rgba(242,140,40,0.6), inset 0 1px 0 rgba(255,240,200,0.5);
+}
+html[data-theme="hollowgrave"] .ss-who { justify-content: center; font-style: italic; color: #cfc6da; }
+/* Portraits in the oval brass frames real headstones carry. */
+html[data-theme="hollowgrave"] .ss-who img {
+  width: 20px;
+  height: 25px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1.5px solid #b08d4a;
+  box-shadow: 0 0 0 1px #15111b, 0 2px 4px rgba(0,0,0,0.6);
+}
+html[data-theme="hollowgrave"] .ss-flag-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(10,8,14,0.65);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.85), 0 1px 0 rgba(255,255,255,0.06);
+}
+html[data-theme="hollowgrave"] .ss-flag-bar .cheat { background: linear-gradient(180deg, #ff7a8a, #b3263a); box-shadow: 0 0 8px rgba(255,84,104,0.5); }
+html[data-theme="hollowgrave"] .ss-flag-bar .boost { background: linear-gradient(180deg, #ffe6a4, #c9a04a); }
+html[data-theme="hollowgrave"] .ss-flag-legend { justify-content: center; font-family: var(--font-label); font-weight: 600; color: #b4aac2; }
+html[data-theme="hollowgrave"] .ss-flag-legend i {
+  width: 7px;
+  height: 11px;
+  vertical-align: -1px;
+  border-radius: 0;
+  clip-path: polygon(28% 0, 72% 0, 100% 26%, 80% 100%, 20% 100%, 0 26%);
+}
+
+/* ---------- Search bar: a cemetery gate between two stone pillars ---------- */
+html[data-theme="hollowgrave"] .toolbar {
+  position: relative;
+  margin-top: 40px;
+  padding: 18px 30px;
+  border-radius: 3px;
+  border: 1px solid #2e2838;
+  border-top: 3px solid #3d3649;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 44px, rgba(61,54,73,0.16) 44px 46px),
+    radial-gradient(80% 60% at 50% 0%, rgba(241,216,138,0.04), transparent 70%),
+    linear-gradient(180deg, #1c1723, #110d16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 18px 34px -16px rgba(0,0,0,0.95);
+}
+/* Spear-topped railings along the gate's top edge. */
+html[data-theme="hollowgrave"] .toolbar::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: -24px;
+  height: 22px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 22 22%22%3E%3Cpath d=%22M11 22 V9%22 stroke=%22%233d3649%22 stroke-width=%222.4%22/%3E%3Cpath d=%22M11 1.5 L14.2 8.5 L11 10.5 L7.8 8.5 Z%22 fill=%22%233d3649%22/%3E%3Cpath d=%22M11 3.2 L12.8 8.2%22 stroke=%22%236d6480%22 stroke-width=%22.8%22 fill=%22none%22/%3E%3Ccircle cx=%2211%22 cy=%2213%22 r=%221.9%22 fill=%22%233d3649%22/%3E%3Cpath d=%22M0 19.5 H22%22 stroke=%22%233d3649%22 stroke-width=%222.2%22/%3E%3C/svg%3E") left bottom / 22px 22px repeat-x;
+  pointer-events: none;
+}
+/* The two gate pillars: stone columns with a cap and a stone ball. */
+html[data-theme="hollowgrave"] .toolbar::after {
+  content: "";
+  position: absolute;
+  left: -13px;
+  right: -13px;
+  top: -34px;
+  bottom: -3px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 62%, #6d6480 0, #4a4456 4px, #2c2834 8px, transparent 8.6px) 0 0 / 26px 18px no-repeat,
+    radial-gradient(circle at 50% 62%, #6d6480 0, #4a4456 4px, #2c2834 8px, transparent 8.6px) 100% 0 / 26px 18px no-repeat,
+    linear-gradient(180deg, #5a5268, #3a3544) 0 16px / 26px 6px no-repeat,
+    linear-gradient(180deg, #5a5268, #3a3544) 100% 16px / 26px 6px no-repeat,
+    linear-gradient(90deg, #25212c, #4a4456 35%, #3a3544 70%, #1e1a24) 3px 22px / 20px calc(100% - 22px) no-repeat,
+    linear-gradient(90deg, #25212c, #4a4456 35%, #3a3544 70%, #1e1a24) calc(100% - 3px) 22px / 20px calc(100% - 22px) no-repeat;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,0.7));
+}
+html[data-theme="hollowgrave"] .toolbar-row {
+  border-top: 0;
+  padding-top: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-6 -1 22 16%22%3E%3Cpath d=%22M5 1 V13 M1.5 4.5 H8.5%22 stroke=%22%232e2838%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E") 0 0 / 22px 10px repeat-x;
+}
+/* The search box: a slab with the letters cut into it. */
+html[data-theme="hollowgrave"] .toolbar #searchInput {
+  border-radius: 3px;
+  border: 1px solid #2a2433;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"), linear-gradient(180deg, #120e17, #1b1622);
+  box-shadow: inset 0 2px 7px rgba(0,0,0,0.75), 0 1px 0 rgba(255,255,255,0.05);
+  font-style: italic;
+}
+html[data-theme="hollowgrave"] .toolbar #searchInput:focus { border-color: rgba(242,140,40,0.55); box-shadow: inset 0 2px 7px rgba(0,0,0,0.75), 0 0 0 3px rgba(242,140,40,0.14); }
+html[data-theme="hollowgrave"] .search-box-icon { color: #8f86a0; }
+html[data-theme="hollowgrave"] .search-box-kbd {
+  border-radius: 3px;
+  border-color: #3d3649;
+  background: linear-gradient(180deg, #2a2433, #1a1520);
+  color: #b9afc6;
+  font-style: normal;
+}
+/* The view switch is an iron band with a rivet at each end; the chosen
+   view glows like lantern glass. */
+html[data-theme="hollowgrave"] .view-toggle,
+html[data-theme="hollowgrave"] .denick-mode-toggle {
+  border-radius: 4px;
+  padding: 4px 16px;
+  border: 1px solid #3d3649;
+  background:
+    radial-gradient(circle at 8px 50%, #8a80a0 0 1.4px, #2c2735 2.4px, transparent 3px),
+    radial-gradient(circle at calc(100% - 8px) 50%, #8a80a0 0 1.4px, #2c2735 2.4px, transparent 3px),
+    linear-gradient(180deg, #2a2433, #17121d);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), inset 0 -2px 0 rgba(0,0,0,0.4), 0 4px 10px -4px rgba(0,0,0,0.8);
+}
+html[data-theme="hollowgrave"] .view-btn,
+html[data-theme="hollowgrave"] .denick-mode-btn { border-radius: 3px; }
+html[data-theme="hollowgrave"] .view-btn.active,
+html[data-theme="hollowgrave"] .denick-mode-btn.active {
+  background: radial-gradient(ellipse 80% 120% at 50% 100%, #ffd27a, #f28c28 55%, #a84a08);
+  color: #1d0b00;
+  box-shadow: inset 0 0 0 1px rgba(255,220,160,0.45), inset 0 -3px 6px rgba(120,40,0,0.45), 0 0 18px rgba(242,140,40,0.45);
+  text-shadow: 0 1px 0 rgba(255,230,190,0.4);
+}
+html[data-theme="hollowgrave"] .toolbar-export,
+html[data-theme="hollowgrave"] .filters-toggle {
+  border-radius: 3px;
+  border-color: #3d3649;
+  background: linear-gradient(180deg, #2a2433, #17121d);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 10px -4px rgba(0,0,0,0.8);
+}
+/* Minimum-stat filters as little coffins: the lid's outline stays put
+   however wide the field is, and lights up orange when it's in use. */
+html[data-theme="hollowgrave"] .filter-field {
+  height: 38px;
+  padding: 0 10px 0 18px;
+  border: 0;
+  border-radius: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 30%22 preserveAspectRatio=%22none%22%3E%3Cpath d=%22M1.2 9 L9 1 L98.8 7 L98.8 23 L9 29 L1.2 21 Z%22 fill=%22%2315111b%22 stroke=%22%234a4456%22 stroke-width=%221.3%22 vector-effect=%22non-scaling-stroke%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 3px 4px rgba(0,0,0,0.6));
+}
+html[data-theme="hollowgrave"] .filter-field:hover { background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 30%22 preserveAspectRatio=%22none%22%3E%3Cpath d=%22M1.2 9 L9 1 L98.8 7 L98.8 23 L9 29 L1.2 21 Z%22 fill=%22%2317121d%22 stroke=%22%236d6480%22 stroke-width=%221.3%22 vector-effect=%22non-scaling-stroke%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E"); }
+html[data-theme="hollowgrave"] .filter-field:focus-within { box-shadow: none; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 30%22 preserveAspectRatio=%22none%22%3E%3Cpath d=%22M1.2 9 L9 1 L98.8 7 L98.8 23 L9 29 L1.2 21 Z%22 fill=%22%2322160f%22 stroke=%22%23f28c28%22 stroke-width=%221.5%22 vector-effect=%22non-scaling-stroke%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E"); filter: drop-shadow(0 0 6px rgba(242,140,40,0.45)); }
+html[data-theme="hollowgrave"] .filter-field.is-set { box-shadow: none; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 30%22 preserveAspectRatio=%22none%22%3E%3Cpath d=%22M1.2 9 L9 1 L98.8 7 L98.8 23 L9 29 L1.2 21 Z%22 fill=%22%2322160f%22 stroke=%22%23f28c28%22 stroke-width=%221.5%22 vector-effect=%22non-scaling-stroke%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E"); filter: drop-shadow(0 0 7px rgba(242,140,40,0.4)); }
+html[data-theme="hollowgrave"] .filter-prefix { font-family: var(--font-label); font-weight: 600; letter-spacing: 0.08em; color: #a99fb7; }
+html[data-theme="hollowgrave"] .toolbar-divider {
+  width: 10px;
+  height: 15px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 10 14%22%3E%3Cpath d=%22M5 1 V13 M1.5 4.5 H8.5%22 stroke=%22%238f86a0%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E") center / contain no-repeat;
+}
+/* Toggle chips are candles: a cold wick when off, lit when on. */
+html[data-theme="hollowgrave"] .chip:not(.roster-chip) > span {
+  position: relative;
+  padding: 7px 14px 7px 30px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"), linear-gradient(180deg, #2f2a38, #1f1b26);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 3px 8px -3px rgba(0,0,0,0.7);
+  color: #b9afc6;
+  font-family: var(--font-label);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+html[data-theme="hollowgrave"] .chip:not(.roster-chip) > span::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  width: 11px;
+  height: 20px;
+  margin-top: -11px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 12 22%22%3E%3Cpath d=%22M6 6 v3%22 stroke=%22%235a5266%22 stroke-width=%221.2%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M2.5 9.5 h7 v12 h-7 z%22 fill=%22%23b3aabd%22/%3E%3Cpath d=%22M2.5 9.5 h7 v2 c-1 0 -1 2.5 -2 2.5 s-1 -2 -1.6 -2 s-.8 1.2 -1.6 1.2 c-.8 0 -.8 -1.7 -1.8 -1.7 z%22 fill=%22%23cbc3d3%22/%3E%3Cpath d=%22M8 11.5 v10%22 stroke=%22%238d8497%22 stroke-width=%221%22/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: filter 0.2s ease;
+}
+html[data-theme="hollowgrave"] .chip:not(.roster-chip):hover > span { border-color: rgba(242,140,40,0.35); color: #ece4f2; }
+html[data-theme="hollowgrave"] .chip:not(.roster-chip) > input:checked + span {
+  color: #ffd9a8;
+  border-color: rgba(242,140,40,0.6);
+  background: radial-gradient(circle at 16px 40%, rgba(242,140,40,0.32), transparent 60%), url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"), linear-gradient(180deg, #3a2f33, #241c24);
+  box-shadow: inset 0 1px 0 rgba(255,220,160,0.12), 0 0 14px rgba(242,140,40,0.28);
+  text-shadow: 0 0 8px rgba(242,140,40,0.55);
+}
+html[data-theme="hollowgrave"] .chip:not(.roster-chip) > input:checked + span::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 12 22%22%3E%3Cpath d=%22M6 .5 C9 4 9 6.5 6 8.3 C3 6.5 3 4 6 .5 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M6 3 C7.4 4.8 7.3 6 6 7.2 C4.7 6 4.6 4.8 6 3 Z%22 fill=%22%23fff3c4%22/%3E%3Cpath d=%22M6 7.6 v1.8%22 stroke=%22%232a2430%22 stroke-width=%221%22/%3E%3Cpath d=%22M2.5 9.5 h7 v12 h-7 z%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M2.5 9.5 h7 v2 c-1 0 -1 3.5 -2 3.5 s-1 -3 -1.6 -3 s-.8 1.8 -1.6 1.8 c-.8 0 -.8 -2.3 -1.8 -2.3 z%22 fill=%22%23fff8e4%22/%3E%3Cpath d=%22M8 11.5 v10%22 stroke=%22%23d6c7a2%22 stroke-width=%221%22/%3E%3C/svg%3E");
+  filter: drop-shadow(0 0 4px rgba(255,170,70,0.95));
+  animation: graveCandleFlicker 1.7s steps(1) infinite;
+}
+html[data-theme="hollowgrave"] .chip.cheat-chip > input:checked + span { color: #ffc2ca; text-shadow: 0 0 8px rgba(255,84,104,0.6); }
+html[data-theme="hollowgrave"] .chip.boost-chip > input:checked + span { color: #ffe6a4; }
+html[data-theme="hollowgrave"] .filter-reset { font-family: var(--font-label); letter-spacing: 0.04em; }
+html[data-theme="hollowgrave"] .filter-reset > span[aria-hidden] {
+  font-size: 0;
+  width: 15px;
+  height: 15px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cg transform=%22translate(0 .8)%22 fill=%22none%22 stroke=%22%230e0b13%22 stroke-width=%221.9%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%22.7%22%3E%3Cpath d=%22M15 3 L21 9 M18 6 L9.5 14.5%22/%3E%3Cpath d=%22M9.5 14.5 L5 13 C3 15 2.5 19 3 21 C5 21.5 9 21 11 19 L9.5 14.5%22/%3E%3C/g%3E%3Cg fill=%22none%22 stroke=%22%23c2b8cf%22 stroke-width=%221.6%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M15 3 L21 9 M18 6 L9.5 14.5%22/%3E%3Cpath d=%22M9.5 14.5 L5 13 C3 15 2.5 19 3 21 C5 21.5 9 21 11 19 L9.5 14.5%22/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ---------- Headstones: more stonework ---------- */
+html[data-theme="hollowgrave"] .sweat-card {
+  padding-top: 60px;
+  background:
+    radial-gradient(130% 46% at 50% 0%, rgba(241,216,138,0.08), transparent 62%),
+    var(--lichen),
+    radial-gradient(34% 16% at 2% 100%, rgba(92,122,58,0.38), transparent 70%),
+    radial-gradient(22% 10% at 99% 100%, rgba(92,122,58,0.26), transparent 70%),
+    radial-gradient(90% 26% at 50% 106%, rgba(96,128,62,0.2), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, var(--stone), var(--stone-dark));
+  --lichen: radial-gradient(34px 22px at 86% 24%, rgba(150,170,104,0.11), transparent), radial-gradient(22px 30px at 6% 58%, rgba(150,170,104,0.08), transparent);
+}
+html[data-theme="hollowgrave"] .sweat-card:nth-child(3n+2) { --lichen: radial-gradient(28px 20px at 14% 20%, rgba(150,170,104,0.1), transparent), radial-gradient(26px 40px at 96% 62%, rgba(150,170,104,0.09), transparent); }
+html[data-theme="hollowgrave"] .sweat-card:nth-child(3n) { --lichen: radial-gradient(30px 18px at 70% 14%, rgba(150,170,104,0.09), transparent), radial-gradient(30px 44px at 4% 80%, rgba(150,170,104,0.11), transparent); }
+/* R.I.P. with a carved scroll line under it. */
+html[data-theme="hollowgrave"] .sweat-card::before {
+  top: 16px;
+  padding-bottom: 11px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 10%22%3E%3Cg fill=%22none%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M8 6 C28 6 36 3 52 5 M112 6 C92 6 84 3 68 5%22 stroke=%22%230e0b13%22 stroke-width=%221.6%22 opacity=%22.6%22 transform=%22translate(0 .7)%22/%3E%3Cpath d=%22M8 6 C28 6 36 3 52 5 M112 6 C92 6 84 3 68 5%22 stroke=%22%238f86a0%22 stroke-width=%221.1%22/%3E%3Cpath d=%22M60 1.5 L63 5 L60 8.5 L57 5 Z%22 fill=%22%238f86a0%22 stroke=%22none%22/%3E%3Ccircle cx=%225%22 cy=%226%22 r=%221.3%22 fill=%22%238f86a0%22/%3E%3Ccircle cx=%22115%22 cy=%226%22 r=%221.3%22 fill=%22%238f86a0%22/%3E%3C/g%3E%3C/svg%3E") center bottom / 112px 9px no-repeat;
+}
+/* An engraved border following the stone's outline. */
+html[data-theme="hollowgrave"] .sweat-card-top::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(0,0,0,0.42);
+  border-radius: 50% 50% 5px 5px / 58px 58px 5px 5px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05);
+  pointer-events: none;
+  transition: border-color 0.3s ease;
+}
+html[data-theme="hollowgrave"] .sweat-card:hover .sweat-card-top::before { border-color: rgba(184,255,92,0.3); }
+html[data-theme="hollowgrave"] .sweat-card-index {
+  top: 66px;
+  right: 16px;
+  padding: 3px 13px;
+  border-radius: 2px;
+  border: 1px solid #5e4718;
+  color: #24180a;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255,235,180,0.45);
+  background:
+    radial-gradient(circle at 5px 50%, #5e4718 0 1.4px, transparent 1.9px),
+    radial-gradient(circle at calc(100% - 5px) 50%, #5e4718 0 1.4px, transparent 1.9px),
+    linear-gradient(180deg, #e0bd72, #b08d4a 55%, #8a6a2c);
+  box-shadow: inset 0 1px 0 rgba(255,240,200,0.5), 0 2px 4px rgba(0,0,0,0.6);
+}
+/* The portrait sits in an oval brass frame. */
+html[data-theme="hollowgrave"] .sweat-card-avatar {
+  width: 46px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #b08d4a;
+  background: #15111b;
+  box-shadow: 0 0 0 1px #15111b, inset 0 0 6px rgba(0,0,0,0.6), 0 4px 10px rgba(0,0,0,0.6), 0 0 0 4px rgba(176,141,74,0.12);
+}
+html[data-theme="hollowgrave"] .sweat-card-name::before {
+  content: "Here lies";
+  display: block;
+  margin-bottom: 1px;
+  font-size: 0.48em;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #9f95ad;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.06), 0 -1px 0 rgba(0,0,0,0.6);
+}
+html[data-theme="hollowgrave"] .sweat-card-stats {
+  border-radius: 3px;
+  background: rgba(10,8,14,0.42);
+  box-shadow: inset 0 2px 7px rgba(0,0,0,0.65), 0 1px 0 rgba(255,255,255,0.06);
+}
+html[data-theme="hollowgrave"] .card-stat + .card-stat { border-left-color: rgba(0,0,0,0.5); box-shadow: inset 1px 0 0 rgba(255,255,255,0.04); }
+/* Notes read as the epitaph, centered between quote marks. */
+html[data-theme="hollowgrave"] .sweat-card-note { text-align: center; border-left: 0; border-radius: 3px; }
+html[data-theme="hollowgrave"] .sweat-card-note .note-text::before { content: "\201C"; color: #8f86a0; margin-right: 2px; }
+html[data-theme="hollowgrave"] .sweat-card-note .note-text::after { content: "\201D"; color: #8f86a0; margin-left: 2px; }
+html[data-theme="hollowgrave"] .sweat-card-footer { border-top-color: rgba(0,0,0,0.45); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
+html[data-theme="hollowgrave"] .sweat-card-date::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 10px;
+  margin-right: 5px;
+  vertical-align: -1px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 10 14%22%3E%3Cpath d=%22M5 1 V13 M1.5 4.5 H8.5%22 stroke=%22%238f86a0%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E") center / contain no-repeat;
+}
+/* Ivy climbing some of the stones. */
+html[data-theme="hollowgrave"] .sweat-card:nth-child(4n+1) .sweat-card-footer::before,
+html[data-theme="hollowgrave"] .sweat-card:nth-child(4n+3) .sweat-card-footer::before {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  width: 40px;
+  height: 112px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-4 0 46 124%22%3E%3Cg%3E%3Cpath d=%22M6 120 C14 104 4 94 12 80 C20 66 10 56 18 42 C24 32 18 22 26 10%22 stroke=%22%233a5228%22 stroke-width=%221.8%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M12 80 C20 82 26 78 30 72 M18 42 C26 46 32 44 36 38 M8 100 C2 98 -2 94 -2 90%22 stroke=%22%233a5228%22 stroke-width=%221.2%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3Cg transform=%22translate(6 118) rotate(-20) scale(1.1)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(10 104) rotate(30) scale(1.0)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(5 92) rotate(-40) scale(0.9)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(14 82) rotate(25) scale(1.05)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(30 72) rotate(60) scale(0.85)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(9 66) rotate(-30) scale(0.95)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(17 54) rotate(20) scale(1.0)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(36 38) rotate(55) scale(0.8)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(16 40) rotate(-35) scale(0.9)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(22 28) rotate(15) scale(0.85)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(25 12) rotate(-10) scale(0.75)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(-1 90) rotate(-70) scale(0.8)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") left bottom / contain no-repeat;
+  pointer-events: none;
+  z-index: 2;
+  left: -9px;
+}
+html[data-theme="hollowgrave"] .sweat-card:nth-child(4n+3) .sweat-card-footer::before { left: auto; right: -9px; background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22-4 0 46 124%22%3E%3Cg transform=%22translate(46 0) scale(-1 1)%22%3E%3Cpath d=%22M6 120 C14 104 4 94 12 80 C20 66 10 56 18 42 C24 32 18 22 26 10%22 stroke=%22%233a5228%22 stroke-width=%221.8%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M12 80 C20 82 26 78 30 72 M18 42 C26 46 32 44 36 38 M8 100 C2 98 -2 94 -2 90%22 stroke=%22%233a5228%22 stroke-width=%221.2%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3Cg transform=%22translate(6 118) rotate(-20) scale(1.1)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(10 104) rotate(30) scale(1.0)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(5 92) rotate(-40) scale(0.9)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(14 82) rotate(25) scale(1.05)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(30 72) rotate(60) scale(0.85)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(9 66) rotate(-30) scale(0.95)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(17 54) rotate(20) scale(1.0)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(36 38) rotate(55) scale(0.8)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(16 40) rotate(-35) scale(0.9)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(22 28) rotate(15) scale(0.85)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(25 12) rotate(-10) scale(0.75)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3Cg transform=%22translate(-1 90) rotate(-70) scale(0.8)%22%3E%3Cpath d=%22M0 0 C-4 -2 -6 -7 -3 -10 C-1 -8 0 -9 0 -12 C1 -9 2 -8 3 -10 C6 -7 4 -2 0 0 Z%22 fill=%22%234d6e34%22/%3E%3Cpath d=%22M0 0 V-9%22 stroke=%22%2330461f%22 stroke-width=%22.6%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); height: 128px; }
+/* Grass at the foot of every stone, and now and then something left
+   there: flowers, a candle, a jack-o'-lantern, a skull. */
+html[data-theme="hollowgrave"] .sweat-card-footer::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: -10px;
+  height: 40px;
+  background: var(--offering, none), url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 16%22 preserveAspectRatio=%22none%22%3E%3Cpath d=%22M-0.1 16 Q1.1 9.6 2.4 5.4 Q2.1 10.7 2.1 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M3.3 16 Q2.3 7.9 1.4 2.4 Q3.7 9.2 5.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M7.2 16 Q6.0 8.2 4.8 3.1 Q7.4 9.5 9.4 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M9.1 16 Q10.3 9.8 11.5 5.6 Q11.3 10.8 11.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M13.9 16 Q13.7 10.6 13.6 7.0 Q15.0 11.5 16.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M17.4 16 Q16.1 8.0 14.7 2.7 Q17.5 9.3 19.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M19.5 16 Q18.1 11.5 16.7 8.6 Q19.5 12.3 21.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M23.3 16 Q22.4 9.5 21.5 5.1 Q23.7 10.5 25.5 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M27.6 16 Q28.1 10.0 28.6 6.0 Q29.2 11.0 29.8 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M31.1 16 Q31.2 10.6 31.4 6.9 Q32.4 11.5 33.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M34.6 16 Q33.8 11.1 33.0 7.8 Q35.2 11.9 36.8 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M36.0 16 Q34.8 9.6 33.6 5.4 Q36.2 10.7 38.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M41.8 16 Q43.2 10.7 44.6 7.1 Q44.1 11.6 44.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M43.3 16 Q42.0 7.4 40.7 1.7 Q43.5 8.9 45.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M49.0 16 Q47.8 10.6 46.5 7.0 Q49.2 11.5 51.2 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M51.8 16 Q50.6 11.4 49.4 8.3 Q52.0 12.2 54.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M52.9 16 Q54.2 10.5 55.5 6.9 Q55.2 11.4 55.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M57.0 16 Q55.7 12.4 54.4 10.0 Q57.2 13.0 59.2 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M60.2 16 Q60.1 9.6 59.9 5.4 Q61.3 10.7 62.4 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M66.1 16 Q65.8 8.4 65.6 3.3 Q67.1 9.7 68.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M66.8 16 Q66.0 10.5 65.1 6.8 Q67.4 11.4 69.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M72.5 16 Q72.8 7.2 73.0 1.3 Q73.9 8.6 74.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M73.9 16 Q75.0 10.6 76.1 7.1 Q76.0 11.5 76.1 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M76.8 16 Q76.7 12.1 76.5 9.5 Q77.9 12.8 79.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M82.4 16 Q81.8 11.0 81.2 7.7 Q83.1 11.9 84.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M83.7 16 Q84.1 11.7 84.5 8.9 Q85.3 12.5 85.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M88.7 16 Q88.6 10.8 88.4 7.3 Q89.8 11.6 90.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M92.8 16 Q92.5 12.2 92.1 9.6 Q93.7 12.8 95.0 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M94.6 16 Q95.0 11.6 95.3 8.7 Q96.1 12.4 96.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M97.6 16 Q97.7 9.2 97.9 4.7 Q98.9 10.4 99.8 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M103.1 16 Q102.9 9.4 102.7 5.0 Q104.2 10.5 105.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M104.2 16 Q103.5 9.9 102.8 5.9 Q104.8 10.9 106.4 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M108.1 16 Q108.4 8.1 108.6 2.8 Q109.5 9.4 110.3 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M112.3 16 Q113.7 7.4 115.1 1.7 Q114.6 8.9 114.5 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M114.8 16 Q115.8 9.6 116.9 5.4 Q116.8 10.7 117.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M118.3 16 Q117.5 7.5 116.6 1.8 Q118.8 8.9 120.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M121.1 16 Q120.4 10.5 119.6 6.9 Q121.7 11.4 123.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M124.8 16 Q125.0 10.8 125.3 7.3 Q126.2 11.7 127.0 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M128.0 16 Q127.8 12.2 127.7 9.6 Q129.1 12.8 130.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M133.1 16 Q133.3 8.9 133.6 4.1 Q134.5 10.0 135.3 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M136.3 16 Q136.2 7.5 136.1 1.8 Q137.4 8.9 138.5 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M140.0 16 Q138.6 7.2 137.1 1.4 Q140.1 8.7 142.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M142.7 16 Q142.2 8.6 141.7 3.7 Q143.5 9.8 144.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M144.9 16 Q145.6 9.7 146.3 5.5 Q146.7 10.8 147.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M150.5 16 Q150.0 7.5 149.6 1.8 Q151.3 8.9 152.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M154.2 16 Q154.0 7.8 153.7 2.3 Q155.2 9.1 156.4 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M157.5 16 Q157.9 9.6 158.2 5.3 Q159.0 10.6 159.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M159.4 16 Q158.2 12.9 156.9 10.9 Q159.6 13.4 161.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M163.6 16 Q164.8 7.0 165.9 1.1 Q165.7 8.5 165.8 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M166.3 16 Q166.5 8.6 166.8 3.6 Q167.7 9.8 168.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M169.9 16 Q169.9 9.8 170.0 5.6 Q171.1 10.8 172.1 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M172.8 16 Q171.4 12.5 170.0 10.1 Q172.9 13.1 175.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M176.8 16 Q178.1 9.3 179.3 4.9 Q179.0 10.4 179.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M181.4 16 Q180.3 10.8 179.2 7.3 Q181.7 11.7 183.6 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M183.7 16 Q183.2 8.5 182.7 3.5 Q184.5 9.7 185.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M187.0 16 Q186.7 11.6 186.4 8.6 Q188.0 12.3 189.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M189.5 16 Q190.4 10.4 191.3 6.7 Q191.4 11.3 191.7 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M194.9 16 Q195.2 10.7 195.4 7.2 Q196.3 11.6 197.1 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M196.3 16 Q195.9 12.2 195.4 9.7 Q197.2 12.8 198.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M201.2 16 Q200.6 7.3 199.9 1.5 Q201.9 8.7 203.4 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M202.8 16 Q204.1 10.2 205.4 6.3 Q205.1 11.1 205.0 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M207.0 16 Q207.6 9.9 208.1 5.8 Q208.7 10.9 209.2 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M210.3 16 Q209.6 8.0 208.9 2.7 Q210.9 9.4 212.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M214.7 16 Q214.3 11.3 213.9 8.2 Q215.6 12.1 216.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M218.0 16 Q217.1 10.6 216.2 6.9 Q218.5 11.5 220.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M220.2 16 Q218.9 12.2 217.5 9.6 Q220.3 12.8 222.4 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M224.2 16 Q224.7 9.2 225.2 4.7 Q225.8 10.4 226.4 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M229.2 16 Q228.3 8.9 227.4 4.2 Q229.7 10.1 231.4 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M230.5 16 Q231.2 8.7 232.0 3.9 Q232.3 9.9 232.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M233.6 16 Q233.2 11.4 232.7 8.3 Q234.5 12.1 235.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M237.7 16 Q238.9 8.2 240.1 3.1 Q239.9 9.5 239.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M241.1 16 Q240.8 7.6 240.5 2.1 Q242.1 9.0 243.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M244.7 16 Q245.9 9.2 247.1 4.7 Q246.8 10.4 246.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M248.4 16 Q248.4 9.1 248.4 4.5 Q249.6 10.2 250.6 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M251.5 16 Q250.6 9.1 249.7 4.5 Q252.0 10.2 253.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M254.1 16 Q255.6 7.6 257.0 2.0 Q256.5 9.0 256.3 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M258.5 16 Q258.0 8.3 257.4 3.1 Q259.3 9.5 260.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M261.3 16 Q261.2 12.5 261.0 10.2 Q262.4 13.1 263.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M266.0 16 Q264.6 10.1 263.2 6.1 Q266.1 11.1 268.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M268.4 16 Q268.5 12.8 268.6 10.6 Q269.7 13.3 270.6 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M271.9 16 Q273.1 7.0 274.3 1.0 Q274.1 8.5 274.1 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M276.7 16 Q278.1 10.0 279.4 6.1 Q279.0 11.0 278.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M279.6 16 Q279.7 10.4 279.9 6.6 Q280.9 11.3 281.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M282.3 16 Q282.4 7.9 282.6 2.6 Q283.6 9.3 284.5 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M286.1 16 Q287.2 7.3 288.3 1.5 Q288.2 8.7 288.3 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M288.4 16 Q288.5 12.2 288.7 9.6 Q289.7 12.8 290.6 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M292.6 16 Q292.7 11.8 292.8 9.0 Q293.9 12.5 294.8 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M296.1 16 Q297.5 12.8 298.9 10.7 Q298.4 13.4 298.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M299.3 16 Q298.2 7.1 297.1 1.1 Q299.6 8.6 301.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M303.2 16 Q303.3 12.6 303.4 10.3 Q304.5 13.2 305.4 16 Z%22 fill=%22%234a6436%22/%3E%3C/svg%3E") left bottom / 100% 14px no-repeat;
+  pointer-events: none;
+  z-index: 2;
+}
+html[data-theme="hollowgrave"] .sweat-card:nth-child(5n+2) { --offering: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 26 30%22%3E%3Cpath d=%22M13 29 L9 14 M13 29 L13 12 M13 29 L18 15%22 stroke=%22%233b4a2a%22 stroke-width=%221.3%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M10 22 l-4 -2 M16 21 l4 -3%22 stroke=%22%233b4a2a%22 stroke-width=%221%22/%3E%3Ccircle cx=%228.5%22 cy=%2212%22 r=%223.4%22 fill=%22%236e1f2b%22/%3E%3Ccircle cx=%228.5%22 cy=%2212%22 r=%221.6%22 fill=%22%238e2a38%22/%3E%3Ccircle cx=%2213%22 cy=%229.5%22 r=%223.6%22 fill=%22%235a1a26%22/%3E%3Ccircle cx=%2213%22 cy=%229.5%22 r=%221.7%22 fill=%22%237a2532%22/%3E%3Ccircle cx=%2218.5%22 cy=%2213%22 r=%223.2%22 fill=%22%236e1f2b%22/%3E%3Ccircle cx=%2218.5%22 cy=%2213%22 r=%221.5%22 fill=%22%238e2a38%22/%3E%3Cpath d=%22M9 27 h8%22 stroke=%22%238f7a52%22 stroke-width=%222%22 stroke-linecap=%22round%22/%3E%3C/svg%3E") 24px 100% / 29px 34px no-repeat; }
+html[data-theme="hollowgrave"] .sweat-card:nth-child(5n+4) { --offering: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 14 30%22%3E%3Crect x=%224%22 y=%2212%22 width=%226%22 height=%2218%22 rx=%221%22 fill=%22%23efe3c6%22/%3E%3Cpath d=%22M7 2 C10 6 10 9 7 11 C4 9 4 6 7 2 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M7 5 C8.3 7 8.2 8.5 7 9.6 C5.8 8.5 5.7 7 7 5 Z%22 fill=%22%23fff3c4%22/%3E%3C/svg%3E") calc(100% - 34px) 100% / 13px 28px no-repeat; }
+html[data-theme="hollowgrave"] .sweat-card:nth-child(7n+6) { --offering: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 30 24%22%3E%3Cpath d=%22M15 4 q1 -3 4 -3.5%22 stroke=%22%236b8f3a%22 stroke-width=%222%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3Cellipse cx=%229%22 cy=%2214%22 rx=%227%22 ry=%229%22 fill=%22%23d9661a%22/%3E%3Cellipse cx=%2221%22 cy=%2214%22 rx=%227%22 ry=%229%22 fill=%22%23d9661a%22/%3E%3Cellipse cx=%2215%22 cy=%2214%22 rx=%228%22 ry=%229.8%22 fill=%22%23f28c28%22/%3E%3Cpath d=%22M9 11 l3 -3.5 l3 3.5 z M15 11 l3 -3.5 l3 3.5 z%22 fill=%22%23ffe08a%22/%3E%3Cpath d=%22M8 16 q7 6.5 14 0 l-2 2 l-2 -2 l-2 2.2 l-1 -2 l-2 2.2 l-2 -2.2 l-1.5 2 z%22 fill=%22%23ffe08a%22/%3E%3C/svg%3E") calc(100% - 20px) 100% / 31px 25px no-repeat; }
+html[data-theme="hollowgrave"] .sweat-card:nth-child(9n+5) { --offering: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 18%22%3E%3Cpath d=%22M10 1 C4.5 1 1.5 4.5 1.5 8.5 C1.5 11 3 12.5 4.5 13 V16.5 H15.5 V13 C17 12.5 18.5 11 18.5 8.5 C18.5 4.5 15.5 1 10 1 Z%22 fill=%22%23cfc4b0%22/%3E%3Cellipse cx=%226.5%22 cy=%228.5%22 rx=%222.4%22 ry=%222.6%22 fill=%22%231a1520%22/%3E%3Cellipse cx=%2213.5%22 cy=%228.5%22 rx=%222.4%22 ry=%222.6%22 fill=%22%231a1520%22/%3E%3Cpath d=%22M10 10.5 L8.8 13 H11.2 Z%22 fill=%22%231a1520%22/%3E%3Cpath d=%22M7 14.2 V16.5 M10 14.2 V16.5 M13 14.2 V16.5%22 stroke=%22%231a1520%22 stroke-width=%22.9%22/%3E%3C/svg%3E") 38px 100% / 23px 21px no-repeat; }
+
+/* ---------- Sweat Lookup ---------- */
+html[data-theme="hollowgrave"] .dash-label { font-family: var(--font-label); font-weight: 600; letter-spacing: 0.16em; }
+html[data-theme="hollowgrave"] .dash-label:not(.dash-label-row)::before,
+html[data-theme="hollowgrave"] .edit-section-label::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 10px;
+  margin-right: 7px;
+  vertical-align: -1px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 10 14%22%3E%3Cpath d=%22M5 1 V13 M1.5 4.5 H8.5%22 stroke=%22%23f28c28%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E") center / contain no-repeat;
+}
+html[data-theme="hollowgrave"] #username,
+html[data-theme="hollowgrave"] .note-input,
+html[data-theme="hollowgrave"] #denickInput,
+html[data-theme="hollowgrave"] .edit-stats-grid input {
+  border-radius: 3px;
+  border-color: #2a2433;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"), linear-gradient(180deg, #120e17, #1b1622);
+  box-shadow: inset 0 2px 7px rgba(0,0,0,0.75), 0 1px 0 rgba(255,255,255,0.05);
+}
+/* The empty preview is a freshly dug plot ringed by little stones. */
+html[data-theme="hollowgrave"] .dash-empty {
+  border: 0;
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 10px 10px, #4a4456 0 4px, #2c2834 5px, transparent 5.6px),
+    radial-gradient(circle at calc(100% - 10px) 10px, #4a4456 0 4px, #2c2834 5px, transparent 5.6px),
+    radial-gradient(circle at 10px calc(100% - 10px), #4a4456 0 4px, #2c2834 5px, transparent 5.6px),
+    radial-gradient(circle at calc(100% - 10px) calc(100% - 10px), #4a4456 0 4px, #2c2834 5px, transparent 5.6px),
+    radial-gradient(circle at 50% 42%, rgba(184,255,92,0.06), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #17121c, #1d1620);
+  box-shadow: inset 0 0 0 2px #2a2433, inset 0 0 0 4px #120e17, inset 0 0 44px rgba(0,0,0,0.6);
+}
+/* The previewed player stands in an open coffin with a satin lining. */
+html[data-theme="hollowgrave"] .skin-tilt #statsAvatar {
+  border: 0;
+  border-radius: 0;
+  padding: 18px 16px 12px;
+  box-sizing: border-box;
+  clip-path: polygon(30% 0, 70% 0, 100% 20%, 84% 100%, 16% 100%, 0 20%);
+  background:
+    radial-gradient(ellipse 50% 40% at 50% 34%, rgba(184,255,92,0.16), transparent 70%),
+    radial-gradient(ellipse 70% 90% at 50% 50%, #3d2a52 0%, #2a1d3a 55%, transparent 56%),
+    linear-gradient(90deg, #3b2418, #5a3a26 18%, #4a2f1f 50%, #5a3a26 82%, #3b2418);
+  box-shadow: none;
+}
+html[data-theme="hollowgrave"] .skin-tilt { filter: drop-shadow(0 0 1px #1e120c) drop-shadow(0 14px 18px rgba(0,0,0,0.7)) drop-shadow(0 0 18px color-mix(in srgb, var(--tier) 30%, transparent)); }
+html[data-theme="hollowgrave"] .skin-glare { clip-path: polygon(30% 0, 70% 0, 100% 20%, 84% 100%, 16% 100%, 0 20%); border-radius: 0; }
+html[data-theme="hollowgrave"] .skin-aura { background: radial-gradient(closest-side, rgba(184,255,92,0.22), transparent); }
+/* The threat level is an epitaph tablet with a bronze dial. */
+html[data-theme="hollowgrave"] .sweat-meter,
+html[data-theme="hollowgrave"] .stat-hero,
+html[data-theme="hollowgrave"] .stats-tag-panel {
+  border: 1px solid rgba(255,255,255,0.07);
+  background:
+    radial-gradient(60% 30% at 50% 0%, rgba(241,216,138,0.07), transparent 70%),
+    radial-gradient(30% 24% at 0% 100%, rgba(92,122,58,0.24), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #3a3544, #29252f);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.07), inset 0 -12px 16px -12px rgba(0,0,0,0.6), 0 10px 16px -10px rgba(0,0,0,0.9);
+}
+html[data-theme="hollowgrave"] .sweat-meter { border-radius: 40px 40px 5px 5px / 22px 22px 5px 5px; padding: 14px 18px 12px; }
+html[data-theme="hollowgrave"] .sweat-gauge .g-track { stroke: #15111b; }
+html[data-theme="hollowgrave"] .sweat-gauge .g-ticks { stroke: #b08d4a; opacity: 0.7; }
+html[data-theme="hollowgrave"] .sweat-gauge-center { inset: 14px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #2f2a38, #15111b); box-shadow: inset 0 2px 6px rgba(0,0,0,0.8), 0 0 0 2px #8a6a2c, 0 0 0 3px #15111b; }
+html[data-theme="hollowgrave"] .sweat-meter-kicker,
+html[data-theme="hollowgrave"] .stat-hero-label { font-family: var(--font-label); font-weight: 600; letter-spacing: 0.2em; color: #b4aac2; text-shadow: 0 -1px 0 rgba(0,0,0,0.7); }
+html[data-theme="hollowgrave"] .sweat-tier { font-family: var(--font-grave); font-weight: 700; letter-spacing: 0.02em; }
+html[data-theme="hollowgrave"] .sweat-tier-scale span {
+  width: 9px;
+  height: 14px;
+  border-radius: 5px 5px 1px 1px;
+  background: #15111b;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+}
+html[data-theme="hollowgrave"] .sweat-tier-scale span.on { background: linear-gradient(180deg, color-mix(in srgb, var(--tier) 60%, #fff), var(--tier)); }
+html[data-theme="hollowgrave"] .stat-hero { border-radius: 50% 50% 5px 5px / 18px 18px 5px 5px; padding-top: 16px; }
+html[data-theme="hollowgrave"] .stats-tag-panel {
+  border-radius: 3px;
+  padding-left: 26px;
+  padding-right: 26px;
+  background:
+    radial-gradient(circle at 10px 50%, #8a80a0 0 1.4px, #2c2735 2.4px, transparent 3px),
+    radial-gradient(circle at calc(100% - 10px) 50%, #8a80a0 0 1.4px, #2c2735 2.4px, transparent 3px),
+    linear-gradient(180deg, #2a2433, #17121d);
+}
+html[data-theme="hollowgrave"] .modal-standing-bar {
+  background: rgba(10,8,14,0.7);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.85), 0 1px 0 rgba(255,255,255,0.06);
+}
+html[data-theme="hollowgrave"] .modal-standing-bar > span { background: linear-gradient(90deg, #8a6a2c, #f28c28, #ffd08a); box-shadow: 0 0 6px rgba(242,140,40,0.6); }
+
+/* ---------- Popups: a stone slab with an engraved border ---------- */
+html[data-theme="hollowgrave"] .modal-content {
+  border-radius: 6px;
+  background:
+    radial-gradient(120% 50% at 50% -10%, rgba(241,216,138,0.06), transparent 60%),
+    radial-gradient(30% 14% at 0% 100%, rgba(92,122,58,0.2), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #221d2a, #15111b);
+}
+html[data-theme="hollowgrave"] .modal-content::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(0,0,0,0.5);
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.04);
+  pointer-events: none;
+}
+html[data-theme="hollowgrave"] #modalSkin {
+  border: 0;
+  border-radius: 0;
+  clip-path: polygon(30% 0, 70% 0, 100% 20%, 84% 100%, 16% 100%, 0 20%);
+  background:
+    radial-gradient(ellipse 50% 40% at 50% 34%, rgba(184,255,92,0.16), transparent 70%),
+    radial-gradient(ellipse 70% 90% at 50% 50%, #3d2a52 0%, #2a1d3a 55%, transparent 56%),
+    linear-gradient(90deg, #3b2418, #5a3a26 18%, #4a2f1f 50%, #5a3a26 82%, #3b2418);
+  padding: 16px 14px 10px;
+  box-sizing: border-box;
+}
+html[data-theme="hollowgrave"] .modal-stat-tile { border-radius: 50% 50% 5px 5px / 16px 16px 5px 5px; }
+
+/* ---------- Leaderboard ---------- */
+html[data-theme="hollowgrave"] .lb-block {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 16%22 preserveAspectRatio=%22none%22%3E%3Cpath d=%22M-0.1 16 Q1.1 9.6 2.4 5.4 Q2.1 10.7 2.1 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M3.3 16 Q2.3 7.9 1.4 2.4 Q3.7 9.2 5.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M7.2 16 Q6.0 8.2 4.8 3.1 Q7.4 9.5 9.4 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M9.1 16 Q10.3 9.8 11.5 5.6 Q11.3 10.8 11.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M13.9 16 Q13.7 10.6 13.6 7.0 Q15.0 11.5 16.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M17.4 16 Q16.1 8.0 14.7 2.7 Q17.5 9.3 19.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M19.5 16 Q18.1 11.5 16.7 8.6 Q19.5 12.3 21.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M23.3 16 Q22.4 9.5 21.5 5.1 Q23.7 10.5 25.5 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M27.6 16 Q28.1 10.0 28.6 6.0 Q29.2 11.0 29.8 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M31.1 16 Q31.2 10.6 31.4 6.9 Q32.4 11.5 33.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M34.6 16 Q33.8 11.1 33.0 7.8 Q35.2 11.9 36.8 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M36.0 16 Q34.8 9.6 33.6 5.4 Q36.2 10.7 38.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M41.8 16 Q43.2 10.7 44.6 7.1 Q44.1 11.6 44.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M43.3 16 Q42.0 7.4 40.7 1.7 Q43.5 8.9 45.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M49.0 16 Q47.8 10.6 46.5 7.0 Q49.2 11.5 51.2 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M51.8 16 Q50.6 11.4 49.4 8.3 Q52.0 12.2 54.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M52.9 16 Q54.2 10.5 55.5 6.9 Q55.2 11.4 55.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M57.0 16 Q55.7 12.4 54.4 10.0 Q57.2 13.0 59.2 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M60.2 16 Q60.1 9.6 59.9 5.4 Q61.3 10.7 62.4 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M66.1 16 Q65.8 8.4 65.6 3.3 Q67.1 9.7 68.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M66.8 16 Q66.0 10.5 65.1 6.8 Q67.4 11.4 69.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M72.5 16 Q72.8 7.2 73.0 1.3 Q73.9 8.6 74.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M73.9 16 Q75.0 10.6 76.1 7.1 Q76.0 11.5 76.1 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M76.8 16 Q76.7 12.1 76.5 9.5 Q77.9 12.8 79.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M82.4 16 Q81.8 11.0 81.2 7.7 Q83.1 11.9 84.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M83.7 16 Q84.1 11.7 84.5 8.9 Q85.3 12.5 85.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M88.7 16 Q88.6 10.8 88.4 7.3 Q89.8 11.6 90.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M92.8 16 Q92.5 12.2 92.1 9.6 Q93.7 12.8 95.0 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M94.6 16 Q95.0 11.6 95.3 8.7 Q96.1 12.4 96.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M97.6 16 Q97.7 9.2 97.9 4.7 Q98.9 10.4 99.8 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M103.1 16 Q102.9 9.4 102.7 5.0 Q104.2 10.5 105.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M104.2 16 Q103.5 9.9 102.8 5.9 Q104.8 10.9 106.4 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M108.1 16 Q108.4 8.1 108.6 2.8 Q109.5 9.4 110.3 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M112.3 16 Q113.7 7.4 115.1 1.7 Q114.6 8.9 114.5 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M114.8 16 Q115.8 9.6 116.9 5.4 Q116.8 10.7 117.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M118.3 16 Q117.5 7.5 116.6 1.8 Q118.8 8.9 120.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M121.1 16 Q120.4 10.5 119.6 6.9 Q121.7 11.4 123.3 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M124.8 16 Q125.0 10.8 125.3 7.3 Q126.2 11.7 127.0 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M128.0 16 Q127.8 12.2 127.7 9.6 Q129.1 12.8 130.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M133.1 16 Q133.3 8.9 133.6 4.1 Q134.5 10.0 135.3 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M136.3 16 Q136.2 7.5 136.1 1.8 Q137.4 8.9 138.5 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M140.0 16 Q138.6 7.2 137.1 1.4 Q140.1 8.7 142.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M142.7 16 Q142.2 8.6 141.7 3.7 Q143.5 9.8 144.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M144.9 16 Q145.6 9.7 146.3 5.5 Q146.7 10.8 147.1 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M150.5 16 Q150.0 7.5 149.6 1.8 Q151.3 8.9 152.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M154.2 16 Q154.0 7.8 153.7 2.3 Q155.2 9.1 156.4 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M157.5 16 Q157.9 9.6 158.2 5.3 Q159.0 10.6 159.7 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M159.4 16 Q158.2 12.9 156.9 10.9 Q159.6 13.4 161.6 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M163.6 16 Q164.8 7.0 165.9 1.1 Q165.7 8.5 165.8 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M166.3 16 Q166.5 8.6 166.8 3.6 Q167.7 9.8 168.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M169.9 16 Q169.9 9.8 170.0 5.6 Q171.1 10.8 172.1 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M172.8 16 Q171.4 12.5 170.0 10.1 Q172.9 13.1 175.0 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M176.8 16 Q178.1 9.3 179.3 4.9 Q179.0 10.4 179.0 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M181.4 16 Q180.3 10.8 179.2 7.3 Q181.7 11.7 183.6 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M183.7 16 Q183.2 8.5 182.7 3.5 Q184.5 9.7 185.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M187.0 16 Q186.7 11.6 186.4 8.6 Q188.0 12.3 189.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M189.5 16 Q190.4 10.4 191.3 6.7 Q191.4 11.3 191.7 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M194.9 16 Q195.2 10.7 195.4 7.2 Q196.3 11.6 197.1 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M196.3 16 Q195.9 12.2 195.4 9.7 Q197.2 12.8 198.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M201.2 16 Q200.6 7.3 199.9 1.5 Q201.9 8.7 203.4 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M202.8 16 Q204.1 10.2 205.4 6.3 Q205.1 11.1 205.0 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M207.0 16 Q207.6 9.9 208.1 5.8 Q208.7 10.9 209.2 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M210.3 16 Q209.6 8.0 208.9 2.7 Q210.9 9.4 212.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M214.7 16 Q214.3 11.3 213.9 8.2 Q215.6 12.1 216.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M218.0 16 Q217.1 10.6 216.2 6.9 Q218.5 11.5 220.2 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M220.2 16 Q218.9 12.2 217.5 9.6 Q220.3 12.8 222.4 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M224.2 16 Q224.7 9.2 225.2 4.7 Q225.8 10.4 226.4 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M229.2 16 Q228.3 8.9 227.4 4.2 Q229.7 10.1 231.4 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M230.5 16 Q231.2 8.7 232.0 3.9 Q232.3 9.9 232.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M233.6 16 Q233.2 11.4 232.7 8.3 Q234.5 12.1 235.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M237.7 16 Q238.9 8.2 240.1 3.1 Q239.9 9.5 239.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M241.1 16 Q240.8 7.6 240.5 2.1 Q242.1 9.0 243.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M244.7 16 Q245.9 9.2 247.1 4.7 Q246.8 10.4 246.9 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M248.4 16 Q248.4 9.1 248.4 4.5 Q249.6 10.2 250.6 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M251.5 16 Q250.6 9.1 249.7 4.5 Q252.0 10.2 253.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M254.1 16 Q255.6 7.6 257.0 2.0 Q256.5 9.0 256.3 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M258.5 16 Q258.0 8.3 257.4 3.1 Q259.3 9.5 260.7 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M261.3 16 Q261.2 12.5 261.0 10.2 Q262.4 13.1 263.5 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M266.0 16 Q264.6 10.1 263.2 6.1 Q266.1 11.1 268.2 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M268.4 16 Q268.5 12.8 268.6 10.6 Q269.7 13.3 270.6 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M271.9 16 Q273.1 7.0 274.3 1.0 Q274.1 8.5 274.1 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M276.7 16 Q278.1 10.0 279.4 6.1 Q279.0 11.0 278.9 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M279.6 16 Q279.7 10.4 279.9 6.6 Q280.9 11.3 281.8 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M282.3 16 Q282.4 7.9 282.6 2.6 Q283.6 9.3 284.5 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M286.1 16 Q287.2 7.3 288.3 1.5 Q288.2 8.7 288.3 16 Z%22 fill=%22%233f5630%22/%3E%3Cpath d=%22M288.4 16 Q288.5 12.2 288.7 9.6 Q289.7 12.8 290.6 16 Z%22 fill=%22%232b3a22%22/%3E%3Cpath d=%22M292.6 16 Q292.7 11.8 292.8 9.0 Q293.9 12.5 294.8 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M296.1 16 Q297.5 12.8 298.9 10.7 Q298.4 13.4 298.3 16 Z%22 fill=%22%234a6436%22/%3E%3Cpath d=%22M299.3 16 Q298.2 7.1 297.1 1.1 Q299.6 8.6 301.5 16 Z%22 fill=%22%2334472a%22/%3E%3Cpath d=%22M303.2 16 Q303.3 12.6 303.4 10.3 Q304.5 13.2 305.4 16 Z%22 fill=%22%234a6436%22/%3E%3C/svg%3E") left bottom / 100% 11px no-repeat,
+    radial-gradient(34% 30% at 0% 100%, rgba(92,122,58,0.3), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #3a3544, #25212c);
+}
+html[data-theme="hollowgrave"] .lb-row {
+  border-radius: 3px;
+  border-color: rgba(255,255,255,0.06);
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"), linear-gradient(180deg, rgba(47,42,56,0.85), rgba(30,26,36,0.9));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 6px 12px -8px rgba(0,0,0,0.9);
+}
+html[data-theme="hollowgrave"] .lb-row .leaderboard-rank { font-family: var(--font-grave); font-size: 1em; color: #8f86a0; }
+/* Each count bar is a slow-burning fuse with a flame at its end. */
+html[data-theme="hollowgrave"] .lb-bar { overflow: visible; height: 5px; background: rgba(10,8,14,0.7); box-shadow: inset 0 1px 2px rgba(0,0,0,0.8); }
+html[data-theme="hollowgrave"] .lb-bar > span { position: relative; }
+html[data-theme="hollowgrave"] .lb-bar > span::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  width: 9px;
+  height: 13px;
+  margin-top: -10px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 10 14%22%3E%3Cpath d=%22M5 .5 C8.5 4.5 8.6 8 5 13.5 C1.4 8 1.5 4.5 5 .5 Z%22 fill=%22%23ffb347%22/%3E%3Cpath d=%22M5 5 C6.6 7 6.5 9 5 11.5 C3.5 9 3.4 7 5 5 Z%22 fill=%22%23fff3c4%22/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 0 4px rgba(255,170,70,0.9));
+  animation: graveCandleFlicker 1.7s steps(1) infinite;
+}
+html[data-theme="hollowgrave"] .lb-avatar { box-shadow: 0 0 0 2px #15111b, 0 0 0 4px #b08d4a, 0 6px 14px rgba(0,0,0,0.6); }
+
+/* ---------- Table: an iron band for the header, carved rows ---------- */
+html[data-theme="hollowgrave"] thead tr {
+  background:
+    radial-gradient(circle at 8px 5px, #8a80a0 0 1.3px, #2c2735 2.2px, transparent 2.8px) 0 0 / 40px 100% repeat-x,
+    linear-gradient(180deg, #2a2433, #17121d);
+  box-shadow: inset 0 -2px 0 #3d3649;
+}
+html[data-theme="hollowgrave"] th { font-family: var(--font-label); font-weight: 600; letter-spacing: 0.16em; }
+html[data-theme="hollowgrave"] tbody tr { box-shadow: inset 0 -1px 0 rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.025); }
+html[data-theme="hollowgrave"] .user-cell img {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid #b08d4a;
+  box-shadow: 0 0 0 1px #15111b;
+}
+
+/* ---------- Crypt panels: the lookup and denick panels get a carved
+   inner border with iron corner brackets ---------- */
+html[data-theme="hollowgrave"] #form-container,
+html[data-theme="hollowgrave"] #denickContainer {
+  position: relative;
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(241,216,138,0.05), transparent 60%),
+    radial-gradient(40% 30% at 100% 100%, rgba(92,122,58,0.10), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, rgba(36,31,45,0.97), rgba(20,16,26,0.98));
+}
+html[data-theme="hollowgrave"] #form-container::after,
+html[data-theme="hollowgrave"] #denickContainer::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: calc(var(--radius-l) - 6px);
+  border: 1px solid rgba(0,0,0,0.55);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.04);
+  background:
+    linear-gradient(#5a5168, #5a5168) left top / 18px 3px no-repeat,
+    linear-gradient(#5a5168, #5a5168) left top / 3px 18px no-repeat,
+    linear-gradient(#5a5168, #5a5168) right top / 18px 3px no-repeat,
+    linear-gradient(#5a5168, #5a5168) right top / 3px 18px no-repeat,
+    linear-gradient(#5a5168, #5a5168) left bottom / 18px 3px no-repeat,
+    linear-gradient(#5a5168, #5a5168) left bottom / 3px 18px no-repeat,
+    linear-gradient(#5a5168, #5a5168) right bottom / 18px 3px no-repeat,
+    linear-gradient(#5a5168, #5a5168) right bottom / 3px 18px no-repeat;
+  pointer-events: none;
+  z-index: 0;
+}
+html[data-theme="hollowgrave"] #form-container > :not(.success-flourish),
+html[data-theme="hollowgrave"] #denickContainer > :not(.success-flourish) { position: relative; z-index: 1; }
+
+/* The record box in a player popup is a little plot ringed by stones. */
+html[data-theme="hollowgrave"] .modal-record {
+  border: 0;
+  border-radius: 4px;
+  padding: 14px 22px;
+  background:
+    radial-gradient(circle at 9px 9px, #4a4456 0 3.5px, #2c2834 4.5px, transparent 5px),
+    radial-gradient(circle at calc(100% - 9px) 9px, #4a4456 0 3.5px, #2c2834 4.5px, transparent 5px),
+    radial-gradient(circle at 9px calc(100% - 9px), #4a4456 0 3.5px, #2c2834 4.5px, transparent 5px),
+    radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #4a4456 0 3.5px, #2c2834 4.5px, transparent 5px),
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22180%22 height=%22180%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22180%22 height=%22180%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #1a1410, #120e0c);
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+}
+html[data-theme="hollowgrave"] .modal-record-label { font-family: var(--font-label); font-weight: 600; letter-spacing: 0.16em; color: #a99fb7; }
+html[data-theme="hollowgrave"] .modal-record-value { font-family: var(--font-label); color: #ffd9a8; }
+
+/* ---------- Footer: the far end of the graveyard ---------- */
+html[data-theme="hollowgrave"] .site-footer::before {
+  content: "";
+  display: block;
+  height: 46px;
+  margin-bottom: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 600 46%22%3E%3Cpath transform=%22rotate(1.3 12.3 46)%22 d=%22M12.3 46 V13.5 M6.3 21.5 H18.3%22 stroke=%22%23221d2b%22 stroke-width=%223.4%22/%3E%3Cpath transform=%22rotate(-0.8 50.1 46)%22 d=%22M50.1 46 V24.2 M44.1 32.2 H56.1%22 stroke=%22%231c1824%22 stroke-width=%223.4%22/%3E%3Cpath transform=%22rotate(-0.0 98.1 46)%22 d=%22M88.2 46 V38.4 a9.9 9.9 0 0 1 19.9 0 V46 Z%22 fill=%22%231c1824%22/%3E%3Cpath transform=%22rotate(6.6 241.2 46)%22 d=%22M241.2 46 V12.4 M235.2 20.4 H247.2%22 stroke=%22%23181420%22 stroke-width=%223.4%22/%3E%3Cpath transform=%22rotate(4.1 272.6 46)%22 d=%22M266.7 46 V21.5 L272.6 15.5 L278.6 21.5 V46 Z%22 fill=%22%23181420%22/%3E%3Cpath transform=%22rotate(2.4 320.7 46)%22 d=%22M312.6 46 V26.9 a8.1 8.1 0 0 1 16.3 0 V46 Z%22 fill=%22%23181420%22/%3E%3Cpath transform=%22rotate(1.0 356.0 46)%22 d=%22M348.3 46 V36.6 a7.7 7.7 0 0 1 15.4 0 V46 Z%22 fill=%22%23181420%22/%3E%3Cpath transform=%22rotate(-3.0 393.0 46)%22 d=%22M385.6 46 V32.8 a7.5 7.5 0 0 1 15.0 0 V46 Z%22 fill=%22%23221d2b%22/%3E%3Cpath transform=%22rotate(-5.5 446.6 46)%22 d=%22M441.6 46 V16.3 L446.6 10.3 L451.6 16.3 V46 Z%22 fill=%22%231c1824%22/%3E%3Cpath transform=%22rotate(5.9 495.6 46)%22 d=%22M489.4 46 V20.7 L495.6 14.7 L501.8 20.7 V46 Z%22 fill=%22%23181420%22/%3E%3Cpath transform=%22rotate(-6.2 530.5 46)%22 d=%22M522.6 46 V21.7 L530.5 15.7 L538.4 21.7 V46 Z%22 fill=%22%23221d2b%22/%3E%3Cpath transform=%22rotate(6.6 574.2 46)%22 d=%22M565.4 46 V27.4 a8.7 8.7 0 0 1 17.5 0 V46 Z%22 fill=%22%23181420%22/%3E%3Cpath d=%22M0 46 V41 C100 37 200 43 300 40 S500 38 600 41 V46 Z%22 fill=%22%23141019%22/%3E%3C/svg%3E") center bottom / 600px 46px repeat-x;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  opacity: 0.9;
+}
+
+/* ---------- Scrollbars of stone ---------- */
+html[data-theme="hollowgrave"] { scrollbar-color: #4a4456 #0d0a12; }
+html[data-theme="hollowgrave"] ::-webkit-scrollbar-track { background: #0d0a12; }
+html[data-theme="hollowgrave"] ::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #3a3544, #4a4456); border-radius: 5px 5px 2px 2px; }
+html[data-theme="hollowgrave"] ::-webkit-scrollbar-thumb:hover { background: #f28c28; }
+
+@media (max-width: 700px) {
+  html[data-theme="hollowgrave"] .sweat-card { padding-top: 56px; }
+  html[data-theme="hollowgrave"] .sweat-card-top::before { border-radius: 50% 50% 5px 5px / 50px 50px 5px 5px; }
+  html[data-theme="hollowgrave"] .sweat-card-index { top: 60px; }
+  html[data-theme="hollowgrave"] .toolbar { padding: 16px 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="hollowgrave"] .quick-nav-link.active::before,
+  html[data-theme="hollowgrave"] .chip:not(.roster-chip) > input:checked + span::before,
+  html[data-theme="hollowgrave"] .lb-bar > span::after { animation: none; }
+}
 /* @@END-HOLLOWGRAVE@@ */
 
 /* ============================================================

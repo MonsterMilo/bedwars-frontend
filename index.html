@@ -12035,7 +12035,7 @@ html[data-theme="hollowgrave"] .grave-crawl-clod {
 /* @@END-HOLLOWGRAVE@@ */
 /* @@HG-EVENT@@ */
 /* ---------- October extras: storm, parting fog, crows, the séance,
-   the pumpkin hunt and the Blood Moon ---------- */
+   and the Blood Moon ---------- */
 /* A ruined chapel on the horizon, barely there against the sky until
    lightning lights the clouds behind it. One window still burns. */
 #gravefield .gf-sky {
@@ -12317,41 +12317,13 @@ html[data-theme="hollowgrave"] #statsEmpty.seance-on #statsEmptyText { visibilit
   .seance-msg { font-size: 19px; }
 }
 
-/* The pumpkin hunt: ten jack-o'-lanterns tucked around the graveyard. */
-.hg-pumpkin { display: none; }
-html[data-theme="hollowgrave"] .hg-pumpkin {
-  display: block;
-  position: absolute;
-  z-index: 4;
-  width: 19px;
-  height: 17px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 40%;
-  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 34 30%22%3E %3Cdefs%3E%3CradialGradient id=%22g%22 cx=%2245%25%22 cy=%2238%25%22 r=%2270%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23ffa23d%22/%3E%3Cstop offset=%22.6%22 stop-color=%22%23e2680f%22/%3E%3Cstop offset=%221%22 stop-color=%22%238f3a06%22/%3E%3C/radialGradient%3E %3CradialGradient id=%22f%22 cx=%2250%25%22 cy=%2250%25%22 r=%2260%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23fff2b0%22/%3E%3Cstop offset=%22.7%22 stop-color=%22%23ffc24a%22/%3E%3Cstop offset=%221%22 stop-color=%22%23ff8c1a%22/%3E%3C/radialGradient%3E%3C/defs%3E %3Cpath d=%22M16 6 C15 3.5 15.5 1.5 18 0.6 C18.6 1.4 18 2.4 17.6 3.4 C17.3 4.4 17.8 5.4 18.4 6.2 Z%22 fill=%22%234a3a1c%22/%3E %3Cellipse cx=%229.5%22 cy=%2217.5%22 rx=%228%22 ry=%2211%22 fill=%22url(%23g)%22/%3E %3Cellipse cx=%2224.5%22 cy=%2217.5%22 rx=%228%22 ry=%2211%22 fill=%22url(%23g)%22/%3E %3Cellipse cx=%2217%22 cy=%2217.5%22 rx=%229%22 ry=%2211.8%22 fill=%22url(%23g)%22/%3E %3Cpath d=%22M12.5 7.5 C9.5 12 9.5 23 12.5 28 M21.5 7.5 C24.5 12 24.5 23 21.5 28%22 stroke=%22%239a420a%22 stroke-width=%22.8%22 fill=%22none%22 opacity=%22.7%22/%3E %3Cpath d=%22M8 14 L12.5 12 L12 17 Z M26 14 L21.5 12 L22 17 Z%22 fill=%22url(%23f)%22/%3E %3Cpath d=%22M15.5 16 L17 13.5 L18.5 16 Z%22 fill=%22url(%23f)%22/%3E %3Cpath d=%22M7.5 19.5 C10 23.5 24 23.5 26.5 19.5 L24 20.6 L23 22.6 L21 21.2 L19.3 23.3 L17 21.6 L14.7 23.3 L13 21.2 L11 22.6 L10 20.6 Z%22 fill=%22url(%23f)%22/%3E %3C/svg%3E") center / contain no-repeat;
-  cursor: pointer;
-  pointer-events: auto;
-  opacity: 0.6;
-  animation: pkFlicker 9s ease-in-out infinite;
-  animation-delay: var(--pd, 0s);
-  transition: transform 0.25s cubic-bezier(.2,.8,.3,1.4);
-}
-html[data-theme="hollowgrave"] .hg-pumpkin:hover,
-html[data-theme="hollowgrave"] .hg-pumpkin:focus-visible { opacity: 1; transform: scale(1.35) rotate(-6deg); outline: none; animation-play-state: paused; filter: drop-shadow(0 0 6px rgba(255,160,50,0.85)); }
-/* Mostly a dull, unlit lump; every so often its candle gutters up. */
-@keyframes pkFlicker {
-  0%, 64%, 82%, 100% { filter: brightness(0.6) saturate(0.7); }
-  68% { filter: brightness(1.1) drop-shadow(0 0 6px rgba(255,160,50,0.75)); }
-  71% { filter: brightness(0.7) saturate(0.8); }
-  75% { filter: brightness(1.05) drop-shadow(0 0 5px rgba(255,160,50,0.6)); }
-}
-html[data-theme="hollowgrave"] .hg-pumpkin.found { opacity: 1; pointer-events: none; animation: pkFound 0.9s cubic-bezier(.3,.7,.4,1) forwards; }
-@keyframes pkFound {
-  0% { transform: none; filter: drop-shadow(0 0 6px #ffb347); }
-  30% { transform: scale(1.6) translateY(-8px); filter: drop-shadow(0 0 18px #ffc067) brightness(1.5); }
-  100% { transform: scale(0.4) translateY(-46px); opacity: 0; filter: drop-shadow(0 0 4px #ffb347); }
-}
+/* The big moon is the Blood Moon's switch: it answers the cursor with a
+   faint brightening, and clicking it turns the night red (or back). The
+   title overlaps it, so the hit test is done by position in JS. */
+html[data-theme="hollowgrave"] .hero-pin { transition: filter 0.4s ease; }
+html[data-theme="hollowgrave"] .hero-pin.hot { filter: brightness(1.15); }
+html[data-theme="hollowgrave"].hg-moon-hot .hero,
+html[data-theme="hollowgrave"].hg-moon-hot .hero * { cursor: pointer; }
 .hg-ember {
   position: fixed;
   z-index: 7000;
@@ -12362,19 +12334,6 @@ html[data-theme="hollowgrave"] .hg-pumpkin.found { opacity: 1; pointer-events: n
   box-shadow: 0 0 6px 2px rgba(242,140,40,0.75);
   pointer-events: none;
 }
-/* Where each one hides. */
-html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="moon"] { right: 4px; bottom: 2px; }
-html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="fence"] { right: 62px; top: -15px; }
-html[data-theme="hollowgrave"] #bottomNav .hg-pumpkin[data-pk="fence"] { right: 30%; top: -14px; }
-html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="plot"] { right: -12px; bottom: -6px; }
-html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="idle"] { left: calc(50% + 46px); bottom: 3px; width: 15px; height: 13px; }
-html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="panel"] { left: 18px; bottom: 16px; }
-html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="tablet"] { left: 10px; bottom: 4px; }
-html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="stone"] { left: 13%; top: 30px; width: 15px; height: 13px; }
-html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="denick"] { right: 16px; bottom: 12px; }
-html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="footer"] { left: 23%; bottom: 22px; width: 16px; height: 14px; }
-html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="coffin"] { left: 16px; bottom: 14px; }
-.hg-pk-host { position: relative; }
 
 /* Theme menu: the Blood Moon row appears once all ten are found. */
 #themeDropdownMenu li.theme-opt-bloodmoon {
@@ -12407,7 +12366,7 @@ html[data-theme="hollowgrave"] .hg-pumpkin[data-pk="coffin"] { left: 16px; botto
 #themeDropdownMenu li.theme-opt-bloodmoon .theme-opt-tag { color: #ff8f80; opacity: 1; font-family: 'Crimson Pro', Georgia, serif; font-style: italic; font-size: 12px; }
 
 /* ---------- Blood Moon ----------
-   Unlocked by finding every pumpkin: the moon turns red, the sky and fog
+   Unlocked by clicking the big moon: it turns red, the sky and fog
    pick up the color, and every ectoplasm-green glow turns to blood. */
 html[data-theme="hollowgrave"].blood-moon {
   --accent-2: #ff4a4a;
@@ -12561,7 +12520,7 @@ html[data-theme="hollowgrave"].blood-moon #form-container::after, html[data-them
     linear-gradient(#5a5168, #5a5168) right bottom / 3px 18px no-repeat; }
 
 @media (prefers-reduced-motion: reduce) {
-  #gravefield .gf-chapel b, html[data-theme="hollowgrave"] .hg-crow, html[data-theme="hollowgrave"] .hg-pumpkin, #hgMist i, .ouija .planchette::after { animation: none !important; }
+  #gravefield .gf-chapel b, html[data-theme="hollowgrave"] .hg-crow, #hgMist i, .ouija .planchette::after { animation: none !important; }
 }
 html[data-theme="hollowgrave"] #statsEmpty { position: relative; }
 /* @@END-HG-EVENT@@ */
@@ -13495,7 +13454,7 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
         <li role="option" data-theme-value="skyisles" data-label="Sky Isles" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Sky Isles</span><span class="theme-opt-tag">Retro pixel skies</span></span></li>
         <li class="theme-season-head" role="presentation" aria-hidden="true"><span class="theme-season-title">&#127875; Seasonal</span><span class="theme-season-pill">Limited time</span></li>
         <li role="option" class="theme-opt-seasonal" data-theme-value="hollowgrave" data-label="Hollow Grave" aria-selected="false" tabindex="0"><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Hollow Grave <span class="theme-opt-badge">Halloween</span></span><span class="theme-opt-tag" id="seasonTag">Moonlit graveyard</span></span></li>
-        <li role="option" class="theme-opt-bloodmoon" data-label="Blood Moon" aria-selected="false" tabindex="0" hidden><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Blood Moon</span><span class="theme-opt-tag">All ten pumpkins found</span></span></li>
+        <li role="option" class="theme-opt-bloodmoon" data-label="Blood Moon" aria-selected="false" tabindex="0" hidden><span class="theme-swatch" aria-hidden="true"><i></i><b></b></span><span class="theme-opt-text"><span class="theme-opt-name">Blood Moon</span><span class="theme-opt-tag">Rises when you touch the moon</span></span></li>
       </ul>
     </div>
     <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; <span class="key-owner-name">Your Key</span></button>
@@ -15012,16 +14971,7 @@ window.siteAudio = (function () {
         noise(t, { type: "bandpass", f: 650, f2: 420, q: 1.3, dur: 0.2, gain: 0.05, swell: 0.4 });
         tone(t, { type: "triangle", f: 96, f2: 80, dur: 0.12, gain: 0.03, a: 0.03 });
       },
-      // A pumpkin found: a hollow knock, its candle catching, and one organ
-      // note that climbs a step with each one found.
-      pumpkin(t, o = {}) {
-        const n = Math.max(1, Math.min(10, o.n || 1));
-        thud(t, { f: 150, f2: 70, gain: 0.3, nf: 650 });
-        noise(t + 0.04, { type: "lowpass", f: 200, f2: 560, dur: 0.38, gain: 0.14, swell: 0.3, rate: 0.6 });
-        organ(t + 0.06, [50, 52, 53, 55, 57, 58, 60, 62, 64, 65][n - 1], { len: 0.3, rel: 0.7, gain: 0.04 });
-        knell(t + 0.08, 38, { gain: 0.03, len: 1.1 });
-      },
-      // All ten found: the ground rumbles, a long minor organ chord swells
+      // The Blood Moon rising: the ground rumbles, a long minor organ chord swells
       // and a bell tolls three times as the moon turns red.
       bloodmoon(t) {
         noise(t, { type: "lowpass", f: 120, f2: 260, dur: 2.4, gain: 0.25, swell: 0.5, rate: 0.4 });
@@ -15608,7 +15558,7 @@ window.siteAudio = (function () {
     ledger: { hover: 8, view: 4, toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2, ambience: 0.5 },
     deepcurrent: { hover: 8, toggle: -2, save: 2, delete: -2, slide: 3, type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -1 },
     skyisles: { hover: 12, click: 10, rare: -9, combo: 9.5, ui: 5, toggle: -1, save: 8, delete: 2.5, slide: 8.5, page: 6, view: 3, type: 10, switch: 6, flipOpen: 8, flipClose: 4, scan: 6.5, found: 4, error: 3, success: 1, stunt: 7, arrive: 7.5, ambience: 11 },
-    hollowgrave: { thunder: -11, crow: 4, planchette: 3, pumpkin: -2.5, bloodmoon: -2, click: -8, rare: -8.5, combo: -0.5, ui: -3.5, toggle: -8, save: -9, delete: -13.5, slide: 1, page: -3.5, view: -10.5, type: 3, switch: -2, flipOpen: 3.5, flipClose: -9, scan: -13, found: -3, error: -11, success: -4.5, stunt: -3.5, hover: -9.5, chime: -4.5, arrive: -7.5, ambience: 5 },
+    hollowgrave: { thunder: -11, crow: 4, planchette: 3, bloodmoon: -2, click: -8, rare: -8.5, combo: -0.5, ui: -3.5, toggle: -8, save: -9, delete: -13.5, slide: 1, page: -3.5, view: -10.5, type: 3, switch: -2, flipOpen: 3.5, flipClose: -9, scan: -13, found: -3, error: -11, success: -4.5, stunt: -3.5, hover: -9.5, chime: -4.5, arrive: -7.5, ambience: 5 },
     shared: { bed: -5, chat: -2 },
   };
   const SHARED = { chat: (t) => pling(t, [78, 85]), techno: fanfare, bed: bedDestroyed };
@@ -15859,8 +15809,6 @@ function updateSeasonalTheme() {
   const left = new Date(now.getFullYear(), 10, 1) - now;
   const days = Math.floor(left / 86400000), hours = Math.floor(left / 3600000) % 24, mins = Math.floor(left / 60000) % 60;
   seasonTag.textContent = days >= 2 ? `Leaves in ${days} days` : days === 1 ? `Leaves in 1 day ${hours}h` : `Last night! ${hours}h ${mins}m left`;
-  const pumpkins = hgPumpkinsFound().length;
-  if (pumpkins || currentThemeId() === "hollowgrave") seasonTag.textContent += pumpkins >= 10 ? " \u00b7 Blood Moon" : ` \u00b7 \u{1F383} ${pumpkins}/10`;
 }
 // The seasonal entry is lettered in Hollow Grave's Grenze/Crimson Pro in
 // every theme, so fetch just those two faces the first time the menu opens.
@@ -22084,8 +22032,8 @@ document.addEventListener("keydown", (e) => {
 // @@HG-EVENT-JS@@
 // ---- Hollow Grave: the October extras ----
 // A storm over a ruined chapel, fog that parts around the cursor, crows on
-// the headstones, a Ouija-board séance for lookups, and ten pumpkins
-// hidden around the page that unlock the Blood Moon. Everything here
+// the headstones, a Ouija-board séance for lookups, and a Blood Moon that
+// rises when you click the big moon. Everything here
 // checks the theme first and sits still for reduced motion.
 const hgOn = () => currentThemeId() === "hollowgrave";
 const hgCalm = () => reducedMotionQuery.matches;
@@ -22434,98 +22382,30 @@ window.hgSeance = (function () {
   return { start, finish, cancel };
 })();
 
-// The pumpkin hunt. Ten jack-o'-lanterns hide around the page (one only
-// shows up inside a player's popup); each one found is remembered for the
-// year, and finding all ten raises the Blood Moon.
-function hgPumpkinsFound() {
-  try {
-    const saved = JSON.parse(localStorage.getItem("hgPumpkins") || "null");
-    return saved && saved.year === new Date().getFullYear() ? saved.found : [];
-  } catch (e) { return []; }
-}
+// The Blood Moon. Clicking the big moon beside the title turns it red
+// (and clicking again turns it back); once raised, the theme menu also
+// gets a Blood Moon entry. The choice is remembered.
 function hgBloodMoonState() {
   try { return localStorage.getItem("hgBloodMoon") || ""; } catch (e) { return ""; }
 }
-(function pumpkinHunt() {
-  const TOTAL = 10;
-  const shown = (el) => (el && el.getClientRects().length ? el : null);
-  const SPOTS = [
-    ["moon", () => document.querySelector(".hero-pin")],
-    ["fence", () => shown(document.getElementById("quickNav")) || shown(document.getElementById("bottomNav"))],
-    ["plot", () => document.querySelector("#sweatLookupSection .panel-icon")],
-    ["idle", () => document.querySelector("#statsEmpty .idle-grave")],
-    ["panel", () => document.getElementById("form-container")],
-    ["tablet", () => document.querySelector("#sweatStats > :last-child")],
-    ["stone", () => cardGrid.querySelector(".sweat-card:nth-child(6)")],
-    ["denick", () => document.getElementById("denickEmpty")],
-    ["footer", () => document.querySelector(".site-footer-end")],
-    ["coffin", () => document.querySelector("#playerModal .modal-card")],
-  ];
+(function bloodMoon() {
+  try { localStorage.removeItem("hgPumpkins"); } catch (e) {}
   const bmOpt = document.querySelector("#themeDropdownMenu .theme-opt-bloodmoon");
   const hgOpt = document.querySelector('#themeDropdownMenu li[data-theme-value="hollowgrave"]');
-  function save(found) {
-    try { localStorage.setItem("hgPumpkins", JSON.stringify({ year: new Date().getFullYear(), found })); } catch (e) {}
-  }
-  function place() {
-    const found = hgPumpkinsFound();
-    document.querySelectorAll(".hg-pumpkin").forEach(b => {
-      if (!hgOn() || found.includes(b.dataset.pk)) b.remove();
-    });
-    if (!hgOn()) return;
-    SPOTS.forEach(([pk, get], i) => {
-      if (found.includes(pk)) return;
-      const host = get();
-      const existing = document.querySelector(`.hg-pumpkin[data-pk="${pk}"]`);
-      if (existing && existing.parentElement === host) return;
-      if (existing) existing.remove();
-      if (!host) return;
-      if (getComputedStyle(host).position === "static") host.classList.add("hg-pk-host");
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "hg-pumpkin";
-      b.dataset.pk = pk;
-      b.tabIndex = -1;
-      b.setAttribute("aria-label", "A hidden jack-o'-lantern");
-      b.style.setProperty("--pd", (-i * 0.37).toFixed(2) + "s");
-      host.appendChild(b);
-    });
-  }
+  const moon = document.querySelector(".hero-pin");
   function embers(x, y) {
     if (hgCalm()) return;
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 14; i++) {
       const e = document.createElement("i");
       e.className = "hg-ember";
       e.style.left = x + "px";
       e.style.top = y + "px";
       document.body.appendChild(e);
-      const a = hgRnd(-Math.PI, 0), d = hgRnd(30, 90);
-      e.animate([{ transform: "translate(-50%,-50%) scale(1)", opacity: 1 }, { transform: `translate(calc(-50% + ${Math.cos(a) * d}px), calc(-50% + ${Math.sin(a) * d - 30}px)) scale(0.2)`, opacity: 0 }],
-        { duration: hgRnd(700, 1200), easing: "cubic-bezier(.2,.7,.4,1)" }).onfinish = () => e.remove();
+      const a = hgRnd(0, Math.PI * 2), d = hgRnd(40, 110);
+      e.animate([{ transform: "translate(-50%,-50%) scale(1)", opacity: 1 }, { transform: `translate(calc(-50% + ${Math.cos(a) * d}px), calc(-50% + ${Math.sin(a) * d}px)) scale(0.2)`, opacity: 0 }],
+        { duration: hgRnd(800, 1400), easing: "cubic-bezier(.2,.7,.4,1)" }).onfinish = () => e.remove();
     }
   }
-  function collect(b) {
-    const found = hgPumpkinsFound();
-    if (found.includes(b.dataset.pk)) return;
-    found.push(b.dataset.pk);
-    save(found);
-    const r = b.getBoundingClientRect();
-    embers(r.left + r.width / 2, r.top + r.height / 2);
-    b.classList.add("found");
-    setTimeout(() => b.remove(), 950);
-    const n = found.length;
-    siteAudio.play("pumpkin", { n, x: r.left });
-    if (n >= TOTAL) setTimeout(raiseBloodMoon, 900);
-    else if (n === 1) eggToast(`&#127875; <b>You found a jack-o'-lantern!</b> ${TOTAL - 1} more are hidden around the graveyard.`, 6000);
-    else eggToast(`&#127875; <b>${n} of ${TOTAL}</b> jack-o'-lanterns found.${n === TOTAL - 1 ? " One left…" : ""}`, 3800);
-    updateSeasonalTheme();
-  }
-  document.addEventListener("click", (e) => {
-    const b = e.target.closest(".hg-pumpkin");
-    if (!b) return;
-    e.preventDefault();
-    e.stopPropagation();
-    collect(b);
-  }, true);
   function syncMenu() {
     const state = hgBloodMoonState();
     const on = state === "on";
@@ -22541,17 +22421,43 @@ function hgBloodMoonState() {
     try { localStorage.setItem("hgBloodMoon", on ? "on" : "off"); } catch (e) {}
     syncMenu();
   }
-  function raiseBloodMoon() {
+  let busy = false;
+  function toggleFromMoon() {
+    if (busy) return;
+    const rising = hgBloodMoonState() !== "on";
     const first = !hgBloodMoonState();
-    siteAudio.play("bloodmoon");
-    const moon = document.querySelector(".hero-pin");
-    if (moon && !hgCalm()) {
+    const r = moon.getBoundingClientRect();
+    embers(r.left + r.width / 2, r.top + r.height / 2);
+    if (rising) siteAudio.play("bloodmoon");
+    else siteAudio.play("switch");
+    if (!hgCalm()) {
+      busy = true;
       moon.animate([{ filter: "none", transform: "none" }, { filter: "brightness(1.7) saturate(1.6)", transform: "scale(1.12)", offset: 0.45 }, { filter: "none", transform: "none" }], { duration: 2600, easing: "ease-in-out" });
-      setTimeout(() => setBloodMoon(true), 1100);
-    } else setBloodMoon(true);
-    eggToast(`&#129656; <b>The Blood Moon rises.</b> You found all ten. ${first ? "Turn it on or off any time from the theme menu." : ""}`, 8000);
-    updateSeasonalTheme();
+      setTimeout(() => { setBloodMoon(rising); busy = false; }, 1100);
+    } else setBloodMoon(rising);
+    if (rising) eggToast(`&#129656; <b>The Blood Moon rises.</b>${first ? " Click the moon again, or use the theme menu, to bring the night back." : ""}`, first ? 8000 : 3500);
   }
+  // The title's box sits over the moon, so find the moon by position: a
+  // click inside its disc (and not on a link or control) is the moon's.
+  const overMoon = (e) => {
+    if (!moon || !hgOn()) return false;
+    const r = moon.getBoundingClientRect();
+    if (!r.width) return false;
+    return Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)) <= r.width / 2;
+  };
+  let hot = false;
+  document.addEventListener("pointermove", (e) => {
+    const now = e.pointerType === "mouse" && overMoon(e);
+    if (now === hot) return;
+    hot = now;
+    moon.classList.toggle("hot", hot);
+    document.documentElement.classList.toggle("hg-moon-hot", hot);
+  }, { passive: true });
+  document.addEventListener("click", (e) => {
+    if (!overMoon(e) || e.target.closest("a, button, input, select, textarea, label, [role='option']")) return;
+    e.stopPropagation();
+    toggleFromMoon();
+  }, true);
   if (bmOpt) {
     const pickBlood = () => {
       const r = bmOpt.getBoundingClientRect();
@@ -22564,15 +22470,9 @@ function hgBloodMoonState() {
     bmOpt.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pickBlood(); } });
   }
   if (hgOpt) hgOpt.addEventListener("click", () => { if (hgBloodMoonState() === "on") setBloodMoon(false); });
-  let resizeTimer = 0;
-  window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(place, 300); });
-  new MutationObserver(place).observe(cardGrid, { childList: true });
-  const tablets = document.getElementById("sweatStats");
-  if (tablets) new MutationObserver(place).observe(tablets, { childList: true });
-  document.addEventListener("themechange", () => { syncMenu(); place(); });
+  document.addEventListener("themechange", syncMenu);
   syncMenu();
-  place();
-  window.hgPumpkins = { place, collect, raiseBloodMoon, setBloodMoon };
+  window.hgBloodMoon = { set: setBloodMoon, toggle: toggleFromMoon };
 })();
 // @@END-HG-EVENT-JS@@
 

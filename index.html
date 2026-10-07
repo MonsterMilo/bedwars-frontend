@@ -14875,20 +14875,78 @@ window.siteAudio = (function () {
         [62, 65, 69, 74].forEach(n => organ(t + 0.6, n, { len: 0.6, rel: 0.8, gain: 0.03 }));
         knell(t + 0.62, 50, { gain: 0.05, len: 1.6 });
       },
-      // October extras. Thunder: a sharp crack when the strike is close,
-      // then a long low roll that grumbles off across the hills.
+      // October extras. Thunder, the way it sounds from a few miles off:
+      // no synth tones, just a deep rumble built sample by sample from brown
+      // noise, rolling in several uneven waves that grumble and fade, its
+      // top end closing down as it rolls away. Closer strikes start with a
+      // muffled tearing crackle and come in brighter and faster.
       thunder(t, o = {}) {
         const near = o.near != null ? o.near : 0.5;
-        if (near > 0.55) {
-          noise(t, { type: "highpass", f: 1400, dur: 0.09, gain: 0.1 * near });
-          noise(t + 0.01, { type: "lowpass", f: 2600, f2: 380, dur: 0.4, gain: 0.3 * near });
+        const sr = ctx.sampleRate, dur = 6.5 + (1 - near) * 2;
+        const n = Math.floor(sr * dur);
+        const buf = ctx.createBuffer(2, n, sr);
+        // The rolls: one main wave and a few aftershocks at random times,
+        // each swelling in and dying away at its own pace.
+        const rolls = [{ at: 0, amp: 1, atk: 0.12 + (1 - near) * 0.5, tau: 0.9 + rnd(0, 0.6) }];
+        const extra = 3 + Math.floor(rnd(0, 3));
+        for (let i = 0; i < extra; i++) rolls.push({ at: rnd(0.4, dur * 0.55), amp: rnd(0.35, 0.8) * (1 - i * 0.12), atk: rnd(0.15, 0.6), tau: rnd(0.5, 1.4) });
+        const env = new Float32Array(n);
+        const step = 64;
+        let flutter = 0, ft = 0;
+        for (let i = 0; i < n; i += step) {
+          const tt = i / sr;
+          let e = 0;
+          for (const r of rolls) {
+            const d = tt - r.at;
+            if (d <= 0) continue;
+            e += r.amp * (d < r.atk ? Math.pow(d / r.atk, 1.6) : Math.exp(-(d - r.atk) / r.tau));
+          }
+          // Slow random grumble on top, so the roll never sounds smooth.
+          if (i % (step * 40) === 0) ft = Math.random();
+          flutter += (ft - flutter) * 0.06;
+          const v = e * (0.55 + 0.9 * flutter) * Math.min(1, (dur - tt) / 1.2);
+          for (let j = i; j < i + step && j < n; j++) env[j] = v;
         }
-        let k = 0.04;
-        for (let i = 0; i < 6; i++) {
-          noise(t + k, { type: "lowpass", f: rnd(170, 280), f2: rnd(70, 110), dur: rnd(1.2, 2.3), gain: rnd(0.3, 0.45) * (1 - i * 0.1) * (0.55 + near * 0.45), swell: 0.18, rate: 0.4, pan: rnd(-0.5, 0.5) });
-          k += rnd(0.3, 0.6);
+        const crack = near > 0.6 ? (near - 0.6) * 2.5 : 0;
+        // Most of the rumble is shared by both ears; a little is separate
+        // per ear so it feels wide, like it's coming off the whole sky.
+        const shared = new Float32Array(n);
+        for (let i = 0; i < n; i++) shared[i] = Math.random() * 2 - 1;
+        for (let c = 0; c < 2; c++) {
+          const d = buf.getChannelData(c);
+          let bShared = 0, bOwn = 0, last = 0;
+          for (let i = 0; i < n; i++) {
+            const w = shared[i];
+            bShared = (bShared + 0.02 * w) / 1.02;
+            bOwn = (bOwn + 0.02 * (Math.random() * 2 - 1)) / 1.02;
+            let v = (bShared * 0.75 + bOwn * 0.45) * 3.2 * env[i];
+            // The opening tear of a closer strike: short ragged bursts of
+            // brighter noise in the first fraction of a second.
+            if (crack && i < sr * 0.45) {
+              const tt = i / sr;
+              const burst = Math.random() < 0.002 ? 1 : 0;
+              last = last * 0.996 + burst * (0.6 + Math.random());
+              v += (w - 0.5 * (Math.random() * 2 - 1)) * 0.22 * crack * last * Math.exp(-tt / 0.18);
+            }
+            d[i] = v;
+          }
         }
-        tone(t + 0.05, { f: 44, f2: 30, dur: 2.6, hold: 0.4, gain: 0.28 * (0.55 + near * 0.45), a: 0.25, vib: [6, 4] });
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        const hp = ctx.createBiquadFilter();
+        hp.type = "highpass"; hp.frequency.value = 24;
+        const lp = ctx.createBiquadFilter();
+        lp.type = "lowpass"; lp.Q.value = 0.5;
+        lp.frequency.setValueAtTime(260 + near * 900, t);
+        lp.frequency.exponentialRampToValueAtTime(140 + near * 120, t + 1.2);
+        lp.frequency.exponentialRampToValueAtTime(90, t + dur);
+        const lp2 = ctx.createBiquadFilter();
+        lp2.type = "lowpass"; lp2.Q.value = 0.4;
+        lp2.frequency.value = 1400;
+        const g = gainNode(0.6 * (0.6 + near * 0.4), panNode(o.pan || rnd(-0.35, 0.35), curOut));
+        src.connect(hp); hp.connect(lp); lp.connect(lp2); lp2.connect(g);
+        src.start(t);
+        track(src, t + dur + 0.05);
       },
       // A crow taking off: a run of soft, heavy wingbeats (each a downstroke
       // whoosh with a quieter upstroke) that slow and fade as it flies away,

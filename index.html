@@ -10211,11 +10211,11 @@ html[data-theme="hollowgrave"] .hero-pin::after {
   left: 0;
   bottom: -30px;
   width: 200vw;
-  height: 46vh;
+  height: 56vh;
   background:
-    radial-gradient(ellipse 18% 34% at 12% 78%, rgba(190,180,220,0.13), transparent 70%),
-    radial-gradient(ellipse 24% 28% at 46% 86%, rgba(190,180,220,0.11), transparent 70%),
-    radial-gradient(ellipse 16% 30% at 78% 74%, rgba(190,180,220,0.12), transparent 70%);
+    radial-gradient(ellipse 17% 32% at 19% 74%, rgba(190,180,220,0.0715) 0%, rgba(190,180,220,0.0572) 15%, rgba(190,180,220,0.0358) 35%, rgba(190,180,220,0.0179) 55%, rgba(190,180,220,0.0072) 75%, rgba(190,180,220,0.0021) 90%, rgba(190,180,220,0.0) 100%),
+    radial-gradient(ellipse 22% 28% at 47% 82%, rgba(190,180,220,0.0618) 0%, rgba(190,180,220,0.0494) 15%, rgba(190,180,220,0.0309) 35%, rgba(190,180,220,0.0155) 55%, rgba(190,180,220,0.0062) 75%, rgba(190,180,220,0.0019) 90%, rgba(190,180,220,0.0) 100%),
+    radial-gradient(ellipse 16% 30% at 81% 70%, rgba(190,180,220,0.065) 0%, rgba(190,180,220,0.052) 15%, rgba(190,180,220,0.0325) 35%, rgba(190,180,220,0.0163) 55%, rgba(190,180,220,0.0065) 75%, rgba(190,180,220,0.002) 90%, rgba(190,180,220,0.0) 100%);
   background-size: 100vw 100%;
   background-repeat: repeat-x;
   will-change: transform;
@@ -10223,7 +10223,7 @@ html[data-theme="hollowgrave"] .hero-pin::after {
 #gravefield .gf-fog.f1 { animation: gfFog 70s linear infinite; }
 #gravefield .gf-fog.f2 {
   bottom: -60px;
-  height: 34vh;
+  height: 42vh;
   opacity: 0.85;
   background-position: 33vw 0;
   animation: gfFog 110s linear infinite reverse;
@@ -12116,19 +12116,19 @@ html[data-theme="hollowgrave"] #hgMist { display: block; }
   left: 0;
   right: 0;
   bottom: 0;
-  height: 24vh;
-  background: linear-gradient(to top, rgba(200,190,230,0.13), rgba(200,190,230,0.05) 55%, transparent);
+  height: 32vh;
+  background: linear-gradient(to top, rgba(200,190,230,0.13), rgba(200,190,230,0.09) 25%, rgba(200,190,230,0.045) 55%, rgba(200,190,230,0.012) 82%, rgba(200,190,230,0));
 }
 #hgMist i {
   position: absolute;
   left: 0;
   bottom: -40px;
   width: 200vw;
-  height: 40vh;
+  height: 50vh;
   background:
-    radial-gradient(ellipse 22% 40% at 14% 84%, rgba(205,195,232,0.2), transparent 70%),
-    radial-gradient(ellipse 28% 34% at 52% 92%, rgba(205,195,232,0.17), transparent 70%),
-    radial-gradient(ellipse 20% 36% at 82% 80%, rgba(205,195,232,0.19), transparent 70%);
+    radial-gradient(ellipse 18% 38% at 20% 78%, rgba(205,195,232,0.1955) 0%, rgba(205,195,232,0.1564) 15%, rgba(205,195,232,0.0978) 35%, rgba(205,195,232,0.0489) 55%, rgba(205,195,232,0.0196) 75%, rgba(205,195,232,0.0059) 90%, rgba(205,195,232,0.0) 100%),
+    radial-gradient(ellipse 24% 32% at 52% 86%, rgba(205,195,232,0.1667) 0%, rgba(205,195,232,0.1334) 15%, rgba(205,195,232,0.0834) 35%, rgba(205,195,232,0.0416) 55%, rgba(205,195,232,0.0167) 75%, rgba(205,195,232,0.0049) 90%, rgba(205,195,232,0.0) 100%),
+    radial-gradient(ellipse 16% 34% at 82% 76%, rgba(205,195,232,0.184) 0%, rgba(205,195,232,0.1472) 15%, rgba(205,195,232,0.092) 35%, rgba(205,195,232,0.046) 55%, rgba(205,195,232,0.0184) 75%, rgba(205,195,232,0.0055) 90%, rgba(205,195,232,0.0) 100%);
   background-size: 100vw 100%;
   background-repeat: repeat-x;
   will-change: transform;
@@ -12136,7 +12136,7 @@ html[data-theme="hollowgrave"] #hgMist { display: block; }
 }
 #hgMist i + i {
   bottom: -70px;
-  height: 30vh;
+  height: 38vh;
   opacity: 0.8;
   background-position: 40vw 0;
   animation: gfFog 140s linear infinite reverse;
@@ -14890,14 +14890,64 @@ window.siteAudio = (function () {
         }
         tone(t + 0.05, { f: 44, f2: 30, dur: 2.6, hold: 0.4, gain: 0.28 * (0.55 + near * 0.45), a: 0.25, vib: [6, 4] });
       },
-      // A crow: two hoarse, low caws and its wings beating as it lifts off.
+      // A crow taking off: a run of soft, heavy wingbeats (each a downstroke
+      // whoosh with a quieter upstroke) that slow and fade as it flies away,
+      // and usually one or two harsh, throaty caws.
       crow(t, o = {}) {
         const pan = o.pan || 0;
-        [0, 0.27].forEach((k, i) => {
-          tone(t + k, { type: "sawtooth", f: 330 - i * 25, f2: 250 - i * 20, glide: 0.16, dur: 0.1, hold: 0.06, gain: 0.07, bp: 950, q: 2.2, vib: [42, 30], a: 0.012, pan });
-          noise(t + k, { type: "bandpass", f: 1300, q: 1.2, dur: 0.15, gain: 0.025, pan });
-        });
-        for (let i = 0; i < 7; i++) noise(t + 0.05 + i * 0.075, { type: "lowpass", f: 760, f2: 300, dur: 0.06, gain: 0.08 - i * 0.008, pan });
+        const dir = pan < 0 ? -1 : 1;
+        let at = t, gap = 0.1;
+        for (let i = 0; i < 10; i++) {
+          const fade = 1 - i * 0.085, p = Math.max(-1, Math.min(1, pan + dir * i * 0.045));
+          const top = 1150 - i * 45;
+          noise(at, { type: "bandpass", f: top, f2: top * 0.38, fDur: 0.11, q: 0.75, dur: 0.12, gain: 0.19 * fade, swell: 0.22, pan: p });
+          noise(at, { type: "lowpass", f: 230, dur: 0.07, gain: 0.15 * fade, a: 0.006, pan: p });
+          noise(at + 0.004, { type: "highpass", f: 4200, dur: 0.05, gain: 0.012 * fade, pan: p });
+          noise(at + gap * 0.5, { type: "bandpass", f: top * 0.7, f2: top * 0.45, q: 0.8, dur: 0.07, gain: 0.05 * fade, swell: 0.4, pan: p });
+          at += gap;
+          gap = Math.min(0.16, gap + 0.007);
+        }
+        const caw = (c, f0, len, g) => {
+          const out = panNode(pan, curOut);
+          const env = gainNode(0, out);
+          env.gain.setValueAtTime(0.0001, c);
+          env.gain.linearRampToValueAtTime(g, c + 0.025);
+          env.gain.setValueAtTime(g * 0.9, c + len * 0.7);
+          env.gain.exponentialRampToValueAtTime(0.0001, c + len);
+          // Three throat resonances give it the "kraa" vowel.
+          const mix = gainNode(1);
+          [[620, 3, 0.7], [1250, 4.5, 1], [2300, 6, 0.45]].forEach(([f, q, v]) => {
+            const bp = ctx.createBiquadFilter();
+            bp.type = "bandpass"; bp.frequency.value = f; bp.Q.value = q;
+            mix.connect(bp); bp.connect(gainNode(v * 2.2, env));
+          });
+          // Rasp: the voice is amplitude-wobbled quickly, which is what makes
+          // a crow sound hoarse instead of like a horn.
+          const rasp = gainNode(0.55, mix);
+          const lfo = ctx.createOscillator();
+          lfo.type = "triangle"; lfo.frequency.value = 62;
+          lfo.connect(gainNode(0.45, rasp.gain));
+          const v = ctx.createOscillator();
+          v.type = "sawtooth";
+          v.frequency.setValueAtTime(f0 * 0.92, c);
+          v.frequency.linearRampToValueAtTime(f0, c + 0.05);
+          v.frequency.exponentialRampToValueAtTime(f0 * 0.8, c + len);
+          v.connect(rasp);
+          const sub = ctx.createOscillator();
+          sub.type = "square";
+          sub.frequency.setValueAtTime(f0 * 0.46, c);
+          sub.frequency.exponentialRampToValueAtTime(f0 * 0.4, c + len);
+          sub.connect(gainNode(0.18, rasp));
+          const air = ctx.createBufferSource();
+          air.buffer = noiseBuf; air.loop = true;
+          air.connect(gainNode(0.35, mix));
+          [lfo, v, sub].forEach(n => { n.start(c); track(n, c + len + 0.05); });
+          air.start(c, Math.random() * 1.5);
+          track(air, c + len + 0.05);
+        };
+        const caws = o.caws != null ? o.caws : Math.random() < 0.15 ? 0 : Math.random() < 0.55 ? 2 : 1;
+        if (caws > 0) caw(t + 0.12, 360, 0.32, 0.036);
+        if (caws > 1) caw(t + 0.55, 335, 0.28, 0.03);
       },
       // The planchette sliding over the wooden board.
       planchette(t) {
@@ -22061,7 +22111,7 @@ const hgRnd = (a, b) => a + Math.random() * (b - a);
   let tx = 0, ty = 0, x = 0, y = 0, r = 0, swell = 130, raf = 0, last = 0, touch = false, out = true, bare = true;
   // Two trailing points chase the cursor more slowly, so a moving cursor
   // leaves a continuous wake in the fog that closes up behind it.
-  const tails = [{ x: 0, y: 0, k: 0.06, floor: 0.3 }, { x: 0, y: 0, k: 0.03, floor: 0.6 }];
+  const tails = [{ x: 0, y: 0, k: 0.1, floor: 0.3 }, { x: 0, y: 0, k: 0.055, floor: 0.6 }];
   function paint(now) {
     const parts = [];
     if (r > 2) {
@@ -22089,14 +22139,21 @@ const hgRnd = (a, b) => a + Math.random() * (b - a);
       el.style.maskImage = mask;
     });
   }
+  let prev = 0;
   function tick(now) {
     raf = 0;
-    x += (tx - x) * 0.12;
-    y += (ty - y) * 0.12;
+    // The opening keeps up with the cursor (a touch of easing, whatever
+    // the frame rate); only the wake behind it trails.
+    const dt = Math.min(64, prev ? now - prev : 16.7);
+    prev = now;
+    const follow = 1 - Math.pow(0.35, dt / 16.7);
+    x += (tx - x) * follow;
+    y += (ty - y) * follow;
     let lead = { x, y }, moving = Math.abs(tx - x) > 0.5 || Math.abs(ty - y) > 0.5;
     tails.forEach(p => {
-      p.x += (lead.x - p.x) * p.k;
-      p.y += (lead.y - p.y) * p.k;
+      const k = 1 - Math.pow(1 - p.k, dt / 16.7);
+      p.x += (lead.x - p.x) * k;
+      p.y += (lead.y - p.y) * k;
       if (Math.abs(lead.x - p.x) > 0.5 || Math.abs(lead.y - p.y) > 0.5) moving = true;
       lead = p;
     });
@@ -22106,6 +22163,7 @@ const hgRnd = (a, b) => a + Math.random() * (b - a);
     r += (goal - r) * (goal < r ? 0.025 : 0.08);
     paint(now);
     if (moving || Math.abs(goal - r) > 0.5 || (!touch && rest < 3600)) raf = requestAnimationFrame(tick);
+    else prev = 0;
   }
   function move(e) {
     if (!hgOn() || hgCalm()) return;

@@ -858,7 +858,7 @@ h1 {
 
 /* Results read as a history timeline: a rail down the left with one dot
    per entry (colored by source - accent for the Denicker API, gold for
-   Diamond Dome, accent-2 for Tricktracker), and the most recent "Current"
+   Diamond Dome, accent-2 for Tricktracker, bad for Bedlify), and the most recent "Current"
    entry lifted into its own highlighted card. */
 .denick-results {
   position: relative;
@@ -907,6 +907,7 @@ h1 {
 }
 .denick-row[data-source="dome"]::before { background: var(--gold); }
 .denick-row[data-source="tricktracker"]::before { background: var(--accent-2); }
+.denick-row[data-source="bedlify"]::before { background: var(--bad); }
 .denick-row.is-current {
   border-color: color-mix(in srgb, var(--good) 45%, transparent);
   background: linear-gradient(90deg, color-mix(in srgb, var(--good) 10%, transparent), transparent 70%), var(--panel-2);
@@ -16959,6 +16960,9 @@ function updateKeyIdentityUi() {
 // noted under the row rather than shown as separate rows.
 //   - Denicker API: proxied through our own backend (/denicker/*) so its
 //     private key never reaches the browser - see server.js.
+//   - Bedlify: also proxied (/bedlify/*), and answers with sightings in the
+//     same shape as the scraped sources' rows. It has a tighter rate limit
+//     than Denicker on the backend.
 //   - Scraped sources (Diamond Dome, Tricktracker): public, keyless gists of
 //     nicks scraped from each Discord's #denicks channel, all in the same
 //     format, fetched directly from the browser and parsed into the same two
@@ -17042,6 +17046,23 @@ async function queryDenickerNicks(path, params) {
       nick: n.nick,
       updated: typeof n.updated === "number" ? n.updated : (Date.parse(n.updated) || 0),
       source: "Denicker API"
+    }));
+    return { entries };
+  } catch (err) {
+    return { entries: [], error: err.message };
+  }
+}
+
+// Bedlify's sightings as entries, like queryDenickerNicks: never throws.
+// kind: "nick" (who used it) or "player" (a player's nicks).
+async function queryBedlify(kind, value) {
+  try {
+    const res = await fetch(`${backendBaseURL}/bedlify/${kind}/${encodeURIComponent(value)}`, { headers: adminHeaders() });
+    const data = await res.json();
+    if (data.noKey) return { entries: [], noKey: true };
+    if (!res.ok) return { entries: [], error: data.error || `HTTP ${res.status}` };
+    const entries = (Array.isArray(data.sightings) ? data.sightings : []).map(s => ({
+      username: s.player, nick: s.nick, updated: s.last, source: "Bedlify", sighting: s
     }));
     return { entries };
   } catch (err) {
@@ -17133,7 +17154,7 @@ function renderDenickResults(entries, nameOf, startIndex) {
 
     const row = document.createElement("div");
     row.className = isCurrent ? "denick-row is-current" : "denick-row";
-    row.dataset.source = { "Diamond Dome": "dome", "Tricktracker": "tricktracker" }[entry.source] || "api";
+    row.dataset.source = { "Diamond Dome": "dome", "Tricktracker": "tricktracker", "Bedlify": "bedlify" }[entry.source] || "api";
 
     const who = document.createElement("div");
     who.className = "denick-row-who";
@@ -17228,9 +17249,12 @@ async function runDenickSearch() {
     await loadScrapedSources(); // never rejects - a gist hiccup shouldn't block the Denicker half from showing
     if (isStale()) return;
 
-    let apiResult, scrapedEntries, keyField, nameOf;
+    let apiResult, bedlifyResult, scrapedEntries, keyField, nameOf;
     if (denickMode === "nick") {
-      apiResult = await queryDenickerNicks("/denicker/nick/" + encodeURIComponent(query), "");
+      [apiResult, bedlifyResult] = await Promise.all([
+        queryDenickerNicks("/denicker/nick/" + encodeURIComponent(query), ""),
+        queryBedlify("nick", query)
+      ]);
       scrapedEntries = scrapedEntriesForNick(query);
       keyField = "username";
       nameOf = e => e.username;
@@ -17240,16 +17264,20 @@ async function runDenickSearch() {
         const resMojang = await fetch(`${backendBaseURL}/mojang/${encodeURIComponent(query)}`, { headers: adminHeaders() });
         if (resMojang.ok) uuid = (await resMojang.json()).id;
       } catch {}
-      apiResult = uuid
-        ? await queryDenickerNicks(`/denicker/history/${uuid}`, `username=${encodeURIComponent(query)}`)
-        : { entries: [] };
+      [apiResult, bedlifyResult] = await Promise.all([
+        uuid
+          ? queryDenickerNicks(`/denicker/history/${uuid}`, `username=${encodeURIComponent(query)}`)
+          : { entries: [] },
+        queryBedlify("player", query)
+      ]);
       scrapedEntries = scrapedEntriesForPlayer(query);
       keyField = "nick";
       nameOf = e => e.nick;
     }
     if (isStale()) return;
 
-    const merged = mergeDenickEntries([...apiResult.entries, ...scrapedEntries], keyField);
+    const merged = mergeDenickEntries([...apiResult.entries, ...bedlifyResult.entries, ...scrapedEntries], keyField);
+    const partial = !!(apiResult.error || bedlifyResult.error);
     denickAllResults = merged;
     denickNameOf = nameOf;
     denickPage = 1;
@@ -17258,14 +17286,14 @@ async function runDenickSearch() {
       denickEmpty.hidden = false;
       // Per Milo, the section just talks about "the database" rather than
       // naming each source; a partial search is only mentioned on a real failure.
-      denickStatus.textContent = apiResult.error ? "No results (part of the database didn't respond)." : "No results.";
+      denickStatus.textContent = partial ? "No results (part of the database didn't respond)." : "No results.";
       siteAudio.play("error");
       return;
     }
 
     renderDenickPage();
     siteAudio.play("found");
-    if (apiResult.error) denickStatus.textContent = "Part of the database didn't respond, so some results may be missing.";
+    if (partial) denickStatus.textContent = "Part of the database didn't respond, so some results may be missing.";
   } catch (err) {
     if (isStale()) return;
     denickAllResults = [];

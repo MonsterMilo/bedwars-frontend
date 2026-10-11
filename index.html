@@ -13115,8 +13115,10 @@ html[data-theme="skyisles"] .site-footer-end-text {
     box-shadow: 0 14px 34px -12px rgba(0,0,0,0.6);
     transition: transform 0.28s var(--ease), opacity 0.2s ease;
   }
-  /* Tucked away while the on-screen keyboard is up. */
-  .bottom-nav.bnav-away { transform: translateY(calc(100% + 24px)); opacity: 0; pointer-events: none; }
+  /* Tucked away while the on-screen keyboard is up, and while a popup is
+     open: the popups live inside .page's stacking context, so the bar
+     would otherwise sit on top of their bottom edge (the notes). */
+  .bottom-nav.bnav-away, .bottom-nav.bnav-popup { transform: translateY(calc(100% + 24px)); opacity: 0; pointer-events: none; }
   .bnav-link {
     position: relative;
     flex: 1 1 0;
@@ -22932,7 +22934,9 @@ updateAudioMood();
 // PHONE BOTTOM NAV
 // The links themselves are wired up with the quick-nav above. Here it
 // just gets out of the way while the on-screen keyboard is up, so typing
-// a name or a note doesn't lose a strip of the screen to it.
+// a name or a note doesn't lose a strip of the screen to it, and while
+// any popup (a player card, edit, key, remove, shortcuts) is open, since
+// it would otherwise cover the bottom of the popup where the notes are.
 // ============================================================
 const bottomNav = document.getElementById("bottomNav");
 const typingField = el => el && el.matches && el.matches("input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=button]), textarea, select, [contenteditable='true']");
@@ -22941,6 +22945,11 @@ document.addEventListener("focusout", () => {
   // Focus moving straight to another field keeps it tucked away.
   setTimeout(() => bottomNav.classList.toggle("bnav-away", typingField(document.activeElement)), 0);
 });
+const bnavPopups = [...document.querySelectorAll(".modal"), shortcutsBackdrop];
+const syncBnavPopup = () => bottomNav.classList.toggle("bnav-popup", bnavPopups.some(el => el.style.display === "flex" || (el === shortcutsBackdrop && !el.hidden)));
+const bnavPopupWatch = new MutationObserver(syncBnavPopup);
+bnavPopups.forEach(el => bnavPopupWatch.observe(el, { attributes: true, attributeFilter: ["style", "hidden"] }));
+syncBnavPopup();
 
 // ============================================================
 // INSTALLABLE APP

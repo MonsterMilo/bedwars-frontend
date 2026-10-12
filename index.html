@@ -14875,6 +14875,363 @@ html[data-theme="hollowgrave"] .unmask-back .unmask-k { color: #b8ff5c; }
   100% { transform: translateY(-120%) skewX(6deg) scaleY(0.6); opacity: 0; }
 }
 /* === UNMASK END === */
+/* === LEADERBOARD SCENE START === */
+/* The roster ranking as one object per theme (redesign 2026-10). Every
+   theme gets the same buttons (.lb-entry with --share 0-1, --place and
+   data-place) and lays them out its own way. */
+.lb-scene { position: relative; margin: 8px auto 26px; }
+.lb-scene-head:empty, .lb-scene-foot:empty { display: none; }
+.lb-scene-body { position: relative; }
+.lb-entry { position: relative; display: flex; align-items: center; gap: 10px; min-width: 0; text-align: left; }
+.lb-entry-art, .lb-entry-score { display: none; }
+.lb-entry .leaderboard-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-entry-count { white-space: nowrap; color: var(--text-dim); font-size: 0.86em; }
+.lb-entry-count b { color: var(--text); font-size: 1.15em; }
+.lb-entry:hover { transform: translateY(-2px); }
+.lb-entry.active { filter: none; }
+
+/* Columns (Deep Current, Sky Isles, Hollow Grave): one column per person,
+   scrolling sideways inside the panel on narrow screens. */
+.lb-cols .lb-scene-body,
+html[data-theme="deepcurrent"] .lb-scene-body,
+html[data-theme="skyisles"] .lb-scene-body,
+html[data-theme="hollowgrave"] .lb-scene-body {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(84px, 1fr);
+  align-items: end;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+/* ---- Neon: an arcade high-score cabinet ---- */
+html:not([data-theme]) .lb-scene {
+  max-width: 640px;
+  padding: 0 18px 18px;
+  border-radius: 22px 22px 10px 10px;
+  background: linear-gradient(180deg, #1a0f2e, #0b0816);
+  box-shadow: 0 0 0 3px #2a1748, 0 0 0 5px rgba(255,79,216,0.6), 0 0 34px rgba(255,79,216,0.35), 0 0 70px rgba(0,217,255,0.15);
+}
+html:not([data-theme]) .lb-scene-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 -18px 16px;
+  padding: 14px 10px 12px;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(90deg, #ff4fd8, #7a5cff 50%, #00d9ff);
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.35), 0 6px 18px rgba(255,79,216,0.4);
+}
+html:not([data-theme]) .lb-scene-title::before { content: "High Scores"; font-size: 1.7em; font-weight: 800; font-style: italic; text-transform: uppercase; letter-spacing: 0.08em; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 2px 0 rgba(0,0,0,0.35); }
+html:not([data-theme]) .lb-scene-sub::before { content: "Sweats knocked out \00b7  this cabinet"; font-size: 0.68em; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(255,255,255,0.85); }
+html:not([data-theme]) .lb-scene-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 90% at 50% 40%, #0c1630, #04060d);
+  box-shadow: inset 0 0 0 2px #000, inset 0 0 40px rgba(0,217,255,0.12), 0 0 0 6px #120a22;
+}
+html:not([data-theme]) .lb-entry {
+  --row: #7fe9ff;
+  display: grid;
+  grid-template-columns: 52px 30px minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 7px 10px;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  color: var(--row);
+  text-shadow: 0 0 8px currentColor;
+  border-radius: 4px;
+}
+html:not([data-theme]) .lb-entry[data-place="1"] { --row: #ffe066; animation: neonHiScore 1.6s steps(1) infinite; }
+html:not([data-theme]) .lb-entry[data-place="2"] { --row: #ff8ae6; }
+html:not([data-theme]) .lb-entry[data-place="3"] { --row: #b98bff; }
+html:not([data-theme]) .lb-entry[data-place="4"], html:not([data-theme]) .lb-entry[data-place="7"] { --row: #7fe9ff; }
+html:not([data-theme]) .lb-entry[data-place="5"], html:not([data-theme]) .lb-entry[data-place="8"] { --row: #74ffb0; }
+html:not([data-theme]) .lb-entry[data-place="6"], html:not([data-theme]) .lb-entry[data-place="9"] { --row: #ffb36b; }
+html:not([data-theme]) .lb-entry:hover, html:not([data-theme]) .lb-entry.active { transform: none; background: rgba(255,255,255,0.06); }
+html:not([data-theme]) .lb-entry.active { box-shadow: inset 3px 0 0 var(--row); }
+html:not([data-theme]) .lb-entry-rank { font-size: 0; }
+html:not([data-theme]) .lb-entry-rank::before { content: attr(data-ord); font-size: 15px; font-weight: 700; text-transform: uppercase; }
+html:not([data-theme]) .lb-entry .lb-avatar { width: 26px; height: 26px; font-size: 0.66em; border-radius: 4px; text-shadow: none; box-shadow: 0 0 8px var(--chip-color); }
+html:not([data-theme]) .lb-entry .leaderboard-name { font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: inherit; }
+html:not([data-theme]) .lb-entry .leaderboard-name::after { content: " ................................................"; letter-spacing: 0.2em; opacity: 0.45; }
+html:not([data-theme]) .lb-entry-count { display: none; }
+html:not([data-theme]) .lb-entry-score { display: block; font-size: 1.15em; font-weight: 800; letter-spacing: 0.12em; }
+html:not([data-theme]) .lb-scene-foot { display: flex; justify-content: center; margin-top: 14px; }
+html:not([data-theme]) .lb-scene-foot::before { content: "Insert coin"; font: 700 0.72em/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.4em; text-transform: uppercase; color: #ffe066; text-shadow: 0 0 8px #ffe066; animation: neonCoin 1.2s steps(1) infinite; }
+@keyframes neonHiScore { 50% { --row: #ffffff; color: #fff; } }
+@keyframes neonCoin { 50% { opacity: 0.15; } }
+
+/* ---- Case Files: a corkboard of wanted posters ---- */
+html[data-theme="casefiles"] .lb-scene {
+  padding: 26px 22px 30px;
+  border: 10px solid #6b4a2b;
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(0,0,0,0.08) 0 1px, transparent 1.5px) 0 0 / 9px 9px,
+    radial-gradient(circle at 70% 60%, rgba(255,255,255,0.12) 0 1px, transparent 1.5px) 0 0 / 7px 7px,
+    linear-gradient(135deg, #c99a63, #b5824c);
+  box-shadow: inset 0 0 0 2px #4e3520, inset 0 6px 14px rgba(0,0,0,0.3), 0 6px 14px rgba(60,40,10,0.25);
+}
+html[data-theme="casefiles"] .lb-scene-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 26px 20px; }
+html[data-theme="casefiles"] .lb-entry {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 10px 12px;
+  text-align: center;
+  background: linear-gradient(180deg, #f4e9cf, #e9dab8);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.1), 3px 5px 8px rgba(40,25,5,0.35);
+  transform: rotate(calc((var(--place) - 5) * 0.7deg));
+}
+html[data-theme="casefiles"] .lb-entry:nth-child(even) { transform: rotate(calc((5 - var(--place)) * 0.9deg)); }
+html[data-theme="casefiles"] .lb-entry:hover { transform: rotate(0) scale(1.04); z-index: 2; }
+html[data-theme="casefiles"] .lb-entry.active { box-shadow: 0 0 0 3px #a32f1d, 3px 5px 10px rgba(40,25,5,0.4); }
+/* The pushpin */
+html[data-theme="casefiles"] .lb-entry::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ff8a7a, #c0392b 55%, #7a1a10);
+  box-shadow: 1px 2px 2px rgba(0,0,0,0.4);
+}
+html[data-theme="casefiles"] .lb-entry-art { display: block; font: 400 1.7em/1 'Anton', sans-serif; letter-spacing: 0.06em; color: #2a2118; }
+html[data-theme="casefiles"] .lb-entry-art::before { content: "Wanted"; text-transform: uppercase; }
+html[data-theme="casefiles"] .lb-entry[data-place="1"] .lb-entry-art::before { content: "Most wanted"; font-size: 0.82em; color: #a32f1d; }
+html[data-theme="casefiles"] .lb-entry-rank { order: 5; font: 700 0.72em/1 'Courier Prime', monospace; letter-spacing: 0.14em; color: #6d5a3e; }
+html[data-theme="casefiles"] .lb-entry-rank::before { content: "File No. 0"; }
+html[data-theme="casefiles"] .lb-entry .lb-avatar { order: 1; width: 64px; height: 64px; border-radius: 2px; font-size: 1.3em; filter: sepia(0.4); box-shadow: 0 0 0 3px #fff, 0 0 0 4px #c9b88f; margin: 4px 0 6px; }
+html[data-theme="casefiles"] .lb-entry .leaderboard-name { order: 2; max-width: 100%; font: 400 1.25em/1.1 'Anton', sans-serif; letter-spacing: 0.04em; text-transform: uppercase; color: #2a2118; }
+html[data-theme="casefiles"] .lb-entry-count { order: 3; font: 700 0.86em/1.2 'Courier Prime', monospace; color: #a32f1d; text-transform: uppercase; letter-spacing: 0.06em; }
+html[data-theme="casefiles"] .lb-entry-count b { color: #a32f1d; }
+html[data-theme="casefiles"] .lb-entry-count::before { content: "Sweats beaten: "; }
+html[data-theme="casefiles"] .lb-entry-count span { display: none; }
+
+/* ---- Private Bank: the richest-accounts page of a ledger ---- */
+html[data-theme="ledger"] .lb-scene {
+  max-width: 720px;
+  padding: 22px 30px 20px;
+  border: 1px solid var(--gold);
+  outline: 1px solid rgba(169,130,46,0.5);
+  outline-offset: -7px;
+  background:
+    linear-gradient(90deg, transparent 64px, rgba(160,40,50,0.35) 64px 65px, transparent 65px calc(100% - 128px), rgba(22,35,58,0.25) calc(100% - 128px) calc(100% - 127px), transparent 0),
+    repeating-linear-gradient(transparent 0 37px, rgba(22,35,58,0.09) 37px 38px),
+    #fbf7ec;
+  box-shadow: 0 8px 22px rgba(22,35,58,0.12);
+}
+html[data-theme="ledger"] .lb-scene-head { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 3px double var(--gold); }
+html[data-theme="ledger"] .lb-scene-title::before { content: "The Richest Accounts"; font: 600 1.6em/1.1 'Playfair Display', serif; color: var(--accent-2); }
+html[data-theme="ledger"] .lb-scene-sub::before { content: "holdings in sweats, as audited"; font: italic 400 0.98em/1.2 'EB Garamond', serif; color: var(--gold); }
+html[data-theme="ledger"] .lb-scene-body { display: flex; flex-direction: column; }
+html[data-theme="ledger"] .lb-entry {
+  display: grid;
+  grid-template-columns: 52px 34px auto minmax(20px, 1fr) 100px;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 4px;
+  border-radius: 0;
+}
+html[data-theme="ledger"] .lb-entry:hover { transform: none; background: rgba(169,130,46,0.08); }
+html[data-theme="ledger"] .lb-entry.active { background: linear-gradient(90deg, rgba(169,130,46,0.16), transparent); }
+html[data-theme="ledger"] .lb-entry > * { grid-row: 1; }
+html[data-theme="ledger"] .lb-entry-rank { grid-column: 1; font-size: 0; text-align: center; }
+html[data-theme="ledger"] .lb-entry-rank::before { content: attr(data-roman); font: italic 600 15px/1 'Playfair Display', serif; color: var(--gold); }
+html[data-theme="ledger"] .lb-entry .lb-avatar { grid-column: 2; width: 28px; height: 28px; font-size: 0.7em; }
+html[data-theme="ledger"] .lb-entry .leaderboard-name { grid-column: 3; font: 500 1.12em/1 'Playfair Display', serif; color: var(--accent-2); }
+html[data-theme="ledger"] .lb-entry[data-place="1"] .leaderboard-name::after { content: " \25C6"; font-size: 0.6em; color: var(--gold); vertical-align: 0.2em; }
+html[data-theme="ledger"] .lb-entry-art { display: block; grid-column: 4; height: 1px; border-bottom: 1px dotted rgba(169,130,46,0.7); align-self: center; margin-top: 8px; }
+html[data-theme="ledger"] .lb-entry-count { grid-column: 5; text-align: right; font: 400 1.05em/1 'EB Garamond', serif; font-variant-numeric: tabular-nums oldstyle-nums; color: var(--accent-2); }
+html[data-theme="ledger"] .lb-entry-count b { font: 600 1.1em/1 'Playfair Display', serif; color: var(--accent-2); }
+html[data-theme="ledger"] .lb-entry-count span { font-style: italic; color: var(--gold); }
+html[data-theme="ledger"] .lb-scene-foot { display: block; height: 6px; margin-top: 10px; border-top: 1px solid var(--gold); border-bottom: 1px solid var(--gold); }
+
+/* ---- Deep Current: a depth chart; the most sweats sinks deepest ---- */
+html[data-theme="deepcurrent"] .lb-scene {
+  padding: 0 0 12px 46px;
+  border-radius: 14px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(120,220,255,0.18) 0 3px, transparent 3px),
+    linear-gradient(180deg, #0c3a55 0%, #072438 45%, #03121e 100%);
+  box-shadow: inset 0 0 0 1px rgba(98,230,214,0.25);
+}
+/* The depth ruler down the left edge */
+html[data-theme="deepcurrent"] .lb-scene::before {
+  content: "Surface";
+  position: absolute;
+  left: 8px;
+  top: 6px;
+  bottom: 12px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-align: right;
+  font: 600 9px/16px 'JetBrains Mono', monospace;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(98,230,214,0.55);
+  border-right: 1px solid rgba(98,230,214,0.25);
+  padding-right: 6px;
+  background: repeating-linear-gradient(transparent 0 15px, rgba(98,230,214,0.35) 15px 16px) right 0 / 4px 100% no-repeat;
+}
+html[data-theme="deepcurrent"] .lb-scene-head { display: flex; justify-content: space-between; padding: 10px 14px 0 0; }
+html[data-theme="deepcurrent"] .lb-scene-title::before { content: "Depth chart"; font: 600 0.78em/1 'JetBrains Mono', monospace; letter-spacing: 0.2em; text-transform: uppercase; color: #62e6d6; }
+html[data-theme="deepcurrent"] .lb-scene-sub::before { content: "Most sweats sinks deepest"; font: 400 0.72em/1 'JetBrains Mono', monospace; color: rgba(160,220,230,0.6); }
+html[data-theme="deepcurrent"] .lb-scene-body { align-items: start; height: 330px; padding-right: 10px; }
+html[data-theme="deepcurrent"] .lb-entry {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: calc(28px + var(--share) * 196px);
+  text-align: center;
+}
+html[data-theme="deepcurrent"] .lb-entry:hover { transform: translateY(3px); }
+/* The sounding line down from the surface */
+html[data-theme="deepcurrent"] .lb-entry-art {
+  display: block;
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 1px;
+  height: calc(36px + var(--share) * 196px);
+  background: linear-gradient(180deg, rgba(160,240,255,0.7), rgba(98,230,214,0.35));
+}
+html[data-theme="deepcurrent"] .lb-entry-art i:first-child { position: absolute; left: -3px; top: 6px; width: 7px; height: 7px; border-radius: 50%; border: 1px solid rgba(160,240,255,0.6); }
+html[data-theme="deepcurrent"] .lb-entry .lb-avatar { width: 40px; height: 40px; font-size: 0.82em; box-shadow: 0 0 0 2px #03121e, 0 0 0 3px var(--chip-color), 0 0 16px var(--chip-color); }
+html[data-theme="deepcurrent"] .lb-entry.active .lb-avatar { box-shadow: 0 0 0 2px #03121e, 0 0 0 4px #62e6d6, 0 0 22px #62e6d6; }
+html[data-theme="deepcurrent"] .lb-entry-rank { order: -1; font: 600 10px/1 'JetBrains Mono', monospace; color: rgba(160,220,230,0.7); }
+html[data-theme="deepcurrent"] .lb-entry-rank::before { content: "#"; }
+html[data-theme="deepcurrent"] .lb-entry .leaderboard-name { max-width: 100%; font: 600 0.92em/1.1 'Chakra Petch', sans-serif; text-transform: uppercase; letter-spacing: 0.04em; color: #dff6f8; }
+html[data-theme="deepcurrent"] .lb-entry-count { font: 400 0.72em/1 'JetBrains Mono', monospace; color: rgba(160,220,230,0.75); }
+html[data-theme="deepcurrent"] .lb-entry-count b { color: #62e6d6; font-size: 1.3em; }
+
+/* ---- Sky Isles: islands floating higher the more sweats beaten ---- */
+html[data-theme="skyisles"] .lb-scene { padding: 12px 8px 8px; }
+html[data-theme="skyisles"] .lb-scene-body { height: 300px; gap: 6px; }
+html[data-theme="skyisles"] .lb-entry {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  padding-bottom: calc(var(--share) * 150px);
+  text-align: center;
+}
+html[data-theme="skyisles"] .lb-entry:hover { transform: translateY(-4px); }
+html[data-theme="skyisles"] .lb-entry-rank { order: -2; padding: 1px 6px; font: 400 1em/1 var(--font-pixel); color: #fff; background: #6b4423; box-shadow: inset 0 0 0 2px #3f2812; }
+html[data-theme="skyisles"] .lb-entry[data-place="1"] .lb-entry-rank { background: #f2c94c; color: #3f2812; }
+html[data-theme="skyisles"] .lb-entry .leaderboard-name { order: -1; max-width: 100%; font: 400 0.8em/1.1 var(--font-label); color: var(--ink); }
+html[data-theme="skyisles"] .lb-entry .lb-avatar { width: 34px; height: 34px; font-size: 0.72em; animation: none; }
+html[data-theme="skyisles"] .lb-entry.active .lb-avatar { outline: 3px solid #fff; outline-offset: 1px; }
+/* The island: grass on dirt, tapering to a point underneath */
+html[data-theme="skyisles"] .lb-entry-art {
+  display: block;
+  order: 1;
+  width: 72px;
+  height: 40px;
+  background:
+    linear-gradient(#5ea83a, #5ea83a) top / 100% 8px no-repeat,
+    linear-gradient(#4a8a2c, #4a8a2c) 0 8px / 100% 2px no-repeat,
+    conic-gradient(#8b5a2b 25%, #6b4423 0 50%, #8b5a2b 0 75%, #79502a 0) 0 10px / 8px 8px;
+  clip-path: polygon(0 0, 100% 0, 100% 40%, 84% 40%, 84% 65%, 66% 65%, 66% 90%, 40% 90%, 40% 100%, 30% 100%, 30% 70%, 14% 70%, 14% 40%, 0 40%);
+  filter: drop-shadow(3px 4px 0 rgba(23,50,71,0.18));
+}
+html[data-theme="skyisles"] .lb-entry-count { order: 2; font: 400 0.72em/1 var(--font-label); color: var(--ink); }
+html[data-theme="skyisles"] .lb-entry-count span { display: none; }
+html[data-theme="skyisles"] .lb-entry-count b { font: 400 1.5em/1 var(--font-pixel); color: #3f8f2a; }
+
+/* ---- Hollow Grave: obelisks standing taller the more sweats beaten ---- */
+html[data-theme="hollowgrave"] .lb-scene {
+  padding: 8px 10px 0;
+  border-radius: 6px;
+  background:
+    radial-gradient(70% 40% at 50% 100%, rgba(96,128,62,0.25), transparent 70%),
+    linear-gradient(180deg, rgba(10,8,14,0) 60%, rgba(10,8,14,0.6));
+}
+html[data-theme="hollowgrave"] .lb-scene-body { height: 330px; gap: 10px; padding: 0 6px; }
+html[data-theme="hollowgrave"] .lb-entry {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  text-align: center;
+}
+html[data-theme="hollowgrave"] .lb-entry:hover { transform: translateY(-3px); }
+/* The obelisk: a tapering shaft with a pyramid cap, its height the count */
+html[data-theme="hollowgrave"] .lb-entry-art {
+  display: block;
+  order: 2;
+  position: relative;
+  width: 58px;
+  height: calc(70px + var(--share) * 170px);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0%22/%3E%3C/filter%3E%3Crect width=%22120%22 height=%22120%22 filter=%22url(%23n)%22 opacity=%22.22%22/%3E%3C/svg%3E"),
+    linear-gradient(90deg, rgba(0,0,0,0.35), transparent 30%, transparent 62%, rgba(0,0,0,0.45)),
+    linear-gradient(180deg, var(--stone), var(--stone-dark));
+  clip-path: polygon(50% 0, 78% 22px, 74% 26px, 82% 100%, 18% 100%, 26% 26px, 22% 22px);
+}
+html[data-theme="hollowgrave"] .lb-entry.active .lb-entry-art { filter: drop-shadow(0 0 10px rgba(184,255,92,0.5)); }
+/* Moss creeping up the foot of each one */
+html[data-theme="hollowgrave"] .lb-entry-art i:first-child { position: absolute; left: 0; right: 0; bottom: 0; height: 26px; background: radial-gradient(40% 70% at 30% 100%, rgba(92,122,58,0.5), transparent), radial-gradient(30% 60% at 75% 100%, rgba(92,122,58,0.4), transparent); }
+/* The plinth */
+html[data-theme="hollowgrave"] .lb-entry::after {
+  content: "";
+  order: 3;
+  width: 76px;
+  height: 14px;
+  background: linear-gradient(180deg, #4a4456, #2a2632);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 6px rgba(0,0,0,0.6);
+}
+html[data-theme="hollowgrave"] .lb-entry .lb-avatar {
+  position: absolute;
+  bottom: calc(14px + 50px + var(--share) * 96px);
+  left: 50%;
+  margin-left: -16px;
+  z-index: 1;
+  width: 32px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 0.7em;
+  box-shadow: 0 0 0 2px #b08d4a, 0 0 0 3px #15111b, 0 3px 6px rgba(0,0,0,0.6);
+}
+html[data-theme="hollowgrave"] .lb-entry-rank { position: absolute; z-index: 1; left: 0; right: 0; bottom: 26px; font-size: 0; }
+html[data-theme="hollowgrave"] .lb-entry-rank::before { content: attr(data-roman); font: 700 15px/1 'Grenze', serif; color: rgba(8,6,12,0.75); text-shadow: 0 1px 0 rgba(220,210,235,0.12); }
+html[data-theme="hollowgrave"] .lb-entry .leaderboard-name { order: 4; max-width: 100%; margin-top: 8px; font: 700 1.05em/1.1 'Grenze Gotisch', serif; color: #ece4f2; }
+html[data-theme="hollowgrave"] .lb-entry-count { order: 5; font: italic 400 0.8em/1.2 'Crimson Pro', serif; color: #b4aac0; }
+html[data-theme="hollowgrave"] .lb-entry-count b { font-style: normal; color: #f28c28; }
+
+@media (max-width: 700px) {
+  html:not([data-theme]) .lb-scene { padding: 0 10px 14px; }
+  html:not([data-theme]) .lb-scene-head { margin: 0 -10px 12px; }
+  html:not([data-theme]) .lb-scene-body { padding: 10px 8px; }
+  html:not([data-theme]) .lb-entry { grid-template-columns: 40px 24px minmax(0, 1fr) auto; gap: 8px; padding: 6px 4px; }
+  html:not([data-theme]) .lb-entry-rank::before { font-size: 12px; }
+  html[data-theme="casefiles"] .lb-scene { padding: 20px 12px 22px; border-width: 7px; }
+  html[data-theme="casefiles"] .lb-scene-body { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 8px; }
+  html[data-theme="casefiles"] .lb-entry { padding: 8px 4px; }
+  html[data-theme="casefiles"] .lb-entry-art { font-size: 1.05em; }
+  html[data-theme="casefiles"] .lb-entry[data-place="1"] .lb-entry-art::before { content: "Wanted"; color: #a32f1d; font-size: 1em; }
+  html[data-theme="casefiles"] .lb-entry .lb-avatar { width: 42px; height: 42px; font-size: 0.9em; }
+  html[data-theme="casefiles"] .lb-entry .leaderboard-name { font-size: 0.95em; }
+  html[data-theme="casefiles"] .lb-entry-count { font-size: 0.72em; }
+  html[data-theme="casefiles"] .lb-entry-count::before { content: none; }
+  html[data-theme="casefiles"] .lb-entry-count span { display: inline; }
+  html[data-theme="casefiles"] .lb-entry-rank { font-size: 0.6em; }
+  html[data-theme="ledger"] .lb-scene { padding: 16px 12px 14px; background: repeating-linear-gradient(transparent 0 37px, rgba(22,35,58,0.09) 37px 38px), #fbf7ec; }
+  html[data-theme="ledger"] .lb-entry { grid-template-columns: 30px 28px auto minmax(10px, 1fr) auto; gap: 7px; }
+  html[data-theme="ledger"] .lb-scene-title::before { font-size: 1.3em; }
+}
+/* === LEADERBOARD SCENE END === */
 /* === STYLE PASS START === */
 /* ================================================================
    Style pass (2026-10): the sections under Sweat of the Day get the
@@ -22292,34 +22649,38 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   const ranked = [...BEATEN_BY_KEYS].sort((a, b) => counts[b] - counts[a]);
   if (!leaderboardPerson) leaderboardPerson = ranked[0];
 
-  // Podium for the top three (laid out 2nd, 1st, 3rd so the winner stands
-  // in the middle), then a ranked list with a bar scaled to the leader's
-  // count for everyone else. Places are re-evaluated every render, so they
-  // always follow whoever currently ranks there under the active filters.
-  const ROMAN = ["I", "II", "III"];
+  // One scene for the whole roster, dressed per theme: a Neon high-score
+  // cabinet, a Case Files wall of wanted posters, a Private Bank ledger
+  // page of the richest accounts, a Deep Current depth chart (most sweats
+  // sinks deepest), Sky Isles islands floating higher the more they've
+  // beaten, and Hollow Grave obelisks standing taller. --share (0-1, the
+  // count against the leader's) drives each theme's heights and depths.
+  // Places are re-evaluated every render, so they always follow whoever
+  // currently ranks there under the active filters.
+  const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+  const ORDINAL = n => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
   const topCount = Math.max(1, counts[ranked[0]]);
   const avatar = k => `<span class="lb-avatar" style="--chip-color:var(--roster-${k})">${BEATEN_BY[k].initials}</span>`;
   const activeClass = k => (k === leaderboardPerson ? " active" : "");
-  const podium = [1, 0, 2].map(i => {
-    const k = ranked[i];
+  const entries = ranked.map((k, i) => {
+    const n = counts[k];
+    const share = Math.round(n / topCount * 1000) / 1000;
     return `
-    <button type="button" class="leaderboard-chip lb-step lb-place-${i + 1}${activeClass(k)}" data-person="${k}" aria-label="${["1st", "2nd", "3rd"][i]} place: ${BEATEN_BY[k].label}, ${counts[k]} sweats">
-      <span class="lb-crown" aria-hidden="true"><span>&#9819;</span></span>
+    <button type="button" class="leaderboard-chip lb-entry${activeClass(k)}" data-person="${k}" data-place="${i + 1}" style="--chip-color:var(--roster-${k});--share:${share};--place:${i + 1}" aria-label="${ORDINAL(i + 1)} place: ${BEATEN_BY[k].label}, ${n} ${n === 1 ? "sweat" : "sweats"}">
+      <span class="lb-entry-art" aria-hidden="true"><i></i><i></i></span>
+      <span class="lb-entry-rank" data-roman="${ROMAN[i] || i + 1}" data-ord="${ORDINAL(i + 1)}">${i + 1}</span>
       ${avatar(k)}
       <span class="leaderboard-name">${BEATEN_BY[k].label}</span>
-      <span class="lb-step-count"><b>${counts[k]}</b> ${counts[k] === 1 ? "sweat" : "sweats"}</span>
-      <span class="lb-block" aria-hidden="true"><span class="lb-place"><span class="lb-place-num">${i + 1}</span><span class="lb-place-roman">${ROMAN[i]}</span></span></span>
+      <span class="lb-entry-count"><b>${n}</b> <span>${n === 1 ? "sweat" : "sweats"}</span></span>
+      <span class="lb-entry-score" aria-hidden="true">${String(n).padStart(3, "0")}</span>
     </button>`;
   }).join("");
-  const rest = ranked.slice(3).map((k, i) => `
-    <button type="button" class="leaderboard-chip lb-row${activeClass(k)}" data-person="${k}" style="--chip-color:var(--roster-${k})">
-      <span class="leaderboard-rank">#${i + 4}</span>
-      ${avatar(k)}
-      <span class="leaderboard-name">${BEATEN_BY[k].label}</span>
-      <span class="lb-bar" aria-hidden="true"><span style="width:${Math.round(counts[k] / topCount * 100)}%"></span></span>
-      <span class="leaderboard-count">${counts[k]}</span>
-    </button>`).join("");
-  leaderboardRanking.innerHTML = `<div class="lb-podium">${podium}</div><div class="lb-list">${rest}</div>`;
+  leaderboardRanking.innerHTML = `
+    <div class="lb-scene">
+      <div class="lb-scene-head" aria-hidden="true"><span class="lb-scene-title"></span><span class="lb-scene-sub"></span></div>
+      <div class="lb-scene-body">${entries}</div>
+      <div class="lb-scene-foot" aria-hidden="true"></div>
+    </div>`;
 
   leaderboardRanking.querySelectorAll(".leaderboard-chip").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -26124,9 +26485,9 @@ cardGrid.addEventListener("pointerover", (e) => {
 // Podium hover chimes: 1st place rings brightest.
 leaderboardRanking.addEventListener("pointerover", (e) => {
   if (e.pointerType !== "mouse") return;
-  const step = e.target.closest(".lb-step");
+  const step = e.target.closest(".lb-entry");
   if (!step || step.contains(e.relatedTarget)) return;
-  const place = [1, 2, 3].find(n => step.classList.contains(`lb-place-${n}`));
+  const place = [1, 2, 3].find(n => Number(step.dataset.place) === n);
   if (place) siteAudio.play("chime", { place });
 });
 

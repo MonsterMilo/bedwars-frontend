@@ -855,6 +855,34 @@ h1 {
 .denick-mode-btn.active { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 1px var(--border-strong); }
 
 .denick-status { min-height: 1.2em; margin-top: 10px; font-size: 0.85em; color: var(--text-dim); }
+/* A search that finds nothing gets a proper callout (in each theme's own
+   "bad" colour) instead of a small grey "No results." line. */
+.denick-status.is-miss {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 14px 18px 14px 14px;
+  border: 1px solid color-mix(in srgb, var(--bad) 55%, transparent);
+  border-left-width: 4px;
+  border-radius: var(--radius-s);
+  background: color-mix(in srgb, var(--bad) 13%, transparent);
+  color: var(--text);
+  font-size: 1em;
+  animation: denickMiss 0.5s var(--ease) both;
+}
+.denick-miss-icon { flex: none; width: 34px; height: 34px; color: var(--bad); filter: drop-shadow(0 0 8px color-mix(in srgb, var(--bad) 45%, transparent)); }
+.denick-miss-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.denick-miss-text b { font-size: 1.12em; font-weight: 800; color: var(--bad); overflow-wrap: anywhere; }
+.denick-miss-text span { font-size: 0.86em; color: var(--text-dim); }
+@keyframes denickMiss {
+  0% { opacity: 0; transform: translateY(6px); }
+  45% { opacity: 1; transform: translateX(-6px); }
+  65% { transform: translateX(5px); }
+  82% { transform: translateX(-2px); }
+  100% { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { .denick-status.is-miss { animation: none; } }
 
 /* Results read as a history timeline: a rail down the left with one dot
    per entry (colored by source - accent for the Denicker API, gold for
@@ -14013,6 +14041,103 @@ html[data-theme="hollowgrave"] .sotd-clock { font-family: 'Crimson Pro', serif; 
 html[data-theme="hollowgrave"].blood-moon .sotd-backdrop i:nth-child(1) { background: radial-gradient(70% 55% at 50% 55%, rgba(255,74,74,0.3), rgba(10,6,8,0.95) 75%); }
 html[data-theme="hollowgrave"].blood-moon .sotd-skin { filter: grayscale(0.7) brightness(1.1) drop-shadow(0 0 14px rgba(255,74,74,0.55)); }
 html[data-theme="hollowgrave"].blood-moon .sotd-kicker { color: #ff6a5a; text-shadow: 0 0 14px rgba(255,74,74,0.45); }
+/* The card itself is a weathered crypt slab: lighter granite than the
+   page, a cold moon wash from the top right, a carved inner frame (d5)
+   and iron corner brackets (d1-d4). Stats sit in small carved tablets
+   with grooved ember bars notched every tenth. */
+html[data-theme="hollowgrave"] .sotd-card {
+  background:
+    radial-gradient(60% 90% at 88% -10%, rgba(214,226,255,0.10), transparent 65%),
+    radial-gradient(45% 80% at 10% 55%, rgba(184,255,92,0.07), transparent 70%),
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.012) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(25deg, rgba(0,0,0,0.05) 0 1px, transparent 1px 11px),
+    linear-gradient(180deg, #2a2532 0%, #201c27 55%, #18151e 100%);
+  border: 1px solid #4a4456;
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px #0b090e, 0 14px 34px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -18px 30px rgba(0,0,0,0.35);
+  padding: 22px 32px 22px 26px;
+}
+html[data-theme="hollowgrave"] .sotd-card:hover { border-color: #5c5568; box-shadow: 0 0 0 1px #0b090e, 0 18px 40px rgba(0,0,0,0.6), 0 0 26px rgba(242,140,40,0.12), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -18px 30px rgba(0,0,0,0.35); }
+html[data-theme="hollowgrave"] .sotd-deco .d5 {
+  display: block;
+  position: absolute;
+  inset: 9px;
+  border: 1px solid rgba(0,0,0,0.55);
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+html[data-theme="hollowgrave"] .sotd-deco .d1,
+html[data-theme="hollowgrave"] .sotd-deco .d2,
+html[data-theme="hollowgrave"] .sotd-deco .d3,
+html[data-theme="hollowgrave"] .sotd-deco .d4 {
+  display: block;
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background:
+    radial-gradient(circle at 9px 9px, #9a92a4 0 1.6px, #1a171f 2.2px, transparent 2.8px),
+    linear-gradient(#4a4454, #26222c) 0 0 / 30px 6px no-repeat,
+    linear-gradient(90deg, #4a4454, #26222c) 0 0 / 6px 30px no-repeat;
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,0.07)) drop-shadow(0 2px 2px rgba(0,0,0,0.6));
+  font-size: 0;
+}
+html[data-theme="hollowgrave"] .sotd-deco .d1 { top: 3px; left: 3px; }
+html[data-theme="hollowgrave"] .sotd-deco .d2 { top: 3px; right: 3px; transform: scaleX(-1); }
+html[data-theme="hollowgrave"] .sotd-deco .d3 { bottom: 3px; left: 3px; transform: scaleY(-1); }
+html[data-theme="hollowgrave"] .sotd-deco .d4 { bottom: 3px; right: 3px; transform: scale(-1); }
+html[data-theme="hollowgrave"] .sotd-deco .d1::before,
+html[data-theme="hollowgrave"] .sotd-deco .d2::before,
+html[data-theme="hollowgrave"] .sotd-deco .d3::before,
+html[data-theme="hollowgrave"] .sotd-deco .d4::before { content: none; }
+html[data-theme="hollowgrave"] .sotd-stats { gap: 10px 12px; max-width: 640px; }
+html[data-theme="hollowgrave"] .sotd-stat {
+  gap: 4px;
+  padding: 8px 11px 10px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.14));
+  border: 1px solid rgba(0,0,0,0.5);
+  border-radius: 10px 10px 3px 3px;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.05);
+}
+html[data-theme="hollowgrave"] .sotd-stat-label { color: #a69cb4; }
+html[data-theme="hollowgrave"] .sotd-stat-bar {
+  height: 7px;
+  margin-top: 2px;
+  border-radius: 2px;
+  background: #0d0b11;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.06);
+}
+html[data-theme="hollowgrave"] .sotd-stat-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgba(0,0,0,0.55) calc(10% - 1px) 10%);
+  pointer-events: none;
+}
+html[data-theme="hollowgrave"] .sotd-stat-bar i {
+  background: linear-gradient(180deg, rgba(255,230,180,0.35), transparent 45%), linear-gradient(90deg, #7a3a10, #c4661c 55%, #ffb050);
+  box-shadow: 0 0 10px rgba(242,140,40,0.55);
+}
+html[data-theme="hollowgrave"] .sotd-clock {
+  padding: 5px 12px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(0,0,0,0.5);
+  border-radius: 3px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.05);
+  color: #a69cb4;
+}
+html[data-theme="hollowgrave"].blood-moon .sotd-card {
+  background:
+    radial-gradient(60% 90% at 88% -10%, rgba(255,90,80,0.12), transparent 65%),
+    radial-gradient(45% 80% at 10% 55%, rgba(255,74,74,0.07), transparent 70%),
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.012) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(25deg, rgba(0,0,0,0.05) 0 1px, transparent 1px 11px),
+    linear-gradient(180deg, #2c2228 0%, #211a1f 55%, #181317 100%);
+}
+html[data-theme="hollowgrave"].blood-moon .sotd-stat-bar i {
+  background: linear-gradient(180deg, rgba(255,200,190,0.3), transparent 45%), linear-gradient(90deg, #5a1010, #b02a22 55%, #ff5a46);
+  box-shadow: 0 0 10px rgba(255,74,74,0.55);
+}
 
 @media (max-width: 620px) {
   .sotd { margin-bottom: 20px; }
@@ -14049,6 +14174,11 @@ html[data-theme="hollowgrave"].blood-moon .sotd-kicker { color: #ff6a5a; text-sh
   .sotd-name { font-size: 1.6em; }
   html[data-theme="skyisles"] .sotd-name { font-size: 2em; }
   html[data-theme="hollowgrave"] .sotd-name { font-size: 1.9em; }
+  html[data-theme="hollowgrave"] .sotd-card { padding: 20px 18px 18px; }
+  html[data-theme="hollowgrave"] .sotd-stats { gap: 8px; }
+  html[data-theme="hollowgrave"] .sotd-stat { padding: 7px 7px 8px; }
+  html[data-theme="hollowgrave"] .sotd-stat-value { font-size: 1.2em; }
+  html[data-theme="hollowgrave"] .sotd-clock { justify-self: center; }
   .sotd-stats { gap: 8px 12px; }
   .sotd-stat-value { font-size: 1.05em; }
   .sotd-stat-label { font-size: 0.6em; letter-spacing: 0.8px; }
@@ -21029,6 +21159,7 @@ denickModeBtns.forEach(btn => {
     denickAllResults = [];
     denickPagination.hidden = true;
     denickStatus.textContent = "";
+    denickStatus.classList.remove("is-miss");
     hideUnmask();
     denickEmpty.hidden = false;
     denickQuery = "";
@@ -21048,6 +21179,7 @@ async function runDenickSearch() {
   denickSearchBtn.disabled = true;
   denickSearchBtn.classList.add("loading");
   denickStatus.textContent = "";
+  denickStatus.classList.remove("is-miss");
   denickResults.innerHTML = "";
   denickPagination.hidden = true;
   denickEmpty.hidden = true;
@@ -21091,10 +21223,9 @@ async function runDenickSearch() {
     denickPage = 1;
     if (merged.length === 0) {
       denickPagination.hidden = true;
-      denickEmpty.hidden = false;
       // Per Milo, the section just talks about "the database" rather than
       // naming each source; a partial search is only mentioned on a real failure.
-      denickStatus.textContent = partial ? "No results (part of the database didn't respond)." : "No results.";
+      showDenickMiss(query, partial);
       siteAudio.play("error");
       return;
     }
@@ -21116,6 +21247,24 @@ async function runDenickSearch() {
       denickSearchBtn.classList.remove("loading");
     }
   }
+}
+
+function showDenickMiss(query, partial) {
+  denickStatus.textContent = "";
+  denickStatus.classList.remove("is-miss");
+  void denickStatus.offsetWidth; // restart the shake on a repeat miss
+  denickStatus.classList.add("is-miss");
+  denickStatus.insertAdjacentHTML("beforeend", '<svg class="denick-miss-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.4 15.4L21 21M8.3 8.3l4.4 4.4M12.7 8.3l-4.4 4.4"/></svg>');
+  const text = document.createElement("div");
+  text.className = "denick-miss-text";
+  const title = document.createElement("b");
+  title.textContent = `No results for "${query}"`;
+  const sub = document.createElement("span");
+  sub.textContent = partial
+    ? "Part of the database didn't respond, so try again in a bit."
+    : denickMode === "nick" ? "Nobody in the database has been seen using this nick yet." : "No nick history found for this player.";
+  text.append(title, sub);
+  denickStatus.append(text);
 }
 
 denickSearchBtn.addEventListener("click", runDenickSearch);

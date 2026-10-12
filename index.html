@@ -14292,28 +14292,181 @@ html[data-theme="skyisles"] .rival-by-person { color: #ffffff; text-shadow: 2px 
 html[data-theme="skyisles"] .rival-by-person b { color: #ff55ff; text-shadow: 2px 2px 0 #3f003f; }
 html[data-theme="skyisles"] .modal-record-rival .rival-icon { width: 26px; height: 26px; border-width: 2px; outline-width: 2px; background-size: 20px; }
 
-/* Hollow Grave: a stone that won't stay down. The arch is carved with
-   how many times they've been buried, the stone is cracked from being
-   dug back out, and "Here lies" becomes "Here lies, again". */
+/* Hollow Grave: the mortsafe. Victorian churchyards caged graves in iron
+   to keep the dead in, so a Rival's stone gets wrought-iron bars across
+   its lower half: spear-point tops, rust bleeding down from the bolts, a
+   heavy padlock with the count cut into it in Roman numerals, and the
+   soil heaped up at the base where something keeps pushing. The bars
+   line up with the stat dividers so no number sits behind one, and the
+   epitaph and footer are fixed to the front of the cage. */
 html[data-theme="hollowgrave"] #playerModal { --rival: #b8ff5c; }
-html[data-theme="hollowgrave"] .sweat-card.is-rival::before { content: "R.I.P. \00b7 " attr(data-rival-roman); }
-html[data-theme="hollowgrave"] .sweat-card.is-rival .sweat-card-name::before { content: "Here lies, again"; }
+html[data-theme="hollowgrave"] .sweat-card.is-rival .sweat-card-name::before {
+  content: "Caged \00b7  rose " attr(data-rival-roman) " times";
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
 html[data-theme="hollowgrave"] .rival-mark {
-  top: 6px;
-  left: 18%;
-  width: 46px;
-  height: 92px;
+  --iron: linear-gradient(90deg, #050407, #6e6578 30%, #1c1820 55%, #08070a);
+  --rust: linear-gradient(180deg, rgba(128,58,22,0.85), rgba(150,72,28,0.45) 40%, rgba(128,58,22,0) );
+  top: 153px;
+  left: 16px;
+  right: 16px;
+  bottom: 62px;
+  z-index: 2;
+  width: auto;
+  height: auto;
   padding: 0;
-  z-index: 0;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 92' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M30 1 L26 14 L31 22 L22 37 L25 46 L15 60 L17 70 L8 90 M26 14 L36 20 M22 37 L12 40 M15 60 L24 66' stroke='%23ffffff' stroke-opacity='.07' stroke-width='2.4' transform='translate(.8 .8)'/%3E%3Cpath d='M30 1 L26 14 L31 22 L22 37 L25 46 L15 60 L17 70 L8 90 M26 14 L36 20 M22 37 L12 40 M15 60 L24 66' stroke='%230a0810' stroke-opacity='.85' stroke-width='1.6'/%3E%3Cpath d='M30 1 L26 14 L31 22 L22 37 L25 46 L15 60 L17 70 L8 90' stroke='%23b8ff5c' stroke-opacity='.35' stroke-width='.6'/%3E%3C/svg%3E") center / contain no-repeat;
+  font-size: 0;
   border: none;
   border-radius: 0;
   box-shadow: none;
+  text-shadow: none;
   animation: none;
-  font-size: 0;
+  pointer-events: none;
+  /* Rust streaks under each bolt, over four iron bars that line up
+     with the edges and the dividers of the stat block. */
+  background:
+    var(--rust) 0 14px / 6px 34px no-repeat,
+    var(--rust) 33.333% 14px / 6px 24px no-repeat,
+    var(--rust) 66.667% 14px / 6px 40px no-repeat,
+    var(--rust) 100% 14px / 6px 20px no-repeat,
+    var(--iron) 0 8px / 6px calc(100% - 8px) no-repeat,
+    var(--iron) 33.333% 8px / 6px calc(100% - 8px) no-repeat,
+    var(--iron) 66.667% 8px / 6px calc(100% - 8px) no-repeat,
+    var(--iron) 100% 8px / 6px calc(100% - 8px) no-repeat;
+  filter: drop-shadow(1px 2px 1px rgba(0,0,0,0.75));
 }
-html[data-theme="hollowgrave"] .rival-mark > * { display: none; }
+/* Spear-point finials, the top rail and its bolts. The layer is 4px
+   wider each side so 14px finials centre on the 6px bars. */
+html[data-theme="hollowgrave"] .rival-mark::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  height: 20px;
+  background:
+    radial-gradient(circle at 50% 50%, #a59bb0 0 1.1px, #1c1820 1.8px 3px, transparent 3.4px) 0 12px / 14px 8px no-repeat,
+    radial-gradient(circle at 50% 50%, #a59bb0 0 1.1px, #1c1820 1.8px 3px, transparent 3.4px) 33.333% 12px / 14px 8px no-repeat,
+    radial-gradient(circle at 50% 50%, #a59bb0 0 1.1px, #1c1820 1.8px 3px, transparent 3.4px) 66.667% 12px / 14px 8px no-repeat,
+    radial-gradient(circle at 50% 50%, #a59bb0 0 1.1px, #1c1820 1.8px 3px, transparent 3.4px) 100% 12px / 14px 8px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 13'%3E%3Cpath d='M7 0 L12.4 7.4 L8.6 6.6 L8.6 13 L5.4 13 L5.4 6.6 L1.6 7.4 Z' fill='%23060508'/%3E%3Cpath d='M7 0 L7.9 1.4 L7.9 6.6 L7 6.6 Z' fill='%23857c90'/%3E%3Cpath d='M7 0 L1.6 7.4 L2.6 7.2 Z' fill='%23605868'/%3E%3C/svg%3E") 0 0 / 14px 13px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 13'%3E%3Cpath d='M7 0 L12.4 7.4 L8.6 6.6 L8.6 13 L5.4 13 L5.4 6.6 L1.6 7.4 Z' fill='%23060508'/%3E%3Cpath d='M7 0 L7.9 1.4 L7.9 6.6 L7 6.6 Z' fill='%23857c90'/%3E%3Cpath d='M7 0 L1.6 7.4 L2.6 7.2 Z' fill='%23605868'/%3E%3C/svg%3E") 33.333% 0 / 14px 13px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 13'%3E%3Cpath d='M7 0 L12.4 7.4 L8.6 6.6 L8.6 13 L5.4 13 L5.4 6.6 L1.6 7.4 Z' fill='%23060508'/%3E%3Cpath d='M7 0 L7.9 1.4 L7.9 6.6 L7 6.6 Z' fill='%23857c90'/%3E%3Cpath d='M7 0 L1.6 7.4 L2.6 7.2 Z' fill='%23605868'/%3E%3C/svg%3E") 66.667% 0 / 14px 13px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 13'%3E%3Cpath d='M7 0 L12.4 7.4 L8.6 6.6 L8.6 13 L5.4 13 L5.4 6.6 L1.6 7.4 Z' fill='%23060508'/%3E%3Cpath d='M7 0 L7.9 1.4 L7.9 6.6 L7 6.6 Z' fill='%23857c90'/%3E%3Cpath d='M7 0 L1.6 7.4 L2.6 7.2 Z' fill='%23605868'/%3E%3C/svg%3E") 100% 0 / 14px 13px no-repeat,
+    linear-gradient(180deg, #6e6578, #1c1820 45%, #050407) 0 12px / 100% 7px no-repeat;
+}
+/* The bottom rail, with a little rust pooled along it. */
+html[data-theme="hollowgrave"] .rival-mark::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  bottom: 0;
+  height: 6px;
+  background:
+    radial-gradient(14px 3px at 30% 100%, rgba(128,58,22,0.7), transparent),
+    radial-gradient(10px 3px at 78% 100%, rgba(128,58,22,0.55), transparent),
+    linear-gradient(180deg, #6e6578, #1c1820 45%, #050407);
+}
+html[data-theme="hollowgrave"] .rival-mark .rival-icon,
+html[data-theme="hollowgrave"] .rival-mark .rival-word { display: none; }
+/* The padlock: hung on the top rail over the right-hand divider, its
+   shackle round the rail and the count cut into its face. */
+html[data-theme="hollowgrave"] .rival-mark .rival-count {
+  position: absolute;
+  top: 19px;
+  left: calc((100% - 6px) * 2 / 3 - 12px);
+  width: 30px;
+  height: 27px;
+  display: block;
+  opacity: 1;
+  border-radius: 3px 3px 6px 6px;
+  background:
+    radial-gradient(circle at 50% 64%, #050407 0 2.3px, transparent 2.8px),
+    linear-gradient(#050407, #050407) 50% 88% / 2px 6px no-repeat,
+    radial-gradient(9px 6px at 22% 90%, rgba(128,58,22,0.75), transparent),
+    radial-gradient(6px 8px at 84% 30%, rgba(128,58,22,0.5), transparent),
+    linear-gradient(160deg, #3a3441, #17131b 50%, #060508);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), inset 1px 0 0 rgba(255,255,255,0.08), inset 0 -2px 3px rgba(0,0,0,0.6), 0 0 0 1px #050407, 0 3px 5px rgba(0,0,0,0.8);
+  transform-origin: 50% -8px;
+  pointer-events: auto;
+}
+html[data-theme="hollowgrave"] .rival-mark .rival-count::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 18px;
+  height: 14px;
+  margin-left: -9px;
+  margin-bottom: -2px;
+  border: 4px solid #1c1820;
+  border-bottom: none;
+  border-radius: 9px 9px 0 0;
+  box-sizing: border-box;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 -1px 0 rgba(255,255,255,0.12);
+  z-index: -1;
+}
+html[data-theme="hollowgrave"] .rival-mark .rival-count::after {
+  content: attr(data-roman);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 3px;
+  text-align: center;
+  font: 700 10px/1 'Grenze', serif;
+  letter-spacing: 0.04em;
+  color: #c9bfd3;
+  text-shadow: 0 -1px 0 rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.12);
+}
+html[data-theme="hollowgrave"] .rival-mark .rival-count > i { display: none; }
+/* One slow, heavy swing on hover (the sound is a matching iron rattle). */
+html[data-theme="hollowgrave"] .sweat-card.is-rival:hover .rival-mark .rival-count { animation: mortsafeRattle 0.95s cubic-bezier(.3,.6,.4,1); }
+@keyframes mortsafeRattle {
+  0% { transform: rotate(0); }
+  14% { transform: rotate(-11deg) translateY(1px); }
+  32% { transform: rotate(8deg); }
+  50% { transform: rotate(-5deg) translateY(1px); }
+  68% { transform: rotate(3deg); }
+  84% { transform: rotate(-1deg); }
+  100% { transform: rotate(0); }
+}
+/* The epitaph and the footer are fixed to the front of the cage. */
+html[data-theme="hollowgrave"] .sweat-card.is-rival :is(.sweat-card-note, .card-note-ghost, .sweat-card-footer) { position: relative; z-index: 3; }
+html[data-theme="hollowgrave"] .sweat-card.is-rival .sweat-card-note { background: rgba(14,11,19,0.6); }
+html[data-theme="hollowgrave"] .sweat-card.is-rival .card-note-ghost { background: rgba(14,11,19,0.5); }
+/* Soil heaped and broken up at the foot of the stone. */
+html[data-theme="hollowgrave"] .sweat-card.is-rival::after {
+  left: -14px;
+  right: -14px;
+  bottom: -16px;
+  height: 46px;
+  z-index: 4;
+  background:
+    radial-gradient(5px 4px at 16% 34%, #1d1620 60%, transparent 70%),
+    radial-gradient(4px 3px at 27% 14%, #241b22 60%, transparent 70%),
+    radial-gradient(3px 3px at 41% 6%, #2a2026 60%, transparent 70%),
+    radial-gradient(6px 4px at 62% 26%, #1d1620 60%, transparent 70%),
+    radial-gradient(3px 3px at 74% 4%, #2a2026 60%, transparent 70%),
+    radial-gradient(4px 3px at 86% 30%, #1d1620 60%, transparent 70%),
+    radial-gradient(ellipse 50% 62% at 50% 100%, #0d0a12 55%, rgba(13,10,18,0.75) 75%, transparent 100%),
+    radial-gradient(ellipse 20% 36% at 30% 66%, #22191f 50%, #120d14 70%, transparent 82%),
+    radial-gradient(ellipse 16% 40% at 52% 60%, #1c141b 50%, #100b12 70%, transparent 82%),
+    radial-gradient(ellipse 18% 34% at 74% 68%, #22191f 50%, #120d14 70%, transparent 82%);
+}
+/* The popup: "Caged after 3 risings", under a padlock. */
 html[data-theme="hollowgrave"] .modal-record-rival .rival-word::before { content: "Restless"; }
+.rival-value-grave { display: none; }
+html[data-theme="hollowgrave"] .modal-record-rival .rival-value-plain { display: none; }
+html[data-theme="hollowgrave"] .modal-record-rival .rival-value-grave { display: inline; }
+html[data-theme="hollowgrave"] .modal-record-rival .rival-icon {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h-2.6V7a2.4 2.4 0 0 0-4.8 0v3Z'/%3E%3Cpath fill-rule='evenodd' d='M4 10h16v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm8 3.2a1.7 1.7 0 0 0-1 3.1V19h2v-2.7a1.7 1.7 0 0 0-1-3.1Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h-2.6V7a2.4 2.4 0 0 0-4.8 0v3Z'/%3E%3Cpath fill-rule='evenodd' d='M4 10h16v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm8 3.2a1.7 1.7 0 0 0-1 3.1V19h2v-2.7a1.7 1.7 0 0 0-1-3.1Z'/%3E%3C/svg%3E");
+}
+@media (max-width: 700px) {
+  html[data-theme="hollowgrave"] .rival-mark { top: 149px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .rival-mark, .rival-mark .rival-icon::after { animation: none !important; }
 }
@@ -17374,6 +17527,16 @@ window.siteAudio = (function () {
       chime(t, place) {
         [[50, 57, 62], [50, 57], [50]][place - 1].forEach((n, i) => knell(t + i * 0.14, n, { gain: 0.05, len: 1.3 }));
       },
+      // A caged Rival: the mortsafe's padlock swings once against the
+      // bars, a heavy iron clank and two weaker knocks as it settles.
+      rattle(t) {
+        [[0, 1], [0.17, 0.62], [0.33, 0.34]].forEach(([d, k]) => {
+          metal(t + d, rnd(118, 132), { ratios: [1, 2.32, 3.87, 5.61], dur: 0.36, gain: 0.09 * k });
+          noise(t + d, { type: "bandpass", f: 1100, q: 1.4, dur: 0.045, gain: 0.07 * k });
+          tone(t + d, { type: "triangle", f: 62, f2: 48, dur: 0.18, gain: 0.12 * k, a: 0.002, lp: 300 });
+        });
+        noise(t + 0.02, { type: "lowpass", f: 700, f2: 250, dur: 0.5, gain: 0.02 });
+      },
       // A fresh grave: an owl calls, then the shovel goes in.
       arrive(t) {
         owl(t, 0.05);
@@ -17835,7 +17998,7 @@ window.siteAudio = (function () {
     ledger: { hover: 8, view: 4, toggle: 4, save: 3, delete: -9, slide: 5, type: 3, rare: 1, switch: -5, flipOpen: 2, flipClose: 4, found: -2, error: -1, stunt: 1, scan: -2, ambience: 0.5 },
     deepcurrent: { hover: 8, toggle: -2, save: 2, delete: -2, slide: 3, type: 2, rare: 5, switch: -2, flipOpen: 3, flipClose: 7, scan: -9, found: -1, error: -4, success: -1, stunt: 1, ambience: -1 },
     skyisles: { hover: 12, click: 10, rare: -9, combo: 9.5, ui: 5, toggle: -1, save: 8, delete: 2.5, slide: 8.5, page: 6, view: 3, type: 10, switch: 6, flipOpen: 8, flipClose: 4, scan: 6.5, found: 4, error: 3, success: 1, stunt: 7, arrive: 7.5, ambience: 11 },
-    hollowgrave: { thunder: -11, crow: 4, planchette: 3, bloodmoon: -2, click: -8, rare: -8.5, combo: -0.5, ui: -3.5, toggle: -8, save: -9, delete: -13.5, slide: 1, page: -3.5, view: -10.5, type: 3, switch: -2, flipOpen: 3.5, flipClose: -9, scan: -13, found: -3, error: -11, success: -4.5, stunt: -3.5, hover: -9.5, chime: -4.5, arrive: -7.5, ambience: 5 },
+    hollowgrave: { thunder: -11, crow: 4, planchette: 3, bloodmoon: -2, click: -8, rare: -8.5, combo: -0.5, ui: -3.5, toggle: -8, save: -9, delete: -13.5, slide: 1, page: -3.5, view: -10.5, type: 3, switch: -2, flipOpen: 3.5, flipClose: -9, scan: -13, found: -3, error: -11, success: -4.5, stunt: -3.5, hover: -9.5, rattle: -10, chime: -4.5, arrive: -7.5, ambience: 5 },
     shared: { bed: -5, chat: -2 },
   };
   const SHARED = { chat: (t) => pling(t, [78, 85]), techno: fanfare, bed: bedDestroyed };
@@ -17862,6 +18025,7 @@ window.siteAudio = (function () {
         page: () => s.page(t, !!opts.next), view: () => s.view(t),
         chime: () => extra(theme).chime(t, Math.min(3, Math.max(1, opts.place || 1))),
         hover: () => extra(theme).hover(t),
+        rattle: () => (extra(theme).rattle || extra(theme).hover)(t),
         arrive: () => extra(theme).arrive(t),
         scanStart: () => s.scanStart(t), scanTick: () => s.scanTick(t),
       })[name] || (() => s[name] && s[name](t, opts)))();
@@ -17899,7 +18063,7 @@ window.siteAudio = (function () {
       lastType = t;
     }
     // Sweeping the mouse across the grid shouldn't turn into a drumroll.
-    if (name === "hover") {
+    if (name === "hover" || name === "rattle") {
       if (t - lastHover < 0.09) return;
       lastHover = t;
     }
@@ -22442,10 +22606,12 @@ function addRivalMark(card, s) {
   card.classList.add("is-rival");
   card.dataset.rivalGames = r.games;
   card.dataset.rivalRoman = toRoman(r.games);
+  const name = card.querySelector(".sweat-card-name");
+  if (name) name.dataset.rivalRoman = toRoman(r.games);
   const mark = document.createElement("span");
   mark.className = "rival-mark";
   mark.setAttribute("data-tooltip", `Rival \u00b7 ${rivalSummary(r)}`);
-  mark.innerHTML = `<i class="rival-icon" aria-hidden="true"></i><b class="rival-word"></b><span class="rival-count"><i>\u00d7</i>${r.games}</span>`;
+  mark.innerHTML = `<i class="rival-icon" aria-hidden="true"></i><b class="rival-word"></b><span class="rival-count" data-roman="${toRoman(r.games)}"><i>\u00d7</i>${r.games}</span>`;
   card.appendChild(mark);
 }
 function rivalRecordHtml(record) {
@@ -22453,7 +22619,7 @@ function rivalRecordHtml(record) {
   if (!r) return "";
   return `<div class="modal-record-item modal-record-rival">
       <span class="modal-record-label"><i class="rival-icon" aria-hidden="true"></i><b class="rival-word"></b></span>
-      <span class="modal-record-value">Beaten in ${r.games} games</span>
+      <span class="modal-record-value"><span class="rival-value-plain">Beaten in ${r.games} games</span><span class="rival-value-grave">Caged after ${r.games} risings</span></span>
       <span class="rival-by">${r.who.map(w => `<span class="rival-by-person"><span class="beaten-avatar" style="--chip-color:var(--roster-${w.key})" data-tooltip="${BEATEN_BY[w.key].label}">${BEATEN_BY[w.key].initials}</span>${BEATEN_BY[w.key].label}${w.n > 1 ? ` <b>\u00d7${w.n}</b>` : ""}</span>`).join("")}</span>
     </div>`;
 }
@@ -25488,7 +25654,9 @@ cardGrid.addEventListener("pointerover", (e) => {
   const card = e.target.closest(".sweat-card");
   if (!card || card.contains(e.relatedTarget)) return;
   const r = card.getBoundingClientRect();
-  siteAudio.play("hover", { x: r.left + r.width / 2 });
+  // A caged Hollow Grave Rival rattles its padlock instead.
+  const rattle = card.classList.contains("is-rival") && document.documentElement.dataset.theme === "hollowgrave";
+  siteAudio.play(rattle ? "rattle" : "hover", { x: r.left + r.width / 2 });
 });
 
 // Podium hover chimes: 1st place rings brightest.

@@ -14593,13 +14593,16 @@ html[data-theme="hollowgrave"] .sweat-card.is-rival .sweat-card-note { backgroun
 /* Room for the spear points between the pills and the top rail. */
 html[data-theme="hollowgrave"] .sweat-card.is-rival .sweat-card-stats { margin-top: 8px; }
 html[data-theme="hollowgrave"] .sweat-card.is-rival .card-note-ghost { background: rgba(14,11,19,0.5); }
-/* Soil heaped and broken up at the foot of the stone. */
+/* Soil heaped and broken up at the foot of the stone. It takes the place
+   of the plain ground shadow, so it sits on the same layer (under the
+   grass, which grows out of it) and stops at the same line, so it never
+   covers the crows or candles on the row below. */
 html[data-theme="hollowgrave"] .sweat-card.is-rival::after {
   left: -14px;
   right: -14px;
-  bottom: -16px;
-  height: 46px;
-  z-index: 4;
+  bottom: -5px;
+  height: 42px;
+  z-index: 1;
   background:
     radial-gradient(5px 4px at 16% 34%, #1d1620 60%, transparent 70%),
     radial-gradient(4px 3px at 27% 14%, #241b22 60%, transparent 70%),

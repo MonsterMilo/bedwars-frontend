@@ -13465,6 +13465,585 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
 /* Install app sits next to Back to top in the footer. */
 .site-footer-install { margin-left: auto; }
 @media (max-width: 560px) { .site-footer-install { margin-left: 0; } }
+
+/* ===== Sweat of the day =====
+   One tracked sweat spotlighted under the hero (renderSweatOfDay). The
+   shared layout is a full skin on the left, name/stats in the middle and
+   the countdown to the next pick on the right; every theme dresses it as
+   its own thing: Neon a fighting-game challenger panel, Case Files a
+   mugshot against a height chart, Private Bank an engraved banknote
+   portrait, Deep Current a specimen capsule, Sky Isles a pixel boss intro
+   and Hollow Grave a soul risen in a crypt doorway. */
+.sotd { max-width: 1200px; margin: 0 auto 26px; }
+.sotd-card {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) auto;
+  gap: 26px;
+  align-items: center;
+  padding: 16px 26px 16px 20px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s var(--ease), border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.sotd-card:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+.sotd-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.sotd-deco { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.sotd-deco i, .sotd-backdrop i, .sotd-plate { display: none; }
+.sotd-figure {
+  position: relative;
+  height: 210px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.sotd-backdrop { position: absolute; inset: 0; z-index: 0; }
+.sotd-skin {
+  position: relative;
+  z-index: 2;
+  height: 196px;
+  width: auto;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  filter: drop-shadow(0 10px 14px rgba(0,0,0,0.45));
+}
+.sotd-skin.loaded { opacity: 1; }
+.sotd-info { min-width: 0; }
+.sotd-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 0.74em;
+  font-weight: 800;
+  letter-spacing: 2.2px;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+.sotd-date { font-weight: 600; letter-spacing: 0.3px; text-transform: none; color: var(--text-faint); }
+.sotd-name {
+  margin: 4px 0 8px;
+  font-size: 2.3em;
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.sotd-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+.sotd-tier {
+  padding: 4px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  font-size: 0.7em;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.sotd-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 20px; max-width: 580px; }
+.sotd-stat { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sotd-stat-label { font-size: 0.68em; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-faint); }
+.sotd-stat-value { font-size: 1.3em; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sotd-stat-bar { position: relative; height: 4px; border-radius: 4px; background: var(--border); overflow: hidden; }
+.sotd-stat-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--pct);
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transform-origin: left;
+  animation: sotdBar 1.1s 0.2s var(--ease) both;
+}
+@keyframes sotdBar { from { transform: scaleX(0); } }
+.sotd-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 14px; font-size: 0.85em; color: var(--text-dim); }
+.sotd-note {
+  margin: 8px 0 0;
+  max-width: 620px;
+  font-size: 0.88em;
+  font-style: italic;
+  color: var(--text-dim);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sotd-note[data-by]::after { content: " " attr(data-by); font-style: normal; color: var(--text-faint); }
+.sotd-clock { align-self: start; white-space: nowrap; font-size: 0.78em; color: var(--text-faint); }
+.sotd-clock b { color: var(--text); font-variant-numeric: tabular-nums; }
+.sotd.sotd-in .sotd-card { animation: sotdIn 0.7s var(--ease) both; }
+@keyframes sotdIn { from { opacity: 0; transform: translateY(14px); } }
+
+/* -- Neon: a fighting-game "challenger approaching" panel. A slanted
+   color slab behind the fighter, speed lines, a light sweep across the
+   panel, segmented power bars and an italic slanted name. */
+html:not([data-theme]) .sotd-card {
+  background: linear-gradient(100deg, rgba(0,217,255,0.07), transparent 40%), var(--panel);
+  border-color: rgba(0,217,255,0.22);
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+  border-radius: 0;
+}
+html:not([data-theme]) .sotd-backdrop i:nth-child(1) {
+  display: block;
+  position: absolute;
+  inset: -30px 4px -30px 4px;
+  background: linear-gradient(160deg, var(--accent) 0%, var(--accent-2) 100%);
+  transform: skewX(-14deg);
+  opacity: 0.85;
+  box-shadow: 0 0 40px rgba(0,217,255,0.35);
+}
+html:not([data-theme]) .sotd-backdrop i:nth-child(2) {
+  display: block;
+  position: absolute;
+  inset: -30px 4px;
+  transform: skewX(-14deg);
+  background: repeating-linear-gradient(0deg, rgba(4,5,10,0.25) 0 2px, transparent 2px 5px);
+}
+html:not([data-theme]) .sotd-deco .d5 {
+  display: block;
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(-14deg, transparent 0 46px, rgba(0,217,255,0.05) 46px 48px);
+  mask-image: linear-gradient(90deg, transparent 15%, #000 60%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 15%, #000 60%);
+}
+html:not([data-theme]) .sotd-deco .d6 {
+  display: block;
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 120px;
+  left: -160px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+  transform: skewX(-14deg);
+  animation: sotdSweep 7s 1.2s ease-in-out infinite;
+}
+@keyframes sotdSweep { 0%, 70% { left: -160px; } 100% { left: 110%; } }
+html:not([data-theme]) .sotd-skin { filter: drop-shadow(0 0 18px rgba(0,217,255,0.5)) drop-shadow(0 12px 10px rgba(0,0,0,0.6)); }
+html:not([data-theme]) .sotd-kicker-text { color: var(--accent); text-shadow: 0 0 12px rgba(0,217,255,0.6); animation: sotdBlink 1.6s steps(2, jump-none) infinite; }
+@keyframes sotdBlink { 50% { opacity: 0.55; } }
+html:not([data-theme]) .sotd-name {
+  font-style: italic;
+  text-transform: uppercase;
+  transform: skewX(-6deg);
+  transform-origin: left;
+  background: linear-gradient(120deg, #fff 30%, var(--accent) 70%, var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 16px rgba(0,217,255,0.35));
+}
+html:not([data-theme]) .sotd-tier { border-color: var(--accent-2); color: #e9d5ff; background: var(--accent-2-soft); border-radius: 0; transform: skewX(-12deg); }
+html:not([data-theme]) .sotd-stat-bar { height: 7px; border-radius: 0; background: rgba(255,255,255,0.06); }
+html:not([data-theme]) .sotd-stat-bar i {
+  border-radius: 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  mask-image: repeating-linear-gradient(90deg, #000 0 6px, transparent 6px 8px);
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 6px, transparent 6px 8px);
+  box-shadow: 0 0 10px rgba(0,217,255,0.6);
+}
+html:not([data-theme]) .sotd-clock b { color: var(--accent); }
+
+/* -- Case Files: a booking photo. The full skin stands against a height
+   chart with a name board at its feet, under a red "person of interest"
+   stamp; the note is written in by hand. */
+html[data-theme="casefiles"] .sotd-card {
+  border-radius: 2px;
+  background: var(--panel);
+  transform: rotate(-0.35deg);
+  box-shadow: 0 2px 0 var(--border), 0 14px 24px -14px rgba(60,40,10,0.45);
+}
+html[data-theme="casefiles"] .sotd-card:hover { transform: rotate(0deg) translateY(-2px); }
+html[data-theme="casefiles"] .sotd-figure { background: #e4e1d6; border: 1px solid var(--border); overflow: hidden; }
+html[data-theme="casefiles"] .sotd-backdrop {
+  background:
+    repeating-linear-gradient(180deg, transparent 0 13px, rgba(42,36,28,0.32) 13px 14px),
+    repeating-linear-gradient(180deg, transparent 0 55px, rgba(42,36,28,0.7) 55px 56px);
+}
+html[data-theme="casefiles"] .sotd-backdrop i {
+  display: block;
+  position: absolute;
+  left: 5px;
+  font: 700 0.62em 'Courier Prime', monospace;
+  color: rgba(42,36,28,0.75);
+}
+html[data-theme="casefiles"] .sotd-backdrop i:nth-child(1) { top: 42px; }
+html[data-theme="casefiles"] .sotd-backdrop i:nth-child(1)::before { content: "6'"; }
+html[data-theme="casefiles"] .sotd-backdrop i:nth-child(2) { top: 98px; }
+html[data-theme="casefiles"] .sotd-backdrop i:nth-child(2)::before { content: "5'"; }
+html[data-theme="casefiles"] .sotd-backdrop i:nth-child(3) { top: 154px; }
+html[data-theme="casefiles"] .sotd-backdrop i:nth-child(3)::before { content: "4'"; }
+html[data-theme="casefiles"] .sotd-skin { height: 188px; filter: grayscale(0.35) contrast(1.05) drop-shadow(3px 3px 0 rgba(0,0,0,0.18)); }
+html[data-theme="casefiles"] .sotd-plate {
+  display: block;
+  position: absolute;
+  z-index: 3;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  background: #23201b;
+  color: #f3eedd;
+  font: 700 0.66em 'Courier Prime', monospace;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.35);
+}
+html[data-theme="casefiles"] .sotd-plate::before { content: "BWT \00b7  "; white-space: pre; }
+html[data-theme="casefiles"] .sotd-kicker { font-family: 'Courier Prime', monospace; letter-spacing: 1.5px; }
+html[data-theme="casefiles"] .sotd-kicker-text {
+  padding: 2px 8px;
+  border: 2px solid var(--accent-2);
+  color: var(--accent-2);
+  transform: rotate(-2.5deg);
+  display: inline-block;
+}
+html[data-theme="casefiles"] .sotd-date { font-family: 'Courier Prime', monospace; }
+html[data-theme="casefiles"] .sotd-name { font-family: 'Anton', 'Arial Narrow', sans-serif; font-weight: 400; letter-spacing: 1px; text-transform: uppercase; margin-top: 8px; }
+html[data-theme="casefiles"] .sotd-tier { border-radius: 2px; border-style: dashed; color: var(--accent); border-color: var(--accent); font-family: 'Courier Prime', monospace; }
+html[data-theme="casefiles"] .sotd-stat-label,
+html[data-theme="casefiles"] .sotd-meta,
+html[data-theme="casefiles"] .sotd-clock { font-family: 'Courier Prime', monospace; }
+html[data-theme="casefiles"] .sotd-stat-value { font-family: 'Courier Prime', monospace; font-weight: 700; }
+html[data-theme="casefiles"] .sotd-stat-bar { border-radius: 0; height: 6px; background: transparent; border: 1px solid var(--border-strong); }
+html[data-theme="casefiles"] .sotd-stat-bar i { border-radius: 0; background: repeating-linear-gradient(-45deg, var(--accent) 0 2px, transparent 2px 4px); }
+html[data-theme="casefiles"] .sotd-note { font-family: 'Caveat', cursive; font-style: normal; font-size: 1.2em; color: #2b4f8c; }
+html[data-theme="casefiles"] .sotd-note[data-by]::after { color: #2b4f8c; opacity: 0.75; }
+html[data-theme="casefiles"] .sotd-deco .d5 {
+  display: block;
+  position: absolute;
+  top: 64px;
+  right: 56px;
+  padding: 4px 12px;
+  border: 3px double var(--accent-2);
+  color: var(--accent-2);
+  font: 400 1.25em 'Anton', sans-serif;
+  letter-spacing: 3px;
+  transform: rotate(8deg);
+  opacity: 0.22;
+}
+html[data-theme="casefiles"] .sotd-deco .d5::before { content: "UNDER WATCH"; }
+html[data-theme="casefiles"] .sotd-deco .d1,
+html[data-theme="casefiles"] .sotd-deco .d2 {
+  display: block;
+  position: absolute;
+  top: -6px;
+  width: 70px;
+  height: 20px;
+  background: rgba(240,228,180,0.75);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+}
+html[data-theme="casefiles"] .sotd-deco .d1 { left: 18px; transform: rotate(-8deg); }
+html[data-theme="casefiles"] .sotd-deco .d2 { right: 18px; transform: rotate(6deg); }
+
+/* -- Private Bank: the sweat engraved on a banknote. An oval portrait in
+   a gold-and-navy frame, the star count as the note's denomination in
+   each corner and a serial number under the portrait. */
+html[data-theme="ledger"] .sotd-card {
+  border: 1px solid var(--gold);
+  outline: 1px solid var(--gold);
+  outline-offset: -7px;
+  background:
+    repeating-radial-gradient(ellipse at 50% 50%, transparent 0 9px, rgba(169,130,46,0.07) 9px 10px),
+    var(--panel);
+  padding: 22px 34px 22px 30px;
+}
+html[data-theme="ledger"] .sotd-card:hover { transform: none; box-shadow: 0 18px 34px -18px rgba(22,35,58,0.5); }
+html[data-theme="ledger"] .sotd-figure { height: 214px; }
+html[data-theme="ledger"] .sotd-backdrop {
+  inset: 0 6px 18px;
+  border-radius: 50%;
+  overflow: hidden;
+  background:
+    repeating-radial-gradient(circle at 50% 40%, rgba(22,35,58,0.05) 0 2px, transparent 2px 5px),
+    radial-gradient(ellipse at 50% 40%, #fffdf6, #efe7d2);
+  box-shadow: inset 0 0 0 2px var(--gold), inset 0 0 0 5px var(--panel), inset 0 0 0 6px var(--accent-2), inset 0 0 22px rgba(22,35,58,0.18);
+}
+html[data-theme="ledger"] .sotd-figure { overflow: hidden; }
+html[data-theme="ledger"] .sotd-skin {
+  height: 300px;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  filter: sepia(0.35) saturate(0.85) contrast(1.05);
+  clip-path: ellipse(48% 34% at 50% 30%);
+}
+html[data-theme="ledger"] .sotd-plate {
+  display: block;
+  position: absolute;
+  z-index: 3;
+  bottom: 0;
+  left: 0; right: 0;
+  text-align: center;
+  font: 600 0.8em 'EB Garamond', serif;
+  letter-spacing: 2px;
+  color: var(--bad);
+}
+html[data-theme="ledger"] .sotd-plate::before { content: "N\00ba  A "; white-space: pre; }
+html[data-theme="ledger"] .sotd-plate::after { content: " B"; }
+html[data-theme="ledger"] .sotd-deco i:nth-child(-n+4) {
+  display: block;
+  position: absolute;
+  font: 600 1.15em 'Playfair Display', serif;
+  color: var(--gold);
+  opacity: 0.85;
+}
+html[data-theme="ledger"] .sotd-deco i:nth-child(-n+4)::before { content: attr(data-v) "\272B"; }
+html[data-theme="ledger"] .sotd-deco .d1 { top: 12px; left: 16px; }
+html[data-theme="ledger"] .sotd-deco .d2 { top: 12px; right: 16px; }
+html[data-theme="ledger"] .sotd-deco .d3 { bottom: 12px; left: 16px; }
+html[data-theme="ledger"] .sotd-deco .d4 { bottom: 12px; right: 16px; }
+html[data-theme="ledger"] .sotd-kicker {
+  font: italic 400 1.05em 'EB Garamond', serif;
+  letter-spacing: 0.5px;
+  text-transform: none;
+  color: var(--gold);
+}
+html[data-theme="ledger"] .sotd-kicker-text { display: inline-flex; align-items: center; gap: 10px; }
+html[data-theme="ledger"] .sotd-kicker-text::before,
+html[data-theme="ledger"] .sotd-kicker-text::after { content: ""; width: 26px; height: 1px; background: var(--gold); }
+html[data-theme="ledger"] .sotd-date { font-family: 'EB Garamond', serif; font-size: 0.85em; }
+html[data-theme="ledger"] .sotd-name { font-family: 'Playfair Display', serif; font-weight: 600; letter-spacing: 0.3px; }
+html[data-theme="ledger"] .sotd-tier { border-radius: 0; background: var(--accent-2); border-color: var(--accent-2); color: #f6efd9; font-family: 'EB Garamond', serif; letter-spacing: 2px; }
+html[data-theme="ledger"] .sotd-stat-label { font: italic 400 0.9em 'EB Garamond', serif; letter-spacing: 0.3px; text-transform: none; color: var(--text-dim); }
+html[data-theme="ledger"] .sotd-stat-value { font-family: 'Playfair Display', serif; font-weight: 600; }
+html[data-theme="ledger"] .sotd-stat-bar { height: 3px; border-radius: 0; background: transparent; border-top: 1px solid var(--border); }
+html[data-theme="ledger"] .sotd-stat-bar i { border-radius: 0; background: var(--gold); }
+html[data-theme="ledger"] .sotd-meta,
+html[data-theme="ledger"] .sotd-note,
+html[data-theme="ledger"] .sotd-clock { font-family: 'EB Garamond', serif; font-size: 0.95em; }
+html[data-theme="ledger"] .sotd-clock { margin-top: 14px; }
+
+/* -- Deep Current: a specimen capsule pulled up from the trench. The skin
+   floats in teal-lit liquid with bubbles rising past it, tagged with a
+   catalog number. */
+html[data-theme="deepcurrent"] .sotd-card {
+  background: radial-gradient(120% 140% at 10% 0%, rgba(53,230,196,0.10), transparent 55%), linear-gradient(160deg, var(--panel), var(--panel-2));
+}
+html[data-theme="deepcurrent"] .sotd-backdrop {
+  inset: 2px 20px 26px;
+  border-radius: 70px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(53,230,196,0.06) 0 14%, rgba(53,230,196,0.22) 14%, rgba(20,90,110,0.5));
+  border: 1px solid rgba(53,230,196,0.45);
+  box-shadow: inset 10px 0 18px -10px rgba(255,255,255,0.25), inset -14px 0 22px -12px rgba(0,0,0,0.6), 0 0 26px rgba(53,230,196,0.18);
+}
+html[data-theme="deepcurrent"] .sotd-backdrop i {
+  display: block;
+  position: absolute;
+  bottom: -10px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(190,255,245,0.7);
+  animation: sotdBubble 5s linear infinite;
+}
+html[data-theme="deepcurrent"] .sotd-backdrop i:nth-child(1) { left: 22%; }
+html[data-theme="deepcurrent"] .sotd-backdrop i:nth-child(2) { left: 64%; width: 5px; height: 5px; animation-delay: 1.8s; animation-duration: 4s; }
+html[data-theme="deepcurrent"] .sotd-backdrop i:nth-child(3) { left: 45%; width: 6px; height: 6px; animation-delay: 3.1s; animation-duration: 6s; }
+@keyframes sotdBubble { from { transform: translateY(0); opacity: 0; } 12% { opacity: 1; } 85% { opacity: 1; } to { transform: translateY(-170px) translateX(6px); opacity: 0; } }
+html[data-theme="deepcurrent"] .sotd-skin {
+  height: 162px;
+  margin-bottom: 30px;
+  filter: drop-shadow(0 0 14px rgba(53,230,196,0.45)) saturate(0.85) hue-rotate(-8deg);
+  animation: sotdFloat 5s ease-in-out infinite;
+}
+@keyframes sotdFloat { 50% { transform: translateY(-7px) rotate(1deg); } }
+html[data-theme="deepcurrent"] .sotd-plate {
+  display: block;
+  position: absolute;
+  z-index: 3;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 8px;
+  border: 1px solid rgba(53,230,196,0.55);
+  border-radius: 3px;
+  background: rgba(4,20,28,0.85);
+  color: var(--accent);
+  font: 600 0.66em 'JetBrains Mono', monospace;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+html[data-theme="deepcurrent"] .sotd-plate::before { content: "SPEC-"; }
+html[data-theme="deepcurrent"] .sotd-kicker { font-family: 'JetBrains Mono', monospace; letter-spacing: 1.5px; color: var(--accent); }
+html[data-theme="deepcurrent"] .sotd-kicker-text::before { content: "// "; opacity: 0.6; }
+html[data-theme="deepcurrent"] .sotd-date { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+html[data-theme="deepcurrent"] .sotd-name { font-family: 'Chakra Petch', sans-serif; font-weight: 700; letter-spacing: 0.5px; text-shadow: 0 0 22px rgba(53,230,196,0.25); }
+html[data-theme="deepcurrent"] .sotd-tier { font-family: 'JetBrains Mono', monospace; border-radius: 3px; }
+html[data-theme="deepcurrent"] .sotd-stat-label,
+html[data-theme="deepcurrent"] .sotd-stat-value,
+html[data-theme="deepcurrent"] .sotd-clock { font-family: 'JetBrains Mono', monospace; }
+html[data-theme="deepcurrent"] .sotd-stat-bar i { box-shadow: 0 0 10px rgba(53,230,196,0.6); }
+html[data-theme="deepcurrent"] .sotd-deco .d5 {
+  display: block;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(40% 60% at 30% 0%, rgba(120,255,230,0.07), transparent 70%),
+    radial-gradient(30% 50% at 70% 10%, rgba(120,255,230,0.05), transparent 70%);
+  animation: sotdCaustic 9s ease-in-out infinite alternate;
+}
+@keyframes sotdCaustic { to { transform: translateX(8%); opacity: 0.6; } }
+
+/* -- Sky Isles: a pixel boss intro. The skin stands on a floating grass
+   block with clouds drifting by, the stats are chunky HP-style bars and
+   the kicker blinks like a title screen. */
+html[data-theme="skyisles"] .sotd-card {
+  border: 0;
+  background: linear-gradient(180deg, #bfe6ff, var(--panel) 70%);
+  box-shadow: 0 0 0 4px var(--ink), 6px 6px 0 4px rgba(23,50,71,0.28);
+  margin: 4px;
+}
+html[data-theme="skyisles"] .sotd-card:hover { transform: translate(-2px, -2px); }
+html[data-theme="skyisles"] .sotd-backdrop i:nth-child(1) {
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 26px; right: 26px;
+  height: 26px;
+  background: linear-gradient(180deg, var(--grass) 0 8px, var(--grass-dark) 8px 10px, var(--dirt) 10px 18px, var(--dirt-dark) 18px);
+  box-shadow: 0 0 0 2px var(--ink);
+  clip-path: polygon(0 0, 100% 0, 100% 18px, 88% 18px, 88% 100%, 12% 100%, 12% 18px, 0 18px);
+}
+html[data-theme="skyisles"] .sotd-backdrop i:nth-child(2),
+html[data-theme="skyisles"] .sotd-backdrop i:nth-child(3) {
+  display: block;
+  position: absolute;
+  width: 40px; height: 12px;
+  background: #fff;
+  box-shadow: 8px -6px 0 -2px #fff, 20px -8px 0 0 #fff;
+  animation: sotdCloud 9s steps(18) infinite alternate;
+}
+html[data-theme="skyisles"] .sotd-backdrop i:nth-child(2) { top: 28px; left: 0; }
+html[data-theme="skyisles"] .sotd-backdrop i:nth-child(3) { top: 70px; right: 6px; transform: scale(0.7); animation-delay: -4s; }
+@keyframes sotdCloud { to { translate: 24px 0; } }
+html[data-theme="skyisles"] .sotd-skin {
+  height: 168px;
+  margin-bottom: 24px;
+  image-rendering: pixelated;
+  filter: drop-shadow(4px 4px 0 rgba(23,50,71,0.3));
+  animation: sotdHop 1.4s steps(2) infinite;
+}
+@keyframes sotdHop { 50% { transform: translateY(-4px); } }
+html[data-theme="skyisles"] .sotd-kicker { font: 400 0.62em var(--font-arcade); letter-spacing: 1px; color: var(--bad); }
+html[data-theme="skyisles"] .sotd-kicker-text::after { content: " !"; animation: sotdBlink 0.8s steps(2, jump-none) infinite; display: inline-block; }
+html[data-theme="skyisles"] .sotd-date { font: 400 1.5em var(--font-label); color: var(--text-dim); }
+html[data-theme="skyisles"] .sotd-name { font: 400 2.9em var(--font-pixel); letter-spacing: 1px; text-shadow: 3px 3px 0 rgba(23,50,71,0.18); }
+html[data-theme="skyisles"] .sotd-tier { border-radius: 0; border: 0; box-shadow: 0 0 0 2px var(--ink); background: var(--gold); color: #fff; font: 400 0.6em var(--font-arcade); padding: 5px 8px; text-shadow: 1px 1px 0 var(--ink); }
+html[data-theme="skyisles"] .sotd-stat-label { font: 700 0.8em var(--font-label); letter-spacing: 0.5px; color: var(--text-dim); }
+html[data-theme="skyisles"] .sotd-stat-value { font: 400 1.6em var(--font-pixel); }
+html[data-theme="skyisles"] .sotd-stat-bar { height: 10px; border-radius: 0; background: #2a3a48; box-shadow: 0 0 0 2px var(--ink); margin: 2px; }
+html[data-theme="skyisles"] .sotd-stat-bar i {
+  border-radius: 0;
+  background: linear-gradient(180deg, #ff8a7a 0 3px, var(--bad) 3px);
+  animation-timing-function: steps(10, end);
+}
+html[data-theme="skyisles"] .sotd-meta,
+html[data-theme="skyisles"] .sotd-note { font: 400 1.25em var(--font-pixel); }
+html[data-theme="skyisles"] .sotd-note { font-style: normal; }
+html[data-theme="skyisles"] .sotd-clock { font: 400 0.6em var(--font-arcade); line-height: 1.6; }
+
+/* -- Hollow Grave: a soul risen in a crypt doorway. The skin hovers,
+   pale and see-through, inside a stone arch lit green from within, with
+   mist pooling at the threshold. Blood Moon turns the glow red. */
+html[data-theme="hollowgrave"] .sotd-card {
+  background:
+    radial-gradient(90% 120% at 12% 50%, rgba(184,255,92,0.06), transparent 60%),
+    linear-gradient(180deg, var(--panel-2), var(--panel));
+  border-color: rgba(232,224,240,0.12);
+}
+html[data-theme="hollowgrave"] .sotd-backdrop i:nth-child(1) {
+  display: block;
+  position: absolute;
+  inset: 4px 14px 0;
+  border-radius: 80px 80px 0 0;
+  background: radial-gradient(70% 55% at 50% 55%, rgba(184,255,92,0.28), rgba(10,8,14,0.95) 75%);
+  box-shadow: 0 0 0 8px var(--stone), 0 0 0 9px var(--stone-dark), inset 0 0 30px rgba(0,0,0,0.9);
+  animation: sotdHaunt 4.5s ease-in-out infinite;
+}
+html[data-theme="hollowgrave"] .sotd-backdrop i:nth-child(2) {
+  display: block;
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 40px;
+  background: radial-gradient(60% 100% at 50% 100%, rgba(220,230,240,0.35), transparent 70%);
+  filter: blur(4px);
+  z-index: 3;
+  animation: sotdMist 6s ease-in-out infinite alternate;
+}
+@keyframes sotdHaunt { 50% { filter: brightness(1.25); } }
+@keyframes sotdMist { to { transform: translateX(10px) scaleX(1.1); opacity: 0.7; } }
+html[data-theme="hollowgrave"] .sotd-skin {
+  height: 170px;
+  margin-bottom: 14px;
+  opacity: 0;
+  filter: grayscale(0.7) brightness(1.15) drop-shadow(0 0 14px rgba(184,255,92,0.55));
+  animation: sotdRise 4.5s ease-in-out infinite;
+}
+html[data-theme="hollowgrave"] .sotd-skin.loaded { opacity: 0.82; }
+@keyframes sotdRise { 50% { transform: translateY(-9px); } }
+html[data-theme="hollowgrave"] .sotd-kicker { font: 600 1.35em var(--font-grave); letter-spacing: 1px; text-transform: none; color: var(--accent-2); text-shadow: 0 0 14px rgba(184,255,92,0.4); }
+html[data-theme="hollowgrave"] .sotd-date { font: italic 400 0.62em 'Crimson Pro', serif; letter-spacing: 0.3px; }
+html[data-theme="hollowgrave"] .sotd-name { font: 700 2.6em var(--font-grave); letter-spacing: 1px; color: var(--moon); text-shadow: 0 2px 0 rgba(0,0,0,0.6), 0 0 24px rgba(241,216,138,0.2); }
+html[data-theme="hollowgrave"] .sotd-tier { font-family: var(--font-label); border-radius: 3px; }
+html[data-theme="hollowgrave"] .sotd-stat-label { font: 600 0.85em var(--font-label); letter-spacing: 1px; }
+html[data-theme="hollowgrave"] .sotd-stat-value { font-family: 'Crimson Pro', serif; font-weight: 700; font-size: 1.45em; }
+html[data-theme="hollowgrave"] .sotd-stat-bar { height: 3px; background: rgba(232,224,240,0.08); }
+html[data-theme="hollowgrave"] .sotd-stat-bar i { background: linear-gradient(90deg, rgba(242,140,40,0.5), var(--accent)); box-shadow: 0 0 8px rgba(242,140,40,0.6); }
+html[data-theme="hollowgrave"] .sotd-meta,
+html[data-theme="hollowgrave"] .sotd-note,
+html[data-theme="hollowgrave"] .sotd-clock { font-family: 'Crimson Pro', serif; font-size: 0.95em; }
+html[data-theme="hollowgrave"].blood-moon .sotd-backdrop i:nth-child(1) { background: radial-gradient(70% 55% at 50% 55%, rgba(255,74,74,0.3), rgba(10,6,8,0.95) 75%); }
+html[data-theme="hollowgrave"].blood-moon .sotd-skin { filter: grayscale(0.7) brightness(1.1) drop-shadow(0 0 14px rgba(255,74,74,0.55)); }
+html[data-theme="hollowgrave"].blood-moon .sotd-kicker { color: #ff6a5a; text-shadow: 0 0 14px rgba(255,74,74,0.45); }
+
+@media (max-width: 620px) {
+  .sotd { margin-bottom: 20px; }
+  /* The info column opens up into the card's own grid: the skin sits
+     beside the kicker, name and tags, and the stats, record, note and
+     countdown run the full width underneath. */
+  .sotd-card { grid-template-columns: 104px minmax(0, 1fr); column-gap: 14px; row-gap: 0; padding: 14px; align-items: start; }
+  .sotd-info { display: contents; }
+  .sotd-figure { grid-column: 1; grid-row: 1 / span 3; }
+  .sotd-kicker, .sotd-name, .sotd-tags { grid-column: 2; }
+  .sotd-kicker { margin-top: 6px; }
+  .sotd-stats, .sotd-meta, .sotd-note { grid-column: 1 / -1; }
+  .sotd-stats { margin-top: 14px; }
+  .sotd-plate { font-size: 0.6em !important; letter-spacing: 0.5px !important; }
+  html[data-theme="ledger"] .sotd-kicker-text::before,
+  html[data-theme="ledger"] .sotd-kicker-text::after,
+  html[data-theme="ledger"] .sotd-deco i.d1,
+  html[data-theme="ledger"] .sotd-deco i.d3,
+  html[data-theme="casefiles"] .sotd-deco .d5 { display: none; }
+  html[data-theme="ledger"] .sotd-plate { white-space: nowrap; }
+  html[data-theme="ledger"] .sotd-card { padding: 18px 18px 18px 16px; }
+  .sotd-figure, html[data-theme="ledger"] .sotd-figure { height: 150px; }
+  .sotd-skin { height: 140px; }
+  html[data-theme="casefiles"] .sotd-skin { height: 136px; }
+  html[data-theme="ledger"] .sotd-skin { height: 210px; top: 14px; }
+  html[data-theme="ledger"] .sotd-backdrop { inset: 0 0 18px; }
+  html[data-theme="ledger"] .sotd-deco i:nth-child(-n+4) { font-size: 0.85em; }
+  html[data-theme="deepcurrent"] .sotd-skin { height: 108px; margin-bottom: 26px; }
+  html[data-theme="deepcurrent"] .sotd-backdrop { inset: 0 6px 24px; border-radius: 50px; }
+  html[data-theme="skyisles"] .sotd-skin { height: 112px; }
+  html[data-theme="skyisles"] .sotd-backdrop i:nth-child(1) { left: 6px; right: 6px; }
+  html[data-theme="hollowgrave"] .sotd-skin { height: 118px; }
+  html[data-theme="hollowgrave"] .sotd-backdrop i:nth-child(1) { inset: 4px 8px 0; }
+  .sotd-name { font-size: 1.6em; }
+  html[data-theme="skyisles"] .sotd-name { font-size: 2em; }
+  html[data-theme="hollowgrave"] .sotd-name { font-size: 1.9em; }
+  .sotd-stats { gap: 8px 12px; }
+  .sotd-stat-value { font-size: 1.05em; }
+  .sotd-stat-label { font-size: 0.6em; letter-spacing: 0.8px; }
+  .sotd-clock { grid-column: 1 / -1; align-self: auto; margin-top: 10px; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sotd-card, .sotd-card *, .sotd-deco i, .sotd-backdrop i { animation: none !important; }
+}
 </style>
 </head>
 <body>
@@ -13517,6 +14096,8 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
     </div>
     <button type="button" id="setAdminKeyBtn" class="btn btn-ghost">&#128273; <span class="key-owner-name">Your Key</span></button>
   </div>
+
+  <section id="sotd" class="sotd" aria-label="Sweat of the day" hidden></section>
 
   <nav id="quickNav" class="quick-nav" aria-label="Jump to section">
     <a href="#sweatLookupSection" class="quick-nav-link active" data-target="sweatLookupSection">Sweat Lookup</a>
@@ -18710,6 +19291,7 @@ const sweatStatsEl = document.getElementById("sweatStats");
 
 let lastSweatStatsPerson;
 function renderSweatStats(list, person) {
+  renderSweatOfDay();
   sweatStatsEl.innerHTML = "";
   // Tiles only animate in when the strip switches whose numbers it shows
   // (all sweats <-> a leaderboard person), not on every filter keystroke.
@@ -18793,6 +19375,192 @@ function renderSweatStats(list, person) {
     <div class="ss-flag-bar" aria-hidden="true"><span class="cheat" style="width:${pct(cheats)}%"></span><span class="boost" style="width:${pct(boosts)}%"></span></div>
     <div class="ss-flag-legend"><span class="cheat"><i></i>${cheats} cheating</span><span class="boost"><i></i>${boosts} boosting</span></div>`);
 }
+
+// ---- Sweat of the day ----
+// One tracked sweat spotlighted under the hero, the same pick for everyone
+// on a given day. Days run on US Eastern time (midnight there starts a new
+// pick). Every player gets a score from hashing the day with their identity
+// and the lowest score wins, so adding a sweat mid-day only changes the
+// pick if the new one happens to win, and the list's order doesn't matter.
+// Players flagged as cheating are never picked, and yesterday's pick sits
+// out today so the spotlight always moves on.
+const sotdEl = document.getElementById("sotd");
+const SOTD_TZ = "America/New_York";
+const SOTD_KICKERS = {
+  neon: "Today's challenger",
+  casefiles: "Person of interest",
+  ledger: "Client of the day",
+  deepcurrent: "Specimen of the day",
+  skyisles: "Boss of the day",
+  hollowgrave: "Soul of the day",
+};
+const SOTD_CLOCKS = {
+  neon: "Next challenger in",
+  casefiles: "Next file opens in",
+  ledger: "Next client in",
+  deepcurrent: "Next dive in",
+  skyisles: "Next boss in",
+  hollowgrave: "Back to the grave in",
+};
+let sotdSignature = "";
+
+function sotdDayKey(date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: SOTD_TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
+}
+// FNV-1a, then a murmur-style finish so nearby day strings spread out.
+function sotdHash(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
+  return h >>> 0;
+}
+// Every logged win against each player, grouped by identity, newest record
+// carrying the stats.
+function sotdPlayers() {
+  const byId = new Map();
+  sweats.forEach(s => {
+    if (!s || !s.username) return;
+    const key = identityKeyFor(s);
+    let p = byId.get(key);
+    if (!p) { p = { key, records: [] }; byId.set(key, p); }
+    p.records.push(s);
+  });
+  const players = [];
+  byId.forEach(p => {
+    p.records.sort((a, b) => (Date.parse(a.dateAdded) || 0) - (Date.parse(b.dateAdded) || 0));
+    p.latest = p.records[p.records.length - 1];
+    p.cheating = p.records.some(r => r.cheating);
+    players.push(p);
+  });
+  return players;
+}
+function sotdPickFor(dayKey, players) {
+  let best = null, bestScore = Infinity;
+  players.forEach(p => {
+    const score = sotdHash(`${dayKey}|${p.key}`);
+    if (score < bestScore) { bestScore = score; best = p; }
+  });
+  return best;
+}
+function sotdPick(players) {
+  const pool = players.filter(p => !p.cheating);
+  if (!pool.length) return null;
+  const today = sotdDayKey();
+  const yesterday = sotdDayKey(new Date(Date.now() - 86400000));
+  const yesterdaysPick = pool.length > 1 ? sotdPickFor(yesterday, pool) : null;
+  return sotdPickFor(today, yesterdaysPick ? pool.filter(p => p !== yesterdaysPick) : pool);
+}
+// Time left until midnight Eastern.
+function sotdTimeLeft() {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: SOTD_TZ, hour: "numeric", minute: "numeric", second: "numeric", hourCycle: "h23" })
+    .formatToParts(new Date()).map(p => [p.type, Number(p.value)]));
+  const left = 86400 - ((parts.hour % 24) * 3600 + parts.minute * 60 + parts.second);
+  const h = Math.floor(left / 3600), m = Math.floor((left % 3600) / 60);
+  return h ? `${h}h ${m}m` : `${Math.max(1, m)}m`;
+}
+// Where a value sits among every tracked player (0-100), for the stat bars.
+function sotdPercentile(players, pick, value) {
+  const vals = players.map(p => value(p.latest)).filter(Number.isFinite);
+  const v = value(pick.latest);
+  if (!vals.length || !Number.isFinite(v)) return 0;
+  return Math.round(vals.filter(x => x <= v).length / vals.length * 100);
+}
+
+function renderSweatOfDay() {
+  if (!sotdEl) return;
+  const players = sotdPlayers();
+  const pick = sotdPick(players);
+  if (!pick) { sotdEl.hidden = true; sotdSignature = ""; return; }
+  const s = pick.latest;
+  const theme = currentThemeId();
+  const sig = [sotdDayKey(), theme, pick.key, pick.records.length, s._id, s.updatedAt, players.length].join("|");
+  if (sig === sotdSignature) { sotdEl.querySelector(".sotd-clock b").textContent = sotdTimeLeft(); return; }
+  const firstShow = !sotdSignature;
+  sotdSignature = sig;
+
+  const num = v => (v === null || v === undefined || v === "" || !Number.isFinite(Number(v))) ? null : Number(v);
+  const star = num(s.star) || 0;
+  const fkdr = num(s.fkdr) || 0;
+  const index = fkdr * fkdr * star;
+  const tier = SWEAT_TIERS.find(t => index < t.max);
+  const beatenBy = BEATEN_BY_KEYS.filter(k => pick.records.some(r => r[k]));
+  const times = pick.records.length;
+  const first = new Date(pick.records[0].dateAdded);
+  const stats = [
+    ["FKDR", fkdr.toFixed(2), sotdPercentile(players, pick, r => num(r.fkdr))],
+    ["WLR", num(s.wlr) === null ? "–" : num(s.wlr).toFixed(2), sotdPercentile(players, pick, r => num(r.wlr))],
+    ["Finals", num(s.finals) === null ? "–" : Math.round(num(s.finals)).toLocaleString(), sotdPercentile(players, pick, r => num(r.finals))],
+    ["Index", Math.round(index).toLocaleString(), sotdPercentile(players, pick, r => (num(r.fkdr) || 0) ** 2 * (num(r.star) || 0))],
+  ];
+  const noteSrc = [...pick.records].reverse().find(r => sweatNotes(r).length);
+  const notes = noteSrc ? sweatNotes(noteSrc) : [];
+  const latestNote = notes[notes.length - 1];
+  const dayLabel = new Intl.DateTimeFormat(undefined, { timeZone: SOTD_TZ, weekday: "long", month: "short", day: "numeric" }).format(new Date());
+
+  // Numbers and fixed labels only in the markup; the name, note and dates
+  // go in via textContent below.
+  sotdEl.innerHTML = `
+    <div class="sotd-card tier-${tier.key}" tabindex="0" role="button">
+      <div class="sotd-deco" aria-hidden="true">${["d1", "d2", "d3", "d4"].map(c => `<i class="${c}" data-v="${star.toLocaleString()}"></i>`).join("")}<i class="d5"></i><i class="d6"></i></div>
+      <div class="sotd-figure" aria-hidden="true">
+        <div class="sotd-backdrop"><i></i><i></i><i></i></div>
+        <img class="sotd-skin" alt="" decoding="async" />
+        <span class="sotd-plate"><span class="sotd-plate-no"></span></span>
+      </div>
+      <div class="sotd-info">
+        <div class="sotd-kicker"><span class="sotd-kicker-text">${SOTD_KICKERS[theme] || SOTD_KICKERS.neon}</span><span class="sotd-date"></span></div>
+        <div class="sotd-name"></div>
+        <div class="sotd-tags">
+          <span class="pill prestige-tag" aria-label="${star} stars">${prestigeTagHtml(star)}</span>
+          <span class="sotd-tier">${tier.name}</span>
+        </div>
+        <div class="sotd-stats">
+          ${stats.map(([label, value, pct]) => `
+            <div class="sotd-stat" data-tooltip="Higher than ${pct}% of tracked sweats">
+              <span class="sotd-stat-label">${label}</span>
+              <span class="sotd-stat-value">${value}</span>
+              <span class="sotd-stat-bar"><i style="--pct:${pct}%"></i></span>
+            </div>`).join("")}
+        </div>
+        <div class="sotd-meta">
+          <span class="beaten-by-avatars">${beatenBy.map(k => `<span class="beaten-avatar" style="--chip-color:var(--roster-${k})" data-tooltip="${BEATEN_BY[k].label}">${BEATEN_BY[k].initials}</span>`).join("")}</span>
+          <span class="sotd-record"></span>
+        </div>
+        ${latestNote ? '<p class="sotd-note"></p>' : ""}
+      </div>
+      <div class="sotd-clock">${SOTD_CLOCKS[theme] || SOTD_CLOCKS.neon} <b>${sotdTimeLeft()}</b></div>
+    </div>`;
+
+  const card = sotdEl.querySelector(".sotd-card");
+  card.dataset.username = s.username;
+  card.dataset.uuid = s.uuid || "";
+  setLoggedStatsDataset(card, s);
+  card.setAttribute("aria-label", `Sweat of the day: ${s.username}. View their stats`);
+  sotdEl.querySelector(".sotd-name").textContent = s.username;
+  sotdEl.querySelector(".sotd-date").textContent = dayLabel;
+  sotdEl.querySelector(".sotd-plate-no").textContent = sotdDayKey().replace(/-/g, "").slice(2);
+  const names = beatenBy.map(k => BEATEN_BY[k].label);
+  const who = names.length > 2 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names.join(" and ");
+  sotdEl.querySelector(".sotd-record").textContent =
+    `${who ? `Beaten by ${who}` : "Beaten"}${times > 1 ? ` · ${times} times` : ""} · first on ${first.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
+  if (latestNote) {
+    const noteEl = sotdEl.querySelector(".sotd-note");
+    noteEl.textContent = `“${latestNote.text}”`;
+    const by = noteAuthorLabel(latestNote.author);
+    if (by) noteEl.dataset.by = `— ${by}`;
+  }
+  const skin = sotdEl.querySelector(".sotd-skin");
+  const cleanUuid = (s.uuid || "").replace(/-/g, "");
+  skin.onload = () => skin.classList.add("loaded");
+  skin.onerror = () => { if (!skin.dataset.retried) { skin.dataset.retried = "1"; skin.src = `https://visage.surgeplay.com/full/256/${cleanUuid}?retry=${Date.now()}`; } };
+  skin.src = `https://visage.surgeplay.com/full/256/${cleanUuid}`;
+  sotdEl.hidden = false;
+  sotdEl.classList.remove("sotd-in");
+  if (firstShow) { void sotdEl.offsetWidth; sotdEl.classList.add("sotd-in"); }
+}
+document.addEventListener("themechange", () => { if (sweats.length) renderSweatOfDay(); });
+// The countdown ticks once a minute, and a new day brings a new pick.
+setInterval(() => { if (sweats.length && !document.hidden) renderSweatOfDay(); }, 30000);
 
 function renderTable() {
   // A full re-render can remove the element the tooltip is currently

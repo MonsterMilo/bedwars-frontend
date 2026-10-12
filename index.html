@@ -12843,6 +12843,33 @@ html[data-theme="skyisles"] .sweat-card .card-note-ghost:hover { color: #3b2410;
 .site-footer-name { font-weight: 700; color: var(--text-dim); }
 .site-footer-top { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; font-size: 13px; }
 .site-footer-top svg { width: 14px; height: 14px; flex: none; }
+/* Sources status (footer pill + panel). Colours come from each theme's
+   own --good / --gold / --bad, so every theme gets it for free. */
+.status-pill .status-dot,
+.status-row .status-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--text-faint); }
+.status-dot[data-state="ok"] { background: var(--good); box-shadow: 0 0 0 3px var(--good-soft); }
+.status-dot[data-state="warn"] { background: var(--gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 22%, transparent); }
+.status-dot[data-state="down"] { background: var(--bad); box-shadow: 0 0 0 3px var(--bad-soft); animation: statusPulse 1.6s ease-in-out infinite; }
+.status-dot[data-state="checking"] { animation: statusPulse 1.2s ease-in-out infinite; }
+@keyframes statusPulse { 50% { opacity: 0.35; } }
+.status-pill[aria-expanded="true"] { border-color: var(--border-strong); }
+.status-panel {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  animation: statusIn 0.28s var(--ease);
+}
+@keyframes statusIn { from { opacity: 0; transform: translateY(-6px); } }
+.status-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 0.78em; color: var(--text-faint); }
+.status-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 18px; }
+.status-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--border); min-width: 0; }
+.status-row-text { display: flex; flex-direction: column; min-width: 0; }
+.status-row-name { font-weight: 700; font-size: 0.88em; color: var(--text); }
+.status-row-detail { font-size: 0.78em; color: var(--text-dim); overflow-wrap: anywhere; }
+.status-row[data-state="off"] .status-row-name { color: var(--text-dim); }
+@media (prefers-reduced-motion: reduce) { .status-dot, .status-panel { animation: none !important; } }
 @media (max-width: 560px) {
   .site-footer { margin-top: 56px; }
   .site-footer-row { flex-direction: column; text-align: center; }
@@ -13943,8 +13970,18 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
     <div class="site-footer-end" aria-hidden="true"><span class="site-footer-end-text"></span></div>
     <div class="site-footer-row">
       <p class="site-footer-meta"><span class="site-footer-name">Bedwars Sweat Tracker</span><span id="footerTally"></span></p>
+      <button type="button" id="statusPill" class="btn btn-ghost site-footer-top status-pill" aria-expanded="false" aria-controls="statusPanel"><span class="status-dot" id="statusDot" aria-hidden="true"></span><span id="statusPillLabel">Sources</span></button>
       <button type="button" id="installAppBtn" class="btn btn-ghost site-footer-top site-footer-install" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v7.5M4.8 6.8 8 10l3.2-3.2M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Install app</button>
       <button type="button" id="backToTopBtn" class="btn btn-ghost site-footer-top"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3.5M3.8 7.7 8 3.5l4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to top</button>
+    </div>
+    <!-- Which sources work right now (GET /status, same checks as the
+         Discord bot's /status). Loaded when the footer comes into view. -->
+    <div id="statusPanel" class="status-panel" hidden>
+      <div class="status-panel-head">
+        <span id="statusChecked" class="status-checked"></span>
+        <button type="button" id="statusRefreshBtn" class="icon-btn" data-tooltip="Check again" aria-label="Check sources again"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 2.5v3h-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <ul id="statusList" class="status-list"></ul>
     </div>
   </footer>
 
@@ -23049,6 +23086,90 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || location.
     navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {});
   });
 }
+// --- Sources status (footer) ---
+// GET /status: the same checks as the Discord bot's /status. The backend
+// keeps its answer for a few minutes, so this is cheap; loaded once the
+// footer scrolls into view, and again when the panel is opened later on.
+const statusPill = document.getElementById("statusPill");
+const statusPanel = document.getElementById("statusPanel");
+const statusDot = document.getElementById("statusDot");
+const statusPillLabel = document.getElementById("statusPillLabel");
+const statusList = document.getElementById("statusList");
+const statusChecked = document.getElementById("statusChecked");
+const statusRefreshBtn = document.getElementById("statusRefreshBtn");
+const STATUS_WORDS = { ok: "Working", warn: "Needs a look", down: "Down", off: "Off" };
+let statusResult = null, statusLoadedAt = 0, statusLoading = null;
+
+function statusAgo(iso) {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return "just now";
+  const m = Math.floor(s / 60);
+  return m < 60 ? `${m} minute${m === 1 ? "" : "s"} ago` : `${Math.floor(m / 60)} hour${m < 120 ? "" : "s"} ago`;
+}
+
+function renderStatus() {
+  if (!statusResult) return;
+  const r = statusResult;
+  statusDot.dataset.state = r.overall;
+  statusPillLabel.textContent = r.overall === "ok" ? "All sources working" : r.summary;
+  statusChecked.textContent = `Checked ${statusAgo(r.checkedAt)}`;
+  statusList.replaceChildren(...r.sources.map(src => {
+    const li = document.createElement("li");
+    li.className = "status-row";
+    li.dataset.state = src.state;
+    const dot = document.createElement("span");
+    dot.className = "status-dot";
+    dot.dataset.state = src.state;
+    dot.title = STATUS_WORDS[src.state] || src.state;
+    const text = document.createElement("span");
+    text.className = "status-row-text";
+    const name = document.createElement("span");
+    name.className = "status-row-name";
+    name.textContent = src.name;
+    const detail = document.createElement("span");
+    detail.className = "status-row-detail";
+    detail.textContent = src.detail || STATUS_WORDS[src.state] || "";
+    text.append(name, detail);
+    li.append(dot, text);
+    return li;
+  }));
+}
+
+function loadStatus(fresh = false) {
+  if (statusLoading) return statusLoading;
+  statusDot.dataset.state = "checking";
+  if (!statusResult) statusPillLabel.textContent = "Checking sources...";
+  statusRefreshBtn.disabled = true;
+  statusLoading = fetch(`${backendBaseURL}/status${fresh ? "?fresh=1" : ""}`)
+    .then(res => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+    .then(data => { statusResult = data; statusLoadedAt = Date.now(); renderStatus(); })
+    .catch(() => {
+      statusDot.dataset.state = "down";
+      statusPillLabel.textContent = navigator.onLine === false ? "Offline" : "Server not answering";
+      statusChecked.textContent = "Couldn't reach the server. It may be waking up, try again in a moment.";
+      if (!statusResult) statusList.replaceChildren();
+    })
+    .finally(() => { statusLoading = null; statusRefreshBtn.disabled = false; });
+  return statusLoading;
+}
+
+statusPill.addEventListener("click", () => {
+  const open = statusPanel.hidden;
+  statusPanel.hidden = !open;
+  statusPill.setAttribute("aria-expanded", String(open));
+  if (open && (!statusResult || Date.now() - statusLoadedAt > 3 * 60 * 1000)) loadStatus();
+  else if (open) renderStatus();
+});
+statusRefreshBtn.addEventListener("click", () => loadStatus(true));
+if ("IntersectionObserver" in window) {
+  const statusWatch = new IntersectionObserver(entries => {
+    if (entries.some(e => e.isIntersecting)) { statusWatch.disconnect(); if (!statusResult) loadStatus(); }
+  }, { rootMargin: "200px" });
+  statusWatch.observe(document.querySelector(".site-footer"));
+} else {
+  loadStatus();
+}
+
 const installAppBtn = document.getElementById("installAppBtn");
 const runningAsApp = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 const isIosSafari = /iP(hone|ad|od)/.test(navigator.userAgent) && /Safari/.test(navigator.userAgent) && !/CriOS|FxiOS|EdgiOS/.test(navigator.userAgent);

@@ -14044,6 +14044,279 @@ html[data-theme="hollowgrave"].blood-moon .sotd-kicker { color: #ff6a5a; text-sh
 @media (prefers-reduced-motion: reduce) {
   .sotd-card, .sotd-card *, .sotd-deco i, .sotd-backdrop i { animation: none !important; }
 }
+
+/* ---- Rivals (tryout) ----
+   A mark on the cards of anyone the roster has beaten in 2+ logged games,
+   and a "Beaten in N games" line in their popup. Each theme dresses it its
+   own way: a neon tag, a rubber stamp, a silk bookmark, a hostile sonar
+   contact, an inventory slot, and a cracked headstone. All of it lives in
+   this block (plus the JS block of the same name), so it comes out cleanly. */
+.rival-mark {
+  --rival: #ff4fd8;
+  position: absolute;
+  top: -11px;
+  left: 18px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 7px;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--rival);
+  background: #0a0d18;
+  border: 1px solid var(--rival);
+  border-radius: 999px;
+  box-shadow: 0 0 12px rgba(255,79,216,0.55), inset 0 0 7px rgba(255,79,216,0.35);
+  text-shadow: 0 0 6px rgba(255,79,216,0.85);
+  animation: rivalNeonFlicker 7s linear infinite;
+}
+.rival-word::before { content: "Rival"; }
+.rival-count { opacity: 0.85; letter-spacing: 0.04em; }
+.rival-count i { font-style: normal; }
+.rival-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M14.5 6.5 18 3h3v3l-3.5 3.5M5 14l4 4M7 17l-3 3M3 19l2 2'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M14.5 6.5 18 3h3v3l-3.5 3.5M5 14l4 4M7 17l-3 3M3 19l2 2'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+/* A neon tube that catches now and then. */
+@keyframes rivalNeonFlicker {
+  0%, 91%, 93.5%, 96%, 100% { opacity: 1; }
+  92%, 95% { opacity: 0.35; }
+}
+html:not([data-theme]) .sweat-card.is-rival:hover .rival-mark { box-shadow: 0 0 18px rgba(255,79,216,0.8), inset 0 0 9px rgba(255,79,216,0.45); }
+
+/* The popup line, shared by every theme: the word with its icon, then
+   who beat them and how often. */
+.modal-record-rival { flex-basis: 100%; }
+.modal-record-rival .modal-record-label { display: inline-flex; align-items: center; gap: 6px; color: var(--rival, #ff4fd8); }
+.modal-record-rival .rival-icon { width: 13px; height: 13px; }
+.rival-by { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 2px; }
+.rival-by-person { display: inline-flex; align-items: center; gap: 6px; font-size: 0.86em; font-weight: 600; color: var(--text-dim); }
+.rival-by-person b { color: var(--rival, #ff4fd8); font-weight: 800; }
+#playerModal { --rival: #ff4fd8; }
+
+/* Case Files: a red REPEAT OFFENDER rubber stamp inked across the file. */
+html[data-theme="casefiles"] #playerModal { --rival: var(--bad); }
+html[data-theme="casefiles"] .rival-mark {
+  --rival: var(--bad);
+  top: auto;
+  left: auto;
+  right: 10px;
+  bottom: 58px;
+  padding: 4px 10px 3px;
+  gap: 7px;
+  font-family: 'Anton', sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  background: rgba(163,47,29,0.06);
+  border: 3px double var(--bad);
+  border-radius: 4px;
+  box-shadow: none;
+  text-shadow: none;
+  transform: rotate(-9deg);
+  mix-blend-mode: multiply;
+  opacity: 0.95;
+  animation: rivalStampIn 0.5s 0.25s cubic-bezier(.2,1.4,.4,1) both;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='40'%3E%3Cfilter id='fs'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.1 0.16' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.2 0.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fs)'/%3E%3C/svg%3E") 0 0 / 60px 40px;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='40'%3E%3Cfilter id='fs'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.1 0.16' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.2 0.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fs)'/%3E%3C/svg%3E") 0 0 / 60px 40px;
+}
+html[data-theme="casefiles"] .rival-mark .rival-icon { display: none; }
+html[data-theme="casefiles"] .rival-word::before { content: "Repeat offender"; }
+html[data-theme="casefiles"] .rival-mark .rival-count {
+  opacity: 1;
+  padding: 0 4px;
+  border-left: 2px solid var(--bad);
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  font-size: 0.9em;
+}
+@keyframes rivalStampIn {
+  0% { transform: rotate(-9deg) scale(2); opacity: 0; }
+  60% { transform: rotate(-9deg) scale(0.95); opacity: 0.95; }
+  100% { transform: rotate(-9deg) scale(1); opacity: 0.95; }
+}
+
+/* Private Bank: a claret silk bookmark tucked into the ledger page at
+   the top-left corner (standing in for the gilt corner bracket), marking
+   a client who keeps coming back. */
+html[data-theme="ledger"] #playerModal { --rival: #8a1f2b; }
+html[data-theme="ledger"] .rival-mark {
+  --rival: #f0d28a;
+  top: -6px;
+  left: 8px;
+  flex-direction: column;
+  gap: 4px;
+  width: 25px;
+  padding: 11px 0 17px;
+  font-family: 'Playfair Display', serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  background:
+    linear-gradient(90deg, transparent 2px, rgba(240,210,138,0.6) 2px 3px, transparent 3px calc(100% - 3px), rgba(240,210,138,0.6) calc(100% - 3px) calc(100% - 2px), transparent calc(100% - 2px)),
+    linear-gradient(90deg, #5a121c, #9a2535 45%, #6a1622);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 8px), 0 100%);
+  transform-origin: top center;
+  animation: rivalRibbonSway 5s ease-in-out infinite;
+}
+html[data-theme="ledger"] .rival-mark .rival-icon { width: 10px; height: 10px; }
+html[data-theme="ledger"] .rival-mark .rival-word { display: none; }
+html[data-theme="ledger"] .rival-mark .rival-count { opacity: 1; }
+html[data-theme="ledger"] .rival-mark .rival-count i { font-size: 0.85em; }
+html[data-theme="ledger"] .sweat-card.is-rival::before { display: none; }
+html[data-theme="ledger"] .sweat-card.is-rival .sweat-card-top { padding-left: 14px; }
+@keyframes rivalRibbonSway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-2.5deg); }
+}
+
+/* Deep Current: a hostile contact on the sonar log - a red diamond
+   pinging out into the water. */
+html[data-theme="deepcurrent"] #playerModal { --rival: #ff5a5a; }
+html[data-theme="deepcurrent"] .rival-mark {
+  --rival: #ff5a5a;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  gap: 8px;
+  padding: 3px 9px 3px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  background: rgba(30,6,12,0.92);
+  border: 1px solid rgba(255,90,90,0.55);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 0 14px rgba(255,90,90,0.25);
+  text-shadow: 0 0 6px rgba(255,90,90,0.6);
+  animation: none;
+}
+html[data-theme="deepcurrent"] .rival-mark .rival-icon {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  margin: 0 1px;
+  background: none;
+  -webkit-mask: none;
+  mask: none;
+  border: 1.5px solid var(--rival);
+  transform: rotate(45deg);
+}
+html[data-theme="deepcurrent"] .rival-mark .rival-icon::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border: 1px solid var(--rival);
+  animation: rivalPing 2.4s ease-out infinite;
+}
+html[data-theme="deepcurrent"] .modal-record-rival .rival-icon { width: 9px; height: 9px; margin-right: 3px; }
+html[data-theme="deepcurrent"] .rival-word::before { content: "Hostile"; }
+@keyframes rivalPing {
+  0% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+
+/* Sky Isles: crossed swords sitting in an inventory slot with a stack
+   count, and a Minecraft item tooltip naming them. */
+html[data-theme="skyisles"] #playerModal { --rival: #aa00aa; }
+html[data-theme="skyisles"] .rival-mark {
+  --rival: #ff55ff;
+  top: -14px;
+  left: -10px;
+  gap: 0;
+  padding: 0;
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  text-shadow: 2px 2px 0 #3f003f;
+  animation: none;
+}
+html[data-theme="skyisles"] .rival-mark .rival-icon {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  -webkit-mask: none;
+  mask: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='0' y='1' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='0' y='14' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='1' y='0' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='1' y='1' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='1' y='2' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='1' y='13' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='1' y='14' width='1' height='1' fill='%23e2b13c'/%3E%3Crect x='1' y='15' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='2' y='0' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='2' y='1' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='2' y='2' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='2' y='3' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='2' y='8' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='2' y='12' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='2' y='13' width='1' height='1' fill='%235a3416'/%3E%3Crect x='2' y='14' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='3' y='1' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='3' y='2' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='3' y='3' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='3' y='4' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='3' y='7' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='3' y='8' width='1' height='1' fill='%23e2b13c'/%3E%3Crect x='3' y='9' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='3' y='10' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='3' y='11' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='3' y='12' width='1' height='1' fill='%237a4a22'/%3E%3Crect x='3' y='13' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='4' y='2' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='4' y='3' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='4' y='4' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='4' y='5' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='4' y='8' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='4' y='9' width='1' height='1' fill='%23e2b13c'/%3E%3Crect x='4' y='10' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='4' y='11' width='1' height='1' fill='%237a4a22'/%3E%3Crect x='4' y='12' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='5' y='3' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='5' y='4' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='5' y='5' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='5' y='6' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='5' y='8' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='5' y='9' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='5' y='10' width='1' height='1' fill='%23e2b13c'/%3E%3Crect x='5' y='11' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='6' y='4' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='6' y='5' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='6' y='6' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='6' y='7' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='6' y='8' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='6' y='9' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='6' y='10' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='6' y='11' width='1' height='1' fill='%23e2b13c'/%3E%3Crect x='6' y='12' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='7' y='5' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='7' y='6' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='7' y='7' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='7' y='8' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='7' y='9' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='7' y='11' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='7' y='12' width='1' height='1' fill='%23e2b13c'/%3E%3Crect x='7' y='13' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='8' y='5' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='8' y='6' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='8' y='7' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='8' y='8' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='8' y='9' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='8' y='11' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='8' y='12' width='1' height='1' fill='%23e2b13c'/%3E%3Crect x='8' y='13' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='9' y='4' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='9' y='5' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='9' y='6' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='9' y='7' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='9' y='8' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='9' y='9' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='9' y='10' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='9' y='11' width='1' height='1' fill='%23e2b13c'/%3E%3Crect x='9' y='12' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='10' y='3' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='10' y='4' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='10' y='5' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='10' y='6' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='10' y='8' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='10' y='9' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='10' y='10' width='1' height='1' fill='%23e2b13c'/%3E%3Crect x='10' y='11' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='11' y='2' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='11' y='3' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='11' y='4' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='11' y='5' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='11' y='8' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='11' y='9' width='1' height='1' fill='%23e2b13c'/%3E%3Crect x='11' y='10' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='11' y='11' width='1' height='1' fill='%237a4a22'/%3E%3Crect x='11' y='12' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='12' y='1' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='12' y='2' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='12' y='3' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='12' y='4' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='12' y='7' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='12' y='8' width='1' height='1' fill='%23e2b13c'/%3E%3Crect x='12' y='9' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='12' y='10' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='12' y='11' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='12' y='12' width='1' height='1' fill='%237a4a22'/%3E%3Crect x='12' y='13' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='13' y='0' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='13' y='1' width='1' height='1' fill='%23c6d0d4'/%3E%3Crect x='13' y='2' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='13' y='3' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='13' y='8' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='13' y='12' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='13' y='13' width='1' height='1' fill='%235a3416'/%3E%3Crect x='13' y='14' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='14' y='0' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='14' y='1' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='14' y='2' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='14' y='13' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='14' y='14' width='1' height='1' fill='%23e2b13c'/%3E%3Crect x='14' y='15' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='15' y='1' width='1' height='1' fill='%231e1e1e'/%3E%3Crect x='15' y='14' width='1' height='1' fill='%231e1e1e'/%3E%3C/svg%3E") center / 32px no-repeat, #8b8b8b;
+  image-rendering: pixelated;
+  border-top: 3px solid #373737;
+  border-left: 3px solid #373737;
+  border-bottom: 3px solid #ffffff;
+  border-right: 3px solid #ffffff;
+  outline: 3px solid #1e1e1e;
+}
+html[data-theme="skyisles"] .rival-word {
+  margin-left: 6px;
+  padding: 3px 7px 4px;
+  font-weight: 400;
+  background: #100010;
+  border: 2px solid #2a0960;
+  box-shadow: 0 0 0 2px #100010;
+}
+html[data-theme="skyisles"] .rival-word::before { content: "Nemesis"; }
+/* The stack count, bottom right of the slot, white with a hard shadow. */
+html[data-theme="skyisles"] .rival-mark .rival-count {
+  position: absolute;
+  left: 24px;
+  top: 19px;
+  opacity: 1;
+  font-size: 18px;
+  color: #ffffff;
+  text-shadow: 2px 2px 0 #3f3f3f;
+}
+html[data-theme="skyisles"] .rival-mark .rival-count i { display: none; }
+html[data-theme="skyisles"] .sweat-card.is-rival:hover .rival-mark .rival-icon { background-color: #a3a3a3; }
+html[data-theme="skyisles"] .rival-by-person { color: #ffffff; text-shadow: 2px 2px 0 #3f3f3f; }
+html[data-theme="skyisles"] .rival-by-person b { color: #ff55ff; text-shadow: 2px 2px 0 #3f003f; }
+html[data-theme="skyisles"] .modal-record-rival .rival-icon { width: 26px; height: 26px; border-width: 2px; outline-width: 2px; background-size: 20px; }
+
+/* Hollow Grave: a stone that won't stay down. The arch is carved with
+   how many times they've been buried, the stone is cracked from being
+   dug back out, and "Here lies" becomes "Here lies, again". */
+html[data-theme="hollowgrave"] #playerModal { --rival: #b8ff5c; }
+html[data-theme="hollowgrave"] .sweat-card.is-rival::before { content: "R.I.P. \00b7 " attr(data-rival-roman); }
+html[data-theme="hollowgrave"] .sweat-card.is-rival .sweat-card-name::before { content: "Here lies, again"; }
+html[data-theme="hollowgrave"] .rival-mark {
+  top: 6px;
+  left: 18%;
+  width: 46px;
+  height: 92px;
+  padding: 0;
+  z-index: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 92' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M30 1 L26 14 L31 22 L22 37 L25 46 L15 60 L17 70 L8 90 M26 14 L36 20 M22 37 L12 40 M15 60 L24 66' stroke='%23ffffff' stroke-opacity='.07' stroke-width='2.4' transform='translate(.8 .8)'/%3E%3Cpath d='M30 1 L26 14 L31 22 L22 37 L25 46 L15 60 L17 70 L8 90 M26 14 L36 20 M22 37 L12 40 M15 60 L24 66' stroke='%230a0810' stroke-opacity='.85' stroke-width='1.6'/%3E%3Cpath d='M30 1 L26 14 L31 22 L22 37 L25 46 L15 60 L17 70 L8 90' stroke='%23b8ff5c' stroke-opacity='.35' stroke-width='.6'/%3E%3C/svg%3E") center / contain no-repeat;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  animation: none;
+  font-size: 0;
+}
+html[data-theme="hollowgrave"] .rival-mark > * { display: none; }
+html[data-theme="hollowgrave"] .modal-record-rival .rival-word::before { content: "Restless"; }
+@media (prefers-reduced-motion: reduce) {
+  .rival-mark, .rival-mark .rival-icon::after { animation: none !important; }
+}
 </style>
 </head>
 <body>
@@ -19205,6 +19478,7 @@ function getProcessedSweats() {
   // username only for older entries that were saved without a UUID.
   // Each sweat's identity key is computed once here and reused below for the
   // dedupe filter, rather than recalculating it in a second pass over the list.
+  refreshRivals();
   const usernameCounts = {};
   const keyFor = new Map();
   filteredSweats.forEach(s => {
@@ -19754,6 +20028,7 @@ function buildSweatCard(s, i, usernameCounts) {
     card.querySelector(".sweat-card-dupe").textContent = `x${count}`;
   }
   card.querySelector(".sweat-card-date").textContent = formatSweatDay(s.dateAdded) || "Unknown";
+  addRivalMark(card, s);
 
   card.querySelector(".edit-btn").addEventListener("click", (e) => {
     e.stopPropagation();
@@ -20768,6 +21043,66 @@ async function deleteNote(btn, note, sweat) {
   }
 }
 
+// ---- Rivals (tryout) ----
+// Anyone the roster has beaten in 2 or more logged games is a Rival: their
+// cards get a themed mark and their popup says "Beaten in 3 games" with who
+// did it (Milo ×2, Potat). Counted over every entry for the player (by UUID,
+// else name), not just what the filters show. To take it out again: delete
+// this block, the "Rivals (tryout)" CSS block, and the three calls to
+// refreshRivals / addRivalMark / rivalRecordHtml.
+const RIVAL_MIN_GAMES = 2;
+let rivalsByKey = new Map();
+function refreshRivals() {
+  const map = new Map();
+  for (const s of sweats) {
+    const key = identityKeyFor(s);
+    let r = map.get(key);
+    if (!r) map.set(key, r = { games: 0, by: {} });
+    r.games++;
+    BEATEN_BY_KEYS.forEach(k => { if (s[k]) r.by[k] = (r.by[k] || 0) + 1; });
+  }
+  rivalsByKey = map;
+}
+function rivalFor(s) {
+  const r = rivalsByKey.get(identityKeyFor(s));
+  if (!r || r.games < RIVAL_MIN_GAMES) return null;
+  // Most wins first, roster order on ties.
+  const who = BEATEN_BY_KEYS.filter(k => r.by[k]).sort((a, b) => r.by[b] - r.by[a]);
+  return { games: r.games, who: who.map(k => ({ key: k, n: r.by[k] })) };
+}
+function toRoman(n) {
+  let out = "";
+  for (const [v, d] of [[1000, "M"], [900, "CM"], [500, "D"], [400, "CD"], [100, "C"], [90, "XC"], [50, "L"], [40, "XL"], [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]]) {
+    while (n >= v) { out += d; n -= v; }
+  }
+  return out;
+}
+function rivalSummary(r) {
+  const names = r.who.map(w => BEATEN_BY[w.key].label + (w.n > 1 ? ` \u00d7${w.n}` : "")).join(", ");
+  return `Beaten in ${r.games} games${names ? ` (${names})` : ""}`;
+}
+function addRivalMark(card, s) {
+  const r = rivalFor(s);
+  if (!r) return;
+  card.classList.add("is-rival");
+  card.dataset.rivalGames = r.games;
+  card.dataset.rivalRoman = toRoman(r.games);
+  const mark = document.createElement("span");
+  mark.className = "rival-mark";
+  mark.setAttribute("data-tooltip", `Rival \u00b7 ${rivalSummary(r)}`);
+  mark.innerHTML = `<i class="rival-icon" aria-hidden="true"></i><b class="rival-word"></b><span class="rival-count"><i>\u00d7</i>${r.games}</span>`;
+  card.appendChild(mark);
+}
+function rivalRecordHtml(record) {
+  const r = rivalFor(record);
+  if (!r) return "";
+  return `<div class="modal-record-item modal-record-rival">
+      <span class="modal-record-label"><i class="rival-icon" aria-hidden="true"></i><b class="rival-word"></b></span>
+      <span class="modal-record-value">Beaten in ${r.games} games</span>
+      <span class="rival-by">${r.who.map(w => `<span class="rival-by-person"><span class="beaten-avatar" style="--chip-color:var(--roster-${w.key})" data-tooltip="${BEATEN_BY[w.key].label}">${BEATEN_BY[w.key].initials}</span>${BEATEN_BY[w.key].label}${w.n > 1 ? ` <b>\u00d7${w.n}</b>` : ""}</span>`).join("")}</span>
+    </div>`;
+}
+
 function renderModalRecord(uuid, item) {
   const clean = u => String(u || "").replace(/-/g, "").toLowerCase();
   const record = sweats.find(s => uuid && clean(s.uuid) === clean(uuid))
@@ -20783,6 +21118,7 @@ function renderModalRecord(uuid, item) {
     <div class="modal-record-item modal-record-beaten"><span class="modal-record-label">Beaten by</span><span class="beaten-by-avatars">${beaten.length
       ? beaten.map(k => `<span class="beaten-avatar" style="--chip-color:var(--roster-${k})" data-tooltip="${BEATEN_BY[k].label}">${BEATEN_BY[k].initials}</span>`).join("")
       : '<span class="modal-record-value">Nobody yet</span>'}</span></div>
+    ${rivalRecordHtml(record)}
     ${record.cheating || record.boosting ? `<div class="modal-record-flags">${record.cheating ? '<span class="pill cheat">⚠ Cheater</span>' : ""}${record.boosting ? '<span class="pill boost">⚠ Boosting</span>' : ""}</div>` : ""}`;
 }
 

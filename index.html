@@ -14593,28 +14593,6 @@ html[data-theme="hollowgrave"] .sweat-card.is-rival .sweat-card-note { backgroun
 /* Room for the spear points between the pills and the top rail. */
 html[data-theme="hollowgrave"] .sweat-card.is-rival .sweat-card-stats { margin-top: 8px; }
 html[data-theme="hollowgrave"] .sweat-card.is-rival .card-note-ghost { background: rgba(14,11,19,0.5); }
-/* Soil heaped and broken up at the foot of the stone. It takes the place
-   of the plain ground shadow, so it sits on the same layer (under the
-   grass, which grows out of it) and stops at the same line, so it never
-   covers the crows or candles on the row below. */
-html[data-theme="hollowgrave"] .sweat-card.is-rival::after {
-  left: -14px;
-  right: -14px;
-  bottom: -5px;
-  height: 42px;
-  z-index: 1;
-  background:
-    radial-gradient(5px 4px at 16% 34%, #1d1620 60%, transparent 70%),
-    radial-gradient(4px 3px at 27% 14%, #241b22 60%, transparent 70%),
-    radial-gradient(3px 3px at 41% 6%, #2a2026 60%, transparent 70%),
-    radial-gradient(6px 4px at 62% 26%, #1d1620 60%, transparent 70%),
-    radial-gradient(3px 3px at 74% 4%, #2a2026 60%, transparent 70%),
-    radial-gradient(4px 3px at 86% 30%, #1d1620 60%, transparent 70%),
-    radial-gradient(ellipse 50% 62% at 50% 100%, #0d0a12 55%, rgba(13,10,18,0.75) 75%, transparent 100%),
-    radial-gradient(ellipse 20% 36% at 30% 66%, #22191f 50%, #120d14 70%, transparent 82%),
-    radial-gradient(ellipse 16% 40% at 52% 60%, #1c141b 50%, #100b12 70%, transparent 82%),
-    radial-gradient(ellipse 18% 34% at 74% 68%, #22191f 50%, #120d14 70%, transparent 82%);
-}
 /* The popup: "Caged after 3 risings", under a padlock. */
 html[data-theme="hollowgrave"] .modal-record-rival .rival-word::before { content: "Restless"; }
 .rival-value-grave { display: none; }

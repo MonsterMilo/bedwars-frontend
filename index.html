@@ -14127,6 +14127,9 @@ html[data-theme="casefiles"] .rival-mark {
   mix-blend-mode: multiply;
   opacity: 0.95;
   animation: rivalStampIn 0.5s 0.25s cubic-bezier(.2,1.4,.4,1) both;
+  /* Grows in from its right edge, so the big first frame stays inside the
+     card instead of widening the page on phones. */
+  transform-origin: 90% 50%;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='40'%3E%3Cfilter id='fs'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.1 0.16' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.2 0.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fs)'/%3E%3C/svg%3E") 0 0 / 60px 40px;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='40'%3E%3Cfilter id='fs'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.1 0.16' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.2 0.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fs)'/%3E%3C/svg%3E") 0 0 / 60px 40px;
 }
@@ -16917,6 +16920,179 @@ html[data-theme="hollowgrave"] #playerModal .modal-mark::before {
   html[data-theme="skyisles"] .modal-deco i:nth-child(1) { transform: scale(0.8); transform-origin: 50% 100%; }
 }
 /* === POPUP OBJECTS END === */
+/* === TABLE RIVAL MARKS START === */
+/* Table rival marks: a tiny version of each theme's card mark, pinned to
+   the corner of the row's avatar so it takes no room from the name. Part
+   of the Rivals tryout. */
+.table-wrap .user-cell { position: relative; }
+.row-rival {
+  position: absolute;
+  left: 40px;
+  bottom: -5px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 9.5px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translateX(-100%);
+  cursor: default;
+}
+.row-rival .rival-icon { width: 9px; height: 9px; }
+.row-rival b { font-weight: inherit; }
+/* Neon: the flickering pink tube, shrunk to a sign */
+html:not([data-theme]) .row-rival {
+  padding: 2px 4px 2px 3px;
+  color: #ff4fd8;
+  background: #0a0d18;
+  border: 1px solid #ff4fd8;
+  border-radius: 999px;
+  box-shadow: 0 0 8px rgba(255,79,216,0.45), inset 0 0 5px rgba(255,79,216,0.3);
+  text-shadow: 0 0 5px rgba(255,79,216,0.85);
+  animation: rivalNeonFlicker 7s linear infinite;
+}
+/* Case Files: a little R.O. rubber stamp inked across the mugshot */
+html[data-theme="casefiles"] .row-rival {
+  left: 18px;
+  bottom: -3px;
+  padding: 2px 3px 1px;
+  font: 400 10px/1 'Anton', sans-serif;
+  letter-spacing: 0.06em;
+  color: var(--bad);
+  background: rgba(251,246,233,0.82);
+  border: 3px double var(--bad);
+  transform: translateX(-50%) rotate(-10deg);
+  opacity: 0.9;
+}
+html[data-theme="casefiles"] .row-rival .rival-icon,
+html[data-theme="casefiles"] .row-rival b { display: none; }
+html[data-theme="casefiles"] .row-rival::before { content: "R.O."; }
+/* Private Bank: the claret bookmark hanging over the portrait */
+html[data-theme="ledger"] .row-rival {
+  top: -8px;
+  bottom: auto;
+  left: 42px;
+  height: 22px;
+  padding: 0 4px 6px;
+  color: #f0d28a;
+  font: 600 10px/1 'EB Garamond', serif;
+  background: linear-gradient(90deg, #5a121c, #9a2535 45%, #6a1622);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 5px), 0 100%);
+}
+html[data-theme="ledger"] .row-rival .rival-icon { width: 8px; height: 8px; }
+/* Deep Current: a hostile contact pinging on the sonar */
+html[data-theme="deepcurrent"] .row-rival {
+  gap: 4px;
+  padding: 2px 4px;
+  color: #ff6a6a;
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(4,14,22,0.88);
+  border-radius: 3px;
+  text-shadow: 0 0 6px rgba(255,90,90,0.6);
+}
+html[data-theme="deepcurrent"] .row-rival .rival-icon {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  background: none;
+  -webkit-mask: none;
+  mask: none;
+  border: 1.5px solid currentColor;
+  transform: rotate(45deg);
+}
+html[data-theme="deepcurrent"] .row-rival .rival-icon::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border: 1px solid currentColor;
+  animation: rivalPing 2.4s ease-out infinite;
+}
+/* Sky Isles: an item stack count in the slot's corner, in Nemesis purple */
+html[data-theme="skyisles"] .row-rival {
+  left: 42px;
+  bottom: -1px;
+  color: #ff7cff;
+  font: 400 19px/1 var(--font-label, 'Silkscreen'), monospace;
+  text-shadow: 2px 2px 0 #3f003f;
+}
+html[data-theme="skyisles"] .row-rival .rival-icon { display: none; }
+/* Hollow Grave: the mortsafe's padlock and a Roman numeral */
+html[data-theme="hollowgrave"] .row-rival {
+  gap: 3px;
+  padding: 2px 4px 1px 3px;
+  color: #b9a585;
+  font: 600 11px/1 'Grenze', serif;
+  background: rgba(12,9,14,0.88);
+  border: 1px solid rgba(138,143,153,0.35);
+  border-radius: 3px;
+}
+html[data-theme="hollowgrave"] .row-rival .rival-icon {
+  width: 9px;
+  height: 10px;
+  background: linear-gradient(#8a8f99, #4a4e57);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h-2.6V7a2.4 2.4 0 0 0-4.8 0v3Z'/%3E%3Cpath fill-rule='evenodd' d='M4 10h16v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm8 3.2a1.7 1.7 0 0 0-1 3.1V19h2v-2.7a1.7 1.7 0 0 0-1-3.1Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h-2.6V7a2.4 2.4 0 0 0-4.8 0v3Z'/%3E%3Cpath fill-rule='evenodd' d='M4 10h16v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm8 3.2a1.7 1.7 0 0 0-1 3.1V19h2v-2.7a1.7 1.7 0 0 0-1-3.1Z'/%3E%3C/svg%3E");
+}
+html[data-theme="hollowgrave"] .row-rival b { font-size: 0; }
+html[data-theme="hollowgrave"] .row-rival b::before { content: attr(data-roman); font-size: 11px; }
+@media (prefers-reduced-motion: reduce) {
+  .row-rival, .row-rival .rival-icon::after { animation: none !important; }
+}
+/* === TABLE RIVAL MARKS END === */
+/* === EMPTY STATES START === */
+/* Themed empty states for Denicking and the Activity log (Lookup already
+   has its own idle scenes): each theme draws its own icon and words. The
+   real sentence stays in the DOM for screen readers, collapsed to 0 (Sky
+   Isles' font-size-adjust would bring it back, so that is reset too). The
+   popup's "No notes yet." gets each theme's wording too. */
+:is(#denickEmpty, #activityEmpty) .dash-empty-icon { display: none; }
+:is(#denickEmpty, #activityEmpty)::before { content: ""; width: 38px; height: 38px; flex-shrink: 0; background: currentColor; opacity: 0.85; -webkit-mask: var(--empty-icon) center / contain no-repeat; mask: var(--empty-icon) center / contain no-repeat; }
+:is(#denickEmpty, #activityEmpty) p { font-size: 0; font-size-adjust: none; width: 100%; max-width: 330px; }
+:is(#denickEmpty, #activityEmpty) p::before { font-size: 13px; }
+#modalNotesEmpty { font-size: 0; font-size-adjust: none; }
+#modalNotesEmpty::before { font-size: 13.5px; }
+html:not([data-theme]) :is(#denickEmpty, #activityEmpty)::before { background: #00d9ff; }
+html:not([data-theme]) #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 9.5c0-2 2-3 5-3h9c3 0 5 1 5 3 0 4-2.6 7-5.6 7-2.2 0-2.9-2.2-3.9-2.2s-1.7 2.2-3.9 2.2c-3 0-5.6-3-5.6-7z'/%3E%3Cellipse cx='8' cy='10.8' rx='2' ry='1.3'/%3E%3Cellipse cx='16' cy='10.8' rx='2' ry='1.3'/%3E%3C/svg%3E"); }
+html:not([data-theme]) #denickEmpty p::before { content: "No target on the scanner. Search a nick to see who's behind it, or a player for their nick history."; }
+html:not([data-theme]) #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='4' width='19' height='16' rx='2'/%3E%3Cpath d='M6.5 10l3 2.2-3 2.2M11.5 15h6'/%3E%3C/svg%3E"); }
+html:not([data-theme]) #activityEmpty p::before { content: "Log is idle. Every add, edit and delete streams in here the moment it happens."; }
+html:not([data-theme]) #modalNotesEmpty::before { content: "No intel yet."; }
+html[data-theme="casefiles"] :is(#denickEmpty, #activityEmpty)::before { background: var(--bad); }
+html[data-theme="casefiles"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8.5' r='4'/%3E%3Cpath d='M4 21c0-4.4 3.6-7.5 8-7.5s8 3.1 8 7.5'/%3E%3Cpath d='M2 3v18M22 3v18' stroke-width='1.2' stroke-dasharray='1.5 2.5'/%3E%3C/svg%3E"); }
+html[data-theme="casefiles"] #denickEmpty p::before { content: "No alias on file. Search a nick to see who's behind it, or a player for every alias they've used."; }
+html[data-theme="casefiles"] #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='3' width='14' height='18' rx='1'/%3E%3Cpath d='M5 7.5h14' stroke-dasharray='2 1.6'/%3E%3Cpath d='M8.5 11.5h7M8.5 14.5h7M8.5 17.5h4'/%3E%3C/svg%3E"); }
+html[data-theme="casefiles"] #activityEmpty p::before { content: "The evidence log is empty. Every add, edit and delete is entered here as it happens."; }
+html[data-theme="casefiles"] #modalNotesEmpty::before { content: "No notes in this file."; }
+html[data-theme="ledger"] :is(#denickEmpty, #activityEmpty)::before { background: var(--gold); }
+html[data-theme="ledger"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='18' height='13' rx='1'/%3E%3Cpath d='M3 7l9 7 9-7'/%3E%3Ccircle cx='12' cy='14' r='2.6' fill='%23000'/%3E%3C/svg%3E"); }
+html[data-theme="ledger"] #denickEmpty p::before { content: "No sealed names to open. Search a nick to see whose it is, or a player for every name they've held."; }
+html[data-theme="ledger"] #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 3.5C13.5 4.5 8.5 9.5 7 16.5l-.8 4 3-3C15.8 16 19.6 11 20 3.5z'/%3E%3Cpath d='M6.2 20.5L16 8.5'/%3E%3Cpath d='M3 21h7' stroke-width='1.2'/%3E%3C/svg%3E"); }
+html[data-theme="ledger"] #activityEmpty p::before { content: "No transactions recorded. Every add, edit and delete is entered here as it happens."; }
+html[data-theme="ledger"] #modalNotesEmpty::before { content: "No memoranda."; }
+html[data-theme="deepcurrent"] :is(#denickEmpty, #activityEmpty)::before { background: #62e6d6; }
+html[data-theme="deepcurrent"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='11' width='17' height='7' rx='3.5'/%3E%3Cpath d='M9 11V7.5h5V11M12 7.5V4h3M19.5 14.5l2-2v4z'/%3E%3Ccircle cx='8' cy='14.5' r='.8' fill='%23000'/%3E%3Ccircle cx='12' cy='14.5' r='.8' fill='%23000'/%3E%3C/svg%3E"); }
+html[data-theme="deepcurrent"] #denickEmpty p::before { content: "No contact on sonar. Search a nick to see who's running silent under it, or a player for their nick history."; }
+html[data-theme="deepcurrent"] #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='2'/%3E%3Cpath d='M12 7v14M8 10.5h8M4.5 13.5c0 4.3 3.4 7.5 7.5 7.5s7.5-3.2 7.5-7.5'/%3E%3C/svg%3E"); }
+html[data-theme="deepcurrent"] #activityEmpty p::before { content: "Ship's log is quiet. Every add, edit and delete is recorded here as it happens."; }
+html[data-theme="deepcurrent"] #modalNotesEmpty::before { content: "No log entries."; }
+html[data-theme="skyisles"] :is(#denickEmpty, #activityEmpty)::before { background: #1d4a6e; }
+html[data-theme="skyisles"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 7h13v10H8L3 12z' stroke-linecap='square' stroke-linejoin='miter' stroke-width='2'/%3E%3Crect x='6.5' y='11' width='2' height='2' fill='%23000' stroke='none'/%3E%3Cpath d='M12 10.5h6M12 13.5h4' stroke-linecap='square' stroke-width='2'/%3E%3C/svg%3E"); }
+html[data-theme="skyisles"] #denickEmpty p::before { content: "No name tags to read. Search a nick to see who's behind it, or a player for every name they've used."; }
+html[data-theme="skyisles"] #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 3h12v18H5z M8 3v18' stroke-linecap='square' stroke-linejoin='miter' stroke-width='2'/%3E%3Cpath d='M17 6h2v15H8' stroke-linecap='square' stroke-linejoin='miter' stroke-width='2'/%3E%3Cpath d='M10.5 9h4M10.5 12h4' stroke-linecap='square' stroke-width='2'/%3E%3C/svg%3E"); }
+html[data-theme="skyisles"] #activityEmpty p::before { content: "Nothing in the chat yet. Every add, edit and delete pops up here as it happens."; }
+html[data-theme="skyisles"] #modalNotesEmpty::before { content: "No notes yet."; }
+html[data-theme="hollowgrave"] :is(#denickEmpty, #activityEmpty)::before { background: #f28c28; }
+html[data-theme="hollowgrave"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 21V10a6.5 6.5 0 0 1 13 0v11l-2.2-1.8-2.1 1.8-2.2-1.8-2.2 1.8-2.1-1.8z'/%3E%3Cellipse cx='9.6' cy='10.5' rx='1' ry='1.5' fill='%23000'/%3E%3Cellipse cx='14.4' cy='10.5' rx='1' ry='1.5' fill='%23000'/%3E%3C/svg%3E"); }
+html[data-theme="hollowgrave"] #denickEmpty p::before { content: "No shroud to lift. Search a nick to see who lies beneath it, or a player for every name they've worn."; }
+html[data-theme="hollowgrave"] #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.5' y='10' width='7' height='10.5' rx='.8'/%3E%3Cpath d='M12 2.8c2.2 2.2 2.2 4.5 0 5.7-2.2-1.2-2.2-3.5 0-5.7zM15.5 12.5v3M5.5 21h13'/%3E%3C/svg%3E"); }
+html[data-theme="hollowgrave"] #activityEmpty p::before { content: "The register lies blank. Every burial, edit and exhumation is written here as it happens."; }
+html[data-theme="hollowgrave"] #modalNotesEmpty::before { content: "No epitaph yet."; }
+html:not([data-theme]) :is(#denickEmpty, #activityEmpty)::before { filter: drop-shadow(0 0 6px rgba(0,217,255,0.7)); }
+html[data-theme="hollowgrave"] #activityEmpty::before { filter: drop-shadow(0 0 6px rgba(242,140,40,0.5)); }
+html[data-theme="skyisles"] :is(#denickEmpty, #activityEmpty) p::before { font-size: 15px; }
+/* === EMPTY STATES END === */
 </style>
 </head>
 <body>
@@ -22855,6 +23031,7 @@ function buildSweatRow(s, { usernameCounts }) {
 
   userCellDiv.appendChild(avatarImg);
   userCellDiv.appendChild(usernameText);
+  addRowRivalMark(userCellDiv, s);
   const rowNotes = sweatNotes(s);
   if (rowNotes.length) {
     const noteIcon = document.createElement("span");
@@ -23730,8 +23907,9 @@ async function deleteNote(btn, note, sweat) {
 // cards get a themed mark and their popup says "Beaten in 3 games" with who
 // did it (Milo ×2, Potat). Counted over every entry for the player (by UUID,
 // else name), not just what the filters show. To take it out again: delete
-// this block, the "Rivals (tryout)" CSS block, and the three calls to
-// refreshRivals / addRivalMark / rivalRecordHtml.
+// this block, the "Rivals (tryout)" CSS block, the "Table rival marks" CSS
+// block, and the four calls to refreshRivals / addRivalMark /
+// addRowRivalMark / rivalRecordHtml.
 const RIVAL_MIN_GAMES = 2;
 let rivalsByKey = new Map();
 function refreshRivals() {
@@ -23776,6 +23954,19 @@ function addRivalMark(card, s) {
   mark.setAttribute("data-tooltip", `Rival \u00b7 ${rivalSummary(r)}`);
   mark.innerHTML = `<i class="rival-icon" aria-hidden="true"></i><b class="rival-word"></b><span class="rival-count" data-roman="${toRoman(r.games)}"><i>\u00d7</i>${r.games}</span>`;
   card.appendChild(mark);
+}
+// The Table's tiny version of the card mark, after the name.
+function addRowRivalMark(cell, s) {
+  const r = rivalFor(s);
+  if (!r) return;
+  // A <small>, not a <span>: the themes style every ".user-cell span" as the name.
+  // It sits on the avatar corner, so it takes no room from the name.
+  const mark = document.createElement("small");
+  mark.className = "row-rival";
+  mark.setAttribute("data-tooltip", `Rival \u00b7 ${rivalSummary(r)}`);
+  mark.setAttribute("aria-label", `Rival, beaten in ${r.games} games`);
+  mark.innerHTML = `<i class="rival-icon" aria-hidden="true"></i><b data-roman="${toRoman(r.games)}">${r.games}</b>`;
+  cell.appendChild(mark);
 }
 function rivalRecordHtml(record) {
   const r = rivalFor(record);

@@ -16579,6 +16579,344 @@ html[data-theme="hollowgrave"] .activity-player { font-family: 'Grenze', serif; 
 }
 
 /* === STYLE PASS END === */
+/* === POPUP OBJECTS START === */
+/* Player popup as a different object per theme (redesign 2026-10). Same
+   data and buttons everywhere; only the layout and the objects change.
+   .modal-deco sits behind the content (decorations), .modal-mark sits in
+   front and only shows for a Rival (:has(.modal-record-rival)). The flip
+   opening is untouched. */
+#playerModal .modal-content { isolation: isolate; }
+.modal-deco { position: absolute; inset: 0; z-index: -1; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.modal-deco i, .modal-mark { display: none; position: absolute; pointer-events: none; }
+.modal-standing { --pct: 0; }
+
+/* ---------------- Neon: a HUD lock-on screen ---------------- */
+html:not([data-theme]) #playerModal .modal-content {
+  background:
+    linear-gradient(rgba(0,217,255,0.045) 1px, transparent 1px) 0 0 / 26px 26px,
+    linear-gradient(90deg, rgba(0,217,255,0.045) 1px, transparent 1px) 0 0 / 26px 26px,
+    radial-gradient(90% 60% at 30% 30%, rgba(0,217,255,0.08), transparent 70%),
+    rgba(6,10,20,0.97);
+  border-color: rgba(0,217,255,0.35);
+}
+/* HUD corner brackets */
+html:not([data-theme]) .modal-deco i:nth-child(-n+4) { display: block; width: 26px; height: 26px; border: 0 solid #00d9ff; filter: drop-shadow(0 0 4px #00d9ff); }
+html:not([data-theme]) .modal-deco i:nth-child(1) { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+html:not([data-theme]) .modal-deco i:nth-child(2) { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
+html:not([data-theme]) .modal-deco i:nth-child(3) { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
+html:not([data-theme]) .modal-deco i:nth-child(4) { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+/* A scan line sweeping down the screen */
+html:not([data-theme]) .modal-deco i:nth-child(5) { display: block; left: 0; right: 0; top: 0; height: 80px; background: linear-gradient(180deg, transparent, rgba(0,217,255,0.07) 80%, rgba(0,217,255,0.25) 98%, transparent); animation: hudScan 5s linear infinite; }
+@keyframes hudScan { from { transform: translateY(-90px); } to { transform: translateY(1200px); } }
+html:not([data-theme]) #playerModal #modalTitle::before { content: "\25C9  Target locked \00b7 "; color: #ff4fd8; letter-spacing: 0.2em; text-shadow: 0 0 6px #ff4fd8; animation: hudBlink 1.4s steps(1) infinite; }
+@keyframes hudBlink { 50% { opacity: 0.35; } }
+/* The skin in a targeting frame: corner brackets, a ring and a crosshair */
+html:not([data-theme]) #playerModal #modalSkin {
+  border: none;
+  border-radius: 0;
+  background:
+    linear-gradient(#ff4fd8, #ff4fd8) 0 0 / 22px 2px no-repeat, linear-gradient(#ff4fd8, #ff4fd8) 0 0 / 2px 22px no-repeat,
+    linear-gradient(#ff4fd8, #ff4fd8) 100% 0 / 22px 2px no-repeat, linear-gradient(#ff4fd8, #ff4fd8) 100% 0 / 2px 22px no-repeat,
+    linear-gradient(#ff4fd8, #ff4fd8) 0 100% / 22px 2px no-repeat, linear-gradient(#ff4fd8, #ff4fd8) 0 100% / 2px 22px no-repeat,
+    linear-gradient(#ff4fd8, #ff4fd8) 100% 100% / 22px 2px no-repeat, linear-gradient(#ff4fd8, #ff4fd8) 100% 100% / 2px 22px no-repeat,
+    linear-gradient(rgba(0,217,255,0.25), rgba(0,217,255,0.25)) 50% 0 / 1px 100% no-repeat,
+    linear-gradient(rgba(0,217,255,0.25), rgba(0,217,255,0.25)) 0 46% / 100% 1px no-repeat,
+    radial-gradient(circle at 50% 46%, transparent 0 58px, rgba(0,217,255,0.5) 59px 60px, transparent 61px 70px, rgba(0,217,255,0.18) 71px 72px, transparent 73px),
+    radial-gradient(ellipse 60% 10% at 50% 95%, rgba(0,217,255,0.4), transparent 70%),
+    rgba(0,217,255,0.04);
+  box-shadow: none;
+}
+/* Stats as HUD readouts */
+html:not([data-theme]) #playerModal .modal-stat-tile {
+  border: none;
+  border-radius: 0;
+  border-left: 2px solid rgba(0,217,255,0.7);
+  background: linear-gradient(90deg, rgba(0,217,255,0.1), rgba(0,217,255,0.02) 60%, transparent);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  text-align: left;
+}
+html:not([data-theme]) #playerModal .modal-stat-label { font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.16em; color: #7fe9ff; }
+html:not([data-theme]) #playerModal .modal-stat-label::before { content: "// "; opacity: 0.6; }
+html:not([data-theme]) #playerModal .modal-stat-value { font-style: italic; text-shadow: 0 0 12px currentColor; }
+html:not([data-theme]) #playerModal :is(.modal-record, .modal-tags-urchin) { border-radius: 0; border-color: rgba(0,217,255,0.25); border-style: dashed; background: rgba(0,217,255,0.03); }
+/* Rival: a glitch tag riding the right edge of the frame */
+html:not([data-theme]) #playerModal:has(.modal-record-rival) .modal-mark {
+  display: block;
+  top: 120px;
+  right: -1px;
+  z-index: 5;
+  padding: 10px 5px;
+  writing-mode: vertical-rl;
+  font: 800 11px/1 ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 0.3em;
+  color: #0a0d18;
+  background: #ff4fd8;
+  box-shadow: 0 0 14px rgba(255,79,216,0.8);
+  text-shadow: 2px 0 rgba(0,217,255,0.8);
+  animation: hudGlitch 3.2s steps(1) infinite;
+}
+html:not([data-theme]) #playerModal .modal-mark::before { content: "Rival lock"; text-transform: uppercase; }
+@keyframes hudGlitch { 0%, 88%, 100% { transform: none; } 90% { transform: translateX(-3px) skewY(4deg); } 94% { transform: translateX(2px); clip-path: inset(20% 0 30% 0); } }
+
+/* ---------------- Case Files: a full manila dossier ---------------- */
+html[data-theme="casefiles"] #playerModal #modalUsername::before { content: "Subject"; display: block; margin-bottom: 4px; font: 700 11px/1 'Courier Prime', monospace; letter-spacing: 0.3em; text-transform: uppercase; color: #a32f1d; }
+/* The mugshot: clipped to the file in a white photo border, in front of a height chart */
+html[data-theme="casefiles"] #playerModal #modalSkin {
+  border: 7px solid #fff;
+  border-bottom-width: 22px;
+  border-radius: 1px;
+  box-shadow: 0 2px 6px rgba(60,40,10,0.35);
+  transform: rotate(-1.5deg);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='96'%3E%3Cpath d='M0 .5h40M0 24.5h14M0 48.5h22M0 72.5h14' stroke='%233c3226' stroke-opacity='.5'/%3E%3Cpath d='M0 12.5h8M0 36.5h8M0 60.5h8M0 84.5h8' stroke='%233c3226' stroke-opacity='.3'/%3E%3C/svg%3E") 0 0 / 40px 96px repeat-y,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='96'%3E%3Cpath d='M40 .5h-40M40 24.5h-14M40 48.5h-22M40 72.5h-14' stroke='%233c3226' stroke-opacity='.5'/%3E%3C/svg%3E") 100% 0 / 40px 96px repeat-y,
+    linear-gradient(180deg, #ddd6c4, #cfc6b0);
+  filter: sepia(0.25) contrast(1.05);
+}
+/* Stats typed onto a form */
+html[data-theme="casefiles"] #playerModal .modal-stat-tile {
+  border: none;
+  border-bottom: 1px solid #3c3226;
+  border-radius: 0;
+  background: repeating-linear-gradient(transparent 0 23px, rgba(70,110,170,0.12) 23px 24px);
+  text-align: left;
+  box-shadow: none;
+}
+html[data-theme="casefiles"] #playerModal .modal-stat-label::after { content: ":"; }
+html[data-theme="casefiles"] #playerModal .modal-stat-value { font-family: 'Courier Prime', monospace; font-weight: 700; letter-spacing: 0.02em; }
+/* Rival: a REPEAT OFFENDER stamp on the cover */
+html[data-theme="casefiles"] #playerModal:has(.modal-record-rival) .modal-mark {
+  display: block;
+  top: 58px;
+  right: 30px;
+  z-index: 5;
+  padding: 5px 12px;
+  border: 4px double #a32f1d;
+  font: 400 22px/1 'Anton', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a32f1d;
+  opacity: 0.78;
+  transform: rotate(-9deg);
+  mix-blend-mode: multiply;
+  -webkit-mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgba(0,0,0,0.7) 80%);
+}
+html[data-theme="casefiles"] #playerModal .modal-mark::before { content: "Repeat offender"; }
+
+/* ---------------- Private Bank: an account statement ---------------- */
+html[data-theme="ledger"] #playerModal .modal-content {
+  background:
+    repeating-radial-gradient(ellipse at 100% 0, transparent 0 11px, rgba(169,130,46,0.05) 11px 12px) 0 0 / 100% 120px no-repeat,
+    #fdfaf2;
+  outline: 1px solid rgba(169,130,46,0.5);
+  outline-offset: -8px;
+}
+html[data-theme="ledger"] #playerModal #modalTitle::before { content: "Statement of account \00b7  "; font-family: 'Playfair Display', serif; font-style: italic; letter-spacing: 0.04em; color: var(--accent-2); }
+html[data-theme="ledger"] #playerModal #modalTitle { margin: 4px -28px 0; padding: 10px 28px 0; border-top: 4px double var(--gold); }
+/* The account holder's portrait in a gold cameo */
+html[data-theme="ledger"] #playerModal #modalSkin {
+  border: 3px double var(--gold);
+  border-radius: 50% / 40%;
+  background:
+    repeating-radial-gradient(ellipse at 50% 45%, transparent 0 9px, rgba(169,130,46,0.07) 9px 10px),
+    #f6efdc;
+  box-shadow: 0 0 0 5px #fdfaf2, 0 0 0 6px rgba(169,130,46,0.5);
+}
+/* Stats as ledger lines: label, dotted leader, amount */
+html[data-theme="ledger"] #playerModal .modal-stats-grid { grid-template-columns: 1fr; gap: 0; align-content: start; }
+html[data-theme="ledger"] #playerModal .modal-stat-tile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 9px 2px 7px;
+  border: none;
+  border-bottom: 1px solid rgba(169,130,46,0.35);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  text-align: left;
+}
+html[data-theme="ledger"] #playerModal .modal-stat-label { display: flex; align-items: baseline; gap: 8px; font: 600 1.02em/1 'EB Garamond', serif; font-variant: small-caps; text-transform: lowercase; letter-spacing: 0.08em; color: var(--accent-2); }
+html[data-theme="ledger"] #playerModal .modal-stat-label::after { content: ""; flex: 1; border-bottom: 1px dotted rgba(169,130,46,0.8); }
+html[data-theme="ledger"] #playerModal .modal-stat-value { font-size: 1.45em; font-variant-numeric: tabular-nums; text-align: right; }
+html[data-theme="ledger"] #playerModal .modal-stat-tile > :not(.modal-stat-label):not(.modal-stat-value) { grid-column: 1 / -1; justify-self: start; }
+html[data-theme="ledger"] #playerModal .modal-stat-tile .modal-standing { justify-self: stretch; }
+/* "Beaten by" becomes the signatures block */
+html[data-theme="ledger"] #playerModal .modal-record-beaten .modal-record-label { font-size: 0; }
+html[data-theme="ledger"] #playerModal .modal-record-beaten .modal-record-label::before { content: "Authorised signatures"; font-size: 11px; }
+html[data-theme="ledger"] #playerModal .modal-record-beaten .beaten-by-avatars { padding: 0 24px 6px 0; border-bottom: 1px solid var(--accent-2); }
+/* Rival: the claret bookmark hanging in from the top */
+html[data-theme="ledger"] #playerModal:has(.modal-record-rival) .modal-mark {
+  display: block;
+  top: 0;
+  right: 160px;
+  z-index: 5;
+  width: 30px;
+  height: 92px;
+  background: linear-gradient(90deg, #5a121c, #9a2535 45%, #6a1622);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+html[data-theme="ledger"] #playerModal .modal-mark::before { content: "\2694"; position: absolute; left: 0; right: 0; top: 50px; text-align: center; color: #f0d28a; font-size: 14px; }
+
+/* ---------------- Deep Current: a contact report on a sonar console ---------------- */
+html[data-theme="deepcurrent"] #playerModal #modalTitle::before { content: "Contact report \00b7  "; font-family: 'JetBrains Mono', monospace; color: #62e6d6; letter-spacing: 0.16em; }
+html[data-theme="deepcurrent"] .modal-deco i:nth-child(-n+4) { display: block; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #e9cf8a, #8a6a2c 70%); box-shadow: 0 1px 1px rgba(0,0,0,0.6); }
+html[data-theme="deepcurrent"] .modal-deco i:nth-child(1) { top: 10px; left: 10px; }
+html[data-theme="deepcurrent"] .modal-deco i:nth-child(2) { top: 10px; right: 10px; }
+html[data-theme="deepcurrent"] .modal-deco i:nth-child(3) { bottom: 10px; left: 10px; }
+html[data-theme="deepcurrent"] .modal-deco i:nth-child(4) { bottom: 10px; right: 10px; }
+/* Stats on dial plates: a semicircle gauge filled to the standing */
+html[data-theme="deepcurrent"] #playerModal .modal-stat-tile {
+  position: relative;
+  border-radius: 12px;
+  border: 1px solid rgba(98,230,214,0.25);
+  background:
+    radial-gradient(circle at 8px 8px, #8a6a2c 0 2px, transparent 2.5px),
+    radial-gradient(circle at calc(100% - 8px) 8px, #8a6a2c 0 2px, transparent 2.5px),
+    radial-gradient(circle at 8px calc(100% - 8px), #8a6a2c 0 2px, transparent 2.5px),
+    radial-gradient(circle at calc(100% - 8px) calc(100% - 8px), #8a6a2c 0 2px, transparent 2.5px),
+    linear-gradient(180deg, rgba(10,40,60,0.9), rgba(4,20,32,0.95));
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.6), inset 0 0 0 3px rgba(4,20,32,0.9), inset 0 0 0 4px rgba(98,230,214,0.12);
+}
+html[data-theme="deepcurrent"] #playerModal .modal-standing { position: static; }
+html[data-theme="deepcurrent"] #playerModal .modal-standing-bar { display: none; }
+html[data-theme="deepcurrent"] #playerModal .modal-standing::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 92px;
+  height: 46px;
+  margin-left: -46px;
+  border-radius: 46px 46px 0 0;
+  background: conic-gradient(from -90deg at 50% 100%, #62e6d6 0deg, #62e6d6 calc(var(--pct) * 1.8deg), rgba(98,230,214,0.12) calc(var(--pct) * 1.8deg) 180deg, transparent 180deg);
+  -webkit-mask: radial-gradient(circle at 50% 100%, transparent 36px, #000 37px);
+  mask: radial-gradient(circle at 50% 100%, transparent 36px, #000 37px);
+  opacity: 0.85;
+  z-index: 0;
+}
+html[data-theme="deepcurrent"] #playerModal .modal-stat-tile:has(.modal-standing) { padding-top: 22px; }
+html[data-theme="deepcurrent"] #playerModal .modal-stat-tile > * { position: relative; z-index: 1; }
+/* The skin in a brass porthole */
+@media (min-width: 761px) {
+  html[data-theme="deepcurrent"] #playerModal #modalSkin { align-self: start; width: 220px; height: 220px; min-height: 0; padding: 16px; box-sizing: border-box; }
+}
+html[data-theme="deepcurrent"] #playerModal #modalSkin {
+  border-radius: 50%;
+  border: 10px solid #8a6a2c;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18), transparent 35%),
+    radial-gradient(circle, #0c3a55, #03121e 75%);
+  box-shadow: 0 0 0 2px #3d2e12, inset 0 0 0 2px #e9cf8a, inset 0 0 26px rgba(0,0,0,0.8), 0 0 24px rgba(98,230,214,0.25);
+}
+/* Rival: the HOSTILE tab clipped to the edge */
+html[data-theme="deepcurrent"] #playerModal:has(.modal-record-rival) .modal-mark {
+  display: block;
+  top: 80px;
+  right: -1px;
+  z-index: 5;
+  padding: 12px 6px;
+  writing-mode: vertical-rl;
+  border: 2px solid rgba(255,90,90,0.8);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  background: rgba(30,6,12,0.95);
+  font: 700 12px/1 'Chakra Petch', sans-serif;
+  letter-spacing: 0.3em;
+  color: #ff5a5a;
+  text-shadow: 0 0 8px rgba(255,90,90,0.8);
+}
+html[data-theme="deepcurrent"] #playerModal .modal-mark::before { content: "\25C6  HOSTILE"; }
+
+/* ---------------- Sky Isles: the inventory, now with a hotbar ---------------- */
+html[data-theme="skyisles"] #playerModal .modal-content { padding-bottom: 76px; }
+html[data-theme="skyisles"] .modal-deco i:nth-child(1) {
+  display: block;
+  left: 50%;
+  bottom: 16px;
+  width: 364px;
+  height: 44px;
+  margin-left: -182px;
+  background:
+    linear-gradient(#fff, #fff) 0 0 / 44px 3px no-repeat, linear-gradient(#fff, #fff) 0 41px / 44px 3px no-repeat,
+    linear-gradient(#fff, #fff) 0 0 / 3px 44px no-repeat, linear-gradient(#fff, #fff) 41px 0 / 3px 44px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='12' y='2' width='2' height='2' fill='%23e8e8e8'/%3E%3Crect x='11' y='3' width='2' height='2' fill='%23e8e8e8'/%3E%3Crect x='10' y='4' width='2' height='2' fill='%23e8e8e8'/%3E%3Crect x='9' y='5' width='2' height='2' fill='%23e8e8e8'/%3E%3Crect x='8' y='6' width='2' height='2' fill='%23e8e8e8'/%3E%3Crect x='7' y='7' width='2' height='2' fill='%23e8e8e8'/%3E%3Crect x='6' y='8' width='2' height='2' fill='%23e8e8e8'/%3E%3Crect x='5' y='9' width='2' height='2' fill='%23e8e8e8'/%3E%3Crect x='13' y='2' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='12' y='3' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='11' y='4' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='10' y='5' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='9' y='6' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='8' y='7' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='7' y='8' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='6' y='9' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='3' y='10' width='4' height='2' fill='%235a3a1a'/%3E%3Crect x='5' y='9' width='2' height='4' fill='%235a3a1a'/%3E%3Crect x='2' y='12' width='2' height='2' fill='%237a5230'/%3E%3Crect x='1' y='13' width='2' height='2' fill='%233b2410'/%3E%3C/svg%3E") 6px 6px / 28px 28px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='3' y='2' width='2' height='1' fill='%237a5230'/%3E%3Crect x='5' y='3' width='2' height='1' fill='%237a5230'/%3E%3Crect x='7' y='4' width='1' height='2' fill='%237a5230'/%3E%3Crect x='8' y='6' width='1' height='3' fill='%237a5230'/%3E%3Crect x='7' y='9' width='1' height='2' fill='%237a5230'/%3E%3Crect x='5' y='11' width='2' height='1' fill='%237a5230'/%3E%3Crect x='3' y='12' width='2' height='1' fill='%237a5230'/%3E%3Crect x='3' y='3' width='1' height='9' fill='%23dddddd'/%3E%3Crect x='9' y='7' width='4' height='1' fill='%23bbbbbb'/%3E%3Crect x='12' y='6' width='2' height='3' fill='%23888'/%3E%3C/svg%3E") 46px 6px / 28px 28px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='3' y='3' width='9' height='2' fill='%238a8a8a'/%3E%3Crect x='2' y='4' width='2' height='2' fill='%236a6a6a'/%3E%3Crect x='11' y='4' width='2' height='2' fill='%236a6a6a'/%3E%3Crect x='7' y='5' width='2' height='2' fill='%237a5230'/%3E%3Crect x='6' y='7' width='2' height='2' fill='%237a5230'/%3E%3Crect x='5' y='9' width='2' height='2' fill='%237a5230'/%3E%3Crect x='4' y='11' width='2' height='2' fill='%237a5230'/%3E%3Crect x='3' y='13' width='2' height='2' fill='%235a3a1a'/%3E%3C/svg%3E") 86px 6px / 28px 28px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='2' y='2' width='12' height='12' fill='%23c0392b'/%3E%3Crect x='2' y='2' width='12' height='2' fill='%23e0533f'/%3E%3Crect x='3' y='5' width='2' height='2' fill='%23a8301f'/%3E%3Crect x='9' y='8' width='2' height='2' fill='%23a8301f'/%3E%3Crect x='6' y='11' width='2' height='1' fill='%23a8301f'/%3E%3Crect x='12' y='4' width='1' height='3' fill='%23a8301f'/%3E%3C/svg%3E") 126px 6px / 28px 28px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='4' y='5' width='8' height='8' fill='%23f1c40f'/%3E%3Crect x='5' y='4' width='6' height='10' fill='%23f1c40f'/%3E%3Crect x='5' y='6' width='2' height='2' fill='%23fff6a0'/%3E%3Crect x='7' y='2' width='1' height='3' fill='%235a3a1a'/%3E%3Crect x='8' y='2' width='3' height='2' fill='%234caf50'/%3E%3Crect x='10' y='12' width='2' height='1' fill='%23c79a00'/%3E%3C/svg%3E") 166px 6px / 28px 28px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='5' y='4' width='6' height='8' fill='%231f6f5c'/%3E%3Crect x='4' y='5' width='8' height='6' fill='%231f6f5c'/%3E%3Crect x='6' y='6' width='4' height='4' fill='%232fa38a'/%3E%3Crect x='7' y='7' width='2' height='2' fill='%237fe0c8'/%3E%3Crect x='5' y='5' width='1' height='1' fill='%237fe0c8'/%3E%3C/svg%3E") 206px 6px / 28px 28px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='4' y='4' width='8' height='8' fill='%233a2a1a'/%3E%3Crect x='5' y='3' width='6' height='10' fill='%233a2a1a'/%3E%3Crect x='5' y='5' width='2' height='2' fill='%23ff9800'/%3E%3Crect x='8' y='6' width='3' height='2' fill='%23ffc107'/%3E%3Crect x='6' y='9' width='3' height='2' fill='%23ff5722'/%3E%3Crect x='9' y='10' width='2' height='1' fill='%23ff9800'/%3E%3C/svg%3E") 246px 6px / 28px 28px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='2' y='2' width='12' height='12' fill='%23d32f2f'/%3E%3Crect x='2' y='6' width='12' height='4' fill='%23f2f2f2'/%3E%3Crect x='4' y='7' width='2' height='2' fill='%23222'/%3E%3Crect x='7' y='7' width='2' height='2' fill='%23222'/%3E%3Crect x='10' y='7' width='2' height='2' fill='%23222'/%3E%3Crect x='2' y='2' width='12' height='1' fill='%23ff6b5b'/%3E%3Crect x='7' y='1' width='2' height='1' fill='%23888'/%3E%3C/svg%3E") 286px 6px / 28px 28px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect x='1' y='7' width='14' height='4' fill='%23c0392b'/%3E%3Crect x='1' y='7' width='5' height='4' fill='%23f2f2f2'/%3E%3Crect x='1' y='11' width='2' height='3' fill='%237a5230'/%3E%3Crect x='13' y='11' width='2' height='3' fill='%237a5230'/%3E%3Crect x='1' y='6' width='14' height='1' fill='%23e0533f'/%3E%3C/svg%3E") 326px 6px / 28px 28px no-repeat,
+    repeating-linear-gradient(90deg, #373737 0 2px, #8b8b8b 2px 38px, #ffffff 38px 40px) 2px 2px / 360px 40px no-repeat,
+    #1b1b1b;
+  image-rendering: pixelated;
+}
+/* Beaten-by avatars as real item slots */
+html[data-theme="skyisles"] #playerModal .modal-record .beaten-avatar { box-shadow: inset 2px 2px 0 rgba(0,0,0,0.35), inset -2px -2px 0 rgba(255,255,255,0.45), 0 0 0 2px #8b8b8b; }
+
+/* ---------------- Hollow Grave: a page of the parish burial register ---------------- */
+html[data-theme="hollowgrave"] #playerModal .modal-content {
+  background:
+    linear-gradient(90deg, transparent 18px, rgba(140,40,40,0.28) 18px 19px, transparent 19px),
+    repeating-linear-gradient(transparent 0 27px, rgba(216,200,170,0.07) 27px 28px),
+    radial-gradient(120% 60% at 50% 0%, rgba(241,216,138,0.07), transparent 60%),
+    linear-gradient(180deg, #2b2420, #1d1815);
+}
+html[data-theme="hollowgrave"] #playerModal #modalUsername::before { content: "Register of burials \00b7  entry"; display: block; margin-bottom: 6px; font: 600 12px/1 'Grenze', serif; letter-spacing: 0.3em; text-transform: uppercase; color: #a99a80; }
+html[data-theme="hollowgrave"] #playerModal #modalTitle::before { content: "Sexton's hand \00b7  "; font-style: italic; }
+/* Entries in ink, on ruled lines rather than in boxes */
+html[data-theme="hollowgrave"] #playerModal .modal-stat-tile {
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(216,200,170,0.18);
+  background: none;
+  box-shadow: none;
+  text-align: left;
+}
+html[data-theme="hollowgrave"] #playerModal .modal-stat-label { font: italic 500 0.95em/1 'Crimson Pro', serif; letter-spacing: 0.04em; text-transform: none; color: #a99a80; }
+html[data-theme="hollowgrave"] #playerModal .modal-stat-value { font-family: 'Grenze', serif; font-weight: 600; text-shadow: 0 0 1px rgba(0,0,0,0.6); }
+html[data-theme="hollowgrave"] #playerModal :is(.modal-record, .modal-tags-urchin) { background: rgba(0,0,0,0.18); border-color: rgba(216,200,170,0.14); }
+html[data-theme="hollowgrave"] #playerModal .modal-record-rival .rival-by { flex-direction: column; gap: 0; }
+html[data-theme="hollowgrave"] #playerModal .modal-record-rival .rival-by-person { padding: 5px 0 4px; border-bottom: 1px solid rgba(216,200,170,0.15); font-family: 'Crimson Pro', serif; font-style: italic; font-size: 0.98em; }
+html[data-theme="hollowgrave"] #playerModal .modal-record-rival .rival-by-person::before { content: "Laid down by"; margin-right: 2px; color: #a99a80; font-size: 0.86em; }
+/* Rival: the mortsafe's padlock pressed into black-red wax */
+html[data-theme="hollowgrave"] #playerModal:has(.modal-record-rival) .modal-mark {
+  display: block;
+  top: 60px;
+  right: 36px;
+  z-index: 5;
+  width: 50px;
+  height: 50px;
+  border-radius: 47% 53% 49% 51%;
+  background: radial-gradient(circle at 36% 32%, #8a2a2a, #4a0f14 60%, #2a070a);
+  box-shadow: inset 0 0 0 5px rgba(0,0,0,0.18), inset 0 0 0 7px rgba(255,180,180,0.08), 0 3px 5px rgba(0,0,0,0.6);
+  transform: rotate(-8deg);
+}
+html[data-theme="hollowgrave"] #playerModal .modal-mark::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  background: rgba(20,4,6,0.75);
+  box-shadow: 0 1px 0 rgba(255,160,160,0.18);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h-2.6V7a2.4 2.4 0 0 0-4.8 0v3Z'/%3E%3Cpath fill-rule='evenodd' d='M4 10h16v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm8 3.2a1.7 1.7 0 0 0-1 3.1V19h2v-2.7a1.7 1.7 0 0 0-1-3.1Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h-2.6V7a2.4 2.4 0 0 0-4.8 0v3Z'/%3E%3Cpath fill-rule='evenodd' d='M4 10h16v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm8 3.2a1.7 1.7 0 0 0-1 3.1V19h2v-2.7a1.7 1.7 0 0 0-1-3.1Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+@media (max-width: 760px) {
+  html[data-theme] #playerModal .modal-mark, html:not([data-theme]) #playerModal .modal-mark { right: 56px; }
+  html:not([data-theme]) #playerModal:has(.modal-record-rival) .modal-mark,
+  html[data-theme="deepcurrent"] #playerModal:has(.modal-record-rival) .modal-mark { right: -1px; top: 64px; }
+  html[data-theme="casefiles"] #playerModal:has(.modal-record-rival) .modal-mark { font-size: 15px; top: 292px; right: 34px; }
+  html[data-theme="ledger"] #playerModal:has(.modal-record-rival) .modal-mark { left: 14px; right: auto; }
+  html[data-theme="hollowgrave"] #playerModal:has(.modal-record-rival) .modal-mark { top: 300px; right: 34px; }
+  html[data-theme="hollowgrave"] #playerModal #modalUsername::before { letter-spacing: 0.16em; font-size: 11px; padding-right: 50px; }
+  html[data-theme="skyisles"] .modal-deco i:nth-child(1) { transform: scale(0.8); transform-origin: 50% 100%; }
+}
+/* === POPUP OBJECTS END === */
 </style>
 </head>
 <body>
@@ -17115,6 +17453,8 @@ html[data-theme="hollowgrave"] .activity-player { font-family: 'Grenze', serif; 
     <div class="modal-card">
       <span class="modal-folder-tab">Case File &middot; Open</span>
       <div class="modal-content">
+      <div class="modal-deco" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <span class="modal-mark" aria-hidden="true"></span>
       <button type="button" id="closeModal" class="modal-close" aria-label="Close">&times;</button>
       <button type="button" id="copyPlayerLink" class="modal-copy-link" aria-label="Copy link to this player"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></svg><span>Copy link</span></button>
       <h2 id="modalUsername">Loading...</h2>
@@ -23003,7 +23343,7 @@ function trackedStandingHtml(field, live) {
   const values = sweats.map(s => Number(s[field])).filter(Number.isFinite);
   if (values.length < 3 || !Number.isFinite(liveNum)) return "";
   const pct = Math.round(values.filter(v => v < liveNum).length / values.length * 100);
-  return `<div class="modal-standing" data-tooltip="Higher than ${pct}% of the ${values.length} tracked sweats' saved ${field === "star" ? "stars" : field.toUpperCase()}">
+  return `<div class="modal-standing" style="--pct:${pct}" data-tooltip="Higher than ${pct}% of the ${values.length} tracked sweats' saved ${field === "star" ? "stars" : field.toUpperCase()}">
     <span class="modal-standing-bar"><span style="width:${pct}%"></span></span>
     <span class="modal-standing-text">Beats ${pct}%</span>
   </div>`;

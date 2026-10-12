@@ -1256,6 +1256,11 @@ input:focus {
   font-weight: 600;
   font-size: 0.92em;
 }
+/* Add Sweat after a same-day duplicate warning: one more click adds anyway. */
+#addSweatBtn.confirm-duplicate {
+  outline: 2px dashed currentColor;
+  outline-offset: 3px;
+}
 
 /* Stats Display (player card) - lives inside .dash-preview-frame, absolutely
    positioned over the same spot as #statsEmpty so the two can crossfade
@@ -17960,6 +17965,23 @@ function formatTagType(tagType) {
     .join(' ');
 }
 
+// Same-day duplicates are allowed (someone can be beaten twice in a day),
+// but the backend warns first: the button turns into "Add anyway" and the
+// next click goes through. Typing a different name clears the warning.
+let duplicateConfirmFor = null;
+function clearDuplicateWarning() {
+  if (duplicateConfirmFor === null) return;
+  duplicateConfirmFor = null;
+  addSweatBtn.textContent = "Add Sweat";
+  addSweatBtn.classList.remove("confirm-duplicate");
+}
+usernameInput.addEventListener("input", () => {
+  if (duplicateConfirmFor !== null && usernameInput.value.trim().toLowerCase() !== duplicateConfirmFor) {
+    clearDuplicateWarning();
+    status.textContent = "";
+  }
+});
+
 form.addEventListener('submit', async e => {
   e.preventDefault();
   const username = usernameInput.value.trim();
@@ -17992,7 +18014,7 @@ form.addEventListener('submit', async e => {
     const cheating = cheatingCheckbox.checked;
     const boosting = boostingCheckbox.checked;
 
-    const todayDate = new Date().toISOString();
+    const todayDate = localDayString();
     const newSweat = {
       username: currentStats.username,
       star: currentStats.star,
@@ -18014,6 +18036,8 @@ form.addEventListener('submit', async e => {
     };
     const noteText = sweatNoteInput.value.trim();
     if (noteText) newSweat.note = noteText;
+    newSweat.warnDuplicate = true;
+    if (duplicateConfirmFor === currentStats.username.toLowerCase()) newSweat.confirmDuplicate = true;
 
     localWriteAt = Date.now();
     const res = await fetch(`${backendBaseURL}/sweats`, {
@@ -18024,8 +18048,22 @@ form.addEventListener('submit', async e => {
     if (res.status === 401 || res.status === 503) {
       throw new Error("Your key is missing or wrong. Click \"Your Key\" at the top.");
     }
+    if (res.status === 409) {
+      const body = await res.json().catch(() => null);
+      if (body && body.duplicate) {
+        const by = body.duplicate.addedBy;
+        const byName = by ? (BEATEN_BY[by] ? BEATEN_BY[by].label : by.charAt(0).toUpperCase() + by.slice(1)) : "";
+        duplicateConfirmFor = currentStats.username.toLowerCase();
+        addSweatBtn.textContent = "Add anyway";
+        addSweatBtn.classList.add("confirm-duplicate");
+        status.textContent = `${body.duplicate.username || currentStats.username} was already added today${byName ? ` by ${byName}` : ""}. Are you sure you'd like to add them again? Click "Add anyway".`;
+        siteAudio.play("error");
+        return;
+      }
+    }
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to add sweat"));
 
+    clearDuplicateWarning();
     await loadSweats({ quiet: true });
     form.reset();
     updateNoteCount(sweatNoteInput, sweatNoteCount);
@@ -18526,7 +18564,7 @@ function getProcessedSweats() {
       const sFkdr = Number(s.fkdr) || 0;
       const sStar = Number(s.star) || 0;
       const sIndex = sFkdr * sFkdr * sStar;
-      const sDate = new Date(s.dateAdded);
+      const sDate = parseSweatDay(s.dateAdded);
 
       if (minFkdr !== null && sFkdr < minFkdr) return false;
       if (minIndex !== null && sIndex < minIndex) return false;
@@ -18575,8 +18613,8 @@ function getProcessedSweats() {
         valA = a.fkdr * a.fkdr * a.star;
         valB = b.fkdr * b.fkdr * b.star;
       } else if (sortField === "dateAdded") {
-        valA = new Date(a.dateAdded);
-        valB = new Date(b.dateAdded);
+        valA = parseSweatDay(a.dateAdded) || 0;
+        valB = parseSweatDay(b.dateAdded) || 0;
       } else if (sortField === "cheating") {
         valA = a.cheating ? 1 : 0;
         valB = b.cheating ? 1 : 0;
@@ -18664,7 +18702,7 @@ function renderSweatStats(list, person) {
   list.forEach(s => {
     const key = String(s.dateAdded || "").slice(0, 7);
     if (monthByKey.has(key)) monthByKey.get(key).n++;
-    const t = Date.parse(s.dateAdded);
+    const t = s.dateAdded ? parseSweatDay(s.dateAdded).getTime() : NaN;
     if (t >= monthAgo) recent++;
   });
   const peak = Math.max(1, ...months.map(m => m.n));
@@ -18910,7 +18948,7 @@ function buildSweatCard(s, i, usernameCounts) {
   if (hideDuplicatesCheckbox.checked && count > 1) {
     card.querySelector(".sweat-card-dupe").textContent = `x${count}`;
   }
-  card.querySelector(".sweat-card-date").textContent = new Date(s.dateAdded).toLocaleDateString();
+  card.querySelector(".sweat-card-date").textContent = formatSweatDay(s.dateAdded) || "Unknown";
 
   card.querySelector(".edit-btn").addEventListener("click", (e) => {
     e.stopPropagation();
@@ -19118,7 +19156,7 @@ function buildSweatRow(s, { usernameCounts }) {
 
   const dateTd = document.createElement("td");
   dateTd.className = "date-cell";
-  dateTd.textContent = new Date(s.dateAdded).toLocaleDateString();
+  dateTd.textContent = formatSweatDay(s.dateAdded) || "Unknown";
   tr.appendChild(dateTd);
 
   const beatenByTd = document.createElement("td");
@@ -19584,8 +19622,26 @@ function noteAuthorInitials(author) {
   if (author === "admin") return "\u2605";
   return BEATEN_BY[author] ? BEATEN_BY[author].initials : "?";
 }
+// A sweat's dateAdded is a calendar day ("2026-10-01"). new Date() reads that
+// as midnight UTC, which is still the day before anywhere west of London, so
+// plain days are read as local midnight instead. Older full timestamps (and
+// note times) still go through new Date().
+function parseSweatDay(d) {
+  if (!d) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
+  return m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(d);
+}
+// Today's date on this device, as "YYYY-MM-DD".
+function localDayString(date = new Date()) {
+  const pad = n => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+function formatSweatDay(d) {
+  const date = parseSweatDay(d);
+  return date && !isNaN(date) ? date.toLocaleDateString() : "";
+}
 function formatNoteDate(d) {
-  const date = d ? new Date(d) : null;
+  const date = parseSweatDay(d);
   return date && !isNaN(date) ? date.toLocaleDateString() : "";
 }
 // "just now" / "5m ago" / "3h ago" / "2d ago", then the plain date past a week.
@@ -19914,7 +19970,7 @@ function renderModalRecord(uuid, item) {
   modalRecord.hidden = !record;
   if (!record) return;
   const beaten = BEATEN_BY_KEYS.filter(k => record[k]);
-  const date = record.dateAdded ? new Date(record.dateAdded) : null;
+  const date = parseSweatDay(record.dateAdded);
   const index = (Number(record.fkdr) || 0) ** 2 * (Number(record.star) || 0);
   modalRecord.innerHTML = `
     <div class="modal-record-item"><span class="modal-record-label">Logged</span><span class="modal-record-value">${date && !isNaN(date) ? date.toLocaleDateString() : "Unknown"}</span></div>
@@ -20042,7 +20098,7 @@ async function openPlayerModal(item, { retry = false } = {}) {
 
     modalSkin.src = `https://visage.surgeplay.com/full/256/${uuid}`;
 
-    const loggedDate = item.dataset.loggedDate ? new Date(item.dataset.loggedDate) : null;
+    const loggedDate = parseSweatDay(item.dataset.loggedDate);
     const when = loggedDate && !isNaN(loggedDate) ? loggedDate.toLocaleDateString() : "";
     const starDelta = sinceBeatDeltaHtml(data.star, item.dataset.loggedStar, { suffix: "\u2605", label: "since you beat them", when });
     const fkdrDelta = sinceBeatDeltaHtml(data.fkdr, item.dataset.loggedFkdr, { decimals: 2, label: "since", when });
@@ -22599,7 +22655,7 @@ const exportCsvBtn = document.getElementById("exportCsvBtn");
 const CSV_COLUMNS = [
   ["Username", s => s.username],
   ["UUID", s => s.uuid || ""],
-  ["Date added", s => s.dateAdded ? new Date(s.dateAdded).toISOString().slice(0, 10) : ""],
+  ["Date added", s => { const d = parseSweatDay(s.dateAdded); return d && !isNaN(d) ? localDayString(d) : ""; }],
   ["Stars", s => Number(s.star) || 0],
   ["FKDR", s => Number(s.fkdr) || 0],
   ["WLR", s => Number(s.wlr) || 0],

@@ -2253,27 +2253,29 @@ li[data-theme-value="skyisles"] .theme-swatch i { left: 4px; top: 5px; width: 12
 li[data-theme-value="hollowgrave"] .theme-swatch { background: radial-gradient(circle 6px at 33px 9px, #fff4cf, #f1d88a 70%, transparent 76%), radial-gradient(circle 13px at 33px 9px, rgba(241,216,138,0.28), transparent), radial-gradient(130% 70% at 50% 120%, #2b1d3d, #120d1a 60%, #07060a); }
 li[data-theme-value="hollowgrave"] .theme-swatch b { left: 9px; bottom: 7px; width: 11px; height: 14px; border-radius: 6px 6px 1px 1px; background: linear-gradient(180deg, #5a5268, #3a3544); box-shadow: 0 0 6px rgba(184,255,92,0.35); z-index: 1; }
 li[data-theme-value="hollowgrave"] .theme-swatch i { left: -6px; right: -6px; bottom: -8px; height: 16px; border-radius: 50%; background: #0c0a12; box-shadow: 0 -2px 6px rgba(242,140,40,0.35); z-index: 2; }
-/* The seasonal section: Hollow Grave sits under its own "Seasonal" header
-   as a small night-sky card that looks the same in every theme. Through
+/* The seasonal section: Hollow Grave sits under its own "Seasonal" header.
+   In every other theme it is an ordinary row in that theme's own colours
+   with a small badge (Milo: the night-sky card clashed with the light
+   themes); in Hollow Grave itself it is a small night-sky card. Through
    October it glows and carries a countdown (updateSeasonalTheme). */
 #themeDropdownMenu li.theme-season-head {
+  /* (the Hollow Grave colours for this are just below) */
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
   margin: 6px 2px 4px;
   padding: 9px 2px 2px;
-  border-top: 1px dashed rgba(242,140,40,0.35);
+  border-top: 1px dashed var(--border-strong);
   border-radius: 0;
   background: none;
   box-shadow: none;
   cursor: default;
-  font-family: 'Grenze', Georgia, serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #f28c28;
+  color: var(--text-dim);
   white-space: nowrap;
   /* Sized by the theme rows above it, never wider. */
   contain: inline-size;
@@ -2283,16 +2285,19 @@ li[data-theme-value="hollowgrave"] .theme-swatch i { left: -6px; right: -6px; bo
   flex-shrink: 0;
   padding: 2px 6px;
   border-radius: 999px;
-  border: 1px solid rgba(242,140,40,0.7);
-  background: #1d1428;
+  border: 1px solid var(--accent);
   font-size: 9px;
   letter-spacing: 0.06em;
-  color: #ffc58a;
+  color: var(--accent);
 }
-.theme-dropdown:not(.season-on) .theme-season-pill { color: #a99fb7; border-color: rgba(169,159,183,0.5); }
-#themeDropdownMenu li.theme-opt-seasonal {
-  position: relative;
-  margin-top: 11px;
+.theme-dropdown:not(.season-on) .theme-season-pill { color: var(--text-faint); border-color: var(--border); }
+html[data-theme="hollowgrave"] #themeDropdownMenu li.theme-season-head { border-top-color: rgba(242,140,40,0.35); font-family: 'Grenze', Georgia, serif; color: #f28c28; }
+html[data-theme="ledger"] #themeDropdownMenu li.theme-season-head { letter-spacing: 0.04em; }
+html[data-theme="ledger"] .theme-season-pill { padding: 1px 5px; letter-spacing: 0.02em; }
+html[data-theme="hollowgrave"] .theme-season-pill { border-color: rgba(242,140,40,0.7); background: #1d1428; color: #ffc58a; }
+html[data-theme="hollowgrave"] .theme-dropdown:not(.season-on) .theme-season-pill { color: #a99fb7; border-color: rgba(169,159,183,0.5); }
+#themeDropdownMenu li.theme-opt-seasonal { position: relative; margin-top: 11px; }
+html[data-theme="hollowgrave"] #themeDropdownMenu li.theme-opt-seasonal {
   border-radius: 9px;
   color: #efe6f4;
   font-family: 'Grenze', Georgia, serif;
@@ -2304,21 +2309,27 @@ li[data-theme-value="hollowgrave"] .theme-swatch i { left: -6px; right: -6px; bo
     linear-gradient(135deg, #1d1428, #0f0b15);
   box-shadow: inset 0 0 0 1px rgba(242,140,40,0.4);
 }
-#themeDropdownMenu li.theme-opt-seasonal:hover,
-#themeDropdownMenu li.theme-opt-seasonal:focus-visible {
+html[data-theme="hollowgrave"] #themeDropdownMenu li.theme-opt-seasonal:hover,
+html[data-theme="hollowgrave"] #themeDropdownMenu li.theme-opt-seasonal:focus-visible {
   color: #fff;
   background:
     radial-gradient(80% 120% at 0% 50%, rgba(242,140,40,0.32), transparent 65%),
     linear-gradient(135deg, #251a33, #120d1a);
   box-shadow: inset 0 0 0 1px rgba(242,140,40,0.7), 0 0 14px rgba(242,140,40,0.25);
 }
-#themeDropdownMenu li.theme-opt-seasonal[aria-selected="true"] { box-shadow: inset 0 0 0 2px #f28c28, 0 0 16px rgba(242,140,40,0.3); }
-.theme-dropdown.season-on #themeDropdownMenu li.theme-opt-seasonal { animation: seasonGlow 2.8s ease-in-out infinite; }
+html[data-theme="hollowgrave"] #themeDropdownMenu li.theme-opt-seasonal[aria-selected="true"] { box-shadow: inset 0 0 0 2px #f28c28, 0 0 16px rgba(242,140,40,0.3); }
+.theme-dropdown.season-on #themeDropdownMenu li.theme-opt-seasonal { animation: seasonGlowTheme 2.8s ease-in-out infinite; }
+html[data-theme="hollowgrave"] .theme-dropdown.season-on #themeDropdownMenu li.theme-opt-seasonal { animation-name: seasonGlow; }
+/* Other themes: a soft pulse of their own accent round the row. */
+@keyframes seasonGlowTheme {
+  0%, 100% { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent); }
+  50% { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 25%, transparent); }
+}
 @keyframes seasonGlow {
   0%, 100% { box-shadow: inset 0 0 0 1px rgba(242,140,40,0.45), 0 0 8px rgba(242,140,40,0.12); }
   50% { box-shadow: inset 0 0 0 1px rgba(242,140,40,0.8), 0 0 18px rgba(242,140,40,0.32); }
 }
-.theme-opt-seasonal .theme-opt-name { font-size: 15px; }
+html[data-theme="hollowgrave"] .theme-opt-seasonal .theme-opt-name { font-size: 15px; }
 /* A tab on the card's corner, so the badge doesn't widen the whole menu
    (on phones that pushed it off the left edge). */
 .theme-opt-badge {
@@ -2328,16 +2339,18 @@ li[data-theme-value="hollowgrave"] .theme-swatch i { left: -6px; right: -6px; bo
   box-shadow: 0 2px 6px rgba(0,0,0,0.35);
   padding: 1px 6px;
   border-radius: 4px;
-  background: linear-gradient(180deg, #f6a04a, #d9661a);
-  color: #1a0f06;
+  background: var(--accent);
+  color: var(--bg);
   font-family: inherit;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
-.theme-opt-seasonal .theme-opt-tag { color: #f6b26b; opacity: 1; font-family: 'Crimson Pro', Georgia, serif; font-style: italic; font-size: 12px; }
-.theme-dropdown:not(.season-on) .theme-opt-seasonal .theme-opt-tag { color: #a99fb7; }
+.theme-dropdown.season-on .theme-opt-seasonal .theme-opt-tag { color: var(--accent); opacity: 1; }
+html[data-theme="hollowgrave"] .theme-opt-badge { background: linear-gradient(180deg, #f6a04a, #d9661a); color: #1a0f06; }
+html[data-theme="hollowgrave"] .theme-opt-seasonal .theme-opt-tag { color: #f6b26b; opacity: 1; font-family: 'Crimson Pro', Georgia, serif; font-style: italic; font-size: 12px; }
+html[data-theme="hollowgrave"] .theme-dropdown:not(.season-on) .theme-opt-seasonal .theme-opt-tag { color: #a99fb7; }
 /* An ember on the theme button in October until Hollow Grave's been tried. */
 .theme-dropdown-btn.season-ember { position: relative; }
 .theme-dropdown-btn.season-ember::after {
@@ -14294,6 +14307,11 @@ html[data-theme="skyisles"] .sweat-card.is-rival:hover .rival-mark .rival-icon {
 html[data-theme="skyisles"] .rival-by-person { color: #ffffff; text-shadow: 2px 2px 0 #3f3f3f; }
 html[data-theme="skyisles"] .rival-by-person b { color: #ff55ff; text-shadow: 2px 2px 0 #3f003f; }
 html[data-theme="skyisles"] .modal-record-rival .rival-icon { width: 26px; height: 26px; border-width: 2px; outline-width: 2px; background-size: 20px; }
+/* The card's slot and tag, a size smaller (Milo: too large). */
+html[data-theme="skyisles"] .rival-mark { top: -11px; left: -8px; font-size: 11px; }
+html[data-theme="skyisles"] .rival-mark .rival-icon { width: 28px; height: 28px; border-width: 2px; outline-width: 2px; background-size: 22px; }
+html[data-theme="skyisles"] .rival-mark .rival-word { margin-left: 5px; padding: 2px 5px 3px; }
+html[data-theme="skyisles"] .rival-mark .rival-count { left: 15px; top: 12px; font-size: 14px; }
 
 /* Hollow Grave: the mortsafe. Victorian churchyards caged graves in iron
    to keep the dead in, so a Rival's stone gets wrought-iron bars across
@@ -14304,17 +14322,17 @@ html[data-theme="skyisles"] .modal-record-rival .rival-icon { width: 26px; heigh
    epitaph and footer are fixed to the front of the cage. */
 html[data-theme="hollowgrave"] #playerModal { --rival: #b8ff5c; }
 html[data-theme="hollowgrave"] .sweat-card.is-rival .sweat-card-name::before {
-  content: "Caged \00b7  rose " attr(data-rival-roman) " times";
+  content: "Caged \00b7  " attr(data-rival-roman) " risings";
   letter-spacing: 0.07em;
   white-space: nowrap;
 }
 html[data-theme="hollowgrave"] .rival-mark {
   --iron: linear-gradient(90deg, #050407, #6e6578 30%, #1c1820 55%, #08070a);
   --rust: linear-gradient(180deg, rgba(128,58,22,0.85), rgba(150,72,28,0.45) 40%, rgba(128,58,22,0) );
-  top: 167px;
+  top: var(--cage-top, 167px);
   left: 16px;
   right: 16px;
-  bottom: 62px;
+  bottom: var(--cage-bottom, 62px);
   z-index: 2;
   width: auto;
   height: auto;
@@ -14438,6 +14456,8 @@ html[data-theme="hollowgrave"] .sweat-card.is-rival:hover .rival-mark .rival-cou
 /* The epitaph and the footer are fixed to the front of the cage. */
 html[data-theme="hollowgrave"] .sweat-card.is-rival :is(.sweat-card-note, .card-note-ghost, .sweat-card-footer) { position: relative; z-index: 3; }
 html[data-theme="hollowgrave"] .sweat-card.is-rival .sweat-card-note { background: rgba(14,11,19,0.6); }
+/* Room for the spear points between the pills and the top rail. */
+html[data-theme="hollowgrave"] .sweat-card.is-rival .sweat-card-stats { margin-top: 8px; }
 html[data-theme="hollowgrave"] .sweat-card.is-rival .card-note-ghost { background: rgba(14,11,19,0.5); }
 /* Soil heaped and broken up at the foot of the stone. */
 html[data-theme="hollowgrave"] .sweat-card.is-rival::after {
@@ -14468,7 +14488,7 @@ html[data-theme="hollowgrave"] .modal-record-rival .rival-icon {
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h-2.6V7a2.4 2.4 0 0 0-4.8 0v3Z'/%3E%3Cpath fill-rule='evenodd' d='M4 10h16v10.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Zm8 3.2a1.7 1.7 0 0 0-1 3.1V19h2v-2.7a1.7 1.7 0 0 0-1-3.1Z'/%3E%3C/svg%3E");
 }
 @media (max-width: 700px) {
-  html[data-theme="hollowgrave"] .rival-mark { top: 163px; }
+  html[data-theme="hollowgrave"] .rival-mark { top: var(--cage-top, 163px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .rival-mark, .rival-mark .rival-icon::after { animation: none !important; }
@@ -14892,6 +14912,7 @@ html[data-theme="hollowgrave"] .unmask-back .unmask-k { color: #b8ff5c; }
 .lb-entry-count b { color: var(--text); font-size: 1.15em; }
 .lb-entry:hover { transform: translateY(-2px); }
 .lb-entry.active { filter: none; }
+.leaderboard-hint { margin: -12px 0 6px; text-align: center; font-size: 0.8em; color: var(--text-faint); }
 
 /* Columns (Deep Current, Sky Isles, Hollow Grave): one column per person,
    scrolling sideways inside the panel on narrow screens. */
@@ -14910,7 +14931,7 @@ html[data-theme="hollowgrave"] .lb-scene-body {
 
 /* ---- Neon: an arcade high-score cabinet ---- */
 html:not([data-theme]) .lb-scene {
-  max-width: 640px;
+  max-width: 880px; /* Milo: the 640px cabinet looked thin */
   padding: 0 18px 18px;
   border-radius: 22px 22px 10px 10px;
   background: linear-gradient(180deg, #1a0f2e, #0b0816);
@@ -14942,9 +14963,10 @@ html:not([data-theme]) .lb-scene-body {
 html:not([data-theme]) .lb-entry {
   --row: #7fe9ff;
   display: grid;
-  grid-template-columns: 52px 30px minmax(0, 1fr) auto;
-  gap: 12px;
-  padding: 7px 10px;
+  grid-template-columns: 64px 34px minmax(0, 1fr) auto;
+  gap: 14px;
+  padding: 9px 16px;
+  font-size: 1.08em;
   font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   color: var(--row);
   text-shadow: 0 0 8px currentColor;
@@ -14960,7 +14982,7 @@ html:not([data-theme]) .lb-entry:hover, html:not([data-theme]) .lb-entry.active 
 html:not([data-theme]) .lb-entry.active { box-shadow: inset 3px 0 0 var(--row); }
 html:not([data-theme]) .lb-entry-rank { font-size: 0; }
 html:not([data-theme]) .lb-entry-rank::before { content: attr(data-ord); font-size: 15px; font-weight: 700; text-transform: uppercase; }
-html:not([data-theme]) .lb-entry .lb-avatar { width: 26px; height: 26px; font-size: 0.66em; border-radius: 4px; text-shadow: none; box-shadow: 0 0 8px var(--chip-color); }
+html:not([data-theme]) .lb-entry .lb-avatar { width: 30px; height: 30px; font-size: 0.66em; border-radius: 4px; text-shadow: none; box-shadow: 0 0 8px var(--chip-color); }
 html:not([data-theme]) .lb-entry .leaderboard-name { font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: inherit; }
 html:not([data-theme]) .lb-entry .leaderboard-name::after { content: " ................................................"; letter-spacing: 0.2em; opacity: 0.45; }
 html:not([data-theme]) .lb-entry-count { display: none; }
@@ -15010,7 +15032,7 @@ html[data-theme="casefiles"] .lb-entry::before {
 }
 html[data-theme="casefiles"] .lb-entry-art { display: block; font: 400 1.7em/1 'Anton', sans-serif; letter-spacing: 0.06em; color: #2a2118; }
 html[data-theme="casefiles"] .lb-entry-art::before { content: "Wanted"; text-transform: uppercase; }
-html[data-theme="casefiles"] .lb-entry[data-place="1"] .lb-entry-art::before { content: "Most wanted"; font-size: 0.82em; color: #a32f1d; }
+html[data-theme="casefiles"] .lb-entry[data-medal="1"] .lb-entry-art::before { content: "Most wanted"; font-size: 0.82em; color: #a32f1d; }
 html[data-theme="casefiles"] .lb-entry-rank { order: 5; font: 700 0.72em/1 'Courier Prime', monospace; letter-spacing: 0.14em; color: #6d5a3e; }
 html[data-theme="casefiles"] .lb-entry-rank::before { content: "File No. 0"; }
 html[data-theme="casefiles"] .lb-entry .lb-avatar { order: 1; width: 64px; height: 64px; border-radius: 2px; font-size: 1.3em; filter: sepia(0.4); box-shadow: 0 0 0 3px #fff, 0 0 0 4px #c9b88f; margin: 4px 0 6px; }
@@ -15053,7 +15075,7 @@ html[data-theme="ledger"] .lb-entry-rank { grid-column: 1; font-size: 0; text-al
 html[data-theme="ledger"] .lb-entry-rank::before { content: attr(data-roman); font: italic 600 15px/1 'Playfair Display', serif; color: var(--gold); }
 html[data-theme="ledger"] .lb-entry .lb-avatar { grid-column: 2; width: 28px; height: 28px; font-size: 0.7em; }
 html[data-theme="ledger"] .lb-entry .leaderboard-name { grid-column: 3; font: 500 1.12em/1 'Playfair Display', serif; color: var(--accent-2); }
-html[data-theme="ledger"] .lb-entry[data-place="1"] .leaderboard-name::after { content: " \25C6"; font-size: 0.6em; color: var(--gold); vertical-align: 0.2em; }
+html[data-theme="ledger"] .lb-entry[data-medal] .leaderboard-name::after { content: " \25C6"; font-size: 0.6em; color: var(--medal); vertical-align: 0.2em; }
 html[data-theme="ledger"] .lb-entry-art { display: block; grid-column: 4; height: 1px; border-bottom: 1px dotted rgba(169,130,46,0.7); align-self: center; margin-top: 8px; }
 html[data-theme="ledger"] .lb-entry-count { grid-column: 5; text-align: right; font: 400 1.05em/1 'EB Garamond', serif; font-variant-numeric: tabular-nums oldstyle-nums; color: var(--accent-2); }
 html[data-theme="ledger"] .lb-entry-count b { font: 600 1.1em/1 'Playfair Display', serif; color: var(--accent-2); }
@@ -15114,7 +15136,9 @@ html[data-theme="deepcurrent"] .lb-entry-art i:first-child { position: absolute;
 html[data-theme="deepcurrent"] .lb-entry .lb-avatar { width: 40px; height: 40px; font-size: 0.82em; box-shadow: 0 0 0 2px #03121e, 0 0 0 3px var(--chip-color), 0 0 16px var(--chip-color); }
 html[data-theme="deepcurrent"] .lb-entry.active .lb-avatar { box-shadow: 0 0 0 2px #03121e, 0 0 0 4px #62e6d6, 0 0 22px #62e6d6; }
 html[data-theme="deepcurrent"] .lb-entry-rank { order: -1; font: 600 10px/1 'JetBrains Mono', monospace; color: rgba(160,220,230,0.7); }
-html[data-theme="deepcurrent"] .lb-entry-rank::before { content: "#"; }
+html[data-theme="deepcurrent"] .lb-entry-rank { font-size: 0 !important; }
+html[data-theme="deepcurrent"] .lb-entry-rank::before { content: "#" attr(data-n); font-size: 10px; }
+html[data-theme="deepcurrent"] .lb-entry[data-medal] .lb-entry-rank::before { font-size: 12px; }
 html[data-theme="deepcurrent"] .lb-entry .leaderboard-name { max-width: 100%; font: 600 0.92em/1.1 'Chakra Petch', sans-serif; text-transform: uppercase; letter-spacing: 0.04em; color: #dff6f8; }
 html[data-theme="deepcurrent"] .lb-entry-count { font: 400 0.72em/1 'JetBrains Mono', monospace; color: rgba(160,220,230,0.75); }
 html[data-theme="deepcurrent"] .lb-entry-count b { color: #62e6d6; font-size: 1.3em; }
@@ -15132,7 +15156,9 @@ html[data-theme="skyisles"] .lb-entry {
 }
 html[data-theme="skyisles"] .lb-entry:hover { transform: translateY(-4px); }
 html[data-theme="skyisles"] .lb-entry-rank { order: -2; padding: 1px 6px; font: 400 1em/1 var(--font-pixel); color: #fff; background: #6b4423; box-shadow: inset 0 0 0 2px #3f2812; }
-html[data-theme="skyisles"] .lb-entry[data-place="1"] .lb-entry-rank { background: #f2c94c; color: #3f2812; }
+html[data-theme="skyisles"] .lb-entry-rank { font-size: 0 !important; }
+html[data-theme="skyisles"] .lb-entry-rank::before { content: attr(data-n); font-size: 16px; }
+html[data-theme="skyisles"] .lb-entry[data-medal] .lb-entry-rank { background: var(--medal); color: #3f2812; box-shadow: inset 0 0 0 2px rgba(0,0,0,0.35), inset 2px 2px 0 2px rgba(255,255,255,0.45); }
 html[data-theme="skyisles"] .lb-entry .leaderboard-name { order: -1; max-width: 100%; font: 400 0.8em/1.1 var(--font-label); color: var(--ink); }
 html[data-theme="skyisles"] .lb-entry .lb-avatar { width: 34px; height: 34px; font-size: 0.72em; animation: none; }
 html[data-theme="skyisles"] .lb-entry.active .lb-avatar { outline: 3px solid #fff; outline-offset: 1px; }
@@ -15218,12 +15244,13 @@ html[data-theme="hollowgrave"] .lb-entry-count b { font-style: normal; color: #f
   html:not([data-theme]) .lb-scene-head { margin: 0 -10px 12px; }
   html:not([data-theme]) .lb-scene-body { padding: 10px 8px; }
   html:not([data-theme]) .lb-entry { grid-template-columns: 40px 24px minmax(0, 1fr) auto; gap: 8px; padding: 6px 4px; }
+  html:not([data-theme]) .lb-entry .lb-avatar { width: 24px; height: 24px; }
   html:not([data-theme]) .lb-entry-rank::before { font-size: 12px; }
   html[data-theme="casefiles"] .lb-scene { padding: 20px 12px 22px; border-width: 7px; }
   html[data-theme="casefiles"] .lb-scene-body { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 8px; }
   html[data-theme="casefiles"] .lb-entry { padding: 8px 4px; }
   html[data-theme="casefiles"] .lb-entry-art { font-size: 1.05em; }
-  html[data-theme="casefiles"] .lb-entry[data-place="1"] .lb-entry-art::before { content: "Wanted"; color: #a32f1d; font-size: 1em; }
+  html[data-theme="casefiles"] .lb-entry[data-medal="1"] .lb-entry-art::before { content: "Wanted"; color: #a32f1d; font-size: 1em; }
   html[data-theme="casefiles"] .lb-entry .lb-avatar { width: 42px; height: 42px; font-size: 0.9em; }
   html[data-theme="casefiles"] .lb-entry .leaderboard-name { font-size: 0.95em; }
   html[data-theme="casefiles"] .lb-entry-count { font-size: 0.72em; }
@@ -15234,6 +15261,45 @@ html[data-theme="hollowgrave"] .lb-entry-count b { font-style: normal; color: #f
   html[data-theme="ledger"] .lb-entry { grid-template-columns: 30px 28px auto minmax(10px, 1fr) auto; gap: 7px; }
   html[data-theme="ledger"] .lb-scene-title::before { font-size: 1.3em; }
 }
+/* 1st, 2nd and 3rd (ties share a place): a small medal mark in each
+   theme's own language, gold, silver and bronze. */
+.lb-entry[data-medal="1"] { --medal: #f2c94c; --medal-dark: #8a6a12; }
+.lb-entry[data-medal="2"] { --medal: #c9d2dc; --medal-dark: #5d6875; }
+.lb-entry[data-medal="3"] { --medal: #d08a4e; --medal-dark: #6e3d14; }
+/* Neon: the place lights up as a solid tile */
+html:not([data-theme]) .lb-entry[data-medal] .lb-entry-rank::before {
+  padding: 3px 6px 2px;
+  border-radius: 3px;
+  color: #0b0816;
+  background: var(--medal);
+  text-shadow: none;
+  box-shadow: 0 0 10px var(--medal);
+}
+/* Case Files: a gold, silver or bronze rosette pinned to the poster */
+html[data-theme="casefiles"] .lb-entry[data-medal]::after {
+  content: attr(data-medal);
+  position: absolute;
+  top: -9px;
+  left: -9px; /* the left corner, so the next poster never covers it */
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font: 400 13px/1 'Anton', sans-serif;
+  color: #2a2118;
+  background: radial-gradient(circle at 35% 30%, #fff8, transparent 45%), var(--medal);
+  box-shadow: 0 0 0 2px #f4e9cf, 0 0 0 3px var(--medal-dark), 1px 2px 3px rgba(0,0,0,0.35);
+}
+html[data-theme="casefiles"] .lb-entry[data-medal] { box-shadow: 0 0 0 2px var(--medal), 0 1px 0 rgba(0,0,0,0.1), 3px 5px 8px rgba(40,25,5,0.35); }
+html[data-theme="casefiles"] .lb-entry[data-medal].active { box-shadow: 0 0 0 3px #a32f1d, 3px 5px 10px rgba(40,25,5,0.4); }
+/* Private Bank: the numeral and the lozenge in gold, silver or bronze */
+html[data-theme="ledger"] .lb-entry[data-medal] .lb-entry-rank::before { color: var(--medal-dark); font-size: 17px; font-weight: 700; }
+/* Deep Current: a medal-coloured ring round the contact */
+html[data-theme="deepcurrent"] .lb-entry[data-medal] .lb-avatar { box-shadow: 0 0 0 2px #03121e, 0 0 0 4px var(--medal), 0 0 16px var(--chip-color); }
+html[data-theme="deepcurrent"] .lb-entry[data-medal] .lb-entry-rank { font-size: 12px; font-weight: 700; color: var(--medal); }
+/* Hollow Grave: the numeral gilded into the stone */
+html[data-theme="hollowgrave"] .lb-entry[data-medal] .lb-entry-rank::before { font-size: 18px; color: var(--medal); text-shadow: 0 0 6px color-mix(in srgb, var(--medal) 45%, transparent), 0 1px 0 rgba(0,0,0,0.8); }
 /* === LEADERBOARD SCENE END === */
 /* === STYLE PASS START === */
 /* ================================================================
@@ -15891,12 +15957,11 @@ html[data-theme="ledger"] .panel-header h2 {
   line-height: 1.05;
   letter-spacing: 0.005em;
 }
-html[data-theme="ledger"] .panel-header h2::first-letter { color: var(--gold); }
 html[data-theme="ledger"] .panel-header p { font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.95em; }
 html[data-theme="ledger"] .panel-index {
   font-size: 0;
   right: 150px;
-  bottom: -10px;
+  bottom: -2px; /* the numeral stands just above the rule, clear of it */
 }
 html[data-theme="ledger"] .panel-index::before {
   content: attr(data-roman);
@@ -17441,6 +17506,7 @@ html[data-theme="skyisles"] :is(#denickEmpty, #activityEmpty) p::before { font-s
 
   <div id="leaderboardWrap" hidden>
     <div id="leaderboardRanking" class="leaderboard-ranking"></div>
+    <p id="leaderboardHint" class="leaderboard-hint"></p>
     <h3 id="leaderboardPersonTitle" class="leaderboard-person-title"></h3>
     <div class="table-wrap card" id="leaderboardTableWrap">
       <table>
@@ -21132,6 +21198,7 @@ const tableWrap = document.getElementById('tableWrap');
 const leaderboardWrap = document.getElementById('leaderboardWrap');
 const leaderboardRanking = document.getElementById('leaderboardRanking');
 const leaderboardPersonTitle = document.getElementById('leaderboardPersonTitle');
+const leaderboardHint = document.getElementById('leaderboardHint');
 const leaderboardTableBody = document.getElementById('leaderboardTableBody');
 const leaderboardTableWrap = document.getElementById('leaderboardTableWrap');
 const leaderboardEmptyState = document.getElementById('leaderboardEmptyState');
@@ -22716,8 +22783,8 @@ function renderTable() {
   }
   // In the Leaderboard view the strip follows whoever is selected there,
   // showing only the sweats that person beat (their own best of each).
-  if (viewMode === "leaderboard" && leaderboardPerson) {
-    renderSweatStats(filteredSweats.filter(s => s[leaderboardPerson]), BEATEN_BY[leaderboardPerson].label);
+  if (viewMode === "leaderboard" && leaderboardPeople.length) {
+    renderSweatStats(filteredSweats.filter(beatenByAllPicked), pickedLabel());
   } else {
     renderSweatStats(filteredSweats);
   }
@@ -22804,6 +22871,7 @@ function cardStatCellsHtml(s) {
 }
 
 function renderCardGrid(filteredSweats, usernameCounts) {
+  if (cageObserver) cageObserver.disconnect();
   cardGrid.innerHTML = "";
   emptyState.hidden = filteredSweats.length !== 0;
   filteredSweats.forEach((s, i) => cardGrid.appendChild(buildSweatCard(s, i, usernameCounts)));
@@ -23154,7 +23222,15 @@ function renderTableRows(filteredSweats, usernameCounts) {
 // whichever person is selected - reuses the exact same sort state as the
 // Table view, and filteredSweats is already sorted by it before we slice
 // down to one person, so ordering carries over for free.
-let leaderboardPerson = null;
+// More than one person can be picked: the list then shows the sweats every
+// one of them beat (Milo + Potat = the ones they both beat). Tapping a
+// picked name again drops it, as long as someone stays picked.
+let leaderboardPeople = [];
+const beatenByAllPicked = s => leaderboardPeople.every(k => s[k]);
+function pickedLabel() {
+  const names = leaderboardPeople.map(k => BEATEN_BY[k].label);
+  return names.length > 1 ? `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}` : names[0];
+}
 
 function renderLeaderboard(filteredSweats, usernameCounts) {
   const counts = {};
@@ -23164,7 +23240,7 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   });
 
   const ranked = [...BEATEN_BY_KEYS].sort((a, b) => counts[b] - counts[a]);
-  if (!leaderboardPerson) leaderboardPerson = ranked[0];
+  if (!leaderboardPeople.length) leaderboardPeople = [ranked[0]];
 
   // One scene for the whole roster, dressed per theme: a Neon high-score
   // cabinet, a Case Files wall of wanted posters, a Private Bank ledger
@@ -23178,14 +23254,18 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   const ORDINAL = n => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
   const topCount = Math.max(1, counts[ranked[0]]);
   const avatar = k => `<span class="lb-avatar" style="--chip-color:var(--roster-${k})">${BEATEN_BY[k].initials}</span>`;
-  const activeClass = k => (k === leaderboardPerson ? " active" : "");
+  const activeClass = k => (leaderboardPeople.includes(k) ? " active" : "");
   const entries = ranked.map((k, i) => {
     const n = counts[k];
     const share = Math.round(n / topCount * 1000) / 1000;
+    // Standing counts ties (two people on 5 are both 1st, the next is 3rd);
+    // 1st, 2nd and 3rd get each theme's medal mark (data-medal).
+    const place = 1 + ranked.filter(o => counts[o] > n).length;
+    const medal = n > 0 && place <= 3 ? ` data-medal="${place}"` : "";
     return `
-    <button type="button" class="leaderboard-chip lb-entry${activeClass(k)}" data-person="${k}" data-place="${i + 1}" style="--chip-color:var(--roster-${k});--share:${share};--place:${i + 1}" aria-label="${ORDINAL(i + 1)} place: ${BEATEN_BY[k].label}, ${n} ${n === 1 ? "sweat" : "sweats"}">
+    <button type="button" class="leaderboard-chip lb-entry${activeClass(k)}" aria-pressed="${leaderboardPeople.includes(k)}" data-person="${k}" data-place="${i + 1}"${medal} style="--chip-color:var(--roster-${k});--share:${share};--place:${i + 1}" aria-label="${ORDINAL(place)} place: ${BEATEN_BY[k].label}, ${n} ${n === 1 ? "sweat" : "sweats"}">
       <span class="lb-entry-art" aria-hidden="true"><i></i><i></i></span>
-      <span class="lb-entry-rank" data-roman="${ROMAN[i] || i + 1}" data-ord="${ORDINAL(i + 1)}">${i + 1}</span>
+      <span class="lb-entry-rank" data-roman="${ROMAN[place - 1] || place}" data-ord="${ORDINAL(place)}" data-n="${place}">${i + 1}</span>
       ${avatar(k)}
       <span class="leaderboard-name">${BEATEN_BY[k].label}</span>
       <span class="lb-entry-count"><b>${n}</b> <span>${n === 1 ? "sweat" : "sweats"}</span></span>
@@ -23201,15 +23281,22 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
 
   leaderboardRanking.querySelectorAll(".leaderboard-chip").forEach(btn => {
     btn.addEventListener("click", () => {
-      leaderboardPerson = btn.dataset.person;
-      currentPage = 1; // switching people changes the result set entirely
+      const k = btn.dataset.person;
+      if (!leaderboardPeople.includes(k)) leaderboardPeople = [...leaderboardPeople, k];
+      else if (leaderboardPeople.length > 1) leaderboardPeople = leaderboardPeople.filter(p => p !== k);
+      else return;
+      currentPage = 1; // changing who's picked changes the result set entirely
       renderTable();
     });
   });
 
-  leaderboardPersonTitle.textContent = `${BEATEN_BY[leaderboardPerson].label}'s Sweats (${counts[leaderboardPerson]})`;
-
-  const personSweats = filteredSweats.filter(s => s[leaderboardPerson]);
+  const personSweats = filteredSweats.filter(beatenByAllPicked);
+  leaderboardPersonTitle.textContent = leaderboardPeople.length > 1
+    ? `Beaten by ${pickedLabel()} together (${personSweats.length})`
+    : `${pickedLabel()}'s Sweats (${counts[leaderboardPeople[0]]})`;
+  leaderboardHint.textContent = leaderboardPeople.length > 1
+    ? "Only sweats every picked person beat. Tap a picked name again to drop it."
+    : "Tap more names to see the sweats you beat together.";
   // Same fix as the Table view: hide the drill-down table's own header
   // chrome instead of leaving it visible above an empty body - the
   // ranking grid above it stays put either way, since that's showing
@@ -23941,10 +24028,27 @@ function rivalSummary(r) {
   const names = r.who.map(w => BEATEN_BY[w.key].label + (w.n > 1 ? ` \u00d7${w.n}` : "")).join(", ");
   return `Beaten in ${r.games} games${names ? ` (${names})` : ""}`;
 }
+// Hollow Grave's mortsafe runs from just above the stats down to the
+// footer. Where those sit depends on the card (a long name, wrapped pills,
+// a note, which fonts have loaded), so the edges are measured, not guessed.
+const cageObserver = typeof ResizeObserver === "function"
+  ? new ResizeObserver(entries => entries.forEach(e => fitCage(e.target)))
+  : null;
+function fitCage(card) {
+  const stats = card.querySelector(".sweat-card-stats");
+  if (!stats || !card.clientHeight) return;
+  // The cage hugs the stats, and the epitaph too when there is one, rather
+  // than running on into the empty space of a tall grid row.
+  const note = card.querySelector(".sweat-card-note");
+  const last = note && note.offsetHeight ? note : stats;
+  card.style.setProperty("--cage-top", `${stats.offsetTop - 15}px`);
+  card.style.setProperty("--cage-bottom", `${Math.max(0, card.clientHeight - (last.offsetTop + last.offsetHeight) - 10)}px`);
+}
 function addRivalMark(card, s) {
   const r = rivalFor(s);
   if (!r) return;
   card.classList.add("is-rival");
+  if (cageObserver) cageObserver.observe(card);
   card.dataset.rivalGames = r.games;
   card.dataset.rivalRoman = toRoman(r.games);
   const name = card.querySelector(".sweat-card-name");
@@ -25111,7 +25215,7 @@ function syncUrl() {
     if (!sortAsc) params.set("dir", "desc");
   }
   if (viewMode !== "grid") params.set("view", viewMode);
-  if (viewMode === "leaderboard" && leaderboardPerson) params.set("lb", leaderboardPerson);
+  if (viewMode === "leaderboard" && leaderboardPeople.length) params.set("lb", leaderboardPeople.join(","));
   if (currentPage > 1) params.set("page", String(currentPage));
   if (openPlayerName) params.set("player", openPlayerName);
   if (denickQuery) {
@@ -25157,7 +25261,7 @@ function restoreStateFromUrl() {
   }
   const view = params.get("view");
   if (view === "table" || view === "leaderboard") applyViewMode(view);
-  if (BEATEN_BY_KEYS.includes(params.get("lb"))) leaderboardPerson = params.get("lb");
+  leaderboardPeople = [...new Set((params.get("lb") || "").split(",").filter(k => BEATEN_BY_KEYS.includes(k)))];
   const page = parseInt(params.get("page"), 10);
   if (page > 1) currentPage = page;
   // Held from the start so URL writes made before the player's card
@@ -26876,9 +26980,9 @@ function patchLiveEdits(editedIds, editedFlags) {
   } else if (viewMode === "table") {
     container = tableBody; selector = ".sweat-row"; build = (s, i, counts) => buildSweatRow(s, { usernameCounts: counts });
   } else {
-    if (editedFlags || !leaderboardPerson) return false;
+    if (editedFlags || !leaderboardPeople.length) return false;
     container = leaderboardTableBody; selector = ".sweat-row"; build = (s, i, counts) => buildSweatRow(s, { usernameCounts: counts });
-    list = filteredSweats.filter(s => s[leaderboardPerson]);
+    list = filteredSweats.filter(beatenByAllPicked);
   }
   const shown = [...container.querySelectorAll(selector)];
   const pageStart = (currentPage - 1) * PAGE_SIZE;
@@ -26891,7 +26995,7 @@ function patchLiveEdits(editedIds, editedFlags) {
   resultCount.textContent = filteredSweats.length === total
     ? `${total.toLocaleString()} tracked ${plural(total)}`
     : `${filteredSweats.length.toLocaleString()} of ${total.toLocaleString()} ${plural(total)} match`;
-  if (viewMode === "leaderboard") renderSweatStats(list, BEATEN_BY[leaderboardPerson].label);
+  if (viewMode === "leaderboard") renderSweatStats(list, pickedLabel());
   else renderSweatStats(filteredSweats);
   shown.forEach((el, i) => {
     const s = pageItems[i];

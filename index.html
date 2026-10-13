@@ -5727,39 +5727,6 @@ html[data-theme="ledger"] .view-btn.active {
   display: block;
   view-transition-name: tto-fx;
 }
-.tto-crt {
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, rgba(0,217,255,0.12) 0 1px, transparent 1px 3px);
-  mix-blend-mode: screen;
-}
-.tto-scan {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 3px;
-  background: #aef6ff;
-  box-shadow: 0 0 18px 6px rgba(0,217,255,0.8), 0 0 60px 20px rgba(168,85,247,0.35);
-}
-.tto-portal {
-  position: absolute;
-  inset: 0;
-}
-.tto-portal svg { display: block; overflow: visible; }
-.tto-portal circle { fill: none; }
-.tto-portal .p1 { stroke: #35e6ff; stroke-width: 5; filter: drop-shadow(0 0 8px #00d9ff) drop-shadow(0 0 22px #00d9ff); }
-.tto-portal .p2 { stroke: #d08cff; stroke-width: 3; filter: drop-shadow(0 0 8px #a855f7); }
-.tto-portal .p3 { stroke: #ff5fd2; stroke-width: 2; filter: drop-shadow(0 0 6px #ff3ec8); }
-.tto-flash {
-  position: absolute;
-  inset: 0;
-  mix-blend-mode: screen;
-}
-.tto-spark {
-  position: absolute;
-  border-radius: 1px;
-}
 .tto-folder-wrap {
   position: absolute;
   transform-origin: 50% 50%;
@@ -17301,6 +17268,64 @@ html:not([data-theme]) :is(#denickEmpty, #activityEmpty)::before { filter: drop-
 html[data-theme="hollowgrave"] #activityEmpty::before { filter: drop-shadow(0 0 6px rgba(242,140,40,0.5)); }
 html[data-theme="skyisles"] :is(#denickEmpty, #activityEmpty) p::before { font-size: 15px; }
 /* === EMPTY STATES END === */
+
+/* @@NEON-SCENE@@ Neon, fitted to its outrun horizon backdrop (#neonHorizon):
+   indigo glass panels the sun and grid glow through, a chrome title split
+   by a horizon line, and the sunset's orange/pink worked into the
+   challenger slab and the leaderboard's top 3. No backdrop blur on the
+   glass: with the canvas animating behind, every blurred panel would be
+   re-blurred each frame. */
+html:not([data-theme]) {
+  --panel: #151230;
+  --panel-2: #191536;
+  --glass: rgba(24, 18, 58, 0.74);
+  --glass-2: rgba(16, 12, 40, 0.84);
+}
+html:not([data-theme]) :is(#form-container, #denickContainer, #activityContainer, .toolbar) {
+  background:
+    radial-gradient(420px 220px at 0 0, rgba(0,217,255,0.07), transparent 70%),
+    radial-gradient(360px 200px at 100% 100%, rgba(255,79,168,0.07), transparent 70%),
+    linear-gradient(180deg, var(--glass), var(--glass-2));
+}
+html:not([data-theme]) .sotd-card {
+  background: linear-gradient(100deg, rgba(0,217,255,0.07), transparent 40%), linear-gradient(180deg, var(--glass), var(--glass-2));
+}
+html:not([data-theme]) .sweat-card { background: linear-gradient(160deg, rgba(26,20,62,0.8), rgba(16,12,40,0.88)); }
+html:not([data-theme]) table { background: var(--glass-2); }
+
+/* Chrome title: icy chrome above a dark horizon line, sunset below. The
+   gradient repeats per line (background-size is one line tall) so a
+   wrapped title on phones gets the split on each line. */
+html:not([data-theme]) .hero h1 {
+  font-style: italic;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  padding: 0 0.12em;
+  background: linear-gradient(180deg, #ffffff 20%, #b8f0ff 36%, #3d8dff 49%, #140a34 49%, #140a34 53%, #ff4fa8 53%, #ff9a5a 68%, #ffe9b0 82%) 0 0 / 100% 1.15em repeat-y;
+  -webkit-text-stroke: 0.6px rgba(255,255,255,0.35);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 0 #2a0b45) drop-shadow(0 0 16px rgba(255,47,160,0.45));
+}
+
+/* Challenger slab: a slice of the sun, stripes and all. */
+html:not([data-theme]) .sotd-backdrop i:nth-child(1) {
+  background: linear-gradient(180deg, #ffe066 0%, #ff9a5a 45%, #ff2fa0 100%);
+  box-shadow: 0 0 40px rgba(255,47,160,0.4);
+}
+html:not([data-theme]) .sotd-backdrop i:nth-child(2) {
+  background: repeating-linear-gradient(0deg, rgba(11,6,25,0.55) 0 3px, transparent 3px 9px);
+}
+html:not([data-theme]) .sotd-skin { filter: drop-shadow(0 0 18px rgba(255,79,168,0.5)) drop-shadow(0 12px 10px rgba(0,0,0,0.6)); }
+
+/* Leaderboard top 3 in the sun's colors, top to horizon. */
+html:not([data-theme]) .lb-entry[data-place="2"] { --row: #ff9a5a; }
+html:not([data-theme]) .lb-entry[data-place="3"] { --row: #ff4fa8; }
+
+/* The drive-into-the-horizon switch scene draws on this. */
+.tto-drive-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* @@END-NEON-SCENE@@ */
 </style>
 </head>
 <body>
@@ -17994,6 +18019,8 @@ window.siteAudio = (function () {
   // down the page you've scrolled (0-1), busy is true while a lookup scans.
   const mood = { depth: 0, busy: false };
   let ctx = null, live = null, master = null, sfxBus = null, ambBus = null, noiseBuf = null, ambNoise = null;
+  // Taps the ambience bus so Neon's horizon can pulse with the music.
+  let ambTap = null, ambTapBuf = null;
   let curOut = null;
   let voices = 0;
   const MAX_VOICES = 160;
@@ -18036,6 +18063,11 @@ window.siteAudio = (function () {
     try { ctx = live = new AC({ latencyHint: "interactive" }); } catch (e) { return false; }
     const w = wire(ctx, masterLevel());
     master = w.m; sfxBus = w.s; ambBus = w.a;
+    ambTap = ctx.createAnalyser();
+    ambTap.fftSize = 1024;
+    ambTap.smoothingTimeConstant = 0.35;
+    ambTapBuf = new Uint8Array(ambTap.frequencyBinCount);
+    ambBus.connect(ambTap);
     noiseBuf = makeNoise(ctx);
     // Ambience beds loop a long buffer (25s+ at their slowed rates) so the
     // noise never audibly repeats.
@@ -19603,6 +19635,14 @@ window.siteAudio = (function () {
     renderOffline,
     get settings() { return { ...settings }; },
     setMood(patch) { Object.assign(mood, patch); },
+    // 0-1 loudness of the ambience's bass right now (0 when it isn't playing).
+    ambienceBass() {
+      if (!ambTap || !amb || ctx.state !== "running") return 0;
+      ambTap.getByteFrequencyData(ambTapBuf);
+      let sum = 0;
+      for (let i = 1; i <= 5; i++) sum += ambTapBuf[i];
+      return sum / (5 * 255);
+    },
     set(patch) {
       Object.assign(settings, patch);
       settings.volume = Math.max(0, Math.min(1, +settings.volume || 0));
@@ -19819,89 +19859,126 @@ function ttoEl(cls, style, html) {
 }
 
 const THEME_REVEALS = {
-  // Neon: the old page glitches out under a CRT scan, a neon portal ring
-  // draws itself in the middle of the screen, ignites with a flash and a
-  // burst of sparks, then blows open to fill the screen with the new theme.
+  // Neon: drive into the horizon. The old page tips back flat onto the
+  // road and falls away, the outrun scene takes over with the grid rushing
+  // at you and stars streaking past, the striped sun rises, and the new
+  // page opens out of a flash along the horizon line.
   neon(x, y, w, h) {
-    const duration = 1600;
-    const cx = w / 2;
-    const cy = h / 2;
-    const R0 = Math.min(w, h) * 0.24;
-    const full = Math.hypot(w, h) / 2 + 30;
-    const hole = (r) => `circle(${r}px at ${cx}px ${cy}px)`;
-    const origin = `${cx}px ${cy}px`;
+    const duration = 1900;
+    const hz = Math.round(h * (w < 700 ? 0.6 : 0.66));
+    const sunR = w < 700 ? Math.min(w * 0.3, h * 0.17) : Math.min(w * 0.17, h * 0.21);
+    const stars = Array.from({ length: 140 }, () => ({ a: Math.random() * Math.PI * 2, r: Math.random(), s: 0.4 + Math.random() * 0.8 }));
     return {
       duration,
+      // The new page is shown once the scene has covered the screen (the
+      // scene's clock starts a little ahead of these), and stays under it
+      // until the scene splits open along the horizon (see fx).
       newFrames: [
-        { clipPath: hole(0), transform: "scale(1.15)", filter: "brightness(1.8) saturate(1.6)", transformOrigin: origin },
-        { clipPath: hole(0), transform: "scale(1.15)", filter: "brightness(1.8) saturate(1.6)", transformOrigin: origin, offset: 0.4, easing: "cubic-bezier(.2,.9,.3,1)" },
-        { clipPath: hole(R0 * 0.94), transform: "scale(1.1)", filter: "brightness(1.5) saturate(1.5)", transformOrigin: origin, offset: 0.47, easing: "ease-in-out" },
-        { clipPath: hole(R0 * 1.02), transform: "scale(1.08)", filter: "brightness(1.35) saturate(1.4)", transformOrigin: origin, offset: 0.57, easing: "cubic-bezier(.7,0,.25,1)" },
-        { clipPath: hole(full), transform: "scale(1)", filter: "brightness(1) saturate(1)", transformOrigin: origin },
+        { opacity: 0, filter: "brightness(2) saturate(1.4)" },
+        { opacity: 0, filter: "brightness(2) saturate(1.4)", offset: 0.24 },
+        { opacity: 1, filter: "brightness(2) saturate(1.4)", offset: 0.25 },
+        { opacity: 1, filter: "brightness(2) saturate(1.4)", offset: 0.6, easing: "ease-out" },
+        { opacity: 1, filter: "brightness(1) saturate(1)" },
       ],
       newOpts: { duration },
       oldFrames: [
-        { transform: "none", filter: "hue-rotate(0deg) brightness(1) saturate(1) blur(0px)", easing: "steps(1, end)" },
-        { transform: "translate(-9px, 0) skewX(-3deg)", filter: "hue-rotate(70deg) brightness(1.2) saturate(2) blur(0px)", offset: 0.04, easing: "steps(1, end)" },
-        { transform: "translate(7px, 3px)", filter: "hue-rotate(-50deg) brightness(1.5) saturate(1.5) blur(0px)", offset: 0.08, easing: "steps(1, end)" },
-        { transform: "translate(-4px, -2px) skewX(2deg)", filter: "hue-rotate(120deg) brightness(1.1) saturate(2) blur(0px)", offset: 0.12, easing: "steps(1, end)" },
-        { transform: "none", filter: "hue-rotate(0deg) brightness(1) saturate(1) blur(0px)", offset: 0.16, easing: "steps(1, end)" },
-        { transform: "translate(5px, 0)", filter: "hue-rotate(-80deg) brightness(1.4) saturate(1.8) blur(0px)", offset: 0.21, easing: "steps(1, end)" },
-        { transform: "none", filter: "hue-rotate(0deg) brightness(1) saturate(1) blur(0px)", offset: 0.24, easing: "ease-out" },
-        { transform: "scale(.97)", filter: "hue-rotate(0deg) brightness(.3) saturate(1.4) blur(2px)", offset: 0.34 },
-        { transform: "scale(.94)", filter: "hue-rotate(0deg) brightness(.22) saturate(1.4) blur(3px)" },
+        { transform: "perspective(900px) rotateX(0deg)", transformOrigin: "50% 100%", filter: "brightness(1)", opacity: 1, easing: "cubic-bezier(.5,0,.8,.4)" },
+        { transform: `perspective(900px) rotateX(62deg) translateY(${Math.round(h * 0.25)}px) scale(.9)`, transformOrigin: "50% 100%", filter: "brightness(.45)", opacity: 0, offset: 0.3 },
+        { transform: `perspective(900px) rotateX(62deg) translateY(${Math.round(h * 0.25)}px) scale(.9)`, transformOrigin: "50% 100%", filter: "brightness(.45)", opacity: 0 },
       ],
       oldOpts: { duration },
       fx() {
-        const crt = ttoEl("tto-crt");
-        crt.animate([{ opacity: 0 }, { opacity: 0.55, offset: 0.08 }, { opacity: 0.4, offset: 0.4 }, { opacity: 0, offset: 0.6 }, { opacity: 0 }], { duration, fill: "both" });
-        [[0, 1], [0.06, -1]].forEach(([start, dir]) => {
-          const scan = ttoEl("tto-scan");
-          scan.animate([
-            { transform: `translateY(${dir > 0 ? -20 : h + 20}px)`, opacity: 1 },
-            { transform: `translateY(${dir > 0 ? h + 20 : -20}px)`, opacity: 1 },
-          ], { duration: duration * 0.26, delay: duration * start, easing: "cubic-bezier(.4,0,.6,1)", fill: "both" });
-        });
-
-        const C = 2 * Math.PI * R0;
-        const c2 = 2 * Math.PI * R0 * 0.84;
-        const portal = ttoEl("tto-portal", {}, `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-          <circle class="p1" cx="${cx}" cy="${cy}" r="${R0}" stroke-dasharray="${C}" stroke-dashoffset="${C}" />
-          <circle class="p2" cx="${cx}" cy="${cy}" r="${R0 * 0.84}" stroke-dasharray="${c2}" stroke-dashoffset="${-c2}" />
-          <circle class="p3" cx="${cx}" cy="${cy}" r="${R0 * 1.14}" stroke-dasharray="6 14" />
-        </svg>`);
-        portal.style.transformOrigin = origin;
-        const draw = { duration, fill: "both" };
-        portal.querySelector(".p1").animate([{ strokeDashoffset: C }, { strokeDashoffset: C, offset: 0.18, easing: "cubic-bezier(.6,0,.3,1)" }, { strokeDashoffset: 0, offset: 0.42 }, { strokeDashoffset: 0 }], draw);
-        portal.querySelector(".p2").animate([{ strokeDashoffset: -c2 }, { strokeDashoffset: -c2, offset: 0.22, easing: "cubic-bezier(.6,0,.3,1)" }, { strokeDashoffset: 0, offset: 0.42 }, { strokeDashoffset: 0 }], draw);
-        portal.querySelector(".p3").animate([{ opacity: 0 }, { opacity: 0, offset: 0.3 }, { opacity: 1, offset: 0.42 }, { opacity: 1 }], draw);
-        portal.animate([
-          { transform: "scale(1) rotate(0deg)", opacity: 1 },
-          { transform: "scale(1) rotate(0deg)", opacity: 1, offset: 0.3, easing: "ease-in" },
-          { transform: "scale(1.04) rotate(40deg)", opacity: 1, offset: 0.47, easing: "ease-in-out" },
-          { transform: "scale(1.02) rotate(70deg)", opacity: 1, offset: 0.57, easing: "cubic-bezier(.7,0,.25,1)" },
-          { transform: `scale(${(full / R0).toFixed(2)}) rotate(160deg)`, opacity: 0 },
-        ], { duration, fill: "both" });
-
-        const flash = ttoEl("tto-flash", { background: `radial-gradient(circle at ${cx}px ${cy}px, rgba(200,250,255,.9), rgba(0,217,255,.35) ${R0 * 1.4}px, transparent ${R0 * 3}px)` });
-        flash.animate([{ opacity: 0 }, { opacity: 0, offset: 0.4 }, { opacity: 1, offset: 0.45 }, { opacity: 0, offset: 0.62 }, { opacity: 0 }], { duration, fill: "both" });
-
-        const colors = ["#00d9ff", "#35e6ff", "#c084fc", "#ff3ec8", "#ffffff"];
-        for (let i = 0; i < 46; i++) {
-          const a = Math.random() * Math.PI * 2;
-          const sz = 3 + Math.random() * 5;
-          const col = colors[i % colors.length];
-          const spark = ttoEl("tto-spark", {
-            left: `${cx + Math.cos(a) * R0 - sz / 2}px`, top: `${cy + Math.sin(a) * R0 - sz / 2}px`,
-            width: `${sz}px`, height: `${sz}px`, background: col, boxShadow: `0 0 10px 2px ${col}`,
+        const cv = document.createElement("canvas");
+        cv.className = "tto-drive-canvas";
+        cv.width = w; cv.height = h;
+        themeTransitionOverlay.appendChild(cv);
+        const g = cv.getContext("2d");
+        const start = performance.now();
+        let phase = 0, last = start;
+        const ease = (t) => 1 - (1 - Math.min(1, Math.max(0, t))) ** 3;
+        const frame = (now) => {
+          if (!cv.isConnected) return;
+          const k = Math.min(1, (now - start) / duration);
+          const dt = (now - last) / 1000;
+          last = now;
+          // Fast while you're driving in, easing off as the page opens.
+          const speed = k < 0.5 ? 1 + k * 14 : Math.max(0.4, 8 - (k - 0.5) * 18);
+          phase = (phase + dt * speed) % 1;
+          g.clearRect(0, 0, w, h);
+          g.globalAlpha = k < 0.16 ? k / 0.16 : 1;
+          let grad = g.createLinearGradient(0, 0, 0, hz);
+          grad.addColorStop(0, "#05060f"); grad.addColorStop(0.55, "#110a28"); grad.addColorStop(1, "#360e46");
+          g.fillStyle = grad; g.fillRect(0, 0, w, hz);
+          // Warp stars streaking out from the vanishing point.
+          const warp = Math.min(1, speed / 8);
+          g.lineCap = "round";
+          stars.forEach((st) => {
+            const r = ((st.r + phase * st.s * 0.6) % 1) ** 2 * Math.hypot(w, h) * 0.6;
+            const len = 4 + warp * 40 * st.s * (r / h);
+            const ca = Math.cos(st.a), sa = Math.sin(st.a);
+            const y1 = hz + sa * r;
+            if (y1 > hz) return;
+            g.strokeStyle = `rgba(220,240,255,${0.3 + 0.6 * (r / h)})`;
+            g.lineWidth = 1 + st.s;
+            g.beginPath(); g.moveTo(w / 2 + ca * r, y1); g.lineTo(w / 2 + ca * (r + len), Math.min(hz, hz + sa * (r + len))); g.stroke();
           });
-          const dist = 120 + Math.random() * Math.max(w, h) * 0.45;
-          spark.animate([
-            { transform: "translate(0, 0) scale(.2)", opacity: 0 },
-            { transform: "translate(0, 0) scale(1)", opacity: 1, offset: 0.04 },
-            { transform: `translate(${Math.cos(a) * dist}px, ${Math.sin(a) * dist}px) scale(.3)`, opacity: 0 },
-          ], { duration: 500 + Math.random() * 400, delay: duration * 0.43 + Math.random() * 80, easing: "cubic-bezier(.1,.7,.3,1)", fill: "both" });
-        }
+          // The sun rises up out of the horizon.
+          const rise = ease((k - 0.12) / 0.42);
+          const sy = hz + sunR * (1 - rise) * 1.05;
+          g.save();
+          g.beginPath(); g.rect(0, 0, w, hz); g.clip();
+          grad = g.createLinearGradient(0, sy - sunR, 0, sy);
+          grad.addColorStop(0, "#ffe066"); grad.addColorStop(0.55, "#ff7a59"); grad.addColorStop(1, "#ff2fa0");
+          g.fillStyle = grad;
+          g.shadowColor = "rgba(255,60,170,0.9)"; g.shadowBlur = 50;
+          g.beginPath(); g.arc(w / 2, sy, sunR, Math.PI, 0); g.fill();
+          g.shadowBlur = 0;
+          g.beginPath(); g.arc(w / 2, sy, sunR, Math.PI, 0); g.clip();
+          g.fillStyle = "#2a0c3c";
+          for (let b = 0; b < 7; b++) {
+            const t = (b + (phase * 3) % 1) / 7;
+            g.fillRect(w / 2 - sunR, sy - sunR * 0.58 + sunR * 0.58 * t, sunR * 2, 0.8 + t * sunR * 0.075);
+          }
+          g.restore();
+          // Floor: receding lines plus rows rushing at you.
+          grad = g.createLinearGradient(0, hz, 0, h);
+          grad.addColorStop(0, "#1b0632"); grad.addColorStop(1, "#04030a");
+          g.fillStyle = grad; g.fillRect(0, hz, w, h - hz);
+          g.strokeStyle = "rgba(0,217,255,0.55)";
+          g.lineWidth = 1.2;
+          for (let i = -34; i <= 34; i++) {
+            g.beginPath(); g.moveTo(w / 2 + i * w * 0.012, hz); g.lineTo(w / 2 + i * w * 0.17, h); g.stroke();
+          }
+          for (let r = 0; r < 22; r++) {
+            const t = (r + phase * 3 % 1) / 22;
+            const ry = hz + (h - hz) * t ** 2.4;
+            g.strokeStyle = `rgba(0,217,255,${0.6 * Math.min(1, t * 4)})`;
+            g.lineWidth = 1.2 + warp * t * 2;
+            g.beginPath(); g.moveTo(0, ry); g.lineTo(w, ry); g.stroke();
+          }
+          // The horizon flares as the page opens out of it.
+          const flare = k < 0.5 ? 0.5 : Math.max(0.5, 1.6 - Math.abs(k - 0.6) * 9);
+          grad = g.createLinearGradient(0, hz - 40, 0, hz + 40);
+          grad.addColorStop(0, "rgba(255,47,160,0)");
+          grad.addColorStop(0.5, `rgba(255,${Math.round(47 + 160 * Math.max(0, flare - 0.5))},${Math.round(160 + 60 * Math.max(0, flare - 0.5))},${Math.min(1, flare)})`);
+          grad.addColorStop(1, "rgba(255,47,160,0)");
+          g.fillStyle = grad; g.fillRect(0, hz - 40, w, 80);
+          g.globalAlpha = 1;
+          // Split open along the horizon, edges lit, onto the new page.
+          const open = ease((k - 0.58) / 0.28);
+          if (open > 0) {
+            const top = hz - open * (hz + 4), bot = hz + open * (h - hz + 4);
+            g.clearRect(0, top, w, bot - top);
+            g.fillStyle = "#ffd6f0";
+            g.shadowColor = "#ff2fa0"; g.shadowBlur = 24;
+            g.fillRect(0, top - 2, w, 2);
+            g.fillRect(0, bot, w, 2);
+            g.shadowBlur = 0;
+          }
+          if (k < 1) requestAnimationFrame(frame);
+          else g.clearRect(0, 0, w, h);
+        };
+        requestAnimationFrame(frame);
       },
     };
   },
@@ -20720,7 +20797,9 @@ for (let i = 0; i < STAR_COUNT; i++) {
 // toward you. The loop only runs while Neon is the active theme, rAF
 // already sleeps in background tabs, and reduced-motion gets one still frame.
 // Scrolling pushes the grid forward, and boost() (a sweat saved here, or one
-// arriving live) floors it for a moment.
+// arriving live) floors it for a moment. Light-trail racers streak along the
+// lanes every few seconds, and with the site's ambience on, the sun, grid
+// and horizon glow pulse on the music's bass.
 const neonHorizon = (() => {
   const canvas = document.getElementById("neonHorizon");
   const ctx = canvas.getContext("2d");
@@ -20730,6 +20809,10 @@ const neonHorizon = (() => {
   let base = null, sun = null, hills = null;
   let phase = 0, bandShift = 0, boostT = 0, pointerX = 0, parallax = 0;
   let raf = 0, last = 0, lastScroll = window.scrollY;
+  let bassPeak = 0, beat = 0;
+  const racers = [];
+  let nextRacer = 1;
+  const RACER_COLORS = ["255,79,168", "255,224,102", "190,250,255", "190,130,255", "255,154,90"];
 
   const isNeon = () => !document.documentElement.hasAttribute("data-theme");
   const layer = (w, h) => {
@@ -20749,8 +20832,11 @@ const neonHorizon = (() => {
     dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
-    hz = Math.round(H * (W < 700 ? 0.7 : 0.66));
-    sunR = Math.min(W * 0.17, H * 0.21);
+    // Phones: a higher horizon and a bigger sun, so the scene isn't
+    // hidden behind the challenger card.
+    const phone = W < 700;
+    hz = Math.round(H * (phone ? 0.6 : 0.66));
+    sunR = phone ? Math.min(W * 0.3, H * 0.17) : Math.min(W * 0.17, H * 0.21);
 
     let x, g;
     [base, x] = layer(W, H);
@@ -20864,8 +20950,58 @@ const neonHorizon = (() => {
     x.globalCompositeOperation = "source-over";
   }
 
+  // A lane's screen x at depth d (0 = horizon, 1 = bottom of the screen),
+  // between two of the receding grid lines.
+  const laneY = (d) => hz + (H - hz) * Math.max(0, d) ** 2.4;
+  const laneX = (lane, y) => W / 2 + lane * W * (0.012 + 0.158 * (y - hz) / (H - hz));
+  function spawnRacer() {
+    const lane = Math.floor(Math.random() * 24) - 12 + 0.5;
+    const away = Math.random() < 0.7;
+    racers.push({
+      lane, away,
+      d: away ? 1.15 : 0,
+      speed: 0.22 + Math.random() * 0.22,
+      col: RACER_COLORS[Math.floor(Math.random() * RACER_COLORS.length)],
+    });
+  }
+  function drawRacers(dt, boost) {
+    nextRacer -= dt * Math.min(boost, 3);
+    if (nextRacer <= 0) {
+      if (racers.length < 5) spawnRacer();
+      nextRacer = 0.9 + Math.random() * 2.2;
+    }
+    for (let i = racers.length - 1; i >= 0; i--) {
+      const r = racers[i];
+      r.d += (r.away ? -1 : 1) * r.speed * boost * dt * (0.4 + r.d);
+      if (r.away ? r.d <= 0.01 : r.d > 1.2) { racers.splice(i, 1); continue; }
+      const tail = r.d + (r.away ? 1 : -1) * 0.14 * (0.3 + r.d);
+      const hy = laneY(r.d), ty = laneY(Math.max(0, tail));
+      const hx = laneX(r.lane, hy), tx = laneX(r.lane, ty);
+      const size = 0.6 + r.d * 3.4;
+      const g = ctx.createLinearGradient(tx, ty, hx, hy);
+      g.addColorStop(0, `rgba(${r.col},0)`);
+      g.addColorStop(1, `rgba(${r.col},0.95)`);
+      ctx.strokeStyle = g;
+      ctx.lineCap = "round";
+      ctx.lineWidth = size * 2.6;
+      ctx.globalAlpha = 0.35;
+      ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(hx, hy); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = size;
+      ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(hx, hy); ctx.stroke();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath(); ctx.arc(hx, hy, size * 0.75, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
   function frame(dt) {
     const boost = boostT > 0 ? 1 + 9 * (boostT / 1.6) ** 2 : 1;
+    // Bass envelope against its own recent peak, so the pulse reads the
+    // same at any volume; cubed so only the hits register.
+    const bass = dt ? siteAudio.ambienceBass() : 0;
+    bassPeak = Math.max(bass, bassPeak * (1 - dt * 0.25));
+    const hit = bassPeak > 0.05 ? (bass / bassPeak) ** 3 : 0;
+    beat = hit > beat ? hit : Math.max(0, beat - dt * 3.5);
     boostT = Math.max(0, boostT - dt);
     phase = (phase + dt * 0.35 * boost) % 1;
     bandShift = (bandShift + dt * 0.12) % 1;
@@ -20876,8 +21012,10 @@ const neonHorizon = (() => {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     drawSun();
-    ctx.globalAlpha = 0.92 + 0.08 * Math.sin(performance.now() / 1400) + Math.min(0.3, boostT * 0.2);
-    ctx.drawImage(sun, W / 2 - sunR - 2 + parallax * 4, hz - sunR - 2, sunR * 2 + 4, sunR + 2);
+    ctx.globalAlpha = Math.min(1, 0.88 + 0.06 * Math.sin(performance.now() / 1400) + Math.min(0.3, boostT * 0.2) + beat * 0.12);
+    const sunScale = 1 + beat * 0.035;
+    const sw = (sunR * 2 + 4) * sunScale, sh = (sunR + 2) * sunScale;
+    ctx.drawImage(sun, W / 2 - sw / 2 + parallax * 4, hz - sh, sw, sh);
     ctx.globalAlpha = 1;
     const mh = hills.height / dpr;
     ctx.drawImage(hills, -20 + parallax * 12, hz - mh + 4, hills.width / dpr, mh);
@@ -20886,7 +21024,7 @@ const neonHorizon = (() => {
     for (let k = 0; k < ROWS; k++) {
       const t = (k + phase) / ROWS;
       const y = hz + (H - hz) * t ** 2.4;
-      const a = Math.min(1, t * 4);
+      const a = Math.min(1, t * 4) * (1 + beat * 0.7);
       ctx.strokeStyle = `rgba(0,217,255,${0.1 * a})`;
       ctx.lineWidth = 4;
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
@@ -20895,12 +21033,13 @@ const neonHorizon = (() => {
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
     }
     const glow = ctx.createLinearGradient(0, hz - 26, 0, hz + 34);
-    const ga = 0.5 + Math.min(0.4, boostT * 0.3);
+    const ga = Math.min(1, 0.5 + Math.min(0.4, boostT * 0.3) + beat * 0.35);
     glow.addColorStop(0, "rgba(255,47,160,0)");
     glow.addColorStop(0.45, `rgba(255,47,160,${ga})`);
     glow.addColorStop(1, "rgba(255,47,160,0)");
     ctx.fillStyle = glow;
     ctx.fillRect(0, hz - 26, W, 60);
+    if (dt) drawRacers(dt, boost);
   }
 
   function tick(now) {
@@ -20935,7 +21074,13 @@ const neonHorizon = (() => {
     }, { passive: true });
   }
   sync();
-  return { boost() { if (!reduceMotion && isNeon()) boostT = 1.6; } };
+  return {
+    boost() {
+      if (reduceMotion || !isNeon()) return;
+      boostT = 1.6;
+      for (let i = 0; i < 3 && racers.length < 8; i++) spawnRacer();
+    },
+  };
 })();
 
 // Deep Current's rising bubbles - generated once at load like the starfield

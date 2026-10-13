@@ -18089,7 +18089,7 @@ html:not([data-theme]) .lb-entry[data-place="3"] { --row: #ff4fa8; }
       <div class="modal-content admin-key-modal-content denick-request-content">
       <button type="button" id="closeDenickRequestModal" class="modal-close" aria-label="Close">&times;</button>
       <h2 class="edit-modal-title">Ask Milo</h2>
-      <p class="admin-key-desc">Milo will try to denick it himself and answer you in a Discord DM from the bot.</p>
+      <p class="admin-key-desc">Milo will try to denick it himself and answer you in a Discord DM from the bot. He usually answers within a day.</p>
       <form id="denickRequestForm" class="denick-request-form" novalidate>
         <label><span>Nick</span>
           <input type="text" id="denickRequestNick" maxlength="16" autocomplete="off" placeholder="The nick" />
@@ -21969,7 +21969,7 @@ denickRequestForm.addEventListener("submit", async (e) => {
     renderDenickRequests();
     updateDenickAskUi();
     denickRequestForm.reset();
-    say(`Sent! Milo will DM you about ${nick}.`);
+    say(`Sent! Milo usually answers within a day, by DM.`);
     document.getElementById("cancelDenickRequestBtn").textContent = "Close";
     siteAudio.play("success");
   } catch (err) {

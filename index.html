@@ -884,6 +884,122 @@ h1 {
 }
 @media (prefers-reduced-motion: reduce) { .denick-status.is-miss { animation: none; } }
 
+/* ---------- Denick requests ("Ask Milo") ----------
+   Before a search it's a quiet line at the bottom of the panel, because
+   people should search first. After a nick search finds nothing, the miss
+   callout grows a real button. Both open #denickRequestModal, which also
+   lists your own requests and Milo's answers. Key holders only. */
+.denick-ask-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 16px;
+  font-size: 0.8em;
+  color: var(--text-faint);
+}
+.denick-ask-link {
+  border: 0;
+  padding: 2px 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  transition: color 0.2s var(--ease);
+}
+.denick-ask-link:hover, .denick-ask-link:focus-visible { color: var(--accent); }
+.denick-ask-new {
+  display: inline-block;
+  min-width: 17px;
+  margin-left: 5px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--bg, #000);
+  font-size: 0.86em;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+}
+.denick-ask-cta {
+  flex: none;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.denick-ask-cta svg { width: 16px; height: 16px; flex: none; }
+@media (max-width: 640px) {
+  .denick-status.is-miss:has(.denick-ask-cta) { flex-wrap: wrap; }
+  .denick-ask-cta { width: 100%; justify-content: center; margin-left: 0; }
+}
+
+.denick-request-content { width: 440px; max-width: 100%; }
+.denick-request-content .admin-key-desc { margin-bottom: 14px; }
+.denick-request-form { display: flex; flex-direction: column; gap: 10px; }
+.denick-request-form label { display: flex; flex-direction: column; gap: 5px; font-size: 0.8em; font-weight: 700; color: var(--text-dim); text-align: left; }
+.denick-request-form label small { margin-left: 4px; font-weight: 500; color: var(--text-faint); }
+.denick-request-form input, .denick-request-form textarea { width: 100%; font-size: 1.1em; }
+.denick-request-form textarea { min-height: 64px; resize: vertical; }
+.denick-request-form .edit-modal-actions { margin-top: 4px; }
+#denickContainer:has(.denick-ask-cta) #denickAskLink { display: none; }
+#denickRequestStatus { min-height: 18px; margin-top: 2px; font-size: 0.86em; font-weight: 600; text-align: center; color: var(--good); }
+#denickRequestStatus.is-error { color: var(--bad); }
+.denick-mine { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); text-align: left; }
+.denick-mine h3 { margin: 0 0 8px; font-size: 0.78em; letter-spacing: 1px; text-transform: uppercase; color: var(--text-faint); }
+.denick-mine-list { display: flex; flex-direction: column; gap: 6px; max-height: 190px; overflow-y: auto; margin: 0; padding: 0; list-style: none; }
+.denick-mine-item { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-s); background: rgba(255,255,255,0.03); }
+.denick-mine-item.is-new { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.denick-mine-nick { font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
+.denick-mine-item .pill { align-self: start; white-space: nowrap; }
+.denick-mine-item .pill.is-found { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); background: color-mix(in srgb, var(--good) 12%, transparent); }
+.denick-mine-item .pill.is-possible { color: var(--gold); border-color: color-mix(in srgb, var(--gold) 40%, transparent); background: color-mix(in srgb, var(--gold) 12%, transparent); }
+.denick-mine-item .pill.is-notfound { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+.denick-mine-answer { grid-column: 1 / -1; font-size: 0.86em; color: var(--text-dim); overflow-wrap: anywhere; }
+.denick-mine-answer b { color: var(--text); }
+.denick-mine-reply { grid-column: 1 / -1; font-size: 0.82em; font-style: italic; color: var(--text-faint); overflow-wrap: anywhere; }
+.denick-mine-reply::before { content: "\201C"; }
+.denick-mine-reply::after { content: "\201D"; }
+.denick-mine-empty { font-size: 0.85em; color: var(--text-faint); }
+/* Milo's answers in search results: his roster colour on the rail. */
+.denick-row[data-source="milo"]::before { background: var(--roster-milo); }
+html:not([data-theme]) .denick-row[data-source="milo"] { border-left-color: var(--roster-milo); }
+
+/* Each theme's voice for the quiet link and the list. */
+html:not([data-theme]) .denick-ask-link { text-transform: uppercase; letter-spacing: 1.2px; font-size: 0.92em; font-weight: 700; }
+html:not([data-theme]) .denick-ask-cta { border-radius: 0; text-transform: uppercase; letter-spacing: 1.2px; }
+html:not([data-theme]) .denick-mine-item { border-radius: 0; border-left: 3px solid var(--accent); }
+html[data-theme="casefiles"] .denick-ask-link { font-family: 'Courier Prime', monospace; text-transform: uppercase; letter-spacing: 0.06em; }
+html[data-theme="casefiles"] .denick-mine-item { border-style: dashed; border-radius: 2px; background: var(--panel); }
+html[data-theme="casefiles"] .denick-mine-nick { font-family: 'Anton', 'Arial Narrow', sans-serif; font-weight: 400; letter-spacing: 0.04em; }
+html[data-theme="casefiles"] .denick-mine h3 { font-family: 'Courier Prime', monospace; }
+html[data-theme="ledger"] .denick-ask-link { font-family: 'EB Garamond', serif; font-style: italic; font-size: 1.12em; }
+html[data-theme="ledger"] .denick-ask-new { border-radius: 0; background: var(--accent-2); color: #fff; }
+html[data-theme="ledger"] .denick-mine-item { border-radius: 0; background: transparent; box-shadow: inset 3px 0 0 var(--gold); }
+html[data-theme="ledger"] .denick-mine-nick { font-family: 'Playfair Display', serif; }
+html[data-theme="ledger"] .denick-mine h3 { font-family: 'EB Garamond', serif; font-variant: small-caps; text-transform: none; font-size: 1em; }
+html[data-theme="ledger"] .denick-mine-reply { font-family: 'EB Garamond', serif; font-size: 0.95em; }
+html[data-theme="deepcurrent"] .denick-ask-link { font-family: 'JetBrains Mono', monospace; text-transform: uppercase; font-size: 0.9em; letter-spacing: 0.04em; }
+html[data-theme="deepcurrent"] .denick-mine-item { border-radius: 8px; border-left: 3px solid var(--accent); background: linear-gradient(160deg, var(--panel), var(--panel-2)); }
+html[data-theme="deepcurrent"] .denick-mine-nick { font-family: 'Chakra Petch', sans-serif; letter-spacing: 0.04em; }
+html[data-theme="skyisles"] .denick-ask-row { font-family: var(--font-pixel); font-size: 0.86em; }
+html[data-theme="skyisles"] .denick-ask-link { color: #8a9aa6; font-weight: 400; }
+html[data-theme="skyisles"] .denick-ask-link { text-decoration: none; border-bottom: 2px dotted currentColor; }
+html[data-theme="skyisles"] .denick-ask-new { border-radius: 0; box-shadow: 2px 2px 0 rgba(0,0,0,0.35); }
+html[data-theme="skyisles"] .denick-mine-item { border-radius: 0; border: 2px solid #3b3b3b; background: #f4f4f4; box-shadow: 3px 3px 0 rgba(0,0,0,0.25); }
+html[data-theme="skyisles"] .denick-mine-nick, html[data-theme="skyisles"] .denick-mine h3 { font-family: var(--font-pixel); font-size: 1.15em; letter-spacing: 0; }
+html[data-theme="skyisles"] .denick-mine-answer, html[data-theme="skyisles"] .denick-mine-answer b { color: #3b3b3b; }
+html[data-theme="skyisles"] .denick-mine-nick { color: #222; }
+html[data-theme="skyisles"] .denick-request-form label { font-family: var(--font-pixel); font-size: 1em; font-weight: 400; }
+html[data-theme="hollowgrave"] .denick-ask-link { font-style: italic; letter-spacing: 0.03em; }
+html[data-theme="hollowgrave"] .denick-ask-new { background: #f28c28; color: #1a1620; box-shadow: 0 0 8px rgba(242,140,40,0.5); }
+html[data-theme="hollowgrave"] .denick-mine-item { border-radius: 3px; background: linear-gradient(180deg, rgba(43,39,51,0.6), rgba(30,26,36,0.7)); }
+html[data-theme="hollowgrave"] .denick-mine-item.is-new { border-color: #f28c28; box-shadow: 0 0 10px rgba(242,140,40,0.25); }
+
 /* Results read as a history timeline: a rail down the left with one dot
    per entry (colored by source - accent for the Denicker API, gold for
    Diamond Dome, accent-2 for Tricktracker, bad for Bedlify), and the most recent "Current"
@@ -17788,6 +17904,10 @@ html:not([data-theme]) .lb-entry[data-place="3"] { --row: #ff4fa8; }
       </svg>
       <p>Search a nick to see who's used it, or a player to see their nick history.</p>
     </div>
+    <div id="denickAskRow" class="denick-ask-row" hidden>
+      <button type="button" id="denickAskLink" class="denick-ask-link">Searched and still no luck? Ask Milo to denick it</button>
+      <button type="button" id="denickMineLink" class="denick-ask-link" hidden>Your requests<span id="denickMineNew" class="denick-ask-new" hidden></span></button>
+    </div>
   </div>
 
   </div>
@@ -17956,6 +18076,39 @@ html:not([data-theme]) .lb-entry[data-place="3"] { --row: #ff4fa8; }
       <div class="edit-modal-actions">
         <button type="button" id="clearAdminKeyBtn" class="btn btn-ghost">Clear</button>
         <button type="button" id="saveAdminKeyBtn" class="btn btn-primary">Save</button>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DENICK REQUEST MODAL: ask Milo to denick a nick by hand (the bot DMs
+       him; his answer comes back by DM and in the list below). -->
+  <div id="denickRequestModal" class="modal">
+    <div class="modal-card">
+      <span class="modal-folder-tab">Case File &middot; Request</span>
+      <div class="modal-content admin-key-modal-content denick-request-content">
+      <button type="button" id="closeDenickRequestModal" class="modal-close" aria-label="Close">&times;</button>
+      <h2 class="edit-modal-title">Ask Milo</h2>
+      <p class="admin-key-desc">Milo will try to denick it himself and answer you in a Discord DM from the bot.</p>
+      <form id="denickRequestForm" class="denick-request-form" novalidate>
+        <label><span>Nick</span>
+          <input type="text" id="denickRequestNick" maxlength="16" autocomplete="off" placeholder="The nick" />
+        </label>
+        <label><span>Replay <small>optional</small></span>
+          <input type="text" id="denickRequestReplay" maxlength="120" autocomplete="off" placeholder="Replay ID or link" />
+        </label>
+        <label><span>Note <small>optional</small></span>
+          <textarea id="denickRequestNote" class="note-input" rows="2" maxlength="280" placeholder="Anything that helps, like when you played them"></textarea>
+        </label>
+        <div id="denickRequestStatus" role="alert" aria-live="assertive"></div>
+        <div class="edit-modal-actions">
+          <button type="button" id="cancelDenickRequestBtn" class="btn btn-ghost">Cancel</button>
+          <button type="submit" id="sendDenickRequestBtn" class="btn btn-primary">Send to Milo</button>
+        </div>
+      </form>
+      <div class="denick-mine">
+        <h3>Your requests</h3>
+        <ul id="denickMineList" class="denick-mine-list"></ul>
       </div>
       </div>
     </div>
@@ -21474,7 +21627,7 @@ function renderDenickResults(entries, nameOf, startIndex) {
 
     const row = document.createElement("div");
     row.className = isCurrent ? "denick-row is-current" : "denick-row";
-    row.dataset.source = { "Diamond Dome": "dome", "Tricktracker": "tricktracker", "Bedlify": "bedlify" }[entry.source] || "api";
+    row.dataset.source = { "Diamond Dome": "dome", "Tricktracker": "tricktracker", "Bedlify": "bedlify", "Milo": "milo" }[entry.source] || "api";
 
     const who = document.createElement("div");
     who.className = "denick-row-who";
@@ -21573,11 +21726,12 @@ async function runDenickSearch() {
     await loadScrapedSources(); // never rejects - a gist hiccup shouldn't block the Denicker half from showing
     if (isStale()) return;
 
-    let apiResult, bedlifyResult, scrapedEntries, keyField, nameOf;
+    let apiResult, bedlifyResult, miloResult, scrapedEntries, keyField, nameOf;
     if (denickMode === "nick") {
-      [apiResult, bedlifyResult] = await Promise.all([
+      [apiResult, bedlifyResult, miloResult] = await Promise.all([
         queryDenickerNicks("/denicker/nick/" + encodeURIComponent(query), ""),
-        queryBedlify("nick", query)
+        queryBedlify("nick", query),
+        queryMilo("nick", query)
       ]);
       scrapedEntries = scrapedEntriesForNick(query);
       keyField = "username";
@@ -21588,11 +21742,12 @@ async function runDenickSearch() {
         const resMojang = await fetch(`${backendBaseURL}/mojang/${encodeURIComponent(query)}`, { headers: adminHeaders() });
         if (resMojang.ok) uuid = (await resMojang.json()).id;
       } catch {}
-      [apiResult, bedlifyResult] = await Promise.all([
+      [apiResult, bedlifyResult, miloResult] = await Promise.all([
         uuid
           ? queryDenickerNicks(`/denicker/history/${uuid}`, `username=${encodeURIComponent(query)}`)
           : { entries: [] },
-        queryBedlify("player", query)
+        queryBedlify("player", query),
+        queryMilo("player", query)
       ]);
       scrapedEntries = scrapedEntriesForPlayer(query);
       keyField = "nick";
@@ -21600,7 +21755,7 @@ async function runDenickSearch() {
     }
     if (isStale()) return;
 
-    const merged = mergeDenickEntries([...apiResult.entries, ...bedlifyResult.entries, ...scrapedEntries], keyField);
+    const merged = mergeDenickEntries([...apiResult.entries, ...bedlifyResult.entries, ...miloResult.entries, ...scrapedEntries], keyField);
     const partial = !!(apiResult.error || bedlifyResult.error);
     denickAllResults = merged;
     denickNameOf = nameOf;
@@ -21649,10 +21804,198 @@ function showDenickMiss(query, partial) {
     : denickMode === "nick" ? "Nobody in the database has been seen using this nick yet." : "No nick history found for this player.";
   text.append(title, sub);
   denickStatus.append(text);
+  // Nothing anywhere: now the request is worth offering properly.
+  if (denickMode === "nick" && !partial && canAskMilo() && denickRequestsOn) {
+    const ask = document.createElement("button");
+    ask.type = "button";
+    ask.className = "btn btn-primary denick-ask-cta";
+    ask.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4 3 11l7 2.5L12.5 21z"/><path d="M10 13.5 21 4"/></svg><span>Ask Milo to denick it</span>';
+    ask.addEventListener("click", () => openDenickRequestModal(query));
+    denickStatus.append(ask);
+  }
 }
 
 denickSearchBtn.addEventListener("click", runDenickSearch);
 denickInput.addEventListener("keydown", (e) => { if (e.key === "Enter") runDenickSearch(); });
+
+// ---------- Denick requests ("Ask Milo") ----------
+// Any key holder can ask Milo to denick a nick by hand: POST
+// /denick-requests, and the bot DMs him. His answer is DMed back and shows
+// in "Your requests" (GET /denick-requests/mine). Answers you haven't seen
+// yet get a count on the quiet link; seen ids are kept in localStorage.
+const denickAskRow = document.getElementById("denickAskRow");
+const denickMineLink = document.getElementById("denickMineLink");
+const denickMineNew = document.getElementById("denickMineNew");
+const denickRequestModal = document.getElementById("denickRequestModal");
+const denickRequestForm = document.getElementById("denickRequestForm");
+const denickRequestNick = document.getElementById("denickRequestNick");
+const denickRequestReplay = document.getElementById("denickRequestReplay");
+const denickRequestNote = document.getElementById("denickRequestNote");
+const denickRequestStatus = document.getElementById("denickRequestStatus");
+const sendDenickRequestBtn = document.getElementById("sendDenickRequestBtn");
+const denickMineList = document.getElementById("denickMineList");
+const DENICK_SEEN_STORAGE = "denickRequestsSeen";
+let denickRequests = [];
+let denickRequestsOn = true;
+
+function denickSeenIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(DENICK_SEEN_STORAGE) || "[]")); } catch { return new Set(); }
+}
+function markDenickAnswersSeen() {
+  const ids = denickRequests.filter(r => r.status !== "open").map(r => `${r.id}:${r.answeredAt}`);
+  try { localStorage.setItem(DENICK_SEEN_STORAGE, JSON.stringify(ids.slice(0, 50))); } catch {}
+  denickMineNew.hidden = true;
+}
+const canAskMilo = () => !!(getAdminKey() && keyOwner);
+
+async function loadDenickRequests() {
+  if (!canAskMilo()) { denickRequests = []; updateDenickAskUi(); return; }
+  try {
+    const res = await fetch(`${backendBaseURL}/denick-requests/mine`, { headers: adminHeaders() });
+    if (!res.ok) return;
+    const data = await res.json();
+    denickRequests = Array.isArray(data.requests) ? data.requests : [];
+    denickRequestsOn = data.on !== false;
+  } catch {}
+  updateDenickAskUi();
+  if (denickRequestModal.style.display === "flex") renderDenickRequests();
+}
+
+function updateDenickAskUi() {
+  denickAskRow.hidden = !canAskMilo() || !denickRequestsOn;
+  denickMineLink.hidden = denickRequests.length === 0;
+  const seen = denickSeenIds();
+  const fresh = denickRequests.filter(r => r.status !== "open" && !seen.has(`${r.id}:${r.answeredAt}`)).length;
+  denickMineNew.hidden = fresh === 0;
+  denickMineNew.textContent = fresh;
+  denickMineNew.setAttribute("aria-label", `${fresh} new answer${fresh === 1 ? "" : "s"}`);
+}
+
+const DENICK_REQUEST_LABELS = { open: "Waiting", found: "Found", possible: "Possible", notfound: "Not found" };
+function renderDenickRequests() {
+  denickMineList.innerHTML = "";
+  if (!denickRequests.length) {
+    const li = document.createElement("li");
+    li.className = "denick-mine-empty";
+    li.textContent = "Nothing sent yet.";
+    denickMineList.append(li);
+    return;
+  }
+  const seen = denickSeenIds();
+  denickRequests.slice(0, 10).forEach(r => {
+    const li = document.createElement("li");
+    li.className = "denick-mine-item";
+    if (r.status !== "open" && !seen.has(`${r.id}:${r.answeredAt}`)) li.classList.add("is-new");
+    const nick = document.createElement("span");
+    nick.className = "denick-mine-nick";
+    nick.textContent = r.nick;
+    const pill = document.createElement("span");
+    pill.className = `pill is-${r.status}`;
+    pill.textContent = DENICK_REQUEST_LABELS[r.status] || r.status;
+    li.append(nick, pill);
+    const answer = document.createElement("span");
+    answer.className = "denick-mine-answer";
+    if (r.status === "found" || r.status === "possible") {
+      answer.append(r.status === "found" ? "It's " : "Might be ");
+      r.names.forEach((n, i) => {
+        if (i) answer.append(", ");
+        const b = document.createElement("b");
+        b.textContent = n;
+        answer.append(b);
+      });
+    } else if (r.status === "notfound") {
+      answer.textContent = "Milo couldn't find who it is.";
+    } else {
+      answer.textContent = `Sent ${denickTimeAgo(new Date(r.createdAt).getTime())}`;
+    }
+    li.append(answer);
+    if (r.reply) {
+      const reply = document.createElement("span");
+      reply.className = "denick-mine-reply";
+      reply.textContent = r.reply;
+      li.append(reply);
+    }
+    denickMineList.append(li);
+  });
+}
+
+function openDenickRequestModal(nick = "") {
+  rememberFocusBeforeModal();
+  denickRequestForm.reset();
+  denickRequestNick.value = nick;
+  denickRequestStatus.textContent = "";
+  denickRequestStatus.classList.remove("is-error");
+  sendDenickRequestBtn.disabled = false;
+  document.getElementById("cancelDenickRequestBtn").textContent = "Cancel";
+  renderDenickRequests();
+  denickRequestModal.style.display = "flex";
+  animateModalIn(denickRequestModal);
+  (nick ? denickRequestReplay : denickRequestNick).focus();
+  loadDenickRequests().then(markDenickAnswersSeen);
+}
+function closeDenickRequestModalFn() {
+  animateModalOut(denickRequestModal);
+  restoreFocusAfterModal();
+}
+document.getElementById("denickAskLink").addEventListener("click", () => openDenickRequestModal(denickMode === "nick" ? denickQuery : ""));
+denickMineLink.addEventListener("click", () => openDenickRequestModal(""));
+document.getElementById("closeDenickRequestModal").addEventListener("click", closeDenickRequestModalFn);
+document.getElementById("cancelDenickRequestBtn").addEventListener("click", closeDenickRequestModalFn);
+
+denickRequestForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const nick = denickRequestNick.value.trim();
+  const say = (text, error) => {
+    denickRequestStatus.textContent = text;
+    denickRequestStatus.classList.toggle("is-error", !!error);
+  };
+  if (!/^[A-Za-z0-9_]{1,16}$/.test(nick)) {
+    say("Enter the nick (letters, numbers and _ only).", true);
+    denickRequestNick.focus();
+    siteAudio.play("error");
+    return;
+  }
+  sendDenickRequestBtn.disabled = true;
+  say("Sending...");
+  try {
+    const res = await fetch(`${backendBaseURL}/denick-requests`, {
+      method: "POST",
+      headers: adminHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ nick, replay: denickRequestReplay.value.trim(), note: denickRequestNote.value.trim() })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    denickRequests.unshift(data.request);
+    renderDenickRequests();
+    updateDenickAskUi();
+    denickRequestForm.reset();
+    say(`Sent! Milo will DM you about ${nick}.`);
+    document.getElementById("cancelDenickRequestBtn").textContent = "Close";
+    siteAudio.play("success");
+  } catch (err) {
+    say(err.message, true);
+    siteAudio.play("error");
+  } finally {
+    sendDenickRequestBtn.disabled = false;
+  }
+});
+
+document.addEventListener("keyownerchange", loadDenickRequests);
+// Answers can come in while the page is open: check again on coming back.
+document.addEventListener("visibilitychange", () => { if (!document.hidden) loadDenickRequests(); });
+
+// Milo's Found answers as search entries (source "Milo"), like queryBedlify.
+async function queryMilo(kind, value) {
+  if (!canAskMilo()) return { entries: [] };
+  try {
+    const res = await fetch(`${backendBaseURL}/denick-requests/known/${kind}/${encodeURIComponent(value)}`, { headers: adminHeaders() });
+    if (!res.ok) return { entries: [] };
+    const data = await res.json();
+    return { entries: Array.isArray(data.entries) ? data.entries : [] };
+  } catch {
+    return { entries: [] };
+  }
+}
 
 // Personal keys get a specific, genuinely useful 403 reason when they try to
 // touch something older than 10 days ("Personal keys can only edit or
@@ -25233,6 +25576,7 @@ window.onclick = (e) => {
   if (e.target === modal) closePlayerModal();
   if (e.target === editModal) closeEditModalFn();
   if (e.target === adminKeyModal) closeAdminKeyModalFn();
+  if (e.target === denickRequestModal) closeDenickRequestModalFn();
   if (e.target === confirmDeleteModal) resolveConfirmDelete(false);
 };
 
@@ -25249,6 +25593,7 @@ document.addEventListener("keydown", (e) => {
   if (confirmDeleteModal.style.display === "flex") { resolveConfirmDelete(false); return; }
   if (editModal.style.display === "flex") { closeEditModalFn(); return; }
   if (adminKeyModal.style.display === "flex") { closeAdminKeyModalFn(); return; }
+  if (denickRequestModal.style.display === "flex") { closeDenickRequestModalFn(); return; }
   if (modal.style.display === "flex") { closePlayerModal(); return; }
 });
 

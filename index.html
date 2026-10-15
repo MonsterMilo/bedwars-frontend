@@ -7582,6 +7582,53 @@ html[data-theme="ledger"] .activity-select select { border-radius: 0; font-famil
 #activityEmpty { margin-top: 14px; }
 #activityPagination { margin: 12px auto 0; }
 html[data-theme="casefiles"] .activity-chip { border-radius: 2px; }
+/* Denick lookups (site + bot): a colour of their own per theme, the names
+   found with their source, and a Site/Bot badge by the time. */
+.activity-row { --act-denick: var(--accent); }
+.activity-row[data-action="denick.search"] { --act-color: var(--act-denick); }
+.activity-found { align-items: center; }
+.activity-found::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.activity-found[data-source="dome"]::before { background: var(--gold); }
+.activity-found[data-source="tricktracker"]::before { background: var(--accent-2); }
+.activity-found[data-source="bedlify"]::before { background: var(--bad); }
+.activity-found[data-source="milo"]::before { background: var(--roster-milo); }
+.activity-found.is-top { border-color: color-mix(in srgb, var(--act-denick) 55%, transparent); }
+.activity-face { width: 14px; height: 14px; image-rendering: pixelated; border-radius: 2px; align-self: center; }
+.activity-source { color: var(--text-faint); font-size: 0.92em; }
+.activity-miss { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 35%, transparent); }
+.activity-partial, .activity-more { color: var(--text-faint); font-style: italic; }
+.activity-via {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 1px 7px 1px 5px;
+  border-radius: 999px;
+  font-size: 0.72em; font-weight: 700; letter-spacing: 0.03em;
+  color: var(--act-denick);
+  border: 1px solid color-mix(in srgb, var(--act-denick) 40%, transparent);
+  background: color-mix(in srgb, var(--act-denick) 10%, transparent);
+  white-space: nowrap;
+}
+.activity-via svg { width: 12px; height: 12px; }
+html:not([data-theme]) .activity-row { --act-denick: #ff4fd8; }
+html:not([data-theme]) .activity-via { border-radius: 0; transform: skewX(-10deg); text-transform: uppercase; letter-spacing: 1.2px; box-shadow: 0 0 10px color-mix(in srgb, var(--act-denick) 35%, transparent); }
+html:not([data-theme]) .activity-via > * { transform: skewX(10deg); }
+html:not([data-theme]) .activity-found.is-top { box-shadow: 0 0 8px color-mix(in srgb, var(--act-denick) 30%, transparent); }
+html[data-theme="casefiles"] .activity-row { --act-denick: #2f4f7a; }
+html[data-theme="casefiles"] .activity-via { border-radius: 2px; border-width: 1.5px; background: transparent; font-family: 'Courier Prime', monospace; text-transform: uppercase; letter-spacing: 1.5px; transform: rotate(-3deg); }
+html[data-theme="casefiles"] .activity-found .now { text-transform: uppercase; letter-spacing: 0.04em; }
+html[data-theme="ledger"] .activity-row { --act-denick: #2f5d50; }
+html[data-theme="ledger"] .activity-via { border-radius: 0; background: transparent; border-width: 0 0 1px; font-family: 'EB Garamond', serif; font-variant: small-caps; font-size: 0.85em; letter-spacing: 1px; padding: 0 2px; }
+html[data-theme="ledger"] .activity-via svg { display: none; }
+html[data-theme="ledger"] .activity-found .now { font-family: 'Playfair Display', serif; }
+html[data-theme="deepcurrent"] .activity-row { --act-denick: #b48cff; }
+html[data-theme="deepcurrent"] .activity-via { font-family: 'JetBrains Mono', monospace; text-transform: uppercase; font-weight: 500; letter-spacing: 1px; box-shadow: 0 0 10px color-mix(in srgb, var(--act-denick) 30%, transparent); }
+html[data-theme="deepcurrent"] .activity-found.is-top { box-shadow: 0 0 10px color-mix(in srgb, var(--act-denick) 25%, transparent); }
+html[data-theme="skyisles"] .activity-row { --act-denick: #8a4fd0; }
+html[data-theme="skyisles"] .activity-via { border-radius: 0; border: none; box-shadow: var(--pxb2); font-family: var(--font-pixel); font-weight: 400; text-transform: uppercase; font-size: 0.66em; padding: 2px 6px 2px 4px; }
+html[data-theme="skyisles"] .activity-face { border-radius: 0; }
+html[data-theme="skyisles"] .activity-found::before { border-radius: 0; }
+html[data-theme="hollowgrave"] .activity-row { --act-denick: #f28c28; }
+html[data-theme="hollowgrave"] .activity-via { font-family: var(--font-label); font-style: italic; font-weight: 500; background: transparent; box-shadow: 0 0 8px color-mix(in srgb, var(--act-denick) 25%, transparent); }
+html[data-theme="hollowgrave"] .activity-found .now { font-family: 'Grenze', serif; font-weight: 600; }
 html[data-theme="ledger"] .activity-chip { border-radius: 0; font-variant-numeric: tabular-nums; }
 @media (max-width: 560px) {
   #activityContainer { padding: 14px 14px 12px; }
@@ -17937,6 +17984,7 @@ html:not([data-theme]) .lb-entry[data-place="3"] { --row: #ff4fa8; }
         <option value="sweat.delete">Deleted</option>
         <option value="sweat.restore">Restored</option>
         <option value="note.add,note.edit,note.delete">Notes</option>
+        <option value="denick.search">Denicks</option>
       </select><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></label>
       <button type="button" id="activityRefreshBtn" class="icon-btn" data-tooltip="Refresh" aria-label="Refresh activity"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 2.5v3h-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
@@ -21757,6 +21805,7 @@ async function runDenickSearch() {
 
     const merged = mergeDenickEntries([...apiResult.entries, ...bedlifyResult.entries, ...miloResult.entries, ...scrapedEntries], keyField);
     const partial = !!(apiResult.error || bedlifyResult.error);
+    reportDenickSearch(denickMode, query, merged, partial);
     denickAllResults = merged;
     denickNameOf = nameOf;
     denickPage = 1;
@@ -21786,6 +21835,21 @@ async function runDenickSearch() {
       denickSearchBtn.classList.remove("loading");
     }
   }
+}
+
+// Every finished search goes in the Activity log (with the bot's /denick
+// ones, which the backend logs itself). Fire-and-forget: a failed report
+// never shows.
+function reportDenickSearch(mode, query, merged, partial) {
+  fetch(`${backendBaseURL}/activity/denick`, {
+    method: "POST",
+    headers: adminHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({
+      mode, query, partial, count: merged.length,
+      results: merged.slice(0, 3).map(e => ({ username: e.username, nick: e.nick, source: e.source }))
+    }),
+    keepalive: true
+  }).then(() => { activityLoadedAt = 0; }, () => {});
 }
 
 function showDenickMiss(query, partial) {
@@ -26247,8 +26311,10 @@ const ACTIVITY_VERBS = {
   "sweat.restore": "restored",
   "note.add": "added a note to",
   "note.edit": "edited a note on",
-  "note.delete": "removed a note from"
+  "note.delete": "removed a note from",
+  "denick.search": "denicked"
 };
+const DENICK_SOURCE_KEYS = { "Diamond Dome": "dome", "Tricktracker": "tricktracker", "Bedlify": "bedlify", "Milo": "milo" };
 // Cursor paging: activityCursors[i] is the "before" cursor that loads page
 // i (page 0 has none), filled in as pages are visited.
 let activityCursors = [null];
@@ -26257,6 +26323,7 @@ let activityLoadedAt = 0;
 let activityRequest = 0;
 
 function activityWhoLabel(who) {
+  if (who === "guest") return "A visitor";
   return noteAuthorLabel(who) || "Someone";
 }
 function formatActivityValue(v) {
@@ -26295,6 +26362,46 @@ function activityDiffChips(changes) {
   });
   return wrap.childNodes.length ? wrap : null;
 }
+// What a denick lookup found: up to 3 names (a face for real players), each
+// with its source, "+N more", or a miss.
+function activityDenickChips(e) {
+  const wrap = document.createElement("div");
+  wrap.className = "activity-details activity-denick";
+  const found = Array.isArray(e.found) ? e.found : [];
+  found.forEach((f, i) => {
+    const c = document.createElement("span");
+    c.className = "activity-chip activity-found" + (i === 0 ? " is-top" : "");
+    c.dataset.source = DENICK_SOURCE_KEYS[f.source] || "api";
+    if (e.mode !== "player") {
+      const face = document.createElement("img");
+      face.className = "activity-face";
+      face.src = denickAvatarUrl(f.name);
+      face.alt = "";
+      face.loading = "lazy";
+      face.addEventListener("error", () => face.remove(), { once: true });
+      c.appendChild(face);
+    }
+    c.append(activitySpan("now", f.name), activitySpan("activity-source", f.source));
+    wrap.appendChild(c);
+  });
+  const more = (e.resultCount || 0) - found.length;
+  if (more > 0) wrap.appendChild(activitySpan("activity-chip activity-more", `+${more} more`));
+  if (!e.resultCount) wrap.appendChild(activitySpan("activity-chip activity-miss", "No result"));
+  if (e.partial) wrap.appendChild(activitySpan("activity-chip activity-partial", "Some sources didn't answer"));
+  return wrap;
+}
+// Where a lookup came from: the website or the Discord bot.
+function activityVia(via) {
+  const bot = via === "bot";
+  const el = activitySpan("activity-via", bot ? "Bot" : "Site");
+  el.dataset.via = bot ? "bot" : "site";
+  el.dataset.tooltip = bot ? "From the Discord bot's /denick" : "From the website's Denicking section";
+  el.insertAdjacentHTML("afterbegin", bot
+    ? '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3.5h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7l-3 2.5v-2.5H3a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="6" cy="7.5" r="0.9" fill="currentColor"/><circle cx="10" cy="7.5" r="0.9" fill="currentColor"/></svg>'
+    : '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2 6h12" stroke="currentColor" stroke-width="1.5"/><circle cx="4" cy="4.5" r="0.55" fill="currentColor"/><circle cx="5.8" cy="4.5" r="0.55" fill="currentColor"/></svg>');
+  return el;
+}
+
 function activityNote(text, was, by) {
   const div = document.createElement("div");
   div.className = "activity-note" + (was ? " was" : "");
@@ -26318,10 +26425,17 @@ function renderActivityRow(e) {
   line.className = "activity-line";
   const who = activitySpan("activity-who-name", activityWhoLabel(e.who));
   if (e.who === "admin" || BEATEN_BY[e.who]) who.style.color = noteAuthorColor(e.who);
-  line.append(who, ` ${ACTIVITY_VERBS[e.action] || e.action} `, activitySpan("activity-player", e.username || "a sweat"));
+  if (e.action === "denick.search") {
+    const player = e.mode === "player";
+    line.append(who, player ? " looked up " : " denicked ", activitySpan("activity-player", e.query || "a nick"), player ? "'s nicks" : "");
+  } else {
+    line.append(who, ` ${ACTIVITY_VERBS[e.action] || e.action} `, activitySpan("activity-player", e.username || "a sweat"));
+  }
   main.appendChild(line);
 
-  if (e.action === "sweat.edit") {
+  if (e.action === "denick.search") {
+    main.appendChild(activityDenickChips(e));
+  } else if (e.action === "sweat.edit") {
     const diff = activityDiffChips(e.changes);
     if (diff) main.appendChild(diff);
   } else if (e.action === "note.edit") {
@@ -26337,6 +26451,7 @@ function renderActivityRow(e) {
 
   const side = document.createElement("div");
   side.className = "activity-side";
+  if (e.action === "denick.search") side.appendChild(activityVia(e.via));
   if (e.action === "sweat.delete") {
     if (e.restorable) {
       const btn = document.createElement("button");
@@ -26423,7 +26538,7 @@ async function loadActivity(page = 0) {
   }
 }
 
-[...BEATEN_BY_KEYS.map(k => [k, BEATEN_BY[k].label]), ["admin", "Admin"]].forEach(([id, label]) => {
+[...BEATEN_BY_KEYS.map(k => [k, BEATEN_BY[k].label]), ["admin", "Admin"], ["guest", "Visitors"]].forEach(([id, label]) => {
   activityWhoSelect.add(new Option(label, id));
 });
 activityWhoSelect.addEventListener("change", () => loadActivity(0));

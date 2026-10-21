@@ -1059,6 +1059,7 @@ html[data-theme="hollowgrave"] .denick-mine-item.is-new { border-color: #f28c28;
 .denick-row.is-current::before { width: 14px; height: 14px; margin-top: -7px; left: -23px; background: var(--good); box-shadow: 0 0 0 3px var(--panel), 0 0 12px var(--good); }
 .denick-row.is-current .denick-avatar { width: 36px; height: 36px; }
 .denick-row-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.denick-row-side { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 /* Minecraft head renders are natively 8x8 px per face - scaling that up
    with the browser's default smoothing turns it to mush, so it's pinned to
    the same crisp-pixel rendering the rest of the site already uses for
@@ -1080,6 +1081,8 @@ html[data-theme="hollowgrave"] .denick-mine-item.is-new { border-color: #f28c28;
   .denick-mode-toggle { width: 100%; }
   .denick-mode-btn { flex: 1; padding: 8px 6px; font-size: 0.8em; gap: 5px; }
   .denick-row .pill { flex: none; font-size: 0.72em; }
+  /* Current badge over the time, so the name keeps its room. */
+  .denick-row-side { flex-direction: column-reverse; align-items: flex-end; gap: 4px; }
 }
 
 /* Per-theme touches for the mode switch and timeline rail. */
@@ -21519,7 +21522,8 @@ async function queryDenickerNicks(path, params) {
     const entries = (data.success && data.nicks ? data.nicks : []).map(n => ({
       username: n.username,
       nick: n.nick,
-      updated: typeof n.updated === "number" ? n.updated : (Date.parse(n.updated) || 0),
+      // Milliseconds; a number this small can only be Unix seconds.
+      updated: typeof n.updated === "number" ? (n.updated > 0 && n.updated < 1e11 ? n.updated * 1000 : n.updated) : (Date.parse(n.updated) || 0),
       source: "Denicker API"
     }));
     return { entries };
@@ -21699,11 +21703,22 @@ function renderDenickResults(entries, nameOf, startIndex) {
 
     who.append(avatar, info);
 
-    const badge = document.createElement("span");
-    badge.className = isCurrent ? "pill acc-current" : "pill";
-    badge.textContent = isCurrent ? "Current" : denickTimeAgo(entry.updated);
+    // Every row says when it was seen, the current one too (next to its
+    // badge). A source with no date for an answer shows none, never a guess.
+    const side = document.createElement("span");
+    side.className = "denick-row-side";
+    const when = document.createElement("span");
+    when.className = "pill";
+    when.textContent = entry.updated ? denickTimeAgo(entry.updated) : (isCurrent ? "" : "Date unknown");
+    if (when.textContent) side.appendChild(when);
+    if (isCurrent) {
+      const badge = document.createElement("span");
+      badge.className = "pill acc-current";
+      badge.textContent = "Current";
+      side.appendChild(badge);
+    }
 
-    row.append(who, badge);
+    row.append(who, side);
     frag.appendChild(row);
   });
   denickResults.appendChild(frag);

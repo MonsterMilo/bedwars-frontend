@@ -1002,7 +1002,7 @@ html[data-theme="hollowgrave"] .denick-mine-item.is-new { border-color: #f28c28;
 
 /* Results read as a history timeline: a rail down the left with one dot
    per entry (colored by source - accent for the Denicker API, gold for
-   Diamond Dome, accent-2 for Tricktracker, good for Observer, bad for Bedlify), and the most recent "Current"
+   Diamond Dome, accent-2 for Tricktracker, bad for Bedlify, including its #nicks list), and the most recent "Current"
    entry lifted into its own highlighted card. */
 .denick-results {
   position: relative;
@@ -1051,7 +1051,6 @@ html[data-theme="hollowgrave"] .denick-mine-item.is-new { border-color: #f28c28;
 }
 .denick-row[data-source="dome"]::before { background: var(--gold); }
 .denick-row[data-source="tricktracker"]::before { background: var(--accent-2); }
-.denick-row[data-source="observer"]::before { background: var(--good); }
 .denick-row[data-source="bedlify"]::before { background: var(--bad); }
 .denick-row.is-current {
   border-color: color-mix(in srgb, var(--good) 45%, transparent);
@@ -7594,7 +7593,6 @@ html[data-theme="casefiles"] .activity-chip { border-radius: 2px; }
 .activity-found::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
 .activity-found[data-source="dome"]::before { background: var(--gold); }
 .activity-found[data-source="tricktracker"]::before { background: var(--accent-2); }
-.activity-found[data-source="observer"]::before { background: var(--good); }
 .activity-found[data-source="bedlify"]::before { background: var(--bad); }
 .activity-found[data-source="milo"]::before { background: var(--roster-milo); }
 .activity-found.is-top { border-color: color-mix(in srgb, var(--act-denick) 55%, transparent); }
@@ -15921,7 +15919,6 @@ html:not([data-theme]) .denick-row {
 }
 html:not([data-theme]) .denick-row[data-source="dome"] { border-left-color: var(--gold); }
 html:not([data-theme]) .denick-row[data-source="tricktracker"] { border-left-color: var(--accent-2); }
-html:not([data-theme]) .denick-row[data-source="observer"] { border-left-color: var(--good); }
 html:not([data-theme]) .denick-row[data-source="bedlify"] { border-left-color: var(--bad); }
 html:not([data-theme]) .denick-row.is-current { border-left-color: var(--good); }
 html:not([data-theme]) .denick-row::before { border-radius: 0; transform: rotate(45deg); }
@@ -21444,7 +21441,8 @@ function updateKeyIdentityUi() {
 //   - Bedlify: also proxied (/bedlify/*), and answers with sightings in the
 //     same shape as the scraped sources' rows. It has a tighter rate limit
 //     than Denicker on the backend.
-//   - Scraped sources (Diamond Dome, Tricktracker, Observer): public, keyless gists of
+//   - Scraped sources (Diamond Dome, Tricktracker, and Bedlify's #nicks list, shown as
+//     "Bedlify"): public, keyless gists of
 //     nicks scraped from each Discord's #denicks channel, all in the same
 //     format, fetched directly from the browser and parsed into the same two
 //     lookup maps the plugin builds (byNick/byPlayer).
@@ -21452,7 +21450,7 @@ function updateKeyIdentityUi() {
 const SCRAPED_SOURCES = [
   { name: "Diamond Dome", url: "https://gist.githubusercontent.com/MonsterMilo/169045d75d17d68a41d051bae056106d/raw/diamond-dome-nicks.json", data: null, loadPromise: null },
   { name: "Tricktracker", url: "https://gist.githubusercontent.com/MonsterMilo/f599b8b81224056ea42a436ece0be5ed/raw/tricktracker-nicks.json", data: null, loadPromise: null },
-  { name: "Observer", url: "https://gist.githubusercontent.com/MonsterMilo/74fc374c134c5e09d5d79590fc7ed70f/raw/observer-nicks.json", data: null, loadPromise: null }
+  { name: "Bedlify", url: "https://gist.githubusercontent.com/MonsterMilo/74fc374c134c5e09d5d79590fc7ed70f/raw/observer-nicks.json", data: null, loadPromise: null }
 ];
 
 // Each source loads independently - one gist being down still leaves the
@@ -21683,7 +21681,7 @@ function renderDenickResults(entries, nameOf, startIndex) {
 
     const row = document.createElement("div");
     row.className = isCurrent ? "denick-row is-current" : "denick-row";
-    row.dataset.source = { "Diamond Dome": "dome", "Tricktracker": "tricktracker", "Observer": "observer", "Bedlify": "bedlify", "Milo": "milo" }[entry.source] || "api";
+    row.dataset.source = { "Diamond Dome": "dome", "Tricktracker": "tricktracker", "Bedlify": "bedlify", "Milo": "milo" }[entry.source] || "api";
 
     const who = document.createElement("div");
     who.className = "denick-row-who";
@@ -26333,7 +26331,7 @@ const ACTIVITY_VERBS = {
   "note.delete": "removed a note from",
   "denick.search": "denicked"
 };
-const DENICK_SOURCE_KEYS = { "Diamond Dome": "dome", "Tricktracker": "tricktracker", "Observer": "observer", "Bedlify": "bedlify", "Milo": "milo" };
+const DENICK_SOURCE_KEYS = { "Diamond Dome": "dome", "Tricktracker": "tricktracker", "Bedlify": "bedlify", "Milo": "milo" };
 // Cursor paging: activityCursors[i] is the "before" cursor that loads page
 // i (page 0 has none), filled in as pages are visited.
 let activityCursors = [null];

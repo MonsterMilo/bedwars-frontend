@@ -4270,8 +4270,9 @@ html[data-theme="deepcurrent"] .flip-sheen { --sheen: rgba(80,255,220,0.3); }
       "live live"
       "skin stats"
       "record urchin"
-      "notes notes";
-    grid-template-rows: auto auto auto 1fr auto;
+      "notes notes"
+      "replays replays";
+    grid-template-rows: auto auto auto 1fr auto auto;
     column-gap: 22px;
     align-items: start;
   }
@@ -4284,6 +4285,7 @@ html[data-theme="deepcurrent"] .flip-sheen { --sheen: rgba(80,255,220,0.3); }
   #playerModal .modal-record-beaten { margin-left: 0; align-items: flex-start; }
   #playerModal .modal-tags-urchin { grid-area: urchin; }
   #playerModal .modal-notes { grid-area: notes; }
+  #playerModal .modal-replays { grid-area: replays; }
   #playerModal .modal-record[hidden] + .modal-tags-urchin { grid-column: 1 / -1; }
   #playerModal .modal-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #playerModal .modal-stat-tile { padding: 12px 12px 10px; }
@@ -7298,6 +7300,13 @@ html[data-theme="deepcurrent"] .card-stat-value { font-family: 'JetBrains Mono',
 .note-add-btn { padding: 5px 12px; font-size: 13px; }
 .note-add-btn[hidden] { display: none; }
 .modal-notes-empty { font-size: 0.86em; color: var(--text-faint); }
+/* REPLAYS - recorded games for this player (the Starfish proxy uploads
+   the game when Milo tracks someone in it). Same list look as the notes. */
+.replay-item { display: flex; align-items: center; gap: 10px; }
+.replay-item-text { flex: 1; min-width: 0; }
+.replay-item-when { font-weight: 800; font-size: 0.86em; }
+.replay-item-meta { font-size: 0.8em; color: var(--text-dim); overflow-wrap: anywhere; }
+.replay-help { font-size: 0.78em; color: var(--text-faint); margin-top: 4px; }
 .modal-notes-empty[hidden] { display: none; }
 .note-list { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; }
 .note-item {
@@ -18070,6 +18079,14 @@ html:not([data-theme]) .lb-entry[data-place="3"] { --row: #ff4fa8; }
         </form>
         <div id="modalNoteStatus" class="modal-note-status" role="alert" aria-live="assertive"></div>
       </div>
+      <div id="modalReplays" class="modal-notes modal-replays" hidden>
+        <div class="modal-notes-head">
+          <div class="modal-tags-label">Replays <span id="modalReplaysCount" class="modal-notes-count"></span></div>
+        </div>
+        <ol id="modalReplaysList" class="note-list"></ol>
+        <div class="replay-help">Opens in Replay Mod: put the file in <code>.minecraft/replay_recordings</code>, then Replay Viewer (Lunar: the Forge module).</div>
+        <div id="modalReplayStatus" class="modal-note-status" role="alert" aria-live="assertive"></div>
+      </div>
       </div>
     </div>
   </div>
@@ -25126,6 +25143,67 @@ async function copyWithFeedback(el, text, what) {
   }
 }
 
+// --- Replays: this player's recorded games (backend /replays, keys only) ---
+// The list hides itself when there are none, or without a key.
+const modalReplays = document.getElementById("modalReplays");
+const modalReplaysList = document.getElementById("modalReplaysList");
+const modalReplaysCount = document.getElementById("modalReplaysCount");
+const modalReplayStatus = document.getElementById("modalReplayStatus");
+async function loadModalReplays(uuid) {
+  modalReplays.hidden = true;
+  modalReplaysList.textContent = "";
+  modalReplayStatus.textContent = "";
+  if (!uuid || !getAdminKey()) return;
+  try {
+    const res = await fetch(`${backendBaseURL}/replays?uuid=${encodeURIComponent(uuid)}`, { headers: adminHeaders() });
+    if (!res.ok) return;
+    const { replays = [] } = await res.json();
+    if (modal.dataset.activeUuid !== uuid || !replays.length) return;
+    modalReplaysCount.textContent = String(replays.length);
+    for (const r of replays) {
+      const li = document.createElement("li");
+      li.className = "note-item replay-item";
+      const text = document.createElement("div");
+      text.className = "replay-item-text";
+      const when = document.createElement("div");
+      when.className = "replay-item-when";
+      const played = r.playedAt ? new Date(r.playedAt) : null;
+      when.textContent = played && !isNaN(played) ? played.toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "Game";
+      const meta = document.createElement("div");
+      meta.className = "replay-item-meta";
+      const mins = Math.floor((r.durationMs || 0) / 60000);
+      const secs = Math.round(((r.durationMs || 0) % 60000) / 1000);
+      const others = (r.players || []).map(p => p.username).filter(n => n.toLowerCase() !== String(openPlayerName || "").toLowerCase());
+      meta.textContent = [r.mode, r.map, `${mins}m ${secs}s`, `${((r.sizeBytes || 0) / 1048576).toFixed(1)} MB`, others.length ? `with ${others.join(", ")}` : null].filter(Boolean).join(" · ");
+      text.append(when, meta);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn btn-ghost note-btn-small";
+      btn.textContent = "Download";
+      btn.addEventListener("click", () => downloadReplay(r.id, btn));
+      li.append(text, btn);
+      modalReplaysList.appendChild(li);
+    }
+    modalReplays.hidden = false;
+  } catch (err) {
+    // No list then - the rest of the popup is unaffected.
+  }
+}
+async function downloadReplay(id, btn) {
+  btn.disabled = true;
+  modalReplayStatus.textContent = "";
+  try {
+    const res = await fetch(`${backendBaseURL}/replays/${encodeURIComponent(id)}/link`, { headers: adminHeaders() });
+    if (!res.ok) throw new Error(await extractErrorMessage(res, "Couldn't get the file."));
+    const { url } = await res.json();
+    window.location.href = url;
+  } catch (err) {
+    modalReplayStatus.textContent = err.message || "Couldn't get the file.";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 async function openPlayerModal(item, { retry = false } = {}) {
   if (!retry) rememberFocusBeforeModal();
   const username = item.dataset.username;
@@ -25152,6 +25230,7 @@ async function openPlayerModal(item, { retry = false } = {}) {
     .map(c => `<div class="modal-stat-tile ${c} modal-stat-skeleton" aria-hidden="true"><span class="skeleton-block"></span><span class="skeleton-block"></span></div>`).join("");
   modalRecord.hidden = true;
   renderModalNotes(item);
+  loadModalReplays(uuid);
   modalTags.textContent = "Checking...";
   modalTagsReason.hidden = true;
 

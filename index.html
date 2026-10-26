@@ -23604,8 +23604,14 @@ function sotdPickFor(dayKey, players) {
   });
   return best;
 }
+// Only real sweats qualify: index (FKDR² × star) of at least 100k.
+const SOTD_MIN_INDEX = 100000;
+function sotdIndex(p) {
+  const fkdr = Number(p.latest && p.latest.fkdr), star = Number(p.latest && p.latest.star);
+  return Number.isFinite(fkdr) && Number.isFinite(star) ? fkdr * fkdr * star : 0;
+}
 function sotdPick(players) {
-  const pool = players.filter(p => !p.cheating);
+  const pool = players.filter(p => !p.cheating && sotdIndex(p) >= SOTD_MIN_INDEX);
   if (!pool.length) return null;
   const today = sotdDayKey();
   const yesterday = sotdDayKey(new Date(Date.now() - 86400000));

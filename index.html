@@ -21808,12 +21808,13 @@ async function runDenickSearch() {
     await loadScrapedSources(); // never rejects - a gist hiccup shouldn't block the Denicker half from showing
     if (isStale()) return;
 
-    let apiResult, bedlifyResult, miloResult, scrapedEntries, keyField, nameOf;
+    let apiResult, bedlifyResult, miloResult, resolvedResult, scrapedEntries, keyField, nameOf;
     if (denickMode === "nick") {
-      [apiResult, bedlifyResult, miloResult] = await Promise.all([
+      [apiResult, bedlifyResult, miloResult, resolvedResult] = await Promise.all([
         queryDenickerNicks("/denicker/nick/" + encodeURIComponent(query), ""),
         queryBedlify("nick", query),
-        queryMilo("nick", query)
+        queryMilo("nick", query),
+        queryResolved("nick", query)
       ]);
       scrapedEntries = scrapedEntriesForNick(query);
       keyField = "username";
@@ -21824,12 +21825,13 @@ async function runDenickSearch() {
         const resMojang = await fetch(`${backendBaseURL}/mojang/${encodeURIComponent(query)}`, { headers: adminHeaders() });
         if (resMojang.ok) uuid = (await resMojang.json()).id;
       } catch {}
-      [apiResult, bedlifyResult, miloResult] = await Promise.all([
+      [apiResult, bedlifyResult, miloResult, resolvedResult] = await Promise.all([
         uuid
           ? queryDenickerNicks(`/denicker/history/${uuid}`, `username=${encodeURIComponent(query)}`)
           : { entries: [] },
         queryBedlify("player", query),
-        queryMilo("player", query)
+        queryMilo("player", query),
+        queryResolved("player", query)
       ]);
       scrapedEntries = scrapedEntriesForPlayer(query);
       keyField = "nick";
@@ -21837,7 +21839,7 @@ async function runDenickSearch() {
     }
     if (isStale()) return;
 
-    const merged = mergeDenickEntries([...apiResult.entries, ...bedlifyResult.entries, ...miloResult.entries, ...scrapedEntries], keyField);
+    const merged = mergeDenickEntries([...apiResult.entries, ...bedlifyResult.entries, ...miloResult.entries, ...resolvedResult.entries, ...scrapedEntries], keyField);
     const partial = !!(apiResult.error || bedlifyResult.error);
     reportDenickSearch(denickMode, query, merged, partial);
     denickAllResults = merged;
@@ -22087,6 +22089,21 @@ async function queryMilo(kind, value) {
   if (!canAskMilo()) return { entries: [] };
   try {
     const res = await fetch(`${backendBaseURL}/denick-requests/known/${kind}/${encodeURIComponent(value)}`, { headers: adminHeaders() });
+    if (!res.ok) return { entries: [] };
+    const data = await res.json();
+    return { entries: Array.isArray(data.entries) ? data.entries : [] };
+  } catch {
+    return { entries: [] };
+  }
+}
+
+// The backend's resolved nicks list (every nick any source ever turned up,
+// plus imports like the Denicker DB export), each entry under the source
+// that saw it. Merged like every other source: newest wins.
+async function queryResolved(kind, value) {
+  if (!canAskMilo()) return { entries: [] };
+  try {
+    const res = await fetch(`${backendBaseURL}/resolved-nicks/search/${kind}/${encodeURIComponent(value)}`, { headers: adminHeaders() });
     if (!res.ok) return { entries: [] };
     const data = await res.json();
     return { entries: Array.isArray(data.entries) ? data.entries : [] };

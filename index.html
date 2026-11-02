@@ -2,6 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<!-- Content Security Policy: the page may only talk to the backend, the
+     denick gists and Google Fonts, and only show images from the skin
+     sites. If a script ever got injected it couldn't send someone's saved
+     key anywhere else. Add a host here when the site starts using a new one. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://visage.surgeplay.com https://mc-heads.net https://crafatar.com; connect-src 'self' https://bedwars-backend.onrender.com https://gist.githubusercontent.com; media-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Bedwars Sweat Tracker</title>
 <link rel="icon" id="siteFavicon" type="image/svg+xml">

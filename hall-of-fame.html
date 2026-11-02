@@ -654,8 +654,12 @@ function buildRotunda(skinOf) {
     plq.material.emissiveMap = plq.material.map; plq.position.set(0, -daisTop + 0.75, 3.3 - p.z + (p.rank === 1 ? 4.3 : 3.0)); plq.rotation.x = -0.35;
     // put plaques on small lecterns at the dais foot
     const lect = new THREE.Group(); lect.position.set(p.x * 1.3, 0, ROT_Z + (p.rank === 1 ? 9.3 : 8.6)); if (p.rank !== 1) lect.rotation.y = -Math.sign(p.x) * 0.25; world.add(lect);
-    const lb = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.9, 0.5), M.dark); lb.position.y = 0.45; lect.add(lb);
-    plq.position.set(0, 0.98, 0.05); plq.rotation.x = -0.55; lect.add(plq);
+    // a low stand with the plaque leaning back on it, so the whole plaque shows
+    const lb = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.62, 1.0), M.dark); lb.position.set(0, 0.31, -0.25); lect.add(lb);
+    const lt = new THREE.Mesh(new THREE.BoxGeometry(2.26, 0.05, 1.06), M.gold); lt.position.set(0, 0.645, -0.25); lect.add(lt);
+    const lean = new THREE.Group(); lean.position.set(0, 0.67, 0.2); lean.rotation.x = -0.62; lect.add(lean);
+    const back = new THREE.Mesh(new THREE.BoxGeometry(2.04, 1.12, 0.06), M.gold); back.position.set(0, 0.56, -0.04); lean.add(back);
+    plq.position.set(0, 0.56, 0.002); plq.rotation.x = 0; lean.add(plq);
     const cone = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 2.1 * p.s / 1.3, 15 - daisTop - p.h, 40, 1, true), coneMaterial(d.cheating ? 0xff7080 : 0xfff0d0)); cone.position.set(0, p.h + (15 - daisTop - p.h) / 2, 0); g.add(cone);
     const ex = { d, group: g, fig, cone, plaque: plq, banner: num, trim: trimMat, power: 0, target: 0, podium: true, rank: p.rank, flag: !!d.cheating,
       z: ROT_Z + p.z, x: p.x, pool: null, disc: null };
@@ -871,7 +875,7 @@ function updateExhibits(dt, time) {
     ex.cone.material.uniforms.uPower.value = p * (ex.podium ? 0.8 : 0.75 - ex.near * 0.35); ex.cone.material.uniforms.uTime.value = time;
     if (ex.pool) ex.pool.material.opacity = p * (0.28 + ex.near * 0.25);
     if (ex.disc) ex.disc.material.color.setRGB(1, 0.77, 0.42).multiplyScalar(0.2 + p * 2.6);
-    ex.plaque.material.emissiveIntensity = p * (0.16 + ex.near * 0.22);
+    ex.plaque.material.emissiveIntensity = p * (ex.podium ? 0.08 + ex.near * 0.06 : 0.16 + ex.near * 0.22);
     ex.banner.material.emissiveIntensity = p * (ex.podium ? 0.35 : 0.2 + ex.near * 0.15);
     ex.trim.color.setRGB(1, ex.flag ? 0.23 : 0.77, ex.flag ? 0.3 : 0.42).multiplyScalar(0.1 + p * (0.9 + ex.near * 0.6));
     const f = ex.fig; if (!f) continue;

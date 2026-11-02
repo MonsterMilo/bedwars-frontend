@@ -507,7 +507,7 @@ function makeSword() {
   Object.entries(byCol).forEach(([ch, cells]) => {
     const mat = new THREE.MeshStandardMaterial({ color: SWORD_COL[ch], roughness: 0.35, metalness: ch === "H" ? 0 : 0.3, emissive: ch === "L" || ch === "M" ? SWORD_COL[ch] : 0, emissiveIntensity: ch === "L" ? 0.35 : 0.15 });
     const im = new THREE.InstancedMesh(box, mat, cells.length); const m = new THREE.Matrix4();
-    cells.forEach(([x, y], i) => { m.makeTranslation(x - 7.5, 7.5 - y, 0); im.setMatrixAt(i, m); }); grp.add(im);
+    cells.forEach(([x, y], i) => { m.makeTranslation(x - 3.5, 12.5 - y, 0); im.setMatrixAt(i, m); }); grp.add(im);
   });
   return grp;
 }
@@ -528,11 +528,12 @@ function makePlayer(skin) {
   part(rLeg, skinBox(4, 12, 4, 0, 16), base, 0, -6, 0); part(rLeg, skinBox(4, 12, 4, 0, 32, 0.25), over, 0, -6, 0);
   const lLeg = new THREE.Group(); lLeg.position.set(2, 12, 0); root.add(lLeg);
   part(lLeg, skinBox(4, 12, 4, 16, 48), base, 0, -6, 0); part(lLeg, skinBox(4, 12, 4, 0, 48, 0.25), over, 0, -6, 0);
-  const sword = makeSword(); sword.scale.setScalar(0.9);
-  sword.position.set(0, -10.5, 1.5); sword.rotation.set(0, -Math.PI / 2 + 0.7, 0); sword.rotateZ(Math.PI / 4 + 0.15); sword.position.z += 5.2; sword.position.y += 3.2;
-  rArm.add(sword);
+  // Held like in-game: the grip sits in the fist, the sword's flat side lines up with the arm,
+  // and the blade points forward and up. `grip` tilts it further when the player salutes.
+  const sword = makeSword(); sword.scale.setScalar(0.8); sword.rotation.y = -Math.PI / 2;
+  const grip = new THREE.Group(); grip.position.set(0, -10.6, 0.3); grip.add(sword); rArm.add(grip);
   root.scale.setScalar(1 / 16);
-  return { root, body, head, rArm, lArm, rLeg, lLeg, sword };
+  return { root, body, head, rArm, lArm, rLeg, lLeg, sword, grip };
 }
 
 // ---------- Exhibits ----------
@@ -878,7 +879,7 @@ function updateExhibits(dt, time) {
     f.body.position.y = Math.sin(ph * 1.6) * 0.18; f.body.scale.y = 1 + Math.sin(ph * 1.6) * 0.004;
     f.lArm.rotation.z = 0.06 + Math.sin(ph * 1.6) * 0.03; f.lArm.rotation.x = Math.sin(ph * 0.8) * 0.05;
     // salute with the sword when you look at them
-    const raise = ex.near; f.rArm.rotation.x = THREE.MathUtils.lerp(-0.32 + Math.sin(ph * 0.8) * 0.04, -2.75, ease(raise)); f.rArm.rotation.z = -0.06 - raise * 0.12;
+    const raise = ex.near; f.rArm.rotation.x = THREE.MathUtils.lerp(-0.38 + Math.sin(ph * 0.8) * 0.04, -1.75, ease(raise)); f.rArm.rotation.z = -0.06 - raise * 0.1; f.grip.rotation.x = THREE.MathUtils.lerp(0.15, 0.95, ease(raise));
     f.rLeg.rotation.x = 0; f.lLeg.rotation.x = 0;
     // head follows the visitor when close
     f.head.getWorldPosition(tmpV); const dist = tmpV.distanceTo(camera.position);

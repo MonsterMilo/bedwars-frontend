@@ -424,7 +424,7 @@ function addFigure(s, i) {
   // wall plaque
   const plaqueTex = plaqueTexture(s, rank);
   const plaque = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 2.6 * 560 / 1024), new THREE.MeshBasicMaterial({ map: plaqueTex, toneMapped: false }));
-  if (slot.dais) { plaque.position.set(0, ph + 2.3 * 1.12 + 1.35, -5.9); plaque.scale.setScalar(1.25); }
+  if (slot.dais) { plaque.position.set(0, ph + 2.3 * 1.12 + 1.95, -5.9); plaque.scale.setScalar(1.25); }
   else { plaque.position.set(slot.side * (HALL_W / 2 - PLINTH_X - 0.02), 2.95, 0); plaque.rotation.y = slot.side === -1 ? Math.PI / 2 : -Math.PI / 2; }
   g.add(plaque);
   const pframe = new THREE.Mesh(new THREE.PlaneGeometry(2.6 + 0.08, 2.6 * 560 / 1024 + 0.08), goldMat);

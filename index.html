@@ -32,7 +32,7 @@
       localStorage.setItem("siteTheme", "neon");
       ["hgBloodMoon", "hgPumpkins", "spookyNudge", "seasonTried"].forEach(k => localStorage.removeItem(k));
     }
-    if (savedTheme && savedTheme !== "neon") document.documentElement.setAttribute("data-theme", savedTheme);
+    window.SAVED_THEME_AT_START = savedTheme;
   } catch (e) {}
 
   // Each theme only pulls in the Google Fonts it actually uses, instead of
@@ -61,6 +61,11 @@
     link.href = "https://fonts.googleapis.com/css2?" + families + "&display=swap";
     document.head.appendChild(link);
   };
+  // Only a theme that still exists goes on the page; anything else (an old
+  // or removed theme's name) shows Neon until the main script resets it.
+  if (window.SAVED_THEME_AT_START && window.SAVED_THEME_AT_START !== "neon" && window.THEME_FONT_FAMILIES[window.SAVED_THEME_AT_START]) {
+    document.documentElement.setAttribute("data-theme", window.SAVED_THEME_AT_START);
+  }
   window.loadThemeFonts(document.documentElement.getAttribute("data-theme") || "neon");
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -80,7 +85,7 @@
   --accent-2-soft: rgba(168,85,247,0.14);
   --text: #eef0f6;
   --text-dim: #8a93a6;
-  --text-faint: #5c6577;
+  --text-faint: #717989;
   --good: #34e0a1;
   --good-soft: rgba(52,224,161,0.12);
   --bad: #ff5c72;
@@ -142,7 +147,7 @@ html[data-theme="casefiles"] {
   --accent-2-soft: rgba(163,47,29,0.12);
   --text: #2a241c;
   --text-dim: #5c5340;
-  --text-faint: #8a7f66;
+  --text-faint: #6e6552;
   --good: #2e6b46;
   --good-soft: rgba(46,107,70,0.12);
   --bad: #a32f1d;
@@ -197,7 +202,7 @@ html[data-theme="ledger"] {
   --accent-2-soft: rgba(22,35,58,0.08);
   --text: #16233a;
   --text-dim: #5c6678;
-  --text-faint: #8b93a3;
+  --text-faint: #6e7481;
   --good: #3a6b4a;
   --good-soft: rgba(58,107,74,0.1);
   --bad: #8a1f2b;
@@ -253,7 +258,7 @@ html[data-theme="deepcurrent"] {
   --accent-2-soft: rgba(155,107,255,0.14);
   --text: #e6f6f4;
   --text-dim: #82a9ae;
-  --text-faint: #4d6d74;
+  --text-faint: #648086;
   --good: #3fd68a;
   --good-soft: rgba(63,214,138,0.12);
   --bad: #ff5a5a;
@@ -308,7 +313,7 @@ html[data-theme="skyisles"] {
   --accent-2-soft: rgba(45,106,159,0.12);
   --text: #173247;
   --text-dim: #4b6a82;
-  --text-faint: #7d97ab;
+  --text-faint: #627685;
   --good: #2e8f2a;
   --good-soft: rgba(46,143,42,0.13);
   --bad: #d23a2e;
@@ -2584,15 +2589,6 @@ html[data-theme="deepcurrent"] { --medal-1: #ffe066; --medal-2: #bfe3ea; --medal
   margin: 0 auto 26px;
 }
 
-.lb-podium {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: end;
-  gap: 14px;
-  max-width: 760px;
-  margin: 8px auto 22px;
-}
-
 .leaderboard-chip {
   font-family: inherit;
   color: var(--text);
@@ -2603,19 +2599,6 @@ html[data-theme="deepcurrent"] { --medal-1: #ffe066; --medal-2: #bfe3ea; --medal
   transition: transform 0.2s var(--ease), filter 0.2s var(--ease);
 }
 .leaderboard-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
-
-.lb-step {
-  --medal: var(--medal-3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-.lb-step.lb-place-1 { --medal: var(--medal-1); }
-.lb-step.lb-place-2 { --medal: var(--medal-2); }
-.lb-step:hover { transform: translateY(-3px); }
-.lb-step:active { transform: translateY(0) scale(0.98); }
 
 .lb-avatar {
   display: grid;
@@ -2629,305 +2612,25 @@ html[data-theme="deepcurrent"] { --medal-1: #ffe066; --medal-2: #bfe3ea; --medal
   font-weight: 800;
   font-size: 0.8em;
 }
-.lb-step .lb-avatar {
-  width: 64px;
-  height: 64px;
-  font-size: 1.25em;
-  box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px var(--medal);
-}
-.lb-step.lb-place-1 .lb-avatar {
-  width: 80px;
-  height: 80px;
-  font-size: 1.5em;
-}
-.lb-crown {
-  height: 22px;
-  color: var(--medal-1);
-  font-size: 1.3em;
-  line-height: 22px;
-}
-.lb-step:not(.lb-place-1) .lb-crown { visibility: hidden; }
 
-.lb-step .leaderboard-name {
-  max-width: 100%;
-  margin-top: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 800;
-  font-size: 1.02em;
-}
-.lb-step-count {
-  color: var(--text-dim);
-  font-size: 0.8em;
-  font-weight: 600;
-}
-.lb-step-count b {
-  color: var(--text);
-  font-size: 1.15em;
-}
-
-.lb-block {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 100%;
-  height: 70px;
-  margin-top: 6px;
-  border-radius: var(--radius-m) var(--radius-m) 0 0;
-  border: 1px solid var(--border);
-  border-top: 3px solid var(--medal);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--medal) 22%, transparent), transparent 90%), var(--panel);
-}
-.lb-place-1 .lb-block { height: 112px; }
-.lb-place-2 .lb-block { height: 88px; }
-.lb-place {
-  color: var(--medal);
-  font-size: 2.3em;
-  font-weight: 800;
-  line-height: 1;
-}
-.lb-place-1 .lb-place { font-size: 3em; }
-.lb-place-roman { display: none; }
-
-/* The selected person - a lit plinth and a "viewing" label, since the
-   drill-down table below it otherwise only says whose it is in its title. */
-.lb-step.active .lb-block {
-  border-color: var(--border-strong);
-  border-top-color: var(--medal);
-  box-shadow: 0 0 0 1px var(--border-strong), 0 12px 28px -12px color-mix(in srgb, var(--medal) 60%, transparent);
-}
-.lb-step.active .lb-block::after,
-.lb-row.active::after {
-  content: "Viewing";
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.62em;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.lb-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 14px;
-}
-.lb-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 9px 14px;
-  border-radius: var(--radius-m);
-  border: 1px solid var(--border);
-  background: var(--panel);
-  text-align: left;
-}
-.lb-row:hover { border-color: var(--border-strong); }
-.lb-row:active { transform: scale(0.99); }
-.lb-row.active {
-  border-color: var(--border-strong);
-  background: linear-gradient(90deg, var(--accent-soft), transparent 70%), var(--panel);
-}
-.lb-row.active::after {
-  position: static;
-  transform: none;
-  order: 3;
-}
-.lb-row .leaderboard-rank {
-  width: 26px;
-  flex: none;
-  color: var(--text-faint);
-  font-size: 0.82em;
-  font-weight: 800;
-}
-.lb-row .leaderboard-name {
-  width: 76px;
-  flex: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 700;
-  font-size: 0.95em;
-}
-.lb-bar {
-  flex: 1;
-  height: 6px;
-  min-width: 30px;
-  border-radius: 999px;
-  background: var(--border);
-  overflow: hidden;
-}
-.lb-bar > span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--chip-color);
-  transition: width 0.5s var(--ease);
-}
-.lb-row .leaderboard-count {
-  order: 4;
-  min-width: 26px;
-  text-align: right;
-  font-weight: 800;
-  font-size: 0.95em;
-  color: var(--text);
-}
-
-@media (max-width: 620px) {
-  .lb-podium { gap: 8px; }
-  .lb-step .lb-avatar { width: 50px; height: 50px; font-size: 1.05em; }
-  .lb-step.lb-place-1 .lb-avatar { width: 62px; height: 62px; font-size: 1.25em; }
-  .lb-block { height: 56px; }
-  .lb-place-1 .lb-block { height: 90px; }
-  .lb-place-2 .lb-block { height: 70px; }
-  .lb-place { font-size: 1.8em; }
-  .lb-place-1 .lb-place { font-size: 2.3em; }
-  .lb-list { grid-template-columns: 1fr; }
-  .lb-step.active .lb-block::after { bottom: 5px; font-size: 0.55em; }
-}
-
-/* Neon - lit-up plinths: the medal color glows through the block and the
-   top-three avatars get a halo, like stage lights on a podium. */
-html:not([data-theme]) .lb-step .lb-avatar {
-  box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px var(--medal), 0 0 22px color-mix(in srgb, var(--medal) 55%, transparent);
-}
-html:not([data-theme]) .lb-place {
-  text-shadow: 0 0 18px color-mix(in srgb, var(--medal) 70%, transparent);
-}
-html:not([data-theme]) .lb-bar > span {
-  box-shadow: 0 0 10px var(--chip-color);
-}
-
-/* Case Files - the podium is three stacked manila folders with the rank
-   stamped on in red ink, avatars pinned up as square mugshot tabs. */
-html[data-theme="casefiles"] .lb-avatar,
-html[data-theme="casefiles"] .lb-step .lb-avatar {
+/* Per-theme leaderboard avatars. Case Files: square mugshot tabs. */
+html[data-theme="casefiles"] .lb-avatar {
   border-radius: 2px;
   color: #2a241c;
   box-shadow: 0 0 0 4px #fbf6e6, 0 0 0 5px var(--border), 3px 5px 8px rgba(42,36,28,0.3);
 }
 html[data-theme="casefiles"] .lb-avatar { box-shadow: 0 0 0 2px #fbf6e6, 0 0 0 3px var(--border); }
-html[data-theme="casefiles"] .lb-step.lb-place-2 .lb-avatar { transform: rotate(-3deg); }
-html[data-theme="casefiles"] .lb-step.lb-place-3 .lb-avatar { transform: rotate(2.5deg); }
-html[data-theme="casefiles"] .lb-crown { color: var(--accent-2); font-family: 'Anton', sans-serif; font-size: 0.8em; letter-spacing: 0.12em; }
-html[data-theme="casefiles"] .lb-crown::before { content: "MOST WANTED"; }
-html[data-theme="casefiles"] .lb-crown > span { display: none; }
-html[data-theme="casefiles"] .lb-block {
-  border: 1px solid var(--border-strong);
-  border-top: 1px solid var(--border-strong);
-  border-radius: 3px 3px 0 0;
-  background:
-    repeating-linear-gradient(180deg, transparent 0 17px, rgba(163,145,92,0.18) 17px 18px),
-    #e9d9a8;
-  box-shadow: inset 0 -6px 0 rgba(0,0,0,0.05), 4px 4px 0 -1px #dcc88f;
-}
-html[data-theme="casefiles"] .lb-place {
-  font-family: 'Anton', sans-serif;
-  font-weight: 400;
-  color: var(--accent-2);
-  padding: 0 10px;
-  border: 3px solid var(--accent-2);
-  border-radius: 4px;
-  transform: rotate(-6deg);
-  opacity: 0.85;
-  font-size: 1.7em;
-  line-height: 1.15;
-}
-html[data-theme="casefiles"] .lb-place-1 .lb-place { font-size: 2.2em; }
-html[data-theme="casefiles"] .lb-step-count,
-html[data-theme="casefiles"] .lb-row .leaderboard-rank { font-family: 'Courier Prime', monospace; }
-html[data-theme="casefiles"] .lb-row {
-  background: var(--panel);
-  border-style: dashed;
-}
-html[data-theme="casefiles"] .lb-row.active { border-style: solid; background: #f2e3b3; }
-html[data-theme="casefiles"] .lb-bar {
-  height: 8px;
-  border-radius: 0;
-  background: repeating-linear-gradient(90deg, var(--border) 0 1px, transparent 1px 8px);
-}
-html[data-theme="casefiles"] .lb-bar > span { border-radius: 0; background: var(--text-dim); opacity: 0.75; }
-html[data-theme="casefiles"] .lb-step.active .lb-block::after,
-html[data-theme="casefiles"] .lb-row.active::after { color: var(--accent-2); font-family: 'Courier Prime', monospace; content: "OPEN FILE"; }
 
-/* Private Bank - engraved medallions on white stone, Roman numerals set in
-   Playfair, thin double gold rules instead of a filled block. */
+/* Private Bank: engraved medallions in Playfair. */
 html[data-theme="ledger"] .lb-avatar {
   color: #fff;
   font-family: 'Playfair Display', serif;
   background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--chip-color) 55%, #fff), var(--chip-color) 60%, color-mix(in srgb, var(--chip-color) 70%, #000));
   text-shadow: 0 1px 1px rgba(0,0,0,0.3);
 }
-html[data-theme="ledger"] .lb-step .lb-avatar {
-  box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--medal), 0 0 0 7px #fff, 0 0 0 8px color-mix(in srgb, var(--medal) 50%, transparent), 0 10px 20px -8px rgba(22,35,58,0.4);
-}
-html[data-theme="ledger"] .lb-crown > span { display: none; }
-html[data-theme="ledger"] .lb-crown::before { content: "\2766"; }
-html[data-theme="ledger"] .lb-block {
-  border: 0;
-  border-top: 1px solid var(--medal);
-  border-radius: 0;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--medal) 10%, #fff), #fff);
-  box-shadow: inset 0 3px 0 #fff, inset 0 4px 0 var(--medal), 0 14px 26px -20px rgba(22,35,58,0.5);
-  outline: 1px solid var(--border);
-}
-html[data-theme="ledger"] .lb-place-num { display: none; }
-html[data-theme="ledger"] .lb-place-roman {
-  display: inline;
-  font-family: 'Playfair Display', serif;
-  font-weight: 600;
-  font-style: italic;
-}
-html[data-theme="ledger"] .lb-step .leaderboard-name { font-weight: 600; }
-html[data-theme="ledger"] .lb-step-count { font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.95em; }
-html[data-theme="ledger"] .lb-row { border-radius: 0; border-color: var(--border); }
-html[data-theme="ledger"] .lb-row.active { border-color: var(--gold); background: linear-gradient(90deg, var(--accent-soft), transparent 70%), #fff; }
-html[data-theme="ledger"] .lb-row .leaderboard-rank { font-family: 'Playfair Display', serif; font-style: italic; }
-html[data-theme="ledger"] .lb-bar { height: 3px; background: var(--border); border-radius: 0; }
-html[data-theme="ledger"] .lb-bar > span { border-radius: 0; background: var(--gold); }
-html[data-theme="ledger"] .lb-step.active .lb-block::after,
-html[data-theme="ledger"] .lb-row.active::after { color: var(--gold); font-family: 'EB Garamond', serif; letter-spacing: 0.2em; }
 
-/* Deep Current - depth soundings: the plinths are columns of water that get
-   darker toward the bottom, ranks read out in the mono gauge font, and the
-   leader gets the same slow sonar ping the rest of this theme uses. */
+/* Deep Current: dark initials on the bright chip. */
 html[data-theme="deepcurrent"] .lb-avatar { color: #031018; }
-html[data-theme="deepcurrent"] .lb-step .lb-avatar {
-  position: relative;
-  box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--medal), 0 0 20px color-mix(in srgb, var(--medal) 40%, transparent);
-}
-html[data-theme="deepcurrent"] .lb-step.lb-place-1 .lb-avatar::after {
-  content: "";
-  position: absolute;
-  inset: -5px;
-  border-radius: 50%;
-  border: 2px solid var(--medal);
-  opacity: 0;
-  animation: alarmPing 2.6s ease-out infinite;
-}
-html[data-theme="deepcurrent"] .lb-block {
-  border-radius: 14px 14px 0 0;
-  border-color: rgba(53,230,196,0.18);
-  border-top: 2px solid var(--medal);
-  background:
-    repeating-linear-gradient(180deg, transparent 0 13px, rgba(53,230,196,0.08) 13px 14px),
-    linear-gradient(180deg, color-mix(in srgb, var(--medal) 20%, #0e2a3c), #04121c);
-}
-html[data-theme="deepcurrent"] .lb-place,
-html[data-theme="deepcurrent"] .lb-row .leaderboard-rank,
-html[data-theme="deepcurrent"] .lb-row .leaderboard-count,
-html[data-theme="deepcurrent"] .lb-step-count {
-  font-family: 'JetBrains Mono', monospace;
-}
-html[data-theme="deepcurrent"] .lb-place { text-shadow: 0 0 14px color-mix(in srgb, var(--medal) 60%, transparent); }
-html[data-theme="deepcurrent"] .lb-row { background: linear-gradient(160deg, var(--panel), var(--panel-2)); }
-html[data-theme="deepcurrent"] .lb-row.active { box-shadow: 0 0 14px rgba(53,230,196,0.2); }
-html[data-theme="deepcurrent"] .lb-bar > span { box-shadow: 0 0 8px var(--chip-color); }
 
 .leaderboard-person-title {
   max-width: 1200px;
@@ -5328,7 +5031,6 @@ html[data-theme="ledger"] tbody tr:hover {
 html[data-theme="ledger"] .chip span,
 html[data-theme="ledger"] .view-toggle,
 html[data-theme="ledger"] .view-btn,
-html[data-theme="ledger"] .leaderboard-count,
 html[data-theme="ledger"] .sweat-card-index,
 html[data-theme="ledger"] .pill {
   border-radius: var(--radius-s);
@@ -6326,10 +6028,7 @@ html[data-theme="deepcurrent"] .chip input:checked + span {
 html[data-theme="deepcurrent"] .view-btn.active {
   box-shadow: 0 4px 14px rgba(53,230,196,0.3);
 }
-html[data-theme="deepcurrent"] .leaderboard-rank,
-html[data-theme="deepcurrent"] .leaderboard-count {
-  font-family: 'JetBrains Mono', monospace;
-}
+
 html[data-theme="deepcurrent"] thead tr {
   background: rgba(53,230,196,0.07);
 }
@@ -7932,6 +7631,33 @@ html[data-theme="deepcurrent"] .egg-sub { font-family: 'JetBrains Mono', monospa
   box-shadow: var(--shadow-card);
   max-width: 420px;
 }
+.egg-toast.is-action { pointer-events: auto; cursor: pointer; }
+/* Pull to refresh (installed app only): a round arrow that drops in from
+   the top, fills with the accent once pulled far enough, and spins while
+   the list reloads. */
+#pullRefresh {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 50%;
+  z-index: 7060;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-card);
+  color: var(--text-dim);
+  transform: translate(-50%, -56px);
+  opacity: 0;
+  pointer-events: none;
+}
+#pullRefresh svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+#pullRefresh.ready { color: var(--accent); border-color: var(--accent); }
+#pullRefresh.spinning svg { animation: pullSpin 0.8s linear infinite; }
+@keyframes pullSpin { to { transform: rotate(360deg); } }
+html.app-standalone body { overscroll-behavior-y: contain; }
 html:not([data-theme]) .egg-toast { font-family: 'Chakra Petch', sans-serif; background: rgba(4,5,10,0.78); backdrop-filter: blur(6px); }
 html[data-theme="casefiles"] .egg-toast { font-family: 'Courier Prime', monospace; border-radius: 2px; transform: rotate(-0.6deg); }
 html[data-theme="ledger"] .egg-toast { font-family: 'EB Garamond', serif; font-size: 16px; border-color: #c9bf9e; }
@@ -9543,8 +9269,6 @@ html[data-theme="skyisles"] .ss-flag-bar {
 /* ---------- Sweat Lookup ---------- */
 html[data-theme="skyisles"] .lookup-input svg { color: #8fa3b3; }
 html[data-theme="skyisles"] .lookup-input:focus-within svg { color: #7cfc4a; }
-html[data-theme="skyisles"] .form-label,
-html[data-theme="skyisles"] .field-label,
 html[data-theme="skyisles"] .recent-label,
 html[data-theme="skyisles"] .sweat-meter-kicker,
 html[data-theme="skyisles"] .sweat-gauge-label { font-family: var(--font-label); font-size-adjust: none; font-weight: 700; letter-spacing: 0.5px; }
@@ -9728,9 +9452,9 @@ html[data-theme="skyisles"] #customTooltip {
 }
 html[data-theme="skyisles"] #customTooltip::after { display: none; }
 
-/* ---------- Leaderboard: gold / iron / copper block podium ---------- */
+/* ---------- Leaderboard: gold / iron / copper medals ---------- */
 html[data-theme="skyisles"] { --medal-1: #f2c21a; --medal-2: #d8d8d8; --medal-3: #d27d4b; }
-html[data-theme="skyisles"] .lb-step:hover { transform: translateY(-4px); }
+
 html[data-theme="skyisles"] .leaderboard-chip { transition: transform 0.15s steps(2); }
 html[data-theme="skyisles"] .lb-avatar {
   border-radius: 0;
@@ -9742,67 +9466,7 @@ html[data-theme="skyisles"] .lb-avatar {
   text-shadow: 1px 1px 0 rgba(0,0,0,0.6);
   box-shadow: inset -3px -3px 0 rgba(0,0,0,0.22), inset 3px 3px 0 rgba(255,255,255,0.25), var(--pxb2);
 }
-html[data-theme="skyisles"] .lb-step .lb-avatar {
-  box-shadow: inset -6px -6px 0 rgba(0,0,0,0.22), inset 6px 6px 0 rgba(255,255,255,0.25), 0 0 0 2px var(--ink), 0 0 0 5px var(--medal), 0 0 0 7px var(--ink);
-  animation: isleBob 2.4s steps(2) infinite;
-}
-html[data-theme="skyisles"] .lb-step.lb-place-2 .lb-avatar { animation-delay: 0.8s; }
-html[data-theme="skyisles"] .lb-step.lb-place-3 .lb-avatar { animation-delay: 1.6s; }
-html[data-theme="skyisles"] .lb-crown { font-size: 0; font-size-adjust: none; height: 32px; }
-html[data-theme="skyisles"] .lb-crown::before {
-  content: "";
-  display: block;
-  width: 36px;
-  height: 24px;
-  margin: 4px auto 0;
-  background: var(--px-crown) center / contain no-repeat;
-  animation: skyCrown 1.6s steps(2) infinite;
-}
-html[data-theme="skyisles"] .lb-crown > span { display: none; }
-@keyframes skyCrown { 50% { transform: translateY(-3px); } }
-html[data-theme="skyisles"] .lb-step-count,
-html[data-theme="skyisles"] .leaderboard-count { color: #1d4a6e; font-family: var(--font-pixel); }
-/* Blocks: flat metal face with a pixel bevel and a darker lower lip. */
-html[data-theme="skyisles"] .lb-block {
-  border: none;
-  border-radius: 0;
-  background:
-    repeating-linear-gradient(0deg, transparent 0 14px, rgba(0,0,0,0.08) 14px 16px),
-    repeating-linear-gradient(90deg, transparent 0 14px, rgba(255,255,255,0.12) 14px 16px),
-    var(--medal);
-  box-shadow: inset 6px 6px 0 rgba(255,255,255,0.45), inset -6px -6px 0 rgba(0,0,0,0.25), var(--pxb), 8px 8px 0 0 rgba(23,50,71,0.22);
-}
-html[data-theme="skyisles"] .lb-place {
-  font-family: var(--font-arcade); font-size-adjust: none;
-  font-weight: 400;
-  font-size: 1.6em;
-  color: #fff;
-  text-shadow: 3px 3px 0 rgba(0,0,0,0.45), -2px 0 0 var(--ink), 2px 0 0 var(--ink), 0 -2px 0 var(--ink), 0 2px 0 var(--ink);
-}
-html[data-theme="skyisles"] .lb-place-1 .lb-place { font-size: 2.1em; }
-html[data-theme="skyisles"] .lb-step.active .lb-block {
-  box-shadow: inset 6px 6px 0 rgba(255,255,255,0.45), inset -6px -6px 0 rgba(0,0,0,0.25), 0 0 0 4px var(--ink), 0 0 0 7px #fff, 0 0 0 9px var(--ink);
-}
-html[data-theme="skyisles"] .lb-step.active .lb-block::after,
-html[data-theme="skyisles"] .lb-row.active::after {
-  font-family: var(--font-label); font-size-adjust: none;
-  color: #fff;
-  text-shadow: 1px 1px 0 var(--ink);
-  animation: skyBlink 1s steps(1) infinite;
-}
-html[data-theme="skyisles"] .lb-row.active::after { color: var(--accent); text-shadow: none; }
-html[data-theme="skyisles"] .lb-row {
-  border: none;
-  border-radius: 0;
-  background: var(--panel);
-  box-shadow: var(--pxb2), 4px 4px 0 2px rgba(23,50,71,0.18);
-  transition: none;
-}
-html[data-theme="skyisles"] .lb-row:hover { background: #eaf6ff; transform: translateX(2px); }
-html[data-theme="skyisles"] .lb-row.active { background: #e6f7da; }
-html[data-theme="skyisles"] .lb-row .leaderboard-rank { font-family: var(--font-arcade); font-size-adjust: none; font-size: 0.7em; color: var(--accent-2); }
-html[data-theme="skyisles"] .lb-bar { border-radius: 0; background: #3a3a3a; height: 8px; box-shadow: 0 0 0 2px #1e1e1e; }
-html[data-theme="skyisles"] .lb-bar > span { border-radius: 0; background: #7cfc4a; box-shadow: inset 0 -3px 0 #3fb52a; }
+
 html[data-theme="skyisles"] .leaderboard-chip:hover .leaderboard-name { color: var(--accent-2); }
 
 /* ---------- Table: an inventory grid ---------- */
@@ -10091,8 +9755,7 @@ html[data-theme="skyisles"] .modal-close:hover { color: #fff; background: #e4483
 html[data-theme="skyisles"] .modal-close:active { transform: translateY(1px); }
 html[data-theme="skyisles"] .modal-record-flags .pill { font-size: 0.75em; }
 html[data-theme="skyisles"] .modal-notes-empty { color: #555; font-family: var(--font-pixel); }
-html[data-theme="skyisles"] .chip-group.roster .roster-avatar::after,
-html[data-theme="skyisles"] .roster-check { border-radius: 0; }
+html[data-theme="skyisles"] .chip-group.roster .roster-avatar::after { border-radius: 0; }
 html[data-theme="skyisles"] .roster-chip:has(input:checked)::after {
   border-radius: 0;
   border: none;
@@ -12377,10 +12040,14 @@ html[data-theme="skyisles"] .unmask-back .unmask-meta { color: #5555ff; }
 .lb-entry:hover { transform: translateY(-2px); }
 .lb-entry.active { filter: none; }
 .leaderboard-hint { margin: -12px 0 6px; text-align: center; font-size: 0.8em; color: var(--text-faint); }
+.lb-scene-body.fade-right { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent); }
+.lb-scene-body.fade-left { -webkit-mask-image: linear-gradient(90deg, transparent, #000 44px); mask-image: linear-gradient(90deg, transparent, #000 44px); }
+.lb-scene-body.fade-left.fade-right { -webkit-mask-image: linear-gradient(90deg, transparent, #000 44px, #000 calc(100% - 44px), transparent); mask-image: linear-gradient(90deg, transparent, #000 44px, #000 calc(100% - 44px), transparent); }
+/* Neon: the hint sits over the bright horizon grid, so give it a backing. */
+html:not([data-theme]) .leaderboard-hint { width: fit-content; margin: -12px auto 8px; padding: 3px 12px; border-radius: 999px; background: rgba(4,5,12,0.78); color: var(--text-dim); }
 
 /* Columns (Deep Current, Sky Isles): one column per person,
    scrolling sideways inside the panel on narrow screens. */
-.lb-cols .lb-scene-body,
 html[data-theme="deepcurrent"] .lb-scene-body,
 html[data-theme="skyisles"] .lb-scene-body {
   display: grid;
@@ -13872,7 +13539,7 @@ html[data-theme="skyisles"] .pdeco i:nth-child(2) {
 html[data-theme="skyisles"] .toolbar > .pdeco i { display: none; }
 
 /* Labels: numbered hotbar keys */
-html[data-theme="skyisles"] .dash-label { display: flex; align-items: center; gap: 8px; }
+html[data-theme="skyisles"] .dash-label { display: flex; align-items: center; gap: 8px; color: #368320; }
 html[data-theme="skyisles"] .dash-left > .dash-label::before {
   content: counter(dashlbl);
   display: inline-grid;
@@ -14582,9 +14249,6 @@ html[data-theme="harvest"] .stat-hero-value,
 html[data-theme="harvest"] .modal-stat-value,
 html[data-theme="harvest"] .card-stat-value,
 html[data-theme="harvest"] .ss-value,
-html[data-theme="harvest"] .lb-place,
-html[data-theme="harvest"] .leaderboard-count,
-html[data-theme="harvest"] .leaderboard-rank,
 html[data-theme="harvest"] .modal-record-value,
 html[data-theme="harvest"] .pill,
 html[data-theme="harvest"] .sweat-gauge-value {
@@ -14592,8 +14256,6 @@ html[data-theme="harvest"] .sweat-gauge-value {
   font-variant-numeric: lining-nums tabular-nums;
 }
 html[data-theme="harvest"] .card-stat-label,
-html[data-theme="harvest"] .form-label,
-html[data-theme="harvest"] .field-label,
 html[data-theme="harvest"] .ss-label,
 html[data-theme="harvest"] .modal-stat-label,
 html[data-theme="harvest"] .stat-hero-label,
@@ -16036,11 +15698,7 @@ html[data-theme="harvest"] .lb-entry .leaderboard-name { order: 4; max-width: 10
 html[data-theme="harvest"] .lb-entry-count { order: 5; font: 400 0.95em/1.2 var(--font-hand); color: #f4ead0; text-shadow: 0 1px 2px rgba(30,40,10,0.6); }
 html[data-theme="harvest"] .lb-entry-count b { color: #fff; }
 html[data-theme="harvest"] .leaderboard-hint { color: #6e5038; font-style: italic; }
-html[data-theme="harvest"] .lb-row { border-radius: 2px; border-color: rgba(91,58,34,0.25); background: #fbf3e2; }
-html[data-theme="harvest"] .lb-row.active { border-color: var(--hv-red); box-shadow: inset 3px 0 0 var(--hv-red); }
-html[data-theme="harvest"] .lb-bar { height: 7px; border-radius: 1px; background: rgba(91,58,34,0.14); }
-html[data-theme="harvest"] .lb-bar > span { border-radius: 1px; }
-html[data-theme="harvest"] .lb-block { border-radius: 3px 3px 0 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='120'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.005 .225' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .2 0 0 0 0 .08 0 0 0 1.4 -.55'/%3E%3C/filter%3E%3Crect width='1200' height='120' filter='url(%23w)'/%3E%3C/svg%3E"), linear-gradient(180deg, #e6c597, #d4ad78); background-size: 1200px 60px, auto; border-color: rgba(91,58,34,0.35); }
+
 html[data-theme="harvest"] .leaderboard-person-title { color: var(--hv-red); text-shadow: 2px 2px 0 rgba(217,154,43,0.35); }
 @media (prefers-reduced-motion: reduce) { html[data-theme="harvest"] .lb-entry-art { animation: none; } }
 
@@ -16336,14 +15994,6 @@ html[data-theme="harvest"] .sweat-card.live-new { animation: hvCrateDrop 0.6s cu
 @keyframes hvLiveArrive {
   0%, 100% { box-shadow: var(--shadow-card); }
   30% { box-shadow: 0 0 0 4px rgba(217,154,43,0.75), 0 0 30px 6px rgba(217,154,43,0.45), var(--shadow-card); }
-}
-
-/* ---------- The crown on the podium: a corn dolly ---------- */
-html[data-theme="harvest"] .lb-crown span { font-size: 0; }
-html[data-theme="harvest"] .lb-crown span::before {
-  content: ""; display: inline-block; width: 26px; height: 26px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b2414' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22 V6'/%3E%3Cpath d='M12 8 C9 7 8 5 8.5 3 C11 3.5 12 5.5 12 8 Z M12 8 C15 7 16 5 15.5 3 C13 3.5 12 5.5 12 8 Z'/%3E%3Cpath d='M12 12.5 C9 11.5 8 9.5 8.5 7.5 C11 8 12 10 12 12.5 Z M12 12.5 C15 11.5 16 9.5 15.5 7.5 C13 8 12 10 12 12.5 Z'/%3E%3Cpath d='M12 17 C9 16 8 14 8.5 12 C11 12.5 12 14.5 12 17 Z M12 17 C15 16 16 14 15.5 12 C13 12.5 12 14.5 12 17 Z'/%3E%3C/svg%3E") center / contain no-repeat;
-  filter: drop-shadow(0 1px 0 #fbf1dc);
 }
 
 /* ---------- Section numbers: stencilled on the boards ---------- */
@@ -22565,9 +22215,13 @@ function buildSweatCard(s, i, usernameCounts) {
   card.dataset.sweatId = s._id || "";
   card.dataset.uuid = s.uuid;
   setLoggedStatsDataset(card, s);
+  // A focusable group rather than role="button": the card holds its own
+  // Edit/Remove buttons, and a button inside a button confuses screen
+  // readers. Enter/Space still opens it (see the keydown handler further
+  // down).
   card.tabIndex = 0;
-  card.setAttribute("role", "button");
-  card.setAttribute("aria-label", `View ${s.username}'s stats`);
+  card.setAttribute("role", "group");
+  card.setAttribute("aria-label", `${s.username}. Press Enter to view their stats`);
   card.style.animationDelay = Math.min(i * 0.03, 0.6) + "s";
 
   // Coerced, not read raw off s - same defensive treatment getProcessedSweats()
@@ -22751,9 +22405,9 @@ function buildSweatRow(s, { usernameCounts }) {
   tr.dataset.sweatId = s._id || "";
   tr.dataset.uuid = s.uuid;
   setLoggedStatsDataset(tr, s);
+  // Stays a real table row (role="button" would hide its cells from screen
+  // readers and it holds Edit/Remove buttons); Enter/Space opens it.
   tr.tabIndex = 0;
-  tr.setAttribute("role", "button");
-  tr.setAttribute("aria-label", `View ${s.username}'s stats`);
 
   // .user-cell is a flex row, but it must live on an inner div, not the <td>
   // itself - a <td> with display:flex stops behaving as a real table cell
@@ -22913,6 +22567,25 @@ function pickedLabel() {
   return names.length > 1 ? `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}` : names[0];
 }
 
+
+// Strips that scroll sideways (the column leaderboards on a phone) fade out
+// at an edge that has more to see, so a cut-off entry reads as "scroll"
+// rather than "broken". The fade is a CSS mask driven by two classes.
+const scrollFadeObserver = "ResizeObserver" in window ? new ResizeObserver(entries => entries.forEach(e => updateScrollFade(e.target))) : null;
+function updateScrollFade(el) {
+  const max = el.scrollWidth - el.clientWidth;
+  el.classList.toggle("fade-right", max > 2 && el.scrollLeft < max - 2);
+  el.classList.toggle("fade-left", max > 2 && el.scrollLeft > 2);
+}
+function watchScrollFade(el) {
+  if (!el.dataset.scrollFade) {
+    el.dataset.scrollFade = "1";
+    el.addEventListener("scroll", () => updateScrollFade(el), { passive: true });
+    if (scrollFadeObserver) scrollFadeObserver.observe(el);
+  }
+  updateScrollFade(el);
+}
+
 function renderLeaderboard(filteredSweats, usernameCounts) {
   const counts = {};
   BEATEN_BY_KEYS.forEach(k => { counts[k] = 0; });
@@ -22953,12 +22626,19 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
       <span class="lb-entry-score" aria-hidden="true">${String(n).padStart(3, "0")}</span>
     </button>`;
   }).join("");
+  // Re-rendering (after a tap on a name) would snap a sideways-scrolling
+  // strip back to the start, so keep where it was.
+  const oldBody = leaderboardRanking.querySelector(".lb-scene-body");
+  const keepScroll = oldBody ? oldBody.scrollLeft : 0;
   leaderboardRanking.innerHTML = `
     <div class="lb-scene">
       <div class="lb-scene-head" aria-hidden="true"><span class="lb-scene-title"></span><span class="lb-scene-sub"></span></div>
       <div class="lb-scene-body">${entries}</div>
       <div class="lb-scene-foot" aria-hidden="true"></div>
     </div>`;
+  const lbBody = leaderboardRanking.querySelector(".lb-scene-body");
+  lbBody.scrollLeft = keepScroll;
+  watchScrollFade(lbBody);
 
   leaderboardRanking.querySelectorAll(".leaderboard-chip").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -23424,7 +23104,6 @@ modalNoteText.addEventListener("input", () => {
 // player (the same player can be logged more than once), with the one that
 // was clicked - or else the newest - first, since that's where "+ Note" goes.
 let modalNoteSweats = [];
-let modalNotesItem = null;
 
 function sweatsForModalItem(item) {
   const clean = u => String(u || "").replace(/-/g, "").toLowerCase();
@@ -23458,12 +23137,10 @@ const editNotesSlot = document.getElementById("editNotesSlot");
 
 function renderModalNotes(item) {
   if (modalNotes.parentNode !== modalNotesHome.parent) modalNotesHome.parent.insertBefore(modalNotes, modalNotesHome.next);
-  modalNotesItem = item;
   showModalNotesFor(sweatsForModalItem(item));
 }
 function renderEditModalNotes(sweat) {
   editNotesSlot.appendChild(modalNotes);
-  modalNotesItem = null;
   showModalNotesFor([sweat]);
   modalNotes.hidden = false;
 }
@@ -24011,7 +23688,9 @@ function showSavedStatsFallback(item, message) {
         <button type="button" class="load-retry-btn modal-stats-retry">Try again</button>
       </div>`;
   modalStats.querySelector(".modal-stats-fallback-msg").textContent =
-    `${message} ${tiles ? "Showing the stats saved when they were added." : ""}`.trim();
+    // Backend errors come without a full stop ("No Hypixel data"), so add
+    // one before the second sentence.
+    (tiles ? `${/[.!?]$/.test(message.trim()) ? message.trim() : message.trim() + "."} Showing the stats saved when they were added.` : message).trim();
   modalStats.querySelector(".modal-stats-retry").addEventListener("click", () => {
     if (modal.dataset.activeUuid !== (item.dataset.uuid || "")) return;
     closeModal.focus();
@@ -24294,7 +23973,7 @@ function playCardFlipExpand(sourceRect, content, sourceEl) {
 
 // Cards/rows are plain div/tr elements (not <button>s), so they need their
 // own Enter/Space handling to be keyboard-reachable at all - see the
-// tabindex="0" role="button" added alongside data-username in
+// tabindex="0" (and role="group" on cards) added alongside data-username in
 // renderCardGrid/buildSweatRow.
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Enter" && e.key !== " ") return;
@@ -25541,6 +25220,7 @@ function eggToast(html, ms = 4200) {
     const out = el.animate([{ opacity: 1 }, { transform: "translateX(-24px)", opacity: 0 }], { duration: 260, fill: "forwards" });
     out.onfinish = () => el.remove();
   }, ms);
+  return el;
 }
 
 const CHAT_RANKS = [
@@ -26483,11 +26163,106 @@ function harvestTitleStunt(release) {
     localStorage.setItem("harvestNudge", today);
   } catch (e) { return; }
   const key = THEME_IDS.indexOf("harvest") + 1;
+  // Phones have no number keys, so there the toast itself is the button.
+  const touch = window.matchMedia("(hover: none)").matches;
   setTimeout(() => {
-    if (currentThemeId() !== "harvest") eggToast(`&#127810; <b>Harvest season's in.</b> Press <b>${key}</b> for the Harvest theme.`, 6500);
+    if (currentThemeId() === "harvest") return;
+    if (!touch) {
+      eggToast(`&#127810; <b>Harvest season's in.</b> Press <b>${key}</b> for the Harvest theme.`, 6500);
+      return;
+    }
+    const el = eggToast(`&#127810; <b>Harvest season's in.</b> Tap here for the Harvest theme.`, 8000);
+    el.classList.add("is-action");
+    el.setAttribute("role", "button");
+    el.tabIndex = 0;
+    el.addEventListener("click", () => {
+      const r = el.getBoundingClientRect();
+      el.remove();
+      if (currentThemeId() !== "harvest") applyTheme("harvest", { origin: { x: r.left + r.width / 2, y: r.top + r.height / 2 } });
+    }, { once: true });
   }, 3500);
 })();
 // @@END-HARVEST-JS@@
+
+// ---------- Pull to refresh (installed app only) ----------
+// As a home-screen app there's no browser refresh button, so pulling down
+// from the very top reloads the sweats (and the denick requests and the
+// sources status if they're showing). In a normal browser tab the
+// browser's own pull-to-refresh already does this, so it stays off there.
+(function pullToRefresh() {
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  if (!standalone || !("ontouchstart" in window)) return;
+  document.documentElement.classList.add("app-standalone");
+  const el = document.createElement("div");
+  el.id = "pullRefresh";
+  el.setAttribute("aria-hidden", "true");
+  el.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>';
+  document.body.appendChild(el);
+  const READY = 72;
+  let startY = null, pull = 0, ready = false, busy = false;
+  const blocked = t => t.closest(".modal, .theme-dropdown-menu, input, textarea, select, .lb-scene-body, .table-wrap");
+  const show = () => {
+    const d = Math.min(pull, 110);
+    el.style.transform = `translate(-50%, ${d - 56}px) rotate(${d * 3}deg)`;
+    el.style.opacity = String(Math.min(1, d / READY));
+  };
+  const reset = () => {
+    el.classList.remove("ready", "spinning");
+    el.style.transition = "transform 0.25s ease, opacity 0.25s ease";
+    el.style.transform = "translate(-50%, -56px)";
+    el.style.opacity = "0";
+    setTimeout(() => { el.style.transition = ""; }, 260);
+  };
+  window.addEventListener("touchstart", e => {
+    if (busy || e.touches.length !== 1 || window.scrollY > 0 || blocked(e.target)) { startY = null; return; }
+    startY = e.touches[0].clientY;
+    pull = 0;
+    ready = false;
+  }, { passive: true });
+  window.addEventListener("touchmove", e => {
+    if (startY === null) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy <= 0 || window.scrollY > 0) { pull = 0; show(); return; }
+    pull = dy * 0.55;
+    if (!ready && pull >= READY) { ready = true; siteAudio.play("ui"); }
+    else if (ready && pull < READY) ready = false;
+    el.classList.toggle("ready", ready);
+    show();
+  }, { passive: true });
+  window.addEventListener("touchend", async () => {
+    if (startY === null) return;
+    startY = null;
+    if (!ready) { reset(); return; }
+    busy = true;
+    el.classList.add("spinning");
+    el.style.transform = `translate(-50%, ${READY - 56}px)`;
+    try {
+      const jobs = [loadSweats({ quiet: true })];
+      if (!document.getElementById("denickingSection")?.hidden) jobs.push(loadDenickRequests());
+      if (!statusPanel.hidden) jobs.push(loadStatus(true));
+      await Promise.allSettled(jobs);
+    } finally {
+      busy = false;
+      reset();
+    }
+  });
+})();
+
+// ---------- What's new ----------
+// One short toast per visible update, shown once per browser. Add the
+// newest entry at the top with a new id; only the top one is ever shown.
+const WHATS_NEW = [
+  { id: "2026-11-polish", html: "&#10024; <b>New:</b> phone leaderboards fade at the edge when there's more to scroll, and in the home-screen app you can pull down to refresh." },
+];
+(function whatsNew() {
+  const latest = WHATS_NEW[0];
+  if (!latest) return;
+  try {
+    if (localStorage.getItem("whatsNewSeen") === latest.id) return;
+    localStorage.setItem("whatsNewSeen", latest.id);
+  } catch (e) { return; }
+  setTimeout(() => eggToast(latest.html, 7000), 1800);
+})();
 
 // Searching Technoblade gets a tribute.
 const usernameField = document.getElementById("username");

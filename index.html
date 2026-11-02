@@ -19757,6 +19757,9 @@ function canChangeNote(note, action) {
   if (!getAdminKey()) return false;
   const days = keyWindowDays[action];
   if (keyFullAccess || days == null) return true;
+  // Personal keys can only edit notes they wrote (an edited note still shows
+  // its author's name); removing someone else's is still allowed.
+  if (action === "edit" && (note.author || "") !== keyOwner) return false;
   const created = note.createdAt ? new Date(note.createdAt).getTime() : 0;
   return Date.now() - created <= days * 86400000;
 }
@@ -26777,7 +26780,9 @@ function loadStatus(fresh = false) {
   statusDot.dataset.state = "checking";
   if (!statusResult) statusPillLabel.textContent = "Checking sources...";
   statusRefreshBtn.disabled = true;
-  statusLoading = fetch(`${backendBaseURL}/status${fresh ? "?fresh=1" : ""}`)
+  // The backend only re-checks for someone with a key (each re-check costs
+  // a metered lookup); without one, "Check again" shows the saved answer.
+  statusLoading = fetch(`${backendBaseURL}/status${fresh ? "?fresh=1" : ""}`, { headers: adminHeaders() })
     .then(res => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
     .then(data => { statusResult = data; statusLoadedAt = Date.now(); renderStatus(); })
     .catch(() => {

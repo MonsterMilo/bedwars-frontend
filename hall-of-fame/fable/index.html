@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prism Hall of Fame</title>
+<meta name="description" content="A walkable 3D hall of the greatest sweats the roster has beaten, ranked by index.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07070b;
+    --ink: #f3efe6;
+    --ink-dim: rgba(243,239,230,0.62);
+    --gold: #ffd166;
+    --gold-deep: #c9962e;
+    --line: rgba(255,209,102,0.22);
+    --panel: rgba(10,10,16,0.72);
+    --t3: #ffd166; --t4: #ff5c72; --t5: #a855f7;
+    --roster-milo:#00d9ff; --roster-potat:#a855f7; --roster-aballs:#ffb84d; --roster-zoiv:#ff5fa2;
+    --roster-max:#4ade80; --roster-sqoz:#60a5fa; --roster-kermit:#a3e635; --roster-ssent:#fb923c; --roster-key:#facc15;
+    --serif: "Cinzel", "Times New Roman", serif;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: var(--sans); overflow: hidden; }
+  canvas#stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+  /* Cinematic letterbox bars */
+  .bar { position: fixed; left: 0; right: 0; height: 0; background: #000; z-index: 5; transition: height 1.2s cubic-bezier(.22,.85,.32,1); pointer-events: none; }
+  .bar.top { top: 0; } .bar.bottom { bottom: 0; }
+  body.cinema .bar { height: 7vh; }
+
+  .vignette { position: fixed; inset: 0; pointer-events: none; z-index: 4;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%); }
+  .grain { position: fixed; inset: -50%; width: 200%; height: 200%; pointer-events: none; z-index: 4; opacity: 0.045; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+    animation: grain 0.6s steps(2) infinite; }
+  @keyframes grain { 0% { transform: translate(0,0);} 50% { transform: translate(-2%,1%);} 100% { transform: translate(1%,-2%);} }
+
+  /* Title card */
+  #intro { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; text-align: center; padding: 24px 16px;
+    background: radial-gradient(ellipse at 50% 60%, rgba(20,16,10,0.55), rgba(4,4,7,0.92) 70%);
+    transition: opacity 1.4s ease, visibility 1.4s; }
+  #intro.hidden { opacity: 0; visibility: hidden; }
+  #intro .eyebrow { font: 600 11px/1 var(--sans); letter-spacing: 0.42em; text-transform: uppercase; color: var(--gold); opacity: 0; animation: rise 1.4s 0.3s forwards; }
+  #intro h1 { font: 900 clamp(38px, 9vw, 112px)/0.95 var(--serif); margin: 18px 0 10px; letter-spacing: 0.04em;
+    background: linear-gradient(180deg, #fff6d8 0%, var(--gold) 45%, var(--gold-deep) 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 28px rgba(255,209,102,0.25)); opacity: 0; animation: rise 1.6s 0.7s forwards; }
+  #intro .rule { width: 140px; height: 1px; margin: 8px auto 18px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0; animation: rise 1.2s 1.2s forwards; }
+  #intro p { max-width: 560px; margin: 0 auto; color: var(--ink-dim); font-size: clamp(13px, 1.6vw, 16px); line-height: 1.6; opacity: 0; animation: rise 1.4s 1.5s forwards; }
+  #intro .hint { margin-top: 36px; font: 500 12px/1 var(--sans); letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); opacity: 0; animation: rise 1.4s 2.3s forwards, pulse 2.4s 3.6s infinite; }
+  #intro .hint kbd { font: inherit; border: 1px solid var(--line); border-radius: 6px; padding: 5px 9px; margin: 0 3px; color: var(--ink); }
+  #enter { margin-top: 28px; font: 600 13px/1 var(--sans); letter-spacing: 0.18em; text-transform: uppercase; color: #1a1408; background: linear-gradient(180deg, #ffe49a, var(--gold-deep));
+    border: 0; border-radius: 999px; padding: 16px 34px; cursor: pointer; opacity: 0; animation: rise 1.4s 2s forwards; box-shadow: 0 10px 40px rgba(255,209,102,0.25); }
+  #enter:hover { filter: brightness(1.08); }
+  @keyframes rise { from { opacity: 0; transform: translateY(16px);} to { opacity: 1; transform: none;} }
+  @keyframes pulse { 0%,100% { opacity: 1;} 50% { opacity: 0.45;} }
+
+  /* HUD */
+  .hud { position: fixed; z-index: 10; pointer-events: none; opacity: 0; transition: opacity 1s ease 0.6s; }
+  body.entered .hud { opacity: 1; }
+  #brand { top: max(18px, env(safe-area-inset-top)); left: 22px; font: 700 12px/1 var(--serif); letter-spacing: 0.34em; text-transform: uppercase; color: var(--gold); }
+  #brand small { display: block; margin-top: 6px; font: 500 10px/1 var(--sans); letter-spacing: 0.22em; color: var(--ink-dim); }
+  #controls { bottom: max(18px, env(safe-area-inset-bottom)); left: 22px; font: 500 11px/1.8 var(--sans); letter-spacing: 0.08em; color: var(--ink-dim); }
+  #controls kbd { font: inherit; border: 1px solid rgba(255,255,255,0.18); border-radius: 4px; padding: 1px 6px; color: var(--ink); }
+  #rail { right: 18px; top: 50%; transform: translateY(-50%); height: min(60vh, 520px); width: 26px; }
+  #rail .track { position: absolute; left: 12px; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, var(--gold), rgba(255,209,102,0.08)); }
+  #rail .tick { position: absolute; left: 9px; width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.25); transform: translateY(-50%); transition: background 0.3s, transform 0.3s, box-shadow 0.3s; }
+  #rail .tick.t5 { background: var(--t5);} #rail .tick.t4 { background: var(--t4);} #rail .tick.t3 { background: var(--t3);}
+  #rail .tick.here { transform: translateY(-50%) scale(1.9); box-shadow: 0 0 14px currentColor; }
+  #rail .you { position: absolute; left: -2px; width: 0; height: 0; border: 7px solid transparent; border-left-color: var(--ink); transform: translateY(-50%); transition: top 0.2s linear; }
+  #tour { position: fixed; z-index: 11; top: max(18px, env(safe-area-inset-top)); right: 22px; pointer-events: auto; font: 600 11px/1 var(--sans); letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); background: rgba(10,10,16,0.55); border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px; cursor: pointer; backdrop-filter: blur(8px); opacity: 0; transition: opacity 1s ease 0.6s; }
+  body.entered #tour { opacity: 1; }
+  #tour:hover { background: rgba(255,209,102,0.12); }
+  #tour.on { color: #1a1408; background: var(--gold); }
+
+  /* Plaque panel: full data for the sweat you're standing in front of */
+  #plaque { position: fixed; z-index: 12; top: 50%; transform: translateY(-50%) translateX(var(--slide, 0)); width: min(380px, calc(100vw - 32px)); max-height: 82vh; overflow: auto;
+    padding: 22px 24px 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; backdrop-filter: blur(14px) saturate(1.3);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
+    opacity: 0; pointer-events: none; transition: opacity 0.45s ease, transform 0.6s cubic-bezier(.22,.85,.32,1); --accent: var(--gold); }
+  #plaque.left { left: 24px; --slide: -24px; } #plaque.right { right: 24px; --slide: 24px; }
+  #plaque.show { opacity: 1; pointer-events: auto; --slide: 0px; }
+  #plaque::before { content: ""; position: absolute; left: 24px; right: 24px; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+  #plaque .rank { font: 700 11px/1 var(--sans); letter-spacing: 0.32em; text-transform: uppercase; color: var(--accent); display: flex; justify-content: space-between; align-items: center; }
+  #plaque .rank .tier { display: inline-block; font: 600 10px/1 var(--sans); letter-spacing: 0.18em; border: 1px solid currentColor; border-radius: 999px; padding: 5px 9px; }
+  #plaque .rank .tier.cheat { color: #ff5c72; background: rgba(255,92,114,0.12); }
+  #plaque h2 { font: 700 clamp(26px, 3.2vw, 34px)/1.05 var(--serif); margin: 12px 0 4px; letter-spacing: 0.02em; word-break: break-all; }
+  #plaque .index { font: 500 13px/1.4 var(--sans); color: var(--ink-dim); }
+  #plaque .index b { color: var(--ink); font-weight: 700; font-size: 20px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  #plaque .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 12px; margin: 18px 0 14px; padding: 14px 0; border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); }
+  #plaque .stat b { display: block; font: 700 17px/1.1 var(--sans); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  #plaque .stat span { display: block; margin-top: 3px; font: 500 10px/1 var(--sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
+  #plaque .label { font: 600 10px/1 var(--sans); letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-dim); margin: 12px 0 8px; }
+  #plaque .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  #plaque .chip { font: 600 11px/1 var(--sans); padding: 6px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--c) 55%, transparent); color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); }
+  #plaque .meta { margin-top: 12px; font: 500 11px/1.6 var(--sans); color: var(--ink-dim); }
+  #plaque .note { margin: 8px 0 0; padding: 10px 12px; border-left: 2px solid var(--accent); background: rgba(255,255,255,0.035); border-radius: 0 10px 10px 0; font: 400 13px/1.5 var(--sans); }
+  #plaque .note small { display: block; margin-top: 4px; color: var(--ink-dim); font-size: 11px; }
+  #plaque .empty { font: 400 12px/1.5 var(--sans); color: var(--ink-dim); font-style: italic; }
+  @media (max-width: 720px) {
+    #plaque { top: auto; bottom: 0; left: 0 !important; right: 0 !important; width: 100%; max-height: 52vh; border-radius: 18px 18px 0 0; transform: translateY(var(--slide, 20px)); --slide: 24px; }
+    #plaque.show { transform: translateY(0); }
+    #controls { display: none; }
+    #rail { right: 10px; }
+  }
+  #loading { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; background: var(--bg); font: 500 11px/1 var(--sans); letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); transition: opacity 0.8s; }
+  #loading.hidden { opacity: 0; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { .grain { animation: none; } #intro *, #intro h1 { animation-duration: 0.01s !important; animation-delay: 0s !important; } }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div class="bar top"></div><div class="bar bottom"></div>
+<div class="vignette"></div><div class="grain"></div>
+
+<div id="loading">Lighting the hall…</div>
+
+<section id="intro" aria-label="Title">
+  <div>
+    <div class="eyebrow">Prism · Bedwars Tracker</div>
+    <h1>Hall of Fame</h1>
+    <div class="rule"></div>
+    <p id="introText">The greatest sweats the roster has ever beaten, ranked by index. Walk the hall from the entrance to the final boss at the end.</p>
+    <button id="enter" type="button">Enter the hall</button>
+    <div class="hint"><kbd>W</kbd> <kbd>S</kbd> or scroll to walk · drag to look</div>
+  </div>
+</section>
+
+<div class="hud" id="brand">Hall of Fame<small id="brandSub">Top 20 by index</small></div>
+<div class="hud" id="controls"><kbd>W</kbd>/<kbd>↑</kbd> forward · <kbd>S</kbd>/<kbd>↓</kbd> back · scroll or drag · click a sweat to walk up to them</div>
+<div class="hud" id="rail"><div class="track"></div><div class="you" id="you"></div></div>
+<button id="tour" type="button" title="Walk the hall automatically">▶ Tour</button>
+
+<aside id="plaque" class="right" aria-live="polite"></aside>
+
+<script id="hof-data" type="application/json">{"generatedAt": "2026-11-02", "totalSweats": 958, "cheaters": 8, "top": [{"username": "JinxFKDR", "uuid": "1806211d5c004e7e9bf7312385db8619", "star": 18, "fkdr": 3070, "wlr": 421, "bblr": 959, "kdr": 2.86, "finals": 3070, "finalDeaths": 8, "beds": 959, "bedsLost": 8, "kills": 1690, "deaths": 600, "index": 169648200, "beatenBy": ["ssent"], "notes": [{"text": "lowk bought acc but we also had to beat a 3q (abusez) same game on 200 ws", "author": "ssent", "at": "2026-09-27"}], "dates": ["2026-09-27"], "times": 1, "cheating": false, "boosting": false, "firstBeaten": "2026-09-27", "lastBeaten": "2026-09-27", "skin": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAEwklEQVR4nO1aPW7jPBB9MlaygdUWWSDFt1dw5c0BfAkjlRDAQJAmF3CTKkdwExgBDBipjHQ5h+MFdl37Bm6iGLIIh1+RkKakoSjb9A8MvUqa4d/MPA5JUQ4MuLm54Xn62WyGWq2GKIpQq9UAQD5HUYTn52fH1EeR/nu9nqOTB0HAn56eEnpKRqFSZBCMMcznc8xmM8xmM8znczDGAEAaTSFPtw7SxqdllKFFjAeAb0UKpQ1xXRe1Wg3L5RJRFJF1dPJ1QRlfRFcUhRwQRREYYxmjhCPSsBX5fWBrBggMBoNEmaurKwvD2z0K5QCVAWk2RFGUMR74dIitabBLbM2A4XCorTccDlGpFPLxwVDIAcvlEq7rwnXdhOwU4JjW+X3BRkZXkbZLt49IMEBEWKzx68JUf5v2r6+vebVaBQAsFgs8Pj5acVhFHZgKSqaDqb5Jb4r+7e1thqWUTIXaZl7/kgGMsUSE0pXu7+8T73d3d4l3U32T3gQ159jMPxVBR5WWqowxhul0iiAIpD4IAkynU6k31c/T50W/3W7zdrvNGWPo9/uOaE88C72ufq/Xc0w7yYpoVKzvjDEMBgN0u1353ul08PPsTFb8eXaGTqcj9d1uF4PBAFRblEx9DoJAa4AoI4xQjen1eo7qYApBEPAgCDhVRvT9LYoiY3JqNpt4eXnB+fk5AOC/X7/QbDbR7/czjarPYiNEtU9trdOgDjSmQ5AK0b6unVarxZ1Wq8Wp42zeBofC5eUleRwGsNPjchHkHZepzk37gtwB1+t17nkeqYvjBRqNC/i+L7txlA7DMDRGtdFocABYxDH+/f0r5ZVKZSNH7mifqvOhMJcnSm4yclu02ZEDPoc3Go0wGo2MpaU7ilplce96XCeVooZZzBrqFNwI9Xo9I3M9Dw4go39xcQEAiBdxdvAc8Kqe+iqLxHEMz/PIaRLHcaYdOJDl/4zHhdy0tQPUDZKA/8MHeLbxMAzJDj+TYnZAYRjm6iiI8g8PD/a+CeZhPB5nZPpVICbleeUpHf/SURZ6rrfWFNnaAY1GIyNTowasImeKWrIGEIZvhA5funesJsyKU77vAw4dGAr2GKBM1GzUPpVmBqiznSOOmTU26WCHAWoQHMD/rotaSGYdkTOScFIMSFY0sWnvDFjFjsPzqmTZwlH7aozKAaKf42JACol5KwLnAOGbIQek2JFeBdQm346NASpsRI0DYIIBxEZAtqVMPV1bedgBAxz4/neybGbefkVcG+X3MCefiFUgieNigBIdEVEKhfcBChMSDFDYcQQMWEWB2glS0K/1IXnrVATHfiFTokSJEiVKlChRokSJEiUOiZ1fTW8LcRucxlhz8yPK6/QlUtiFlyz9X8AxGr1K+ab3/yYc32cT+fvAfhh8fA5wsNfMdHwO2DNs+Hpn/xfoEMcxJpOJFZ5s/VV4W8ivysonZN1XYoH3MMRkMrHS/8EdsM7/BaZb5k1wcAfo7hWUK8XVoqDcMZ4OA17HmUxkut05KQb8/t1I/ibHNf8LKDkiPKUc8GrKAXk3wxZwcAdo7xZz/l87KQastwrk3zJvgoM7QGWACHruPsAB3k9qFViTAYA5B+i+ISh9yqxy8K3wx8fHRvVsHY//B5iZAXG4ncjXAAAAAElFTkSuQmCC"}, {"username": "AgentBaron", "uuid": "7e7f3e79cc0744498c2e92dc9384ee4a", "star": 30, "fkdr": 850, "wlr": 157.5, "bblr": 71.47826086956522, "kdr": 1.2412318220701455, "finals": 3543, "finalDeaths": 6, "beds": 1644, "bedsLost": 23, "kills": 1451, "deaths": 1169, "index": 21675000, "beatenBy": ["milo", "potat"], "notes": [{"text": "Was gonna spare but our presence made him lose to nons", "author": "milo", "at": "2026-09-26"}], "dates": ["2026-09-12"], "times": 1, "cheating": true, "boosting": false, "firstBeaten": "2026-09-12", "lastBeaten": "2026-09-12", "skin": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAADi0lEQVR4nO2bsW7bMBCGfwWCkE72otGFHsBT9wBdMxXoC2Tp4r2P0DFLgAKZ+xR+gOyZNHYwYBSowaVZDRTqYNGmqSOPEkkzQfkBRiSSEo9H8ngULwUY7qqqA4BaSxf93896hsanX/uCqyMlpUuhGsCCSBdE2luDVYBsfGMaAm+cq9QCpCYrILUAqWFtgBhcHNj2SRtB2IeAfO1Xofv9+WpiSh+L0ypA2Ts1LbYSYlJw67wkVv4PQw/KHpaYRoAp35Vy1198IDKlkJwfMDW/tQh2v98XspHUswscpqEsa3mVleMUWANYqd2kdKHuB2zEuVA2P0EQ+Y+OPoRUwpbIC9F4wGEVaHFQjorLfG/qQ8P1oq6NV6Ea6dtwiVEBTX0aoj/fNwPBv83mWMDQ+wpcPoetoSGUcFTAyiLky8ufQdpsNp9Uoa2eFBQPVdWZekjt9VUNfNnPcf3uGt///g4mQOrdYvHQW1qTEja9EmKt88kVoCfcVVUn26ouY/LetG6rz3OV1qD9BNf3+8inM/AE9Y42reGpoOTxke/im6FXZgOHI0DgXEhhuJ6K/v4pz1PX1L0LBTenKLj80PjIx9kEp93gFMZ+QTOVl3Ne9UZ3AG4t7xpjE0qbUaGE3uF840SVGfsR1VZeb7xkDbMSmhFDdNIIUCun5jPl/q41YZZM+UvNrxJK5VvN6Xm2CNH0Cze1U9MbQ22AWpyUsAaODb60q2xdBmviF5IWw28ClLIopYRS1HEKqBW3wq+CR8/nKVZ1HLf8CqC1btu3mxqn9qi+kdJZDpOSMNoI2pYf7jndXkglqNPg0jagFAZBlqAdD4GTsfT16iS3SPdV2eoHmO5vemGfDEubtPAbx6VsC5DnDnrecQTp9zpcPoCu6z6iKA4jQHuOvX8SdL5Ejh41n9oCq3nPRJqrPCas+UUx/BaQyWQymUwmk8lkMplM5r8g+DeBEPEFIc//OaKdDQInwcec1YU+/+fIwdIxXz7l/D70+T+H93yiYoK48/yx8QcxbULUEeCC6XTZFg8Q0iZEUYDrOUMLOkibiwcYc/7PkcwIUo1MQRQFNPX5UZd67xs7HBpvBcSIIYgZD6ATzQj6xhvEigfQiTIFXOINXkvUeFJPcGqsQUi8p4AaIyA7eYlh7I96YqzGF1DL4CXxVoBp86L+U5MtvoA8w+fiARzO/10JMgKoa9s9F18w9n0+/AMNxTUcIeG5RAAAAABJRU5ErkJggg=="}, {"username": "lelitzpanda", "uuid": "d33671f7baf14e95a027377ae6ed5efb", "star": 3822, "fkdr": 74.32032422695887, "wlr": 20.562168532704774, "bblr": 14.380037868542061, "kdr": 0.9092114380493553, "finals": 247561, "finalDeaths": 3331, "beds": 106326, "bedsLost": 7394, "kills": 166643, "deaths": 183283, "index": 21110857, "beatenBy": ["milo", "sqoz", "kermit", "key"], "notes": [], "dates": ["2026-09-09", "2026-09-12"], "times": 2, "cheating": false, "boosting": true, "firstBeaten": "2026-09-09", "lastBeaten": "2026-09-12", "skin": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAEvUlEQVR4nO2aT2hcRRzHP2/m/dnNtk1K/9i0alNMS7E9SKkopRQKxYulBwVBQQoqWJQeevFi0YOgYvFioYciCl49FEGlnuzBgh6kLe1FAo1o6ba1SzbJbjb73vzx8HaTbLvJbpPdvGzzPhDIvnkz8/t95zfzm/feOLTg2afWWoAwivA9j/r/ANG05LUXhhesf+aXa06rPhYif3KvXUr9wbM3FuzfbaeRMIrIBQEAkTEz172MBqBcbd5HLliS7ctCWwLUna9EEa6UTe85d+lqw+9Xdu/ime3ZJZrXfVoKEEYRXhAQGYMxBqTE9zw8IRqi4UG2bOkDuh8BrUK8FaLVDfV5DyCEQGmNJ1pW6xna8iQyBqXj+Z6dI8jjQFtrgNKarOcRak0liqhOOQz0N1b99NX93CoontwQXx8rRR0xcKkh3oq2BJBCUIlmHQr6bMP8zwWWsVJELuic48uFs3tbnwUwFhzHQTgO2cAliiMegUYZcB1BVSuU0ggh8FyJtSBrWcGTUKkqjLVYaxG1cRMiLp9vH/H7mzuaGvaoI7/Y/UJDBFhrkVJSqSqEcMj4LtNhXKasIZfx6fcdNJJCqYq2mqzrMh0qKsoihUAr9VAnrfYRSeK60iUMNYjYAUssRDU0GGMRwuHM+8cJPJ9sZh2V8gRIwdid23x+4SLlSkikDK50sMTTRRuD0Q6+LzHWtrWPSAqhtEIIQSDd2HitsEDGd/F9j4+Pv46JHApjJfL3Cozm72EiQ3FyghNHDuD7HhnfxQJaK2StrThlqtlwr+8jiFNrLggaUmxSxFPA0UQGjBVobXnn8HNsyuX45vIV+oKAlz/8CoCfT59g+xObOfLBlwB8/9G75HzJW4f381+5zNe/XsFYg3AM1GZws33ESkqls2uAlWAM2SCDDiuEQcCxfTu5M/oXP55+GzcY4KfLfwAg7Ulu/TPCzbsFju3bSagUOqyQDTKEYQhCgjM7v1fyPkK4MtbAkw4H9wxz6ughNq/fQLE0SaEwRSnS/HvrJl98e56hNWsZWrOWz85/R6FUwcGjUJiiWJpk8/oNnDp6iIN7hvFkPPz1tuujXk+nxfGHF8qkcN94fhcAGwcGuF8sYnUVpTSuH2CdiNH83Zm5e/Han0gvdqpU0VSjEOuA6wd4nofWVV7csY0Dw4MYpbhfLALx3uCH6yMznQZ9lpd2D7F+jQdML6/HD9As1zbkU2sb06vjOAvm524/v89t/73fqgz258iPl7lwZWRRO8bH56lmkfS0APXRH+zPLbqNnhagEzgs8a1F/uTeDpnSWdp9llj1EdDW4/CjMnj2RtPrKzFauiIAPOzsfKIkTdcEWKkOP0hXBFiJoT4fq34RTAVI2oCkaSqArb3YXA2IurNz/+o0K5vv3l6la2mwU1yY2NR4YWArG9fluD9RBmD89t/09/kzxRuf3lkr6400nJKSkpKSkpKSkpKSkpKSsvx04xRmx84XfHLdnfn6e+7S1a6cGE1fiiZtwELURz8/Xu5aHytagOWgE/MqkfMFnTpFvuojIBUgaQOSJhUgaQOSJhUgaQOSJhWgG4320qfzJQvQ6+cLEj8fMPf7//hUSP/WIYDZMwDF240VaucDOvX9/39Lkzhrkl7NUwAAAABJRU5ErkJggg=="}, {"username": "Virtuah", "uuid": "2c36d15aea9d4fad89f20954d7f48d59", "star": 14, "fkdr": 1128, "wlr": 72, "bblr": 55.9, "kdr": 1.1691648822269807, "finals": 1166, "finalDeaths": 5, "beds": 559, "bedsLost": 10, "kills": 546, "deaths": 467, "index": 17813376, "beatenBy": ["milo"], "notes": [{"text": "this was a sold account but they were still sweaty and cheating", "author": "milo", "at": "2026-09-26"}], "dates": ["2026-04-19"], "times": 1, "cheating": true, "boosting": false, "firstBeaten": "2026-04-19", "lastBeaten": "2026-04-19", "skin": "data:image/png;base64,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"}, {"username": "coc_r1ch_pr0", "uuid": "37264418d7bc4795ae51a86b806a94f6", "star": 19, "fkdr": 715.67, "wlr": 197, "bblr": 184.33, "kdr": 1.12, "finals": 2147, "finalDeaths": 3, "beds": 1106, "bedsLost": 6, "kills": 327, "deaths": 291, "index": 9731487, "beatenBy": ["max", "kermit", "key"], "notes": [{"text": "holy moly", "author": "max", "at": "2026-09-26"}], "dates": ["2026-09-13"], "times": 1, "cheating": true, "boosting": true, "firstBeaten": "2026-09-13", "lastBeaten": "2026-09-13", "skin": "data:image/png;base64,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"}, {"username": "mfkdr", "uuid": "c1a7f68bb22f49b0866ca773118d082a", "star": 10, "fkdr": 813, "wlr": 59.89, "bblr": 32.31, "kdr": 1.9, "finals": 2201, "finalDeaths": 10, "beds": 840, "bedsLost": 26, "kills": 1074, "deaths": 565, "index": 6609690, "beatenBy": ["sqoz"], "notes": [], "dates": ["2026-10-02"], "times": 1, "cheating": true, "boosting": false, "firstBeaten": "2026-10-02", "lastBeaten": "2026-10-02", "skin": "data:image/png;base64,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"}, {"username": "Wlnks", "uuid": "e23eb596934c456ab8c740c2a951b3fc", "star": 4093, "fkdr": 39.15611425562722, "wlr": 11.050641940085592, "bblr": 11.994520794035749, "kdr": 0.7000652023629965, "finals": 297469, "finalDeaths": 7597, "beds": 133535, "bedsLost": 11133, "kills": 178231, "deaths": 254592, "index": 6275393, "beatenBy": ["kermit"], "notes": [], "dates": ["2026-09-12"], "times": 1, "cheating": false, "boosting": false, "firstBeaten": "2026-09-12", "lastBeaten": "2026-09-12", "skin": "data:image/png;base64,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"}, {"username": "tiltingsson", "uuid": "fcc1737428354846bdeaba4899d637ed", "star": 3283, "fkdr": 43.6948553764628, "wlr": 11.247356774034914, "bblr": 11.636317780580075, "kdr": 1.0873153555479216, "finals": 197894, "finalDeaths": 4529, "beds": 92276, "bedsLost": 7930, "kills": 126607, "deaths": 116440, "index": 6268036, "beatenBy": ["milo", "max"], "notes": [], "dates": ["2026-07-16"], "times": 1, "cheating": false, "boosting": false, "firstBeaten": "2026-07-16", "lastBeaten": "2026-07-16", "skin": "data:image/png;base64,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"}, {"username": "Cormai", "uuid": "44945f34047541df920ad86b6da08db6", "star": 197, "fkdr": 172.09876543209876, "wlr": 53.3235294117647, "bblr": 18.44078947368421, "kdr": 1.5497099419883977, "finals": 13940, "finalDeaths": 81, "beds": 5606, "bedsLost": 304, "kills": 7747, "deaths": 4999, "index": 5834743, "beatenBy": ["sqoz", "potat", "aballs"], "notes": [], "dates": ["2026-08-15", "2026-10-02"], "times": 2, "cheating": true, "boosting": false, "firstBeaten": "2026-08-15", "lastBeaten": "2026-10-02", "skin": "data:image/png;base64,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"}, {"username": "Protocolist", "uuid": "c5ebb491f42c42c1bf9b7f1778b54600", "star": 1554, "fkdr": 59.28789237668161, "wlr": 26.90751445086705, "bblr": 11.170498915401302, "kdr": 0.8129184071797304, "finals": 66106, "finalDeaths": 1115, "beds": 25748, "bedsLost": 2305, "kills": 44565, "deaths": 54821, "index": 5462394, "beatenBy": ["sqoz", "milo", "potat", "aballs"], "notes": [], "dates": ["2026-05-10", "2026-06-18", "2026-10-02"], "times": 3, "cheating": true, "boosting": false, "firstBeaten": "2026-05-10", "lastBeaten": "2026-10-02", "skin": "data:image/png;base64,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"}, {"username": "swag43", "uuid": "27231055914d46abb59e7912240f815d", "star": 464, "fkdr": 105.8173719376392, "wlr": 25.77777777777778, "bblr": 16.71310799670239, "kdr": 1.2098131076520076, "finals": 47512, "finalDeaths": 449, "beds": 20273, "bedsLost": 1213, "kills": 24016, "deaths": 19851, "index": 5195555, "beatenBy": ["kermit"], "notes": [{"text": "was genzio at the time", "author": "kermit", "at": "2026-09-30"}], "dates": ["2026-09-30"], "times": 1, "cheating": true, "boosting": false, "firstBeaten": "2026-09-30", "lastBeaten": "2026-09-30", "skin": "data:image/png;base64,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"}, {"username": "F1nalist", "uuid": "43910c95ba604266a61f86936a901f4e", "star": 2466, "fkdr": 45.15173508732139, "wlr": 9.87744976432647, "bblr": 5.524549665465774, "kdr": 0.9870939883893873, "finals": 199074, "finalDeaths": 4409, "beds": 53671, "bedsLost": 9715, "kills": 61722, "deaths": 62529, "index": 5027383, "beatenBy": ["milo", "potat", "max", "key", "sqoz", "aballs", "zoiv"], "notes": [], "dates": ["2025-10-05", "2026-01-18", "2026-05-27", "2026-07-16", "2026-10-02"], "times": 7, "cheating": true, "boosting": false, "firstBeaten": "2025-10-05", "lastBeaten": "2026-10-02", "skin": "data:image/png;base64,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"}, {"username": "JaroniaOwnsYou", "uuid": "b238da4869854fdf806bf4c6be5984ba", "star": 3992, "fkdr": 31.23243014394581, "wlr": 10.952095808383234, "bblr": 6.0301701908200105, "kdr": 0.725640124821757, "finals": 73771, "finalDeaths": 2362, "beds": 23385, "bedsLost": 3878, "kills": 35113, "deaths": 48389, "index": 3894055, "beatenBy": ["milo", "aballs"], "notes": [], "dates": ["2026-05-10"], "times": 1, "cheating": false, "boosting": false, "firstBeaten": "2026-05-10", "lastBeaten": "2026-05-10", "skin": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABmElEQVR4nO2asW7CMBCGzyhDJVjL1PBY7d6p70BHeIdO3ctjQad2pRKbuxSJuCoX5zf9ifx/EjJRFPt8/Lk7bAdzmLareHr9enjp3H+8ebJz9x8+34M3BpMJ2wA2cgDbADZyANsANnIA2wA2Ic3zHmmezyWtG752z9Q6YbLfLs3MrG9bitL9DaV6Bdi0XcUYY+zTHr8jpP1SJ28DFIBKd7ZYd67ZCmj226XNFmvr227mLTbizytw7I9N9TFgYsbLANeQCX55Pw1MqeS9//epotJJeq9Qbv/o+kP1laAcwDaATUCLES+V5Qa60qnRyzLFFVAqwg/NTLnjh7fbO0gBaV7/y6C+jF4BZt1Jb+Zt1uf0+f9QwcVjQG7l6CkqF4oCxgQcA+4/dqVsuQghBCngHHAMuHY8BTToAPD6AJlm7BNAqT4GCCGEEEIIIYQQoj6Kn85Azxegz+dS/YqQHMA2gA38PrH3Fbx1f4/qFUDfGGHvLcIOQGFvzMAOQH9BtgOqjwFwFmCfL1AWAKm+DlAWQDtgTwCl+hjwDd4kVzDQJiYBAAAAAElFTkSuQmCC"}, {"username": "Timness", "uuid": "dea1f77ab0374139b1fa9811fde71d10", "star": 1567, "fkdr": 45.29929300864101, "wlr": 13.595, "bblr": 11.200829588662288, "kdr": 0.7239246442432082, "finals": 57666, "finalDeaths": 1273, "beds": 32404, "bedsLost": 2893, "kills": 35814, "deaths": 49472, "index": 3215525, "beatenBy": ["milo", "potat"], "notes": [], "dates": ["2026-07-17"], "times": 1, "cheating": false, "boosting": false, "firstBeaten": "2026-07-17", "lastBeaten": "2026-07-17", "skin": "data:image/png;base64,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"}, {"username": "MyGoatAA23", "uuid": "c37f6aa1a4444462a015625db20ea6cb", "star": 17, "fkdr": 427.3333333333333, "wlr": 84, "bblr": 39.6, "kdr": 0.9536784741144414, "finals": 1282, "finalDeaths": 3, "beds": 396, "bedsLost": 10, "kills": 350, "deaths": 367, "index": 3104434, "beatenBy": ["kermit"], "notes": [{"text": "was 1100 fkdr at the time", "author": "kermit", "at": "2026-10-31"}], "dates": ["2026-09-13"], "times": 1, "cheating": false, "boosting": true, "firstBeaten": "2026-09-13", "lastBeaten": "2026-09-13", "skin": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAHlklEQVR4nO2bXYgkVxXHf/XdHzPTM0vTnXUn2V0yWXdJICsxrKwmT24iLsgK4hdCAmFB9CUo4kPQxYCQmDeJUZAQfMu+KBKFmIcognnR1ZAPx0xaZzZZnO1hNjM90x9bXVX3+lBT3VXd1dXdMz3bvTh/aOpW3VO3zjn3nFOn7rmtSClJwr13zUiApuNgGgZBG8C5qfHlMwuJ9//k1TeVRIIxQx2EqOk4ZC0LQ42SGykPgJqtMDdltI5zU8boOd0n6IMQZS0LgIbjoGtaLM2Lb274jQ/9w6N3TpO1kq1rEtDXAlrmLgRCCABMwyBrWS2XuJ3RVwFhIVVVxfW8Lle4nTGQJI4QuJ7v7+kBZ/369fruubqFGCgGuJ5H2jBoeh4Nx8GuK8zmorc+eud0zJ2THwMGUoCmqjR2YgGAlZE4O/EAuC2CXS8oJ49kJICQoCgKqqKQtnQc3+JR8XAF6IqK7bm4roeqqhi6hpSg7bwVDA0atouQEikl6s7bX1X9/l55xMpGdax5QsQCpJRomkbDdlFVhZSpc7Pp97lSkE2Z5EwFD40bVRtPeqR1nZtNl4Yr0VQVz3W7HhLkEUDEcoI8YpzQdU2n2fRA9QWQ+IqwmwIhJKqq8Ny3H8MyTNKpGRq1LdBUNq7/l2d+8yq1RhPHFeiagsR3F08IhKdgmhpCyoHyiHFBdT0XVVWxNN1n3nORQMrUMU2DS499DeEo3Niosrp2g+XVNYQj2Nze4pufPYtpGqRMHQl4nou2M5b/ynQnPo/wX4OKhyNcmq7AcSWPP3Q/T547Q9bUyFgW55/6KS//6W5STpOjxQI//12RJ154hZn8x8iaGk+eO8PjD92P40p/DOGC4pv3pOcRrSCI1BBCYJomX/3kMQ5Nz7Ll3CSfnqZ4xzy6Ncsrr78OwJc+9xmuffA+/ynfIGUZzBgpPtre5OW/rdBsNlFVtaWAIAjG5RGOELz7wdZYg6By310z0vVcDFXnwRPH+fTHj+HZNdY3N9moOhwp5jEVj6sf1iI33jGfZqvmUK3WmZsyyM/OollZ/vLeCn9dWsYRLrqmI6SM5BGeEK08YhIUoH/9wRMA5GdnWd/cRHo2ruuhmxZScVheLSOEID+XA8B2mqStFNWGh+00kQropoVhGHiezaeOH+HswmGE67K+uQnARtXht2+/33qolZE8cvLYRHw1Kp3rAV/5/JXIhbeWvxHpX1xcTJwx5coV+b2nnojte+7HL8LzzycyJF96KXn8y5clCztrEKUS3/rFM6xWahzOZVmt1Pj135eGsqiBMsFhUbP30aoXFuLbu8TkhOPdoFSKzP7hXHboIfbFAvb126BUGsnMB1BOn/yOBKjbZTJWkcKhByIEax9dafUBkf5q4xpvfCH02VsqwcMPg2Hwo9//kuPFGZbLWwBcOn/Rp7l6NcrB0aOQybTPd7JGbNs/Li7G01uWT9PZf/p05FReuJDoj2og/G4wlZ73G+Wy/1tYgFwOMhkunb8YFX5uzv+F6cvltjDBrxNhWmiPAVCvR2l2gZYLBDM8NDofHBLi0vmL4DjRGU6g77pu21AsRu+x7fY9c3PdFjUk9h4Et7fb7VKp3Q4LFm6H6cPttTX/aNvtdhzqIZfb2BiO1xgMFAQzVrEVB6qNa9HO6el4QQoFf4aC87BQYXpo+3snLIsXVv7cOq38823uFvfCcpvk3/96l1zG9E9W3iMvVqNjXLiQKFusBVQb1yKCJsaIsDDTHctiYcFyuW6aoF2pdI/bSynA+lY7Lc9lTCr1Zm/++iDWAlrBLYQgRnT1TS93z2ih4B8rlbbgnQgrIpfzacP+XalAoUCl3mzPcAfCioi7np/pnxfosIcACH6QimsPQh+gVyDsQKCIXoJV6k3yCf1xGDgGDIxg9jsRJ2RYGeH7YsZIsoRe1weBnite8R9QfiCRMKC7576ob75G3m8EwoSDXS7Xfp31muUwfaEQDaK2nShcfibL+mbocTu061s1v6+Hi4TRsoBeAtrvvJM4wOnL29TtbTJWhrpd5tjhE6FeD6j7GeMP29dP/MGPGRkrQ+HQVCvgvvH9drw4+/SSH2/uiX9uIGRgGUkWkoSRfgz1cpWp9Dxnn14CfIV10k6l532aZ/2k5pFfTXUF2/DsBuh8G+wGXesB/2+4vT+HR4ADBYybgXHjQAHjZmDcOFDAuBkYNw4UMG4Gxo0DBYybgXHjQAHjZmDcOFDAuBkYN0ZeHN3z/oKO+v8Xn/1BpPr7sz/+Y6S198mzgBHX//th8hQQLq9BZPZXK/0XOYfF5CkgjA5l7Af2vCb4iVPfHWp/QSZdjCx4vnZuKTrgqVPtpfR6vbv6O2T9vx9umQUE9cW4slukvh+u/sbtJxgxbokChqosBUIHVhDGIKW3ITF5MSBc86/v/79ORpIHhH28Hzr3F+x3/b8fRmYB4T0EnfsLBkFnaWuQut4oMBILCHaQBIgNdAP0QbvmF4eg/D1M/b8f9mWfYBx6uUivomYgXFLfKDAyF9jTJguSi5t72QLTD3u2gL3uL8hVo4InzW4uY0Zq/xPlArvdXwBEavyBj4/SzJMwEXlAr+gftPeyBaYf/gfURVWGHaGYawAAAABJRU5ErkJggg=="}, {"username": "jcks", "uuid": "5eba0de764e142eb943a8590a1283789", "star": 330, "fkdr": 95.93264248704664, "wlr": 45.54430379746835, "bblr": 21.350609756097562, "kdr": 0.6675191815856778, "finals": 18515, "finalDeaths": 193, "beds": 7003, "bedsLost": 328, "kills": 9918, "deaths": 14858, "index": 3037014, "beatenBy": ["kermit", "potat", "aballs", "zoiv", "milo"], "notes": [], "dates": ["2025-08-10", "2026-01-18", "2026-09-12"], "times": 3, "cheating": false, "boosting": false, "firstBeaten": "2025-08-10", "lastBeaten": "2026-09-12", "skin": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAFCElEQVR4nO2bX2gcRRzHv5seyEFibryQFp/axNA+CE0tCSdSsA9WCn0IfToEKZInoaCItfEgBRsMaqUoBPJ0UhCKFi1BorX2UUqPJGgKPiQct+ZRy13nzhzdl/POh2O3u3uzM7M7+ye194GD3Z1/v/nNb34zO789DUAHHGhpBVd+WWOmXTg17ZlmsnhpkZsOQBO03yG5GWYeXposAyqF/w/0FZC0AEmjQeADCpcLSg2o+oCoeeotoK+ApAVIGo2WVhw+QLSui7hwarrnGW8f4UZ1XXf3h1cnLa10BgDgYXkHBqUq7TowKMXD8o50fpKb0VQ7HrS+FACkR4ZhVBtIExKKAEa1gfTIsHI9hcsFx2guXlrUeM+D0FUAIczOf/DORcf9Z19+yn1u8tzEQV9CsMwW8O6YqMNe9bFIFW7cdjwgmV5FvHT0KH67f1/4DADc9XnVaeZdvroc6j7Az1QiuRkt5SUcAAwNDgIAypUKrn17zXJa3//4HcqVCrtSTn0qeYvXi53ZN2Y197UqKV7i/Mfz1vX4C+O4qdeYaXFRvF6UNm1ZuAqws7GxgaUrS9htNvHhR3O+Ri8MwhpxNz3vAva9v17Rsfx23ro3KMXzp9/iVmiWp3UKWqO4mn8dRrWB4p8PpAQSvTvY5TOnpIxcXkhbgF9ojYJkCd775jZIlsRuMbJEthUeGx8DgD3deSBCCxBB6xT6jg4AGDs4lpiSNPeuyo5e0ZnPZUeV1rvba5m8s4dGkR4ZDm3KSJxDAAhoAbLCnXz1JABgc3OTm8/deVqjwjZM5QaVzYSrAJINPgqTk5MwHhnWNU8J6ZFhpAl57DckOmFOHzfHJ4/7kpPrBGmNMn8yGI8MtNottNotSxFeLNzpvi7PnT0hKTZAhgjz55dILGD0wH602i3rvtVuYfTAfjz46292OxkCg1KkQTB39gQ+ufmrsA26G87rO1cBYZmZDAt31jD/2rS0EoKMNgu+BYTUiAwkQ2BUGwAgpQQV/2QnMicYhM9/38b7xw6HdjAjQ2Qbod1m03qd3m02pcqQDLFOki5+9QN3NfByxqEug0Eb2d7awuEjRxwd397aEpY7PzVhjb5wHxCWEzw/NeGZaBwaZT63n/ctrZd70kmGoHT3HnKvvAwAKN29Z63xXsza2to3+Ix17T45Ng9vRbLJ7QOBVJD5JlOGZAlu/fwTgO5eXwbTCS7cWPO0AFHbcfqPPn369OnzpBPp1xnmOb7MkXZ9fbWTmTrTk8/rxMorPGbml40XpnhHYqJGeHnsQQzZSM4/f9zqPPvi6Vg/mYmsMXcUR9YKBtL7EKcSIrOAIGSmzmj19dVOnJaQ2LE4j7bxrzUdovYBe2oKmMQ5FbhxAdUp4GcVsGNfESJfBfwI5pcgEd36+mroIfAnCtMJJi3HU0MYTsYxWvlzecfpj/2YCwBIboZbmT3+7zgi8y7X/7+ACn0FJC1A0ij7gPy5fI/HFp0AA4+/IZLJy8IW/1fqQ2JbYZLpfgfAivMH/TYgCMoKUAmfkSxhBmBFwVevoK0Jb3cLOHeJTAWIKrBXxIoeyYanaI0GCsCGGbRlKsDPK24UFiBCFBbzI7+yBQQxYRN9R9+bFuAHFWHIEAlkQaIyyj4gzikQBbFOAdmGvAjiREUfailbgB9UV4Egcf6wvg0AQtgJVr7+okfbsv8XMsPhfssb1QbG33zXvE12J8gSVjVGH2eM/z+sfDQP3zSUZgAAAABJRU5ErkJggg=="}, {"username": "72Os", "uuid": "15305e0e7d11490f82867752dbf0be3b", "star": 3395, "fkdr": 27.147332936744, "wlr": 9.051862523152913, "bblr": 7.68938816958619, "kdr": 0.8111055945654144, "finals": 136904, "finalDeaths": 5043, "beds": 60577, "bedsLost": 7878, "kills": 102922, "deaths": 126891, "index": 2502039, "beatenBy": ["kermit", "key"], "notes": [], "dates": ["2026-09-12"], "times": 1, "cheating": false, "boosting": true, "firstBeaten": "2026-09-12", "lastBeaten": "2026-09-12", "skin": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAGNUlEQVR4nO1a3W4bRRT+tt6Nkm22caw2sbrGJHUVmVQlIgjxJ0FvQL3hCUC8TN6Fy14ihBCCCiS4ICigmqiq25J6S1JK7GRT1/LUXS6c2YzXZ2Z2vXacpv1udnbOmdmdM+dnZs4Y0GC9UgtmHBt7fhODPEuv5QzdN9JA93+675u6D8w4Ntz5WQAY+DlKxPk/FbQC2PObqZ6jRtrvv9IAHcOe3+yRZlTClwqzyudxYHLCIO28+mA30LWNrQHeTn0sM6yDStXjmEFqH3CcM01hxrEHonEMxQeME2k1wIgT55cvu6jc8cint1NXtgWgbC+z3+OCsV6pKR3FW2+4Utrvf3mpf2B1uTBWAZgAlCs5FeJqgK7/6oPdgKJz4bTaQUBpHF/lybSY01X9m1EbP3JqR/Z9afF1UgB37/19yN/lvVuj/YPKh1Qf7AYyeqsdBACwMEf7Gk6XRSgeBlX9m8P06pcKs7hbq5OrsbQryu1GwwCAfDYbbDcaRj6bDSp3vB5NU60GZbQ+DaDw+RdfAgB+vfk97KlJXH3nA6kQkmqA7unOz4aDFwWx3WgYy5fd0H+pIpSqf6UGfPrxh/j2x5+xtrZ2WLOGKDgPB7dRsU+xPMw9xcg1QByYDFGeUWiADMuXjyLUoBpgAOgJg+VyOSz7vg/f92FZFgCAMYb9/X3pDwHAeqXW5+VFz/vZJ++G/UXBGIPn9YXWnjApevSP3rsatnv06NFA4fTMII1OE4YuANEmF9xZLLhddYuzrhgHxq4BN77+aazfN8rlsnQp7Ps+We84Tlj+6sZ3AHp3XlwDVspdJ7Wx6Ul5eL3MZ1Bao9KmpGeRJmMsDl8PxDYX52b66O58d8nKnnXfeaRp7B+EPGenjtplz01jz2+G3pmXz07RznLPx0A0CtrtsA4XctN9df/uHvTVNfYPSF4AYM96tYOXL+SmQyGKePKUIXuO7ktFo5BaANQPXshNA7sHsA57PztlSQfDeSgNAIDSYgHVe7WwDAC/bWyicofeiV6cmwn54sBwXZf0ATrTENcGUfxRqeLJUxaqIi+/uVwi+9qq7aBYmMdWbSes4+/lpUUwxlC9V0NpsQDLssAYk/6fZVmwLAv379+P5QOMUqkkdYKtVousn5ycDMudTqeP3mw28c0P67h+bRX/bO9gY7O7lS0W5mHb/c6r2TxyiFwYtm2j2WzCcRx0Oh0wxmBZFjKZTPhOgfNUq9V4TjAOU1Lkcjlcv7YKoBsBrl9bRS6XIwcP9EYVPvhMJtPDzwc2bJAC4OFPtmQVIZsJ/vMrZRe2baPVamnNSmwnznK0ncoEksKUxXrqw1Q9NauiiWxsej3vFFR0cdbjaEBSTTEpG85mswDkCyEOqi3QK6CVsqudrWHN5iBQmoBsgDoJi6azsemF77L+ZKYm4x8mlCvBODOn41kpu2E0STrT0f5lZardqcat6mNtzu/UYtiDH/t2+IVAPp8P8vn8iVG7l84EblUfB+KgVQJIKpyRLIWHibrPgufPO2EZALb/81H3WTDrWH3r/TOZM1IaBXNpaYmUWLvdlu6oFhYWgomJCQDA7du3R5rcdGwT0Xl62rYP6/sx48hpFE68EzQzR+lzM2MYZsYwpiYyPfUiVLRXIGCcdBMYNU68CYwapLd40Wc1NYrFYlAsFl+uxcYrCNBpwGnSENIHtNttZSMd/UXC0J2d67qBeMr78OHD6P0C5TfF/P/7b5fDtp7nxf7XW9XHwZXS+Vj8pzIMXimdN+Juik6lAJIglgBO2nmADklMILUPoHKLog9Qwfd93Pzlz776tPl/UQDcFMR3UTgjOQ9IcipL5fLT5P/rPgv4eQEAUGcJIkgBiJsdGVSbpSSgcvlp8v+ObUbOC/rPEkSM/USIyvOLOf4kdwOA7plB3WcBPxN41uneJ+bvXBM4Us/g3Nwc6Rx1iVWVmfAcf/ReAG+X5l5gFKlNgBqoLhnKeWT3D8QEJx/8KFLjwAkwARVGNWgRpAC4c5OdFunAk6txwmHSzPEw7wYAEgHwnV6cgxHVz+jS6wDtKyiVP1YT2NraSuVg+Mw3Gg2SfhyqHRdKDZAJQqRTOfw4Mw908/9xruGMEqnPA9LeL5BpA2X7cftNgv8B23Rjjp4QROkAAAAASUVORK5CYII="}, {"username": "oCxmboo", "uuid": "a9436039f0954b98bac538cfeb7a609b", "star": 2452, "fkdr": 31.147323943661974, "wlr": 8.92425187032419, "bblr": 6.498964445978599, "kdr": 0.7759317621266101, "finals": 110573, "finalDeaths": 3550, "beds": 37655, "bedsLost": 5794, "kills": 45302, "deaths": 58384, "index": 2378822, "beatenBy": ["kermit"], "notes": [], "dates": ["2026-09-12"], "times": 2, "cheating": false, "boosting": false, "firstBeaten": "2026-09-12", "lastBeaten": "2026-09-12", "skin": "data:image/png;base64,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"}, {"username": "fury123456789", "uuid": "2f36783a9b614ccf94f6c477b1a1308d", "star": 1740, "fkdr": 36.81440517939034, "wlr": 10.725403817914831, "bblr": 9.302779864763336, "kdr": 0.8764327616002258, "finals": 136471, "finalDeaths": 3707, "beds": 61910, "bedsLost": 6655, "kills": 74552, "deaths": 85063, "index": 2358223, "beatenBy": ["milo", "potat"], "notes": [], "dates": ["2025-09-24"], "times": 1, "cheating": false, "boosting": false, "firstBeaten": "2025-09-24", "lastBeaten": "2025-09-24", "skin": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABbklEQVR4nO2aPW6EMBCFTZQDcKfUW0VyRcUN6CnpuQHNUrlNHeVKFOmTLlqZTezsjP0szftKC8zz84x/0HQuQXh7/0o98xf+8tJJ3i/NE1oAGhqAFoCGBqAFoKEBaAFoOuk+LwV9TsiKgGFastp+YwxHvqLKQCNgDIf7vL5CI+A556F4tvd1Vvn45nvnrypdPUyWAc7JBj2Gw22+f/j9kmStARozHq8DYziaWBuqrQH3Brv5Hr4LZKeAlFZT4OR+KiJSM1b6/4FUX4z5kyANQAtAk9wF4pxC3x1iUvpSa4L5CKAB2h0O03K6O9xrawV1A/Z1dvs6/wx4mJZTmxYa/ZlPgeJH4duZ17pGa1LMgNvBlhr4vs7OXz5EfZhPARqAFoDGvAGEEEIIIYQQQgixh3p1Run6Au2KEvN/hGgAWgAacT5p1wT9tz/pmmA+AmgAWgAaGoAWgKY5A2qX0jRnQO0iiuYMqA0NQAtAY96Ab2MMdLbn6dmbAAAAAElFTkSuQmCC"}, {"username": "tiltings", "uuid": "3ba0f367841548c0b2283acfe876525d", "star": 4072, "fkdr": 23.998646538261323, "wlr": 5.901552655265527, "bblr": 7.04814767825425, "kdr": 0.9291838260851247, "finals": 230507, "finalDeaths": 9605, "beds": 111107, "bedsLost": 15764, "kills": 176439, "deaths": 189886, "index": 2345207, "beatenBy": ["kermit"], "notes": [], "dates": ["2026-09-12"], "times": 1, "cheating": false, "boosting": false, "firstBeaten": "2026-09-12", "lastBeaten": "2026-09-12", "skin": "data:image/png;base64,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"}]}</script>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+// ---------- data ----------
+const DATA = JSON.parse(document.getElementById('hof-data').textContent);
+const SWEATS = DATA.top; // sorted best first (rank 1 = index 0)
+const N = SWEATS.length;
+const ROSTER = { milo:'Milo', potat:'Potat', aballs:'ABoi', zoiv:'Zoiv', max:'Max', sqoz:'Sqoz', kermit:'Kermit', ssent:'Ssent', key:'Key' };
+const ROSTER_COLOR = { milo:'#00d9ff', potat:'#a855f7', aballs:'#ffb84d', zoiv:'#ff5fa2', max:'#4ade80', sqoz:'#60a5fa', kermit:'#a3e635', ssent:'#fb923c', key:'#facc15' };
+const TIERS = [
+  { max: 5e3, name: 'Casual', color: '#34e0a1' },
+  { max: 5e4, name: 'Tryhard', color: '#4fc3f7' },
+  { max: 5e5, name: 'Sweat', color: '#ffd166' },
+  { max: 5e6, name: 'Demon', color: '#ff5c72' },
+  { max: Infinity, name: 'Final Boss', color: '#a855f7' },
+];
+const tierOf = v => TIERS.find(t => v < t.max);
+const fmtIndex = v => v >= 1e6 ? `${(v / 1e6).toFixed(v >= 1e7 ? 0 : 1)}M` : v >= 1e4 ? `${Math.round(v / 1e3)}K` : Math.round(v).toLocaleString();
+const fmt = (v, d = 2) => v == null ? '—' : Number(v) >= 1000 ? Math.round(v).toLocaleString() : Number(v).toFixed(d).replace(/\.?0+$/, '');
+const prettyDate = s => s ? new Date(s + 'T12:00:00Z').toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+document.getElementById('brandSub').textContent = `Top ${N} of ${DATA.totalSweats.toLocaleString()} sweats · by index${DATA.cheaters ? ` · ${DATA.cheaters} cheaters counted` : ''}`;
+document.getElementById('introText').textContent = `The ${N} greatest sweats the roster has ever beaten, out of ${DATA.totalSweats.toLocaleString()} logged, ranked by index (FKDR² × stars). Walk the hall from the entrance to the Final Boss at the end.`;
+
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isTouch = matchMedia('(pointer: coarse)').matches;
+
+// ---------- layout ----------
+// The hall runs along -Z. Rank N stands nearest the entrance, rank 1 on the
+// dais at the far end, so walking forward climbs the leaderboard.
+const BAY = 5.2;                   // distance between figures on the same wall
+const HALL_W = 9;                  // wall to wall
+const HALL_H = 7.5;
+const PLINTH_X = 3.1;              // how far from centre the figures stand
+const ENTRANCE_Z = 6;
+const pairs = Math.ceil((N - 1) / 2);
+const HALL_LEN = pairs * BAY + 14;
+const DAIS_Z = -(pairs * BAY + 6);
+
+// z and side for each rank. Rank 1 (i=0) is the dais; others alternate.
+const slotFor = i => {
+  if (i === 0) return { x: 0, z: DAIS_Z, side: 0, dais: true };
+  const k = N - 1 - i;                     // 0 = nearest the entrance
+  const side = (k % 2 === 0) ? -1 : 1;     // left first
+  const z = -(Math.floor(k / 2) * BAY + 3) - (side === 1 ? BAY / 2 : 0);
+  return { x: side * PLINTH_X, z, side, dais: false };
+};
+
+// ---------- renderer ----------
+const canvas = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+renderer.setSize(innerWidth, innerHeight, false);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x06060a);
+scene.fog = new THREE.FogExp2(0x06060a, 0.028);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(58, innerWidth / innerHeight, 0.05, 140);
+const EYE = 1.65;
+camera.position.set(0, EYE, ENTRANCE_Z + 4);
+
+// ---------- materials ----------
+const marble = new THREE.MeshStandardMaterial({ color: 0x14141b, roughness: 0.32, metalness: 0.25 });
+const floorMat = new THREE.MeshStandardMaterial({ color: 0x08080c, roughness: 0.2, metalness: 0.75, envMapIntensity: 0.7 });
+const goldMat = new THREE.MeshStandardMaterial({ color: 0xd9a441, roughness: 0.22, metalness: 1, envMapIntensity: 1.4 });
+const darkGold = new THREE.MeshStandardMaterial({ color: 0x7a5a1e, roughness: 0.35, metalness: 0.9 });
+const glowMat = c => new THREE.MeshBasicMaterial({ color: c, toneMapped: false });
+
+// Floor with a subtle tile pattern baked into a canvas.
+function tileTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const g = c.getContext('2d');
+  g.fillStyle = '#0d0d13'; g.fillRect(0, 0, 512, 512);
+  g.strokeStyle = 'rgba(255,209,102,0.10)'; g.lineWidth = 3;
+  for (let i = 0; i <= 512; i += 128) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 512); g.moveTo(0, i); g.lineTo(512, i); g.stroke(); }
+  g.strokeStyle = 'rgba(255,255,255,0.03)'; g.lineWidth = 1;
+  for (let i = 64; i < 512; i += 128) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 512); g.moveTo(0, i); g.lineTo(512, i); g.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(HALL_W / 2, HALL_LEN / 2); t.anisotropy = 8; t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+floorMat.map = tileTexture();
+
+// ---------- the hall ----------
+const hall = new THREE.Group(); scene.add(hall);
+const zMid = (ENTRANCE_Z + DAIS_Z - 6) / 2;
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(HALL_W, HALL_LEN + 20), floorMat);
+floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, zMid); floor.receiveShadow = true; hall.add(floor);
+const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(HALL_W, HALL_LEN + 20), new THREE.MeshStandardMaterial({ color: 0x0a0a0f, roughness: 0.9 }));
+ceiling.rotation.x = Math.PI / 2; ceiling.position.set(0, HALL_H, zMid); hall.add(ceiling);
+for (const s of [-1, 1]) {
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(HALL_LEN + 20, HALL_H), marble);
+  wall.rotation.y = s === -1 ? Math.PI / 2 : -Math.PI / 2; wall.position.set(s * HALL_W / 2, HALL_H / 2, zMid); wall.receiveShadow = true; hall.add(wall);
+  // skirting + cornice in gold
+  const skirt = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.22, HALL_LEN + 20), darkGold); skirt.position.set(s * (HALL_W / 2 - 0.04), 0.11, zMid); hall.add(skirt);
+  const cornice = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.12, HALL_LEN + 20), darkGold); cornice.position.set(s * (HALL_W / 2 - 0.09), HALL_H - 0.3, zMid); hall.add(cornice);
+  // neon guide line along the floor edge
+  const strip = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.01, HALL_LEN + 20), glowMat(0xffd166)); strip.position.set(s * (HALL_W / 2 - 0.5), 0.006, zMid); hall.add(strip);
+}
+// Pillars between bays, with a gold capital
+const pillarGeo = new THREE.BoxGeometry(0.55, HALL_H, 0.55);
+const capGeo = new THREE.BoxGeometry(0.72, 0.16, 0.72);
+for (let k = 0; k <= pairs + 1; k++) {
+  const z = -(k * BAY) - 0.4 + BAY / 2;
+  for (const s of [-1, 1]) {
+    const p = new THREE.Mesh(pillarGeo, marble); p.position.set(s * (HALL_W / 2 - 0.3), HALL_H / 2, z); p.castShadow = true; hall.add(p);
+    const cap = new THREE.Mesh(capGeo, goldMat); cap.position.set(s * (HALL_W / 2 - 0.3), HALL_H - 0.4, z); hall.add(cap);
+    const base = new THREE.Mesh(capGeo, goldMat); base.position.set(s * (HALL_W / 2 - 0.3), 0.08, z); hall.add(base);
+  }
+}
+// Ceiling light slots down the middle: a dim warm glow that leads the eye
+for (let k = 0; k <= pairs + 1; k++) {
+  const z = -(k * BAY) - 0.4 + BAY / 2;
+  const slot = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 2.6), glowMat(0x6b5530)); slot.position.set(0, HALL_H - 0.02, z); hall.add(slot);
+}
+// End wall behind the dais and entrance wall behind the camera
+const endWall = new THREE.Mesh(new THREE.PlaneGeometry(HALL_W, HALL_H), marble); endWall.position.set(0, HALL_H / 2, DAIS_Z - 6); hall.add(endWall);
+const backWall = new THREE.Mesh(new THREE.PlaneGeometry(HALL_W, HALL_H), marble); backWall.rotation.y = Math.PI; backWall.position.set(0, HALL_H / 2, ENTRANCE_Z + 8); hall.add(backWall);
+
+// Lighting
+scene.add(new THREE.AmbientLight(0x3a3450, 0.25));
+const hemi = new THREE.HemisphereLight(0x2a2440, 0x050507, 0.35); scene.add(hemi);
+
+// ---------- canvas text helpers ----------
+function makeCanvasTexture(w, h, draw) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+// Wall plaque: name, tier, index and the four headline stats.
+function plaqueTexture(s, rank) {
+  const tier = tierOf(s.index);
+  return makeCanvasTexture(1024, 560, (g, w, h) => {
+    g.fillStyle = '#0b0b11'; roundRect(g, 0, 0, w, h, 26); g.fill();
+    const grad = g.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, 'rgba(255,209,102,0)'); grad.addColorStop(0.5, tier.color); grad.addColorStop(1, 'rgba(255,209,102,0)');
+    g.fillStyle = grad; g.fillRect(60, 0, w - 120, 5);
+    g.strokeStyle = 'rgba(255,209,102,0.35)'; g.lineWidth = 3; roundRect(g, 10, 10, w - 20, h - 20, 20); g.stroke();
+    g.textBaseline = 'alphabetic';
+    g.fillStyle = tier.color; g.font = '700 30px Inter, sans-serif'; g.letterSpacing = '10px';
+    g.fillText(`#${rank}  ·  ${tier.name.toUpperCase()}`, 60, 92);
+    if (s.cheating) { g.save(); g.translate(w - 170, 120); g.rotate(-0.18); g.strokeStyle = '#ff5c72'; g.lineWidth = 6; roundRect(g, -150, -34, 300, 68, 12); g.stroke(); g.fillStyle = '#ff5c72'; g.textAlign = 'center'; g.font = '900 44px Inter, sans-serif'; g.letterSpacing = '8px'; g.fillText('CHEATER', 0, 16); g.restore(); g.textAlign = 'left'; }
+    g.letterSpacing = '2px'; g.fillStyle = '#f7f1e3';
+    let size = 108; g.font = `700 ${size}px Cinzel, serif`;
+    while (g.measureText(s.username).width > w - 120 && size > 44) { size -= 6; g.font = `700 ${size}px Cinzel, serif`; }
+    g.fillText(s.username, 60, 215);
+    g.letterSpacing = '0px';
+    g.fillStyle = 'rgba(247,241,227,0.6)'; g.font = '500 30px Inter, sans-serif'; g.fillText('INDEX', 60, 300);
+    g.fillStyle = '#ffffff'; g.font = '700 74px Inter, sans-serif'; g.fillText(Math.round(s.index).toLocaleString(), 60, 372);
+    const stats = [['STARS', `${fmt(s.star, 0)}✫`], ['FKDR', fmt(s.fkdr)], ['WLR', fmt(s.wlr)], ['BBLR', fmt(s.bblr)]];
+    const x0 = 60, cw = (w - 120) / 4;
+    g.fillStyle = 'rgba(255,255,255,0.1)'; g.fillRect(60, 410, w - 120, 2);
+    stats.forEach(([k, v], i) => {
+      g.fillStyle = 'rgba(247,241,227,0.55)'; g.font = '600 24px Inter, sans-serif'; g.letterSpacing = '5px'; g.fillText(k, x0 + i * cw, 462);
+      g.letterSpacing = '0px'; g.fillStyle = '#f7f1e3'; g.font = '700 48px Inter, sans-serif'; g.fillText(v, x0 + i * cw, 520);
+    });
+  });
+}
+// Plinth face: just the big rank number.
+function rankTexture(rank, color) {
+  return makeCanvasTexture(256, 256, (g, w, h) => {
+    g.fillStyle = '#121219'; g.fillRect(0, 0, w, h);
+    g.fillStyle = color; g.font = `900 ${rank >= 10 ? 150 : 180}px Cinzel, serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.shadowColor = color; g.shadowBlur = 24; g.fillText(String(rank), w / 2, h / 2 + 10);
+  });
+}
+
+// ---------- Minecraft player model ----------
+const skinLoader = new THREE.ImageLoader();
+function loadSkinImage(src) { return new Promise((res, rej) => skinLoader.load(src, res, undefined, rej)); }
+
+// Normalise any skin (64x32 legacy, 64x64) onto a 64x64 canvas, detect slim arms.
+function prepareSkin(img) {
+  const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+  const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
+  g.drawImage(img, 0, 0, img.width, img.height, 0, 0, 64, img.height === 32 ? 32 : 64);
+  if (img.height === 32) { // legacy: copy right limbs to the left slots
+    g.drawImage(c, 0, 16, 16, 16, 16, 48, 16, 16);
+    g.drawImage(c, 40, 16, 16, 16, 32, 48, 16, 16);
+  }
+  const a = g.getImageData(54, 20, 1, 1).data[3];
+  const slim = img.height === 64 && a === 0;
+  const tex = new THREE.CanvasTexture(c); tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter; tex.generateMipmaps = false; tex.colorSpace = THREE.SRGBColorSpace;
+  return { tex, slim };
+}
+// Map one box of the skin onto a BoxGeometry (face order +x,-x,+y,-y,+z,-z).
+function skinBox(w, h, d, u, v, inflate = 0) {
+  const geo = new THREE.BoxGeometry((w + inflate) * PX, (h + inflate) * PX, (d + inflate) * PX);
+  const uv = geo.attributes.uv;
+  const T = 64;
+  const face = (i, x1, y1, x2, y2, flip = false) => {
+    const u1 = x1 / T, u2 = x2 / T, v1 = 1 - y1 / T, v2 = 1 - y2 / T;
+    const o = i * 4;
+    if (!flip) { uv.setXY(o, u1, v1); uv.setXY(o + 1, u2, v1); uv.setXY(o + 2, u1, v2); uv.setXY(o + 3, u2, v2); }
+    else { uv.setXY(o, u1, v2); uv.setXY(o + 1, u2, v2); uv.setXY(o + 2, u1, v1); uv.setXY(o + 3, u2, v1); }
+  };
+  face(0, u, v + d, u + d, v + d + h);                         // +x (model's left side in texture terms)
+  face(1, u + d + w, v + d, u + d + w + d, v + d + h);         // -x
+  face(2, u + d, v, u + d + w, v + d);                         // top
+  face(3, u + d + w, v, u + d + w + w, v + d, true);           // bottom
+  face(4, u + d, v + d, u + d + w, v + d + h);                 // front (+z)
+  face(5, u + d + w + d, v + d, u + d + w + d + w, v + d + h); // back
+  uv.needsUpdate = true;
+  return geo;
+}
+const PX = 1 / 16; // one skin pixel in world units -> player is 2 units tall
+function buildPlayer({ tex, slim }) {
+  const base = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.75, metalness: 0 });
+  const over = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.75, metalness: 0, transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
+  const root = new THREE.Group();
+  const part = (w, h, d, u, v, ou, ov, px, py, pz, pivotY = 0) => {
+    const g = new THREE.Group(); g.position.set(px * PX, py * PX, pz * PX);
+    const m = new THREE.Mesh(skinBox(w, h, d, u, v), base); m.position.y = pivotY * PX; m.castShadow = true;
+    const o = new THREE.Mesh(skinBox(w, h, d, ou, ov, 0.5), over); o.position.y = pivotY * PX;
+    g.add(m, o); root.add(g); return g;
+  };
+  const aw = slim ? 3 : 4;
+  const parts = {
+    head: part(8, 8, 8, 0, 0, 32, 0, 0, 24, 0, 4),
+    body: part(8, 12, 4, 16, 16, 16, 32, 0, 18, 0, 0),
+    armR: part(aw, 12, 4, 40, 16, 40, 32, -(4 + aw / 2), 22, 0, -4),
+    armL: part(aw, 12, 4, 32, 48, 48, 48, (4 + aw / 2), 22, 0, -4),
+    legR: part(4, 12, 4, 0, 16, 0, 32, -2, 12, 0, -6),
+    legL: part(4, 12, 4, 16, 48, 0, 48, 2, 12, 0, -6),
+  };
+  // Minecraft models face -Z in their own space; our hall figures should face +X/-X
+  // toward the walkway, so the caller rotates the root.
+  root.rotation.y = Math.PI;
+  return { root, parts };
+}
+
+// ---------- figures, plinths, plaques ----------
+const figures = [];
+const PLINTH_H = 0.75;
+const spotTargets = [];
+function addFigure(s, i) {
+  const slot = slotFor(i);
+  const rank = i + 1;
+  const tier = tierOf(s.index);
+  const tcol = new THREE.Color(tier.color);
+  const g = new THREE.Group(); g.position.set(slot.x, 0, slot.z); hall.add(g);
+
+  // plinth
+  const ph = slot.dais ? PLINTH_H + 0.45 : PLINTH_H;
+  const pw = slot.dais ? 2.2 : 1.4;
+  const plinth = new THREE.Mesh(new THREE.BoxGeometry(pw, ph, pw), marble); plinth.position.y = ph / 2; plinth.castShadow = true; plinth.receiveShadow = true; g.add(plinth);
+  const trim = new THREE.Mesh(new THREE.BoxGeometry(pw + 0.08, 0.06, pw + 0.08), goldMat); trim.position.y = ph - 0.03; g.add(trim);
+  const trimLow = new THREE.Mesh(new THREE.BoxGeometry(pw + 0.12, 0.08, pw + 0.12), goldMat); trimLow.position.y = 0.04; g.add(trimLow);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(pw * 0.36, pw * 0.42, 64), glowMat(s.cheating ? new THREE.Color(0xff5c72) : tcol)); ring.rotation.x = -Math.PI / 2; ring.position.y = ph + 0.004; g.add(ring);
+  // rank face toward the walkway
+  const faceMat = new THREE.MeshBasicMaterial({ map: rankTexture(rank, tier.color), toneMapped: false });
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(pw * 0.6, pw * 0.6 * ph / pw * 0.9), faceMat);
+  const faceDir = slot.dais ? 0 : (slot.side === -1 ? Math.PI / 2 : -Math.PI / 2);
+  face.rotation.y = faceDir; face.position.set(slot.dais ? 0 : -slot.side * (pw / 2 + 0.01), ph / 2, slot.dais ? pw / 2 + 0.01 : 0); g.add(face);
+  if (slot.dais) {
+    // wide steps up to the dais
+    for (let k = 0; k < 3; k++) { const step = new THREE.Mesh(new THREE.BoxGeometry(5 - k * 0.9, 0.16, 3.2 - k * 0.6), marble); step.position.set(0, 0.08 + k * 0.16, 0.6 + k * 0.1); step.receiveShadow = true; g.add(step); }
+    // light cones (god rays) behind the champion
+    const rayMat = new THREE.MeshBasicMaterial({ color: tcol, transparent: true, opacity: 0.035, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false });
+    for (let k = 0; k < 5; k++) { const cone = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 1.6 + k * 0.25, HALL_H, 24, 1, true), rayMat); cone.position.set((k - 2) * 0.9, HALL_H / 2, -0.8 - Math.abs(k - 2) * 0.3); cone.rotation.z = (k - 2) * 0.08; g.add(cone); }
+    // laurel-ish halo ring on the end wall
+    const halo = new THREE.Mesh(new THREE.RingGeometry(2.3, 2.42, 96), glowMat(tcol)); halo.position.set(0, 3.6, -5.95); g.add(halo);
+    const halo2 = new THREE.Mesh(new THREE.RingGeometry(2.9, 2.93, 96), glowMat(0xffd166)); halo2.position.set(0, 3.6, -5.95); g.add(halo2);
+  }
+
+  // wall plaque
+  const plaqueTex = plaqueTexture(s, rank);
+  const plaque = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 2.6 * 560 / 1024), new THREE.MeshBasicMaterial({ map: plaqueTex, toneMapped: false }));
+  if (slot.dais) { plaque.position.set(0, 1.0, -5.9); plaque.scale.setScalar(1.25); plaque.position.y = ph + 2.45 + 0.6; }
+  else { plaque.position.set(slot.side * (HALL_W / 2 - PLINTH_X - 0.02), 2.95, 0); plaque.rotation.y = slot.side === -1 ? Math.PI / 2 : -Math.PI / 2; }
+  g.add(plaque);
+  const pframe = new THREE.Mesh(new THREE.PlaneGeometry(2.6 + 0.08, 2.6 * 560 / 1024 + 0.08), goldMat);
+  pframe.position.copy(plaque.position); pframe.rotation.copy(plaque.rotation); pframe.scale.copy(plaque.scale);
+  pframe.position.x += slot.dais ? 0 : slot.side * 0.015; pframe.position.z -= slot.dais ? 0.015 : 0;
+  g.add(pframe);
+
+  // spotlight from above
+  const spot = new THREE.SpotLight(tcol.clone().lerp(new THREE.Color(0xfff2d0), 0.6), slot.dais ? 70 : 34, 12, 0.42, 0.6, 1.6);
+  spot.position.set(slot.dais ? 0 : -slot.side * 0.9, HALL_H - 0.1, slot.dais ? 1.6 : 0.2);
+  spot.target.position.set(0, ph + 0.9, 0); spot.castShadow = slot.dais || i < 6; spot.shadow.mapSize.set(1024, 1024); spot.shadow.bias = -0.0005;
+  g.add(spot, spot.target);
+  const fill = new THREE.PointLight(tcol, 1.1, 4, 2); fill.position.set(0, ph + 0.12, 0); g.add(fill);
+
+  const rec = { s, i, rank, tier, slot, g, ph, player: null, parts: null, world: new THREE.Vector3(slot.x, 0, slot.z), seed: Math.random() * 100 };
+  figures.push(rec);
+
+  loadSkinImage(s.skin || '').then(img => {
+    const { root, parts } = buildPlayer(prepareSkin(img));
+    root.position.y = ph; root.rotation.y += slot.dais ? 0 : (slot.side === -1 ? Math.PI / 2 : -Math.PI / 2);
+    if (slot.dais) root.scale.setScalar(1.12);
+    g.add(root); rec.player = root; rec.parts = parts; rec.baseYaw = root.rotation.y;
+  }).catch(() => {
+    // fallback: a dark silhouette
+    const m = new THREE.Mesh(new THREE.CapsuleGeometry(0.3, 1.2, 4, 12), new THREE.MeshStandardMaterial({ color: 0x1a1a22, roughness: 0.9 })); m.position.y = ph + 0.9; g.add(m);
+  });
+}
+SWEATS.forEach(addFigure);
+
+// Entrance arch sign
+const signTex = makeCanvasTexture(2048, 512, (g, w, h) => {
+  g.clearRect(0, 0, w, h);
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = '#ffd166'; g.font = '900 230px Cinzel, serif'; g.letterSpacing = '26px';
+  g.shadowColor = 'rgba(255,209,102,0.7)'; g.shadowBlur = 40; g.fillText('HALL OF FAME', w / 2, h / 2 - 20);
+  g.shadowBlur = 0; g.fillStyle = 'rgba(247,241,227,0.8)'; g.font = '600 56px Inter, sans-serif'; g.letterSpacing = '22px'; g.fillText('THE GREATEST SWEATS WE EVER BEAT', w / 2, h - 80);
+});
+const sign = new THREE.Mesh(new THREE.PlaneGeometry(7, 7 / 4), new THREE.MeshBasicMaterial({ map: signTex, transparent: true, toneMapped: false, depthWrite: false }));
+sign.position.set(0, HALL_H - 1.5, ENTRANCE_Z - 1.2); hall.add(sign);
+
+// Floating dust
+let dust = null;
+if (!reduceMotion) {
+  const count = 900; const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) { pos[i * 3] = (Math.random() - 0.5) * (HALL_W - 1); pos[i * 3 + 1] = Math.random() * HALL_H; pos[i * 3 + 2] = ENTRANCE_Z + 6 - Math.random() * (HALL_LEN + 12); }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const dmat = new THREE.PointsMaterial({ color: 0xffd9a0, size: 0.035, transparent: true, opacity: 0.55, sizeAttenuation: true, depthWrite: false, blending: THREE.AdditiveBlending });
+  dust = new THREE.Points(geo, dmat); scene.add(dust);
+}
+
+// ---------- post ----------
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.42, 0.55, 0.92);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false); composer.setSize(w, h); bloom.resolution.set(w, h);
+  camera.aspect = w / h; camera.fov = w < 720 ? 70 : 58; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+
+// ---------- movement ----------
+const Z_MIN = DAIS_Z + 3.2, Z_MAX = ENTRANCE_Z + 4;
+let targetZ = camera.position.z, z = targetZ, vel = 0;
+let lookX = 0, lookY = 0, lookTX = 0, lookTY = 0;
+const keys = new Set();
+let entered = false, touring = false, lastInputAt = 0;
+let t0 = performance.now();
+
+function enter() {
+  if (entered) return; entered = true;
+  document.body.classList.add('entered', 'cinema');
+  document.getElementById('intro').classList.add('hidden');
+  targetZ = ENTRANCE_Z - 1.5;
+}
+document.getElementById('enter').addEventListener('click', enter);
+document.getElementById('intro').addEventListener('click', e => { if (e.target.id !== 'enter') enter(); });
+addEventListener('keydown', e => {
+  if (['w', 'a', 's', 'd', 'ArrowUp', 'ArrowDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); if (!entered) { enter(); return; } }
+  keys.add(e.key.toLowerCase()); userMoved();
+  if (e.key === 'Escape') setTour(false);
+});
+addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+addEventListener('wheel', e => { if (!entered) { enter(); return; } targetZ -= e.deltaY * 0.012; userMoved(); }, { passive: true });
+
+// pointer: drag to look, vertical drag on touch to walk, click a figure to walk to it
+let drag = null;
+const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2();
+canvas.addEventListener('pointerdown', e => { if (!entered) return; drag = { x: e.clientX, y: e.clientY, moved: 0, t: performance.now() }; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove', e => {
+  if (!entered) return;
+  if (drag) {
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.moved += Math.abs(dx) + Math.abs(dy);
+    if (e.pointerType === 'touch') { targetZ += dy * 0.03; lookTX = THREE.MathUtils.clamp(lookTX - dx * 0.0025, -0.6, 0.6); }
+    else { lookTX = THREE.MathUtils.clamp(lookTX - dx * 0.003, -0.7, 0.7); lookTY = THREE.MathUtils.clamp(lookTY + dy * 0.002, -0.35, 0.35); }
+    drag.x = e.clientX; drag.y = e.clientY; userMoved();
+  } else if (e.pointerType !== 'touch') {
+    // gentle parallax look following the mouse
+    lookTX = ((e.clientX / innerWidth) - 0.5) * -0.5; lookTY = ((e.clientY / innerHeight) - 0.5) * 0.25;
+  }
+});
+canvas.addEventListener('pointerup', e => {
+  if (!drag) return;
+  const tap = drag.moved < 8 && performance.now() - drag.t < 400; drag = null;
+  if (!tap) return;
+  ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hits = ray.intersectObjects(figures.map(f => f.g), true);
+  if (hits.length) {
+    const f = figures.find(f => { let o = hits[0].object; while (o) { if (o === f.g) return true; o = o.parent; } return false; });
+    if (f) { targetZ = f.slot.dais ? f.slot.z + 6.0 : f.slot.z + 2.0; setTour(false); userMoved(); }
+  }
+});
+function userMoved() { lastInputAt = performance.now(); }
+
+// Tour: glide to each figure in turn, pause, then continue to the dais
+const tourBtn = document.getElementById('tour');
+let tourStep = -1, tourHold = 0;
+function setTour(on) { touring = on; tourBtn.classList.toggle('on', on); tourBtn.textContent = on ? '■ Stop tour' : '▶ Tour'; if (on) { tourStep = -1; tourHold = 0; } }
+tourBtn.addEventListener('click', () => { if (!entered) enter(); setTour(!touring); });
+
+// stops in walking order (nearest the entrance first)
+const stops = figures.slice().sort((a, b) => b.slot.z - a.slot.z).map(f => f.slot.dais ? f.slot.z + 6.0 : f.slot.z + 2.0);
+
+// ---------- rail HUD ----------
+const rail = document.getElementById('rail'); const you = document.getElementById('you');
+const ticks = figures.map(f => { const t = document.createElement('div'); t.className = `tick ${f.tier === TIERS[4] ? 't5' : f.tier === TIERS[3] ? 't4' : 't3'}`; t.style.color = f.tier.color; const p = 1 - (f.slot.z - Z_MIN) / (Z_MAX - Z_MIN); t.style.top = `${p * 100}%`; t.title = `#${f.rank} ${f.s.username}${f.s.cheating ? ' (cheater)' : ''}`; rail.appendChild(t); return t; });
+
+// ---------- plaque panel ----------
+const panel = document.getElementById('plaque');
+let shownRank = 0;
+function renderPanel(f) {
+  const s = f.s;
+  panel.style.setProperty('--accent', f.tier.color);
+  panel.classList.toggle('left', f.slot.side === 1); panel.classList.toggle('right', f.slot.side !== 1);
+  const chips = s.beatenBy.map(k => `<span class="chip" style="--c:${ROSTER_COLOR[k] || '#fff'}">${ROSTER[k] || k}</span>`).join('') || '<span class="empty">no roster flag saved</span>';
+  const notes = s.notes.length ? s.notes.map(n => `<p class="note">${escapeHtml(n.text)}<small>${n.author ? ROSTER[n.author] || escapeHtml(n.author) : 'unknown'}${n.at ? ' · ' + prettyDate(n.at) : ''}</small></p>`).join('') : '<p class="empty">No notes on this one yet.</p>';
+  const when = s.firstBeaten === s.lastBeaten ? prettyDate(s.firstBeaten) : `${prettyDate(s.firstBeaten)} → ${prettyDate(s.lastBeaten)}`;
+  panel.innerHTML = `
+    <div class="rank"><span>Rank #${f.rank} of ${N}</span><span>${s.cheating ? '<span class="tier cheat">Cheater</span> ' : ''}<span class="tier">${f.tier.name}</span></span></div>
+    <h2>${escapeHtml(s.username)}</h2>
+    <div class="index">Index <b>${Math.round(s.index).toLocaleString()}</b> &nbsp;·&nbsp; ${fmtIndex(s.index)} · FKDR² × stars</div>
+    <div class="stats">
+      <div class="stat"><b>${fmt(s.star, 0)}✫</b><span>Stars</span></div>
+      <div class="stat"><b>${fmt(s.fkdr)}</b><span>FKDR</span></div>
+      <div class="stat"><b>${fmt(s.wlr)}</b><span>WLR</span></div>
+      <div class="stat"><b>${fmt(s.bblr)}</b><span>BBLR</span></div>
+      <div class="stat"><b>${fmt(s.finals, 0)}</b><span>Finals</span></div>
+      <div class="stat"><b>${fmt(s.beds, 0)}</b><span>Beds</span></div>
+      <div class="stat"><b>${fmt(s.kdr)}</b><span>KDR</span></div>
+      <div class="stat"><b>${fmt(s.finalDeaths, 0)}</b><span>Final deaths</span></div>
+      <div class="stat"><b>${fmt(s.bedsLost, 0)}</b><span>Beds lost</span></div>
+    </div>
+    <div class="label">Beaten by</div><div class="chips">${chips}</div>
+    <div class="meta">${s.times > 1 ? `Logged ${s.times} times · ` : ''}${when}${s.cheating ? ' · flagged cheating' : ''}${s.boosting ? ' · flagged boosting' : ''}</div>
+    <div class="label">Notes</div>${notes}`;
+}
+function escapeHtml(t) { return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+// ---------- animate ----------
+const tmpV = new THREE.Vector3(), lookAt = new THREE.Vector3();
+let bobT = 0;
+let paused = false;
+function animate(now, render = true) {
+  if (!paused) requestAnimationFrame(animate);
+  const dt = Math.min(0.05, (now - t0) / 1000); t0 = now;
+  const t = now / 1000;
+
+  // input
+  if (entered) {
+    const fwd = (keys.has('w') || keys.has('arrowup')) - (keys.has('s') || keys.has('arrowdown'));
+    if (fwd) { targetZ -= fwd * dt * 4.2; if (touring) setTour(false); }
+    if (touring) {
+      if (tourHold > 0) tourHold -= dt;
+      else {
+        const next = stops.findIndex(sz => sz < z - 0.5);
+        if (tourStep !== next) { tourStep = next; }
+        if (next === -1) setTour(false);
+        else { targetZ = stops[next]; if (Math.abs(z - targetZ) < 0.08) tourHold = 3.2; }
+      }
+    }
+  }
+  targetZ = THREE.MathUtils.clamp(targetZ, Z_MIN, Z_MAX);
+  // critically damped glide
+  const k = touring ? 1.6 : 4.5;
+  const accel = (targetZ - z) * k * k - vel * 2 * k;
+  vel += accel * dt; z += vel * dt;
+  const moving = Math.abs(vel) > 0.15;
+  if (moving && !reduceMotion) bobT += dt * Math.min(8, Math.abs(vel) * 2.2);
+  const bob = reduceMotion ? 0 : Math.sin(bobT) * 0.02 * Math.min(1, Math.abs(vel));
+  camera.position.set(Math.sin(bobT * 0.5) * 0.01 * Math.min(1, Math.abs(vel)), EYE + bob + (entered ? 0 : 0.6), z);
+  if (!entered) camera.position.y = EYE + 0.7 + Math.sin(t * 0.4) * 0.05;
+
+  // look: glance toward the sweat you're standing in front of (and up at the champion), plus mouse parallax
+  let glance = 0, glanceY = 0;
+  if (entered && nearest && !drag) {
+    const dz = camera.position.z - nearest.slot.z;
+    if (nearest.slot.dais) { if (dz < 8) glanceY = -0.16 * (1 - Math.max(0, dz - 4) / 4); }
+    else if (dz > -0.8 && dz < 3.2) glance = nearest.slot.side * (0.78 - Math.max(0, dz - 1.2) * 0.18);
+  }
+  lookX += ((lookTX + glance) - lookX) * Math.min(1, dt * 2.2); lookY += ((lookTY + glanceY) - lookY) * Math.min(1, dt * 2.2);
+  const idleSway = reduceMotion ? 0 : Math.sin(t * 0.37) * 0.015;
+  lookAt.set(camera.position.x + Math.sin(lookX + idleSway) * 10, camera.position.y - lookY * 10 + (entered ? 0 : -0.9), camera.position.z - Math.cos(lookX) * 10);
+  camera.lookAt(lookAt);
+
+  // figures: idle breathing, heads turn to follow the visitor when near
+  let nearest = null, nearestD = 1e9;
+  for (const f of figures) {
+    const dz = camera.position.z - f.slot.z;
+    const d = Math.abs(dz);
+    if (d < nearestD) { nearestD = d; nearest = f; }
+    if (!f.parts) continue;
+    const p = f.parts, ph = f.seed;
+    const breathe = reduceMotion ? 0 : Math.sin(t * 1.6 + ph) * 0.012;
+    f.player.position.y = f.ph + breathe;
+    p.armR.rotation.x = Math.sin(t * 1.1 + ph) * 0.05; p.armL.rotation.x = -Math.sin(t * 1.1 + ph) * 0.05;
+    p.armR.rotation.z = 0.04 + Math.sin(t * 0.9 + ph) * 0.02; p.armL.rotation.z = -0.04 - Math.sin(t * 0.9 + ph) * 0.02;
+    // head tracking: look at the camera within limits, in the figure's local frame
+    f.player.updateMatrixWorld();
+    tmpV.copy(camera.position); p.head.parent.worldToLocal(tmpV); tmpV.sub(p.head.position);
+    const yaw = THREE.MathUtils.clamp(Math.atan2(-tmpV.x, -tmpV.z), -0.9, 0.9);
+    const pitch = THREE.MathUtils.clamp(Math.atan2(tmpV.y - 0.25, Math.hypot(tmpV.x, tmpV.z)), -0.5, 0.5);
+    const near = d < 9;
+    p.head.rotation.y += ((near ? yaw : 0) - p.head.rotation.y) * Math.min(1, dt * 3);
+    p.head.rotation.x += ((near ? -pitch : 0) - p.head.rotation.x) * Math.min(1, dt * 3);
+  }
+  // plaque panel for the figure you're standing by
+  const inFront = nearest && entered && (nearest.slot.dais ? nearestD < 8 : (camera.position.z - nearest.slot.z) > -0.8 && nearestD < 3.2);
+  if (inFront && shownRank !== nearest.rank) { shownRank = nearest.rank; renderPanel(nearest); panel.classList.add('show'); ticks.forEach((tk, i) => tk.classList.toggle('here', figures[i] === nearest)); }
+  if (!inFront && shownRank) { shownRank = 0; panel.classList.remove('show'); ticks.forEach(tk => tk.classList.remove('here')); }
+  you.style.top = `${(1 - (z - Z_MIN) / (Z_MAX - Z_MIN)) * 100}%`;
+
+  if (dust) { dust.rotation.y = 0; dust.position.y = Math.sin(t * 0.15) * 0.15; const pa = dust.geometry.attributes.position; for (let i = 0; i < pa.count; i += 7) { pa.array[i * 3] += Math.sin(t * 0.3 + i) * 0.0006; } pa.needsUpdate = true; }
+
+  if (render) composer.render();
+}
+
+// Wait for fonts so canvas plaques render with Cinzel/Inter, then go.
+Promise.race([document.fonts.ready.then(() => Promise.all(['700 48px Cinzel', '700 48px Inter', '900 48px Cinzel'].map(f => document.fonts.load(f)))), new Promise(r => setTimeout(r, 2500))])
+  .then(() => {
+    // Re-render textures now that fonts are definitely in
+    figures.forEach(f => { f.g.traverse(o => { if (o.material && o.material.map && o.material.map.image && o.material.map.image.tagName === 'CANVAS' && o.geometry.type === 'PlaneGeometry' && o.material.map.image.width === 1024) { o.material.map.dispose(); o.material.map = plaqueTexture(f.s, f.rank); } }); });
+    document.getElementById('loading').classList.add('hidden');
+    requestAnimationFrame(animate);
+  });
+
+// Debug hooks for screenshots
+window.__hof = { enter, setTour, go: v => { targetZ = v; }, snap: v => { targetZ = v; z = v; vel = 0; }, figures, get z() { return z; },
+  pause() { paused = true; }, step(ms = 16) { for (let i = 0; i < ms / 50; i++) { const n = performance.now(); t0 = n - 50; animate(n, false); } }, shot() { animate(performance.now()); return canvas.toDataURL('image/png'); } };
+</script>
+</body>
+</html>

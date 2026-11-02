@@ -57,7 +57,13 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
 
   if (url.origin === SCOPE.origin && url.href.startsWith(SCOPE.href)) {
-    if (req.mode === "navigate") { event.respondWith(pageNetworkFirst(req)); return; }
+    if (req.mode === "navigate") {
+      // Only the tracker page itself is saved for offline. Other pages (like
+      // hall-of-fame.html) go straight to the network, so they never replace
+      // the saved copy of the tracker.
+      if (url.pathname === SCOPE.pathname || url.pathname === SCOPE.pathname + "index.html") event.respondWith(pageNetworkFirst(req));
+      return;
+    }
     if (SHELL.includes(url.href.split("?")[0])) { event.respondWith(networkFirst(req, PAGE_CACHE)); return; }
     return;
   }

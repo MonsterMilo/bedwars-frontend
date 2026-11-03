@@ -174,7 +174,7 @@ class PlayerModel {
       if (slot === 3) { put('body', B(8, 12, 4, 16, 16), [0, -6]); put('rightArm', B(4, 12, 4, 40, 16), [-1, -4]); put('leftArm', B(4, 12, 4, 40, 16, true), [1, -4]) }
       if (slot === 2) { put('body', B(8, 12, 4, 16, 16), [0, -6]); put('rightLeg', B(4, 12, 4, 0, 16), [0, -6]); put('leftLeg', B(4, 12, 4, 0, 16, true), [0, -6]) }
       if (slot === 1) { put('rightLeg', B(4, 12, 4, 0, 16), [0, -6]); put('leftLeg', B(4, 12, 4, 0, 16, true), [0, -6]) }
-      if (item.glint && !/_overlay$/.test(file)) for (const mesh of meshes.slice(first)) { const g = new THREE.Mesh(mesh.geometry, glintMaterial(0.8)); g.position.copy(mesh.position); mesh.parent.add(g); meshes.push(g) }
+      if (item.glint && !/_overlay$/.test(file)) for (const mesh of meshes.slice(first)) { const g = new THREE.Mesh(mesh.geometry, glintMaterial(m, 'armor')); g.position.copy(mesh.position); mesh.parent.add(g); meshes.push(g) }
     }
     if (mat === 'leather') {
       add(`leather_layer_${layer}`, item.color != null ? item.color : 0xa06540)

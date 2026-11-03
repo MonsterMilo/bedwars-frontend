@@ -82,7 +82,7 @@ class ItemFactory {
       group.userData.block = true
     } else return null
     if (item.glint && glint) {
-      const glintMat = glintMaterial(1)
+      const glintMat = glintMaterial(mesh.material, 'item')
       group.add(new THREE.Mesh(mesh.geometry, glintMat))
       group.userData.glint = glintMat
     }

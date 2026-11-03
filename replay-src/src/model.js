@@ -403,6 +403,7 @@ function buildTimeline (mcpr, onProgress = () => {}) {
   const teams = new Map()
   const chat = []
   const markers = []
+  const cracks = [] // { t, who, x, y, z, stage } block-breaking progress
   const effects = [] // { t, kind: 'particle'|'break'|'explosion'|'crit', ... }
   const sounds = [] // { t, name, x, y, z, volume, pitch }
   const deaths = [] // { t, name, final }
@@ -524,6 +525,12 @@ function buildTimeline (mcpr, onProgress = () => {}) {
           for (let q = 0; q < cnt; q++) setBlock(t, bx + r.i8(), by + r.i8(), bz + r.i8(), 0)
           effects.push({ t, kind: 'explosion', x, y, z, radius })
           sounds.push({ t, name: 'random.explode', x, y, z, volume: 4, pitch: 1 })
+          break
+        }
+        case P.BLOCK_BREAK_ANIM: {
+          // Someone mining a block: stage 0-9 cracks, anything else = stopped.
+          const who = r.varint(); const [x, y, z] = r.blockPos(); const stage = r.i8()
+          cracks.push({ t, who, x, y, z, stage: stage >= 0 && stage <= 9 ? stage : -1 })
           break
         }
         case P.EFFECT: {
@@ -707,7 +714,7 @@ function buildTimeline (mcpr, onProgress = () => {}) {
   for (const e of entities.values()) if (e.kind === 'mob') e.finish()
   // Objects keep their raw samples.
 
-  return { meta, info, duration, columns, changes, tracks, entities, names, skins, teamOf, teams, chat, markers, effects, sounds, deaths, bedsBroken, self, getBlock }
+  return { meta, info, duration, columns, changes, tracks, entities, names, skins, teamOf, teams, chat, markers, effects, cracks, sounds, deaths, bedsBroken, self, getBlock }
 }
 
 function popcount (m) { let c = 0; while (m) { c += m & 1; m >>>= 1 } return c }

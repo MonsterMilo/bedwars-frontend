@@ -33,6 +33,21 @@ const REPLACED = /^(dig\.|step\.|game\.player\.(hurt|die)|random\.(bow|explode|p
 // they'd be heard across the map, so they're left out.
 const POV_ONLY = /^(note\.|random\.(orb|levelup|click|successful_hit)$|mob\.(enderdragon|wither|villager|cat)\.)/
 
+/** How far a player had just fallen when hurt at time t (0 if not falling). */
+function fallBefore (tr, t) {
+  // Movement here glides 3 ticks behind the server, so look just after t.
+  const k = Math.min(tr.ty.length - 1, Math.max(1, Math.round((t - tr.t0) / 50) + 3))
+  // Still dropping then: hit in mid-air, not a landing.
+  if (tr.ty[k] < tr.ty[k - 1] - 0.05) return 0
+  // Find where they landed (within the last half second), then climb back
+  // up the fall to its top.
+  let land = k
+  for (let j = k; j > k - 10 && j > 0; j--) if (tr.ty[j] < tr.ty[land]) land = j
+  let top = land
+  while (top > 0 && tr.talive[top - 1] && tr.ty[top - 1] >= tr.ty[top] - 0.01 && land - top < 100) top--
+  return tr.ty[top] - tr.ty[land]
+}
+
 function synthesize (tl) {
   let seed = 12345
   const rnd = () => { seed = (seed * 1103515245 + 12345) >>> 0; return seed / 4294967296 }
@@ -70,7 +85,17 @@ function synthesize (tl) {
   for (const tr of tl.tracks.values()) {
     // Hits and deaths.
     for (const t of tr.hurts) {
-      const s = tr.stateAt(t); if (s) add(t, 'game.player.hurt', s.x, s.y + 1, s.z, 1, (rnd() - rnd()) * 0.2 + 1)
+      const s = tr.stateAt(t); if (!s) continue
+      add(t, 'game.player.hurt', s.x, s.y + 1, s.z, 1, (rnd() - rnd()) * 0.2 + 1)
+      // Fall damage (EntityLivingBase.fall): a thud, small or big, and the
+      // block landed on, quieter and lower.
+      const fall = tr.tx ? fallBefore(tr, t) : 0
+      const dmg = Math.ceil(fall - 3)
+      if (dmg > 0) {
+        add(t, dmg > 4 ? 'game.player.hurt.fall.big' : 'game.player.hurt.fall.small', s.x, s.y, s.z, 1, 1)
+        const below = blockAt(t, Math.floor(s.x), Math.floor(s.y - 0.2), Math.floor(s.z))
+        if (below >> 4) { const st = soundType(below); add(t, st.step, s.x, s.y, s.z, st.vol * 0.5, st.pitch * 0.75) }
+      }
     }
     for (const t of tr.deaths) {
       const s = tr.stateAt(t); if (s) add(t, 'game.player.die', s.x, s.y + 1, s.z, 1, (rnd() - rnd()) * 0.2 + 1)

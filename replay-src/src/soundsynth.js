@@ -57,6 +57,7 @@ function synthesize (tl) {
   const out = tl.sounds.filter(s => s.name && !REPLACED.test(s.name) && !POV_ONLY.test(s.name))
   const add = (t, name, x, y, z, volume, pitch) => out.push({ t, name, x, y, z, volume, pitch })
   const ch = tl.changes
+  const uses = [] // eating and drinking: { tr, start, end, kind, item }
 
   // Blocks placed and broken. Many changes in the same moment are the map
   // loading, cages opening or an explosion: no per-block sounds for those.
@@ -124,6 +125,7 @@ function synthesize (tl) {
       else if (held && (held.id === 335 || (held.id === 373 && !(held.damage & 16384)))) kind = 'drink'
       else if (!held && len > 1500 && len < 1750) kind = 'drink'
       if (!kind) continue
+      uses.push({ tr, start, end, kind, item: held })
       for (let k = 8; k <= 32 && k * 50 <= len + 25; k += 4) {
         const t = start + k * 50
         const st = tr.stateAt(t); if (!st) break
@@ -187,6 +189,9 @@ function synthesize (tl) {
     if (f.kind === 'explosion') add(f.t, 'random.explode', f.x, f.y, f.z, 4, (1 + (rnd() - rnd()) * 0.2) * 0.7)
   }
   out.sort((a, b) => a.t - b.t)
+  // Shared with the particles (sprint dust, eating crumbs).
+  tl.blockAt = blockAt
+  tl.uses = uses
   return out
 }
 

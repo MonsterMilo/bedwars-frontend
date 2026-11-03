@@ -16,17 +16,91 @@ function rng (seed) {
 }
 const gauss = (r) => { const u = Math.max(1e-9, r()); const v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v) }
 
+// Crumb colours for eating and drinking (EntityPlayer.updateItemUse uses
+// bits of the item's picture).
+const CRUMB = { 322: [0.95, 0.78, 0.2], 260: [0.8, 0.15, 0.1], 297: [0.75, 0.55, 0.25], 335: [0.95, 0.95, 0.95], 373: [0.35, 0.4, 0.95], 391: [0.95, 0.5, 0.1], 357: [0.6, 0.4, 0.2], 360: [0.85, 0.2, 0.15], 396: [0.95, 0.75, 0.2] }
+
+/**
+ * Particles the game makes by itself for every player, never sent by the
+ * server: potion swirls (EntityLivingBase.updatePotionEffects), dust kicked
+ * up while sprinting (Entity.createRunningParticles) and crumbs while eating
+ * or drinking (EntityPlayer.updateItemUse).
+ */
+function living (tl, colorOf, add) {
+  let seed = 0
+  for (const tr of tl.tracks.values()) {
+    if (!tr.tx) continue
+    const r = rng(0x9e3779b9 ^ (tr.id * 97 + seed++))
+    const n = tr.tx.length
+    for (let k = 1; k < n; k++) {
+      if (!tr.talive[k] || !tr.talive[k - 1]) continue
+      const t = tr.t0 + k * 50
+      const x = tr.tx[k]; const y = tr.ty[k]; const z = tr.tz[k]
+      const flags = tr.flags.at(t) || 0
+      if (flags & 0x20) continue // invisible: hidden, no swirls worth showing either
+      const pot = tr.potion && tr.potion.at(t)
+      if (pot) {
+        let show = r() < 0.5
+        if (pot.ambient) show = show && r() < 0.2
+        if (show) {
+          const c = [(pot.color >> 16 & 255) / 255, (pot.color >> 8 & 255) / 255, (pot.color & 255) / 255]
+          add({ t0: t, life: Math.min(2, 0.4 / (r() * 0.8 + 0.2)), x: x + (r() - 0.5) * 0.6, y: y + r() * 1.8, z: z + (r() - 0.5) * 0.6, vx: (r() - 0.5) * 0.3, vy: 0.3 + r() * 0.3, vz: (r() - 0.5) * 0.3, grav: 1.6, color: c, size: 0.1 + r() * 0.05, cell: 128, anim: 2, alpha: pot.ambient ? 0.15 : 1 })
+        }
+      }
+      // Sprinting on the ground (not crouching, not in water).
+      if ((flags & 0x08) && !(flags & 0x02) && tl.blockAt && Math.abs(y - tr.ty[k - 1]) < 0.01) {
+        const below = tl.blockAt(t, Math.floor(x), Math.floor(y - 0.2), Math.floor(z))
+        const id = below >> 4
+        if (id && !(id >= 8 && id <= 11)) {
+          const dx = x - tr.tx[k - 1]; const dz = z - tr.tz[k - 1]
+          let mx = -dx * 4 + (r() * 2 - 1) * 0.4; let my = 1.5 + (r() * 2 - 1) * 0.4; let mz = -dz * 4 + (r() * 2 - 1) * 0.4
+          const f = (r() + r() + 1) * 0.15; const len = Math.hypot(mx, my, mz) || 1
+          mx = mx / len * f * 0.4 * 20; my = (my / len * f * 0.4 + 0.1) * 20; mz = mz / len * f * 0.4 * 20
+          const b = 0.6
+          add({ t0: t, life: Math.min(1, 4 / (r() * 0.9 + 0.1) / 20), x: x + (r() - 0.5) * 0.6, y: y + 0.1, z: z + (r() - 0.5) * 0.6, vx: mx, vy: my, vz: mz, grav: -16, color: colorOf(below).map(v => v * b), size: 0.05 + r() * 0.05, cell: -1, anim: 0 })
+        }
+      }
+    }
+  }
+  // Crumbs: 5 every bite (every 4 ticks once 25 are left), 16 at the end.
+  for (const u of tl.uses || []) {
+    const r = rng(u.start ^ (u.tr.id * 131))
+    const col = (u.item && CRUMB[u.item.id]) || (u.kind === 'drink' ? CRUMB[373] : [0.65, 0.4, 0.22])
+    const len = u.end - u.start
+    const burst = (t, count) => {
+      const s = u.tr.stateAt(t); if (!s) return
+      const yaw = -s.head * Math.PI / 180; const pitch = -s.pitch * Math.PI / 180
+      for (let i = 0; i < count; i++) {
+        // In front of the mouth, turned by where they look.
+        let px = (r() - 0.5) * 0.3; let py = -r() * 0.6 - 0.3; let pz = 0.6
+        let vx = (r() - 0.5) * 0.1; let vy = r() * 0.1 + 0.1; let vz = 0
+        const rot = (a, b, c) => {
+          // rotateAroundX(pitch) then rotateAroundY(yaw), as Vec3 does.
+          const y1 = b * Math.cos(pitch) + c * Math.sin(pitch); const z1 = c * Math.cos(pitch) - b * Math.sin(pitch)
+          return [a * Math.cos(yaw) + z1 * Math.sin(yaw), y1, z1 * Math.cos(yaw) - a * Math.sin(yaw)]
+        }
+        ;[px, py, pz] = rot(px, py, pz); [vx, vy, vz] = rot(vx, vy, vz)
+        const b = 0.75 + r() * 0.25
+        add({ t0: t, life: 0.3 + r() * 0.5, x: s.x + px, y: s.y + 1.62 + py, z: s.z + pz, vx: vx * 20, vy: vy * 20, vz: vz * 20, grav: -16, color: col.map(c => c * b), size: 0.06, cell: -1, anim: 0 })
+      }
+    }
+    for (let k = 8; k <= 32 && k * 50 <= len + 25; k += 4) burst(u.start + k * 50, 5)
+    if (len >= 1550) burst(u.end, 16)
+  }
+}
+
 class Particles {
   constructor (scene, timeline, { colorOf }) {
     this.list = this.expand(timeline, colorOf)
     this.list.sort((a, b) => a.t0 - b.t0)
     this.maxLife = this.list.reduce((m, p) => Math.max(m, p.life), 0)
     const g = new THREE.BufferGeometry()
-    this.pos = new Float32Array(MAX * 3); this.col = new Float32Array(MAX * 3); this.size = new Float32Array(MAX); this.cell = new Float32Array(MAX)
+    this.pos = new Float32Array(MAX * 3); this.col = new Float32Array(MAX * 3); this.size = new Float32Array(MAX); this.cell = new Float32Array(MAX); this.alpha = new Float32Array(MAX)
     g.setAttribute('position', new THREE.BufferAttribute(this.pos, 3).setUsage(THREE.DynamicDrawUsage))
     g.setAttribute('color', new THREE.BufferAttribute(this.col, 3).setUsage(THREE.DynamicDrawUsage))
     g.setAttribute('size', new THREE.BufferAttribute(this.size, 1).setUsage(THREE.DynamicDrawUsage))
     g.setAttribute('cell', new THREE.BufferAttribute(this.cell, 1).setUsage(THREE.DynamicDrawUsage))
+    g.setAttribute('alpha', new THREE.BufferAttribute(this.alpha, 1).setUsage(THREE.DynamicDrawUsage))
     g.setDrawRange(0, 0)
     this.geo = g
     const tex = new THREE.TextureLoader().load('replay/particles.png')
@@ -38,24 +112,24 @@ class Particles {
       transparent: true,
       depthWrite: false,
       vertexShader: `
-        attribute float size; attribute float cell;
-        varying vec3 vCol; varying float vCell;
+        attribute float size; attribute float cell; attribute float alpha;
+        varying vec3 vCol; varying float vCell; varying float vAlpha;
         uniform float scale;
         void main () {
-          vCol = color; vCell = cell;
+          vCol = color; vCell = cell; vAlpha = alpha;
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
           gl_PointSize = max(1.0, size * scale / -mv.z);
           gl_Position = projectionMatrix * mv;
         }`,
       fragmentShader: `
         uniform sampler2D map;
-        varying vec3 vCol; varying float vCell;
+        varying vec3 vCol; varying float vCell; varying float vAlpha;
         void main () {
-          if (vCell < 0.0) { gl_FragColor = vec4(vCol, 1.0); return; }
+          if (vCell < 0.0) { gl_FragColor = vec4(vCol, vAlpha); return; }
           vec2 uv = (vec2(mod(vCell, 16.0), floor(vCell / 16.0)) + gl_PointCoord) / 16.0;
           vec4 t = texture2D(map, uv);
           if (t.a < 0.4) discard;
-          gl_FragColor = vec4(t.rgb * vCol, 1.0);
+          gl_FragColor = vec4(t.rgb * vCol, vAlpha);
         }`
     })
     this.points = new THREE.Points(g, mat)
@@ -91,6 +165,9 @@ class Particles {
             else { color = [0.25, 0.25, 0.25]; size = name === 'largesmoke' ? 0.35 : 0.18; vy += 1 }
           } else if (SPELL.has(name)) {
             cell = 128; anim = 2; color = name === 'witchMagic' ? [0.6, 0.2, 0.8] : [0.6, 0.6, 1]; vy += 1; size = 0.12
+            // Potion swirls sent with count 0 carry their colour in the offsets.
+            if (e.count === 0 && /^mobSpell/.test(name)) { color = [e.ox * e.speed, e.oy * e.speed, e.oz * e.speed].map(c => Math.max(0, Math.min(1, c))); vx = (r() - 0.5) * 0.4; vz = (r() - 0.5) * 0.4; vy = 0.4 }
+            if (name === 'mobSpellAmbient') add({ t0: e.t, life, x, y, z, vx, vy, vz, grav, color, size, cell, anim, alpha: 0.15 })
           } else if (name === 'crit' || name === 'magicCrit') {
             color = name === 'magicCrit' ? [0.4, 0.85, 1] : [0.9, 0.85, 0.7]; size = 0.12; grav = -6
           } else if (name === 'blockcrack' || name === 'blockdust' || name === 'iconcrack') {
@@ -99,7 +176,7 @@ class Particles {
           } else if (name === 'flame' || name === 'lava') { size = 0.12; vy += name === 'lava' ? 3 : 0.2; grav = name === 'lava' ? -12 : 0 }
           else if (name === 'note') { color = [r(), r(), r()]; size = 0.2; vy += 1 }
           else if (name === 'heart' || /Villager/.test(name)) { size = 0.2; vy += 0.5 }
-          add({ t0: e.t, life, x, y, z, vx, vy, vz, grav, color, size, cell, anim })
+          if (name !== 'mobSpellAmbient') add({ t0: e.t, life, x, y, z, vx, vy, vz, grav, color, size, cell, anim })
         }
       } else if (e.kind === 'break') {
         // Minecraft drops 4x4x4 pieces of the broken block.
@@ -122,6 +199,7 @@ class Particles {
         }
       }
     })
+    living(tl, colorOf, (p) => out.push(p))
     return out
   }
 
@@ -144,6 +222,7 @@ class Particles {
       this.pos[k + 2] = p.z + p.vz * age
       this.col[k] = p.color[0]; this.col[k + 1] = p.color[1]; this.col[k + 2] = p.color[2]
       this.size[n] = p.size
+      this.alpha[n] = p.alpha || 1
       // Smoke-like particles shrink through their 8 frames as they age.
       this.cell[n] = p.anim === 1 ? p.cell + 7 - Math.min(7, Math.floor(age / p.life * 8)) : p.anim === 2 ? p.cell + 7 - Math.min(7, Math.floor(age / p.life * 8)) : p.cell
       if (p.anim === 1 && p.cell === 0) this.cell[n] = 7 - Math.min(7, Math.floor(age / p.life * 8))
@@ -151,7 +230,7 @@ class Particles {
     }
     const g = this.geo
     g.setDrawRange(0, n)
-    for (const a of ['position', 'color', 'size', 'cell']) g.attributes[a].needsUpdate = true
+    for (const a of ['position', 'color', 'size', 'cell', 'alpha']) g.attributes[a].needsUpdate = true
   }
 }
 

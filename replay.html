@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Prism Replay</title>
+<link rel="icon" href="icons/icon-192.png">
+<style>
+  :root {
+    --bg: #0d1017;
+    --panel: #151a24;
+    --panel-2: #1c2230;
+    --line: #2a3243;
+    --text: #e8ecf4;
+    --dim: #9aa5b8;
+    --faint: #6d788c;
+    --accent: #8fd3ff;
+    --final: #ff6b6b;
+    --bed: #ffb347;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.4 "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; }
+  button, select, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .rp { display: grid; height: 100vh; height: 100dvh; grid-template-columns: 1fr 300px; grid-template-rows: auto 1fr; grid-template-areas: "head head" "stage side"; }
+  .rp-head { grid-area: head; display: flex; align-items: center; gap: 14px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); min-width: 0; }
+  .rp-home { color: var(--dim); text-decoration: none; font-weight: 600; white-space: nowrap; }
+  .rp-home:hover { color: var(--text); }
+  .rp-titles { min-width: 0; }
+  .rp-title { margin: 0; font-size: 1.05em; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rp-sub { color: var(--dim); font-size: 0.85em; }
+  .rp-help { margin-left: auto; color: var(--faint); font-size: 0.8em; text-align: right; }
+  .rp-help kbd { background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; font: inherit; color: var(--dim); }
+
+  .rp-stage-wrap { grid-area: stage; position: relative; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
+  .rp-stage { position: relative; flex: 1; min-height: 0; overflow: hidden; background: #9ec9f5; touch-action: none; }
+  .rp-stage canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+  .rp-stage canvas:active { cursor: grabbing; }
+
+  .rp-chat { position: absolute; left: 12px; bottom: 12px; max-width: min(560px, calc(100% - 24px)); pointer-events: none; display: flex; flex-direction: column; gap: 2px; }
+  .rp-chat-line { background: rgba(0, 0, 0, 0.5); color: #f1f1f1; padding: 2px 8px; border-radius: 4px; font-size: 0.85em; white-space: pre-wrap; overflow-wrap: anywhere; text-shadow: 0 1px 0 #000; }
+  .rp-chat-line.is-final { color: #ffb0b0; }
+  .rp-chat-line.is-bed { color: #ffd59a; }
+  .rp-follow { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.6); padding: 4px 12px; border-radius: 999px; font-size: 0.85em; white-space: nowrap; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
+  .rp-noself { position: absolute; top: 12px; right: 12px; background: rgba(0, 0, 0, 0.6); padding: 6px 10px; border-radius: 8px; font-size: 0.8em; max-width: 260px; color: #dde; }
+
+  .rp-controls { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--panel); border-top: 1px solid var(--line); }
+  .rp-btn { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font-weight: 600; min-width: 44px; min-height: 36px; }
+  .rp-btn:hover { border-color: var(--accent); }
+  .rp-btn-main { min-width: 76px; background: var(--accent); color: #0b1220; border-color: transparent; }
+  .rp-time { font-variant-numeric: tabular-nums; color: var(--dim); white-space: nowrap; min-width: 92px; text-align: center; }
+  .rp-track { position: relative; flex: 1; min-width: 80px; height: 36px; display: flex; align-items: center; }
+  .rp-scrub { width: 100%; margin: 0; accent-color: var(--accent); height: 36px; }
+  .rp-markers { position: absolute; left: 8px; right: 8px; top: 0; height: 8px; pointer-events: none; }
+  .rp-marker { position: absolute; top: -2px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; border: 2px solid var(--panel); padding: 0; pointer-events: auto; }
+  .rp-marker-final { background: var(--final); }
+  .rp-marker-bed { background: var(--bed); border-radius: 2px; }
+  .rp-marker-end { background: var(--accent); }
+  .rp-speed { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; min-height: 36px; }
+
+  .rp-side { grid-area: side; background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; min-height: 0; padding: 12px; display: flex; flex-direction: column; gap: 16px; }
+  .rp-side h2 { margin: 0 0 6px; font-size: 0.78em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+  .rp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .rp-team { margin-top: 8px; font-size: 0.8em; font-weight: 700; color: var(--team); }
+  .rp-team:first-child { margin-top: 0; }
+  .rp-player { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; background: transparent; border: 1px solid transparent; border-left: 3px solid var(--team); border-radius: 6px; padding: 5px 8px; min-height: 32px; }
+  .rp-player:hover { background: var(--panel-2); }
+  .rp-player.is-following { background: var(--panel-2); border-color: var(--accent); border-left-color: var(--team); }
+  .rp-player.is-dead .rp-player-name { color: var(--faint); text-decoration: line-through; }
+  .rp-player-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rp-badge { font-size: 0.72em; padding: 0 5px; border-radius: 4px; background: var(--line); color: var(--dim); }
+  .rp-event { display: flex; gap: 8px; width: 100%; text-align: left; background: transparent; border: 0; border-left: 3px solid var(--final); border-radius: 4px; padding: 5px 8px; }
+  .rp-event:hover { background: var(--panel-2); }
+  .rp-event-bed { border-left-color: var(--bed); }
+  .rp-event-end { border-left-color: var(--accent); }
+  .rp-event-time { color: var(--dim); font-variant-numeric: tabular-nums; }
+  .rp-event-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .rp-empty { color: var(--faint); font-size: 0.9em; }
+
+  .rp-loading { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(13, 16, 23, 0.82); z-index: 5; padding: 16px; }
+  .rp-loading[hidden] { display: none; }
+  .rp-loading-box { width: min(420px, 100%); text-align: center; }
+  .rp-loading.is-error .rp-loading-text { color: #ffb0b0; }
+  .rp-bar { height: 6px; border-radius: 3px; background: var(--panel-2); margin-top: 12px; overflow: hidden; }
+  .rp-bar::after { content: ""; display: block; height: 100%; width: var(--p, 0%); background: var(--accent); transition: width 0.15s; }
+  .rp-pick { margin-top: 18px; color: var(--dim); }
+  .rp-pick[hidden] { display: none; }
+  .rp-pick label { display: inline-block; margin-top: 8px; }
+  .rp-pick input { max-width: 100%; }
+
+  @media (max-width: 820px) {
+    .rp { grid-template-columns: 1fr; grid-template-rows: auto minmax(320px, 62dvh) auto; grid-template-areas: "head" "stage" "side"; height: auto; min-height: 100dvh; }
+    .rp-side { border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
+    .rp-help { display: none; }
+    .rp-controls { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+    .rp-track { order: -1; flex-basis: 100%; }
+    .rp-time { min-width: 0; margin-left: auto; }
+    .rp-chat-line:nth-last-child(n+5) { display: none; }
+    .rp-noself { left: 12px; right: 12px; max-width: none; }
+  }
+</style>
+</head>
+<body>
+<div class="rp">
+  <header class="rp-head">
+    <a class="rp-home" href="./">&larr; Tracker</a>
+    <div class="rp-titles">
+      <h1 class="rp-title" id="rpTitle">Replay</h1>
+      <div class="rp-sub" id="rpSub">Prism replay viewer</div>
+    </div>
+    <div class="rp-help">Drag to look · <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> fly · <kbd>E</kbd>/<kbd>Q</kbd> up/down · <kbd>Shift</kbd> faster · <kbd>Space</kbd> play · <kbd>&larr;</kbd><kbd>&rarr;</kbd> 5s</div>
+  </header>
+
+  <main class="rp-stage-wrap">
+    <div class="rp-stage" id="rpStage">
+      <div class="rp-chat" id="rpChat" aria-live="off"></div>
+      <div class="rp-follow" id="rpFollow" hidden></div>
+      <div class="rp-noself" id="rpNoSelf" hidden>You're not in this recording: older replays didn't save your own movement. Everyone else is here.</div>
+      <div class="rp-loading" id="rpLoading" role="status">
+        <div class="rp-loading-box">
+          <div class="rp-loading-text" id="rpLoadingText">Loading…</div>
+          <div class="rp-bar" id="rpLoadingBar" hidden></div>
+          <div class="rp-pick" id="rpPick" hidden>
+            <div>Or open a replay file from your computer (<code>.mcpr</code>, from the proxy's <code>plugins/replays</code> folder):</div>
+            <label><input type="file" id="rpFile" accept=".mcpr,application/zip"></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="rp-controls">
+      <button type="button" class="rp-btn rp-btn-main" id="rpPlay" aria-pressed="false">Play</button>
+      <button type="button" class="rp-btn" id="rpBack" title="Back 10 seconds" aria-label="Back 10 seconds">&minus;10s</button>
+      <button type="button" class="rp-btn" id="rpFwd" title="Forward 10 seconds" aria-label="Forward 10 seconds">+10s</button>
+      <div class="rp-track">
+        <input type="range" class="rp-scrub" id="rpScrub" min="0" max="1" value="0" step="50" aria-label="Replay time">
+        <div class="rp-markers" id="rpMarkers"></div>
+      </div>
+      <span class="rp-time" id="rpTime">0:00 / 0:00</span>
+      <select class="rp-speed" id="rpSpeed" aria-label="Speed">
+        <option value="0.25">0.25×</option>
+        <option value="0.5">0.5×</option>
+        <option value="1" selected>1×</option>
+        <option value="2">2×</option>
+        <option value="4">4×</option>
+        <option value="8">8×</option>
+      </select>
+    </div>
+  </main>
+
+  <aside class="rp-side">
+    <section>
+      <h2>Players</h2>
+      <ul class="rp-list" id="rpPlayers"></ul>
+      <p class="rp-empty" style="margin:6px 0 0">Click a name to follow them, again to see through their eyes.</p>
+    </section>
+    <section>
+      <h2>Final kills and beds</h2>
+      <ul class="rp-list" id="rpEvents"></ul>
+    </section>
+  </aside>
+</div>
+<script src="replay/app.js"></script>
+</body>
+</html>

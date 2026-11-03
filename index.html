@@ -6994,6 +6994,7 @@ html[data-theme="deepcurrent"] .card-stat-value { font-family: 'JetBrains Mono',
 .replay-item-when { font-weight: 800; font-size: 0.86em; }
 .replay-item-meta { font-size: 0.8em; color: var(--text-dim); overflow-wrap: anywhere; }
 .replay-help { font-size: 0.78em; color: var(--text-faint); margin-top: 4px; }
+.replay-item a.btn { text-decoration: none; display: inline-block; }
 .modal-notes-empty[hidden] { display: none; }
 .note-list { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; }
 .note-item {
@@ -16614,7 +16615,7 @@ html[data-theme="harvest"] .sotd-stats { gap: 10px 12px; }
           <div class="modal-tags-label">Replays <span id="modalReplaysCount" class="modal-notes-count"></span></div>
         </div>
         <ol id="modalReplaysList" class="note-list"></ol>
-        <div class="replay-help">Opens in Replay Mod: put the file in <code>.minecraft/replay_recordings</code>, then Replay Viewer (Lunar: the Forge module).</div>
+        <div class="replay-help">Watch plays it here in 3D. Download opens in Replay Mod: put the file in <code>.minecraft/replay_recordings</code>, then Replay Viewer (Lunar: the Forge module).</div>
         <div id="modalReplayStatus" class="modal-note-status" role="alert" aria-live="assertive"></div>
       </div>
       </div>
@@ -23564,7 +23565,14 @@ async function loadModalReplays(uuid) {
       btn.className = "btn btn-ghost note-btn-small";
       btn.textContent = "Download";
       btn.addEventListener("click", () => downloadReplay(r.id, btn));
-      li.append(text, btn);
+      // Watch it in the browser (replay.html, the 3D replay viewer).
+      const watch = document.createElement("a");
+      watch.className = "btn btn-primary note-btn-small";
+      watch.textContent = "Watch";
+      watch.href = `replay.html?id=${encodeURIComponent(r.id)}`;
+      watch.target = "_blank";
+      watch.rel = "noopener";
+      li.append(text, watch, btn);
       modalReplaysList.appendChild(li);
     }
     modalReplays.hidden = false;

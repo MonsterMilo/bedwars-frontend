@@ -318,7 +318,15 @@ class PlayerModel {
     const heldRight = !hand ? 0 : using && sword ? 3 : 1
     if (heldRight) rightArm.x = rightArm.x * 0.5 - Math.PI / 10 * heldRight
     if (heldRight === 3) rightArm.y = -0.5235988
-    const sw = tr.lastBefore(tr.swings, t)
+    // EntityLivingBase.swingItem: a click only restarts the 6-tick swing once
+    // it's at least halfway through, so fast clicking (or the swing every
+    // tick while mining) keeps a steady rhythm instead of jittering.
+    if (!tr.swingStarts) {
+      tr.swingStarts = []
+      let start = -Infinity
+      for (const w of tr.swings) if (w - start >= 150) { start = w; tr.swingStarts.push(w) }
+    }
+    const sw = tr.lastBefore(tr.swingStarts, t)
     const swing = t - sw < 300 ? (t - sw) / 300 : 0
     if (swing > 0) {
       body.y = Math.sin(Math.sqrt(swing) * Math.PI * 2) * 0.2

@@ -112,6 +112,8 @@ class PlayerModel {
     this.parts = {}
     this.armor = [null, null, null, null, null]
     this.armorKey = ['', '', '', '', '']
+    this.ghost = false
+    this.ghostAllowed = true // setting: show potion-invisible players as ghosts
     this.build(64)
     this.tag = textSprite(track.name || '?', { color: track.team ? track.team.color : '#ffffff' })
     this.tag.position.y = 2.2
@@ -181,6 +183,28 @@ class PlayerModel {
       add(`leather_layer_${layer}_overlay`, null)
     } else add(`${mat}_layer_${layer}`, null)
     this.armor[slot] = meshes
+    if (this.ghost) { this.ghost = null; this.setGhost(true) } // new armour: make it see-through too
+  }
+
+  /** Show an invisible (potion) player as a see-through ghost. */
+  setGhost (on) {
+    if (on === this.ghost) return
+    this.ghost = on
+    const mats = [...this.skinMats]
+    if (this.armor) for (const set of this.armor) if (set) for (const m of set) if (!mats.includes(m.material)) mats.push(m.material)
+    for (const m of mats) {
+      if (m.isShaderMaterial) continue
+      m.opacity = on ? 0.28 : 1
+      m.depthWrite = !on
+      m.needsUpdate = true
+    }
+    if (this.held) this.held.visible = !on
+    this.tag.material.color.setHex(on ? 0xc8b8ff : 0xffffff)
+    if (on && !this.invisTag) {
+      this.invisTag = textSprite('§7invisible', { scale: 0.2, plate: false })
+      this.invisTag.position.y = 2.48
+      this.group.add(this.invisTag)
+    }
   }
 
   setHeld (item, texture = null) {
@@ -239,6 +263,18 @@ class PlayerModel {
     for (let slot = 1; slot <= 4; slot++) this.setArmor(slot, tr.equip[slot].at(t))
 
     const flags = tr.flags.at(t) || 0
+    // Invisible (0x20). Right after dying they're a spectator waiting to
+    // respawn (or out for good after a final kill): hidden, as in game.
+    // Otherwise it's an invisibility potion: a faint ghost, marked as such.
+    let invisible = !!(flags & 0x20)
+    if (invisible && tr.chatDeaths) {
+      let d = null
+      for (const x of tr.chatDeaths) { if (x.t <= t + 500) d = x; else break }
+      if (d && (d.final || t - d.t < 6500)) { this.group.visible = false; this.present = false; this.state = null; return null }
+    }
+    if (invisible && !this.ghostAllowed) { this.group.visible = false; this.present = false; this.state = null; return null }
+    this.setGhost(invisible)
+    if (this.invisTag) this.invisTag.visible = invisible && this.tag.visible
     const sneaking = !!(flags & 0x02)
     const using = !!(flags & 0x10)
     const hand = tr.equip[0].at(t)
@@ -252,6 +288,7 @@ class PlayerModel {
     }
     this.setHeld(hand, bowTex)
     this.placeHeld(sneaking)
+    if (this.held) this.held.visible = !this.ghost
 
     const P = this.parts
     const D = Math.PI / 180

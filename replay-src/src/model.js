@@ -712,6 +712,11 @@ function buildTimeline (mcpr, onProgress = () => {}) {
   const selfTrack = [...tracks.values()].find(tr => tr.self)
   for (const b of bedsBroken) if (b.team === 'Your' && selfTrack && selfTrack.team) b.team = selfTrack.team.label
   if (selfTrack) selfCracks(selfTrack, changes, cracks)
+  // Chat deaths per player: after one, Hypixel turns them into an invisible
+  // spectator (respawning, or for good after a final kill).
+  for (const tr of tracks.values()) {
+    tr.chatDeaths = deaths.filter(d => d.name === tr.name && !d.disconnected)
+  }
   for (const e of entities.values()) if (e.kind === 'mob') e.finish()
   // Objects keep their raw samples.
 

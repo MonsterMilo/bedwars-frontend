@@ -17,6 +17,9 @@ set('gravel', [3, 13, 60, 82])
 set('sand', [12, 88])
 set('snow', [78, 80])
 set('metal', [42, 41, 57, 133, 152, 101, 167, 154, 145])
+const LIQUID = new Set([8, 9, 10, 11])
+// Food (eaten) and drinks, by item id.
+const FOOD = new Set([260, 282, 297, 319, 320, 322, 349, 350, 357, 360, 363, 364, 365, 366, 367, 375, 391, 392, 393, 394, 396, 400, 411, 412, 413, 423, 424])
 const NOT_GROUND = new Set([0, 8, 9, 10, 11, 31, 32, 37, 38, 6, 39, 40, 50, 51, 59, 83, 106, 175, 30, 55, 66, 27, 28, 157, 69, 77, 143, 63, 68, 171, 90, 119])
 
 function soundType (state) {
@@ -27,7 +30,7 @@ function soundType (state) {
   return { brk: 'dig.' + t, place: 'dig.' + t, step: 'step.' + t, vol: 1, pitch: 1 }
 }
 
-const REPLACED = /^(dig\.|step\.|game\.player\.(hurt|die)|random\.(bow|explode|pop)$|mob\.ghast\.fireball$|game\.tnt\.primed$|mob\.endermen\.portal$)/
+const REPLACED = /^(dig\.|step\.|game\.player\.(hurt|die|swim\.splash)|random\.(bow|explode|pop|eat|drink|burp)$|mob\.ghast\.fireball$|game\.tnt\.primed$|mob\.endermen\.portal$)/
 // Sounds Hypixel plays only to the recording player (countdown ticks,
 // purchases, level-ups, game announcements). Played loud at their spot,
 // they'd be heard across the map, so they're left out.
@@ -68,6 +71,9 @@ function synthesize (tl) {
     if (byTime.get(ch.t[i]) > 6) continue
     const from = ch.from[i]; const to = ch.to[i]
     const x = ch.x[i] + 0.5; const y = ch.y[i] + 0.5; const z = ch.z[i] + 0.5
+    // Water and lava spreading or drying up make no block sounds (1.8
+    // buckets are silent too).
+    if (LIQUID.has(to >> 4) || LIQUID.has(from >> 4)) continue
     if (to >> 4 && !(from >> 4)) {
       const st = soundType(to); add(ch.t[i], st.place, x, y, z, (st.vol + 1) / 2, st.pitch * 0.8)
     } else if (from >> 4 && !(to >> 4)) {
@@ -100,6 +106,34 @@ function synthesize (tl) {
     for (const t of tr.deaths) {
       const s = tr.stateAt(t); if (s) add(t, 'game.player.die', s.x, s.y + 1, s.z, 1, (rnd() - rnd()) * 0.2 + 1)
     }
+    // Eating and drinking (EntityPlayer.updateItemUse): while the item is
+    // in use, a bite or gulp every 4 ticks once 25 of its 32 ticks are
+    // left, and a burp when food is finished. Hypixel hides what invisible
+    // players hold, so a 1.6 s use with an empty hand is a potion.
+    const fl = tr.flags
+    for (let i = 0; i < fl.t.length; i++) {
+      if (!(fl.v[i] & 0x10) || (i > 0 && fl.v[i - 1] & 0x10)) continue
+      const start = fl.t[i]
+      let j = i + 1
+      while (j < fl.t.length && fl.v[j] & 0x10) j++
+      const end = j < fl.t.length ? fl.t[j] : start + 1600
+      const held = tr.equip[0].at(start + 1)
+      const len = end - start
+      let kind = null
+      if (held && FOOD.has(held.id)) kind = 'eat'
+      else if (held && (held.id === 335 || (held.id === 373 && !(held.damage & 16384)))) kind = 'drink'
+      else if (!held && len > 1500 && len < 1750) kind = 'drink'
+      if (!kind) continue
+      for (let k = 8; k <= 32 && k * 50 <= len + 25; k += 4) {
+        const t = start + k * 50
+        const st = tr.stateAt(t); if (!st) break
+        if (kind === 'eat') add(t, 'random.eat', st.x, st.y + 1.5, st.z, 0.5 + 0.5 * Math.floor(rnd() * 2), (rnd() - rnd()) * 0.2 + 1)
+        else add(t, 'random.drink', st.x, st.y + 1.5, st.z, 0.5, rnd() * 0.1 + 0.9)
+      }
+      if (kind === 'eat' && len >= 1550) {
+        const st = tr.stateAt(end); if (st) add(end, 'random.burp', st.x, st.y + 1.5, st.z, 0.5, rnd() * 0.1 + 0.9)
+      }
+    }
     // Footsteps: Entity.moveEntity plays one each time the distance walked
     // (x 0.6) passes the next whole number, on the block underfoot.
     if (!tr.tx) continue
@@ -107,6 +141,16 @@ function synthesize (tl) {
     for (let k = 1; k < tr.tx.length; k++) {
       if (!tr.talive[k] || !tr.talive[k - 1]) continue
       const dx = tr.tx[k] - tr.tx[k - 1]; const dz = tr.tz[k] - tr.tz[k - 1]; const dy = tr.ty[k] - tr.ty[k - 1]
+      // Falling or walking into water: a splash (Entity.handleWaterMovement).
+      {
+        const t = tr.t0 + k * 50
+        const inNow = LIQUID.has(blockAt(t, Math.floor(tr.tx[k]), Math.floor(tr.ty[k] + 0.1), Math.floor(tr.tz[k])) >> 4)
+        const inBefore = LIQUID.has(blockAt(t - 50, Math.floor(tr.tx[k - 1]), Math.floor(tr.ty[k - 1] + 0.1), Math.floor(tr.tz[k - 1])) >> 4)
+        if (inNow && !inBefore) {
+          const v = Math.min(1, Math.sqrt(dx * dx * 0.2 + dy * dy + dz * dz * 0.2) * 0.2)
+          if (v > 0.02) add(t, 'game.player.swim.splash', tr.tx[k], tr.ty[k], tr.tz[k], v, 1 + (rnd() - rnd()) * 0.4)
+        }
+      }
       const d = Math.sqrt(dx * dx + dz * dz)
       if (d > 2) { walked = 0; next = 1; continue }
       walked += d * 0.6

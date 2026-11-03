@@ -28,6 +28,14 @@ function loadTex (url, onLoad) {
 }
 
 /** The skin URL from a tab-list "textures" property, or null. */
+function skinSlim (prop) {
+  if (!prop) return false
+  try {
+    const j = JSON.parse(atob(prop))
+    return !!(j && j.textures && j.textures.SKIN && j.textures.SKIN.metadata && j.textures.SKIN.metadata.model === 'slim')
+  } catch { return false }
+}
+
 function skinUrl (prop) {
   if (!prop) return null
   try {
@@ -57,6 +65,45 @@ function texBox (w, h, d, u, v, texW, texH, inflate = 0, mirror = false) {
   rect(5, u + 2 * d + w, v + d, w, h)
   uv.needsUpdate = true
   return g
+}
+
+/** java.util.Random, for LayerArrow's placement of stuck arrows. */
+function javaRandom (seed) {
+  const B = BigInt; const M = (B(1) << B(48)) - B(1); const MUL = B('0x5DEECE66D'); const ADD = B(11)
+  let s = (B(seed) ^ MUL) & M
+  const next = (bits) => { s = (s * MUL + ADD) & M; let v = Number(s >> B(48 - bits)); if (v >= 2 ** (bits - 1) && bits === 32) v -= 2 ** 32; return v }
+  return {
+    nextInt (n) {
+      if ((n & -n) === n) return Number((B(n) * B(next(31))) >> B(31))
+      let bits; let val
+      do { bits = next(31); val = bits % n } while (bits - val + (n - 1) >= 2 ** 31)
+      return val
+    },
+    nextFloat () { return next(24) / (1 << 24) }
+  }
+}
+
+// ModelPlayer's renderer list in creation order (ModelBase.boxList), as
+// LayerArrow picks from it: [part we draw it on or null, rotation point,
+// box from, box size]. Some are never drawn (old arms/legs replaced by
+// ModelPlayer, ears, cape) but arrows can still land on them.
+function arrowBoxes (slim) {
+  const arm = slim ? 3 : 4; const ay = slim ? 2.5 : 2
+  const L = [
+    ['head', [0, 0, 0], [-4, -8, -4], [8, 8, 8]], ['head', [0, 0, 0], [-4, -8, -4], [8, 8, 8]],
+    ['body', [0, 0, 0], [-4, 0, -2], [8, 12, 4]],
+    [slim ? null : 'rightArm', [-5, 2, 0], [-3, -2, -2], [4, 12, 4]],
+    [null, [5, 2, 0], [-1, -2, -2], [4, 12, 4]],
+    ['rightLeg', [-1.9, 12, 0.1], [-2, 0, -2], [4, 12, 4]],
+    [null, [1.9, 12, 0.1], [-2, 0, -2], [4, 12, 4]],
+    [null, [0, 0, 0], [-3, -6, -1], [6, 6, 1]],
+    [null, [0, 0, 0], [-5, 0, -1], [10, 16, 1]]
+  ]
+  const lArm = ['leftArm', [5, ay, 0], [-1, -2, -2], [arm, 12, 4]]
+  const rArm = ['rightArm', [-5, ay, 0], [slim ? -2 : -3, -2, -2], [arm, 12, 4]]
+  if (slim) L.push(lArm, rArm, lArm, rArm); else L.push(lArm, lArm, rArm)
+  L.push(['leftLeg', [1.9, 12, 0.1], [-2, 0, -2], [4, 12, 4]], ['leftLeg', [1.9, 12, 0.1], [-2, 0, -2], [4, 12, 4]], ['rightLeg', [-1.9, 12, 0.1], [-2, 0, -2], [4, 12, 4]], ['body', [0, 0, 0], [-4, 0, -2], [8, 12, 4]])
+  return L
 }
 
 /** Text in Minecraft colours (§ codes) on a dark plate, as a sprite. */
@@ -105,6 +152,7 @@ class PlayerModel {
   constructor (track, items) {
     this.track = track
     this.items = items
+    this.slim = !!track.slim
     this.group = new THREE.Group()
     this.pose = new THREE.Group() // everything that tips over on death
     this.group.add(this.pose)
@@ -138,12 +186,24 @@ class PlayerModel {
       return p
     }
     const ov = (arr) => legacy ? [] : arr
+    // Slim ("Alex") skins have 3-pixel arms hung half a pixel lower
+    // (ModelPlayer with smallArms).
+    this.slimNow = this.slim && !legacy
+    const aw = this.slim && !legacy ? 3 : 4
+    const ay = this.slim && !legacy ? 21.5 : 22
+    const ax = aw === 3 ? 0.5 : 1
     part('head', [0, 24], [[B(8, 8, 8, 0, 0), [0, 4], base], [B(8, 8, 8, 32, 0, 0.5), [0, 4], over]])
     part('body', [0, 24], [[B(8, 12, 4, 16, 16), [0, -6], base], ...ov([[B(8, 12, 4, 16, 32, 0.25), [0, -6], over]])])
-    part('rightArm', [-5, 22], [[B(4, 12, 4, 40, 16), [-1, -4], base], ...ov([[B(4, 12, 4, 40, 32, 0.25), [-1, -4], over]])])
-    part('leftArm', [5, 22], [[legacy ? B(4, 12, 4, 40, 16, 0, true) : B(4, 12, 4, 32, 48), [1, -4], base], ...ov([[B(4, 12, 4, 48, 48, 0.25), [1, -4], over]])])
+    part('rightArm', [-5, ay], [[B(aw, 12, 4, 40, 16), [-ax, -4], base], ...ov([[B(aw, 12, 4, 40, 32, 0.25), [-ax, -4], over]])])
+    part('leftArm', [5, ay], [[legacy ? B(4, 12, 4, 40, 16, 0, true) : B(aw, 12, 4, 32, 48), [ax, -4], base], ...ov([[B(aw, 12, 4, 48, 48, 0.25), [ax, -4], over]])])
     part('rightLeg', [-1.9, 12], [[B(4, 12, 4, 0, 16), [0, -6], base], ...ov([[B(4, 12, 4, 0, 32, 0.25), [0, -6], over]])])
     part('leftLeg', [1.9, 12], [[legacy ? B(4, 12, 4, 0, 16, 0, true) : B(4, 12, 4, 16, 48), [0, -6], base], ...ov([[B(4, 12, 4, 0, 48, 0.25), [0, -6], over]])])
+    // The second skin layer, part by part, so the player's own "skin
+    // customisation" settings (which layers they show) can be followed.
+    const second = (name) => this.parts[name].children[1] || null
+    this.layers = [[0x40, second('head')], [0x02, second('body')], [0x04, second('leftArm')], [0x08, second('rightArm')], [0x10, second('leftLeg')], [0x20, second('rightLeg')]]
+    this.layersShown = -1
+    this.hurtShown = null
     this.armor = [null, null, null, null, null]; this.armorKey = ['', '', '', '', '']
   }
 
@@ -186,6 +246,39 @@ class PlayerModel {
     if (this.ghost) { this.ghost = null; this.setGhost(true) } // new armour: make it see-through too
   }
 
+  /** Arrows stuck in the player (LayerArrow), placed the same way each time. */
+  setStuckArrows (n) {
+    if (n === this.stuckShown) return
+    this.stuckShown = n
+    if (this.stuck) for (const m of this.stuck) m.parent.remove(m)
+    this.stuck = []
+    if (!n) return
+    const { arrowGeo, arrowMat, ARROW_LOCAL } = require('./entities')
+    const r = javaRandom(this.track.id)
+    const boxes = arrowBoxes(this.slimNow)
+    const F = new THREE.Matrix4().makeScale(1, -1, -1)
+    for (let j = 0; j < Math.min(n, 30); j++) {
+      const [partName, rp, from, size] = boxes[r.nextInt(boxes.length)]
+      let f = r.nextFloat(); let f1 = r.nextFloat(); let f2 = r.nextFloat()
+      const X = from[0] + size[0] * f; const Y = from[1] + size[1] * f1; const Z = from[2] + size[2] * f2
+      f = -(f * 2 - 1); f1 = -(f1 * 2 - 1); f2 = -(f2 * 2 - 1)
+      const yaw = Math.atan2(f, f2); const pitch = Math.atan2(f1, Math.sqrt(f * f + f2 * f2))
+      const m = new THREE.Mesh(arrowGeo(), arrowMat())
+      m.matrixAutoUpdate = false
+      m.matrix.makeTranslation(X * PX, -Y * PX, -Z * PX).multiply(F)
+        .multiply(new THREE.Matrix4().makeRotationY(yaw - Math.PI / 2))
+        .multiply(new THREE.Matrix4().makeRotationZ(pitch))
+        .multiply(ARROW_LOCAL)
+      let parent = partName && this.parts[partName]
+      if (!parent) {
+        // A renderer that's never drawn: it stays at its rest position.
+        parent = new THREE.Group(); parent.position.set(rp[0] * PX, (24 - rp[1]) * PX, -rp[2] * PX)
+        this.pose.add(parent); this.stuck.push(parent)
+      }
+      parent.add(m); this.stuck.push(m)
+    }
+  }
+
   /** Show an invisible (potion) player as a see-through ghost. */
   setGhost (on) {
     if (on === this.ghost) return
@@ -224,6 +317,8 @@ class PlayerModel {
     const mat = new THREE.Matrix4()
     const mul = (m2) => mat.multiply(m2)
     mat.copy(HAND_FLIP)
+    // Slim arms: ModelPlayer.postRenderArm moves the hand half a pixel in.
+    if (this.slimNow) mul(new THREE.Matrix4().makeTranslation(0.5 / 16, 0, 0))
     mul(new THREE.Matrix4().makeTranslation(-1 / 16, 7 / 16, 1 / 16))
     this.sneakSlot = new THREE.Matrix4() // filled in each frame (crouching moves it)
     const before = mat.clone()
@@ -302,8 +397,8 @@ class PlayerModel {
     const A = {
       head: { x: 0, y: 0, z: 0, px: 0, py: 0, pz: 0 },
       body: { x: 0, y: 0, z: 0, px: 0, py: 0, pz: 0 },
-      rightArm: { x: 0, y: 0, z: 0, px: -5, py: 2, pz: 0 },
-      leftArm: { x: 0, y: 0, z: 0, px: 5, py: 2, pz: 0 },
+      rightArm: { x: 0, y: 0, z: 0, px: -5, py: this.slimNow ? 2.5 : 2, pz: 0 },
+      leftArm: { x: 0, y: 0, z: 0, px: 5, py: this.slimNow ? 2.5 : 2, pz: 0 },
       rightLeg: { x: 0, y: 0, z: 0, px: -1.9, py: 12, pz: 0.1 },
       leftLeg: { x: 0, y: 0, z: 0, px: 1.9, py: 12, pz: 0.1 }
     }
@@ -382,8 +477,19 @@ class PlayerModel {
     const lh = tr.lastBefore(tr.hurts, t)
     this.hurtAgo = lh == null ? Infinity : t - lh
     const hurt = tr.recent(tr.hurts, t, 500) || s.dying > 0
-    for (const m of this.skinMats) m.color.setHex(hurt ? 0xff7070 : 0xffffff)
-    if (this.armor) for (const set of this.armor) if (set) for (const m of set) if (m.material.isMeshLambertMaterial && m.material.emissive) m.material.emissive.setHex(hurt ? 0x550000 : 0x000000)
+    // RendererLivingEntity.setBrightness: the skin is blended 30% toward red
+    // (after lighting). Armour and held items don't flash in 1.8.
+    if (hurt !== this.hurtShown) {
+      this.hurtShown = hurt
+      for (const m of this.skinMats) { m.color.setHex(hurt ? 0xb3b3b3 : 0xffffff); m.emissive.setHex(hurt ? 0x4c0000 : 0x000000) }
+    }
+    this.setStuckArrows(tr.arrowsIn.at(t) || 0)
+    // Which second-layer skin parts this player shows.
+    const parts = tr.skinParts.at(t)
+    if (parts !== this.layersShown && this.layers) {
+      this.layersShown = parts
+      for (const [bit, mesh] of this.layers) if (mesh) mesh.visible = !!(parts & bit)
+    }
     return s
   }
 }
@@ -391,4 +497,4 @@ class PlayerModel {
 // Minecraft draws entities in a flipped space (x stays, y and z negated).
 const HAND_FLIP = new THREE.Matrix4().makeScale(1, -1, -1)
 
-module.exports = { PlayerModel, skinUrl, textSprite, texBox, loadTex }
+module.exports = { PlayerModel, skinUrl, skinSlim, textSprite, texBox, loadTex }

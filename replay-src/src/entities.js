@@ -248,4 +248,4 @@ function golem () {
   return g
 }
 
-module.exports = { EntityView }
+module.exports = { EntityView, arrowGeo, arrowMat, ARROW_LOCAL }

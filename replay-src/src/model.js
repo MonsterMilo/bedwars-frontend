@@ -246,6 +246,9 @@ class Track {
     this.swings = []; this.hurts = []; this.deaths = []; this.crits = []
     this.flags = new Timeline(0) // 0x02 crouch, 0x08 sprint, 0x10 using item (blocking, eating, bow)
     this.health = new Timeline(null)
+    this.skinParts = new Timeline(0x7f)
+    this.potion = new Timeline(null)
+    this.arrowsIn = new Timeline(0)
     this.equip = [new Timeline(null), new Timeline(null), new Timeline(null), new Timeline(null), new Timeline(null)] // hand, boots, legs, chest, helmet
     this.meta = {} // latest metadata (objects and mobs)
     this.cur = { x: 0, y: 0, z: 0, yaw: 0, head: 0, pitch: 0, alive: false }
@@ -477,6 +480,18 @@ function buildTimeline (mcpr, onProgress = () => {}) {
   const applyMeta = (e, t, m) => {
     if (m[0] !== undefined) e.flags.set(t, m[0] & 0xff)
     if (e.kind === 'player' && m[6] !== undefined) e.health.set(t, m[6])
+    if (e.kind === 'player') {
+      // Skin layers shown (hat, jacket, sleeves, trousers), potion swirl
+      // colour (7) and whether it's faint "ambient" (8, beacons and the
+      // like), and arrows stuck in them (9).
+      if (m[10] !== undefined) e.skinParts.set(t, m[10] & 0xff)
+      if (m[7] !== undefined || m[8] !== undefined) {
+        const col = m[7] !== undefined ? m[7] : (e.meta[7] || 0)
+        const amb = m[8] !== undefined ? m[8] : (e.meta[8] || 0)
+        e.potion.set(t, col > 0 ? { color: col, ambient: amb > 0 } : null)
+      }
+      if (m[9] !== undefined) e.arrowsIn.set(t, m[9])
+    }
     for (const k of Object.keys(m)) e.meta[k] = m[k]
     if (e.kind === 'object' && e.type === 'item' && m[10] !== undefined) e.item = m[10]
     if (m[2] !== undefined) { if (!e.nameTl) e.nameTl = new Timeline(''); e.nameTl.set(t, m[2]); if (m[2]) e.customName = m[2] }

@@ -6,7 +6,7 @@ const THREE = global.THREE
 const { BlockRenderer } = require('./renderer')
 const { readMcpr, buildTimeline } = require('./model')
 const { ReplayWorld } = require('./world')
-const { PlayerModel, skinUrl } = require('./players')
+const { PlayerModel, skinUrl, skinSlim } = require('./players')
 const { Mesher } = require('./mesher')
 const { ItemFactory } = require('./items')
 const { EntityView } = require('./entities')
@@ -80,7 +80,7 @@ async function start (bytes, details = null) {
   setStatus('Rebuilding the game…', { progress: 0 })
   await tick()
   const tl = buildTimeline(mcpr)
-  for (const tr of tl.tracks.values()) tr.skinUrl = skinUrl(tl.skins.get(tr.uuid))
+  for (const tr of tl.tracks.values()) { tr.skinUrl = skinUrl(tl.skins.get(tr.uuid)); tr.slim = skinSlim(tl.skins.get(tr.uuid)) }
   await runViewer(tl, details)
 }
 
@@ -159,9 +159,9 @@ async function runViewer (tl, details) {
     colorCache.set(state, c)
     return c
   }
-  const particles = new Particles(scene, tl, { colorOf })
   const cracks = new Cracks(scene, tl, world)
   tl.sounds = synthesize(tl)
+  const particles = new Particles(scene, tl, { colorOf })
   const sounds = new Sounds(tl)
   for (const m of models) m.group.userData.model = m
 

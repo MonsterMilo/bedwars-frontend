@@ -167,7 +167,7 @@ async function runViewer (tl, details) {
 
   // --- Settings (remembered in this browser) ---
   const SETTINGS_KEY = 'replaySettings'
-  const settings = { chat: true, feed: true, names: true, particles: true, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860 }
+  const settings = { chat: true, feed: true, names: true, invis: true, particles: true, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860 }
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) } catch { /* private window */ }
   const saveSettings = () => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ } }
 
@@ -184,7 +184,7 @@ async function runViewer (tl, details) {
   function applySettings () {
     $('rpChat').hidden = !settings.chat
     $('rpFeed').hidden = !settings.feed
-    for (const m of models) m.tag.visible = settings.names
+    for (const m of models) { m.tag.visible = settings.names; m.ghostAllowed = settings.invis }
     particles.points.visible = settings.particles
     cam.smooth = settings.smooth
     cam.sensitivity = settings.sensitivity

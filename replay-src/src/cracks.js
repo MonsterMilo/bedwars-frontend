@@ -41,11 +41,16 @@ class Cracks {
       if (i < 0) continue
       const c = list[i]
       if (c.stage < 0 || now - c.t > STALE) continue
-      if (!(this.world.get(c.x, c.y, c.z) >> 4)) continue // already broken
+      const b = this.world.get(c.x, c.y, c.z)
+      if (!(b >> 4)) continue // already broken
+      // Fit low blocks (beds, bottom slabs, carpets) instead of a full cube.
+      const id = b >> 4; const meta = b & 15
+      const h = id === 26 ? 9 / 16 : (id === 44 || id === 126 || id === 182) && meta < 8 ? 0.5 : id === 171 ? 1 / 16 : 1
       let mesh = this.pool[n]
       if (!mesh) { mesh = this.pool[n] = new THREE.Mesh(this.geo, this.mats[0]); mesh.renderOrder = 2; this.scene.add(mesh) }
       mesh.material = this.mats[c.stage]
-      mesh.position.set(c.x + 0.5, c.y + 0.5, c.z + 0.5)
+      mesh.scale.set(1, h, 1)
+      mesh.position.set(c.x + 0.5, c.y + h / 2, c.z + 0.5)
       mesh.visible = true
       n++
     }

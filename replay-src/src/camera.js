@@ -144,7 +144,11 @@ class ReplayCamera {
           this.tYaw = this.yaw = -st.head * Math.PI / 180 + Math.PI
           this.tPitch = this.pitch = -st.pitch * Math.PI / 180
         }
-        cam.rotation.set(this.pitch, this.yaw, 0)
+        // EntityRenderer.hurtCameraEffect: a quick tilt when they get hit.
+        const ago = this.model.hurtAgo
+        let roll = 0
+        if (ago >= 0 && ago < 500) { const f = 1 - ago / 500; roll = -Math.sin(f * f * f * f * Math.PI) * 14 * Math.PI / 180 }
+        cam.rotation.set(this.pitch, this.yaw, roll)
         g.visible = false // their own model would block the view
         return
       }

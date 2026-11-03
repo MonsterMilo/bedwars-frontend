@@ -1,0 +1,55 @@
+// Game sounds: the replay holds every sound the server played (footsteps,
+// hits, explosions, block breaks, pickups...). They're played from
+// Mojang's own sound server, quieter the further they are from the camera,
+// only while the replay is playing at up to 2x speed.
+const BASE = 'https://resources.download.minecraft.net/'
+const MAX_PLAYING = 24
+
+class Sounds {
+  constructor (timeline) {
+    this.list = timeline.sounds.filter(s => s.name)
+    this.map = null
+    this.on = true
+    this.volume = 0.7
+    this.playing = new Set()
+    this.cursor = 0
+    fetch('replay/sounds.json').then(r => r.ok ? r.json() : null).then(m => { this.map = m }).catch(() => {})
+  }
+
+  setOn (on) { this.on = on; if (!on) for (const a of this.playing) a.pause() }
+
+  /** Play everything between the last frame's time and now. */
+  update (prev, now, playing, speed, cam) {
+    // Find the first sound after `prev`.
+    if (now < prev || now - prev > 1000 || !playing) {
+      let lo = 0; let hi = this.list.length
+      while (lo < hi) { const m = (lo + hi) >> 1; if (this.list[m].t <= now) lo = m + 1; else hi = m }
+      this.cursor = lo
+      return
+    }
+    while (this.cursor < this.list.length && this.list[this.cursor].t <= now) {
+      const s = this.list[this.cursor++]
+      if (this.on && this.map && speed <= 2) this.play(s, cam, speed)
+    }
+  }
+
+  play (s, cam, speed) {
+    const files = this.map[s.name]
+    if (!files || this.playing.size >= MAX_PLAYING) return
+    const dist = Math.hypot(s.x - cam.x, s.y - cam.y, s.z - cam.z)
+    // Minecraft: heard up to 16 blocks (more for loud sounds), fading out.
+    const v = s.volume > 1 ? Math.max(0, 1 - dist / (16 * s.volume)) : s.volume * Math.max(0, 1 - dist / 16)
+    if (v <= 0.01) return
+    const h = files[Math.floor(Math.random() * files.length)]
+    const a = new Audio(BASE + h.slice(0, 2) + '/' + h)
+    a.volume = Math.min(1, v * this.volume)
+    a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false
+    a.playbackRate = Math.max(0.5, Math.min(4, (s.pitch || 1) * speed))
+    const done = () => this.playing.delete(a)
+    a.addEventListener('ended', done); a.addEventListener('error', done)
+    this.playing.add(a)
+    a.play().catch(done)
+  }
+}
+
+module.exports = { Sounds }

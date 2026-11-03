@@ -3,10 +3,16 @@
 // builds the timeline and runs the 3D view.
 global.THREE = require('three')
 const THREE = global.THREE
-const { Viewer } = require('prismarine-viewer/viewer/lib/viewer')
+const { BlockRenderer } = require('./renderer')
 const { readMcpr, buildTimeline } = require('./model')
 const { ReplayWorld } = require('./world')
 const { PlayerModel, skinUrl } = require('./players')
+const { Mesher } = require('./mesher')
+const { ItemFactory } = require('./items')
+const { EntityView } = require('./entities')
+const { Particles } = require('./particles')
+const { Sounds } = require('./sounds')
+const { tickGlint } = require('./glint')
 const { ReplayCamera } = require('./camera')
 
 const BACKEND = 'https://bedwars-backend.onrender.com'
@@ -73,49 +79,98 @@ async function start (bytes, details = null) {
   await tick()
   const tl = buildTimeline(mcpr)
   for (const tr of tl.tracks.values()) tr.skinUrl = skinUrl(tl.skins.get(tr.uuid))
-  runViewer(tl, details)
+  await runViewer(tl, details)
 }
 
-function runViewer (tl, details) {
+async function runViewer (tl, details) {
   setStatus('Drawing the map…', { progress: 0 })
   const stage = $('rpStage')
   const renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1))
   stage.appendChild(renderer.domElement)
-  const viewer = new Viewer(renderer)
-  viewer.setVersion('1.8.8')
-  viewer.scene.background = new THREE.Color('#9ec9f5')
-  viewer.scene.fog = new THREE.Fog('#9ec9f5', 140, 260)
-  viewer.camera.far = 600
+  const scene = new THREE.Scene()
+  // Minecraft 1.8's midday sky, with fog near the edge of the view.
+  const SKY = '#7ba4ff'
+  const FOG = '#c4d8ff'
+  scene.background = new THREE.Color(SKY)
+  scene.add(new THREE.AmbientLight(0xffffff, 0.75))
+  const sun = new THREE.DirectionalLight(0xffffff, 0.45)
+  sun.position.set(0.3, 1, 0.5)
+  scene.add(sun)
+  const camera = new THREE.PerspectiveCamera(70, 1, 0.05, 700)
   const resize = () => {
     const w = stage.clientWidth; const h = stage.clientHeight
     renderer.setSize(w, h)
-    viewer.camera.aspect = w / h
-    viewer.camera.updateProjectionMatrix()
+    camera.aspect = w / h
+    camera.updateProjectionMatrix()
   }
   window.addEventListener('resize', resize)
   resize()
 
-  const world = new ReplayWorld(viewer, tl)
+  const blocks = new BlockRenderer(scene, { fog: { color: FOG, near: 160, far: 320 } })
+  await blocks.load()
+  const world = new ReplayWorld(blocks, tl)
   world.loadAll()
-  const sectionsTotal = viewer.world.sectionsOutstanding.size || 1
   // Only the first build of the map shows progress; later jumps redraw
   // in the background.
-  const waitMap = setInterval(() => {
-    const left = viewer.world.sectionsOutstanding.size
-    if (left === 0) { clearInterval(waitMap); setStatus(''); mapReady = true } else setStatus('Drawing the map…', { progress: 1 - left / sectionsTotal })
-  }, 150)
   let mapReady = false
-
-  // Players
-  const models = []
-  for (const tr of tl.tracks.values()) {
-    const m = new PlayerModel(tr)
-    viewer.scene.add(m.group)
-    models.push(m)
+  let total = 0
+  blocks.onProgress = (left) => {
+    if (mapReady) return
+    total = Math.max(total, left)
+    if (left === 0) { mapReady = true; setStatus('') } else setStatus('Drawing the map…', { progress: 1 - left / (total || 1) })
   }
 
-  const cam = new ReplayCamera(viewer.camera, renderer.domElement)
+  // Items, players, other entities, particles, sounds.
+  const mesher = new Mesher(blocks.data)
+  const itemsTex = await new Promise((resolve, reject) => new THREE.TextureLoader().load('replay/items.png', resolve, undefined, () => reject(new Error('Couldn\'t load the item textures'))))
+  itemsTex.magFilter = THREE.NearestFilter; itemsTex.minFilter = THREE.NearestFilter; itemsTex.generateMipmaps = false
+  const items = new ItemFactory(blocks.data, mesher, blocks.tex, itemsTex)
+  const models = []
+  for (const tr of tl.tracks.values()) {
+    const m = new PlayerModel(tr, items)
+    scene.add(m.group)
+    models.push(m)
+  }
+  const views = []
+  for (const e of tl.entities.values()) {
+    if (!e.t || !e.t.length) continue
+    const v = new EntityView(e, items)
+    scene.add(v.group)
+    views.push(v)
+  }
+  const texName = new Map(Object.entries(blocks.data.textures).map(([k, v]) => [v, k]))
+  const colorCache = new Map()
+  const colorOf = (state) => {
+    if (colorCache.has(state)) return colorCache.get(state)
+    let c = [0.6, 0.6, 0.6]
+    try {
+      const b = mesher.blockInfo(state)
+      const quads = b.air ? [] : mesher.modelQuads(b.name, b.props)
+      const q = quads.find(q => q.dir === 'north') || quads[0]
+      const avg = q && blocks.data.avgColors[texName.get(q.tex)]
+      if (avg) {
+        const tint = q.tint ? mesher.tintFor(b.name) : [255, 255, 255]
+        c = avg.map((v, k) => v / 255 * tint[k] / 255)
+      }
+    } catch { /* unknown block: grey */ }
+    colorCache.set(state, c)
+    return c
+  }
+  const particles = new Particles(scene, tl, { colorOf })
+  const sounds = new Sounds(tl)
+  const soundBtn = $('rpSound')
+  soundBtn.addEventListener('click', () => {
+    sounds.setOn(!sounds.on)
+    soundBtn.textContent = sounds.on ? 'Sound on' : 'Sound off'
+    soundBtn.setAttribute('aria-pressed', String(sounds.on))
+  })
+
+  const cam = new ReplayCamera(camera, renderer.domElement)
+  cam.solidAt = (x, y, z) => {
+    const v = world.get(Math.floor(x), Math.floor(y), Math.floor(z))
+    return v !== 0 && mesher.blockInfo(v).solid
+  }
   // Start looking at the middle of the map from above.
   const c = world.center()
   const startY = 95
@@ -136,15 +191,23 @@ function runViewer (tl, details) {
   for (const m of models) {
     const label = m.track.team ? m.track.team.label : 'No team'
     if (!teams.has(label)) teams.set(label, { color: m.track.team ? m.track.team.color : '#bbbbbb', members: [] })
-    teams.get(label).members.push(m)
+    // Someone who left and rejoined comes back as a new entity: one row each name.
+    const members = teams.get(label).members
+    const same = m.track.name && members.find(x => x.track.name === m.track.name)
+    if (same) { same.others = same.others || []; same.others.push(m) } else members.push(m)
   }
   const order = ['Red', 'Blue', 'Green', 'Yellow', 'Aqua', 'White', 'Pink', 'Gray']
   const rows = []
+  const teamBeds = []
   for (const [label, team] of [...teams].sort((a, b) => (order.indexOf(a[0]) + 99) % 99 - (order.indexOf(b[0]) + 99) % 99)) {
     const h = document.createElement('li')
     h.className = 'rp-team'
     h.style.setProperty('--team', team.color)
     h.textContent = label
+    const bedT = (tl.bedsBroken.find(b => b.team === label) || {}).t
+    const bedNote = document.createElement('span'); bedNote.className = 'rp-team-bed'; bedNote.textContent = 'bed broken'; bedNote.hidden = true
+    h.appendChild(bedNote)
+    if (bedT != null) teamBeds.push({ t: bedT, el: bedNote })
     list.appendChild(h)
     for (const m of team.members) {
       const li = document.createElement('li')
@@ -156,26 +219,33 @@ function runViewer (tl, details) {
       btn.append(name)
       if (m.track.self) { const b = document.createElement('span'); b.className = 'rp-badge'; b.textContent = 'you'; btn.append(b) }
       if (m.track.nicked) { const b = document.createElement('span'); b.className = 'rp-badge'; b.textContent = 'nick'; b.title = 'Played under a nick'; btn.append(b) }
+      const status = document.createElement('span'); status.className = 'rp-status'; status.hidden = true
+      btn.append(status)
       btn.title = 'Follow ' + (m.track.name || 'this player')
       btn.addEventListener('click', () => {
-        const same = cam.follow && cam.follow.model === m
-        if (same && cam.follow.mode === 'behind') cam.setFollow(m, 'eyes')
+        const all = [m, ...(m.others || [])]
+        const target = all.find(x => x.present) || all.filter(x => x.track.t[0] <= now).pop() || m
+        const same = cam.follow && all.includes(cam.follow.model)
+        if (same && cam.follow.mode === 'behind') cam.setFollow(target, 'eyes')
         else if (same) cam.setFollow(null)
-        else { cam.yaw = -m.group.rotation.y + Math.PI; cam.pitch = -0.35; cam.setFollow(m, 'behind') }
+        else { cam.yaw = -target.group.rotation.y + Math.PI; cam.pitch = -0.35; cam.setFollow(target, 'behind') }
       })
       li.appendChild(btn)
       list.appendChild(li)
-      rows.push({ m, btn })
+      rows.push({ m, all: [m, ...(m.others || [])], btn, status, deaths: tl.deaths.filter(d => d.name === m.track.name), kind: null, text: '' })
     }
   }
   if (!tl.tracks.size) list.innerHTML = '<li class="rp-empty">No players in this recording.</li>'
   const followNote = $('rpFollow')
   cam.onFollowChange = (f) => {
-    for (const r of rows) r.btn.classList.toggle('is-following', !!f && f.model === r.m)
+    for (const r of rows) r.btn.classList.toggle('is-following', !!f && r.all.includes(f.model))
     followNote.hidden = !f
     if (f) followNote.textContent = (f.mode === 'eyes' ? 'Through the eyes of ' : 'Following ') + (f.model.track.name || '?') + (f.mode === 'eyes' ? ' · click the name again to stop' : ' · click the name again for their view, WASD to fly free')
   }
-  if (!tl.self.id || !tl.tracks.has(tl.self.id)) $('rpNoSelf').hidden = false
+  if (!tl.self.id || !tl.tracks.has(tl.self.id)) {
+    $('rpNoSelf').hidden = false
+    setTimeout(() => { $('rpNoSelf').hidden = true }, 12000)
+  }
 
   // --- Timeline ---
   const scrub = $('rpScrub')
@@ -215,15 +285,22 @@ function runViewer (tl, details) {
     let i = -1
     let lo = 0; let hi = tl.chat.length - 1
     while (lo <= hi) { const m = (lo + hi) >> 1; if (tl.chat[m].t <= t) { i = m; lo = m + 1 } else hi = m - 1 }
-    if (i === chatShown) return
-    chatShown = i
+    // Redraw when a line arrives or once a second (for fading).
+    const key = i * 1000 + Math.floor(t / 1000)
+    if (key === chatShown) return
+    chatShown = key
     chatBox.textContent = ''
-    for (let k = Math.max(0, i - 7); k <= i; k++) {
+    for (let k = Math.max(0, i - 9); k <= i; k++) {
       const line = document.createElement('div')
       line.className = 'rp-chat-line'
-      if (/FINAL KILL!/.test(tl.chat[k].text)) line.classList.add('is-final')
-      if (/BED DESTRUCTION/.test(tl.chat[k].text)) line.classList.add('is-bed')
-      line.textContent = tl.chat[k].text
+      // Fade out after 10 s, like the game's chat.
+      if (t - tl.chat[k].t > 10000) continue
+      for (const seg of tl.chat[k].segs || [{ text: tl.chat[k].text }]) {
+        const span = document.createElement(seg.bold ? 'b' : 'span')
+        span.textContent = seg.text
+        if (seg.color) span.style.color = seg.color
+        line.appendChild(span)
+      }
       chatBox.appendChild(line)
     }
   }
@@ -261,7 +338,35 @@ function runViewer (tl, details) {
   seek(startMark ? startMark.t : 0)
   play(false)
 
+  // What each player is doing when they aren't drawn.
+  function statusOf (r) {
+    if (r.all.some(x => x.present)) return [null, '']
+    let d = null
+    for (const x of r.deaths) if (x.t <= now) d = x
+    if (d && d.final) return ['eliminated', 'eliminated']
+    if (d && d.disconnected) return ['disconnected', 'disconnected']
+    if (d && now - d.t < 5500) return ['dead', 'dead · respawn ' + Math.max(1, Math.ceil((d.t + 5000 - now) / 1000)) + 's']
+    if (now < Math.min(...r.all.map(x => x.track.t[0]))) return ['far', 'not seen yet']
+    return ['far', 'out of view']
+  }
+  function updateStatus () {
+    for (const r of rows) {
+      const [kind, text] = statusOf(r)
+      if (kind === r.kind && text === r.text) continue
+      r.kind = kind; r.text = text
+      r.status.hidden = !kind
+      r.status.textContent = text
+      if (kind) r.status.dataset.kind = kind
+      r.btn.classList.toggle('is-gone', !!kind)
+      r.btn.title = (r.m.track.name || 'Player') + (kind === 'far' ? ': alive, but too far from the recording player to be in the replay' : kind ? ': ' + text : '') + '. Click to follow.'
+    }
+    for (const b of teamBeds) b.el.hidden = now < b.t
+  }
+  const drawSize = new THREE.Vector2()
+  let prevNow = now
+  let lastStatus = 0
   let last = performance.now()
+  let lastCamSent = 0
   function frame (ts) {
     requestAnimationFrame(frame)
     const dt = Math.min(0.1, (ts - last) / 1000); last = ts
@@ -270,16 +375,22 @@ function runViewer (tl, details) {
       if (now >= tl.duration) play(false)
     }
     for (const m of models) m.update(now)
+    for (const v of views) v.update(now, camera)
     cam.update(dt)
-    viewer.update()
-    renderer.render(viewer.scene, viewer.camera)
+    particles.update(now, camera, renderer.getDrawingBufferSize(drawSize).y)
+    sounds.update(prevNow, now, playing, speed, camera.position)
+    prevNow = now
+    blocks.tick(ts / 1000)
+    tickGlint(ts / 1000)
+    if (ts - lastCamSent > 500) { blocks.setCamera(camera.position); lastCamSent = ts }
+    renderer.render(scene, camera)
     if (document.activeElement !== scrub) scrub.value = String(Math.round(now))
     $('rpTime').textContent = fmt(now) + ' / ' + fmt(tl.duration)
     showChat(now)
-    for (const r of rows) r.btn.classList.toggle('is-dead', !r.m.group.visible && !(cam.follow && cam.follow.model === r.m && cam.follow.mode === 'eyes'))
+    if (ts - lastStatus > 200) { lastStatus = ts; updateStatus() }
   }
   requestAnimationFrame(frame)
-  window.__replay = { tl, seek, play, cam, models, viewer, get now () { return now }, ready: () => mapReady && viewer.world.sectionsOutstanding.size === 0 }
+  window.__replay = { tl, seek, play, cam, models, views, particles, sounds, world, blocks, get now () { return now }, ready: () => mapReady && blocks.left === 0 }
 }
 
 function pickFile () {

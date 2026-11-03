@@ -41,12 +41,11 @@
   .rp-stage canvas { display: block; width: 100%; height: 100%; cursor: grab; }
   .rp-stage canvas:active { cursor: grabbing; }
 
-  .rp-chat { position: absolute; left: 12px; bottom: 12px; max-width: min(560px, calc(100% - 24px)); pointer-events: none; display: flex; flex-direction: column; gap: 2px; }
-  .rp-chat-line { background: rgba(0, 0, 0, 0.5); color: #f1f1f1; padding: 2px 8px; border-radius: 4px; font-size: 0.85em; white-space: pre-wrap; overflow-wrap: anywhere; text-shadow: 0 1px 0 #000; }
-  .rp-chat-line.is-final { color: #ffb0b0; }
-  .rp-chat-line.is-bed { color: #ffd59a; }
+  .rp-chat { position: absolute; left: 12px; bottom: 12px; max-width: min(720px, calc(100% - 24px)); pointer-events: none; display: flex; flex-direction: column; gap: 0; font-family: 'Consolas', 'Menlo', ui-monospace, monospace; }
+  .rp-chat-line { background: rgba(0, 0, 0, 0.5); color: #ffffff; padding: 2px 8px; font-size: 15px; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.75); }
+  .rp-chat-line b { font-weight: 700; }
   .rp-follow { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.6); padding: 4px 12px; border-radius: 999px; font-size: 0.85em; white-space: nowrap; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
-  .rp-noself { position: absolute; top: 12px; right: 12px; background: rgba(0, 0, 0, 0.6); padding: 6px 10px; border-radius: 8px; font-size: 0.8em; max-width: 260px; color: #dde; }
+  .rp-noself { position: absolute; top: 52px; right: 12px; background: rgba(0, 0, 0, 0.6); padding: 6px 10px; border-radius: 8px; font-size: 0.8em; max-width: 260px; color: #dde; }
 
   .rp-controls { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--panel); border-top: 1px solid var(--line); }
   .rp-btn { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font-weight: 600; min-width: 44px; min-height: 36px; }
@@ -70,7 +69,13 @@
   .rp-player { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; background: transparent; border: 1px solid transparent; border-left: 3px solid var(--team); border-radius: 6px; padding: 5px 8px; min-height: 32px; }
   .rp-player:hover { background: var(--panel-2); }
   .rp-player.is-following { background: var(--panel-2); border-color: var(--accent); border-left-color: var(--team); }
-  .rp-player.is-dead .rp-player-name { color: var(--faint); text-decoration: line-through; }
+  .rp-player.is-gone .rp-player-name { color: var(--faint); }
+  .rp-status { font-size: 0.72em; padding: 0 5px; border-radius: 4px; white-space: nowrap; color: var(--dim); background: var(--line); }
+  .rp-status[data-kind="dead"] { color: #ffd59a; background: rgba(255, 170, 60, 0.15); }
+  .rp-status[data-kind="eliminated"] { color: #ff9a9a; background: rgba(255, 80, 80, 0.15); }
+  .rp-status[data-kind="disconnected"] { color: var(--dim); }
+  .rp-status[data-kind="far"] { color: var(--faint); background: transparent; border: 1px dashed var(--line); }
+  .rp-team-bed { font-weight: 400; color: #ff9a9a; margin-left: 6px; }
   .rp-player-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rp-badge { font-size: 0.72em; padding: 0 5px; border-radius: 4px; background: var(--line); color: var(--dim); }
   .rp-event { display: flex; gap: 8px; width: 100%; text-align: left; background: transparent; border: 0; border-left: 3px solid var(--final); border-radius: 4px; padding: 5px 8px; }
@@ -100,6 +105,7 @@
     .rp-track { order: -1; flex-basis: 100%; }
     .rp-time { min-width: 0; margin-left: auto; }
     .rp-chat-line:nth-last-child(n+5) { display: none; }
+    .rp-chat-line { font-size: 12px; }
     .rp-noself { left: 12px; right: 12px; max-width: none; }
   }
 </style>
@@ -148,6 +154,7 @@
         <option value="4">4×</option>
         <option value="8">8×</option>
       </select>
+      <button type="button" class="rp-btn" id="rpSound" aria-pressed="true" title="Game sounds (only up to 2× speed)">Sound on</button>
     </div>
   </main>
 
@@ -155,7 +162,7 @@
     <section>
       <h2>Players</h2>
       <ul class="rp-list" id="rpPlayers"></ul>
-      <p class="rp-empty" style="margin:6px 0 0">Click a name to follow them, again to see through their eyes.</p>
+      <p class="rp-empty" style="margin:6px 0 0">Click a name to follow them, again to see through their eyes. Labels: <b>dead</b> = waiting to respawn, <b>eliminated</b> = final killed, <b>out of view</b> = alive but too far from the recording player for the game to send where they were.</p>
     </section>
     <section>
       <h2>Final kills and beds</h2>

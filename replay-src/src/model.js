@@ -3,9 +3,14 @@
 //   - world: every chunk column ever sent, as first seen (unloads are
 //     ignored so the whole map stays drawn), plus a list of block changes
 //     with the block before and after, so time can run both ways.
-//   - players: position/rotation samples per entity, with gaps while dead.
-//   - chat: every chat line with its time; final kills and bed breaks
-//     become timeline markers.
+//   - players: position/rotation samples per entity, with gaps while dead,
+//     plus crouching/sprinting/blocking, armour and held items, swings, hits
+//     and deaths.
+//   - other entities: dropped items, arrows, fireballs, TNT, pearls, mobs,
+//     and Hypixel's floating text (generator timers and so on).
+//   - effects: particles, block-break bursts and sounds, each with its time.
+//   - chat: every chat line (with its colours) and its time; final kills and
+//     bed breaks become timeline markers; deaths say who is respawning.
 // Pure data - no three.js here, so it runs in Node tests too.
 // Minecraft 1.8 protocol (47), clientbound play packets.
 
@@ -13,9 +18,10 @@ const { unzipSync } = require('fflate')
 
 const P = {
   JOIN: 0x01, CHAT: 0x02, TIME: 0x03, EQUIP: 0x04, RESPAWN: 0x07, POSITION: 0x08,
-  ANIMATION: 0x0b, SPAWN_PLAYER: 0x0c, DESTROY: 0x13, REL_MOVE: 0x15, LOOK: 0x16,
-  LOOK_MOVE: 0x17, TELEPORT: 0x18, HEAD_LOOK: 0x19, STATUS: 0x1a, METADATA: 0x1c,
-  CHUNK: 0x21, MULTI_BLOCK: 0x22, BLOCK: 0x23, CHUNK_BULK: 0x26, EXPLOSION: 0x27,
+  ANIMATION: 0x0b, SPAWN_PLAYER: 0x0c, COLLECT: 0x0d, SPAWN_OBJECT: 0x0e, SPAWN_MOB: 0x0f,
+  VELOCITY: 0x12, DESTROY: 0x13, REL_MOVE: 0x15, LOOK: 0x16, LOOK_MOVE: 0x17, TELEPORT: 0x18,
+  HEAD_LOOK: 0x19, STATUS: 0x1a, METADATA: 0x1c, CHUNK: 0x21, MULTI_BLOCK: 0x22, BLOCK: 0x23,
+  BLOCK_BREAK_ANIM: 0x25, CHUNK_BULK: 0x26, EXPLOSION: 0x27, EFFECT: 0x28, SOUND: 0x29, PARTICLE: 0x2a,
   PLAYER_LIST: 0x38, TEAMS: 0x3e
 }
 
@@ -32,15 +38,13 @@ class Reader {
   i16 () { const v = this.dv.getInt16(this.pos); this.pos += 2; return v }
   u16 () { const v = this.dv.getUint16(this.pos); this.pos += 2; return v }
   i32 () { const v = this.dv.getInt32(this.pos); this.pos += 4; return v }
+  i64 () { const hi = this.i32(); const lo = this.dv.getUint32(this.pos); this.pos += 4; return hi * 4294967296 + lo }
   f32 () { const v = this.dv.getFloat32(this.pos); this.pos += 4; return v }
   f64 () { const v = this.dv.getFloat64(this.pos); this.pos += 8; return v }
   blockPos () {
     const hi = this.dv.getInt32(this.pos); const lo = this.dv.getUint32(this.pos + 4); this.pos += 8
     // 26 bits x, 12 bits y, 26 bits z
-    const x = hi >> 6
-    const y = ((hi & 0x3f) << 6) | (lo >>> 26)
-    const z = (lo << 6) >> 6
-    return [x, y, z]
+    return [hi >> 6, ((hi & 0x3f) << 6) | (lo >>> 26), (lo << 6) >> 6]
   }
 
   uuid () {
@@ -49,31 +53,120 @@ class Reader {
     return s
   }
 
-  str () {
-    const n = this.varint()
-    const s = new TextDecoder().decode(this.b.subarray(this.pos, this.pos + n))
-    this.pos += n
-    return s
-  }
-
+  strN (n) { const s = new TextDecoder().decode(this.b.subarray(this.pos, this.pos + n)); this.pos += n; return s }
+  str () { return this.strN(this.varint()) }
   bytes (n) { const s = this.b.subarray(this.pos, this.pos + n); this.pos += n; return s }
+
+  /** One NBT tag's payload. Only what the viewer needs is kept. */
+  nbt (type) {
+    switch (type) {
+      case 1: return this.i8()
+      case 2: return this.i16()
+      case 3: return this.i32()
+      case 4: return this.i64()
+      case 5: return this.f32()
+      case 6: return this.f64()
+      case 7: { const n = this.i32(); this.pos += n; return null }
+      case 8: return this.strN(this.u16())
+      case 9: { const t = this.u8(); const n = this.i32(); const a = []; for (let k = 0; k < n; k++) a.push(this.nbt(t)); return a }
+      case 10: {
+        const o = {}
+        for (;;) { const t = this.u8(); if (t === 0) break; const name = this.strN(this.u16()); o[name] = this.nbt(t) }
+        return o
+      }
+      case 11: { const n = this.i32(); this.pos += n * 4; return null }
+      default: throw new Error('bad nbt')
+    }
+  }
+
+  /** An item stack: { id, count, damage, color, glint } or null. */
+  slot () {
+    const id = this.i16()
+    if (id < 0) return null
+    const count = this.i8(); const damage = this.i16()
+    let tag = null
+    const t = this.u8()
+    if (t !== 0) { this.strN(this.u16()); tag = this.nbt(t) }
+    const item = { id, count, damage }
+    if (tag) {
+      if (tag.display && typeof tag.display.color === 'number') item.color = tag.display.color
+      if (Array.isArray(tag.ench) && tag.ench.length) item.glint = true
+    }
+    return item
+  }
+
+  /** Entity metadata -> { index: value }. */
+  metadata () {
+    const out = {}
+    for (;;) {
+      const h = this.u8()
+      if (h === 0x7f) break
+      const idx = h & 0x1f
+      switch (h >> 5) {
+        case 0: out[idx] = this.i8(); break
+        case 1: out[idx] = this.i16(); break
+        case 2: out[idx] = this.i32(); break
+        case 3: out[idx] = this.f32(); break
+        case 4: out[idx] = this.str(); break
+        case 5: out[idx] = this.slot(); break
+        case 6: out[idx] = [this.i32(), this.i32(), this.i32()]; break
+        case 7: out[idx] = [this.f32(), this.f32(), this.f32()]; break
+        default: return out
+      }
+    }
+    return out
+  }
 }
 
-/** Chat JSON -> plain text (colour codes dropped). */
-function chatText (json) {
-  let c
-  try { c = JSON.parse(json) } catch { return String(json) }
-  const walk = (n) => {
-    if (n == null) return ''
-    if (typeof n === 'string') return n
-    if (Array.isArray(n)) return n.map(walk).join('')
-    let s = n.text || ''
-    if (n.translate && !n.text) s = n.translate
-    if (Array.isArray(n.extra)) s += n.extra.map(walk).join('')
-    return s
-  }
-  return walk(c).replace(/§./g, '')
+// --- Chat ---
+const COLOR_CODES = {
+  0: '#000000', 1: '#0000aa', 2: '#00aa00', 3: '#00aaaa', 4: '#aa0000', 5: '#aa00aa', 6: '#ffaa00', 7: '#aaaaaa',
+  8: '#555555', 9: '#5555ff', a: '#55ff55', b: '#55ffff', c: '#ff5555', d: '#ff55ff', e: '#ffff55', f: '#ffffff'
 }
+const NAMED_COLORS = {
+  black: '0', dark_blue: '1', dark_green: '2', dark_aqua: '3', dark_red: '4', dark_purple: '5', gold: '6', gray: '7',
+  dark_gray: '8', blue: '9', green: 'a', aqua: 'b', red: 'c', light_purple: 'd', yellow: 'e', white: 'f'
+}
+
+/** Chat JSON -> coloured pieces [{ text, color, bold }], following § codes too. */
+function chatSegments (json) {
+  let c
+  try { c = JSON.parse(json) } catch { c = String(json) }
+  const segs = []
+  const push = (text, style) => {
+    // Old-style § codes inside the text.
+    let st = { ...style }
+    const parts = String(text).split(/(§[0-9a-fk-or])/i)
+    for (const p of parts) {
+      if (!p) continue
+      const m = p.match(/^§([0-9a-fk-or])$/i)
+      if (m) {
+        const k = m[1].toLowerCase()
+        if (COLOR_CODES[k]) st = { color: COLOR_CODES[k], bold: false }
+        else if (k === 'l') st = { ...st, bold: true }
+        else if (k === 'r') st = { color: null, bold: false }
+        continue
+      }
+      const last = segs[segs.length - 1]
+      if (last && last.color === st.color && last.bold === st.bold) last.text += p
+      else segs.push({ text: p, color: st.color || null, bold: !!st.bold })
+    }
+  }
+  const walk = (n, style) => {
+    if (n == null) return
+    if (typeof n === 'string' || typeof n === 'number') { push(n, style); return }
+    if (Array.isArray(n)) { for (const x of n) walk(x, style); return }
+    const st = { ...style }
+    if (n.color) st.color = COLOR_CODES[NAMED_COLORS[n.color]] || st.color
+    if (n.bold !== undefined) st.bold = !!n.bold
+    if (n.text) push(n.text, st)
+    else if (n.translate) push(n.translate, st)
+    if (Array.isArray(n.extra)) for (const x of n.extra) walk(x, st)
+  }
+  walk(c, { color: null, bold: false })
+  return segs
+}
+const chatText = (json) => chatSegments(json).map(s => s.text).join('')
 
 // Bed Wars teams are named like "Red8"; their colour is fixed.
 const TEAM_COLORS = {
@@ -82,11 +175,6 @@ const TEAM_COLORS = {
 function bedwarsTeam (name) {
   const m = String(name || '').match(/^(Red|Blue|Green|Yellow|Aqua|White|Pink|Gr[ae]y)\d*$/i)
   return m ? { label: m[1][0].toUpperCase() + m[1].slice(1).toLowerCase(), color: TEAM_COLORS[m[1].toLowerCase()] } : null
-}
-
-const COLOR_CODES = {
-  0: '#000000', 1: '#0000aa', 2: '#00aa00', 3: '#00aaaa', 4: '#aa0000', 5: '#aa00aa', 6: '#ffaa00', 7: '#aaaaaa',
-  8: '#555555', 9: '#5555ff', a: '#55ff55', b: '#55ffff', c: '#ff5555', d: '#ff55ff', e: '#ffff55', f: '#ffffff'
 }
 /** The last colour code in a scoreboard team prefix, as a CSS colour. */
 function prefixColor (prefix) {
@@ -102,7 +190,6 @@ function readMcpr (bytes) {
   try { meta = JSON.parse(new TextDecoder().decode(files['metaData.json'])) } catch { /* optional */ }
   const rec = files['recording.tmcpr']
   const dv = new DataView(rec.buffer, rec.byteOffset, rec.byteLength)
-  // Count first so the arrays are the right size.
   let n = 0
   for (let i = 0; i + 8 <= rec.length;) { const len = dv.getInt32(i + 4); i += 8 + len; n++ }
   const t = new Int32Array(n); const id = new Int32Array(n); const start = new Int32Array(n); const end = new Int32Array(n)
@@ -135,97 +222,146 @@ class ChangeList {
   }
 }
 
-/** Per-entity samples: time, position, yaw/pitch (degrees), shown or not. */
+/** Binary search: index of the last entry with time <= t, or -1. */
+function lastAt (times, t) {
+  let lo = 0; let hi = times.length - 1; let ans = -1
+  while (lo <= hi) { const m = (lo + hi) >> 1; if (times[m] <= t) { ans = m; lo = m + 1 } else hi = m - 1 }
+  return ans
+}
+
+/** A value that changes over time: [[t, value], ...]. */
+class Timeline {
+  constructor (initial = null) { this.t = []; this.v = []; this.initial = initial }
+  set (t, v) { const n = this.t.length; if (n && this.t[n - 1] === t) this.v[n - 1] = v; else { this.t.push(t); this.v.push(v) } }
+  at (t) { const i = lastAt(this.t, t); return i < 0 ? this.initial : this.v[i] }
+  /** Time the current value started. */
+  since (t) { const i = lastAt(this.t, t); return i < 0 ? -Infinity : this.t[i] }
+}
+
+/** Per-entity samples: time, position, rotation (degrees), shown or not. */
 class Track {
-  constructor (id) {
-    this.id = id; this.uuid = null
-    this.t = []; this.x = []; this.y = []; this.z = []; this.yaw = []; this.pitch = []; this.alive = []
-    this.swings = []; this.hurts = []; this.sneak = []
-    this.cur = { x: 0, y: 0, z: 0, yaw: 0, pitch: 0, alive: false }
+  constructor (id, kind) {
+    this.id = id; this.kind = kind; this.uuid = null
+    this.t = []; this.x = []; this.y = []; this.z = []; this.yaw = []; this.head = []; this.pitch = []; this.alive = []
+    this.swings = []; this.hurts = []; this.deaths = []; this.crits = []
+    this.flags = new Timeline(0) // 0x02 crouch, 0x08 sprint, 0x10 using item (blocking, eating, bow)
+    this.health = new Timeline(null)
+    this.equip = [new Timeline(null), new Timeline(null), new Timeline(null), new Timeline(null), new Timeline(null)] // hand, boots, legs, chest, helmet
+    this.meta = {} // latest metadata (objects and mobs)
+    this.cur = { x: 0, y: 0, z: 0, yaw: 0, head: 0, pitch: 0, alive: false }
   }
 
   sample (t) {
     const c = this.cur; const n = this.t.length
-    // Several packets in the same millisecond: keep the last.
     if (n && this.t[n - 1] === t) {
-      this.x[n - 1] = c.x; this.y[n - 1] = c.y; this.z[n - 1] = c.z; this.yaw[n - 1] = c.yaw; this.pitch[n - 1] = c.pitch; this.alive[n - 1] = c.alive
+      this.x[n - 1] = c.x; this.y[n - 1] = c.y; this.z[n - 1] = c.z; this.yaw[n - 1] = c.yaw; this.head[n - 1] = c.head; this.pitch[n - 1] = c.pitch; this.alive[n - 1] = c.alive
       return
     }
-    this.t.push(t); this.x.push(c.x); this.y.push(c.y); this.z.push(c.z); this.yaw.push(c.yaw); this.pitch.push(c.pitch); this.alive.push(c.alive)
+    this.t.push(t); this.x.push(c.x); this.y.push(c.y); this.z.push(c.z); this.yaw.push(c.yaw); this.head.push(c.head); this.pitch.push(c.pitch); this.alive.push(c.alive)
   }
 
-  /** Index of the last sample at or before t, or -1. */
-  indexAt (t) {
-    let lo = 0; let hi = this.t.length - 1; let ans = -1
-    while (lo <= hi) { const m = (lo + hi) >> 1; if (this.t[m] <= t) { ans = m; lo = m + 1 } else hi = m - 1 }
-    return ans
+  /** After all samples: walking distance, for the limb swing. */
+  finish () {
+    const n = this.t.length
+    this.limb = new Float32Array(n); this.amount = new Float32Array(n)
+    let limb = 0; let amt = 0
+    for (let i = 1; i < n; i++) {
+      const ticks = Math.max(1, (this.t[i] - this.t[i - 1]) / 50)
+      const d = this.alive[i] && this.alive[i - 1] ? Math.hypot(this.x[i] - this.x[i - 1], this.z[i] - this.z[i - 1]) : 0
+      // Minecraft: amount moves 40% per tick toward min(1, speed*4); limb += amount.
+      const target = d > 4 ? 0 : Math.min(1, d / ticks * 4)
+      for (let k = 0; k < Math.min(ticks, 20); k++) { amt += (target - amt) * 0.4; limb += amt }
+      if (ticks > 20) amt = target
+      this.limb[i] = limb; this.amount[i] = amt
+    }
   }
+
+  indexAt (t) { return lastAt(this.t, t) }
 
   /** Where the entity is at time t (smoothed between samples), or null. */
   stateAt (t) {
     const i = this.indexAt(t)
-    if (i < 0 || !this.alive[i]) return null
+    if (i < 0) return null
+    if (!this.alive[i]) {
+      // Just died: keep it for the fall-over.
+      const d = this.deaths.length ? this.deaths[lastAt(this.deaths, t)] : undefined
+      if (d !== undefined && t - d < 1000 && this.t[i] - d < 200 && i > 0 && this.alive[i - 1]) {
+        const k = i - 1
+        return { x: this.x[k], y: this.y[k], z: this.z[k], yaw: this.yaw[k], head: this.head[k], pitch: this.pitch[k], limb: this.limb ? this.limb[k] : 0, amount: 0, dying: (t - d) / 1000 }
+      }
+      return null
+    }
     const j = i + 1
     let f = 0
     if (j < this.t.length && this.alive[j]) {
       const dt = this.t[j] - this.t[i]
-      // Long gaps are teleports or pauses - don't glide across them.
-      if (dt > 0 && dt <= 400) f = (t - this.t[i]) / dt
+      // Long gaps are teleports or pauses - don't glide across them,
+      // except for things that fly in a line (arrows, items).
+      if (dt > 0 && (dt <= 400 || (this.kind === 'object' && dt <= 2000))) f = (t - this.t[i]) / dt
     }
     const lerp = (a) => a[i] + (a[j] - a[i]) * f
-    let yaw = this.yaw[i]
-    if (f) { let d = ((this.yaw[j] - yaw) % 360 + 540) % 360 - 180; yaw += d * f }
+    const angle = (a) => { let v = a[i]; if (f) { const d = ((a[j] - v) % 360 + 540) % 360 - 180; v += d * f } return v }
+    const dying = this.deaths.length ? t - this.deaths[Math.max(0, lastAt(this.deaths, t))] : Infinity
     return {
       x: f ? lerp(this.x) : this.x[i], y: f ? lerp(this.y) : this.y[i], z: f ? lerp(this.z) : this.z[i],
-      yaw, pitch: f ? lerp(this.pitch) : this.pitch[i]
+      yaw: angle(this.yaw), head: angle(this.head), pitch: f ? lerp(this.pitch) : this.pitch[i],
+      limb: this.limb ? (f ? lerp(this.limb) : this.limb[i]) : 0,
+      amount: this.amount ? (f ? lerp(this.amount) : this.amount[i]) : 0,
+      dying: dying >= 0 && dying < 1000 ? dying / 1000 : 0
     }
   }
 
-  /** Is there an event in `list` within `ms` before time t? */
-  recent (list, t, ms) {
-    let lo = 0; let hi = list.length - 1; let ans = -1
-    while (lo <= hi) { const m = (lo + hi) >> 1; if (list[m] <= t) { ans = m; lo = m + 1 } else hi = m - 1 }
-    return ans >= 0 && t - list[ans] < ms
-  }
-
-  sneakingAt (t) {
-    let v = false
-    for (const [st, on] of this.sneak) { if (st > t) break; v = on }
-    return v
-  }
+  recent (list, t, ms) { const i = lastAt(list, t); return i >= 0 && t - list[i] < ms }
+  lastBefore (list, t) { const i = lastAt(list, t); return i >= 0 ? list[i] : -Infinity }
 }
 
 const SECTION = 4096
+// 1.8 object types (spawn object packet).
+const OBJECTS = { 1: 'boat', 2: 'item', 10: 'minecart', 50: 'tnt', 60: 'arrow', 61: 'snowball', 62: 'egg', 63: 'fireball', 64: 'small_fireball', 65: 'pearl', 66: 'skull', 70: 'falling_block', 71: 'item_frame', 72: 'eye', 73: 'potion', 75: 'xp_bottle', 76: 'firework', 78: 'armor_stand', 90: 'fishing_hook' }
+const MOBS = { 30: 'armor_stand', 50: 'creeper', 51: 'skeleton', 52: 'spider', 54: 'zombie', 55: 'slime', 57: 'zombie_pigman', 58: 'enderman', 60: 'silverfish', 61: 'blaze', 63: 'ender_dragon', 65: 'bat', 66: 'witch', 90: 'pig', 91: 'sheep', 92: 'cow', 93: 'chicken', 94: 'squid', 95: 'wolf', 96: 'mooshroom', 97: 'snow_golem', 98: 'ocelot', 99: 'iron_golem', 100: 'horse', 101: 'rabbit', 120: 'villager' }
+// 1.8 particle ids -> names.
+const PARTICLES = ['explode', 'largeexplode', 'hugeexplosion', 'fireworksSpark', 'bubble', 'splash', 'wake', 'suspended', 'depthsuspend', 'crit', 'magicCrit', 'smoke', 'largesmoke', 'spell', 'instantSpell', 'mobSpell', 'mobSpellAmbient', 'witchMagic', 'dripWater', 'dripLava', 'angryVillager', 'happyVillager', 'townaura', 'note', 'portal', 'enchantmenttable', 'flame', 'lava', 'footstep', 'cloud', 'reddust', 'snowballpoof', 'snowshovel', 'slime', 'heart', 'barrier', 'iconcrack', 'blockcrack', 'blockdust', 'droplet', 'take', 'mobappearance']
+
+// Hypixel death messages start with the player's name and have no "name:".
+const DEATH = /^(\S+) (was|fell|slipped|got|died|burned|tried|walked|hit the ground|didn't|withered|blew up|starved|drowned|suffocated|went|froze|stumbled)\b/
 
 /**
  * Build the whole timeline. `onProgress(fraction)` is called now and then.
- * Returns { meta, info, duration, columns, changes, tracks, names, teams, chat, markers, selfId }.
  */
 function buildTimeline (mcpr, onProgress = () => {}) {
   const { meta, rec, packets } = mcpr
   const { n, t: T, id: ID, start: S, end: E } = packets
-  const columns = new Map() // "x,z" -> { x, z, sections: Array(16) of Uint16Array|null, firstSeen }
-  const current = new Map() // live state while building, same shape (shares arrays at first)
+  const columns = new Map()
+  const current = new Map()
   const changes = new ChangeList()
-  const tracks = new Map()
-  const names = new Map() // uuid (no dashes) -> name
-  const skins = new Map() // uuid -> textures property (base64)
-  const teamOf = new Map() // player name -> team name
-  const teams = new Map() // team name -> { prefix, color }
+  const tracks = new Map() // players
+  const entities = new Map() // everything else
+  const names = new Map()
+  const skins = new Map()
+  const teamOf = new Map()
+  const teams = new Map()
   const chat = []
   const markers = []
+  const effects = [] // { t, kind: 'particle'|'break'|'explosion'|'crit', ... }
+  const sounds = [] // { t, name, x, y, z, volume, pitch }
+  const deaths = [] // { t, name, final }
+  const bedsBroken = [] // { t, team }
   let info = {}
   let duration = meta.duration || (n ? T[n - 1] : 0)
-  let self = { id: meta.selfId != null ? meta.selfId : null, positions: [] }
+  const self = { id: meta.selfId != null ? meta.selfId : null, positions: [] }
+  // The newest entity with each id (ids are reused after despawning).
+  const live = new Map()
 
-  const track = (eid) => { let tr = tracks.get(eid); if (!tr) { tr = new Track(eid); tracks.set(eid, tr) } return tr }
-
-  const getBlock = (x, y, z) => {
-    if (y < 0 || y > 255) return 0
-    const c = current.get(colKey(x >> 4, z >> 4)); if (!c) return 0
-    const s = c.sections[y >> 4]; if (!s) return 0
-    return s[((y & 15) << 8) | ((z & 15) << 4) | (x & 15)]
+  const newEntity = (eid, kind) => {
+    const old = live.get(eid)
+    if (old && kind === 'player' && old.kind === 'player') return old // a player respawning keeps their track
+    const e = new Track(eid, kind)
+    if (kind === 'player') tracks.set(eid, e)
+    else entities.set(eid + '@' + entities.size, e)
+    live.set(eid, e)
+    return e
   }
+
   const setBlock = (t, x, y, z, to) => {
     if (y < 0 || y > 255) return
     const c = current.get(colKey(x >> 4, z >> 4)); if (!c) return
@@ -237,10 +373,14 @@ function buildTimeline (mcpr, onProgress = () => {}) {
     s[i] = to
     changes.push(t, x, y, z, from, to)
   }
+  const getBlock = (x, y, z) => {
+    const c = current.get(colKey(x >> 4, z >> 4)); const s = c && y >= 0 && y < 256 && c.sections[y >> 4]
+    return s ? s[((y & 15) << 8) | ((z & 15) << 4) | (x & 15)] : 0
+  }
 
-  const loadColumn = (t, cx, cz, full, mask, r, skyLight) => {
+  const loadColumn = (t, cx, cz, full, mask, r) => {
     const key = colKey(cx, cz)
-    let cur = current.get(key)
+    const cur = current.get(key)
     const blocks = []
     for (let sy = 0; sy < 16; sy++) {
       if (!(mask & (1 << sy))) continue
@@ -250,14 +390,12 @@ function buildTimeline (mcpr, onProgress = () => {}) {
       blocks.push([sy, arr])
     }
     if (!cur) {
-      // First time this column is seen: it becomes part of the base world.
       const sections = new Array(16).fill(null)
       for (const [sy, arr] of blocks) sections[sy] = arr
       columns.set(key, { x: cx, z: cz, sections, firstSeen: t })
       current.set(key, { x: cx, z: cz, sections: sections.map(s => s && s.slice()) })
       return
     }
-    // Sent again (Milo came back near it): whatever differs is a change.
     for (const [sy, arr] of blocks) {
       const old = cur.sections[sy]
       for (let k = 0; k < SECTION; k++) {
@@ -266,7 +404,6 @@ function buildTimeline (mcpr, onProgress = () => {}) {
       }
     }
     if (full) {
-      // A full column with a section missing means that section is now empty.
       for (let sy = 0; sy < 16; sy++) {
         if (mask & (1 << sy)) continue
         const old = cur.sections[sy]; if (!old) continue
@@ -275,7 +412,15 @@ function buildTimeline (mcpr, onProgress = () => {}) {
     }
   }
 
-  let dimension = 0
+  const applyMeta = (e, t, m) => {
+    if (m[0] !== undefined) e.flags.set(t, m[0] & 0xff)
+    if (e.kind === 'player' && m[6] !== undefined) e.health.set(t, m[6])
+    for (const k of Object.keys(m)) e.meta[k] = m[k]
+    if (e.kind === 'object' && e.type === 'item' && m[10] !== undefined) e.item = m[10]
+    if (m[2] !== undefined) { if (!e.nameTl) e.nameTl = new Timeline(''); e.nameTl.set(t, m[2]); if (m[2]) e.customName = m[2] }
+    if (m[3] !== undefined) e.nameVisible = !!m[3]
+  }
+
   const step = Math.max(1, Math.floor(n / 50))
   for (let k = 0; k < n; k++) {
     if (k % step === 0) onProgress(k / n)
@@ -283,24 +428,16 @@ function buildTimeline (mcpr, onProgress = () => {}) {
     const r = new Reader(rec, S[k], E[k])
     try {
       switch (id) {
-        case P.JOIN: {
-          const eid = r.i32(); r.u8(); dimension = r.i8()
-          if (self.id == null) self.id = eid
-          break
-        }
-        case P.RESPAWN: dimension = r.i32(); break
+        case P.JOIN: { const eid = r.i32(); if (self.id == null) self.id = eid; break }
         case P.POSITION: {
-          // Our own position (only teleports - the server never echoes walking).
-          const x = r.f64(); const y = r.f64(); const z = r.f64(); const yaw = r.f32(); const pitch = r.f32(); const flags = r.u8()
-          const last = self.positions[self.positions.length - 1]
-          const abs = (v, bit, prev) => (flags & bit) && prev != null ? prev + v : v
-          self.positions.push({ t, x: abs(x, 1, last && last.x), y: abs(y, 2, last && last.y), z: abs(z, 4, last && last.z), yaw: abs(yaw, 8, last && last.yaw), pitch: abs(pitch, 16, last && last.pitch) })
+          const x = r.f64(); const y = r.f64(); const z = r.f64(); const yaw = r.f32(); const pitch = r.f32()
+          self.positions.push({ t, x, y, z, yaw, pitch })
           break
         }
         case P.CHUNK: {
           const cx = r.i32(); const cz = r.i32(); const full = r.bool(); const mask = r.u16(); r.varint()
           if (full && mask === 0) break // unload: keep it drawn
-          loadColumn(t, cx, cz, full, mask, r, dimension === 0)
+          loadColumn(t, cx, cz, full, mask, r)
           break
         }
         case P.CHUNK_BULK: {
@@ -309,76 +446,131 @@ function buildTimeline (mcpr, onProgress = () => {}) {
           for (let q = 0; q < count; q++) metas.push([r.i32(), r.i32(), r.u16()])
           for (const [cx, cz, mask] of metas) {
             const secs = popcount(mask)
-            const sub = new Reader(rec, r.pos, E[k])
-            loadColumn(t, cx, cz, true, mask, sub, sky)
+            loadColumn(t, cx, cz, true, mask, new Reader(rec, r.pos, E[k]))
             r.pos += secs * 8192 + secs * 2048 + (sky ? secs * 2048 : 0) + 256
           }
           break
         }
-        case P.BLOCK: {
-          const [x, y, z] = r.blockPos(); setBlock(t, x, y, z, r.varint()); break
-        }
+        case P.BLOCK: { const [x, y, z] = r.blockPos(); setBlock(t, x, y, z, r.varint()); break }
         case P.MULTI_BLOCK: {
           const cx = r.i32(); const cz = r.i32(); const cnt = r.varint()
-          for (let q = 0; q < cnt; q++) {
-            const h = r.u8(); const y = r.u8(); const st = r.varint()
-            setBlock(t, (cx << 4) + (h >> 4), y, (cz << 4) + (h & 15), st)
-          }
+          for (let q = 0; q < cnt; q++) { const h = r.u8(); const y = r.u8(); setBlock(t, (cx << 4) + (h >> 4), y, (cz << 4) + (h & 15), r.varint()) }
           break
         }
         case P.EXPLOSION: {
-          const x = r.f32(); const y = r.f32(); const z = r.f32(); r.f32(); const cnt = r.i32()
+          const x = r.f32(); const y = r.f32(); const z = r.f32(); const radius = r.f32(); const cnt = r.i32()
           const bx = Math.floor(x); const by = Math.floor(y); const bz = Math.floor(z)
           for (let q = 0; q < cnt; q++) setBlock(t, bx + r.i8(), by + r.i8(), bz + r.i8(), 0)
+          effects.push({ t, kind: 'explosion', x, y, z, radius })
+          sounds.push({ t, name: 'random.explode', x, y, z, volume: 4, pitch: 1 })
+          break
+        }
+        case P.EFFECT: {
+          const effect = r.i32(); const [x, y, z] = r.blockPos(); const data = r.i32()
+          if (effect === 2001) {
+            // A block broken: its pieces fly out (the block is already gone by now, so use the data).
+            effects.push({ t, kind: 'break', x: x + 0.5, y: y + 0.5, z: z + 0.5, block: (data & 0xfff) << 4 | (data >> 12 & 15) })
+          }
+          break
+        }
+        case P.PARTICLE: {
+          const pid = r.i32(); r.bool()
+          const x = r.f32(); const y = r.f32(); const z = r.f32(); const ox = r.f32(); const oy = r.f32(); const oz = r.f32(); const speed = r.f32(); const count = r.i32()
+          const data = []
+          while (r.pos < r.end) data.push(r.varint())
+          effects.push({ t, kind: 'particle', name: PARTICLES[pid] || 'crit', x, y, z, ox, oy, oz, speed, count: Math.min(count, 60), data })
+          break
+        }
+        case P.SOUND: {
+          const name = r.str(); const x = r.i32() / 8; const y = r.i32() / 8; const z = r.i32() / 8; const volume = r.f32(); const pitch = r.u8() / 63
+          sounds.push({ t, name, x, y, z, volume, pitch })
           break
         }
         case P.SPAWN_PLAYER: {
-          const eid = r.varint(); const tr = track(eid)
-          tr.uuid = r.uuid()
-          tr.cur = { x: r.i32() / 32, y: r.i32() / 32, z: r.i32() / 32, yaw: r.i8() * 360 / 256, pitch: r.i8() * 360 / 256, alive: true }
-          tr.sample(t)
+          const eid = r.varint(); const e = newEntity(eid, 'player')
+          e.uuid = r.uuid()
+          const x = r.i32() / 32; const y = r.i32() / 32; const z = r.i32() / 32; const yaw = r.i8() * 360 / 256; const pitch = r.i8() * 360 / 256
+          const item = r.i16()
+          e.cur = { x, y, z, yaw, head: yaw, pitch, alive: true }
+          if (item > 0) e.equip[0].set(t, { id: item, count: 1, damage: 0 })
+          e.sample(t)
+          applyMeta(e, t, r.metadata())
+          break
+        }
+        case P.SPAWN_OBJECT: {
+          const eid = r.varint(); const type = r.i8()
+          const e = newEntity(eid, 'object')
+          e.type = OBJECTS[type] || 'object'
+          const x = r.i32() / 32; const y = r.i32() / 32; const z = r.i32() / 32; const pitch = r.i8() * 360 / 256; const yaw = r.i8() * 360 / 256
+          const data = r.i32()
+          if (data > 0 && r.pos + 6 <= r.end) e.vel = [r.i16() / 8000, r.i16() / 8000, r.i16() / 8000]
+          if (e.type === 'falling_block') e.block = ((data & 0xfff) << 4) | ((data >> 12) & 15)
+          e.cur = { x, y, z, yaw, head: yaw, pitch, alive: true }
+          e.sample(t)
+          break
+        }
+        case P.SPAWN_MOB: {
+          const eid = r.varint(); const type = r.u8()
+          const e = newEntity(eid, 'mob')
+          e.type = MOBS[type] || 'mob'
+          const x = r.i32() / 32; const y = r.i32() / 32; const z = r.i32() / 32; const yaw = r.i8() * 360 / 256; const pitch = r.i8() * 360 / 256; const head = r.i8() * 360 / 256
+          r.i16(); r.i16(); r.i16()
+          e.cur = { x, y, z, yaw, head, pitch, alive: true }
+          e.sample(t)
+          applyMeta(e, t, r.metadata())
           break
         }
         case P.DESTROY: {
           const cnt = r.varint()
-          for (let q = 0; q < cnt; q++) { const tr = tracks.get(r.varint()); if (tr && tr.cur.alive) { tr.cur.alive = false; tr.sample(t) } }
+          for (let q = 0; q < cnt; q++) { const e = live.get(r.varint()); if (e && e.cur.alive) { e.cur.alive = false; e.sample(t) } }
+          break
+        }
+        case P.COLLECT: {
+          const e = live.get(r.varint()); const by = live.get(r.varint())
+          if (e && by) { e.collectedBy = by; e.collectedAt = t }
           break
         }
         case P.REL_MOVE: case P.LOOK_MOVE: case P.LOOK: {
-          const tr = tracks.get(r.varint()); if (!tr || !tr.cur.alive) break
-          if (id !== P.LOOK) { tr.cur.x += r.i8() / 32; tr.cur.y += r.i8() / 32; tr.cur.z += r.i8() / 32 }
-          if (id !== P.REL_MOVE) { r.i8(); tr.cur.pitch = r.i8() * 360 / 256 } // body yaw ignored: head look drives the model
-          tr.sample(t)
+          const e = live.get(r.varint()); if (!e || !e.cur.alive) break
+          if (id !== P.LOOK) { e.cur.x += r.i8() / 32; e.cur.y += r.i8() / 32; e.cur.z += r.i8() / 32 }
+          if (id !== P.REL_MOVE) { e.cur.yaw = r.i8() * 360 / 256; e.cur.pitch = r.i8() * 360 / 256 }
+          e.sample(t)
           break
         }
         case P.TELEPORT: {
-          const tr = tracks.get(r.varint()); if (!tr || !tr.cur.alive) break
-          tr.cur.x = r.i32() / 32; tr.cur.y = r.i32() / 32; tr.cur.z = r.i32() / 32; r.i8(); tr.cur.pitch = r.i8() * 360 / 256
-          // Two samples at the same spot so the move isn't smoothed over.
-          tr.sample(t)
+          const e = live.get(r.varint()); if (!e || !e.cur.alive) break
+          e.cur.x = r.i32() / 32; e.cur.y = r.i32() / 32; e.cur.z = r.i32() / 32; e.cur.yaw = r.i8() * 360 / 256; e.cur.pitch = r.i8() * 360 / 256
+          e.sample(t)
           break
         }
         case P.HEAD_LOOK: {
-          const tr = tracks.get(r.varint()); if (!tr || !tr.cur.alive) break
-          tr.cur.yaw = r.i8() * 360 / 256; tr.sample(t)
+          const e = live.get(r.varint()); if (!e || !e.cur.alive) break
+          e.cur.head = r.i8() * 360 / 256; e.sample(t)
           break
         }
         case P.ANIMATION: {
-          const tr = tracks.get(r.varint()); const a = r.u8()
-          if (tr && a === 0) tr.swings.push(t)
-          if (tr && a === 1) tr.hurts.push(t)
+          const e = live.get(r.varint()); const a = r.u8()
+          if (!e) break
+          if (a === 0) e.swings.push(t)
+          else if (a === 1) e.hurts.push(t)
+          else if (a === 4 || a === 5) { e.crits.push(t); effects.push({ t, kind: 'crit', magic: a === 5, entity: e }) }
           break
         }
         case P.STATUS: {
-          const tr = tracks.get(r.i32()); const s = r.i8()
-          if (tr && s === 2) tr.hurts.push(t)
+          const e = live.get(r.i32()); const s = r.i8()
+          if (!e) break
+          if (s === 2) e.hurts.push(t)
+          if (s === 3) e.deaths.push(t)
           break
         }
         case P.METADATA: {
-          const tr = tracks.get(r.varint()); if (!tr) break
-          // Index 0 is the flags byte (0x02 = sneaking); it comes first when sent.
-          const head = r.u8()
-          if (head !== 0x7f && (head & 0x1f) === 0 && (head >> 5) === 0) tr.sneak.push([t, !!(r.u8() & 0x02)])
+          const e = live.get(r.varint()); if (!e) break
+          applyMeta(e, t, r.metadata())
+          break
+        }
+        case P.EQUIP: {
+          const e = live.get(r.varint()); const slot = r.i16(); const item = r.slot()
+          if (e && slot >= 0 && slot < 5) e.equip[slot].set(t, item)
           break
         }
         case P.PLAYER_LIST: {
@@ -394,11 +586,9 @@ function buildTimeline (mcpr, onProgress = () => {}) {
         }
         case P.TEAMS: {
           const name = r.str(); const mode = r.i8()
-          let team = teams.get(name)
           if (mode === 0 || mode === 2) {
             r.str(); const prefix = r.str(); r.str(); r.i8(); r.str(); r.i8()
-            team = { name, prefix, color: prefixColor(prefix) }
-            teams.set(name, team)
+            teams.set(name, { name, prefix, color: prefixColor(prefix) })
           }
           if (mode === 0 || mode === 3) {
             // A player keeps the first Bed Wars team they're put in (Hypixel
@@ -411,19 +601,25 @@ function buildTimeline (mcpr, onProgress = () => {}) {
         case P.CHAT: {
           const json = r.str(); const pos = r.pos < r.end ? r.i8() : 0
           if (pos === 2) break // action bar
-          const text = chatText(json)
-          if (/^\{"server"/.test(text)) {
-            try { info = { ...info, ...JSON.parse(text) } } catch { /* not locraw */ }
-            break
-          }
+          const segs = chatSegments(json)
+          const text = segs.map(s => s.text).join('')
+          if (/^\{"server"/.test(text)) { try { info = { ...info, ...JSON.parse(text) } } catch { /* not locraw */ } break }
           if (!text.trim()) break
           // Private and party/guild chat stays out: replays are shared with
           // the roster, and these were never part of the game.
           if (PRIVATE_CHAT.test(text)) break
-          chat.push({ t, text })
-          if (/FINAL KILL!/.test(text)) markers.push({ t, kind: 'final', text: text.trim() })
-          else if (/^\s*BED DESTRUCTION >/.test(text)) markers.push({ t, kind: 'bed', text: text.replace(/^\s*BED DESTRUCTION >\s*/, '').trim() })
-          else if (/^\s*(VICTORY|GAME OVER)/i.test(text)) markers.push({ t, kind: 'end', text: text.trim() })
+          chat.push({ t, text, segs })
+          const final = /FINAL KILL!/.test(text)
+          if (final) markers.push({ t, kind: 'final', text: text.trim() })
+          else if (/^\s*BED DESTRUCTION >/.test(text)) {
+            markers.push({ t, kind: 'bed', text: text.replace(/^\s*BED DESTRUCTION >\s*/, '').trim() })
+            const m = text.match(/>\s*(\w+) Bed/)
+            if (m) bedsBroken.push({ t, team: m[1] })
+          } else if (/^\s*(VICTORY|GAME OVER)/i.test(text)) markers.push({ t, kind: 'end', text: text.trim() })
+          const d = text.trim().match(DEATH)
+          if (d && !/:/.test(text.split(' ')[0])) deaths.push({ t, name: d[1], final })
+          const dc = text.trim().match(/^(\S+) disconnected\.?$/)
+          if (dc) deaths.push({ t, name: dc[1], disconnected: true })
           break
         }
       }
@@ -434,6 +630,7 @@ function buildTimeline (mcpr, onProgress = () => {}) {
   onProgress(1)
   if (n && T[n - 1] > duration) duration = T[n - 1]
 
+  // Bed colour from the "Your Bed" message: the team of the recording player.
   // Hypixel's NPCs are player entities with version-2 UUIDs; nicked players
   // have version 1, real accounts version 4.
   for (const [eid, tr] of tracks) {
@@ -442,11 +639,15 @@ function buildTimeline (mcpr, onProgress = () => {}) {
     tr.nicked = tr.uuid[12] === '1'
     tr.team = bedwarsTeam(teamOf.get(tr.name))
     tr.self = eid === self.id
+    tr.finish()
   }
+  const selfTrack = [...tracks.values()].find(tr => tr.self)
+  for (const b of bedsBroken) if (b.team === 'Your' && selfTrack && selfTrack.team) b.team = selfTrack.team.label
+  for (const e of entities.values()) if (e.kind === 'mob') e.finish()
 
-  return { meta, info, duration, columns, changes, tracks, names, skins, teamOf, teams, chat, markers, self }
+  return { meta, info, duration, columns, changes, tracks, entities, names, skins, teamOf, teams, chat, markers, effects, sounds, deaths, bedsBroken, self, getBlock }
 }
 
 function popcount (m) { let c = 0; while (m) { c += m & 1; m >>>= 1 } return c }
 
-module.exports = { readMcpr, buildTimeline, chatText, prefixColor, bedwarsTeam, Reader, Track, colKey }
+module.exports = { Timeline, readMcpr, buildTimeline, chatText, chatSegments, prefixColor, bedwarsTeam, Reader, Track, colKey, lastAt }

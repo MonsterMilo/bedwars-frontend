@@ -74,7 +74,16 @@ class ReplayCamera {
           return
         }
         const dir = new THREE.Vector3(Math.sin(this.yaw) * Math.cos(this.pitch), -Math.sin(this.pitch), Math.cos(this.yaw) * Math.cos(this.pitch))
-        cam.position.set(p.x + dir.x * this.dist, p.y + 1.4 + dir.y * this.dist, p.z + dir.z * this.dist)
+        // Like Minecraft's third person: move in closer when a block is in the way.
+        let dist = this.dist
+        if (this.solidAt) {
+          for (let d = 0.3; d <= this.dist; d += 0.1) {
+            if (this.solidAt(p.x + dir.x * d, p.y + 1.4 + dir.y * d, p.z + dir.z * d)) { dist = Math.max(0.3, d - 0.3); break }
+          }
+        }
+        cam.position.set(p.x + dir.x * dist, p.y + 1.4 + dir.y * dist, p.z + dir.z * dist)
+        // Too close to see past them: hide them, as their own view would.
+        if (dist < 1) g.visible = false
         cam.rotation.set(this.pitch, this.yaw, 0)
         return
       }

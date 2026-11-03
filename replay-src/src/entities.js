@@ -14,6 +14,7 @@ class EntityView {
     this.items = items
     this.group = new THREE.Group()
     this.textKey = null
+    this.hover = ((track.id * 2654435761) >>> 0) / 4294967296 * Math.PI * 2
     this.build()
   }
 
@@ -24,13 +25,8 @@ class EntityView {
       this.spin = true
       this.itemKey = ''
     } else if (e.kind === 'object' && e.type === 'arrow') {
-      const m = new THREE.MeshLambertMaterial({ color: 0x8a6a40 })
-      const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.5), m)
-      const tip = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 0.08), new THREE.MeshLambertMaterial({ color: 0x9a9a9a }))
-      tip.position.z = 0.27
-      const fl = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.01, 0.12), new THREE.MeshLambertMaterial({ color: 0xeeeeee }))
-      fl.position.z = -0.2
-      this.inner = new THREE.Group(); this.inner.add(shaft, tip, fl)
+      this.inner = new THREE.Mesh(arrowGeo(), arrowMat())
+      this.inner.matrixAutoUpdate = false
       g.add(this.inner)
       this.orient = true
     } else if (e.kind === 'object' && THROWN[e.type]) {
@@ -46,6 +42,10 @@ class EntityView {
         m.position.y = 0.5
         g.add(m)
         if (e.type === 'tnt') {
+          // When it goes off: the moment it disappears.
+          let end = Infinity
+          for (let k = 0; k < e.t.length; k++) if (!e.alive[k]) { end = e.t[k]; break }
+          this.fuseEnd = end
           // Own material, so only this TNT flashes white.
           m.traverse(o => { if (o.material) o.material = o.material.clone() })
           this.flash = m
@@ -61,11 +61,30 @@ class EntityView {
       const m = new THREE.MeshLambertMaterial({ color: 0x8c8c8c })
       const b = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.6), m); b.position.y = 0.1
       g.add(b)
-    } else if (e.kind === 'mob' && e.type !== 'armor_stand' && e.type !== 'bat') {
-      const b = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.6), new THREE.MeshLambertMaterial({ color: 0xdddddd }))
-      b.position.y = 0.3
-      g.add(b)
     }
+    // Other mobs (lobby animals, pets) aren't part of the game: not drawn,
+    // rather than shown as blank boxes.
+  }
+
+  /** A dropped stack: more copies for bigger stacks, like the game. */
+  dropped (item) {
+    const n = item.count > 48 ? 5 : item.count > 32 ? 4 : item.count > 16 ? 3 : item.count > 1 ? 2 : 1
+    const g = new THREE.Group()
+    let seed = this.track.id >>> 0
+    const rnd = () => { seed = (seed * 1103515245 + 12345) >>> 0; return seed / 4294967296 }
+    for (let k = 0; k < n; k++) {
+      const m = this.items.mesh(item)
+      if (!m) return k ? g : null
+      if (m.userData.block) {
+        m.scale.setScalar(0.25)
+        if (k) m.position.set((rnd() * 2 - 1) * 0.15 * 0.5, (rnd() * 2 - 1) * 0.15 * 0.5, (rnd() * 2 - 1) * 0.15 * 0.5)
+      } else {
+        m.scale.setScalar(0.5)
+        m.position.z = -k * 0.046875 * 0.5
+      }
+      g.add(m)
+    }
+    return g
   }
 
   update (t, camera) {
@@ -85,19 +104,22 @@ class EntityView {
       if (key !== this.itemKey) {
         this.itemKey = key
         if (this.inner) g.remove(this.inner)
-        this.inner = item && this.items ? this.items.mesh(item) : null
-        if (this.inner) { this.inner.scale.setScalar(this.inner.userData.block ? 0.25 : 0.4); g.add(this.inner) }
+        this.inner = item && this.items ? this.dropped(item) : null
+        if (this.inner) g.add(this.inner)
       }
       if (this.inner) {
-        // Dropped items bob and turn (ticks since spawn).
+        // RenderEntityItem: bob up and down and turn, from a random start.
         const age = (t - e.t[0]) / 50
-        this.inner.rotation.y = age / 20
-        this.inner.position.y = Math.sin(age / 10) * 0.1 + 0.1 + (this.inner.userData.block ? 0.125 : 0.2)
+        this.inner.rotation.y = age / 20 + this.hover
+        this.inner.position.y = Math.sin(age / 10 + this.hover) * 0.1 + 0.1 + 0.25
       }
     } else if (this.orient) {
-      g.rotation.order = 'YXZ'
-      g.rotation.y = -s.yaw * Math.PI / 180 + Math.PI
-      g.rotation.x = s.pitch * Math.PI / 180
+      // RenderArrow: turn by yaw - 90 and pitch, then its own 45 degrees.
+      const D = Math.PI / 180
+      this.inner.matrix.makeRotationY((s.yaw - 90) * D)
+        .multiply(new THREE.Matrix4().makeRotationZ(s.pitch * D))
+        .multiply(ARROW_LOCAL)
+      this.inner.matrixWorldNeedsUpdate = true
     } else if (this.billboard) {
       this.billboard.quaternion.copy(camera.quaternion)
     } else if (this.model) {
@@ -105,9 +127,13 @@ class EntityView {
       if (this.model.userData.head) this.model.userData.head.rotation.x = s.pitch * Math.PI / 180
     }
     if (this.flash) {
-      const fuse = (t - e.t[0]) / 50
-      const on = Math.floor(fuse / 5) % 2 === 0
-      this.flash.traverse(o => { if (o.material && o.material.emissive) o.material.emissive.setHex(on ? 0x888888 : 0x000000) })
+      // RenderTNTPrimed: swells in its last 10 ticks and flashes white
+      // every 5 ticks, brighter as it gets close.
+      const fuse = Math.max(0, (this.fuseEnd - t) / 50)
+      let f = Math.min(1, Math.max(0, 1 - fuse / 10)); f = f * f; f = f * f
+      this.flash.scale.setScalar(1 + f * 0.3)
+      const white = Math.floor(fuse / 5) % 2 === 0 ? Math.min(1, (1 - fuse / 100) * 0.8) : 0
+      this.flash.traverse(o => { if (o.material && o.material.emissive) o.material.emissive.setScalar(white) })
     }
     // Floating text.
     const showName = name && (isStand || e.nameVisible)
@@ -121,6 +147,35 @@ class EntityView {
       this.textKey = name
     }
   }
+}
+
+const ARROW_LOCAL = new THREE.Matrix4().makeRotationX(Math.PI / 4)
+  .multiply(new THREE.Matrix4().makeScale(0.05625, 0.05625, 0.05625))
+  .multiply(new THREE.Matrix4().makeTranslation(-4, 0, 0))
+let arrowGeometry = null
+let arrowMaterial = null
+/** Minecraft's arrow: two crossed planes and a square for the feathers. */
+function arrowGeo () {
+  if (arrowGeometry) return arrowGeometry
+  const pos = []; const uv = []; const idx = []
+  const quad = (pts, uvs) => { const b = pos.length / 3; for (const p of pts) pos.push(...p); for (const q of uvs) uv.push(q[0], 1 - q[1]); idx.push(b, b + 1, b + 2, b, b + 2, b + 3) }
+  const sh = [[0, 0], [0.5, 0], [0.5, 5 / 32], [0, 5 / 32]]
+  quad([[-8, -2, 0], [8, -2, 0], [8, 2, 0], [-8, 2, 0]], sh)
+  quad([[-8, 0, -2], [8, 0, -2], [8, 0, 2], [-8, 0, 2]], sh)
+  quad([[-7, -2, -2], [-7, -2, 2], [-7, 2, 2], [-7, 2, -2]], [[0, 5 / 32], [0.15625, 5 / 32], [0.15625, 10 / 32], [0, 10 / 32]])
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2))
+  g.setIndex(idx)
+  g.computeVertexNormals()
+  arrowGeometry = g
+  return g
+}
+function arrowMat () {
+  if (arrowMaterial) return arrowMaterial
+  arrowMaterial = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, alphaTest: 0.5, transparent: false })
+  loadTex('replay/entity/arrow.png', (t) => { t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; arrowMaterial.map = t; arrowMaterial.needsUpdate = true })
+  return arrowMaterial
 }
 
 function villager () {

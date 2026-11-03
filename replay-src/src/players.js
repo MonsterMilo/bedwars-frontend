@@ -183,38 +183,49 @@ class PlayerModel {
     this.armor[slot] = meshes
   }
 
-  setHeld (item) {
-    const key = item ? item.id + ':' + item.damage + (item.glint ? '*' : '') + (item.color != null ? item.color : '') : ''
+  setHeld (item, texture = null) {
+    const key = item ? item.id + ':' + item.damage + (item.glint ? '*' : '') + (item.color != null ? item.color : '') + (texture || '') : ''
     if (key === this.heldKey) return
     this.heldKey = key
     if (this.held) { this.parts.rightArm.remove(this.held); this.held = null }
     this.heldItem = item
     if (!item || !this.items) return
-    const m = this.items.mesh(item)
+    const m = this.items.mesh(item, { texture })
     if (!m) return
-    // In the hand: at the bottom of the arm, pointing forward.
+    // The item's own third-person transform, applied in the hand the way
+    // LayerHeldItem and ItemRenderer do (in Minecraft's model space, which
+    // is upside down; HAND_FLIP turns it into ours).
+    const [rot, tr, sc] = this.items.thirdPerson(item)
+    const D = Math.PI / 180
+    const mat = new THREE.Matrix4()
+    const mul = (m2) => mat.multiply(m2)
+    mat.copy(HAND_FLIP)
+    mul(new THREE.Matrix4().makeTranslation(-1 / 16, 7 / 16, 1 / 16))
+    this.sneakSlot = new THREE.Matrix4() // filled in each frame (crouching moves it)
+    const before = mat.clone()
+    const after = new THREE.Matrix4().makeScale(2, 2, 2)
+      .multiply(new THREE.Matrix4().makeTranslation(tr[0] / 16, tr[1] / 16, tr[2] / 16))
+      .multiply(new THREE.Matrix4().makeRotationY(rot[1] * D))
+      .multiply(new THREE.Matrix4().makeRotationX(rot[0] * D))
+      .multiply(new THREE.Matrix4().makeRotationZ(rot[2] * D))
+      .multiply(new THREE.Matrix4().makeScale(sc * 0.5, sc * 0.5, sc * 0.5))
     const holder = new THREE.Group()
-    holder.position.set(-1 * PX, -10 * PX, 1 * PX)
-    if (m.userData.block) {
-      m.scale.setScalar(0.375)
-      m.position.set(0, -0.05, 0.12)
-      m.rotation.set(0.35, Math.PI / 4, 0)
-    } else {
-      m.scale.setScalar(SWORDS.has(item.id) || TOOLS.has(item.id) ? 0.85 : 0.6)
-      // The flat picture stands in the hand's plane, tip forward and up.
-      m.rotation.set(-Math.PI / 2 + 0.35, Math.PI / 2, 0)
-      m.rotation.order = 'YXZ'
-      m.rotation.set(0, -Math.PI / 2, Math.PI / 4)
-      m.position.set(0, 0.1, 0.25)
-      const outer = new THREE.Group(); outer.add(m); outer.rotation.x = -Math.PI / 2 + 0.6
-      holder.add(outer)
-      this.parts.rightArm.add(holder)
-      this.held = holder
-      return
-    }
+    holder.matrixAutoUpdate = false
+    holder.userData = { before, after }
     holder.add(m)
     this.parts.rightArm.add(holder)
     this.held = holder
+    this.placeHeld(false)
+  }
+
+  placeHeld (sneaking) {
+    const h = this.held
+    if (!h || h.userData.sneaking === sneaking) return
+    h.userData.sneaking = sneaking
+    h.matrix.copy(h.userData.before)
+    if (sneaking) h.matrix.multiply(new THREE.Matrix4().makeTranslation(0, 0.203125, 0))
+    h.matrix.multiply(h.userData.after)
+    h.matrixWorldNeedsUpdate = true
   }
 
   /** Pose at replay time t. Returns the state, or null when not there. */
@@ -222,88 +233,115 @@ class PlayerModel {
     const tr = this.track
     const s = tr.stateAt(t)
     this.present = !!s
+    this.state = s
     if (!s) { this.group.visible = false; return null }
     this.group.visible = true
     for (let slot = 1; slot <= 4; slot++) this.setArmor(slot, tr.equip[slot].at(t))
-    this.setHeld(tr.equip[0].at(t))
 
     const flags = tr.flags.at(t) || 0
     const sneaking = !!(flags & 0x02)
     const using = !!(flags & 0x10)
-    const P = this.parts
-    const toRad = Math.PI / 180
-    this.group.position.set(s.x, s.y, s.z)
-    this.group.rotation.y = -s.yaw * toRad
-    const netHead = -(((s.head - s.yaw) % 360 + 540) % 360 - 180) * toRad
-    const pitch = s.pitch * toRad
-    const limb = s.limb; const amt = s.amount
-    const reset = (p) => { const pv = p.userData.pivot; p.position.set(pv[0] * PX, pv[1] * PX, 0); p.rotation.set(0, 0, 0) }
-    for (const p of Object.values(P)) reset(p)
+    const hand = tr.equip[0].at(t)
+    const bow = !!hand && hand.id === 261
+    // A bow being drawn shows its pulling picture (ItemModelMesher).
+    let bowTex = null
+    if (bow && using) {
+      const held = (t - tr.flags.since(t)) / 50
+      bowTex = held >= 18 ? 'bow_pulling_2' : held > 13 ? 'bow_pulling_1' : 'bow_pulling_0'
+      if (!this.items || !this.items.d.items.textures[bowTex]) bowTex = null
+    }
+    this.setHeld(hand, bowTex)
+    this.placeHeld(sneaking)
 
-    // ModelBiped.setRotationAngles, in this model's axes.
-    P.head.rotation.y = netHead
-    P.head.rotation.x = pitch
-    P.rightArm.rotation.x = Math.cos(limb * 0.6662 + Math.PI) * 2 * amt * 0.5
-    P.leftArm.rotation.x = Math.cos(limb * 0.6662) * 2 * amt * 0.5
-    P.rightLeg.rotation.x = Math.cos(limb * 0.6662) * 1.4 * amt
-    P.leftLeg.rotation.x = Math.cos(limb * 0.6662 + Math.PI) * 1.4 * amt
-    const item = this.heldItem
-    const sword = item && SWORDS.has(item.id)
-    const bow = item && item.id === 261
-    if (item) P.rightArm.rotation.x = P.rightArm.rotation.x * 0.5 - Math.PI / 10
-    if (using && sword) { // blocking
-      P.rightArm.rotation.x = P.rightArm.rotation.x * 0.5 - Math.PI / 10 * 3
-      P.rightArm.rotation.y = -Math.PI / 6
+    const P = this.parts
+    const D = Math.PI / 180
+    this.group.position.set(s.x, s.y, s.z)
+    this.group.rotation.y = -s.yaw * D
+    const ageInTicks = t / 50
+    const limb = s.limb; const amt = s.amount
+
+    // ModelBiped.setRotationAngles, word for word, in Minecraft's own model
+    // space (angles in radians, rotation points in pixels, y down).
+    const A = {
+      head: { x: 0, y: 0, z: 0, px: 0, py: 0, pz: 0 },
+      body: { x: 0, y: 0, z: 0, px: 0, py: 0, pz: 0 },
+      rightArm: { x: 0, y: 0, z: 0, px: -5, py: 2, pz: 0 },
+      leftArm: { x: 0, y: 0, z: 0, px: 5, py: 2, pz: 0 },
+      rightLeg: { x: 0, y: 0, z: 0, px: -1.9, py: 12, pz: 0.1 },
+      leftLeg: { x: 0, y: 0, z: 0, px: 1.9, py: 12, pz: 0.1 }
     }
-    // Swinging (6 ticks).
+    const { head, body, rightArm, leftArm, rightLeg, leftLeg } = A
+    head.y = (((s.head - s.yaw) % 360 + 540) % 360 - 180) * D
+    head.x = s.pitch * D
+    rightArm.x = Math.cos(limb * 0.6662 + Math.PI) * 2 * amt * 0.5
+    leftArm.x = Math.cos(limb * 0.6662) * 2 * amt * 0.5
+    rightLeg.x = Math.cos(limb * 0.6662) * 1.4 * amt
+    leftLeg.x = Math.cos(limb * 0.6662 + Math.PI) * 1.4 * amt
+    const sword = hand && SWORDS.has(hand.id)
+    const heldRight = !hand ? 0 : using && sword ? 3 : 1
+    if (heldRight) rightArm.x = rightArm.x * 0.5 - Math.PI / 10 * heldRight
+    if (heldRight === 3) rightArm.y = -0.5235988
     const sw = tr.lastBefore(tr.swings, t)
-    const f = t - sw < 300 ? (t - sw) / 300 : 0
-    if (f > 0) {
-      const bodyY = Math.sin(Math.sqrt(f) * Math.PI * 2) * 0.2
-      P.body.rotation.y = bodyY
-      P.rightArm.position.z = Math.sin(bodyY) * 5 * PX; P.rightArm.position.x = -Math.cos(bodyY) * 5 * PX
-      P.leftArm.position.z = -Math.sin(bodyY) * 5 * PX; P.leftArm.position.x = Math.cos(bodyY) * 5 * PX
-      P.rightArm.rotation.y += bodyY; P.leftArm.rotation.y += bodyY
-      let f2 = 1 - f; f2 = 1 - f2 * f2 * f2 * f2
-      const a = Math.sin(f2 * Math.PI); const b = Math.sin(f * Math.PI) * -(pitch - 0.7) * 0.75
-      P.rightArm.rotation.x -= a * 1.2 + b
-      P.rightArm.rotation.y += P.body.rotation.y * 2
-      P.rightArm.rotation.z += Math.sin(f * Math.PI) * -0.4
-    }
-    // Breathing.
-    const age = t / 50
-    P.rightArm.rotation.z += Math.cos(age * 0.09) * 0.05 + 0.05
-    P.leftArm.rotation.z -= Math.cos(age * 0.09) * 0.05 + 0.05
-    P.rightArm.rotation.x += Math.sin(age * 0.067) * 0.05
-    P.leftArm.rotation.x -= Math.sin(age * 0.067) * 0.05
-    if (using && bow) {
-      P.rightArm.rotation.y = -0.1 + netHead
-      P.leftArm.rotation.y = 0.1 + netHead + 0.4
-      P.rightArm.rotation.x = -Math.PI / 2 + pitch
-      P.leftArm.rotation.x = -Math.PI / 2 + pitch
+    const swing = t - sw < 300 ? (t - sw) / 300 : 0
+    if (swing > 0) {
+      body.y = Math.sin(Math.sqrt(swing) * Math.PI * 2) * 0.2
+      rightArm.pz = Math.sin(body.y) * 5; rightArm.px = -Math.cos(body.y) * 5
+      leftArm.pz = -Math.sin(body.y) * 5; leftArm.px = Math.cos(body.y) * 5
+      rightArm.y += body.y; leftArm.y += body.y; leftArm.x += body.y
+      let f = 1 - swing; f = f * f; f = f * f; f = 1 - f
+      const f1 = Math.sin(f * Math.PI)
+      const f2 = Math.sin(swing * Math.PI) * -(head.x - 0.7) * 0.75
+      rightArm.x -= f1 * 1.2 + f2
+      rightArm.y += body.y * 2
+      rightArm.z += Math.sin(swing * Math.PI) * -0.4
     }
     if (sneaking) {
-      // ModelBiped's sneak: body leans, legs move back and up, and the whole
-      // player sits 0.2 blocks lower.
-      P.body.rotation.x = 0.5
-      P.rightArm.rotation.x += 0.4; P.leftArm.rotation.x += 0.4
-      P.rightLeg.position.z = -4 * PX; P.leftLeg.position.z = -4 * PX
-      P.rightLeg.position.y = 15 * PX; P.leftLeg.position.y = 15 * PX
-      P.head.position.y = 23 * PX
-      this.group.position.y -= 0.2
+      body.x = 0.5
+      rightArm.x += 0.4; leftArm.x += 0.4
+      rightLeg.pz = 4; leftLeg.pz = 4
+      rightLeg.py = 9; leftLeg.py = 9
+      head.py = 1
     }
-    // Death: tip over sideways over a second, like Minecraft.
-    if (s.dying > 0) {
-      const d = Math.min(1, Math.sqrt(s.dying * 20 / 20 * 1.6))
-      this.pose.rotation.z = d * Math.PI / 2
-    } else this.pose.rotation.z = 0
+    rightArm.z += Math.cos(ageInTicks * 0.09) * 0.05 + 0.05
+    leftArm.z -= Math.cos(ageInTicks * 0.09) * 0.05 + 0.05
+    rightArm.x += Math.sin(ageInTicks * 0.067) * 0.05
+    leftArm.x -= Math.sin(ageInTicks * 0.067) * 0.05
+    if (using && bow) {
+      rightArm.z = 0; leftArm.z = 0
+      rightArm.y = -0.1 + head.y
+      leftArm.y = 0.1 + head.y + 0.4
+      rightArm.x = -Math.PI / 2 + head.x
+      leftArm.x = -Math.PI / 2 + head.x
+      rightArm.z += Math.cos(ageInTicks * 0.09) * 0.05 + 0.05
+      leftArm.z -= Math.cos(ageInTicks * 0.09) * 0.05 + 0.05
+      rightArm.x += Math.sin(ageInTicks * 0.067) * 0.05
+      leftArm.x -= Math.sin(ageInTicks * 0.067) * 0.05
+    }
+    // Into this model's space: x stays, y and z flip (so y and z turns flip).
+    for (const [name, a] of Object.entries(A)) {
+      const p = P[name]
+      p.position.set(a.px * PX, (24 - a.py) * PX, -a.pz * PX)
+      p.rotation.set(a.x, -a.y, -a.z, 'ZYX')
+    }
+    // Crouching: ModelBiped.render moves the model down 0.2 and RenderPlayer
+    // another 0.125.
+    this.pose.position.y = sneaking ? -0.325 : 0
+    this.tag.position.y = sneaking ? 2.2 - 0.375 : 2.2
     this.tag.material.opacity = sneaking ? 0.35 : 1
-    // Red when hurt.
-    const hurt = tr.recent(tr.hurts, t, 400) || s.dying > 0
+    // Death: tip over onto the left side over a second (rotateCorpse).
+    if (s.dying > 0) {
+      const d = Math.min(1, Math.sqrt((s.dying * 20 - 1 > 0 ? s.dying * 20 - 1 : 0) / 20 * 1.6))
+      this.pose.rotation.z = -d * Math.PI / 2
+    } else this.pose.rotation.z = 0
+    // Red while hurt (10 ticks) or dying.
+    const hurt = tr.recent(tr.hurts, t, 500) || s.dying > 0
     for (const m of this.skinMats) m.color.setHex(hurt ? 0xff7070 : 0xffffff)
-    if (this.armor) for (const set of this.armor) if (set) for (const m of set) if (m.material.isMeshLambertMaterial && !m.material.userData.base) { m.material.emissive && m.material.emissive.setHex(hurt ? 0x550000 : 0x000000) }
+    if (this.armor) for (const set of this.armor) if (set) for (const m of set) if (m.material.isMeshLambertMaterial && m.material.emissive) m.material.emissive.setHex(hurt ? 0x550000 : 0x000000)
     return s
   }
 }
+
+// Minecraft draws entities in a flipped space (x stays, y and z negated).
+const HAND_FLIP = new THREE.Matrix4().makeScale(1, -1, -1)
 
 module.exports = { PlayerModel, skinUrl, textSprite, texBox, loadTex }

@@ -66,9 +66,11 @@ class ReplayCamera {
       if (g.visible) {
         const p = g.position
         if (this.follow.mode === 'eyes') {
-          const tr = this.follow.model
-          cam.position.set(p.x, p.y + 1.62, p.z)
-          cam.rotation.set(-tr.parts.head.rotation.x, g.rotation.y + Math.PI, 0)
+          const st = this.follow.model.state
+          const sneak = this.follow.model.pose.position.y < 0
+          cam.position.set(p.x, p.y + (sneak ? 1.54 : 1.62), p.z)
+          // Where their head points (not their body, which lags behind).
+          if (st) cam.rotation.set(-st.pitch * Math.PI / 180, -st.head * Math.PI / 180 + Math.PI, 0)
           // The model itself would block the view.
           g.visible = false
           return

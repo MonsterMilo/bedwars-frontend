@@ -260,19 +260,67 @@ class Track {
     this.t.push(t); this.x.push(c.x); this.y.push(c.y); this.z.push(c.z); this.yaw.push(c.yaw); this.head.push(c.head); this.pitch.push(c.pitch); this.alive.push(c.alive)
   }
 
-  /** After all samples: walking distance, for the limb swing. */
+  /**
+   * After all samples. Players and mobs are replayed tick by tick (20 per
+   * second) the way the Minecraft client does it: each position packet is
+   * glided to over 3 ticks, the legs swing by the distance moved each tick,
+   * and the body turns toward where they walk, never more than 75 degrees
+   * away from where they look.
+   */
   finish () {
-    const n = this.t.length
-    this.limb = new Float32Array(n); this.amount = new Float32Array(n)
-    let limb = 0; let amt = 0
-    for (let i = 1; i < n; i++) {
-      const ticks = Math.max(1, (this.t[i] - this.t[i - 1]) / 50)
-      const d = this.alive[i] && this.alive[i - 1] ? Math.hypot(this.x[i] - this.x[i - 1], this.z[i] - this.z[i - 1]) : 0
-      // Minecraft: amount moves 40% per tick toward min(1, speed*4); limb += amount.
-      const target = d > 4 ? 0 : Math.min(1, d / ticks * 4)
-      for (let k = 0; k < Math.min(ticks, 20); k++) { amt += (target - amt) * 0.4; limb += amt }
-      if (ticks > 20) amt = target
-      this.limb[i] = limb; this.amount[i] = amt
+    this.ticked = this.kind === 'player' || (this.kind === 'mob' && this.type !== 'armor_stand')
+    if (!this.ticked || !this.t.length) return
+    const t0 = this.t[0]
+    const n = Math.max(1, Math.floor((this.t[this.t.length - 1] - t0) / 50) + 2)
+    this.t0 = t0
+    const X = this.tx = new Float32Array(n); const Y = this.ty = new Float32Array(n); const Z = this.tz = new Float32Array(n)
+    const BODY = this.tbody = new Float32Array(n); const HEAD = this.thead = new Float32Array(n); const PITCH = this.tpitch = new Float32Array(n)
+    const LIMB = this.tlimb = new Float32Array(n); const AMT = this.tamt = new Float32Array(n)
+    const ALIVE = this.talive = new Uint8Array(n)
+    const wrap = (a) => ((a % 360) + 540) % 360 - 180
+    let i = 0; let alive = false; let inc = 0
+    let x = 0; let y = 0; let z = 0; let yaw = 0; let pitch = 0; let head = 0; let body = 0
+    let gx = 0; let gy = 0; let gz = 0; let gyaw = 0; let gpitch = 0
+    let limb = 0; let amt = 0; let sw = 0
+    for (let k = 0; k < n; k++) {
+      const tk = t0 + k * 50
+      let snapped = false
+      while (i < this.t.length && this.t[i] <= tk) {
+        const nowAlive = this.alive[i]
+        if (nowAlive && (!alive || Math.hypot(this.x[i] - x, this.y[i] - y, this.z[i] - z) > 8)) {
+          // Spawned (or a long teleport): appear there at once.
+          x = gx = this.x[i]; y = gy = this.y[i]; z = gz = this.z[i]
+          yaw = gyaw = this.yaw[i]; pitch = gpitch = this.pitch[i]; body = yaw; inc = 0; snapped = true
+        } else if (nowAlive) {
+          gx = this.x[i]; gy = this.y[i]; gz = this.z[i]; gyaw = this.yaw[i]; gpitch = this.pitch[i]; inc = 3
+        }
+        head = this.head[i]
+        alive = nowAlive
+        i++
+      }
+      const px = x; const pz = z
+      if (inc > 0) {
+        x += (gx - x) / inc; y += (gy - y) / inc; z += (gz - z) / inc
+        yaw += wrap(gyaw - yaw) / inc; pitch += (gpitch - pitch) / inc
+        inc--
+      }
+      const dx = snapped ? 0 : x - px; const dz = snapped ? 0 : z - pz
+      // Body: EntityLivingBase.onUpdate + updateDistance.
+      let target = body
+      if (dx * dx + dz * dz > 0.0025) target = Math.atan2(dz, dx) * 180 / Math.PI - 90
+      while (sw < this.swings.length && this.swings[sw] <= tk - 300) sw++
+      if (sw < this.swings.length && this.swings[sw] <= tk) target = yaw
+      body += wrap(target - body) * 0.3
+      let off = wrap(yaw - body)
+      if (off < -75) off = -75
+      if (off >= 75) off = 75
+      body = yaw - off
+      if (off * off > 2500) body += off * 0.2
+      // Legs: EntityOtherPlayerMP.onUpdate.
+      const f = Math.min(1, Math.sqrt(dx * dx + dz * dz) * 4)
+      amt += (f - amt) * 0.4
+      limb += amt
+      X[k] = x; Y[k] = y; Z[k] = z; BODY[k] = body; HEAD[k] = head; PITCH[k] = pitch; LIMB[k] = limb; AMT[k] = amt; ALIVE[k] = alive ? 1 : 0
     }
   }
 
@@ -280,17 +328,9 @@ class Track {
 
   /** Where the entity is at time t (smoothed between samples), or null. */
   stateAt (t) {
+    if (this.ticked) return this.tickStateAt(t)
     const i = this.indexAt(t)
-    if (i < 0) return null
-    if (!this.alive[i]) {
-      // Just died: keep it for the fall-over.
-      const d = this.deaths.length ? this.deaths[lastAt(this.deaths, t)] : undefined
-      if (d !== undefined && t - d < 1000 && this.t[i] - d < 200 && i > 0 && this.alive[i - 1]) {
-        const k = i - 1
-        return { x: this.x[k], y: this.y[k], z: this.z[k], yaw: this.yaw[k], head: this.head[k], pitch: this.pitch[k], limb: this.limb ? this.limb[k] : 0, amount: 0, dying: (t - d) / 1000 }
-      }
-      return null
-    }
+    if (i < 0 || !this.alive[i]) return null
     const j = i + 1
     let f = 0
     if (j < this.t.length && this.alive[j]) {
@@ -301,14 +341,35 @@ class Track {
     }
     const lerp = (a) => a[i] + (a[j] - a[i]) * f
     const angle = (a) => { let v = a[i]; if (f) { const d = ((a[j] - v) % 360 + 540) % 360 - 180; v += d * f } return v }
-    const dying = this.deaths.length ? t - this.deaths[Math.max(0, lastAt(this.deaths, t))] : Infinity
     return {
       x: f ? lerp(this.x) : this.x[i], y: f ? lerp(this.y) : this.y[i], z: f ? lerp(this.z) : this.z[i],
       yaw: angle(this.yaw), head: angle(this.head), pitch: f ? lerp(this.pitch) : this.pitch[i],
-      limb: this.limb ? (f ? lerp(this.limb) : this.limb[i]) : 0,
-      amount: this.amount ? (f ? lerp(this.amount) : this.amount[i]) : 0,
-      dying: dying >= 0 && dying < 1000 ? dying / 1000 : 0
+      limb: 0, amount: 0, dying: 0
     }
+  }
+
+  tickStateAt (t) {
+    const n = this.tx.length
+    const p = (t - this.t0) / 50
+    if (p < 0) return null
+    let k = Math.min(n - 1, Math.floor(p))
+    const deathAt = this.deaths.length ? this.deaths[lastAt(this.deaths, t)] : undefined
+    const sinceDeath = deathAt !== undefined ? t - deathAt : Infinity
+    let dying = sinceDeath >= 0 && sinceDeath < 1000 ? sinceDeath / 1000 : 0
+    let f = k < n - 1 && this.talive[k + 1] ? p - k : 0
+    if (!this.talive[k]) {
+      // Just died: keep the body there for Minecraft's one-second fall-over.
+      if (!dying) return null
+      let j = k
+      while (j >= 0 && !this.talive[j]) j--
+      if (j < 0 || this.t0 + j * 50 < deathAt - 250) return null
+      k = j; f = 0
+    }
+    const j = f ? k + 1 : k
+    const lerp = (a) => a[k] + (a[j] - a[k]) * f
+    const angle = (a) => a[k] + (((a[j] - a[k]) % 360 + 540) % 360 - 180) * f
+    if (!dying && sinceDeath < 0) dying = 0
+    return { x: lerp(this.tx), y: lerp(this.ty), z: lerp(this.tz), yaw: angle(this.tbody), head: angle(this.thead), pitch: lerp(this.tpitch), limb: lerp(this.tlimb), amount: lerp(this.tamt), dying }
   }
 
   recent (list, t, ms) { const i = lastAt(list, t); return i >= 0 && t - list[i] < ms }
@@ -644,6 +705,7 @@ function buildTimeline (mcpr, onProgress = () => {}) {
   const selfTrack = [...tracks.values()].find(tr => tr.self)
   for (const b of bedsBroken) if (b.team === 'Your' && selfTrack && selfTrack.team) b.team = selfTrack.team.label
   for (const e of entities.values()) if (e.kind === 'mob') e.finish()
+  // Objects keep their raw samples.
 
   return { meta, info, duration, columns, changes, tracks, entities, names, skins, teamOf, teams, chat, markers, effects, sounds, deaths, bedsBroken, self, getBlock }
 }

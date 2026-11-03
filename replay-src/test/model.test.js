@@ -59,7 +59,9 @@ test('blocks, players, teams, chat and markers come out of a recording', () => {
   assert.equal(steve.name, 'Steve')
   assert.equal(steve.team.label, 'Red')
   assert.equal(steve.stateAt(120).x > 1 && steve.stateAt(120).x < 2, true)
-  assert.equal(steve.stateAt(150).x, 2)
+  // Like the game, a move is glided to over 3 ticks.
+  assert.equal(steve.stateAt(150).x < 2, true)
+  assert.ok(Math.abs(steve.stateAt(400).x - 2) < 1e-6)
   assert.equal(steve.stateAt(4500), null)
   // Private messages never reach the chat; kills become markers.
   assert.equal(tl.chat.length, 1)

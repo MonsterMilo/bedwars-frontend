@@ -4,6 +4,26 @@
 const THREE = require('three')
 const { glintMaterial } = require('./glint')
 
+// How each item sits in the hand in third person: Minecraft 1.8's item
+// models, "display.thirdperson" (rotation in degrees, translation in
+// pixels, scale).
+const GENERATED = [[-90, 0, 0], [0, 1, -3], 0.55]
+const BLOCK = [[10, -45, 170], [0, 1.5, -2.75], 0.375]
+const THIRD_PERSON = [
+  [/(_sword|_axe|_pickaxe|_shovel|_hoe)$|^(bone|stick)$/, [[0, 90, -35], [0, 1.25, -3.5], 0.85]],
+  [/^blaze_rod$/, [[0, 90, -35], [0, 0.75, -3.5], 0.85]],
+  [/^bow/, [[5, 80, -45], [0.75, 0, 0.25], 1]],
+  [/^(fishing_rod|carrot_on_a_stick)/, [[180, 90, -35], [0, 0, -3.5], 0.85]],
+  [/_boots$|^(bowl|melon_seeds|mushroom_stew|nether_wart|pumpkin_seeds|rabbit_stew|wheat_seeds)$/, [[-90, 0, 0], [0, 1, -2.5], 0.55]],
+  [/_helmet$|^(ghast_tear|rabbit_foot)$/, [[-90, 0, 0], [0, 1, -2.25], 0.55]],
+  [/^gold_nugget$/, [[-90, 0, 0], [0, 1, -2], 0.55]],
+  [/_carpet$|trapdoor$|^snow$|daylight_detector/, [[10, -45, 170], [0, 0.25, -2.75], 0.375]],
+  [/_fence_gate$/, [[0, -90, 170], [0, 1.5, -2.75], 0.375]],
+  [/_fence$/, [[0, 0, 180], [0, 1.5, -2.75], 0.375]],
+  [/_button$/, [[10, -45, 170], [0, 1, -1.75], 0.375]],
+  [/anvil$/, [[10, -45, 170], [0.25, 1.5, -2.5], 0.375]]
+]
+
 class ItemFactory {
   constructor (data, mesher, blocksTex, itemsTex) {
     this.d = data
@@ -32,10 +52,17 @@ class ItemFactory {
     return item.id < 256 && !(n && this.d.items.textures[n]) && !!n
   }
 
+  /** [rotation, translation, scale] for holding this item in third person. */
+  thirdPerson (item) {
+    const n = this.name(item) || ''
+    for (const [re, v] of THIRD_PERSON) if (re.test(n)) return v
+    return this.d.items.textures[n] ? GENERATED : BLOCK
+  }
+
   /** A mesh for this item, about one block in size, centred. */
-  mesh (item, { glint = true } = {}) {
+  mesh (item, { glint = true, texture = null } = {}) {
     if (!item) return null
-    const name = this.name(item)
+    const name = texture || this.name(item)
     if (!name) return null
     const group = new THREE.Group()
     let mesh = null

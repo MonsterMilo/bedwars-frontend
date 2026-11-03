@@ -178,7 +178,7 @@ for (const [k, v] of Object.entries(legacyItems)) {
   itemTex[name] = null
   if (fs.existsSync(file)) itemImgs.push({ name, png: PNG.sync.read(fs.readFileSync(file)) })
 }
-for (const extra of ['leather_helmet_overlay', 'leather_chestplate_overlay', 'leather_leggings_overlay', 'leather_boots_overlay', 'potion_overlay', 'bow_pulling_2']) {
+for (const extra of ['leather_helmet_overlay', 'leather_chestplate_overlay', 'leather_leggings_overlay', 'leather_boots_overlay', 'potion_overlay', 'bow_pulling_0', 'bow_pulling_1', 'bow_pulling_2']) {
   const file = path.join(A, '1.13.2', 'items', extra + '.png')
   if (fs.existsSync(file)) itemImgs.push({ name: extra, png: PNG.sync.read(fs.readFileSync(file)) })
 }

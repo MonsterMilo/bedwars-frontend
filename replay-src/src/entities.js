@@ -87,6 +87,33 @@ class EntityView {
     return g
   }
 
+  /** A short fading streak behind a flying arrow, so shots are easy to follow. */
+  trailAt (t, s) {
+    if (!this.trail) {
+      if (!trailMat) trailMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })
+      const geo = new THREE.BufferGeometry()
+      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(TRAIL * 3), 3))
+      const col = new Float32Array(TRAIL * 3)
+      for (let k = 0; k < TRAIL; k++) { const a = 0.95 * (1 - k / (TRAIL - 1)); col[k * 3] = a; col[k * 3 + 1] = a; col[k * 3 + 2] = a * 0.9 }
+      geo.setAttribute('color', new THREE.BufferAttribute(col, 3))
+      this.trail = new THREE.Line(geo, trailMat)
+      this.trail.frustumCulled = false
+      this.group.add(this.trail)
+    }
+    const pos = this.trail.geometry.attributes.position
+    let last = s; let n = 1
+    pos.setXYZ(0, 0, 0, 0)
+    for (let k = 1; k < TRAIL; k++) {
+      const p = this.track.stateAt(t - k * 50)
+      // Stop at the bow, or where it was lying still (stuck in a block).
+      if (!p || Math.hypot(p.x - last.x, p.y - last.y, p.z - last.z) < 0.05) break
+      pos.setXYZ(k, p.x - s.x, p.y - s.y, p.z - s.z); last = p; n++
+    }
+    this.trail.geometry.setDrawRange(0, n)
+    this.trail.visible = n > 1
+    pos.needsUpdate = true
+  }
+
   update (t, camera) {
     const e = this.track
     const s = e.stateAt(t)
@@ -120,6 +147,7 @@ class EntityView {
         .multiply(new THREE.Matrix4().makeRotationZ(s.pitch * D))
         .multiply(ARROW_LOCAL)
       this.inner.matrixWorldNeedsUpdate = true
+      this.trailAt(t, s)
     } else if (this.billboard) {
       this.billboard.quaternion.copy(camera.quaternion)
     } else if (this.model) {
@@ -152,6 +180,8 @@ class EntityView {
 const ARROW_LOCAL = new THREE.Matrix4().makeRotationX(Math.PI / 4)
   .multiply(new THREE.Matrix4().makeScale(0.05625, 0.05625, 0.05625))
   .multiply(new THREE.Matrix4().makeTranslation(-4, 0, 0))
+const TRAIL = 8 // points, one per tick
+let trailMat = null
 let arrowGeometry = null
 let arrowMaterial = null
 /** Minecraft's arrow: two crossed planes and a square for the feathers. */

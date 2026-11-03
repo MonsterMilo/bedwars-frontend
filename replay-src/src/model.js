@@ -711,10 +711,40 @@ function buildTimeline (mcpr, onProgress = () => {}) {
   }
   const selfTrack = [...tracks.values()].find(tr => tr.self)
   for (const b of bedsBroken) if (b.team === 'Your' && selfTrack && selfTrack.team) b.team = selfTrack.team.label
+  if (selfTrack) selfCracks(selfTrack, changes, cracks)
   for (const e of entities.values()) if (e.kind === 'mob') e.finish()
   // Objects keep their raw samples.
 
   return { meta, info, duration, columns, changes, tracks, entities, names, skins, teamOf, teams, chat, markers, effects, cracks, sounds, deaths, bedsBroken, self, getBlock }
+}
+
+/**
+ * The server never tells you your own break progress, so rebuild it: a block
+ * within reach turning to air at the end of a run of your arm swings (they
+ * come every tick while you dig) was mined by you, and the cracks grow
+ * evenly over that run.
+ */
+function selfCracks (tr, ch, cracks) {
+  const sw = tr.swings
+  if (!sw.length) return
+  let prevT = -Infinity // you mine one block at a time
+  for (let i = 0; i < ch.n; i++) {
+    if (!(ch.from[i] >> 4) || ch.to[i] >> 4) continue
+    const T = ch.t[i]
+    let k = lastAt(sw, T + 100)
+    if (k < 0 || sw[k] < T - 200) continue
+    const st = tr.stateAt(T); if (!st) continue
+    const x = ch.x[i]; const y = ch.y[i]; const z = ch.z[i]
+    if (Math.hypot(st.x - x - 0.5, st.y + 1.62 - y - 0.5, st.z - z - 0.5) > 6) continue
+    let j = k
+    while (j > 0 && sw[j] - sw[j - 1] < 350 && T - sw[j - 1] < 6000) j--
+    const start = Math.max(sw[j], prevT); const d = T - start
+    if (d < 150) { prevT = Math.max(prevT, T); continue } // broken at once (wool with shears, fire...)
+    prevT = T
+    for (let s = 0; s < 10; s++) cracks.push({ t: Math.round(start + d * s / 10), who: tr.id, x, y, z, stage: s })
+    cracks.push({ t: T, who: tr.id, x, y, z, stage: -1 })
+  }
+  cracks.sort((a, b) => a.t - b.t)
 }
 
 function popcount (m) { let c = 0; while (m) { c += m & 1; m >>>= 1 } return c }

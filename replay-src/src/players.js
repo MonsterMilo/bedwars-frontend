@@ -334,6 +334,8 @@ class PlayerModel {
       this.pose.rotation.z = -d * Math.PI / 2
     } else this.pose.rotation.z = 0
     // Red while hurt (10 ticks) or dying.
+    const lh = tr.lastBefore(tr.hurts, t)
+    this.hurtAgo = lh == null ? Infinity : t - lh
     const hurt = tr.recent(tr.hurts, t, 500) || s.dying > 0
     for (const m of this.skinMats) m.color.setHex(hurt ? 0xff7070 : 0xffffff)
     if (this.armor) for (const set of this.armor) if (set) for (const m of set) if (m.material.isMeshLambertMaterial && m.material.emissive) m.material.emissive.setHex(hurt ? 0x550000 : 0x000000)

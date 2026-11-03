@@ -219,6 +219,7 @@ const copies = {
   'entity/iron_golem.png': '1.13.2/entity/iron_golem.png',
   'entity/silverfish.png': '1.13.2/entity/silverfish.png',
   'entity/arrow.png': '1.13.2/entity/projectiles/arrow.png',
+  ...Object.fromEntries([...Array(10).keys()].map(i => ['blocks/destroy_stage_' + i + '.png', '1.8.8/blocks/destroy_stage_' + i + '.png'])),
   'entity/glint.png': '1.8.8/misc/enchanted_item_glint.png',
   'particles.png': '1.8.8/particle/particles.png',
   'explosion.png': '1.13.2/entity/explosion.png'

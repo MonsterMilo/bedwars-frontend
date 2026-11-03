@@ -14,6 +14,7 @@ const { Particles } = require('./particles')
 const { Sounds } = require('./sounds')
 const { synthesize } = require('./soundsynth')
 const { tickGlint } = require('./glint')
+const { Cracks } = require('./cracks')
 const { ReplayCamera } = require('./camera')
 
 const BACKEND = 'https://bedwars-backend.onrender.com'
@@ -159,6 +160,7 @@ async function runViewer (tl, details) {
     return c
   }
   const particles = new Particles(scene, tl, { colorOf })
+  const cracks = new Cracks(scene, tl, world)
   tl.sounds = synthesize(tl)
   const sounds = new Sounds(tl)
   for (const m of models) m.group.userData.model = m
@@ -436,34 +438,32 @@ async function runViewer (tl, details) {
     return line
   }
   const lastIndex = (arr, t) => { let lo = 0; let hi = arr.length - 1; let i = -1; while (lo <= hi) { const m = (lo + hi) >> 1; if (arr[m].t <= t) { i = m; lo = m + 1 } else hi = m - 1 } return i }
-  let chatKey = -1; let feedKey = -1
+  // Lines are kept by index: only new lines are added (and animate in) and
+  // old ones are removed, so nothing already on screen redraws or flashes.
+  function syncLines (box, list, from, to, t, maxAge, make, style) {
+    const keep = new Set()
+    for (let k = from; k <= to; k++) if (k >= 0 && t - list[k].t <= maxAge && t >= list[k].t) keep.add(k)
+    for (const el of [...box.children]) if (!keep.has(+el.dataset.k)) el.remove()
+    const have = new Set([...box.children].map(el => +el.dataset.k))
+    for (const k of keep) {
+      if (have.has(k)) continue
+      const line = make(list[k]); line.dataset.k = String(k)
+      const next = [...box.children].find(el => +el.dataset.k > k)
+      box.insertBefore(line, next || null)
+    }
+    if (style) for (const el of box.children) style(el, list[+el.dataset.k])
+  }
   function showChat (t) {
     const i = lastIndex(tl.chat, t)
-    const key = i * 1000 + Math.floor(t / 1000)
-    if (key !== chatKey) {
-      chatKey = key
-      chatBox.textContent = ''
-      for (let k = Math.max(0, i - 9); k <= i; k++) {
-        const age = t - tl.chat[k].t
-        if (age > 10000) continue
-        const line = lineEl(tl.chat[k]); line.className = 'rp-chat-line'
-        if (age > 9000) line.classList.add('is-old')
-        chatBox.appendChild(line)
-      }
-    }
+    syncLines(chatBox, tl.chat, i - 9, i, t, 10000, (c) => { const l = lineEl(c); l.className = 'rp-chat-line'; return l },
+      (el, c) => el.classList.toggle('is-old', t - c.t > 9000))
     const j = lastIndex(feed, t)
-    const fkey = j * 1000 + Math.floor(t / 1000)
-    if (fkey !== feedKey) {
-      feedKey = fkey
-      feedBox.textContent = ''
-      for (let k = Math.max(0, j - 4); k <= j; k++) {
-        if (t - feed[k].t > 6000) continue
-        const line = lineEl(feed[k]); line.className = 'rp-feed-line'
-        if (/FINAL KILL!/.test(feed[k].text)) line.classList.add('is-final')
-        if (/BED DESTRUCTION/.test(feed[k].text)) line.classList.add('is-bed')
-        feedBox.appendChild(line)
-      }
-    }
+    syncLines(feedBox, feed, j - 4, j, t, 6000, (c) => {
+      const l = lineEl(c); l.className = 'rp-feed-line'
+      if (/FINAL KILL!/.test(c.text)) l.classList.add('is-final')
+      if (/BED DESTRUCTION/.test(c.text)) l.classList.add('is-bed')
+      return l
+    })
   }
 
   // --- Clock ---
@@ -645,6 +645,7 @@ async function runViewer (tl, details) {
     for (const m of models) m.update(now)
     for (const v of views) v.update(now, camera)
     cam.update(dt)
+    cracks.update(now)
     particles.update(now, camera, renderer.getDrawingBufferSize(drawSize).y)
     sounds.update(prevNow, now, playing, speed, camera.position)
     prevNow = now
@@ -661,7 +662,7 @@ async function runViewer (tl, details) {
     if (ts - lastStatus > 200) { lastStatus = ts; updateStatus() }
   }
   requestAnimationFrame(frame)
-  window.__replay = { tl, seek, play, cam, models, views, particles, sounds, world, blocks, settings, get now () { return now }, ready: () => mapReady && blocks.left === 0 }
+  window.__replay = { cracks, tl, seek, play, cam, models, views, particles, sounds, world, blocks, settings, get now () { return now }, ready: () => mapReady && blocks.left === 0 }
 }
 
 const ICON = {

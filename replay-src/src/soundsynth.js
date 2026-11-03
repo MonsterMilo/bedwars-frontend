@@ -27,12 +27,16 @@ function soundType (state) {
   return { brk: 'dig.' + t, place: 'dig.' + t, step: 'step.' + t, vol: 1, pitch: 1 }
 }
 
-const REPLACED = /^(dig\.|step\.|game\.player\.(hurt|die)|random\.(bow|explode|pop)$|mob\.ghast\.fireball$|game\.tnt\.primed$)/
+const REPLACED = /^(dig\.|step\.|game\.player\.(hurt|die)|random\.(bow|explode|pop)$|mob\.ghast\.fireball$|game\.tnt\.primed$|mob\.endermen\.portal$)/
+// Sounds Hypixel plays only to the recording player (countdown ticks,
+// purchases, level-ups, game announcements). Played loud at their spot,
+// they'd be heard across the map, so they're left out.
+const POV_ONLY = /^(note\.|random\.(orb|levelup|click|successful_hit)$|mob\.(enderdragon|wither|villager|cat)\.)/
 
 function synthesize (tl) {
   let seed = 12345
   const rnd = () => { seed = (seed * 1103515245 + 12345) >>> 0; return seed / 4294967296 }
-  const out = tl.sounds.filter(s => s.name && !REPLACED.test(s.name))
+  const out = tl.sounds.filter(s => s.name && !REPLACED.test(s.name) && !POV_ONLY.test(s.name))
   const add = (t, name, x, y, z, volume, pitch) => out.push({ t, name, x, y, z, volume, pitch })
   const ch = tl.changes
 
@@ -98,6 +102,13 @@ function synthesize (tl) {
     if (e.type === 'arrow') add(t, 'random.bow', x, y, z, 1, 1 / (rnd() * 0.4 + 1.2) + 0.5)
     else if (e.type === 'fireball' || e.type === 'small_fireball') add(t, 'mob.ghast.fireball', x, y, z, 1, (rnd() - rnd()) * 0.2 + 1)
     else if (e.type === 'tnt') add(t, 'game.tnt.primed', x, y, z, 1, 1)
+    else if (e.type === 'pearl') {
+      // Where the pearl lands, the thrower teleports there.
+      let k = e.t.length - 1
+      while (k > 0 && !e.alive[k]) k--
+      const end = e.alive[e.t.length - 1] ? null : e.t[e.t.length - 1]
+      if (end != null) add(end, 'mob.endermen.portal', e.x[k], e.y[k], e.z[k], 1, 1)
+    }
     if (e.type === 'item' && e.collectedAt != null) {
       const s = e.stateAt(e.collectedAt - 1) || { x, y, z }
       add(e.collectedAt, 'random.pop', s.x, s.y, s.z, 0.2, ((rnd() - rnd()) * 0.7 + 1) * 2)

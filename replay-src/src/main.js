@@ -12,6 +12,7 @@ const { ItemFactory } = require('./items')
 const { EntityView } = require('./entities')
 const { Particles } = require('./particles')
 const { Sounds } = require('./sounds')
+const { synthesize } = require('./soundsynth')
 const { tickGlint } = require('./glint')
 const { ReplayCamera } = require('./camera')
 
@@ -158,6 +159,7 @@ async function runViewer (tl, details) {
     return c
   }
   const particles = new Particles(scene, tl, { colorOf })
+  tl.sounds = synthesize(tl)
   const sounds = new Sounds(tl)
   const soundBtn = $('rpSound')
   soundBtn.addEventListener('click', () => {

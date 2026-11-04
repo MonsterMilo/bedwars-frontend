@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<!-- Cosmetics Library (prototype): search or browse Bed Wars cosmetics and see each one
+     in a 3D studio preview. Every cosmetic on this page is a made-up example; real
+     ones come later from the Cosmetics plugin's learning. three.js from jsDelivr (pinned),
+     textures from replay/ (the replay viewer's 1.8 assets). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net; media-src 'self' data: blob: https://resources.download.minecraft.net; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'">
+<title>Prism Cosmetics</title>
+<link rel="icon" href="icons/icon-192.png">
+<script>
+  // Same theme as the tracker site, with its fonts.
+  (function () {
+    var FONTS = {
+      neon: 'family=Manrope:wght@400;500;600;700;800',
+      casefiles: 'family=Courier+Prime:wght@400;700&family=Anton',
+      ledger: 'family=EB+Garamond:wght@400;600&family=Playfair+Display:wght@600;700',
+      deepcurrent: 'family=Sora:wght@400;500;600;700&family=Chakra+Petch:wght@600;700',
+      skyisles: 'family=Jersey+10&family=Silkscreen:wght@400;700',
+      harvest: 'family=Bitter:wght@400;600;700&family=Ultra'
+    }
+    var theme = 'neon'
+    try { theme = localStorage.getItem('siteTheme') || 'neon' } catch (e) {}
+    var q = /[?&]theme=([a-z]+)/.exec(location.search)
+    if (q) theme = q[1]
+    if (!FONTS[theme]) theme = 'neon'
+    document.documentElement.setAttribute('data-theme', theme)
+    var link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://fonts.googleapis.com/css2?' + FONTS[theme] + '&display=swap'
+    document.head.appendChild(link)
+  })()
+</script>
+<style>
+  :root {
+    --bg: #04050a; --panel: #12151f; --panel-2: #1a1f2d; --border: rgba(255,255,255,0.08); --border-strong: rgba(0,217,255,0.4);
+    --accent: #00d9ff; --accent-2: #a855f7; --accent-ink: #031018; --text: #eef0f6; --dim: #8f98ab; --faint: #6c7486;
+    --good: #34e0a1; --bad: #ff5c72; --gold: #ffd166;
+    --glass: rgba(14,17,26,0.72); --glass-2: rgba(26,31,45,0.85); --glass-line: rgba(255,255,255,0.09);
+    --r-s: 8px; --r-m: 14px; --r-l: 20px;
+    --shadow: 0 12px 34px rgba(0,0,0,0.45);
+    --font: 'Manrope', 'Segoe UI', system-ui, sans-serif; --font-title: var(--font);
+    --ease: cubic-bezier(.22,.85,.32,1);
+    --glow: 0 0 0 1px rgba(0,217,255,0.35), 0 0 18px rgba(0,217,255,0.25);
+    --stage-dark: 1;
+    color-scheme: dark;
+  }
+  html[data-theme="casefiles"] { --bg: #efe6cc; --panel: #fbf6e6; --panel-2: #f2e9cf; --border: #c9b98a; --border-strong: #a3915c; --accent: #2e4a5c; --accent-2: #a32f1d; --accent-ink: #fbf6e6; --text: #2a241c; --dim: #5c5340; --faint: #7a705a; --good: #2e6b46; --bad: #a32f1d; --gold: #b8912f; --glass: rgba(251,246,230,0.9); --glass-2: rgba(242,233,207,0.95); --glass-line: #c9b98a; --r-s: 3px; --r-m: 4px; --r-l: 6px; --shadow: 0 10px 18px -8px rgba(42,36,28,0.45); --font: 'Courier Prime', 'Courier New', monospace; --font-title: 'Anton', Impact, sans-serif; --glow: 0 0 0 2px #2e4a5c; color-scheme: light; }
+  html[data-theme="ledger"] { --bg: #ffffff; --panel: #fdfdfc; --panel-2: #f6f4ee; --border: #dcd6c6; --border-strong: #c9bf9e; --accent: #a9822e; --accent-2: #16233a; --accent-ink: #ffffff; --text: #16233a; --dim: #5c6678; --faint: #7a8090; --good: #3a6b4a; --bad: #8a1f2b; --gold: #a9822e; --glass: rgba(253,253,252,0.92); --glass-2: rgba(246,244,238,0.96); --glass-line: #dcd6c6; --r-s: 2px; --r-m: 2px; --r-l: 3px; --shadow: 0 14px 30px -18px rgba(22,35,58,0.35); --font: 'EB Garamond', Georgia, serif; --font-title: 'Playfair Display', Georgia, serif; --glow: 0 0 0 2px #a9822e; color-scheme: light; }
+  html[data-theme="deepcurrent"] { --bg: #030c14; --panel: #0a2130; --panel-2: #0e2a3c; --border: rgba(255,255,255,0.08); --border-strong: rgba(53,230,196,0.4); --accent: #35e6c4; --accent-2: #9b6bff; --accent-ink: #021614; --text: #e6f6f4; --dim: #82a9ae; --faint: #648086; --good: #3fd68a; --bad: #ff5a5a; --gold: #c99a4a; --glass: rgba(6,24,36,0.74); --glass-2: rgba(14,42,60,0.88); --glass-line: rgba(53,230,196,0.16); --r-s: 10px; --r-m: 16px; --r-l: 20px; --font: 'Sora', 'Segoe UI', sans-serif; --font-title: 'Chakra Petch', 'Sora', sans-serif; --glow: 0 0 0 1px rgba(53,230,196,0.45), 0 0 18px rgba(53,230,196,0.25); }
+  html[data-theme="skyisles"] { --bg: #8fd0ff; --panel: #fbfdf5; --panel-2: #eef6fb; --border: #c3d6e3; --border-strong: #2d6a9f; --accent: #3f9a26; --accent-2: #2d6a9f; --accent-ink: #ffffff; --text: #173247; --dim: #4b6a82; --faint: #6c8294; --good: #2e8f2a; --bad: #d23a2e; --gold: #c98a0b; --glass: rgba(251,253,245,0.93); --glass-2: rgba(238,246,251,0.97); --glass-line: #173247; --r-s: 0px; --r-m: 0px; --r-l: 0px; --shadow: 4px 4px 0 rgba(23,50,71,0.28); --font: 'Jersey 10', 'Silkscreen', monospace; --font-title: 'Silkscreen', monospace; --glow: 0 0 0 2px #173247; color-scheme: light; }
+  html[data-theme="skyisles"] body { font-size: 17px; }
+  html[data-theme="harvest"] { --bg: #e7c99a; --panel: #fbf3e2; --panel-2: #f4e8cf; --border: rgba(91,58,34,0.2); --border-strong: rgba(168,50,43,0.45); --accent: #a8322b; --accent-2: #c98a1c; --accent-ink: #fbf3e2; --text: #3b2414; --dim: #6e5038; --faint: #8e7055; --good: #4f7a32; --bad: #b3261e; --gold: #c98a1c; --glass: rgba(251,243,226,0.93); --glass-2: rgba(244,232,207,0.97); --glass-line: rgba(91,58,34,0.25); --r-s: 3px; --r-m: 5px; --r-l: 7px; --shadow: 0 16px 30px -16px rgba(59,36,20,0.55); --font: 'Bitter', Georgia, serif; --font-title: 'Ultra', Georgia, serif; --glow: 0 0 0 2px #a8322b; color-scheme: light; }
+
+  /* The studio (where previews render) is the same dark "light box" in every theme,
+     tinted with the theme's accent, so particles read the same everywhere. */
+  :root { --studio-a: #1b2233; --studio-b: #07090f; }
+  html[data-theme="casefiles"] { --studio-a: #3a3a33; --studio-b: #16150f; }
+  html[data-theme="ledger"] { --studio-a: #26324a; --studio-b: #0d1422; }
+  html[data-theme="deepcurrent"] { --studio-a: #0f3a4a; --studio-b: #020b12; }
+  html[data-theme="skyisles"] { --studio-a: #2d6a9f; --studio-b: #123552; }
+  html[data-theme="harvest"] { --studio-a: #4a2b1a; --studio-b: #1c0f08; }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  button, input, select { font: inherit; color: inherit; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .page { max-width: 1320px; margin: 0 auto; padding: 22px 24px 60px; }
+
+  /* Header */
+  .top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .back { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--dim); font-size: 14px; padding: 6px 10px 6px 6px; border-radius: var(--r-s); }
+  .back:hover { color: var(--text); background: var(--panel); }
+  .back svg { width: 16px; height: 16px; }
+  .proto { margin-left: auto; font-size: 12px; color: var(--dim); border: 1px dashed var(--border-strong); padding: 5px 10px; border-radius: 999px; }
+  html[data-theme="skyisles"] .proto, html[data-theme="ledger"] .proto { border-radius: var(--r-s); }
+
+  .hero { margin: 26px 0 22px; display: grid; grid-template-columns: 1fr minmax(280px, 460px); gap: 24px; align-items: end; }
+  .hero h1 { font-family: var(--font-title); font-size: clamp(34px, 5vw, 56px); line-height: 1; margin: 0; letter-spacing: -0.02em; }
+  html[data-theme="casefiles"] .hero h1 { font-weight: 400; letter-spacing: 0.03em; text-transform: uppercase; }
+  html[data-theme="skyisles"] .hero h1 { letter-spacing: 0; font-size: clamp(28px, 4vw, 44px); }
+  .hero h1 span { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tally { margin: 10px 0 0; color: var(--dim); font-size: 15px; }
+  .tally b { color: var(--text); font-weight: 700; }
+
+  .proto:empty { display: none; }
+  .search { position: relative; }
+  .search svg { position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
+  .search input { width: 100%; padding: 14px 44px 14px 42px; border-radius: var(--r-m); border: 1px solid var(--border); background: var(--panel); font-size: 16px; transition: border-color .2s, box-shadow .2s; }
+  .search input::placeholder { color: var(--faint); }
+  .search input:focus { outline: none; border-color: var(--border-strong); box-shadow: var(--glow); }
+  .search kbd { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font: 12px/1 var(--font); color: var(--faint); border: 1px solid var(--border); border-radius: 5px; padding: 4px 7px; }
+  .search input:not(:placeholder-shown) ~ kbd { display: none; }
+
+  /* Body: category rail + results */
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 28px; align-items: start; }
+  .rail { position: sticky; top: 18px; display: flex; flex-direction: column; gap: 2px; }
+  .rail-label { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin: 0 0 8px 10px; }
+  .cat { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; padding: 9px 10px; border-radius: var(--r-s); cursor: pointer; color: var(--dim); font-size: 14.5px; transition: background .15s, color .15s; }
+  .cat:hover { background: var(--panel); color: var(--text); }
+  .cat[aria-pressed="true"] { background: var(--panel-2); color: var(--text); box-shadow: inset 3px 0 0 var(--accent); }
+  .cat .ic { width: 20px; height: 20px; flex: none; color: var(--accent); opacity: .85; }
+  .cat .n { margin-left: auto; font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+
+  .bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .bar h2 { margin: 0 auto 0 0; font-family: var(--font-title); font-size: 22px; font-weight: 700; }
+  html[data-theme="casefiles"] .bar h2 { font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
+  .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
+  html[data-theme="skyisles"] .seg, html[data-theme="ledger"] .seg, html[data-theme="casefiles"] .seg { border-radius: var(--r-s); }
+  .seg button { border: 0; background: none; padding: 6px 12px; border-radius: 999px; font-size: 13px; color: var(--dim); cursor: pointer; }
+  html[data-theme="skyisles"] .seg button, html[data-theme="ledger"] .seg button, html[data-theme="casefiles"] .seg button { border-radius: var(--r-s); }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .sort { padding: 7px 10px; border-radius: var(--r-s); border: 1px solid var(--border); background: var(--panel); font-size: 13px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(208px, 1fr)); gap: 16px; }
+  .card { position: relative; display: flex; flex-direction: column; text-align: left; padding: 0; border: 1px solid var(--border); border-radius: var(--r-m); background: var(--panel); overflow: hidden; cursor: pointer; transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .2s; animation: rise .5s var(--ease) both; }
+  .card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--border-strong); }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+  .thumb { position: relative; aspect-ratio: 4 / 3; background: radial-gradient(120% 90% at 50% 30%, var(--studio-a), var(--studio-b)); overflow: hidden; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s, transform .6s var(--ease); }
+  .thumb img.on { opacity: 1; }
+  .card:hover .thumb img { transform: scale(1.06); }
+  .thumb .chat-thumb { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 14px; }
+  .shimmer { position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.06) 50%, transparent 70%); background-size: 200% 100%; animation: sh 1.4s linear infinite; }
+  @keyframes sh { to { background-position: -200% 0; } }
+  .rar { position: absolute; left: 10px; top: 10px; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 7px; border-radius: 999px; color: #fff; background: rgba(0,0,0,.42); backdrop-filter: blur(4px); }
+  html[data-theme="skyisles"] .rar, html[data-theme="ledger"] .rar { border-radius: 0; }
+  .rar::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; background: var(--rc); box-shadow: 0 0 8px var(--rc); }
+  .meta { padding: 11px 13px 13px; display: grid; gap: 3px; }
+  .meta .nm { font-weight: 700; font-size: 15.5px; color: var(--text); }
+  .meta .sub { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--dim); }
+  .st { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; font-size: 12px; }
+  .st::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .st.sure { color: var(--good); } .st.maybe { color: var(--gold); } .st.unseen { color: var(--faint); }
+  .st.unseen::before { background: none; border: 1.5px solid currentColor; width: 5px; height: 5px; }
+
+  .empty { padding: 60px 20px; text-align: center; color: var(--dim); border: 1px dashed var(--border); border-radius: var(--r-l); }
+  .empty b { display: block; color: var(--text); font-size: 17px; margin-bottom: 4px; }
+
+  /* Studio (preview) */
+  .studio { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 3vh 3vw; background: rgba(0,0,0,.55); backdrop-filter: blur(8px); opacity: 0; transition: opacity .3s; }
+  .studio.open { opacity: 1; }
+  .sheet { position: relative; width: min(1240px, 100%); height: min(760px, 94vh); display: grid; grid-template-columns: 1fr 360px; border-radius: var(--r-l); overflow: hidden; background: var(--panel); border: 1px solid var(--glass-line); box-shadow: 0 30px 80px rgba(0,0,0,.5); transform: translateY(16px) scale(.98); transition: transform .45s var(--ease); }
+  .studio.open .sheet { transform: none; }
+  .stage { position: relative; background: radial-gradient(90% 80% at 50% 38%, var(--studio-a), var(--studio-b)); overflow: hidden; }
+  .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  .stage canvas:active { cursor: grabbing; }
+  .stage .chat-stage { position: absolute; left: 6%; right: 6%; bottom: 16%; display: grid; gap: 8px; }
+  .chat-line { font: 600 15px/1.35 'Courier New', monospace; color: #fff; background: rgba(0,0,0,.45); padding: 4px 8px; width: fit-content; max-width: 100%; text-shadow: 2px 2px 0 rgba(0,0,0,.6); animation: chatin .45s var(--ease) both; }
+  .thumb .chat-line { font-size: 10.5px; padding: 3px 6px; }
+  @keyframes chatin { from { opacity: 0; transform: translateX(-10px); } }
+  .c-red { color: #ff5555; } .c-blue { color: #5555ff; } .c-gray { color: #aaaaaa; } .c-bold { font-weight: 800; } .c-aqua { color: #55ffff; } .c-gold { color: #ffaa00; }
+  .unseen-note { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); padding: 8px 14px; border-radius: 999px; background: rgba(0,0,0,.5); color: #dfe3ea; font-size: 13px; white-space: nowrap; }
+  .tools { position: absolute; left: 14px; bottom: 14px; display: flex; gap: 6px; }
+  .tool { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,18,.55); color: #e9edf5; font-size: 12.5px; cursor: pointer; backdrop-filter: blur(6px); }
+  html[data-theme="skyisles"] .tool, html[data-theme="ledger"] .tool { border-radius: 0; }
+  .tool:hover { background: rgba(10,12,18,.8); }
+  .tool[aria-pressed="true"] { border-color: var(--accent); color: #fff; }
+  .tool svg { width: 15px; height: 15px; }
+  .hint { position: absolute; right: 16px; bottom: 20px; font-size: 12px; color: rgba(230,235,245,.55); pointer-events: none; }
+  .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,18,.45); color: #fff; font-size: 22px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+  .nav.prev { left: 14px; } .nav.next { right: 14px; }
+  .nav:hover { background: rgba(10,12,18,.8); }
+
+  .info { display: flex; flex-direction: column; gap: 18px; padding: 26px 24px; overflow-y: auto; }
+  .close { position: absolute; right: 12px; top: 12px; z-index: 2; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--panel); cursor: pointer; display: grid; place-items: center; }
+  .close svg { width: 16px; height: 16px; }
+  .eyebrow { display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: var(--dim); }
+  .info h3 { margin: 6px 0 0; font-family: var(--font-title); font-size: 30px; line-height: 1.1; }
+  html[data-theme="casefiles"] .info h3 { font-weight: 400; text-transform: uppercase; letter-spacing: .02em; }
+  .desc { margin: 0; color: var(--dim); line-height: 1.55; font-size: 14.5px; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fact { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--r-s); padding: 10px 12px; }
+  .fact .k { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+  .fact .v { margin-top: 3px; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .block-h { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin: 0 0 8px; }
+  .how { margin: 0; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--panel-2); border-radius: 0 var(--r-s) var(--r-s) 0; font-size: 14px; line-height: 1.5; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: 13px; padding: 5px 10px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border); }
+  html[data-theme="skyisles"] .chip, html[data-theme="ledger"] .chip { border-radius: 0; }
+  .wave { width: 100%; height: 56px; display: block; border-radius: var(--r-s); background: var(--panel-2); }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 14px; border-radius: var(--r-s); border: 1px solid var(--border); background: var(--panel-2); cursor: pointer; font-size: 13.5px; font-weight: 600; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn svg { width: 15px; height: 15px; }
+  .soon { font-size: 12px; color: var(--faint); margin: -2px 0 0; }
+
+
+  /* v2 polish */
+  .card { --rc: #9aa3b2; }
+  .card::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--rc), transparent); opacity: .85; }
+  .card:hover { border-color: color-mix(in srgb, var(--rc) 55%, var(--border)); box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--rc) 35%, transparent); }
+  .thumb::after { content: ""; position: absolute; inset: auto 0 0 0; height: 40%; background: radial-gradient(60% 100% at 50% 100%, color-mix(in srgb, var(--rc) 22%, transparent), transparent 70%); pointer-events: none; }
+  .price { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .price.none { font-weight: 500; color: var(--faint); font-size: 12px; }
+  .tok { width: 14px; height: 14px; flex: none; }
+  .v .tok { width: 17px; height: 17px; margin-right: 5px; vertical-align: -2px; }
+  .season { position: absolute; right: 10px; top: 10px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; color: #1b1206; background: #ffb547; }
+  .season.inline { position: static; vertical-align: 1px; margin-right: 4px; }
+  html[data-theme="skyisles"] .season, html[data-theme="ledger"] .season { border-radius: 0; }
+  .fact.wide { grid-column: 1 / -1; }
+  .fact .v.small { font-size: 15px; font-weight: 600; line-height: 1.4; }
+  .muted { color: var(--faint); font-weight: 500; font-size: 15px; }
+  .rar-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; background: var(--rc); box-shadow: 0 0 10px var(--rc); vertical-align: 1px; }
+  .sound-btn .eq { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; margin-left: 4px; opacity: 0; transition: opacity .2s; }
+  .sound-btn .eq i { width: 3px; height: 4px; background: currentColor; border-radius: 1px; }
+  .sound-btn.playing .eq { opacity: 1; }
+  .sound-btn.playing .eq i { animation: eq .5s ease-in-out infinite alternate; }
+  .sound-btn.playing .eq i:nth-child(2) { animation-delay: .12s; } .sound-btn.playing .eq i:nth-child(3) { animation-delay: .24s; } .sound-btn.playing .eq i:nth-child(4) { animation-delay: .08s; }
+  @keyframes eq { to { height: 12px; } }
+  .stage.chat-mode canvas, .stage.chat-mode .tools, .stage.chat-mode .hint { display: none; }
+  .stage .chat-stage { position: absolute; inset: 0; display: grid; place-items: center; padding: 6%; }
+  .chat-box { width: 100%; max-width: 620px; display: grid; gap: 4px; }
+  .chat-box .chat-line { font-size: 16px; padding: 6px 10px; }
+  .thumb .chat-thumb { gap: 3px; justify-content: flex-start; padding: 40px 12px 12px; }
+
+  @media (max-width: 900px) {
+    .page { padding: 14px 16px 50px; }
+    .hero { grid-template-columns: 1fr; margin: 16px 0 14px; }
+    .layout { grid-template-columns: 1fr; gap: 14px; }
+    .rail { position: static; flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; scrollbar-width: none; }
+    .rail-label { display: none; }
+    .cat { width: auto; flex: none; border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; white-space: nowrap; }
+    .cat[aria-pressed="true"] { box-shadow: none; border-color: var(--accent); }
+    .cat .ic { width: 16px; height: 16px; }
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .meta { padding: 9px 10px 10px; } .meta .nm { font-size: 14px; }
+    .studio { padding: 0; }
+    .sheet { height: 100%; width: 100%; border-radius: 0; grid-template-columns: 1fr; grid-template-rows: 48vh 1fr; }
+    .info { padding: 18px 16px 24px; }
+    .hint { display: none; }
+    .chat-box .chat-line { font-size: 13px; padding: 4px 8px; }
+    .nav { top: auto; bottom: 14px; transform: none; width: 34px; height: 34px; }
+    .nav.prev { left: auto; right: 56px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <a class="back" href="index.html"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Tracker</a>
+    <span class="proto" id="proto"></span>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1>Cosmetics <span>Library</span></h1>
+      <p class="tally" id="tally"></p>
+    </div>
+    <label class="search">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <input id="q" type="search" placeholder="Search cosmetics, e.g. flame, shopkeeper, sound" autocomplete="off" aria-label="Search cosmetics">
+      <kbd>/</kbd>
+    </label>
+  </section>
+
+  <div class="layout">
+    <nav class="rail" id="rail" aria-label="Categories"><p class="rail-label">Categories</p></nav>
+    <main>
+      <div class="bar">
+        <h2 id="heading">All cosmetics</h2>
+        <div class="seg" id="rarSeg" role="group" aria-label="Filter by rarity">
+          <button type="button" data-r="all" aria-pressed="true">All</button>
+          <button type="button" data-r="common" aria-pressed="false">Common</button>
+          <button type="button" data-r="rare" aria-pressed="false">Rare</button>
+          <button type="button" data-r="epic" aria-pressed="false">Epic</button>
+          <button type="button" data-r="legendary" aria-pressed="false">Legendary</button>
+        </div>
+        <select id="avail" class="sort" aria-label="How to get">
+          <option value="all">Any way to get</option>
+          <option value="shop">In the shop</option>
+          <option value="season">Seasonal only</option>
+          <option value="other">Other ways</option>
+        </select>
+        <select id="sort" class="sort" aria-label="Sort">
+          <option value="rarity">Rarity</option>
+          <option value="price-hi">Price, high to low</option>
+          <option value="price-lo">Price, low to high</option>
+          <option value="name">A to Z</option>
+        </select>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" hidden><b>Nothing matches that</b>Try another word, or clear the category.</div>
+    </main>
+  </div>
+</div>
+
+<div class="studio" id="studio" hidden role="dialog" aria-modal="true" aria-labelledby="sName">
+  <div class="sheet">
+    <div class="stage" id="stage">
+      <div class="chat-stage" id="chatStage" hidden></div>
+      <button class="nav prev" id="prevBtn" type="button" aria-label="Previous cosmetic">&#8249;</button>
+      <button class="nav next" id="nextBtn" type="button" aria-label="Next cosmetic">&#8250;</button>
+      <div class="tools">
+        <button class="tool" id="replayBtn" type="button"><svg viewBox="0 0 16 16"><path d="M3 8a5 5 0 1 0 1.5-3.5M3 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Replay</button>
+        <button class="tool" id="slowBtn" type="button" aria-pressed="false">0.25×</button>
+        <button class="tool" id="spinBtn" type="button" aria-pressed="true">Spin</button>
+      </div>
+      <span class="hint">Drag to turn · scroll to zoom</span>
+    </div>
+    <div class="info">
+      <button class="close" id="closeBtn" type="button" aria-label="Close"><svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <div>
+        <div class="eyebrow"><span id="sCat"></span><span>·</span><span id="sRar"></span></div>
+        <h3 id="sName"></h3>
+      </div>
+      <p class="desc" id="sDesc"></p>
+      <div id="soundBox" hidden>
+        <p class="block-h">Sound</p>
+        <button class="btn sound-btn" id="playSound" type="button"><svg viewBox="0 0 16 16"><path d="M4 3v10l9-5z" fill="currentColor"/></svg>Play sound<span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
+      </div>
+      <div class="facts">
+        <div class="fact"><div class="k">Rarity</div><div class="v" id="sRarity"></div></div>
+        <div class="fact"><div class="k">Price</div><div class="v" id="sPrice"></div></div>
+        <div class="fact wide"><div class="k">How to get it</div><div class="v small" id="sGet"></div></div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="copyBtn" type="button"><svg viewBox="0 0 16 16"><path d="M6.5 9.5 9.5 6.5M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Copy link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+/* ------------------------------------------------------------------ data
+   Real Bed Wars cosmetics. Names, descriptions, rarity, price and how to get
+   them come from the in-game cosmetics menu; previews are rebuilt from what
+   each one spawns (particles, mobs, sounds) when previewed in the lobby. */
+const CATS = [
+  { id: "final", name: "Final kill effects", icon: '<path d="M10 2.5v4M10 13.5v4M2.5 10h4M13.5 10h4M5 5l2.5 2.5M12.5 12.5 15 15M15 5l-2.5 2.5M7.5 12.5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
+  { id: "cry", name: "Death cries", icon: '<path d="M3 8v4h3l4 3.5v-11L6 8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M13 7.5a3.5 3.5 0 0 1 0 5M15 5.5a6.5 6.5 0 0 1 0 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
+  { id: "shop", name: "Shopkeeper skins", icon: '<rect x="6.5" y="2.5" width="7" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 17.5V10h10v7.5" fill="none" stroke="currentColor" stroke-width="1.5"/>' },
+  { id: "msg", name: "Kill messages", icon: '<path d="M3 4h14v9H8l-4 3v-3H3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
+];
+const RAR = { common: ["Common", "#9aa3b2"], rare: ["Rare", "#4f8cff"], epic: ["Epic", "#b05cff"], legendary: ["Legendary", "#ffb020"] };
+const RAR_ORDER = { legendary: 0, epic: 1, rare: 2, common: 3 };
+const GET = { shop: "Bed Wars shop", challenges: "Bed Wars challenges", slumber: "Slumber Hotel", dreamfeast: "Dreamfeast", pass: "Battle Pass season 1", event: "Event shop" };
+const GET_SHORT = { challenges: "Challenges", slumber: "Slumber", dreamfeast: "Dreamfeast", pass: "Battle Pass", event: "Event" };
+
+// Kill message packs: melee, void, bow, fall, mob, bed. {MOB} is a Dream Defender here.
+function pack(lines) {
+  const V = '<span class="c-red">Rival</span><span class="c-gray">', K = '</span><span class="c-blue">Milo</span><span class="c-gray">';
+  const out = lines.slice(0, 5).map((l, i) => l.replace("{V}", V).replace("{K}", K).replace("{MOB}", "Dream Defender") + "</span>" + (i === 0 ? ' <span class="c-aqua c-bold">FINAL KILL!</span>' : ""));
+  out.push('<span class="c-bold">BED DESTRUCTION &gt; </span>' + lines[5].replace("{BED}", '<span class="c-red">Red Bed</span><span class="c-gray">').replace("{K}", K) + "</span>");
+  return out;
+}
+const ITEMS = [
+  // Final kill effects
+  { id: "lightning-strike", cat: "final", name: "Lightning Strike", rar: "common", price: 5000, get: "shop",
+    desc: "Killing an enemy will wake up Thor.", tags: "thunder bolt storm", preview: "lightning" },
+  { id: "tnt", cat: "final", name: "TNT", rar: "common", price: 5000, get: "shop",
+    desc: "Killing an enemy will make them disappear into TNT.", tags: "explosion boom", preview: "tnt" },
+  { id: "squid-missile", cat: "final", name: "Squid Missile", rar: "common", price: 5000, get: "shop",
+    desc: "Killing an enemy will spawn a fellow companion.", tags: "squid rocket firework", preview: "squid" },
+  { id: "heart-aura", cat: "final", name: "Heart Aura", rar: "rare", price: 10000, get: "shop",
+    desc: "Killing an enemy will spawn lots of love.", tags: "hearts love", preview: "hearts" },
+  { id: "burning-shoes", cat: "final", name: "Burning Shoes", rar: "rare", price: 10000, get: "shop",
+    desc: "Killing an enemy will set your feet on fire.", tags: "fire flame feet", preview: "burningShoes" },
+  { id: "tornado", cat: "final", name: "Tornado", rar: "legendary", price: 100000, get: "shop",
+    desc: "Killing an enemy will summon a vortex!", tags: "wind vortex sparks", preview: "tornado" },
+  { id: "batcrux", cat: "final", name: "Batcrux", rar: "legendary", price: 300000, get: "event", season: "Halloween",
+    desc: "Killing an enemy splits their soul into 7 Batcruxes.", tags: "bats smoke spooky", preview: "batcrux" },
+  // Death cries (sound, pitch as Hypixel plays them)
+  { id: "bazinga", cat: "cry", name: "Bazinga", rar: "common", price: 5000, get: "shop", desc: "Plays the Bazinga Death Cry when you die.", tags: "sound blaze", preview: "cry", sound: ["mob.blaze.death", 2] },
+  { id: "dinosaur", cat: "cry", name: "Dinosaur", rar: "common", price: 5000, get: "shop", desc: "Plays the Dinosaur Death Cry when you die.", tags: "sound donkey", preview: "cry", sound: ["mob.horse.donkey.death", 0.5] },
+  { id: "ding", cat: "cry", name: "Ding", rar: "rare", price: 10000, get: "shop", desc: "Plays the Ding Death Cry when you die.", tags: "sound orb xp", preview: "cry", sound: ["random.orb", 1] },
+  { id: "dragon-roar", cat: "cry", name: "Dragon Roar", rar: "rare", price: 10000, get: "shop", desc: "Plays the Dragon Roar Death Cry when you die.", tags: "sound ender dragon", preview: "cry", sound: ["mob.enderdragon.growl", 0.5] },
+  { id: "howl", cat: "cry", name: "Howl", rar: "epic", price: 25000, get: "shop", desc: "Plays the Howl Death Cry when you die.", tags: "sound wolf", preview: "cry", sound: ["mob.wolf.howl", 1] },
+  { id: "sad-moo", cat: "cry", name: "Sad Moo", rar: "epic", price: 25000, get: "shop", desc: "Plays the Sad Moo Death Cry when you die.", tags: "sound cow", preview: "cry", sound: ["mob.cow.say", 1] },
+  { id: "guardian", cat: "cry", name: "Guardian", rar: "legendary", price: null, get: "challenges", desc: "Plays the Guardian Death Cry when you die.", tags: "sound guardian", preview: "cry", sound: ["mob.guardian.death", 1] },
+  { id: "carol", cat: "cry", name: "Carol", rar: "legendary", price: null, get: "event", season: "Holidays", desc: "Plays the Carol Death Cry when you die.", tags: "sound christmas bell", preview: "cry", sound: ["random.orb", 1.1] },
+  // Shopkeeper skins
+  { id: "magic-vendor", cat: "shop", name: "Magic Vendor", rar: "common", price: 5000, get: "shop", desc: "Select Magic Vendor as your Shopkeeper!", tags: "npc wizard", preview: "shopkeeper", skin: "magic-vendor" },
+  { id: "bed-salesman", cat: "shop", name: "Bed Salesman", rar: "common", price: 5000, get: "shop", desc: "Select Bed Salesman as your Shopkeeper!", tags: "npc bed", preview: "shopkeeper", skin: "bed-salesman" },
+  { id: "king-of-beds", cat: "shop", name: "King Of Beds", rar: "rare", price: 10000, get: "shop", desc: "Select King Of Beds as your Shopkeeper!", tags: "npc crown king", preview: "shopkeeper", skin: "king-of-beds" },
+  { id: "bright-tiger", cat: "shop", name: "Bright Tiger", rar: "epic", price: 25000, get: "shop", desc: "Select Bright Tiger as your Shopkeeper!", tags: "npc tiger", preview: "shopkeeper", skin: "bright-tiger" },
+  { id: "gold-tiger", cat: "shop", name: "Gold Tiger", rar: "legendary", price: 100000, get: "shop", desc: "Select Gold Tiger as your Shopkeeper!", tags: "npc tiger gold", preview: "shopkeeper", skin: "gold-tiger" },
+  { id: "astronaut", cat: "shop", name: "Astronaut", rar: "legendary", price: 100000, get: "shop", desc: "Select Astronaut as your Shopkeeper!", tags: "npc space", preview: "shopkeeper", skin: "astronaut" },
+  // Kill messages
+  { id: "km-fire", cat: "msg", name: "Fire", rar: "common", price: 5000, get: "shop", desc: "Select the Fire Kill Messages!", tags: "chat burn",
+    lines: pack(["{V} was struck down by {K}.", "{V} was turned to dust by {K}.", "{V} was melted by {K}.", "{V} was turned to ash by {K}.", "{V} was fried by {K}'s {MOB}.", "{BED} was incinerated by {K}!"]) },
+  { id: "km-western", cat: "msg", name: "Western", rar: "common", price: 5000, get: "shop", desc: "Select the Western Kill Messages!", tags: "chat cowboy",
+    lines: pack(["{V} was filled full of lead by {K}.", "{V} met their end by {K}.", "{V} was killed with dynamite by {K}.", "{V} lost a drinking contest with {K}.", "{V} lost the draw to {K}'s {MOB}.", "{BED} was iced by {K}!"]) },
+  { id: "km-love", cat: "msg", name: "Love", rar: "rare", price: 10000, get: "shop", desc: "Select the Love Kill Messages!", tags: "chat cupid",
+    lines: pack(["{V} was given the cold shoulder by {K}.", "{V} was hit off by a love bomb from {K}.", "{V} was struck with Cupid's arrow by {K}.", "{V} was out of the league of {K}.", "{V} was no match for {K}'s {MOB}.", "{BED} was dismantled by {K}!"]) },
+  { id: "km-pirate", cat: "msg", name: "Pirate", rar: "epic", price: 25000, get: "shop", desc: "Select the Pirate Kill Messages!", tags: "chat sea",
+    lines: pack(["{V} be sent to Davy Jones' locker by {K}.", "{V} be cannonballed to death by {K}.", "{V} be shot and killed by {K}.", "{V} be killed with magic by {K}.", "{V} be killed with metal by {K}'s {MOB}.", "{BED} be shot with cannon by {K}!"]) },
+  { id: "km-to-the-moon", cat: "msg", name: "To The Moon", rar: "epic", price: 25000, get: "shop", desc: "Select the To The Moon Kill Messages!", tags: "chat space",
+    lines: pack(["{V} was crushed into moon dust by {K}.", "{V} was sent the wrong way by {K}.", "{V} was hit by an asteroid from {K}.", "{V} was blasted to the moon by {K}.", "{V} was blown up by {K}'s {MOB}.", "{BED} was blasted to dust by {K}!"]) },
+  { id: "km-roar", cat: "msg", name: "Roar", rar: "epic", price: 25000, get: "shop", desc: "Select the Roar Kill Messages!", tags: "chat animal",
+    lines: pack(["{V} was ripped to shreds by {K}.", "{V} was charged by {K}.", "{V} was pounced on by {K}.", "{V} was ripped and thrown by {K}.", "{V} was ripped to shreds by {K}'s {MOB}.", "{BED} was ripped to shreds by {K}!"]) },
+];
+
+/* ------------------------------------------------------------------ list UI */
+const $ = (id) => document.getElementById(id);
+const state = { cat: "all", rar: "all", avail: "all", sort: "rarity", q: "" };
+const catOf = (id) => CATS.find((c) => c.id === id);
+const fmtPrice = (n) => n == null ? null : n.toLocaleString("en-US");
+const TOKEN = '<svg class="tok" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="#2fbf71" stroke="#1b7a46" stroke-width="1.4"/><path d="M8 4.6v6.8M5.8 6.2 8 4.6l2.2 1.6" fill="none" stroke="#dfffe9" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function getText(it) {
+  if (it.season) return `Only during the ${it.season} event${it.price != null ? ", for tokens" : ""}`;
+  return GET[it.get] || it.get;
+}
+function availOf(it) { return it.season ? "season" : it.get === "shop" ? "shop" : "other"; }
+
+function buildRail() {
+  const rail = $("rail");
+  const mk = (id, name, icon, n) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "cat"; b.dataset.cat = id;
+    b.setAttribute("aria-pressed", String(state.cat === id));
+    b.innerHTML = `<svg class="ic" viewBox="0 0 20 20" aria-hidden="true">${icon}</svg><span>${name}</span><span class="n">${n}</span>`;
+    b.onclick = () => { state.cat = id; render(); };
+    rail.appendChild(b);
+  };
+  mk("all", "Everything", '<rect x="3" y="3" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/>', ITEMS.length);
+  for (const c of CATS) { const n = ITEMS.filter((i) => i.cat === c.id).length; if (n) mk(c.id, c.name, c.icon, n); }
+}
+
+function matches(it, q) {
+  if (!q) return true;
+  const hay = `${it.name} ${catOf(it.cat).name} ${it.tags || ""} ${it.desc} ${RAR[it.rar][0]} ${it.season || ""} ${getText(it)}`.toLowerCase();
+  return q.toLowerCase().split(/\s+/).filter(Boolean).every((w) => hay.includes(w) || fuzzy(hay, w));
+}
+// Lets small typos through ("flme" finds "flame").
+function fuzzy(hay, w) {
+  if (w.length < 4) return false;
+  for (const word of hay.split(/[^a-z0-9]+/)) {
+    if (Math.abs(word.length - w.length) > 1) continue;
+    if (lev(word, w) <= 1) return true;
+  }
+  return false;
+}
+function lev(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+
+function chatHtml(it, cls = "") {
+  return it.lines.map((l, i) => `<div class="chat-line ${cls}" style="animation-delay:${i * 0.06}s">${l}</div>`).join("");
+}
+
+let visible = [];
+function render() {
+  for (const b of document.querySelectorAll(".cat")) b.setAttribute("aria-pressed", String(b.dataset.cat === state.cat));
+  for (const b of document.querySelectorAll("#rarSeg button")) b.setAttribute("aria-pressed", String(b.dataset.r === state.rar));
+  $("heading").textContent = state.cat === "all" ? "All cosmetics" : catOf(state.cat).name;
+  visible = ITEMS.filter((it) => (state.cat === "all" || it.cat === state.cat) && (state.rar === "all" || it.rar === state.rar)
+    && (state.avail === "all" || availOf(it) === state.avail) && matches(it, state.q));
+  const p = (x) => x.price ?? -1;
+  const by = {
+    rarity: (a, b) => RAR_ORDER[a.rar] - RAR_ORDER[b.rar] || a.name.localeCompare(b.name),
+    "price-hi": (a, b) => p(b) - p(a) || a.name.localeCompare(b.name),
+    "price-lo": (a, b) => (p(a) < 0) - (p(b) < 0) || p(a) - p(b) || a.name.localeCompare(b.name),
+    name: (a, b) => a.name.localeCompare(b.name),
+  }[state.sort];
+  visible.sort(by);
+  const grid = $("grid");
+  grid.innerHTML = "";
+  visible.forEach((it, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "card"; b.style.animationDelay = `${Math.min(i, 12) * 30}ms`;
+    b.style.setProperty("--rc", RAR[it.rar][1]);
+    b.setAttribute("aria-label", `${it.name}, ${RAR[it.rar][0]} ${catOf(it.cat).name}`);
+    const thumb = it.lines
+      ? `<div class="chat-thumb">${chatHtml(it)}</div>`
+      : `<img alt="" data-id="${it.id}"${thumbs[it.id] ? ` src="${thumbs[it.id]}" class="on"` : ""}>${thumbs[it.id] ? "" : '<div class="shimmer"></div>'}`;
+    const price = it.price != null ? `<span class="price">${TOKEN}${fmtPrice(it.price)}</span>` : `<span class="price none">${GET_SHORT[it.get] || ""}</span>`;
+    b.innerHTML = `<div class="thumb">${thumb}<span class="rar">${RAR[it.rar][0]}</span>${it.season ? `<span class="season">${it.season}</span>` : ""}</div>
+      <div class="meta"><span class="nm">${it.name}</span><span class="sub">${catOf(it.cat).name}${price}</span></div>`;
+    b.onclick = () => openStudio(it.id);
+    grid.appendChild(b);
+  });
+  $("empty").hidden = visible.length > 0;
+}
+
+function tally() {
+  const cats = new Set(ITEMS.map((i) => i.cat)).size;
+  $("tally").innerHTML = `<b>${ITEMS.length}</b> cosmetics in <b>${cats}</b> categories`;
+}
+
+$("q").addEventListener("input", (e) => { state.q = e.target.value.trim(); render(); });
+$("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
+$("avail").addEventListener("change", (e) => { state.avail = e.target.value; render(); });
+for (const b of document.querySelectorAll("#rarSeg button")) b.onclick = () => { state.rar = b.dataset.r; render(); };
+document.addEventListener("keydown", (e) => {
+  if (e.key === "/" && document.activeElement !== $("q") && $("studio").hidden) { e.preventDefault(); $("q").focus(); }
+  if ($("studio").hidden) return;
+  if (e.key === "Escape") closeStudio();
+  if (e.key === "ArrowRight") step(1);
+  if (e.key === "ArrowLeft") step(-1);
+});
+
+/* ------------------------------------------------------------------ textures */
+const loadImg = (src) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+const [particlesImg, blocksImg, steveImg, explosionImg, blocksJson] = await Promise.all([
+  loadImg("replay/particles.png"), loadImg("replay/blocks.png"), loadImg("replay/steve.png"), loadImg("replay/explosion.png"),
+  fetch("replay/blocks.json").then((r) => r.json()),
+]);
+function canvasTex(c) { const t = new THREE.CanvasTexture(c); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace; return t; }
+function crop(img, x, y, w, h) { const c = document.createElement("canvas"); c.width = w; c.height = h; c.getContext("2d").drawImage(img, x, y, w, h, 0, 0, w, h); return c; }
+const pCache = {};
+function ptex(i) { return pCache[i] || (pCache[i] = canvasTex(crop(particlesImg, (i % 16) * 8, Math.floor(i / 16) * 8, 8, 8))); }
+const bCache = {};
+function btex(name, fn) {
+  const key = name + (fn ? fn.name : "");
+  if (bCache[key]) return bCache[key];
+  const t = blocksJson.textures["block/" + name] || blocksJson.textures["blocks/" + name];
+  const c = crop(blocksImg, t.x, t.y, t.w, t.w);
+  if (fn) fn(c);
+  return (bCache[key] = canvasTex(c));
+}
+function recolor(img, fn) {
+  const c = crop(img, 0, 0, img.width, img.height), g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height);
+  for (let i = 0; i < d.data.length; i += 4) {
+    if (!d.data[i + 3]) continue;
+    const o = fn(d.data[i], d.data[i + 1], d.data[i + 2], (i / 4) % c.width, Math.floor(i / 4 / c.width));
+    if (o) { d.data[i] = o[0]; d.data[i + 1] = o[1]; d.data[i + 2] = o[2]; }
+  }
+  g.putImageData(d, 0, 0);
+  return c;
+}
+function hueOf(r, g, b) { const c = new THREE.Color(r / 255, g / 255, b / 255), h = {}; c.getHSL(h); return h; }
+const SKIN_IDS = [...new Set(ITEMS.map((i) => i.skin).filter(Boolean)), "dummy", "killer"];
+const skinImgs = await Promise.all(SKIN_IDS.map((id) => loadImg(`cosmetics/skins/${id}.png`)));
+const SKINS = { steve: canvasTex(crop(steveImg, 0, 0, 64, 64)) };
+SKIN_IDS.forEach((id, i) => { const im = skinImgs[i]; const t = canvasTex(crop(im, 0, 0, 64, 64)); t.userData = { legacy: im.height === 32 }; SKINS[id] = t; });
+
+/* ------------------------------------------------------------------ studio scene kit */
+const PX = 0.9375 / 16;
+function setBoxUV(geo, u, v, w, h, d, th = 64) {
+  const F = [[u + d + w, v + d, d, h], [u, v + d, d, h], [u + d, v, w, d], [u + d + w, v, w, d], [u + d, v + d, w, h], [u + 2 * d + w, v + d, w, h]];
+  const uv = geo.attributes.uv;
+  F.forEach(([x, y, fw, fh], f) => {
+    const u0 = x / 64, u1 = (x + fw) / 64, v0 = 1 - y / th, v1 = 1 - (y + fh) / th;
+    const s = [[u0, v0], [u1, v0], [u0, v1], [u1, v1]];
+    for (let k = 0; k < 4; k++) uv.setXY(f * 4 + k, s[k][0], s[k][1]);
+  });
+  uv.needsUpdate = true;
+}
+function makePlayer(skin = SKINS.steve, opts = {}) {
+  const root = new THREE.Group(), mats = [];
+  const mat = (overlay) => { const m = new THREE.MeshLambertMaterial({ map: skin, transparent: overlay, alphaTest: overlay ? 0.1 : 0.5, side: overlay ? THREE.DoubleSide : THREE.FrontSide }); mats.push(m); return m; };
+  const legacy = !!skin.userData?.legacy, TH = legacy ? 32 : 64;
+  const part = (w, h, d, u, v, pivot, inflate = 0, overlay = false) => {
+    const g = new THREE.BoxGeometry((w + inflate) * PX, (h + inflate) * PX, (d + inflate) * PX);
+    setBoxUV(g, u, v, w, h, d, TH);
+    g.translate(0, -h * PX / 2, 0);
+    const m = new THREE.Mesh(g, mat(overlay));
+    const p = new THREE.Group(); p.position.set(pivot[0] * PX, pivot[1] * PX, pivot[2] * PX); p.add(m);
+    return p;
+  };
+  const body = new THREE.Group(); root.add(body);
+  const head = part(8, 8, 8, 0, 0, [0, 24, 0]); head.children[0].position.y = 8 * PX;
+  const hat = part(8, 8, 8, 32, 0, [0, 0, 0], 1, true); hat.children[0].position.y = 8.5 * PX; head.add(hat);
+  const torso = part(8, 12, 4, 16, 16, [0, 24, 0]);
+  const armR = part(4, 12, 4, 40, 16, [-6, 22, 0]); armR.children[0].position.y = 2 * PX;
+  const armL = legacy ? part(4, 12, 4, 40, 16, [6, 22, 0]) : part(4, 12, 4, 32, 48, [6, 22, 0]); armL.children[0].position.y = 2 * PX;
+  const legR = part(4, 12, 4, 0, 16, [-2, 12, 0]);
+  const legL = legacy ? part(4, 12, 4, 0, 16, [2, 12, 0]) : part(4, 12, 4, 16, 48, [2, 12, 0]);
+  body.add(head, torso, armR, armL, legR, legL);
+  if (opts.silhouette) for (const m of mats) { m.map = null; m.color.set(0x0b0d12); }
+  return { root, body, head, armR, armL, legR, legL, mats };
+}
+function makeBlock(tex, size = 1) {
+  const mats = (Array.isArray(tex) ? tex : [tex, tex, tex, tex, tex, tex]).map((t) => new THREE.MeshLambertMaterial({ map: t, transparent: true, alphaTest: 0.05 }));
+  const m = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), mats);
+  return m;
+}
+function textSprite(text, color = "#fff") {
+  const c = document.createElement("canvas"), g = c.getContext("2d");
+  g.font = "bold 40px 'Courier New', monospace";
+  const w = Math.ceil(g.measureText(text).width) + 24;
+  c.width = w; c.height = 58;
+  g.fillStyle = "rgba(0,0,0,0.35)"; g.fillRect(0, 0, w, 58);
+  g.font = "bold 40px 'Courier New', monospace"; g.fillStyle = color; g.textBaseline = "middle"; g.fillText(text, 12, 31);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthWrite: false }));
+  s.scale.set(w / 58 * 0.32, 0.32, 1);
+  return s;
+}
+
+// A small particle system in the spirit of 1.8's: billboards that age through
+// texture frames, drift, fall and fade.
+class Fx {
+  constructor(parent) { this.g = new THREE.Group(); parent.add(this.g); this.list = []; }
+  spawn(o) {
+    const frames = o.frames || [o.tex];
+    const m = new THREE.SpriteMaterial({ map: ptex(frames[0]), color: o.color ?? 0xffffff, transparent: true, depthWrite: false, blending: o.add ? THREE.AdditiveBlending : THREE.NormalBlending });
+    const s = new THREE.Sprite(m);
+    s.position.copy(o.pos); const size = o.size ?? 0.18; s.scale.set(size, size, 1);
+    this.g.add(s);
+    this.list.push({ s, m, frames, v: o.vel ? o.vel.clone() : new THREE.Vector3(), age: 0, life: o.life ?? 1, size, grav: o.grav ?? 0, drag: o.drag ?? 0.96, fade: o.fade ?? true, shrink: o.shrink ?? false, sway: o.sway || 0, seed: Math.random() * 10 });
+  }
+  update(dt) {
+    for (let i = this.list.length - 1; i >= 0; i--) {
+      const p = this.list[i]; p.age += dt;
+      const k = p.age / p.life;
+      if (k >= 1) { this.g.remove(p.s); p.m.dispose(); this.list.splice(i, 1); continue; }
+      p.v.y -= p.grav * dt; p.v.multiplyScalar(Math.pow(p.drag, dt * 60));
+      p.s.position.addScaledVector(p.v, dt);
+      if (p.sway) p.s.position.x += Math.sin(p.age * 3 + p.seed) * p.sway * dt;
+      if (p.frames.length > 1) { const f = p.frames[Math.min(p.frames.length - 1, Math.floor(k * p.frames.length))]; const t = ptex(f); if (p.m.map !== t) p.m.map = t; }
+      if (p.fade) p.m.opacity = k > 0.6 ? 1 - (k - 0.6) / 0.4 : 1;
+      if (p.shrink) { const s = p.size * (1 - k * 0.7); p.s.scale.set(s, s, 1); }
+    }
+  }
+  clear() { for (const p of this.list) { this.g.remove(p.s); p.m.dispose(); } this.list = []; }
+}
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const rnd = (a, b) => a + Math.random() * (b - a);
+const sphere = (s) => { const v = V(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)); if (v.lengthSq() < 1e-4) v.set(0, 1, 0); return v.normalize().multiplyScalar(s); };
+const SMOKE = [7, 6, 5, 4, 3, 2, 1, 0], SPELL = [135, 134, 133, 132, 131, 130, 129, 128], SPARK = [160, 161, 162, 163, 164, 165, 166, 167];
+
+// MC-style death: tip over sideways while flashing red.
+function dieAnim(p, t, start) {
+  const k = Math.max(0, Math.min(1, (t - start) / 0.9));
+  p.body.rotation.z = Math.sqrt(k) * Math.PI / 2;
+  p.body.position.x = Math.sqrt(k) * 0.05;
+  const red = t > start && k < 1;
+  for (const m of p.mats) m.color.setRGB(1, red ? 0.45 : 1, red ? 0.45 : 1);
+  return k;
+}
+function idle(p, t) {
+  p.armR.rotation.x = Math.sin(t * 1.2) * 0.05; p.armL.rotation.x = -Math.sin(t * 1.2) * 0.05;
+  p.armR.rotation.z = -0.04 - Math.sin(t * 1.4) * 0.03; p.armL.rotation.z = 0.04 + Math.sin(t * 1.4) * 0.03;
+}
+
+/* ------------------------------------------------------------------ previews
+   Each preview builds into `S.item` and returns tick(t, dt). `loop` is how long
+   one play takes; `hero` is the moment used for the card picture. Timings,
+   particle kinds and counts follow what Hypixel's own lobby preview spawns.
+   The victim is the preview dummy Hypixel uses (Derperino). */
+const EXPLOSION = canvasTex(crop(explosionImg, 0, 0, 128, 128));
+function killScene(S, victimAt = V(0, 0, 0)) {
+  const killer = makePlayer(SKINS.killer); killer.root.position.set(-1.3, 0, .9); killer.root.rotation.y = 2.1; S.item.add(killer.root);
+  const victim = makePlayer(SKINS.dummy); victim.root.position.copy(victimAt); victim.root.rotation.y = -1; S.item.add(victim.root);
+  return { killer, victim };
+}
+// The kill: the killer swings at 0.8s, the hit lands at 1.0s (Hypixel plays game.neutral.hurt there).
+function killAnim(S, k, t, { vanish = true } = {}) {
+  idle(k.killer, t);
+  k.killer.armR.rotation.x = t > .75 && t < 1.05 ? -Math.sin((t - .75) / .3 * Math.PI) * 1.6 : k.killer.armR.rotation.x;
+  if (t < 1) { idle(k.victim, t + 1); for (const m of k.victim.mats) m.color.setRGB(1, 1, 1); }
+  else if (vanish) k.victim.root.visible = false;
+  else dieAnim(k.victim, t, 1);
+  S.at(1.0, () => S.sound("game.neutral.hurt", .79, .8));
+}
+function bat(S) {
+  const g = new THREE.Group(), m = new THREE.MeshLambertMaterial({ color: 0x2b211b });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(.18, .26, .14), m); g.add(body);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(.18, .16, .16), m); head.position.y = .2; g.add(head);
+  const wl = new THREE.Mesh(new THREE.BoxGeometry(.4, .02, .22), m); wl.geometry.translate(-.2, 0, 0); wl.position.x = -.08; g.add(wl);
+  const wr = new THREE.Mesh(new THREE.BoxGeometry(.4, .02, .22), m); wr.geometry.translate(.2, 0, 0); wr.position.x = .08; g.add(wr);
+  g.userData.flap = (t) => { wl.rotation.z = Math.sin(t * 28) * .9; wr.rotation.z = -Math.sin(t * 28) * .9; };
+  return g;
+}
+const PREVIEWS = {
+  lightning: { loop: 3.6, hero: 1.06, build(S) {
+    const k = killScene(S); let bolt = null, flash = null;
+    return (t, dt) => {
+      killAnim(S, k, t);
+      S.at(1.0, () => {
+        S.sound("ambient.weather.thunder", .95, 1); S.sound("random.explode", .57, .7);
+        bolt = new THREE.Group(); const mat = new THREE.MeshBasicMaterial({ color: 0xd8e4ff, transparent: true, opacity: .9, blending: THREE.AdditiveBlending, depthWrite: false });
+        let p = V(0, 14, 0);
+        for (let i = 0; i < 18; i++) { const n = V(p.x + rnd(-.45, .45), p.y - .78, p.z + rnd(-.45, .45)); if (i === 17) n.set(0, 0, 0);
+          const len = p.distanceTo(n), seg = new THREE.Mesh(new THREE.BoxGeometry(.12, len, .12), mat); seg.position.copy(p).add(n).multiplyScalar(.5); seg.lookAt(n); seg.rotateX(Math.PI / 2); bolt.add(seg); p = n; }
+        S.item.add(bolt);
+        flash = new THREE.PointLight(0xc8d8ff, 60, 14, 1.2); flash.position.set(0, 2, 0); S.item.add(flash);
+        for (let i = 0; i < 5; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(.2, 1.6), rnd(-.4, .4)), vel: V(0, .6, 0), life: 1.6, size: .5, color: 0x444444 });
+      });
+      if (bolt) { const k2 = (t - 1) / .45; bolt.visible = k2 < 1 && Math.sin(t * 70) > -.3; flash.intensity = Math.max(0, 1 - k2) * 60; }
+    };
+  } },
+  tnt: { loop: 4, hero: 1.5, build(S) {
+    const k = killScene(S); let tnt = null;
+    return (t, dt) => {
+      killAnim(S, k, t);
+      S.at(1.0, () => { S.sound("fireworks.launch", 1, 1);
+        tnt = makeBlock([btex("tnt_side"), btex("tnt_side"), btex("tnt_top"), btex("tnt_bottom"), btex("tnt_side"), btex("tnt_side")]); tnt.position.set(0, .5, 0); S.item.add(tnt);
+        for (let i = 0; i < 30; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(.1, 1.8), rnd(-.4, .4)), vel: V(0, rnd(.2, .6), 0), life: 1.2, size: .2, color: 0x555555 }); });
+      if (tnt && t < 2.5) { const flashOn = Math.floor(t * 6) % 2; for (const m of tnt.material) m.color.setScalar(flashOn ? 2.2 : 1); tnt.scale.setScalar(1 + Math.max(0, t - 2.2) * .5); }
+      S.at(2.5, () => { tnt.visible = false; S.sound("random.explode", .79, .8); S.explode(V(0, .6, 0)); });
+    };
+  } },
+  squid: { loop: 4.2, hero: 1.9, build(S) {
+    const k = killScene(S); let squid = null, pops = 0;
+    return (t, dt) => {
+      killAnim(S, k, t);
+      S.at(1.0, () => { squid = makeSquid(); squid.position.set(0, .4, 0); S.item.add(squid); });
+      if (squid && t < 2.67) {
+        const k2 = t - 1.0; squid.position.y = .4 + k2 * k2 * 2.6; squid.rotation.y += dt * 3;
+        squid.userData.wiggle(t);
+        if (Math.random() < .9) S.fx.spawn({ frames: [48], pos: squid.position.clone().add(V(rnd(-.15, .15), -.3, rnd(-.15, .15))), vel: V(0, -.6, 0), life: .6, size: .16 });
+        while (pops < 15 && t > 1.17 + pops * .1) { S.sound("random.pop", .6 + pops * .08, .6); pops++; }
+      }
+      S.at(2.67, () => { squid.visible = false; S.sound("fireworks.blast", 1, 1); S.firework(squid.position.clone(), [0x3a7bff, 0xffffff]); });
+    };
+  } },
+  hearts: { loop: 3.6, hero: 1.55, build(S) {
+    const k = killScene(S);
+    return (t, dt) => {
+      killAnim(S, k, t);
+      S.at(1.3, () => { for (let i = 0; i < 100; i++) S.fx.spawn({ frames: [80], pos: V(rnd(-1, 1), rnd(.2, 2.2), rnd(-1, 1)), vel: V(rnd(-.2, .2), rnd(.3, .9), rnd(-.2, .2)), life: rnd(1.2, 2), size: rnd(.18, .26), drag: .97 }); });
+    };
+  } },
+  burningShoes: { loop: 3.6, hero: 1.4, build(S) {
+    const k = killScene(S); let acc = 0;
+    return (t, dt) => {
+      killAnim(S, k, t);
+      if (t > 1.06 && t < 3.0 && (acc += dt) > .006) { acc = 0;
+        const f = k.killer.root.position; S.fx.spawn({ frames: [48], pos: V(f.x + rnd(-.3, .3), rnd(0, .25), f.z + rnd(-.25, .25)), vel: V(0, rnd(.1, .5), 0), life: rnd(.4, .8), size: .14, shrink: true }); }
+      if (t > .1 && t < 1 && Math.random() < .4) S.fx.spawn({ frames: [49], pos: V(rnd(-1.5, -1.1), 2.1, rnd(.7, 1.1)), vel: V(0, -2, 0), life: .5, size: .1, fade: false });
+    };
+  } },
+  tornado: { loop: 4.6, hero: 1.9, build(S) {
+    const k = killScene(S); let acc = 0;
+    return (t, dt) => {
+      killAnim(S, k, t);
+      S.at(1.02, () => { for (let i = 0; i < 3; i++) S.sound("mob.enderdragon.wings", .5, .6, i * .25); });
+      if (t > 1.02 && t < 3.4 && (acc += dt) > .004) { acc = 0;
+        const h = rnd(0, 3.6), r = .15 + h * .32, a = t * 9 + h * 2.2 + rnd(0, Math.PI * 2);
+        S.fx.spawn({ frames: SPARK, pos: V(Math.cos(a) * r, h, Math.sin(a) * r), vel: V(-Math.sin(a) * 2, .4, Math.cos(a) * 2), life: .55, size: .13, color: 0xffffff, add: true }); }
+      if (t > 1.56 && t < 3.2 && Math.random() < .6) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(0, .4), rnd(-.4, .4)), vel: V(rnd(-.5, .5), rnd(.8, 1.6), rnd(-.5, .5)), life: 1.4, size: .4, color: 0x666666 });
+    };
+  } },
+  batcrux: { loop: 5, hero: 1.9, build(S) {
+    const k = killScene(S); const bats = [];
+    return (t, dt) => {
+      killAnim(S, k, t);
+      S.at(1.06, () => {
+        for (let i = 0; i < 160; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(0, 2), rnd(-.4, .4)), vel: sphere(rnd(.4, 2.4)), life: rnd(.9, 1.8), size: .4, color: 0x2a2a2a, drag: .94 });
+        for (let i = 0; i < 7; i++) { const b = bat(S); b.position.set(rnd(-.3, .3), rnd(.8, 1.6), rnd(-.3, .3)); S.item.add(b); bats.push({ b, a: i / 7 * Math.PI * 2, r: rnd(1.4, 2.4), h: rnd(1.4, 3), sp: rnd(1.4, 2.2) }); }
+        S.sound("mob.bat.takeoff", 1, .6);
+      });
+      S.at(2.4, () => S.sound("mob.bat.idle", .86, .3)); S.at(3.1, () => S.sound("mob.bat.idle", 1.06, .3));
+      for (const x of bats) {
+        const age = t - 1.06, ease = Math.min(1, age / .7);
+        x.a += dt * x.sp; const tx = Math.cos(x.a) * x.r, tz = Math.sin(x.a) * x.r, ty = x.h + Math.sin(t * 3 + x.r) * .25;
+        x.b.position.lerp(V(tx, ty, tz), ease * .15); x.b.lookAt(V(Math.cos(x.a + .3) * x.r, ty, Math.sin(x.a + .3) * x.r)); x.b.userData.flap(t);
+      }
+    };
+  } },
+  cry: { loop: 3, hero: 1.1, build(S, it) {
+    const p = makePlayer(SKINS.dummy); p.root.rotation.y = -.4; S.item.add(p.root);
+    let hsh = 0; for (const ch of it.id) hsh = (hsh * 31 + ch.charCodeAt(0)) >>> 0;
+    const ringCol = new THREE.Color().setHSL((hsh % 360) / 360, .85, .62);
+    const rings = [];
+    for (let i = 0; i < 3; i++) {
+      const m = new THREE.Mesh(new THREE.TorusGeometry(.3, .022, 6, 48), new THREE.MeshBasicMaterial({ color: ringCol, transparent: true, opacity: 0, depthWrite: false }));
+      m.position.set(0, 1.75, 0); S.item.add(m); rings.push(m);
+    }
+    return (t, dt) => {
+      idle(p, t); dieAnim(p, t, .6);
+      rings.forEach((m, i) => {
+        const k = (t - .6 - i * .18) / 1.1;
+        m.visible = k > 0 && k < 1; if (!m.visible) return;
+        m.scale.setScalar(1 + k * 4); m.material.opacity = (1 - k) * .9;
+        m.rotation.y = S.camYaw(); m.position.y = 1.75 - Math.min(1, (t - .6) / .9) * .9;
+      });
+    };
+  } },
+  shopkeeper: { loop: 6, hero: 1.2, thumbY: 1.45, build(S, it) {
+    const p = makePlayer(SKINS[it.skin]); p.root.rotation.y = .25; S.item.add(p.root);
+    const tag = textSprite("ITEM SHOP", "#55ffff"); tag.position.y = 2.42; S.item.add(tag);
+    const tag2 = textSprite("RIGHT CLICK", "#ffff55"); tag2.position.y = 2.15; tag2.scale.multiplyScalar(.7); S.item.add(tag2);
+    return (t) => { idle(p, t); p.head.rotation.y = Math.sin(t * .9) * .55; p.head.rotation.x = Math.sin(t * .6) * .1 - .05; };
+  } },
+};
+function makeSquid() {
+  const g = new THREE.Group(), m = new THREE.MeshLambertMaterial({ color: 0x24456a }), eye = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(12 * PX, 16 * PX, 12 * PX), m); body.position.y = 8 * PX; g.add(body);
+  for (const s of [-1, 1]) { const e = new THREE.Mesh(new THREE.BoxGeometry(2 * PX, 2 * PX, .01), eye); e.position.set(s * 3 * PX, 4 * PX, 6.1 * PX); g.add(e); }
+  const tents = [];
+  for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; const tt = new THREE.Mesh(new THREE.BoxGeometry(2 * PX, 18 * PX, 2 * PX), m); tt.geometry.translate(0, -9 * PX, 0); tt.position.set(Math.cos(a) * 5 * PX, 0, Math.sin(a) * 5 * PX); tt.userData.a = a; g.add(tt); tents.push(tt); }
+  g.userData.wiggle = (t) => { for (const tt of tents) { tt.rotation.x = Math.sin(tt.userData.a) * (.3 + Math.sin(t * 9) * .25); tt.rotation.z = -Math.cos(tt.userData.a) * (.3 + Math.sin(t * 9) * .25); } };
+  g.rotation.x = Math.PI; // head up, tentacles trailing below
+  g.rotation.x = 0;
+  return g;
+}
+
+/* ------------------------------------------------------------------ studio renderer */
+function cssColor(v) { const el = document.createElement("i"); el.style.color = `var(${v})`; document.body.appendChild(el); const c = getComputedStyle(el).color; el.remove(); const m = c.match(/[\d.]+/g).map(Number); return new THREE.Color(m[0] / 255, m[1] / 255, m[2] / 255); }
+const ACCENT = cssColor("--accent"), ACCENT2 = cssColor("--accent-2");
+
+// A small floating sky island: grass on top, dirt and stone tapering underneath,
+// a few tufts and flowers. Built once per renderer.
+function tint(rgb) { return function tinted(c) { const g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height);
+  for (let i = 0; i < d.data.length; i += 4) { d.data[i] = d.data[i] * rgb[0] / 255; d.data[i + 1] = d.data[i + 1] * rgb[1] / 255; d.data[i + 2] = d.data[i + 2] * rgb[2] / 255; }
+  g.putImageData(d, 0, 0); }; }
+const GRASS = blocksJson.tints.grass;
+function grassSide() {
+  if (bCache.__gs) return bCache.__gs;
+  const t = blocksJson.textures, a = t["block/grass_block_side"], o = t["block/grass_block_side_overlay"];
+  const c = crop(blocksImg, a.x, a.y, a.w, a.w), ov = crop(blocksImg, o.x, o.y, o.w, o.w);
+  tint(GRASS)(ov); c.getContext("2d").drawImage(ov, 0, 0);
+  return (bCache.__gs = canvasTex(c));
+}
+function makeIsland(far = false) {
+  const g = new THREE.Group();
+  const top = btex("grass_block_top", tint(GRASS)), side = grassSide(), dirt = btex("dirt"), stone = btex("stone");
+  const geo = new THREE.BoxGeometry(1, 1, 1);
+  const M = (arr) => arr.map((t) => new THREE.MeshLambertMaterial({ map: t }));
+  const grassM = M([side, side, top, dirt, side, side]), dirtM = M([dirt, dirt, dirt, dirt, dirt, dirt]), stoneM = M([stone, stone, stone, stone, stone, stone]);
+  const layers = [[6.2, grassM], [4.6, dirtM], [2.6, stoneM], [1.2, stoneM], [0.3, stoneM]];
+  const seed = seeded(far ? 7 : 3);
+  layers.forEach(([r2, mat], L) => {
+    for (let x = -2; x <= 2; x++) for (let z = -2; z <= 2; z++) {
+      const d = x * x + z * z + (L ? seed() * 1.2 : 0);
+      if (d > r2) continue;
+      if (L === 0 && x * x + z * z > 4.5 && seed() < 0.35) continue;
+      const m = new THREE.Mesh(geo, mat); m.position.set(x, -0.5 - L, z); g.add(m);
+    }
+  });
+  if (!far) {
+    const plant = (name, x, z, tex) => {
+      const mat = new THREE.MeshLambertMaterial({ map: tex || btex(name), transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
+      for (const r of [Math.PI / 4, -Math.PI / 4]) { const p = new THREE.Mesh(new THREE.PlaneGeometry(.8, .8), mat); p.position.set(x, .4, z); p.rotation.y = r; g.add(p); }
+    };
+    const tuft = btex("grass", tint(GRASS));
+    for (const [x, z] of [[-1.6, .9], [1.7, -.6], [-.9, -1.7], [1.3, 1.5]]) plant("grass", x, z, tuft);
+    plant("poppy", -1.7, -.9); plant("dandelion", 1.8, .6);
+  }
+  return g;
+}
+
+function makeStudio(canvas, w, h) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: !!canvas.dataset.thumb });
+  renderer.setPixelRatio(canvas.dataset.thumb ? 1 : Math.min(2, devicePixelRatio));
+  renderer.setSize(w, h, false);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(32, w / h, 0.1, 100);
+  camera.position.set(5.6, 3.2, 8.2);
+  scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x2a2420, 1.3));
+  const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 6, 4); scene.add(key);
+  const rim = new THREE.DirectionalLight(ACCENT, 2.2); rim.position.set(-4, -0.4, -6); scene.add(rim);
+  const island = makeIsland(); scene.add(island);
+  const glow = new THREE.PointLight(ACCENT, 6, 9, 1.6); glow.position.set(0, -2.6, 0); scene.add(glow);
+  // Two far-off islands for depth.
+  for (const [x, y, z, k] of [[-9, -1.5, -12, .45], [10, 1.2, -16, .35]]) { const f = makeIsland(true); f.position.set(x, y, z); f.scale.setScalar(k); scene.add(f); }
+  // Slow motes drifting in the light, for depth.
+  const mg = new THREE.BufferGeometry(), mp = new Float32Array(120 * 3);
+  for (let i = 0; i < 120; i++) { mp[i * 3] = rnd(-7, 7); mp[i * 3 + 1] = rnd(-1, 7); mp[i * 3 + 2] = rnd(-7, 3); }
+  mg.setAttribute("position", new THREE.BufferAttribute(mp, 3));
+  const motes = new THREE.Points(mg, new THREE.PointsMaterial({ color: ACCENT2.clone().lerp(new THREE.Color(1, 1, 1), .5), size: .035, transparent: true, opacity: .45, depthWrite: false }));
+  scene.add(motes);
+
+  const item = new THREE.Group(); scene.add(item);
+  const S = { scene, camera, renderer, item, fx: new Fx(scene), camYaw: () => Math.atan2(camera.position.x, camera.position.z), tick: null, t: 0, def: null, motes };
+  S.load = (def, it = S.it) => {
+    S.fx.clear(); S.anims = []; S.fired = new Set();
+    for (const c of [...item.children]) { item.remove(c); c.traverse?.((o) => { o.geometry?.dispose(); }); }
+    item.rotation.set(0, 0, 0);
+    S.def = def; S.it = it; S.t = 0; S.tick = def.build(S, it);
+  };
+  // Runs fn once, the first tick at or after `time` (calls are told apart by order).
+  S.at = (time, fn) => { const k = S.ci++; if (S.t >= time && !S.fired.has(k)) { S.fired.add(k); fn(); } };
+  S.audible = false;
+  S.sound = (name, pitch = 1, vol = 1, delay = 0) => { if (S.audible) mcSound(name, pitch, vol, delay); };
+  S.explode = (pos) => {
+    for (let i = 0; i < 9; i++) {
+      const tex = EXPLOSION.clone(); tex.needsUpdate = true; tex.repeat.set(.25, .25);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+      sp.position.copy(pos).add(i ? sphere(rnd(.4, 1.4)) : V(0, 0, 0)); const sz = rnd(1.4, 2.4); sp.scale.set(sz, sz, 1); item.add(sp);
+      S.anims.push({ sp, tex, age: -i * .02, life: .5 });
+    }
+  };
+  S.firework = (pos, colors) => {
+    for (let i = 0; i < 90; i++) S.fx.spawn({ frames: SPARK, pos: pos.clone(), vel: sphere(rnd(2.2, 3.2)), life: rnd(.9, 1.4), grav: 1.2, drag: .93, size: .15, color: colors[i % colors.length], add: true });
+  };
+  S.island = island;
+  S.step = (dt) => {
+    S.t += dt; S.clock = (S.clock || 0) + dt;
+    island.position.y = Math.sin(S.clock * 0.8) * 0.04; item.position.y = island.position.y; S.fx.g.position.y = island.position.y;
+    if (S.def.loop && S.t > S.def.loop) { S.load(S.def); S.audible = false; }
+    S.ci = 0; S.tick?.(S.t, dt); S.fx.update(dt);
+    for (let i = S.anims.length - 1; i >= 0; i--) { const a = S.anims[i]; a.age += dt; const f = Math.floor(Math.max(0, a.age) / a.life * 16);
+      if (f >= 16) { item.remove(a.sp); a.sp.material.dispose(); a.tex.dispose(); S.anims.splice(i, 1); continue; }
+      a.sp.visible = a.age >= 0; a.tex.offset.set((f % 4) * .25, 1 - .25 - Math.floor(f / 4) * .25); }
+    motes.rotation.y += dt * 0.02;
+  };
+  return S;
+}
+
+/* Card pictures: one hidden renderer plays each preview to its hero moment and snapshots it. */
+const thumbs = {};
+async function makeThumbs() {
+  const c = document.createElement("canvas"); c.dataset.thumb = "1";
+  const T = makeStudio(c, 480, 360);
+  T.camera.position.set(3.7, 2.3, 5.2); T.camera.lookAt(0, 1.05, 0);
+  for (const it of ITEMS) {
+    if (it.lines) continue;
+    const def = PREVIEWS[it.preview];
+    T.camera.position.set(3.7, 2.3 + (def.thumbY ? .4 : 0), 5.2); T.camera.lookAt(0, def.thumbY || 1.05, 0);
+    Math.random = seeded(it.id.length * 97 + 13);
+    T.load(def, it);
+    const steps = Math.round(def.hero * 60);
+    for (let i = 0; i < steps; i++) T.step(1 / 60);
+    Math.random = realRandom;
+    T.renderer.render(T.scene, T.camera);
+    thumbs[it.id] = c.toDataURL("image/webp", 0.9);
+    const img = document.querySelector(`img[data-id="${it.id}"]`);
+    if (img) { img.src = thumbs[it.id]; img.classList.add("on"); img.nextElementSibling?.classList.contains("shimmer") && img.nextElementSibling.remove(); }
+    await new Promise((r) => setTimeout(r, 0));
+  }
+  T.renderer.dispose();
+}
+const realRandom = Math.random;
+function seeded(s) { return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }
+
+/* ------------------------------------------------------------------ studio dialog */
+let studio = null, controls = null, current = null, raf = 0, last = 0, speed = 1, spin = true;
+function ensureStudio() {
+  if (studio) return;
+  const canvas = document.createElement("canvas");
+  $("stage").prepend(canvas);
+  studio = makeStudio(canvas, 10, 10);
+  controls = new OrbitControls(studio.camera, canvas);
+  controls.target.set(0, .55, 0); controls.enableDamping = true; controls.enablePan = false;
+  controls.minDistance = 4; controls.maxDistance = 18; controls.maxPolarAngle = Math.PI * 0.62;
+  controls.autoRotateSpeed = 1.1; controls.autoRotate = true;
+  controls.addEventListener("start", () => { controls.autoRotate = false; });
+  controls.addEventListener("end", () => { setTimeout(() => { controls.autoRotate = spin; }, 1500); });
+  new ResizeObserver(resize).observe($("stage"));
+}
+function resize() {
+  const r = $("stage").getBoundingClientRect();
+  if (!r.width) return;
+  studio.renderer.setSize(r.width, r.height, false);
+  studio.camera.aspect = r.width / r.height; studio.camera.updateProjectionMatrix();
+}
+function frame(now) {
+  raf = requestAnimationFrame(frame);
+  const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
+  studio.step(dt * speed);
+  controls.update();
+  studio.renderer.render(studio.scene, studio.camera);
+}
+function openStudio(id, push = true) {
+  const it = ITEMS.find((i) => i.id === id); if (!it) return;
+  current = it;
+  const el = $("studio");
+  if (el.hidden) { el.hidden = false; requestAnimationFrame(() => el.classList.add("open")); document.body.style.overflow = "hidden"; }
+  ensureStudio(); resize();
+  const chatOnly = !!it.lines;
+  $("stage").classList.toggle("chat-mode", chatOnly);
+  cancelAnimationFrame(raf);
+  if (!chatOnly) {
+    studio.camera.position.set(7.6, 4.4, 11.2); controls.target.set(0, 1, 0);
+    studio.load(PREVIEWS[it.preview], it); studio.audible = !it.sound;
+    last = performance.now(); raf = requestAnimationFrame(frame);
+  }
+  const chat = $("chatStage"); chat.hidden = !chatOnly;
+  if (chatOnly) chat.innerHTML = `<div class="chat-box">${chatHtml(it)}</div>`;
+  // Text panel
+  $("sCat").textContent = catOf(it.cat).name;
+  $("sRar").innerHTML = `<span style="color:${RAR[it.rar][1]};font-weight:700">${RAR[it.rar][0]}</span>`;
+  $("sName").textContent = it.name;
+  $("sDesc").textContent = it.desc;
+  $("sRarity").innerHTML = `<span class="rar-dot" style="--rc:${RAR[it.rar][1]}"></span>${RAR[it.rar][0]}`;
+  $("sPrice").innerHTML = it.price != null ? `${TOKEN}${fmtPrice(it.price)}` : '<span class="muted">Not sold</span>';
+  $("sGet").textContent = getText(it);
+  $("soundBox").hidden = !it.sound;
+  $("playSound").classList.remove("playing");
+  if (it.sound) playCry(it, 0.6);
+  if (push) history.replaceState(null, "", "#" + it.id);
+}
+function closeStudio() {
+  const el = $("studio"); el.classList.remove("open");
+  cancelAnimationFrame(raf); document.body.style.overflow = "";
+  setTimeout(() => { el.hidden = true; }, 250);
+  history.replaceState(null, "", location.pathname + location.search);
+}
+function step(d) {
+  const list = visible.length ? visible : ITEMS;
+  const i = list.findIndex((x) => x.id === current.id);
+  openStudio(list[(i + d + list.length) % list.length].id);
+}
+$("closeBtn").onclick = closeStudio;
+$("studio").addEventListener("click", (e) => { if (e.target.id === "studio") closeStudio(); });
+$("prevBtn").onclick = () => step(-1); $("nextBtn").onclick = () => step(1);
+$("replayBtn").onclick = () => { if (current.lines) return; studio.load(studio.def); studio.audible = true; if (current.sound) playCry(current, .6); };
+$("slowBtn").onclick = (e) => { speed = speed === 1 ? .25 : 1; e.currentTarget.setAttribute("aria-pressed", String(speed !== 1)); };
+$("spinBtn").onclick = (e) => { spin = !spin; controls.autoRotate = spin; e.currentTarget.setAttribute("aria-pressed", String(spin)); };
+$("copyBtn").onclick = async () => { try { await navigator.clipboard.writeText(location.href); $("copyBtn").textContent = "Copied"; setTimeout(() => { $("copyBtn").textContent = "Copy link"; }, 1400); } catch (e) {} };
+$("playSound").onclick = () => current?.sound && playCry(current);
+
+/* ------------------------------------------------------------------ sounds
+   Real Minecraft 1.8 sounds, fetched from Mojang's asset server by the hashes
+   the replay viewer already ships (replay/sounds.json). */
+let soundIndex = null;
+async function mcSound(name, pitch = 1, vol = 1, delay = 0) {
+  try {
+    if (!soundIndex) soundIndex = await fetch("replay/sounds.json").then((r) => r.json());
+    const list = soundIndex[name]; if (!list) return;
+    const h = list[Math.floor(Math.random() * list.length)];
+    const a = new Audio(`https://resources.download.minecraft.net/${h.slice(0, 2)}/${h}`);
+    a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false;
+    a.playbackRate = Math.min(2, Math.max(.5, pitch)); a.volume = Math.min(1, vol) * .6;
+    const go = () => a.play().catch(() => {});
+    if (delay) setTimeout(go, delay * 1000); else go();
+    return a;
+  } catch (e) {}
+}
+async function playCry(it, delay = 0) {
+  if (!it.sound) return;
+  const btn = $("playSound");
+  const a = await mcSound(it.sound[0], it.sound[1], 1, delay);
+  if (!a) return;
+  a.addEventListener("playing", () => { if (current === it) btn.classList.add("playing"); });
+  a.addEventListener("ended", () => btn.classList.remove("playing"));
+}
+
+/* ------------------------------------------------------------------ start */
+buildRail(); tally(); render();
+const deep = location.hash.slice(1);
+if (deep && ITEMS.some((i) => i.id === deep)) openStudio(deep, false);
+addEventListener("hashchange", () => { const h = location.hash.slice(1); if (h && h !== current?.id && ITEMS.some((i) => i.id === h)) openStudio(h, false); });
+makeThumbs();
+</script>
+</body>
+</html>

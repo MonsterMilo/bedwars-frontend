@@ -20,6 +20,8 @@
     }
     var theme = 'neon'
     try { theme = localStorage.getItem('siteTheme') || 'neon' } catch (e) {}
+    var q = /[?&]theme=([a-z]+)/.exec(location.search)
+    if (q) theme = q[1]
     if (!FONTS[theme]) theme = 'neon'
     document.documentElement.setAttribute('data-theme', theme)
     var link = document.createElement('link')
@@ -58,72 +60,107 @@
   body[data-view="map"] .at-list, body[data-view="list"] .at-map { display: none; }
   body:not([data-view]) .at-list, body:not([data-view]) .at-map { visibility: hidden; }
 
-  /* --- List --- */
-  .at-list { max-width: 1120px; margin: 0 auto; padding: 28px 16px 64px; }
-  .at-head { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
-  .at-back { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); text-decoration: none; font-weight: 600; font-size: 0.92em; padding: 6px 10px 6px 6px; border-radius: var(--r-s); }
-  .at-back:hover { color: var(--text); background: var(--panel-2); }
-  .at-back svg { width: 18px; height: 18px; }
-  .at-titles { flex: 1; min-width: 240px; }
-  .at-title { margin: 6px 0 4px; font: 800 clamp(1.9em, 4vw, 2.6em)/1.1 var(--font-title); letter-spacing: -0.01em; display: flex; align-items: center; gap: 12px; }
-  html[data-theme="casefiles"] .at-title { font-weight: 400; text-transform: uppercase; letter-spacing: 0.03em; }
-  .at-title svg { width: 0.9em; height: 0.9em; color: var(--accent); flex: none; }
-  .at-lede { margin: 0; color: var(--dim); max-width: 60ch; }
-  .at-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: var(--r-s); border: 1px solid var(--border); background: var(--panel); color: var(--text); font-weight: 600; font-size: 0.92em; white-space: nowrap; transition: border-color .2s, background .2s; }
+  /* --- List: laid out like the Cosmetics Library (cosmetics.html) --- */
+  /* The dark "light box" behind each map drawing, tinted per theme. */
+  :root { --studio-a: #1b2233; --studio-b: #07090f; }
+  html[data-theme="casefiles"] { --studio-a: #3a3a33; --studio-b: #16150f; }
+  html[data-theme="ledger"] { --studio-a: #26324a; --studio-b: #0d1422; }
+  html[data-theme="deepcurrent"] { --studio-a: #0f3a4a; --studio-b: #020b12; }
+  html[data-theme="skyisles"] { --studio-a: #2d6a9f; --studio-b: #123552; }
+  html[data-theme="harvest"] { --studio-a: #4a2b1a; --studio-b: #1c0f08; }
+  body[data-view="list"] { font-size: 16px; line-height: normal; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1320px; margin: 0 auto; padding: 22px 24px 60px; }
+
+  .top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .back { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--dim); font-size: 14px; padding: 6px 10px 6px 6px; border-radius: var(--r-s); }
+  .back:hover { color: var(--text); background: var(--panel); }
+  .back svg { width: 16px; height: 16px; }
+  .open-file { position: relative; margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--dim); border: 1px dashed var(--border-strong); padding: 5px 11px; border-radius: 999px; cursor: pointer; transition: color .15s, background .15s; }
+  .open-file:hover { color: var(--text); background: var(--panel); }
+  html[data-theme="skyisles"] .open-file, html[data-theme="ledger"] .open-file { border-radius: var(--r-s); }
+  .open-file svg { width: 14px; height: 14px; }
+  .open-file input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+  .hero { margin: 26px 0 22px; display: grid; grid-template-columns: 1fr minmax(280px, 460px); gap: 24px; align-items: end; }
+  .hero h1 { font-family: var(--font-title); font-size: clamp(34px, 5vw, 56px); line-height: 1; margin: 0; letter-spacing: -0.02em; }
+  html[data-theme="casefiles"] .hero h1 { font-weight: 400; letter-spacing: 0.03em; text-transform: uppercase; }
+  html[data-theme="skyisles"] .hero h1 { letter-spacing: 0; font-size: clamp(28px, 4vw, 44px); }
+  .hero h1 span { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tally { margin: 10px 0 0; color: var(--dim); font-size: 15px; min-height: 1.2em; }
+  .tally b { color: var(--text); font-weight: 700; }
+  .search { position: relative; }
+  .search svg { position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
+  .search input { width: 100%; padding: 14px 44px 14px 42px; border-radius: var(--r-m); border: 1px solid var(--border); background: var(--panel); font-size: 16px; transition: border-color .2s, box-shadow .2s; }
+  .search input::placeholder { color: var(--faint); }
+  .search input:focus { outline: none; border-color: var(--border-strong); box-shadow: var(--glow); }
+  .search kbd { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font: 12px/1 var(--font); color: var(--faint); border: 1px solid var(--border); border-radius: 5px; padding: 4px 7px; }
+  .search input:not(:placeholder-shown) ~ kbd { display: none; }
+  .note { margin: 0 0 18px; padding: 12px 14px; border-radius: var(--r-m); background: var(--panel); border: 1px solid var(--border-strong); font-size: 14.5px; }
+
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 28px; align-items: start; }
+  .rail { position: sticky; top: 18px; display: flex; flex-direction: column; gap: 2px; }
+  .rail-label { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin: 0 0 8px 10px; }
+  .cat { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; padding: 9px 10px; border-radius: var(--r-s); cursor: pointer; color: var(--dim); font-size: 14.5px; transition: background .15s, color .15s; }
+  .cat:hover { background: var(--panel); color: var(--text); }
+  .cat[aria-pressed="true"] { background: var(--panel-2); color: var(--text); box-shadow: inset 3px 0 0 var(--accent); }
+  .cat .ic { width: 20px; height: 20px; flex: none; color: var(--accent); opacity: .85; }
+  .cat .n { margin-left: auto; font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+
+  .bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .bar h2 { margin: 0 auto 0 0; font-family: var(--font-title); font-size: 22px; font-weight: 700; }
+  html[data-theme="casefiles"] .bar h2 { font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
+  .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
+  html[data-theme="skyisles"] .seg, html[data-theme="ledger"] .seg, html[data-theme="casefiles"] .seg { border-radius: var(--r-s); }
+  .seg button { border: 0; background: none; padding: 6px 12px; border-radius: 999px; font-size: 13px; color: var(--dim); cursor: pointer; }
+  html[data-theme="skyisles"] .seg button, html[data-theme="ledger"] .seg button, html[data-theme="casefiles"] .seg button { border-radius: var(--r-s); }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(208px, 1fr)); gap: 16px; }
+  .card { --rc: var(--accent); position: relative; display: flex; flex-direction: column; text-align: left; text-decoration: none; color: inherit; border: 1px solid var(--border); border-radius: var(--r-m); background: var(--panel); overflow: hidden; transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .2s; animation: rise .5s var(--ease) both; }
+  .card::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--rc), transparent); opacity: .85; }
+  a.card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--rc) 55%, var(--border)); box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--rc) 35%, transparent); }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+  .thumb { position: relative; aspect-ratio: 4 / 3; background: radial-gradient(120% 90% at 50% 30%, var(--studio-a), var(--studio-b)); overflow: hidden; display: grid; place-items: center; }
+  .thumb::after { content: ""; position: absolute; inset: auto 0 0 0; height: 40%; background: radial-gradient(60% 100% at 50% 100%, color-mix(in srgb, var(--rc) 22%, transparent), transparent 70%); pointer-events: none; }
+  .thumb canvas { width: 80%; height: 80%; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45)); transition: transform .6s var(--ease); }
+  a.card:hover .thumb canvas { transform: scale(1.06); }
+  .thumb .blank { display: grid; justify-items: center; gap: 8px; color: rgba(230,235,245,.45); font-size: 12.5px; }
+  .thumb .blank svg { width: 34px; height: 34px; }
+  .card.is-missing .meta .nm { color: var(--dim); }
+  .tag { position: absolute; left: 10px; top: 10px; z-index: 1; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 7px; border-radius: 999px; color: #fff; background: rgba(0,0,0,.42); backdrop-filter: blur(4px); }
+  html[data-theme="skyisles"] .tag, html[data-theme="ledger"] .tag { border-radius: 0; }
+  .tag::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; background: var(--rc); box-shadow: 0 0 8px var(--rc); }
+  .season { position: absolute; right: 10px; top: 10px; z-index: 1; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; color: #1b1206; background: #ffb547; }
+  html[data-theme="skyisles"] .season, html[data-theme="ledger"] .season { border-radius: 0; }
+  .meta { padding: 11px 13px 13px; display: grid; gap: 3px; }
+  .meta .nm { font-weight: 700; font-size: 15.5px; color: var(--text); }
+  .meta .sub { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--dim); }
+  .st { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; font-size: 12px; white-space: nowrap; }
+  .st::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .st.sure { color: var(--good); } .st.maybe { color: var(--gold); } .st.unseen { color: var(--faint); }
+  .st.unseen::before { background: none; border: 1.5px solid currentColor; width: 5px; height: 5px; }
+  .empty { padding: 60px 20px; text-align: center; color: var(--dim); border: 1px dashed var(--border); border-radius: var(--r-l); }
+  .empty b { display: block; color: var(--text); font-size: 17px; margin-bottom: 4px; }
+
+  @media (max-width: 900px) {
+    .page { padding: 14px 16px 50px; }
+    .hero { grid-template-columns: 1fr; margin: 16px 0 14px; }
+    .layout { grid-template-columns: 1fr; gap: 14px; }
+    .rail { position: static; flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; scrollbar-width: none; }
+    .rail-label { display: none; }
+    .cat { width: auto; flex: none; border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; white-space: nowrap; }
+    .cat[aria-pressed="true"] { box-shadow: none; border-color: var(--accent); }
+    .cat .ic { width: 16px; height: 16px; }
+    .seg { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+    .seg button { white-space: nowrap; }
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .meta { padding: 9px 10px 10px; } .meta .nm { font-size: 14px; }
+    .meta .sub { flex-wrap: wrap; gap: 2px 8px; } .st { margin-left: 0; }
+  }
+
+  /* Shared with the one-map view */
+  .at-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: var(--r-s); border: 1px solid var(--border); background: var(--panel); color: var(--text); font-weight: 600; font-size: 0.92em; white-space: nowrap; transition: border-color .2s, background .2s; text-decoration: none; }
   .at-btn:hover { border-color: var(--border-strong); background: var(--panel-2); }
-  .at-btn svg { width: 16px; height: 16px; }
-  .at-btn input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-  .at-head .at-btn { margin-top: 14px; position: relative; }
-
-  .at-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 26px 0 8px; }
-  .at-stat { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-m); padding: 14px 16px; min-width: 0; }
-  .at-stat b { display: block; font: 800 1.7em/1.1 var(--font-title); font-variant-numeric: tabular-nums; }
-  html[data-theme="casefiles"] .at-stat b { font-weight: 400; }
-  .at-stat span { color: var(--dim); font-size: 0.86em; }
-  .at-small { color: var(--faint); font-size: 0.82em; margin: 6px 2px 0; }
-  .at-note { margin: 18px 0 0; padding: 12px 14px; border-radius: var(--r-m); background: var(--panel); border: 1px solid var(--border-strong); }
-  .at-note.is-warn { border-color: var(--bad); color: var(--bad); }
-
-  .at-tools { display: flex; align-items: center; gap: 12px; margin: 30px 0 14px; flex-wrap: wrap; }
-  .at-h2 { margin: 0; font: 700 1.25em/1.2 var(--font-title); flex: 1; }
-  html[data-theme="casefiles"] .at-h2 { font-weight: 400; text-transform: uppercase; letter-spacing: 0.04em; }
-  .at-h2 small { color: var(--dim); font: 600 0.62em var(--font); margin-left: 8px; letter-spacing: 0; text-transform: none; }
-  .at-search { width: min(260px, 100%); padding: 9px 12px; border-radius: var(--r-s); border: 1px solid var(--border); background: var(--panel); }
-  .at-search::placeholder { color: var(--faint); }
-
-  .at-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
-  .at-card { display: flex; flex-direction: column; text-decoration: none; color: inherit; background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-m); overflow: hidden; transition: transform .25s var(--ease), border-color .2s, box-shadow .25s; }
-  .at-card:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow); }
-  .at-thumb { aspect-ratio: 1; background: radial-gradient(circle at 50% 40%, #1b2a44, #0b111d 75%); display: grid; place-items: center; overflow: hidden; }
-  html[data-theme="casefiles"] .at-thumb, html[data-theme="ledger"] .at-thumb, html[data-theme="harvest"] .at-thumb, html[data-theme="skyisles"] .at-thumb { background: radial-gradient(circle at 50% 40%, #3a4a63, #1c2533 80%); }
-  .at-thumb canvas { width: 92%; height: 92%; image-rendering: pixelated; transition: transform .5s var(--ease); filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45)); }
-  .at-card:hover .at-thumb canvas { transform: scale(1.05) rotate(-1.5deg); }
-  .at-card-body { padding: 12px 14px 14px; }
-  .at-card h3 { margin: 0 0 6px; font: 700 1.05em/1.25 var(--font-title); }
-  html[data-theme="casefiles"] .at-card h3 { font-weight: 400; letter-spacing: 0.03em; }
-  .at-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-  .at-chip { font-size: 0.74em; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--panel-2); color: var(--dim); border: 1px solid var(--glass-line); }
-  html[data-theme="skyisles"] .at-chip { border-radius: 0; }
-  .at-chip.is-in { color: var(--good); }
-  .at-chip.is-season { color: var(--gold); }
-  .at-chip.is-warn { color: var(--bad); }
-  .at-meta { margin: 8px 0 0; color: var(--faint); font-size: 0.82em; }
-  .at-empty { color: var(--dim); background: var(--panel); border: 1px dashed var(--border); border-radius: var(--r-m); padding: 22px; text-align: center; }
-
-  .at-groups { display: grid; gap: 18px; }
-  .at-group h3 { margin: 0 0 8px; font-size: 0.95em; display: flex; gap: 8px; align-items: baseline; }
-  .at-group-count { color: var(--faint); font-weight: 600; font-size: 0.9em; }
-  .at-pills { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-  .at-pill { padding: 5px 11px; border-radius: 999px; background: var(--panel); border: 1px solid var(--border); font-size: 0.88em; font-weight: 600; }
-  html[data-theme="skyisles"] .at-pill { border-radius: 0; }
-  .at-pill.is-have { color: var(--good); border-color: var(--good); }
-  .at-pill.is-have::before { content: "✓ "; }
-  .at-more { margin-top: 26px; }
-  .at-more summary { cursor: pointer; color: var(--dim); font-weight: 600; }
-  .at-more summary:hover { color: var(--text); }
-  .at-more .at-pills { margin-top: 12px; }
-  .at-how { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--dim); font-size: 0.9em; max-width: 75ch; }
-  .at-how p { margin: 0 0 8px; }
 
   /* --- One map --- */
   .at-map { position: fixed; inset: 0; }
@@ -174,10 +211,6 @@
   .at-bar::after { content: ""; display: block; height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .2s; }
 
   @media (max-width: 720px) {
-    .at-stats { grid-template-columns: 1fr 1fr; }
-    .at-stats .at-stat:last-child { grid-column: span 2; }
-    .at-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-    .at-card-body { padding: 10px 11px 12px; }
     .at-mode span, .at-hint, .at-hide-narrow { display: none; }
     .at-titlecard { flex: 1; }
     .at-mapsub { white-space: normal; }
@@ -186,44 +219,40 @@
 </style>
 </head>
 <body>
-<div class="at-list">
-  <header class="at-head">
-    <div class="at-titles">
-      <a class="at-back" href="./"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Tracker</a>
-      <h1 class="at-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg>Prism Atlas</h1>
-      <p class="at-lede">Every Bed Wars map from your saved games, in 3D, exactly as Hypixel built it: no player blocks, no waiting lobby, no island toppers.</p>
-    </div>
-    <label class="at-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Open a replay file<input type="file" class="at-file" accept=".mcpr,.patl,application/zip,application/gzip"></label>
+<div class="page at-list">
+  <header class="top">
+    <a class="back" href="./"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Tracker</a>
+    <label class="open-file" title="See any replay's map, from a file on this computer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Open a replay file<input type="file" class="at-file" accept=".mcpr,.patl,application/zip,application/gzip"></label>
   </header>
 
-  <section class="at-stats" aria-label="Summary">
-    <div class="at-stat"><b id="atCount">–</b><span>maps in the Atlas</span></div>
-    <div class="at-stat"><b id="atCovered">–</b><span>of the maps in rotation now</span></div>
-    <div class="at-stat"><b id="atGames">–</b><span id="atGamesNote">saved replays</span></div>
+  <section class="hero">
+    <div>
+      <h1>Prism <span>Atlas</span></h1>
+      <p class="tally" id="tally"></p>
+    </div>
+    <label class="search">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <input id="q" type="search" placeholder="Search maps, e.g. lighthouse" autocomplete="off" aria-label="Search maps">
+      <kbd>/</kbd>
+    </label>
   </section>
-  <p class="at-small" id="atAsOf"></p>
-  <p class="at-note" id="atNote" hidden></p>
-  <p class="at-note is-warn" id="atFailed" hidden></p>
+  <p class="note" id="atNote" hidden></p>
 
-  <div class="at-tools">
-    <h2 class="at-h2">Your maps</h2>
-    <input class="at-search" id="atSearch" type="search" placeholder="Find a map" aria-label="Find a map">
-  </div>
-  <div class="at-grid" id="atGrid"></div>
-  <p class="at-empty" id="atEmpty" hidden>No maps yet. A map shows up here once a game on it has been saved as a replay; the server reads new replays every few minutes.</p>
-
-  <div class="at-tools">
-    <h2 class="at-h2"><span id="atMissingTitle">Not in the Atlas yet</span> <small id="atMissingCount"></small></h2>
-  </div>
-  <div class="at-groups" id="atMissing"></div>
-  <details class="at-more">
-    <summary>Out of rotation right now (<span id="atOutCount">0</span>)</summary>
-    <ul class="at-pills" id="atOut"></ul>
-  </details>
-
-  <div class="at-how">
-    <p><b>How the maps are made.</b> Hypixel sends the whole map while everyone waits before the start. The Atlas keeps the map from that moment, takes away the waiting lobby above the middle, and leaves out the island toppers added at the start and everything players do later. Several games of one map are stitched together, and the newest game wins if Hypixel changed the map.</p>
-    <p>The rotation list is kept by players (JaayMC's Bed Wars map list) and updated each Monday.</p>
+  <div class="layout">
+    <nav class="rail" id="rail" aria-label="Categories"><p class="rail-label">Categories</p></nav>
+    <main>
+      <div class="bar">
+        <h2 id="heading">All maps</h2>
+        <div class="seg" id="haveSeg" role="group" aria-label="Show">
+          <button type="button" data-h="all" aria-pressed="true">All</button>
+          <button type="button" data-h="have" aria-pressed="false">In the Atlas</button>
+          <button type="button" data-h="need" aria-pressed="false">Still needed</button>
+          <button type="button" data-h="out" aria-pressed="false">Out of rotation</button>
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" hidden><b>Nothing matches that</b><span id="emptyText">Try another word, or another category.</span></div>
+    </main>
   </div>
 </div>
 

@@ -11,6 +11,7 @@ class Sounds {
     this.map = null
     this.on = true
     this.volume = 0.7
+    this.range = 2 // hearing distance, times Minecraft's (spectating from further away)
     this.playing = new Set()
     this.cursor = 0
     fetch('replay/sounds.json').then(r => r.ok ? r.json() : null).then(m => { this.map = m }).catch(() => {})
@@ -38,7 +39,9 @@ class Sounds {
     if (!files || this.playing.size >= MAX_PLAYING) return
     const dist = Math.hypot(s.x - cam.x, s.y - cam.y, s.z - cam.z)
     // Minecraft: heard up to 16 blocks (more for loud sounds), fading out.
-    const v = s.volume > 1 ? Math.max(0, 1 - dist / (16 * s.volume)) : s.volume * Math.max(0, 1 - dist / 16)
+    // The replay stretches that by the hearing range setting.
+    const R = 16 * this.range
+    const v = s.volume > 1 ? Math.max(0, 1 - dist / (R * s.volume)) : s.volume * Math.max(0, 1 - dist / R)
     if (v <= 0.01) return
     const h = files[Math.floor(Math.random() * files.length)]
     const a = new Audio(BASE + h.slice(0, 2) + '/' + h)

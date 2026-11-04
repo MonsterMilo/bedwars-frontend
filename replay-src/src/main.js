@@ -167,7 +167,7 @@ async function runViewer (tl, details) {
 
   // --- Settings (remembered in this browser) ---
   const SETTINGS_KEY = 'replaySettings'
-  const settings = { chat: true, feed: true, names: true, invis: true, particles: true, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860 }
+  const settings = { chat: true, feed: true, names: true, invis: true, particles: true, hearing: 2, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860 }
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) } catch { /* private window */ }
   const saveSettings = () => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ } }
 
@@ -189,6 +189,7 @@ async function runViewer (tl, details) {
     cam.smooth = settings.smooth
     cam.sensitivity = settings.sensitivity
     sounds.volume = settings.volume
+    sounds.range = settings.hearing
     sounds.setOn(settings.volume > 0)
     $('rp').classList.toggle('is-collapsed', !settings.panel)
     $('rpPanelBtn').setAttribute('aria-pressed', String(settings.panel))
@@ -647,7 +648,9 @@ async function runViewer (tl, details) {
     cam.update(dt)
     cracks.update(now)
     particles.update(now, camera, renderer.getDrawingBufferSize(drawSize).y)
-    sounds.update(prevNow, now, playing, speed, camera.position)
+    // Following someone: hear from where they are, not from the camera behind them.
+    const ear = (cam.mode === 'follow' || cam.mode === 'eyes') && cam.focus ? cam.focus : camera.position
+    sounds.update(prevNow, now, playing, speed, ear)
     prevNow = now
     blocks.tick(ts / 1000)
     tickGlint(ts / 1000)

@@ -1,5 +1,6 @@
 // Builds the replay viewer into ../replay/ (committed, since the site has
-// no build step): app.js (the page), mesh.js (the block-meshing worker),
+// no build step): app.js (the page), atlas.js (the Atlas page, atlas.html),
+// mesh.js (the block-meshing worker),
 // and the block data/texture atlas from build-assets.mjs.
 import * as esbuild from 'esbuild'
 import fs from 'node:fs'
@@ -13,7 +14,7 @@ const out = path.join(here, '..', 'replay')
 for (const f of ['worker.js', 'textures', 'blocksStates']) fs.rmSync(path.join(out, f), { recursive: true, force: true })
 
 const result = await esbuild.build({
-  entryPoints: { app: path.join(here, 'src', 'main.js'), mesh: path.join(here, 'src', 'mesh-worker.js') },
+  entryPoints: { app: path.join(here, 'src', 'main.js'), atlas: path.join(here, 'src', 'atlas.js'), mesh: path.join(here, 'src', 'mesh-worker.js') },
   bundle: true,
   outdir: out,
   minify: true,

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Prism Atlas</title>
+<link rel="icon" href="icons/icon-192.png">
+<script>
+  // Same theme as the tracker site (Neon, Case Files, Ledger, Deep Current,
+  // Sky Isles, Harvest), with its fonts.
+  (function () {
+    var FONTS = {
+      neon: 'family=Manrope:wght@400;500;600;700;800',
+      casefiles: 'family=Courier+Prime:wght@400;700&family=Anton',
+      ledger: 'family=EB+Garamond:wght@400;600&family=Playfair+Display:wght@600;700',
+      deepcurrent: 'family=Sora:wght@400;500;600;700&family=Chakra+Petch:wght@600;700',
+      skyisles: 'family=Jersey+10&family=Silkscreen:wght@400;700',
+      harvest: 'family=Bitter:wght@400;600;700&family=Ultra'
+    }
+    var theme = 'neon'
+    try { theme = localStorage.getItem('siteTheme') || 'neon' } catch (e) {}
+    if (!FONTS[theme]) theme = 'neon'
+    document.documentElement.setAttribute('data-theme', theme)
+    var link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://fonts.googleapis.com/css2?' + FONTS[theme] + '&display=swap'
+    document.head.appendChild(link)
+  })()
+</script>
+<style>
+  /* Tokens follow the tracker's themes. */
+  :root {
+    --bg: #04050a; --panel: #12151f; --panel-2: #1a1f2d; --border: rgba(255,255,255,0.08); --border-strong: rgba(0,217,255,0.4);
+    --accent: #00d9ff; --accent-2: #a855f7; --accent-ink: #031018; --text: #eef0f6; --dim: #8f98ab; --faint: #6c7486;
+    --good: #34e0a1; --bad: #ff5c72; --gold: #ffd166; --bed: #ffb347;
+    --glass: rgba(14,17,26,0.72); --glass-2: rgba(26,31,45,0.85); --glass-line: rgba(255,255,255,0.09);
+    --r-s: 8px; --r-m: 14px; --r-l: 20px;
+    --shadow: 0 12px 34px rgba(0,0,0,0.45);
+    --font: 'Manrope', 'Segoe UI', system-ui, sans-serif; --font-title: var(--font);
+    --ease: cubic-bezier(.22,.85,.32,1);
+    --glow: 0 0 0 1px rgba(0,217,255,0.35), 0 0 18px rgba(0,217,255,0.25);
+  }
+  html[data-theme="casefiles"] { --bg: #efe6cc; --panel: #fbf6e6; --panel-2: #f2e9cf; --border: #c9b98a; --border-strong: #a3915c; --accent: #2e4a5c; --accent-2: #a32f1d; --accent-ink: #fbf6e6; --text: #2a241c; --dim: #5c5340; --faint: #7a705a; --good: #2e6b46; --bad: #a32f1d; --gold: #b8912f; --glass: rgba(251,246,230,0.9); --glass-2: rgba(242,233,207,0.95); --glass-line: #c9b98a; --r-s: 3px; --r-m: 4px; --r-l: 6px; --shadow: 0 10px 18px -8px rgba(42,36,28,0.45); --font: 'Courier Prime', 'Courier New', monospace; --font-title: 'Anton', Impact, sans-serif; --glow: 0 0 0 2px #2e4a5c; }
+  html[data-theme="ledger"] { --bg: #ffffff; --panel: #fdfdfc; --panel-2: #f6f4ee; --border: #dcd6c6; --border-strong: #c9bf9e; --accent: #a9822e; --accent-2: #16233a; --accent-ink: #ffffff; --text: #16233a; --dim: #5c6678; --faint: #7a8090; --good: #3a6b4a; --bad: #8a1f2b; --gold: #a9822e; --glass: rgba(253,253,252,0.92); --glass-2: rgba(246,244,238,0.96); --glass-line: #dcd6c6; --r-s: 2px; --r-m: 2px; --r-l: 3px; --shadow: 0 14px 30px -18px rgba(22,35,58,0.35); --font: 'EB Garamond', Georgia, serif; --font-title: 'Playfair Display', Georgia, serif; --glow: 0 0 0 2px #a9822e; }
+  html[data-theme="deepcurrent"] { --bg: #030c14; --panel: #0a2130; --panel-2: #0e2a3c; --border: rgba(255,255,255,0.08); --border-strong: rgba(53,230,196,0.4); --accent: #35e6c4; --accent-2: #9b6bff; --accent-ink: #021614; --text: #e6f6f4; --dim: #82a9ae; --faint: #648086; --good: #3fd68a; --bad: #ff5a5a; --gold: #c99a4a; --glass: rgba(6,24,36,0.74); --glass-2: rgba(14,42,60,0.88); --glass-line: rgba(53,230,196,0.16); --r-s: 10px; --r-m: 16px; --r-l: 20px; --font: 'Sora', 'Segoe UI', sans-serif; --font-title: 'Chakra Petch', 'Sora', sans-serif; --glow: 0 0 0 1px rgba(53,230,196,0.45), 0 0 18px rgba(53,230,196,0.25); }
+  html[data-theme="skyisles"] { --bg: #8fd0ff; --panel: #fbfdf5; --panel-2: #eef6fb; --border: #c3d6e3; --border-strong: #2d6a9f; --accent: #3f9a26; --accent-2: #2d6a9f; --accent-ink: #ffffff; --text: #173247; --dim: #4b6a82; --faint: #6c8294; --good: #2e8f2a; --bad: #d23a2e; --gold: #c98a0b; --glass: rgba(251,253,245,0.93); --glass-2: rgba(238,246,251,0.97); --glass-line: #173247; --r-s: 0px; --r-m: 0px; --r-l: 0px; --shadow: 4px 4px 0 rgba(23,50,71,0.28); --font: 'Jersey 10', 'Silkscreen', monospace; --font-title: 'Silkscreen', monospace; --glow: 0 0 0 2px #173247; }
+  html[data-theme="skyisles"] body { font-size: 17px; }
+  html[data-theme="harvest"] { --bg: #e7c99a; --panel: #fbf3e2; --panel-2: #f4e8cf; --border: rgba(91,58,34,0.2); --border-strong: rgba(168,50,43,0.45); --accent: #a8322b; --accent-2: #c98a1c; --accent-ink: #fbf3e2; --text: #3b2414; --dim: #6e5038; --faint: #8e7055; --good: #4f7a32; --bad: #b3261e; --gold: #c98a1c; --glass: rgba(251,243,226,0.93); --glass-2: rgba(244,232,207,0.97); --glass-line: rgba(91,58,34,0.25); --r-s: 3px; --r-m: 5px; --r-l: 7px; --shadow: 0 16px 30px -16px rgba(59,36,20,0.55); --font: 'Bitter', Georgia, serif; --font-title: 'Ultra', Georgia, serif; --glow: 0 0 0 2px #a8322b; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 var(--font); }
+  body[data-view="map"] { overflow: hidden; height: 100%; }
+  button, select, input { font: inherit; color: inherit; }
+  button, label.at-btn { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+  .glass { background: var(--glass); border: 1px solid var(--glass-line); box-shadow: var(--shadow); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2); }
+  body[data-view="map"] .at-list, body[data-view="list"] .at-map { display: none; }
+  body:not([data-view]) .at-list, body:not([data-view]) .at-map { visibility: hidden; }
+
+  /* --- List --- */
+  .at-list { max-width: 1120px; margin: 0 auto; padding: 28px 16px 64px; }
+  .at-head { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+  .at-back { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); text-decoration: none; font-weight: 600; font-size: 0.92em; padding: 6px 10px 6px 6px; border-radius: var(--r-s); }
+  .at-back:hover { color: var(--text); background: var(--panel-2); }
+  .at-back svg { width: 18px; height: 18px; }
+  .at-titles { flex: 1; min-width: 240px; }
+  .at-title { margin: 6px 0 4px; font: 800 clamp(1.9em, 4vw, 2.6em)/1.1 var(--font-title); letter-spacing: -0.01em; display: flex; align-items: center; gap: 12px; }
+  html[data-theme="casefiles"] .at-title { font-weight: 400; text-transform: uppercase; letter-spacing: 0.03em; }
+  .at-title svg { width: 0.9em; height: 0.9em; color: var(--accent); flex: none; }
+  .at-lede { margin: 0; color: var(--dim); max-width: 60ch; }
+  .at-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: var(--r-s); border: 1px solid var(--border); background: var(--panel); color: var(--text); font-weight: 600; font-size: 0.92em; white-space: nowrap; transition: border-color .2s, background .2s; }
+  .at-btn:hover { border-color: var(--border-strong); background: var(--panel-2); }
+  .at-btn svg { width: 16px; height: 16px; }
+  .at-btn input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .at-head .at-btn { margin-top: 14px; position: relative; }
+
+  .at-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 26px 0 8px; }
+  .at-stat { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-m); padding: 14px 16px; min-width: 0; }
+  .at-stat b { display: block; font: 800 1.7em/1.1 var(--font-title); font-variant-numeric: tabular-nums; }
+  html[data-theme="casefiles"] .at-stat b { font-weight: 400; }
+  .at-stat span { color: var(--dim); font-size: 0.86em; }
+  .at-small { color: var(--faint); font-size: 0.82em; margin: 6px 2px 0; }
+  .at-note { margin: 18px 0 0; padding: 12px 14px; border-radius: var(--r-m); background: var(--panel); border: 1px solid var(--border-strong); }
+  .at-note.is-warn { border-color: var(--bad); color: var(--bad); }
+
+  .at-tools { display: flex; align-items: center; gap: 12px; margin: 30px 0 14px; flex-wrap: wrap; }
+  .at-h2 { margin: 0; font: 700 1.25em/1.2 var(--font-title); flex: 1; }
+  html[data-theme="casefiles"] .at-h2 { font-weight: 400; text-transform: uppercase; letter-spacing: 0.04em; }
+  .at-h2 small { color: var(--dim); font: 600 0.62em var(--font); margin-left: 8px; letter-spacing: 0; text-transform: none; }
+  .at-search { width: min(260px, 100%); padding: 9px 12px; border-radius: var(--r-s); border: 1px solid var(--border); background: var(--panel); }
+  .at-search::placeholder { color: var(--faint); }
+
+  .at-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+  .at-card { display: flex; flex-direction: column; text-decoration: none; color: inherit; background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-m); overflow: hidden; transition: transform .25s var(--ease), border-color .2s, box-shadow .25s; }
+  .at-card:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow); }
+  .at-thumb { aspect-ratio: 1; background: radial-gradient(circle at 50% 40%, #1b2a44, #0b111d 75%); display: grid; place-items: center; overflow: hidden; }
+  html[data-theme="casefiles"] .at-thumb, html[data-theme="ledger"] .at-thumb, html[data-theme="harvest"] .at-thumb, html[data-theme="skyisles"] .at-thumb { background: radial-gradient(circle at 50% 40%, #3a4a63, #1c2533 80%); }
+  .at-thumb canvas { width: 92%; height: 92%; image-rendering: pixelated; transition: transform .5s var(--ease); filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45)); }
+  .at-card:hover .at-thumb canvas { transform: scale(1.05) rotate(-1.5deg); }
+  .at-card-body { padding: 12px 14px 14px; }
+  .at-card h3 { margin: 0 0 6px; font: 700 1.05em/1.25 var(--font-title); }
+  html[data-theme="casefiles"] .at-card h3 { font-weight: 400; letter-spacing: 0.03em; }
+  .at-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .at-chip { font-size: 0.74em; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--panel-2); color: var(--dim); border: 1px solid var(--glass-line); }
+  html[data-theme="skyisles"] .at-chip { border-radius: 0; }
+  .at-chip.is-in { color: var(--good); }
+  .at-chip.is-season { color: var(--gold); }
+  .at-chip.is-warn { color: var(--bad); }
+  .at-meta { margin: 8px 0 0; color: var(--faint); font-size: 0.82em; }
+  .at-empty { color: var(--dim); background: var(--panel); border: 1px dashed var(--border); border-radius: var(--r-m); padding: 22px; text-align: center; }
+
+  .at-groups { display: grid; gap: 18px; }
+  .at-group h3 { margin: 0 0 8px; font-size: 0.95em; display: flex; gap: 8px; align-items: baseline; }
+  .at-group-count { color: var(--faint); font-weight: 600; font-size: 0.9em; }
+  .at-pills { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .at-pill { padding: 5px 11px; border-radius: 999px; background: var(--panel); border: 1px solid var(--border); font-size: 0.88em; font-weight: 600; }
+  html[data-theme="skyisles"] .at-pill { border-radius: 0; }
+  .at-pill.is-have { color: var(--good); border-color: var(--good); }
+  .at-pill.is-have::before { content: "✓ "; }
+  .at-more { margin-top: 26px; }
+  .at-more summary { cursor: pointer; color: var(--dim); font-weight: 600; }
+  .at-more summary:hover { color: var(--text); }
+  .at-more .at-pills { margin-top: 12px; }
+  .at-how { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--dim); font-size: 0.9em; max-width: 75ch; }
+  .at-how p { margin: 0 0 8px; }
+
+  /* --- One map --- */
+  .at-map { position: fixed; inset: 0; }
+  .at-stage { position: absolute; inset: 0; background: #9ec9f5; touch-action: none; }
+  .at-stage canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+  .at-stage canvas:active { cursor: grabbing; }
+  .at-top { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; align-items: center; gap: 10px; pointer-events: none; z-index: 3; flex-wrap: wrap; }
+  .at-top > * { pointer-events: auto; }
+  .at-titlecard { display: flex; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; border-radius: var(--r-m); min-width: 0; }
+  .at-home { display: grid; place-items: center; width: 34px; height: 34px; border-radius: var(--r-s); color: var(--dim); text-decoration: none; flex: none; }
+  .at-home:hover { background: var(--panel-2); color: var(--text); }
+  .at-maptitle { margin: 0; font: 700 1.05em/1.2 var(--font-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html[data-theme="casefiles"] .at-maptitle { font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; }
+  .at-mapsub { color: var(--dim); font-size: 0.82em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .at-spacer { flex: 1; }
+  .at-modes { display: flex; padding: 4px; gap: 2px; border-radius: var(--r-m); }
+  .at-mode { border: 0; background: transparent; color: var(--dim); padding: 7px 12px; border-radius: var(--r-s); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .at-mode svg { width: 16px; height: 16px; }
+  .at-mode:hover { color: var(--text); background: var(--panel-2); }
+  .at-mode[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .at-iconbar { display: flex; gap: 4px; padding: 4px; border-radius: var(--r-m); }
+  .at-icon { display: grid; place-items: center; width: 36px; height: 36px; border: 0; background: transparent; color: var(--dim); border-radius: var(--r-s); }
+  .at-icon svg { width: 18px; height: 18px; }
+  .at-icon:hover { background: var(--panel-2); color: var(--text); }
+  .at-warn { position: absolute; left: 12px; bottom: 12px; max-width: min(420px, calc(100% - 24px)); padding: 10px 14px; border-radius: var(--r-m); font-size: 0.85em; color: var(--dim); z-index: 2; }
+  .at-warn b { color: var(--text); }
+  .at-hint { position: absolute; right: 12px; bottom: 12px; padding: 8px 12px; border-radius: var(--r-m); font-size: 0.82em; color: var(--dim); z-index: 2; }
+  .at-hint kbd, .at-keys kbd { display: inline-block; min-width: 20px; text-align: center; padding: 0 5px; border-radius: 5px; background: var(--panel-2); border: 1px solid var(--glass-line); border-bottom-width: 2px; font: 600 0.88em var(--font); color: var(--text); }
+  .at-toast { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); padding: 10px 18px; border-radius: var(--r-m); font-weight: 700; z-index: 4; pointer-events: none; opacity: 0; transition: opacity .25s; }
+  .at-toast.is-on { opacity: 1; }
+  .at-help { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.35); z-index: 7; padding: 16px; }
+  .at-help-box { width: min(500px, 100%); border-radius: var(--r-l); padding: 18px 20px; }
+  .at-help-box h2 { margin: 0 0 12px; font: 700 1.1em var(--font-title); }
+  .at-keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; align-items: center; font-size: 0.92em; }
+  .at-help-box p { color: var(--dim); font-size: 0.86em; margin: 12px 0 0; }
+
+  .at-loading { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at center, var(--panel) 0%, var(--bg) 75%); z-index: 8; padding: 16px; }
+  .at-loading-box { width: min(420px, 100%); text-align: center; }
+  .at-logo { width: 54px; height: 54px; margin: 0 auto 14px; border-radius: 14px; display: grid; place-items: center; background: var(--panel-2); box-shadow: var(--glow); }
+  .at-logo svg { width: 28px; height: 28px; color: var(--accent); animation: at-spin 2.4s linear infinite; }
+  @keyframes at-spin { to { transform: rotate(360deg); } }
+  .at-loading.is-error .at-logo svg { animation: none; color: var(--bad); }
+  .at-loading-text { font-weight: 700; }
+  .at-loading.is-error .at-loading-text { color: var(--bad); font-weight: 600; }
+  .at-loading-back { display: none; margin-top: 16px; }
+  .at-loading.is-error .at-loading-back { display: inline-flex; }
+  .at-bar { height: 6px; border-radius: 3px; background: var(--panel-2); margin-top: 14px; overflow: hidden; }
+  .at-bar::after { content: ""; display: block; height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .2s; }
+
+  @media (max-width: 720px) {
+    .at-stats { grid-template-columns: 1fr 1fr; }
+    .at-stats .at-stat:last-child { grid-column: span 2; }
+    .at-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .at-card-body { padding: 10px 11px 12px; }
+    .at-mode span, .at-hint, .at-hide-narrow { display: none; }
+    .at-titlecard { flex: 1; }
+    .at-mapsub { white-space: normal; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="at-list">
+  <header class="at-head">
+    <div class="at-titles">
+      <a class="at-back" href="./"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Tracker</a>
+      <h1 class="at-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg>Prism Atlas</h1>
+      <p class="at-lede">Every Bed Wars map from your saved games, in 3D, exactly as Hypixel built it: no player blocks, no waiting lobby, no island toppers.</p>
+    </div>
+    <label class="at-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Open a replay file<input type="file" class="at-file" accept=".mcpr,.patl,application/zip,application/gzip"></label>
+  </header>
+
+  <section class="at-stats" aria-label="Summary">
+    <div class="at-stat"><b id="atCount">–</b><span>maps in the Atlas</span></div>
+    <div class="at-stat"><b id="atCovered">–</b><span>of the maps in rotation now</span></div>
+    <div class="at-stat"><b id="atGames">–</b><span id="atGamesNote">saved replays</span></div>
+  </section>
+  <p class="at-small" id="atAsOf"></p>
+  <p class="at-note" id="atNote" hidden></p>
+  <p class="at-note is-warn" id="atFailed" hidden></p>
+
+  <div class="at-tools">
+    <h2 class="at-h2">Your maps</h2>
+    <input class="at-search" id="atSearch" type="search" placeholder="Find a map" aria-label="Find a map">
+  </div>
+  <div class="at-grid" id="atGrid"></div>
+  <p class="at-empty" id="atEmpty" hidden>No maps yet. A map shows up here once a game on it has been saved as a replay; the server reads new replays every few minutes.</p>
+
+  <div class="at-tools">
+    <h2 class="at-h2"><span id="atMissingTitle">Not in the Atlas yet</span> <small id="atMissingCount"></small></h2>
+  </div>
+  <div class="at-groups" id="atMissing"></div>
+  <details class="at-more">
+    <summary>Out of rotation right now (<span id="atOutCount">0</span>)</summary>
+    <ul class="at-pills" id="atOut"></ul>
+  </details>
+
+  <div class="at-how">
+    <p><b>How the maps are made.</b> Hypixel sends the whole map while everyone waits before the start. The Atlas keeps the map from that moment, takes away the waiting lobby above the middle, and leaves out the island toppers added at the start and everything players do later. Several games of one map are stitched together, and the newest game wins if Hypixel changed the map.</p>
+    <p>The rotation list is kept by players (JaayMC's Bed Wars map list) and updated each Monday.</p>
+  </div>
+</div>
+
+<div class="at-map">
+  <div class="at-stage" id="atStage"></div>
+  <div class="at-top">
+    <div class="at-titlecard glass">
+      <a class="at-home" href="atlas.html" title="All maps" aria-label="All maps"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
+      <div style="min-width:0">
+        <h1 class="at-maptitle" id="atMapTitle">Map</h1>
+        <div class="at-mapsub" id="atMapSub">Prism Atlas</div>
+      </div>
+    </div>
+    <div class="at-spacer"></div>
+    <div class="at-modes glass" role="group" aria-label="Camera">
+      <button type="button" class="at-mode" data-mode="overview" aria-pressed="true" title="Circle the map (M)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg><span>Map</span></button>
+      <button type="button" class="at-mode" data-mode="free" aria-pressed="false" title="Fly freely (F)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><span>Fly</span></button>
+    </div>
+    <div class="at-iconbar glass">
+      <button type="button" class="at-icon" id="atHelpBtn" title="Controls (?)" aria-label="Controls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg></button>
+      <button type="button" class="at-icon at-hide-narrow" id="atFullBtn" title="Full screen" aria-label="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 00-2 2v3M21 8V5a2 2 0 00-2-2h-3M3 16v3a2 2 0 002 2h3M16 21h3a2 2 0 002-2v-3"/></svg></button>
+    </div>
+  </div>
+  <div class="at-warn glass" id="atMapWarn" hidden><b>Some edges may not be exact.</b> Parts of this map were only seen after the game started, so a few player blocks could be in them. Another game on this map fixes it.</div>
+  <div class="at-hint glass">Drag to turn · <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move · <kbd>?</kbd> for all controls</div>
+  <div class="at-toast glass" id="atToast" role="status"></div>
+  <div class="at-help" id="atHelp" hidden>
+    <div class="at-help-box glass" role="dialog" aria-label="Controls">
+      <h2>Controls</h2>
+      <div class="at-keys">
+        <span>Drag</span><span>Turn the camera</span>
+        <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span>Map view: slide across. Fly: move (<kbd>E</kbd> up, <kbd>Q</kbd> down)</span>
+        <span><kbd>Shift</kbd></span><span>Faster</span>
+        <span>Wheel / pinch</span><span>Map view: zoom. Fly: flying speed</span>
+        <span>Double-click</span><span>Go to that spot</span>
+        <span><kbd>M</kbd> <kbd>F</kbd></span><span>Map view / fly</span>
+        <span><kbd>R</kbd></span><span>Back to the whole map</span>
+      </div>
+      <p>Click anywhere to close.</p>
+    </div>
+  </div>
+</div>
+
+<div class="at-loading" id="atLoading" role="status">
+  <div class="at-loading-box">
+    <div class="at-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 5v10l-8 5-8-5V7z"/><path d="M12 22V12M20 7l-8 5-8-5"/></svg></div>
+    <div class="at-loading-text" id="atLoadingText">Loading…</div>
+    <div class="at-bar" id="atLoadingBar" hidden></div>
+    <a class="at-btn at-loading-back" href="atlas.html">All maps</a>
+  </div>
+</div>
+<script src="replay/atlas.js"></script>
+</body>
+</html>

@@ -237,6 +237,22 @@
     .rp-titlecard { flex: 1; }
     .rp-hide-narrow { display: none; }
   }
+
+  /* A clip inside the tracker's player popup (?embed=1): only the view, the
+     camera buttons, the kill feed and the play bar. */
+  .rp-embed .rp-side, .rp-embed .rp-home, .rp-embed #rpPanelBtn, .rp-embed #rpHelpBtn, .rp-embed #rpFullBtn,
+  .rp-embed .rp-chat, .rp-embed .rp-noself { display: none !important; }
+  .rp-embed .rp-titlecard { padding: 6px 10px; }
+  .rp-embed .rp-title { font-size: 0.95em; }
+  .rp-embed .rp-sub { font-size: 0.78em; }
+  .rp-embed .rp-modes span { display: none; }
+  .rp-embed .rp-top { top: 8px; left: 8px; right: 8px; }
+  .rp-embed .rp-dock { left: 8px; right: 8px; bottom: 8px; padding: 4px 10px 6px; }
+  .rp-embed .rp-btn { min-width: 30px; height: 30px; padding: 0 6px; }
+  .rp-embed .rp-play { width: 34px; height: 34px; }
+  .rp-embed .rp-play svg { width: 15px; height: 15px; }
+  .rp-embed .rp-time { font-size: 0.85em; }
+  .rp-embed .rp-feed { font-size: 0.8em; }
 </style>
 </head>
 <body>

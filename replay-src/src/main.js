@@ -56,20 +56,28 @@ async function readWithProgress (res, onProgress) {
   return out
 }
 
-async function loadFromBackend (id) {
+/** A replay (what = 'replays') or a clip ('clips') from the backend. */
+async function loadFromBackend (id, what = 'replays') {
+  const noun = what === 'clips' ? 'clip' : 'replay'
   const key = getKey()
-  if (!key) throw new Error('This replay needs your tracker key. Open the tracker site, enter your key there, then come back to this page.')
+  if (!key) throw new Error(`This ${noun} needs your tracker key. Open the tracker site, enter your key there, then come back to this page.`)
   const headers = { 'x-admin-key': key }
   setStatus('Waking up the server…', { progress: 0 })
-  const infoRes = await fetch(`${BACKEND}/replays/${encodeURIComponent(id)}`, { headers })
-  if (!infoRes.ok) throw new Error((await infoRes.json().catch(() => ({}))).error || `Couldn't find this replay (${infoRes.status}).`)
+  const infoRes = await fetch(`${BACKEND}/${what}/${encodeURIComponent(id)}`, { headers })
+  if (!infoRes.ok) throw new Error((await infoRes.json().catch(() => ({}))).error || `Couldn't find this ${noun} (${infoRes.status}).`)
   const details = await infoRes.json()
-  setStatus('Downloading the replay…', { progress: 0 })
-  const res = await fetch(`${BACKEND}/replays/${encodeURIComponent(id)}/file`, { headers })
-  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Couldn't download the replay (${res.status}).`)
-  const bytes = await readWithProgress(res, (p) => setStatus('Downloading the replay…', { progress: p }))
+  setStatus(`Downloading the ${noun}…`, { progress: 0 })
+  const res = await fetch(`${BACKEND}/${what}/${encodeURIComponent(id)}/file`, { headers })
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Couldn't download the ${noun} (${res.status}).`)
+  const bytes = await readWithProgress(res, (p) => setStatus(`Downloading the ${noun}…`, { progress: p }))
+  if (what === 'clips') details.isClip = true
   return { bytes, details }
 }
+
+// Inside the tracker's player popup (replay.html?clip=…&embed=1): just the
+// view and the controls, playing on a loop.
+const EMBED = new URLSearchParams(location.search).get('embed') === '1'
+if (EMBED) document.documentElement.classList.add('rp-embed')
 
 const tick = () => new Promise(r => setTimeout(r, 0))
 
@@ -169,7 +177,11 @@ async function runViewer (tl, details) {
   const SETTINGS_KEY = 'replaySettings'
   const settings = { chat: true, feed: true, names: true, invis: true, particles: true, hearing: 2, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860 }
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) } catch { /* private window */ }
-  const saveSettings = () => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ } }
+  const saveSettings = () => { if (EMBED) return; try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ } }
+  // A clip in the popup: no side panel or chat, and starts muted (the
+  // popup shouldn't suddenly make noise).
+  if (EMBED) { settings.panel = false; settings.chat = false; settings.volume = 0 }
+  const clip = details && details.isClip ? details : null
 
   const cam = new ReplayCamera(camera, renderer.domElement)
   cam.solidAt = (x, y, z) => {
@@ -226,6 +238,11 @@ async function runViewer (tl, details) {
   const when = new Date(tl.meta.date || (details && details.playedAt) || Date.now())
   $('rpTitle').textContent = [info.map || (details && details.map), modeName || (details && details.mode)].filter(Boolean).join(' · ') || 'Replay'
   $('rpSub').textContent = when.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) + ' · ' + fmt(tl.duration) + ' · ' + tl.tracks.size + ' players'
+  if (clip) {
+    // "Final kill · Steve" / "by Milo · Lighthouse · 3 Nov, 20:14"
+    $('rpTitle').textContent = (clip.kind === 'bed' ? 'Bed break' : 'Final kill') + ' · ' + (clip.victim || clip.username || '?')
+    $('rpSub').textContent = [clip.by ? 'by ' + clip.by : null, clip.map, when.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })].filter(Boolean).join(' · ')
+  }
   document.title = ($('rpTitle').textContent || 'Replay') + ' · Prism Replay'
 
   // --- Player heads (from each skin's face and hat layer) ---
@@ -623,10 +640,17 @@ async function runViewer (tl, details) {
     }
   }
 
-  // Start just after the cages open, when there's something to see.
-  const startMark = tl.chat.find(l => /Protect your bed and destroy/.test(l.text))
+  // Start just after the cages open, when there's something to see. A clip
+  // starts at its start, following the player it's about, and plays.
+  const startMark = !clip && tl.chat.find(l => /Protect your bed and destroy/.test(l.text))
   seek(startMark ? startMark.t : 0)
   play(false)
+  if (clip) {
+    const name = String(clip.follow || '').toLowerCase()
+    const r = rows.find(x => (x.m.track.name || '').toLowerCase() === name) || defaultPlayer()
+    if (r) { const m = currentModel(r); cam.tYaw = cam.yaw = -m.group.rotation.y + Math.PI; cam.tPitch = -0.35; cam.setMode('follow', m) }
+    play(true)
+  }
   setSpeed(1)
   $('rpToast').classList.remove('is-on')
   applySettings()
@@ -641,7 +665,10 @@ async function runViewer (tl, details) {
     const dt = Math.min(0.1, (ts - last) / 1000); last = ts
     if (playing && !scrubbing) {
       seek(now + dt * 1000 * speed)
-      if (now >= tl.duration) play(false)
+      if (now >= tl.duration) {
+        // Clips loop, after a short hold on the last frame.
+        if (clip) { play(false); setTimeout(() => { if (!playing && now >= tl.duration) { seek(0); play(true) } }, 1200) } else play(false)
+      }
     }
     for (const m of models) m.update(now)
     for (const v of views) v.update(now, camera)
@@ -695,9 +722,13 @@ async function main () {
   pickFile()
   const params = new URLSearchParams(location.search)
   const id = params.get('id')
+  const clipId = params.get('clip')
   const src = params.get('src')
   try {
-    if (id) {
+    if (clipId) {
+      const { bytes, details } = await loadFromBackend(clipId, 'clips')
+      await start(bytes, details)
+    } else if (id) {
       const { bytes, details } = await loadFromBackend(id)
       await start(bytes, details)
     } else if (src && /^[\w./-]+\.mcpr$/.test(src)) {

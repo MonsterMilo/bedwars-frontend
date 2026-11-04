@@ -6,7 +6,7 @@
      denick gists and Google Fonts, and only show images from the skin
      sites. If a script ever got injected it couldn't send someone's saved
      key anywhere else. Add a host here when the site starts using a new one. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://visage.surgeplay.com https://mc-heads.net https://crafatar.com; connect-src 'self' https://bedwars-backend.onrender.com https://gist.githubusercontent.com; media-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://visage.surgeplay.com https://mc-heads.net https://crafatar.com; connect-src 'self' https://bedwars-backend.onrender.com https://gist.githubusercontent.com; media-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; object-src 'none'; frame-src 'self'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Bedwars Sweat Tracker</title>
 <link rel="icon" id="siteFavicon" type="image/svg+xml">
@@ -3963,8 +3963,9 @@ html[data-theme="deepcurrent"] .flip-sheen { --sheen: rgba(80,255,220,0.3); }
       "skin stats"
       "record urchin"
       "notes notes"
+      "clips clips"
       "replays replays";
-    grid-template-rows: auto auto auto 1fr auto auto;
+    grid-template-rows: auto auto auto 1fr auto auto auto;
     column-gap: 22px;
     align-items: start;
   }
@@ -3978,6 +3979,7 @@ html[data-theme="deepcurrent"] .flip-sheen { --sheen: rgba(80,255,220,0.3); }
   #playerModal .modal-tags-urchin { grid-area: urchin; }
   #playerModal .modal-notes { grid-area: notes; }
   #playerModal .modal-replays { grid-area: replays; }
+  #playerModal .modal-clips { grid-area: clips; }
   #playerModal .modal-record[hidden] + .modal-tags-urchin { grid-column: 1 / -1; }
   #playerModal .modal-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #playerModal .modal-stat-tile { padding: 12px 12px 10px; }
@@ -6995,6 +6997,63 @@ html[data-theme="deepcurrent"] .card-stat-value { font-family: 'JetBrains Mono',
 .replay-item-meta { font-size: 0.8em; color: var(--text-dim); overflow-wrap: anywhere; }
 .replay-help { font-size: 0.78em; color: var(--text-faint); margin-top: 4px; }
 .replay-item a.btn { text-decoration: none; display: inline-block; }
+/* CLIPS - the moments this player was beaten (final kill, bed break), cut
+   from the replays by the backend. A player above, cards to scroll below;
+   nothing loads until a card is picked. Theme colours come from the vars. */
+.clip-stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  background: #05070c;
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+.clip-stage[hidden] { display: none; }
+.clip-stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.clip-stage-bar { display: flex; gap: 8px; justify-content: flex-end; margin: -4px 0 10px; }
+.clip-stage-bar[hidden] { display: none; }
+.clip-stage-bar a.btn { text-decoration: none; display: inline-block; }
+.clip-strip {
+  list-style: none;
+  margin: 0 -4px 6px;
+  padding: 4px 4px 8px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+}
+.clip-strip li { flex: 0 0 172px; scroll-snap-align: start; }
+.clip-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  padding: 10px 12px 10px 14px;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s var(--ease), transform .2s var(--ease), box-shadow .2s var(--ease);
+}
+.clip-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--team, var(--accent)); }
+.clip-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+.clip-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.clip-card.is-active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 6px 18px var(--accent-soft); }
+.clip-kind { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 0.9em; }
+.clip-kind svg { width: 16px; height: 16px; flex: 0 0 auto; color: var(--team, var(--accent)); }
+.clip-by { font-size: 0.82em; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clip-meta { font-size: 0.76em; color: var(--text-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clip-play { position: absolute; right: 10px; top: 9px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.clip-play svg { width: 10px; height: 10px; margin-left: 1px; }
+@media (prefers-reduced-motion: reduce) { .clip-card { transition: none; } .clip-card:hover { transform: none; } }
 .modal-notes-empty[hidden] { display: none; }
 .note-list { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; }
 .note-item {
@@ -16610,6 +16669,18 @@ html[data-theme="harvest"] .sotd-stats { gap: 10px 12px; }
         </form>
         <div id="modalNoteStatus" class="modal-note-status" role="alert" aria-live="assertive"></div>
       </div>
+      <div id="modalClips" class="modal-notes modal-clips" hidden>
+        <div class="modal-notes-head">
+          <div class="modal-tags-label">Clips <span id="modalClipsCount" class="modal-notes-count"></span></div>
+        </div>
+        <div id="modalClipStage" class="clip-stage" hidden></div>
+        <div id="modalClipBar" class="clip-stage-bar" hidden>
+          <button type="button" id="modalClipDownload" class="btn btn-ghost note-btn-small">Download</button>
+          <a id="modalClipOpen" class="btn btn-primary note-btn-small" target="_blank" rel="noopener">Open full</a>
+        </div>
+        <ol id="modalClipsList" class="clip-strip" aria-label="Clips"></ol>
+        <div id="modalClipStatus" class="modal-note-status" role="alert" aria-live="assertive"></div>
+      </div>
       <div id="modalReplays" class="modal-notes modal-replays" hidden>
         <div class="modal-notes-head">
           <div class="modal-tags-label">Replays <span id="modalReplaysCount" class="modal-notes-count"></span></div>
@@ -23580,6 +23651,109 @@ async function loadModalReplays(uuid) {
     // No list then - the rest of the popup is unaffected.
   }
 }
+// --- Clips: the moments this player was beaten (backend /clips, keys only) ---
+// The final kill and bed break from each recorded game, cut by the backend
+// when it was close enough to see. Picking a card plays it above the strip
+// in the replay viewer (replay.html?clip=…&embed=1); nothing loads before.
+const modalClips = document.getElementById("modalClips");
+const modalClipsList = document.getElementById("modalClipsList");
+const modalClipsCount = document.getElementById("modalClipsCount");
+const modalClipStage = document.getElementById("modalClipStage");
+const modalClipBar = document.getElementById("modalClipBar");
+const modalClipOpen = document.getElementById("modalClipOpen");
+const modalClipDownload = document.getElementById("modalClipDownload");
+const modalClipStatus = document.getElementById("modalClipStatus");
+const CLIP_TEAM_COLORS = { Red: "#ff5555", Blue: "#5577ff", Green: "#3fcf5f", Yellow: "#e8c930", Aqua: "#3fd6d6", White: "#c9ced8", Pink: "#ff66d0", Gray: "#9aa0a8" };
+const CLIP_ICONS = {
+  final: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6M16 16l4 4M19 21l2-2"/></svg>',
+  bed: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4v16M2 8h18a2 2 0 012 2v10M2 17h20M6 8v9"/></svg>'
+};
+let activeClipId = null;
+function stopModalClip() {
+  activeClipId = null;
+  modalClipStage.textContent = "";
+  modalClipStage.hidden = true;
+  modalClipBar.hidden = true;
+  for (const b of modalClipsList.querySelectorAll(".clip-card")) b.classList.remove("is-active");
+}
+function playModalClip(clip, card) {
+  if (activeClipId === clip.id) return;
+  activeClipId = clip.id;
+  for (const b of modalClipsList.querySelectorAll(".clip-card")) b.classList.toggle("is-active", b === card);
+  const frame = document.createElement("iframe");
+  frame.src = `replay.html?clip=${encodeURIComponent(clip.id)}&embed=1`;
+  frame.title = card.getAttribute("aria-label") || "Clip";
+  frame.allow = "fullscreen";
+  modalClipStage.textContent = "";
+  modalClipStage.appendChild(frame);
+  modalClipStage.hidden = false;
+  modalClipOpen.href = `replay.html?clip=${encodeURIComponent(clip.id)}`;
+  modalClipDownload.onclick = () => downloadClip(clip.id, modalClipDownload);
+  modalClipBar.hidden = false;
+  siteAudio.play("click");
+}
+async function loadModalClips(uuid) {
+  modalClips.hidden = true;
+  modalClipsList.textContent = "";
+  modalClipStatus.textContent = "";
+  stopModalClip();
+  if (!uuid || !getAdminKey()) return;
+  try {
+    const res = await fetch(`${backendBaseURL}/clips?uuid=${encodeURIComponent(uuid)}`, { headers: adminHeaders() });
+    if (!res.ok) return;
+    const { clips = [] } = await res.json();
+    if (modal.dataset.activeUuid !== uuid || !clips.length) return;
+    modalClipsCount.textContent = String(clips.length);
+    for (const c of clips) {
+      const li = document.createElement("li");
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "clip-card";
+      if (c.team && CLIP_TEAM_COLORS[c.team]) card.style.setProperty("--team", CLIP_TEAM_COLORS[c.team]);
+      const what = c.kind === "bed" ? "Bed break" : "Final kill";
+      const played = c.playedAt ? new Date(c.playedAt) : null;
+      const date = played && !isNaN(played) ? played.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+      const kind = document.createElement("span");
+      kind.className = "clip-kind";
+      kind.innerHTML = CLIP_ICONS[c.kind === "bed" ? "bed" : "final"];
+      kind.append(what);
+      const by = document.createElement("span");
+      by.className = "clip-by";
+      // A nick they used that game shows too.
+      const asNick = c.victim && openPlayerName && c.victim.toLowerCase() !== String(openPlayerName).toLowerCase() ? ` (as ${c.victim})` : "";
+      by.textContent = (c.by ? `by ${c.by}` : "") + asNick;
+      const meta = document.createElement("span");
+      meta.className = "clip-meta";
+      meta.textContent = [c.map, date, `${Math.round((c.durationMs || 0) / 1000)}s`].filter(Boolean).join(" · ");
+      const playIcon = document.createElement("span");
+      playIcon.className = "clip-play";
+      playIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 001.5.86l12-7.5a1 1 0 000-1.72l-12-7.5A1 1 0 007 4.5z"/></svg>';
+      card.append(kind, by, meta, playIcon);
+      card.setAttribute("aria-label", `Play ${what.toLowerCase()}${c.by ? " by " + c.by : ""}${date ? ", " + date : ""}`);
+      card.addEventListener("click", () => playModalClip(c, card));
+      li.appendChild(card);
+      modalClipsList.appendChild(li);
+    }
+    modalClips.hidden = false;
+  } catch (err) {
+    // No clips then - the rest of the popup is unaffected.
+  }
+}
+async function downloadClip(id, btn) {
+  btn.disabled = true;
+  modalClipStatus.textContent = "";
+  try {
+    const res = await fetch(`${backendBaseURL}/clips/${encodeURIComponent(id)}/link`, { headers: adminHeaders() });
+    if (!res.ok) throw new Error(await extractErrorMessage(res, "Couldn't get the clip."));
+    const { url } = await res.json();
+    window.location.href = url;
+  } catch (err) {
+    modalClipStatus.textContent = err.message || "Couldn't get the clip.";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 async function downloadReplay(id, btn) {
   btn.disabled = true;
   modalReplayStatus.textContent = "";
@@ -23621,6 +23795,7 @@ async function openPlayerModal(item, { retry = false } = {}) {
     .map(c => `<div class="modal-stat-tile ${c} modal-stat-skeleton" aria-hidden="true"><span class="skeleton-block"></span><span class="skeleton-block"></span></div>`).join("");
   modalRecord.hidden = true;
   renderModalNotes(item);
+  loadModalClips(uuid);
   loadModalReplays(uuid);
   modalTags.textContent = "Checking...";
   modalTagsReason.hidden = true;
@@ -24009,6 +24184,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 function closePlayerModal() {
+  stopModalClip();
   animateModalOut(modal);
   restoreFocusAfterModal();
   openPlayerName = null;

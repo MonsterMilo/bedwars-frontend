@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<!-- Cosmetics Library (prototype): search or browse Bed Wars cosmetics and see each one
+     in a 3D studio preview. Every cosmetic on this page is a made-up example; real
+     ones come later from the Cosmetics plugin's learning. three.js from jsDelivr (pinned),
+     textures from replay/ (the replay viewer's 1.8 assets). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net; media-src 'self' data: blob:; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'">
+<title>Prism Cosmetics</title>
+<link rel="icon" href="icons/icon-192.png">
+<script>
+  // Same theme as the tracker site, with its fonts.
+  (function () {
+    var FONTS = {
+      neon: 'family=Manrope:wght@400;500;600;700;800',
+      casefiles: 'family=Courier+Prime:wght@400;700&family=Anton',
+      ledger: 'family=EB+Garamond:wght@400;600&family=Playfair+Display:wght@600;700',
+      deepcurrent: 'family=Sora:wght@400;500;600;700&family=Chakra+Petch:wght@600;700',
+      skyisles: 'family=Jersey+10&family=Silkscreen:wght@400;700',
+      harvest: 'family=Bitter:wght@400;600;700&family=Ultra'
+    }
+    var theme = 'neon'
+    try { theme = localStorage.getItem('siteTheme') || 'neon' } catch (e) {}
+    var q = /[?&]theme=([a-z]+)/.exec(location.search)
+    if (q) theme = q[1]
+    if (!FONTS[theme]) theme = 'neon'
+    document.documentElement.setAttribute('data-theme', theme)
+    var link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://fonts.googleapis.com/css2?' + FONTS[theme] + '&display=swap'
+    document.head.appendChild(link)
+  })()
+</script>
+<style>
+  :root {
+    --bg: #04050a; --panel: #12151f; --panel-2: #1a1f2d; --border: rgba(255,255,255,0.08); --border-strong: rgba(0,217,255,0.4);
+    --accent: #00d9ff; --accent-2: #a855f7; --accent-ink: #031018; --text: #eef0f6; --dim: #8f98ab; --faint: #6c7486;
+    --good: #34e0a1; --bad: #ff5c72; --gold: #ffd166;
+    --glass: rgba(14,17,26,0.72); --glass-2: rgba(26,31,45,0.85); --glass-line: rgba(255,255,255,0.09);
+    --r-s: 8px; --r-m: 14px; --r-l: 20px;
+    --shadow: 0 12px 34px rgba(0,0,0,0.45);
+    --font: 'Manrope', 'Segoe UI', system-ui, sans-serif; --font-title: var(--font);
+    --ease: cubic-bezier(.22,.85,.32,1);
+    --glow: 0 0 0 1px rgba(0,217,255,0.35), 0 0 18px rgba(0,217,255,0.25);
+    --stage-dark: 1;
+    color-scheme: dark;
+  }
+  html[data-theme="casefiles"] { --bg: #efe6cc; --panel: #fbf6e6; --panel-2: #f2e9cf; --border: #c9b98a; --border-strong: #a3915c; --accent: #2e4a5c; --accent-2: #a32f1d; --accent-ink: #fbf6e6; --text: #2a241c; --dim: #5c5340; --faint: #7a705a; --good: #2e6b46; --bad: #a32f1d; --gold: #b8912f; --glass: rgba(251,246,230,0.9); --glass-2: rgba(242,233,207,0.95); --glass-line: #c9b98a; --r-s: 3px; --r-m: 4px; --r-l: 6px; --shadow: 0 10px 18px -8px rgba(42,36,28,0.45); --font: 'Courier Prime', 'Courier New', monospace; --font-title: 'Anton', Impact, sans-serif; --glow: 0 0 0 2px #2e4a5c; color-scheme: light; }
+  html[data-theme="ledger"] { --bg: #ffffff; --panel: #fdfdfc; --panel-2: #f6f4ee; --border: #dcd6c6; --border-strong: #c9bf9e; --accent: #a9822e; --accent-2: #16233a; --accent-ink: #ffffff; --text: #16233a; --dim: #5c6678; --faint: #7a8090; --good: #3a6b4a; --bad: #8a1f2b; --gold: #a9822e; --glass: rgba(253,253,252,0.92); --glass-2: rgba(246,244,238,0.96); --glass-line: #dcd6c6; --r-s: 2px; --r-m: 2px; --r-l: 3px; --shadow: 0 14px 30px -18px rgba(22,35,58,0.35); --font: 'EB Garamond', Georgia, serif; --font-title: 'Playfair Display', Georgia, serif; --glow: 0 0 0 2px #a9822e; color-scheme: light; }
+  html[data-theme="deepcurrent"] { --bg: #030c14; --panel: #0a2130; --panel-2: #0e2a3c; --border: rgba(255,255,255,0.08); --border-strong: rgba(53,230,196,0.4); --accent: #35e6c4; --accent-2: #9b6bff; --accent-ink: #021614; --text: #e6f6f4; --dim: #82a9ae; --faint: #648086; --good: #3fd68a; --bad: #ff5a5a; --gold: #c99a4a; --glass: rgba(6,24,36,0.74); --glass-2: rgba(14,42,60,0.88); --glass-line: rgba(53,230,196,0.16); --r-s: 10px; --r-m: 16px; --r-l: 20px; --font: 'Sora', 'Segoe UI', sans-serif; --font-title: 'Chakra Petch', 'Sora', sans-serif; --glow: 0 0 0 1px rgba(53,230,196,0.45), 0 0 18px rgba(53,230,196,0.25); }
+  html[data-theme="skyisles"] { --bg: #8fd0ff; --panel: #fbfdf5; --panel-2: #eef6fb; --border: #c3d6e3; --border-strong: #2d6a9f; --accent: #3f9a26; --accent-2: #2d6a9f; --accent-ink: #ffffff; --text: #173247; --dim: #4b6a82; --faint: #6c8294; --good: #2e8f2a; --bad: #d23a2e; --gold: #c98a0b; --glass: rgba(251,253,245,0.93); --glass-2: rgba(238,246,251,0.97); --glass-line: #173247; --r-s: 0px; --r-m: 0px; --r-l: 0px; --shadow: 4px 4px 0 rgba(23,50,71,0.28); --font: 'Jersey 10', 'Silkscreen', monospace; --font-title: 'Silkscreen', monospace; --glow: 0 0 0 2px #173247; color-scheme: light; }
+  html[data-theme="skyisles"] body { font-size: 17px; }
+  html[data-theme="harvest"] { --bg: #e7c99a; --panel: #fbf3e2; --panel-2: #f4e8cf; --border: rgba(91,58,34,0.2); --border-strong: rgba(168,50,43,0.45); --accent: #a8322b; --accent-2: #c98a1c; --accent-ink: #fbf3e2; --text: #3b2414; --dim: #6e5038; --faint: #8e7055; --good: #4f7a32; --bad: #b3261e; --gold: #c98a1c; --glass: rgba(251,243,226,0.93); --glass-2: rgba(244,232,207,0.97); --glass-line: rgba(91,58,34,0.25); --r-s: 3px; --r-m: 5px; --r-l: 7px; --shadow: 0 16px 30px -16px rgba(59,36,20,0.55); --font: 'Bitter', Georgia, serif; --font-title: 'Ultra', Georgia, serif; --glow: 0 0 0 2px #a8322b; color-scheme: light; }
+
+  /* The studio (where previews render) is the same dark "light box" in every theme,
+     tinted with the theme's accent, so particles read the same everywhere. */
+  :root { --studio-a: #1b2233; --studio-b: #07090f; }
+  html[data-theme="casefiles"] { --studio-a: #3a3a33; --studio-b: #16150f; }
+  html[data-theme="ledger"] { --studio-a: #26324a; --studio-b: #0d1422; }
+  html[data-theme="deepcurrent"] { --studio-a: #0f3a4a; --studio-b: #020b12; }
+  html[data-theme="skyisles"] { --studio-a: #2d6a9f; --studio-b: #123552; }
+  html[data-theme="harvest"] { --studio-a: #4a2b1a; --studio-b: #1c0f08; }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  button, input, select { font: inherit; color: inherit; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .page { max-width: 1320px; margin: 0 auto; padding: 22px 24px 60px; }
+
+  /* Header */
+  .top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .back { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--dim); font-size: 14px; padding: 6px 10px 6px 6px; border-radius: var(--r-s); }
+  .back:hover { color: var(--text); background: var(--panel); }
+  .back svg { width: 16px; height: 16px; }
+  .proto { margin-left: auto; font-size: 12px; color: var(--dim); border: 1px dashed var(--border-strong); padding: 5px 10px; border-radius: 999px; }
+  html[data-theme="skyisles"] .proto, html[data-theme="ledger"] .proto { border-radius: var(--r-s); }
+
+  .hero { margin: 26px 0 22px; display: grid; grid-template-columns: 1fr minmax(280px, 460px); gap: 24px; align-items: end; }
+  .hero h1 { font-family: var(--font-title); font-size: clamp(34px, 5vw, 56px); line-height: 1; margin: 0; letter-spacing: -0.02em; }
+  html[data-theme="casefiles"] .hero h1 { font-weight: 400; letter-spacing: 0.03em; text-transform: uppercase; }
+  html[data-theme="skyisles"] .hero h1 { letter-spacing: 0; font-size: clamp(28px, 4vw, 44px); }
+  .hero h1 span { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tally { margin: 10px 0 0; color: var(--dim); font-size: 15px; }
+  .tally b { color: var(--text); font-weight: 700; }
+
+  .search { position: relative; }
+  .search svg { position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
+  .search input { width: 100%; padding: 14px 44px 14px 42px; border-radius: var(--r-m); border: 1px solid var(--border); background: var(--panel); font-size: 16px; transition: border-color .2s, box-shadow .2s; }
+  .search input::placeholder { color: var(--faint); }
+  .search input:focus { outline: none; border-color: var(--border-strong); box-shadow: var(--glow); }
+  .search kbd { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font: 12px/1 var(--font); color: var(--faint); border: 1px solid var(--border); border-radius: 5px; padding: 4px 7px; }
+  .search input:not(:placeholder-shown) ~ kbd { display: none; }
+
+  /* Body: category rail + results */
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 28px; align-items: start; }
+  .rail { position: sticky; top: 18px; display: flex; flex-direction: column; gap: 2px; }
+  .rail-label { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin: 0 0 8px 10px; }
+  .cat { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; padding: 9px 10px; border-radius: var(--r-s); cursor: pointer; color: var(--dim); font-size: 14.5px; transition: background .15s, color .15s; }
+  .cat:hover { background: var(--panel); color: var(--text); }
+  .cat[aria-pressed="true"] { background: var(--panel-2); color: var(--text); box-shadow: inset 3px 0 0 var(--accent); }
+  .cat .ic { width: 20px; height: 20px; flex: none; color: var(--accent); opacity: .85; }
+  .cat .n { margin-left: auto; font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+
+  .bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .bar h2 { margin: 0 auto 0 0; font-family: var(--font-title); font-size: 22px; font-weight: 700; }
+  html[data-theme="casefiles"] .bar h2 { font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
+  .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
+  html[data-theme="skyisles"] .seg, html[data-theme="ledger"] .seg, html[data-theme="casefiles"] .seg { border-radius: var(--r-s); }
+  .seg button { border: 0; background: none; padding: 6px 12px; border-radius: 999px; font-size: 13px; color: var(--dim); cursor: pointer; }
+  html[data-theme="skyisles"] .seg button, html[data-theme="ledger"] .seg button, html[data-theme="casefiles"] .seg button { border-radius: var(--r-s); }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .sort { padding: 7px 10px; border-radius: var(--r-s); border: 1px solid var(--border); background: var(--panel); font-size: 13px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(208px, 1fr)); gap: 16px; }
+  .card { position: relative; display: flex; flex-direction: column; text-align: left; padding: 0; border: 1px solid var(--border); border-radius: var(--r-m); background: var(--panel); overflow: hidden; cursor: pointer; transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .2s; animation: rise .5s var(--ease) both; }
+  .card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--border-strong); }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+  .thumb { position: relative; aspect-ratio: 4 / 3; background: radial-gradient(120% 90% at 50% 30%, var(--studio-a), var(--studio-b)); overflow: hidden; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s, transform .6s var(--ease); }
+  .thumb img.on { opacity: 1; }
+  .card:hover .thumb img { transform: scale(1.06); }
+  .thumb .chat-thumb { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 14px; }
+  .shimmer { position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.06) 50%, transparent 70%); background-size: 200% 100%; animation: sh 1.4s linear infinite; }
+  @keyframes sh { to { background-position: -200% 0; } }
+  .rar { position: absolute; left: 10px; top: 10px; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 7px; border-radius: 999px; color: #fff; background: rgba(0,0,0,.42); backdrop-filter: blur(4px); }
+  html[data-theme="skyisles"] .rar, html[data-theme="ledger"] .rar { border-radius: 0; }
+  .rar::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; background: var(--rc); box-shadow: 0 0 8px var(--rc); }
+  .meta { padding: 11px 13px 13px; display: grid; gap: 3px; }
+  .meta .nm { font-weight: 700; font-size: 15.5px; color: var(--text); }
+  .meta .sub { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--dim); }
+  .st { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; font-size: 12px; }
+  .st::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .st.sure { color: var(--good); } .st.maybe { color: var(--gold); } .st.unseen { color: var(--faint); }
+  .st.unseen::before { background: none; border: 1.5px solid currentColor; width: 5px; height: 5px; }
+
+  .empty { padding: 60px 20px; text-align: center; color: var(--dim); border: 1px dashed var(--border); border-radius: var(--r-l); }
+  .empty b { display: block; color: var(--text); font-size: 17px; margin-bottom: 4px; }
+
+  /* Studio (preview) */
+  .studio { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 3vh 3vw; background: rgba(0,0,0,.55); backdrop-filter: blur(8px); opacity: 0; transition: opacity .3s; }
+  .studio.open { opacity: 1; }
+  .sheet { position: relative; width: min(1240px, 100%); height: min(760px, 94vh); display: grid; grid-template-columns: 1fr 360px; border-radius: var(--r-l); overflow: hidden; background: var(--panel); border: 1px solid var(--glass-line); box-shadow: 0 30px 80px rgba(0,0,0,.5); transform: translateY(16px) scale(.98); transition: transform .45s var(--ease); }
+  .studio.open .sheet { transform: none; }
+  .stage { position: relative; background: radial-gradient(90% 80% at 50% 38%, var(--studio-a), var(--studio-b)); overflow: hidden; }
+  .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  .stage canvas:active { cursor: grabbing; }
+  .stage .chat-stage { position: absolute; left: 6%; right: 6%; bottom: 16%; display: grid; gap: 8px; }
+  .chat-line { font: 600 15px/1.35 'Courier New', monospace; color: #fff; background: rgba(0,0,0,.45); padding: 4px 8px; width: fit-content; max-width: 100%; text-shadow: 2px 2px 0 rgba(0,0,0,.6); animation: chatin .45s var(--ease) both; }
+  .thumb .chat-line { font-size: 10.5px; padding: 3px 6px; }
+  @keyframes chatin { from { opacity: 0; transform: translateX(-10px); } }
+  .c-red { color: #ff5555; } .c-blue { color: #5555ff; } .c-gray { color: #aaaaaa; } .c-bold { font-weight: 800; } .c-aqua { color: #55ffff; } .c-gold { color: #ffaa00; }
+  .unseen-note { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); padding: 8px 14px; border-radius: 999px; background: rgba(0,0,0,.5); color: #dfe3ea; font-size: 13px; white-space: nowrap; }
+  .tools { position: absolute; left: 14px; bottom: 14px; display: flex; gap: 6px; }
+  .tool { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,18,.55); color: #e9edf5; font-size: 12.5px; cursor: pointer; backdrop-filter: blur(6px); }
+  html[data-theme="skyisles"] .tool, html[data-theme="ledger"] .tool { border-radius: 0; }
+  .tool:hover { background: rgba(10,12,18,.8); }
+  .tool[aria-pressed="true"] { border-color: var(--accent); color: #fff; }
+  .tool svg { width: 15px; height: 15px; }
+  .hint { position: absolute; right: 16px; bottom: 20px; font-size: 12px; color: rgba(230,235,245,.55); pointer-events: none; }
+  .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,18,.45); color: #fff; font-size: 22px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+  .nav.prev { left: 14px; } .nav.next { right: 14px; }
+  .nav:hover { background: rgba(10,12,18,.8); }
+
+  .info { display: flex; flex-direction: column; gap: 18px; padding: 26px 24px; overflow-y: auto; }
+  .close { position: absolute; right: 12px; top: 12px; z-index: 2; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--panel); cursor: pointer; display: grid; place-items: center; }
+  .close svg { width: 16px; height: 16px; }
+  .eyebrow { display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: var(--dim); }
+  .info h3 { margin: 6px 0 0; font-family: var(--font-title); font-size: 30px; line-height: 1.1; }
+  html[data-theme="casefiles"] .info h3 { font-weight: 400; text-transform: uppercase; letter-spacing: .02em; }
+  .desc { margin: 0; color: var(--dim); line-height: 1.55; font-size: 14.5px; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fact { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--r-s); padding: 10px 12px; }
+  .fact .k { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+  .fact .v { margin-top: 3px; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .block-h { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin: 0 0 8px; }
+  .how { margin: 0; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--panel-2); border-radius: 0 var(--r-s) var(--r-s) 0; font-size: 14px; line-height: 1.5; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: 13px; padding: 5px 10px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border); }
+  html[data-theme="skyisles"] .chip, html[data-theme="ledger"] .chip { border-radius: 0; }
+  .wave { width: 100%; height: 56px; display: block; border-radius: var(--r-s); background: var(--panel-2); }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 14px; border-radius: var(--r-s); border: 1px solid var(--border); background: var(--panel-2); cursor: pointer; font-size: 13.5px; font-weight: 600; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn svg { width: 15px; height: 15px; }
+  .soon { font-size: 12px; color: var(--faint); margin: -2px 0 0; }
+
+  @media (max-width: 900px) {
+    .page { padding: 14px 16px 50px; }
+    .hero { grid-template-columns: 1fr; margin: 16px 0 14px; }
+    .layout { grid-template-columns: 1fr; gap: 14px; }
+    .rail { position: static; flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; scrollbar-width: none; }
+    .rail-label { display: none; }
+    .cat { width: auto; flex: none; border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; white-space: nowrap; }
+    .cat[aria-pressed="true"] { box-shadow: none; border-color: var(--accent); }
+    .cat .ic { width: 16px; height: 16px; }
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .meta { padding: 9px 10px 10px; } .meta .nm { font-size: 14px; }
+    .studio { padding: 0; }
+    .sheet { height: 100%; width: 100%; border-radius: 0; grid-template-columns: 1fr; grid-template-rows: 48vh 1fr; }
+    .info { padding: 18px 16px 24px; }
+    .hint { display: none; }
+    .nav { top: auto; bottom: 14px; transform: none; width: 34px; height: 34px; }
+    .nav.prev { left: auto; right: 56px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <a class="back" href="index.html"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Tracker</a>
+    <span class="proto">Prototype · all cosmetics here are made-up examples</span>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1>Cosmetics <span>Library</span></h1>
+      <p class="tally" id="tally"></p>
+    </div>
+    <label class="search">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <input id="q" type="search" placeholder="Search cosmetics, e.g. flame, shopkeeper, sound" autocomplete="off" aria-label="Search cosmetics">
+      <kbd>/</kbd>
+    </label>
+  </section>
+
+  <div class="layout">
+    <nav class="rail" id="rail" aria-label="Categories"><p class="rail-label">Categories</p></nav>
+    <main>
+      <div class="bar">
+        <h2 id="heading">All cosmetics</h2>
+        <div class="seg" id="statusSeg" role="group" aria-label="Filter by status">
+          <button type="button" data-s="all" aria-pressed="true">All</button>
+          <button type="button" data-s="sure" aria-pressed="false">Sure</button>
+          <button type="button" data-s="maybe" aria-pressed="false">Maybe</button>
+          <button type="button" data-s="unseen" aria-pressed="false">Not seen yet</button>
+        </div>
+        <select id="sort" class="sort" aria-label="Sort">
+          <option value="seen">Most seen</option>
+          <option value="recent">Recently seen</option>
+          <option value="name">A to Z</option>
+          <option value="rarity">Rarity</option>
+        </select>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" hidden><b>Nothing matches that</b>Try another word, or clear the category.</div>
+    </main>
+  </div>
+</div>
+
+<div class="studio" id="studio" hidden role="dialog" aria-modal="true" aria-labelledby="sName">
+  <div class="sheet">
+    <div class="stage" id="stage">
+      <div class="chat-stage" id="chatStage" hidden></div>
+      <div class="unseen-note" id="unseenNote" hidden>Not seen in a replay yet, so there's no exact preview</div>
+      <button class="nav prev" id="prevBtn" type="button" aria-label="Previous cosmetic">&#8249;</button>
+      <button class="nav next" id="nextBtn" type="button" aria-label="Next cosmetic">&#8250;</button>
+      <div class="tools">
+        <button class="tool" id="replayBtn" type="button"><svg viewBox="0 0 16 16"><path d="M3 8a5 5 0 1 0 1.5-3.5M3 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Replay</button>
+        <button class="tool" id="slowBtn" type="button" aria-pressed="false">0.25×</button>
+        <button class="tool" id="spinBtn" type="button" aria-pressed="true">Spin</button>
+      </div>
+      <span class="hint">Drag to turn · scroll to zoom</span>
+    </div>
+    <div class="info">
+      <button class="close" id="closeBtn" type="button" aria-label="Close"><svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <div>
+        <div class="eyebrow"><span id="sCat"></span><span>·</span><span id="sRar"></span></div>
+        <h3 id="sName"></h3>
+      </div>
+      <p class="desc" id="sDesc"></p>
+      <div id="soundBox" hidden>
+        <p class="block-h">Sound</p>
+        <canvas class="wave" id="wave" width="620" height="112"></canvas>
+        <div style="margin-top:8px"><button class="btn" id="playSound" type="button"><svg viewBox="0 0 16 16"><path d="M4 3v10l9-5z" fill="currentColor"/></svg>Play sound</button></div>
+      </div>
+      <div class="facts">
+        <div class="fact"><div class="k">Status</div><div class="v" id="sStatus"></div></div>
+        <div class="fact"><div class="k">Times seen</div><div class="v" id="sSeen"></div></div>
+        <div class="fact"><div class="k">First seen</div><div class="v" id="sFirst"></div></div>
+        <div class="fact"><div class="k">Last seen</div><div class="v" id="sLast"></div></div>
+      </div>
+      <div>
+        <p class="block-h">How Prism spots it</p>
+        <p class="how" id="sHow"></p>
+      </div>
+      <div>
+        <p class="block-h">Seen on</p>
+        <div class="chips" id="sWho"></div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" type="button" disabled>Watch a sighting</button>
+        <button class="btn" id="copyBtn" type="button">Copy link</button>
+      </div>
+      <p class="soon">"Watch a sighting" opens the replay at that moment once real data is in.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+/* ------------------------------------------------------------------ data
+   Made-up examples only. Real entries will come from the Cosmetics plugin's
+   learning (one entry per effect it can name), with sightings from replays. */
+const CATS = [
+  { id: "kill", name: "Kill effects", icon: '<path d="M10 2.5 12 8l5.5 2-5.5 2-2 5.5L8 12l-5.5-2L8 8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
+  { id: "final", name: "Final kill effects", icon: '<path d="M10 2.5v4M10 13.5v4M2.5 10h4M13.5 10h4M5 5l2.5 2.5M12.5 12.5 15 15M15 5l-2.5 2.5M7.5 12.5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
+  { id: "trail", name: "Projectile trails", icon: '<path d="M3 15c4-1 8-5 11-10M14 5l-3.5.5M14 5l-.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="8" cy="10" r=".8" fill="currentColor"/>' },
+  { id: "cry", name: "Death cries", icon: '<path d="M3 8v4h3l4 3.5v-11L6 8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M13 7.5a3.5 3.5 0 0 1 0 5M15 5.5a6.5 6.5 0 0 1 0 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
+  { id: "topper", name: "Island toppers", icon: '<path d="M4 17h12M6 17V9h8v8M8 9V5h4v4M10 5V2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
+  { id: "shop", name: "Shopkeeper skins", icon: '<rect x="6.5" y="2.5" width="7" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 17.5V10h10v7.5" fill="none" stroke="currentColor" stroke-width="1.5"/>' },
+  { id: "dance", name: "Victory dances", icon: '<path d="M10 3v4M10 13v4M5 5.5l2 2M13 12.5l2 2M15 5.5l-2 2M7 12.5l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/>' },
+  { id: "glyph", name: "Glyphs", icon: '<rect x="3" y="3" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 13l2.5-5 2 3.5L12 9l2 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
+  { id: "bed", name: "Bed destroys", icon: '<path d="M2.5 15V6M2.5 11h15v4M5 11V8.5h5V11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
+  { id: "wood", name: "Wood skins", icon: '<rect x="3" y="3" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M3 13h14M8 3v5M12 8v5M8 13v4" stroke="currentColor" stroke-width="1.2"/>' },
+  { id: "msg", name: "Kill messages", icon: '<path d="M3 4h14v9H8l-4 3v-3H3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
+];
+const RAR = { common: ["Common", "#9aa3b2"], rare: ["Rare", "#4f8cff"], epic: ["Epic", "#b05cff"], legendary: ["Legendary", "#ffb020"] };
+const RAR_ORDER = { legendary: 0, epic: 1, rare: 2, common: 3 };
+const STATUS = { sure: "Sure", maybe: "Maybe", unseen: "Not seen yet" };
+
+const ITEMS = [
+  { id: "ember-bloom", cat: "kill", name: "Ember Bloom", rar: "rare", status: "sure", seen: 41, first: "2026-09-12", last: "2026-11-03",
+    desc: "The victim's body bursts into a short bloom of flame that curls upward and burns out as smoke.",
+    how: "30 or more flame particles within 0.4s at the death spot, and no lava drips. Never shows up without a kill.",
+    who: ["ExampleSweat", "DemoPlayer", "NotARealNick"], tags: "fire flame burst orange", preview: "emberBloom" },
+  { id: "static-snap", cat: "kill", name: "Static Snap", rar: "common", status: "maybe", seen: 6, first: "2026-10-20", last: "2026-11-01",
+    desc: "A ring of blue sparks snaps outward along the ground with a few crackles thrown upward.",
+    how: "A flat ring of magic crit particles at the death spot. Maybe, because sword crits on the same tick look close.",
+    who: ["SampleNick"], tags: "electric spark blue ring crit", preview: "staticSnap" },
+  { id: "prism-shatter", cat: "final", name: "Prism Shatter", rar: "legendary", status: "sure", seen: 12, first: "2026-10-02", last: "2026-11-02",
+    desc: "On a final kill the player breaks into coloured glass shards that scatter and tumble away in a rainbow mist.",
+    how: "Spell particles in six colours plus block-crack particles of stained glass, only on a FINAL KILL message.",
+    who: ["ExampleSweat", "PlaceholderPro"], tags: "glass rainbow shards break", preview: "prismShatter" },
+  { id: "comet-tail", cat: "trail", name: "Comet Tail", rar: "epic", status: "sure", seen: 88, first: "2026-08-30", last: "2026-11-04",
+    desc: "Arrows and fireballs drag a gold spark tail that fades into thin smoke behind them.",
+    how: "Firework sparks that follow a moving arrow entity every tick. Easy to spot, very common in late games.",
+    who: ["DemoPlayer", "TestAccount42", "ExampleSweat", "NotARealNick"], tags: "arrow bow gold sparks firework", preview: "cometTail" },
+  { id: "note-stream", cat: "trail", name: "Note Stream", rar: "common", status: "maybe", seen: 9, first: "2026-10-11", last: "2026-10-30",
+    desc: "A line of coloured music notes floats behind each arrow.",
+    how: "Note particles on an arrow's path. Maybe, because note blocks on some maps give the same particle.",
+    who: ["SampleNick", "PlaceholderPro"], tags: "music notes arrow colourful", preview: "noteStream" },
+  { id: "low-brass", cat: "cry", name: "Low Brass", rar: "rare", status: "sure", seen: 23, first: "2026-09-21", last: "2026-11-02",
+    desc: "A deep, falling horn note when the player dies.",
+    how: "Matched by sound name and pitch in the packet on the death tick, so it's never a guess.",
+    who: ["TestAccount42"], tags: "sound horn deep", preview: "lowBrass", sound: "brass" },
+  { id: "glitch-chirp", cat: "cry", name: "Glitch Chirp", rar: "common", status: "maybe", seen: 4, first: "2026-10-28", last: "2026-11-03",
+    desc: "A quick run of broken, robotic chirps.",
+    how: "Six short sounds in under 0.3s on the death tick. Maybe, because two of the sound names are shared with another cry.",
+    who: ["DemoPlayer"], tags: "sound robot glitch beep", preview: "glitchChirp", sound: "chirp" },
+  { id: "crystal-spire", cat: "topper", name: "Crystal Spire", rar: "epic", status: "sure", seen: 15, first: "2026-09-05", last: "2026-10-29",
+    desc: "A quartz plinth topped with a stack of glowing glass, built at the team's island when the game starts.",
+    how: "Exact block layout at the island topper spot in the first second of the game. Layouts are unique, so it's always sure.",
+    who: ["PlaceholderPro", "ExampleSweat"], tags: "quartz glass diamond tower", preview: "crystalSpire" },
+  { id: "night-merchant", cat: "shop", name: "Night Merchant", rar: "rare", status: "sure", seen: 31, first: "2026-09-02", last: "2026-11-04",
+    desc: "The team's item shop keeper wears a dark violet robe and gives off slow purple sparkles.",
+    how: "The shopkeeper NPC's skin texture is compared against the known skin list.",
+    who: ["NotARealNick", "TestAccount42"], tags: "npc villager robe purple", preview: "nightMerchant" },
+  { id: "copper-clerk", cat: "shop", name: "Copper Clerk", rar: "common", status: "unseen", seen: 0, first: null, last: null,
+    desc: "Known from the shop list but never spotted in a game yet.",
+    how: "Will be matched by skin texture like other shopkeepers once it shows up in a replay.",
+    who: [], tags: "npc copper orange", preview: "unseen" },
+  { id: "spark-ring", cat: "dance", name: "Spark Ring", rar: "epic", status: "sure", seen: 7, first: "2026-10-04", last: "2026-11-02",
+    desc: "After a win, rockets launch in a ring around the player and burst in the team colour.",
+    how: "Firework entities spawned in a circle around the winner during the victory screen.",
+    who: ["ExampleSweat"], tags: "fireworks win rockets", preview: "sparkRing" },
+  { id: "pixel-crown", cat: "glyph", name: "Pixel Crown", rar: "rare", status: "sure", seen: 19, first: "2026-09-18", last: "2026-11-03",
+    desc: "A small gold crown that hovers over the player's head for a few seconds.",
+    how: "Glyph particles drawn in a fixed pixel pattern above a player's head.",
+    who: ["DemoPlayer", "SampleNick"], tags: "crown gold king pixel", preview: "pixelCrown" },
+  { id: "feather-burst", cat: "bed", name: "Feather Burst", rar: "rare", status: "maybe", seen: 5, first: "2026-10-15", last: "2026-11-02",
+    desc: "The broken bed bursts into a cloud of feathers that drift slowly down.",
+    how: "White cloud particles at a bed spot right after a BED DESTRUCTION message. Maybe, until it's seen a few more times.",
+    who: ["PlaceholderPro"], tags: "feathers white pillow", preview: "featherBurst" },
+  { id: "frosted-birch", cat: "wood", name: "Frosted Birch", rar: "common", status: "sure", seen: 27, first: "2026-09-09", last: "2026-11-01",
+    desc: "Wood bought from the shop is pale birch with frost on the edges.",
+    how: "The wood block type placed by the player differs from the default wood the shop sells.",
+    who: ["TestAccount42", "SampleNick", "DemoPlayer"], tags: "wood planks ice snow", preview: "frostedBirch" },
+  { id: "weather-report", cat: "msg", name: "Weather Report", rar: "common", status: "sure", seen: 52, first: "2026-08-28", last: "2026-11-04",
+    desc: "Kill messages read like a forecast.",
+    how: "The wording of the kill message in chat. Every message pack has its own lines, so it's always sure.",
+    who: ["ExampleSweat", "NotARealNick"], tags: "chat forecast storm", preview: "chat",
+    lines: [
+      ['<span class="c-red">Rival</span><span class="c-gray"> got caught in </span><span class="c-blue">Milo</span><span class="c-gray">\'s storm.</span>'],
+      ['<span class="c-red">Rival</span><span class="c-gray"> was hit by a cold front from </span><span class="c-blue">Milo</span><span class="c-gray">.</span>'],
+      ['<span class="c-red">Rival</span><span class="c-gray"> was forecast to lose by </span><span class="c-blue">Milo</span><span class="c-gray">. </span><span class="c-aqua c-bold">FINAL KILL!</span>'],
+    ] },
+];
+
+/* ------------------------------------------------------------------ list UI */
+const $ = (id) => document.getElementById(id);
+const state = { cat: "all", status: "all", sort: "seen", q: "" };
+const fmtDate = (d) => d ? new Date(d + "T12:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short" }) : "–";
+const catOf = (id) => CATS.find((c) => c.id === id);
+
+function buildRail() {
+  const rail = $("rail");
+  const mk = (id, name, icon, n) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "cat"; b.dataset.cat = id;
+    b.setAttribute("aria-pressed", String(state.cat === id));
+    b.innerHTML = `<svg class="ic" viewBox="0 0 20 20" aria-hidden="true">${icon}</svg><span>${name}</span><span class="n">${n}</span>`;
+    b.onclick = () => { state.cat = id; render(); };
+    rail.appendChild(b);
+  };
+  mk("all", "Everything", '<rect x="3" y="3" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/>', ITEMS.length);
+  for (const c of CATS) mk(c.id, c.name, c.icon, ITEMS.filter((i) => i.cat === c.id).length);
+}
+
+function matches(it, q) {
+  if (!q) return true;
+  const hay = `${it.name} ${catOf(it.cat).name} ${it.tags} ${it.desc} ${RAR[it.rar][0]} ${STATUS[it.status]}`.toLowerCase();
+  return q.toLowerCase().split(/\s+/).filter(Boolean).every((w) => hay.includes(w) || fuzzy(hay, w));
+}
+// Lets small typos through ("flme" finds "flame").
+function fuzzy(hay, w) {
+  if (w.length < 4) return false;
+  for (const word of hay.split(/[^a-z0-9]+/)) {
+    if (Math.abs(word.length - w.length) > 1) continue;
+    if (lev(word, w) <= 1) return true;
+  }
+  return false;
+}
+function lev(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+
+let visible = [];
+function render() {
+  for (const b of document.querySelectorAll(".cat")) b.setAttribute("aria-pressed", String(b.dataset.cat === state.cat));
+  for (const b of document.querySelectorAll("#statusSeg button")) b.setAttribute("aria-pressed", String(b.dataset.s === state.status));
+  $("heading").textContent = state.cat === "all" ? "All cosmetics" : catOf(state.cat).name;
+  visible = ITEMS.filter((it) => (state.cat === "all" || it.cat === state.cat) && (state.status === "all" || it.status === state.status) && matches(it, state.q));
+  const by = {
+    seen: (a, b) => b.seen - a.seen,
+    recent: (a, b) => (b.last || "").localeCompare(a.last || ""),
+    name: (a, b) => a.name.localeCompare(b.name),
+    rarity: (a, b) => RAR_ORDER[a.rar] - RAR_ORDER[b.rar] || b.seen - a.seen,
+  }[state.sort];
+  visible.sort(by);
+  const grid = $("grid");
+  grid.innerHTML = "";
+  visible.forEach((it, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "card"; b.style.animationDelay = `${Math.min(i, 12) * 30}ms`;
+    b.setAttribute("aria-label", `${it.name}, ${catOf(it.cat).name}`);
+    const thumb = it.preview === "chat"
+      ? `<div class="chat-thumb">${it.lines.map((l) => `<div class="chat-line">${l.join("")}</div>`).join("")}</div>`
+      : `<img alt="" data-id="${it.id}"${thumbs[it.id] ? ` src="${thumbs[it.id]}" class="on"` : ""}>${thumbs[it.id] ? "" : '<div class="shimmer"></div>'}`;
+    b.innerHTML = `<div class="thumb">${thumb}<span class="rar" style="--rc:${RAR[it.rar][1]}">${RAR[it.rar][0]}</span></div>
+      <div class="meta"><span class="nm">${it.name}</span><span class="sub">${catOf(it.cat).name}<span class="st ${it.status}">${STATUS[it.status]}</span></span></div>`;
+    b.onclick = () => openStudio(it.id);
+    grid.appendChild(b);
+  });
+  $("empty").hidden = visible.length > 0;
+}
+
+function tally() {
+  const seen = ITEMS.filter((i) => i.status !== "unseen");
+  const sure = ITEMS.filter((i) => i.status === "sure").length;
+  $("tally").innerHTML = `<b>${ITEMS.length}</b> cosmetics in <b>${CATS.length}</b> categories · <b>${seen.length}</b> seen in games, <b>${sure}</b> of them sure`;
+}
+
+$("q").addEventListener("input", (e) => { state.q = e.target.value.trim(); render(); });
+$("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
+for (const b of document.querySelectorAll("#statusSeg button")) b.onclick = () => { state.status = b.dataset.s; render(); };
+document.addEventListener("keydown", (e) => {
+  if (e.key === "/" && document.activeElement !== $("q") && $("studio").hidden) { e.preventDefault(); $("q").focus(); }
+  if ($("studio").hidden) return;
+  if (e.key === "Escape") closeStudio();
+  if (e.key === "ArrowRight") step(1);
+  if (e.key === "ArrowLeft") step(-1);
+});
+
+/* ------------------------------------------------------------------ textures */
+const loadImg = (src) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+const [particlesImg, blocksImg, steveImg, blocksJson] = await Promise.all([
+  loadImg("replay/particles.png"), loadImg("replay/blocks.png"), loadImg("replay/steve.png"),
+  fetch("replay/blocks.json").then((r) => r.json()),
+]);
+function canvasTex(c) { const t = new THREE.CanvasTexture(c); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace; return t; }
+function crop(img, x, y, w, h) { const c = document.createElement("canvas"); c.width = w; c.height = h; c.getContext("2d").drawImage(img, x, y, w, h, 0, 0, w, h); return c; }
+const pCache = {};
+function ptex(i) { return pCache[i] || (pCache[i] = canvasTex(crop(particlesImg, (i % 16) * 8, Math.floor(i / 16) * 8, 8, 8))); }
+const bCache = {};
+function btex(name, fn) {
+  const key = name + (fn ? fn.name : "");
+  if (bCache[key]) return bCache[key];
+  const t = blocksJson.textures["block/" + name] || blocksJson.textures["blocks/" + name];
+  const c = crop(blocksImg, t.x, t.y, t.w, t.w);
+  if (fn) fn(c);
+  return (bCache[key] = canvasTex(c));
+}
+function recolor(img, fn) {
+  const c = crop(img, 0, 0, img.width, img.height), g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height);
+  for (let i = 0; i < d.data.length; i += 4) {
+    if (!d.data[i + 3]) continue;
+    const o = fn(d.data[i], d.data[i + 1], d.data[i + 2], (i / 4) % c.width, Math.floor(i / 4 / c.width));
+    if (o) { d.data[i] = o[0]; d.data[i + 1] = o[1]; d.data[i + 2] = o[2]; }
+  }
+  g.putImageData(d, 0, 0);
+  return c;
+}
+function hueOf(r, g, b) { const c = new THREE.Color(r / 255, g / 255, b / 255), h = {}; c.getHSL(h); return h; }
+const SKINS = {
+  steve: canvasTex(crop(steveImg, 0, 0, 64, 64)),
+  rival: canvasTex(recolor(steveImg, (r, g, b) => { const h = hueOf(r, g, b); if (h.s > .3 && h.h > .42 && h.h < .58) return [180 * h.l * 2, 40 * h.l * 2, 40 * h.l * 2]; })),
+  merchant: canvasTex(recolor(steveImg, (r, g, b, x, y) => {
+    const h = hueOf(r, g, b);
+    if (h.s > .3 && h.h > .42 && h.h < .58) return [92 * h.l * 2.2, 40 * h.l * 2.2, 150 * h.l * 2.2];
+    if (h.h > .58 && h.h < .75) return [30 * h.l * 2, 22 * h.l * 2, 48 * h.l * 2];
+    if (y < 16 && h.l < .25) return [40, 34, 60];
+  })),
+};
+
+/* ------------------------------------------------------------------ studio scene kit */
+const PX = 0.9375 / 16;
+function setBoxUV(geo, u, v, w, h, d) {
+  const F = [[u + d + w, v + d, d, h], [u, v + d, d, h], [u + d, v, w, d], [u + d + w, v, w, d], [u + d, v + d, w, h], [u + 2 * d + w, v + d, w, h]];
+  const uv = geo.attributes.uv;
+  F.forEach(([x, y, fw, fh], f) => {
+    const u0 = x / 64, u1 = (x + fw) / 64, v0 = 1 - y / 64, v1 = 1 - (y + fh) / 64;
+    const s = [[u0, v0], [u1, v0], [u0, v1], [u1, v1]];
+    for (let k = 0; k < 4; k++) uv.setXY(f * 4 + k, s[k][0], s[k][1]);
+  });
+  uv.needsUpdate = true;
+}
+function makePlayer(skin = SKINS.steve, opts = {}) {
+  const root = new THREE.Group(), mats = [];
+  const mat = (overlay) => { const m = new THREE.MeshLambertMaterial({ map: skin, transparent: overlay, alphaTest: overlay ? 0.1 : 0.5, side: overlay ? THREE.DoubleSide : THREE.FrontSide }); mats.push(m); return m; };
+  const part = (w, h, d, u, v, pivot, inflate = 0, overlay = false) => {
+    const g = new THREE.BoxGeometry((w + inflate) * PX, (h + inflate) * PX, (d + inflate) * PX);
+    setBoxUV(g, u, v, w, h, d);
+    g.translate(0, -h * PX / 2, 0);
+    const m = new THREE.Mesh(g, mat(overlay));
+    const p = new THREE.Group(); p.position.set(pivot[0] * PX, pivot[1] * PX, pivot[2] * PX); p.add(m);
+    return p;
+  };
+  const body = new THREE.Group(); root.add(body);
+  const head = part(8, 8, 8, 0, 0, [0, 24, 0]); head.children[0].position.y = 8 * PX;
+  const hat = part(8, 8, 8, 32, 0, [0, 0, 0], 1, true); hat.children[0].position.y = 8.5 * PX; head.add(hat);
+  const torso = part(8, 12, 4, 16, 16, [0, 24, 0]);
+  const armR = part(4, 12, 4, 40, 16, [-6, 22, 0]); armR.children[0].position.y = 2 * PX;
+  const armL = part(4, 12, 4, 32, 48, [6, 22, 0]); armL.children[0].position.y = 2 * PX;
+  const legR = part(4, 12, 4, 0, 16, [-2, 12, 0]);
+  const legL = part(4, 12, 4, 16, 48, [2, 12, 0]);
+  body.add(head, torso, armR, armL, legR, legL);
+  if (opts.silhouette) for (const m of mats) { m.map = null; m.color.set(0x0b0d12); }
+  return { root, body, head, armR, armL, legR, legL, mats };
+}
+function makeBlock(tex, size = 1) {
+  const mats = (Array.isArray(tex) ? tex : [tex, tex, tex, tex, tex, tex]).map((t) => new THREE.MeshLambertMaterial({ map: t, transparent: true, alphaTest: 0.05 }));
+  const m = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), mats);
+  return m;
+}
+function textSprite(text, color = "#fff") {
+  const c = document.createElement("canvas"), g = c.getContext("2d");
+  g.font = "bold 40px 'Courier New', monospace";
+  const w = Math.ceil(g.measureText(text).width) + 24;
+  c.width = w; c.height = 58;
+  g.fillStyle = "rgba(0,0,0,0.35)"; g.fillRect(0, 0, w, 58);
+  g.font = "bold 40px 'Courier New', monospace"; g.fillStyle = color; g.textBaseline = "middle"; g.fillText(text, 12, 31);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthWrite: false }));
+  s.scale.set(w / 58 * 0.32, 0.32, 1);
+  return s;
+}
+
+// A small particle system in the spirit of 1.8's: billboards that age through
+// texture frames, drift, fall and fade.
+class Fx {
+  constructor(parent) { this.g = new THREE.Group(); parent.add(this.g); this.list = []; }
+  spawn(o) {
+    const frames = o.frames || [o.tex];
+    const m = new THREE.SpriteMaterial({ map: ptex(frames[0]), color: o.color ?? 0xffffff, transparent: true, depthWrite: false, blending: o.add ? THREE.AdditiveBlending : THREE.NormalBlending });
+    const s = new THREE.Sprite(m);
+    s.position.copy(o.pos); const size = o.size ?? 0.18; s.scale.set(size, size, 1);
+    this.g.add(s);
+    this.list.push({ s, m, frames, v: o.vel ? o.vel.clone() : new THREE.Vector3(), age: 0, life: o.life ?? 1, size, grav: o.grav ?? 0, drag: o.drag ?? 0.96, fade: o.fade ?? true, shrink: o.shrink ?? false, sway: o.sway || 0, seed: Math.random() * 10 });
+  }
+  update(dt) {
+    for (let i = this.list.length - 1; i >= 0; i--) {
+      const p = this.list[i]; p.age += dt;
+      const k = p.age / p.life;
+      if (k >= 1) { this.g.remove(p.s); p.m.dispose(); this.list.splice(i, 1); continue; }
+      p.v.y -= p.grav * dt; p.v.multiplyScalar(Math.pow(p.drag, dt * 60));
+      p.s.position.addScaledVector(p.v, dt);
+      if (p.sway) p.s.position.x += Math.sin(p.age * 3 + p.seed) * p.sway * dt;
+      if (p.frames.length > 1) { const f = p.frames[Math.min(p.frames.length - 1, Math.floor(k * p.frames.length))]; const t = ptex(f); if (p.m.map !== t) p.m.map = t; }
+      if (p.fade) p.m.opacity = k > 0.6 ? 1 - (k - 0.6) / 0.4 : 1;
+      if (p.shrink) { const s = p.size * (1 - k * 0.7); p.s.scale.set(s, s, 1); }
+    }
+  }
+  clear() { for (const p of this.list) { this.g.remove(p.s); p.m.dispose(); } this.list = []; }
+}
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const rnd = (a, b) => a + Math.random() * (b - a);
+const sphere = (s) => { const v = V(rnd(-1, 1), rnd(-1, 1), rnd(-1, 1)); if (v.lengthSq() < 1e-4) v.set(0, 1, 0); return v.normalize().multiplyScalar(s); };
+const SMOKE = [7, 6, 5, 4, 3, 2, 1, 0], SPELL = [135, 134, 133, 132, 131, 130, 129, 128], SPARK = [160, 161, 162, 163, 164, 165, 166, 167];
+
+// MC-style death: tip over sideways while flashing red.
+function dieAnim(p, t, start) {
+  const k = Math.max(0, Math.min(1, (t - start) / 0.9));
+  p.body.rotation.z = Math.sqrt(k) * Math.PI / 2;
+  p.body.position.x = Math.sqrt(k) * 0.05;
+  const red = t > start && k < 1;
+  for (const m of p.mats) m.color.setRGB(1, red ? 0.45 : 1, red ? 0.45 : 1);
+  return k;
+}
+function idle(p, t) {
+  p.armR.rotation.x = Math.sin(t * 1.2) * 0.05; p.armL.rotation.x = -Math.sin(t * 1.2) * 0.05;
+  p.armR.rotation.z = -0.04 - Math.sin(t * 1.4) * 0.03; p.armL.rotation.z = 0.04 + Math.sin(t * 1.4) * 0.03;
+}
+
+/* ------------------------------------------------------------------ previews
+   Each preview builds into `S.item` and returns tick(t, dt). `loop` is how long
+   one play takes; `hero` is the moment used for the card picture. */
+const PREVIEWS = {
+  emberBloom: { loop: 3.4, hero: 1.05, build(S) {
+    const p = makePlayer(SKINS.rival); S.item.add(p.root); let fired = false, smoke = 0;
+    return (t, dt) => {
+      idle(p, t);
+      const k = dieAnim(p, t, 0.5);
+      if (t > 0.75 && !fired) { fired = true;
+        for (let i = 0; i < 46; i++) S.fx.spawn({ frames: [48], pos: V(0.6 + rnd(-.3, .3), rnd(.2, .7), rnd(-.3, .3)), vel: sphere(rnd(.6, 2.2)).add(V(0, 1.2, 0)), life: rnd(.6, 1.2), size: rnd(.12, .2), drag: .93, shrink: true });
+        for (let i = 0; i < 7; i++) S.fx.spawn({ frames: [49], pos: V(0.6, .5, 0), vel: sphere(1.4).add(V(0, 2.5, 0)), life: 1.2, grav: 6, size: .14, fade: false });
+      }
+      if (fired && t < 2.2 && (smoke += dt) > 0.03) { smoke = 0; S.fx.spawn({ frames: SMOKE, pos: V(0.6 + rnd(-.4, .4), rnd(.3, .9), rnd(-.3, .3)), vel: V(0, rnd(.5, 1), 0), life: rnd(1, 1.6), size: .22, color: 0x333333 }); }
+      p.root.visible = !(t > 0.75 && k >= .3) || t < 0.78;
+    };
+  } },
+  staticSnap: { loop: 3, hero: 1.0, build(S) {
+    const p = makePlayer(SKINS.rival); S.item.add(p.root); let fired = false;
+    return (t, dt) => {
+      idle(p, t);
+      const k = dieAnim(p, t, 0.4);
+      if (t > 0.8 && !fired) { fired = true;
+        for (let i = 0; i < 60; i++) { const a = i / 60 * Math.PI * 2; S.fx.spawn({ frames: [66], pos: V(0.5, .15, 0), vel: V(Math.cos(a) * 3.2, rnd(0, .2), Math.sin(a) * 3.2), life: .9, size: .16, color: 0x7fd8ff, drag: .9, add: true }); }
+        for (let i = 0; i < 24; i++) S.fx.spawn({ frames: [65], pos: V(0.5 + rnd(-.3, .3), .3, rnd(-.3, .3)), vel: V(rnd(-.8, .8), rnd(2, 4), rnd(-.8, .8)), life: .8, grav: 5, size: .14, color: 0xbfe9ff });
+      }
+      p.root.visible = t < 0.85;
+    };
+  } },
+  prismShatter: { loop: 3.6, hero: 1.15, build(S) {
+    const p = makePlayer(SKINS.rival); S.item.add(p.root);
+    const colors = ["red", "orange", "yellow", "lime", "light_blue", "magenta"];
+    const shards = []; let fired = false;
+    return (t, dt) => {
+      idle(p, t);
+      if (t > 0.7 && !fired) { fired = true; p.root.visible = false;
+        for (let i = 0; i < 70; i++) {
+          const m = makeBlock(btex(colors[i % 6] + "_stained_glass"), rnd(.09, .2));
+          m.position.set(rnd(-.25, .25), rnd(.1, 1.8), rnd(-.15, .15));
+          const v = V(m.position.x, m.position.y - .9, m.position.z).normalize().multiplyScalar(rnd(1.5, 3.5)).add(V(0, 1.5, 0));
+          S.item.add(m); shards.push({ m, v, r: sphere(rnd(4, 10)) });
+        }
+        for (let i = 0; i < 80; i++) S.fx.spawn({ frames: SPELL, pos: V(rnd(-.4, .4), rnd(.1, 1.9), rnd(-.3, .3)), vel: sphere(rnd(.3, 1)).add(V(0, .6, 0)), life: rnd(1, 1.8), size: .16, color: new THREE.Color().setHSL(Math.random(), 1, .6) });
+      }
+      if (!fired) { const s = 1 + Math.max(0, t - .45) * 0.4; for (const m of p.mats) m.emissive?.setRGB(Math.max(0, t - .4) * 1.4, Math.max(0, t - .4) * 1.4, Math.max(0, t - .4) * 1.6); p.root.scale.setScalar(s); }
+      for (const s of shards) {
+        s.v.y -= 9 * dt; s.m.position.addScaledVector(s.v, dt);
+        if (s.m.position.y < .07) { s.m.position.y = .07; s.v.y *= -.3; s.v.x *= .7; s.v.z *= .7; s.r.multiplyScalar(.7); }
+        s.m.rotation.x += s.r.x * dt; s.m.rotation.y += s.r.y * dt;
+        if (t > 2.6) s.m.scale.multiplyScalar(Math.pow(0.1, dt));
+      }
+    };
+  } },
+  cometTail: { loop: 2.6, hero: 1.0, build(S) {
+    const arrow = makeArrow(); S.item.add(arrow); const target = makeBlock([btex("red_wool"), btex("red_wool"), btex("white_wool"), btex("white_wool"), btex("red_wool"), btex("red_wool")]);
+    target.position.set(1.9, 1.3, -.6); S.item.add(target);
+    const from = V(-2.6, 0.8, .8), to = V(1.75, 1.32, -.55); let acc = 0, prev = from.clone();
+    return (t, dt) => {
+      const k = Math.min(1, t / 1.4);
+      const pos = from.clone().lerp(to, k); pos.y += Math.sin(k * Math.PI) * 1.4;
+      arrow.position.copy(pos); if (k < 1) { arrow.lookAt(pos.clone().add(pos.clone().sub(prev))); } prev.copy(pos);
+      if (k < 1 && (acc += dt) > 0.012) { acc = 0;
+        S.fx.spawn({ frames: SPARK, pos: pos.clone().add(sphere(.05)), vel: sphere(.3), life: rnd(.5, .9), size: rnd(.1, .16), color: 0xffcf5a, add: true });
+        S.fx.spawn({ frames: SMOKE, pos: pos.clone(), vel: V(0, .2, 0), life: 1.1, size: .14, color: 0x99887a });
+      }
+      if (k >= 1 && k < 1.01) target.scale.setScalar(1.08);
+      target.scale.lerp(V(1, 1, 1), 0.1);
+    };
+  } },
+  noteStream: { loop: 2.6, hero: 1.0, build(S) {
+    const arrow = makeArrow(); S.item.add(arrow);
+    const from = V(-2.6, 0.8, .8), to = V(2.4, .6, -.6); let acc = 0, prev = from.clone(), n = 0;
+    return (t, dt) => {
+      const k = Math.min(1, t / 1.5);
+      const pos = from.clone().lerp(to, k); pos.y += Math.sin(k * Math.PI) * 1.6;
+      arrow.position.copy(pos); arrow.lookAt(pos.clone().add(pos.clone().sub(prev).add(V(0.0001, 0, 0)))); prev.copy(pos);
+      arrow.visible = k < 1;
+      if (k < 1 && (acc += dt) > 0.07) { acc = 0; n++;
+        S.fx.spawn({ frames: [64], pos: pos.clone(), vel: V(0, .4, 0), life: 1.3, size: .2, color: new THREE.Color().setHSL((n * 0.09) % 1, .9, .55), drag: .9 });
+      }
+    };
+  } },
+  lowBrass: { loop: 3, hero: 0.9, build(S) { return deathCry(S, 0xffb347); } },
+  glitchChirp: { loop: 3, hero: 0.9, build(S) { return deathCry(S, 0x55ffff, true); } },
+  crystalSpire: { loop: 4.2, hero: 3.0, build(S) {
+    const parts = [];
+    const add = (tex, x, y, z, s = 1) => { const b = makeBlock(tex, s); b.position.set(x, y + 4, z); b.userData = { y, s }; b.visible = false; S.item.add(b); parts.push(b); };
+    for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++) add(btex("quartz_block_side"), x * .5, .25, z * .5, .5);
+    add(btex("quartz_pillar"), 0, .75, 0, .5); add(btex("quartz_pillar"), 0, 1.25, 0, .5);
+    add(btex("diamond_block"), 0, 1.75, 0, .5);
+    add(btex("light_blue_stained_glass"), 0, 2.2, 0, .4); add(btex("white_stained_glass"), 0, 2.55, 0, .3); add(btex("light_blue_stained_glass"), 0, 2.82, 0, .22);
+    return (t, dt) => {
+      parts.forEach((b, i) => {
+        const st = 0.2 + i * 0.13, k = Math.max(0, Math.min(1, (t - st) / 0.35));
+        b.visible = t > st;
+        const e = 1 - Math.pow(1 - k, 3);
+        b.position.y = b.userData.y + (1 - e) * 2.5;
+        if (i >= parts.length - 3 && k >= 1) b.rotation.y = t * (i % 2 ? 1.2 : -0.8);
+      });
+      if (t > 2.2 && Math.random() < 0.5) S.fx.spawn({ frames: SPARK, pos: V(rnd(-.5, .5), rnd(1.8, 3), rnd(-.5, .5)), vel: V(0, rnd(.1, .4), 0), life: 1, size: .12, color: 0x9fe8ff, add: true });
+    };
+  } },
+  nightMerchant: { loop: 5, hero: 1.6, build(S) {
+    const p = makePlayer(SKINS.merchant); S.item.add(p.root);
+    const tag = textSprite("ITEM SHOP", "#ffd166"); tag.position.y = 2.45; S.item.add(tag);
+    const tag2 = textSprite("RIGHT CLICK", "#ffff55"); tag2.position.y = 2.18; tag2.scale.multiplyScalar(.7); S.item.add(tag2);
+    let acc = 0;
+    return (t, dt) => {
+      idle(p, t);
+      p.head.rotation.y = Math.sin(t * 0.9) * 0.5; p.head.rotation.x = Math.sin(t * 0.6) * 0.1;
+      if ((acc += dt) > 0.09) { acc = 0; S.fx.spawn({ frames: SPELL, pos: V(rnd(-.5, .5), rnd(.2, 1.9), rnd(-.4, .4)), vel: V(0, rnd(.2, .5), 0), life: 1.4, size: .14, color: 0xb36bff }); }
+    };
+  } },
+  unseen: { loop: 4, hero: 1, build(S) {
+    const p = makePlayer(SKINS.steve, { silhouette: true }); S.item.add(p.root);
+    const q = textSprite("?", "#c8ced8"); q.position.y = 2.3; S.item.add(q);
+    return (t) => { idle(p, t); q.position.y = 2.3 + Math.sin(t * 2) * 0.05; };
+  } },
+  sparkRing: { loop: 4, hero: 1.55, build(S) {
+    const p = makePlayer(SKINS.steve); S.item.add(p.root);
+    const rockets = []; let launched = 0;
+    return (t, dt) => {
+      p.armR.rotation.x = -Math.PI + Math.sin(t * 8) * .2; p.armL.rotation.x = -Math.PI - Math.sin(t * 8) * .2;
+      p.root.position.y = Math.abs(Math.sin(t * 4)) * 0.15;
+      while (launched < 8 && t > 0.2 + launched * 0.08) {
+        const a = launched / 8 * Math.PI * 2; launched++;
+        rockets.push({ pos: V(Math.cos(a) * 1.5, .1, Math.sin(a) * 1.5), v: V(Math.cos(a) * .3, 5.5, Math.sin(a) * .3), age: 0, col: new THREE.Color().setHSL(launched % 2 ? .55 : .12, 1, .6), done: false });
+      }
+      for (const r of rockets) {
+        if (r.done) continue;
+        r.age += dt; r.v.y -= 4 * dt; r.pos.addScaledVector(r.v, dt);
+        S.fx.spawn({ frames: SPARK, pos: r.pos.clone(), vel: V(rnd(-.1, .1), -.4, rnd(-.1, .1)), life: .45, size: .09, color: 0xffeecc, add: true });
+        if (r.age > .9) { r.done = true; for (let i = 0; i < 40; i++) S.fx.spawn({ frames: SPARK, pos: r.pos.clone(), vel: sphere(rnd(1.5, 2.6)), life: rnd(.8, 1.3), grav: 1.4, size: .14, color: r.col, add: true }); }
+      }
+    };
+  } },
+  pixelCrown: { loop: 4, hero: 1.2, build(S) {
+    const p = makePlayer(SKINS.steve); S.item.add(p.root);
+    const c = document.createElement("canvas"); c.width = c.height = 16; const g = c.getContext("2d");
+    const rows = ["................", "................", "..y....y....y...", "..yy..yyy..yy...", "..yyy.yyy.yyy...", "..yyyyyyyyyyy...", "..yyryybyyryy...", "..yyyyyyyyyyy...", "..ooooooooooo...", "................"];
+    const col = { y: "#ffcf3a", o: "#c98a0b", r: "#ff4d5e", b: "#4fb8ff" };
+    rows.forEach((row, y) => [...row].forEach((ch, x) => { if (col[ch]) { g.fillStyle = col[ch]; g.fillRect(x + 1, y + 3, 1, 1); } }));
+    const crown = new THREE.Sprite(new THREE.SpriteMaterial({ map: canvasTex(c), transparent: true, depthWrite: false }));
+    crown.scale.set(.9, .9, 1); S.item.add(crown);
+    return (t, dt) => {
+      idle(p, t);
+      const k = Math.min(1, t / .5), e = 1 - Math.pow(1 - k, 3);
+      crown.position.y = 2.35 + Math.sin(t * 2.4) * .06;
+      crown.material.opacity = t > 3.4 ? Math.max(0, 1 - (t - 3.4) / .5) : e;
+      crown.scale.setScalar(.9 * (0.6 + .4 * e)); crown.scale.z = 1;
+      if (Math.random() < .25 && t < 3.4) S.fx.spawn({ frames: SPARK, pos: V(rnd(-.4, .4), 2.35 + rnd(-.25, .25), rnd(-.1, .1)), vel: V(0, .3, 0), life: .7, size: .08, color: 0xffe08a, add: true });
+    };
+  } },
+  featherBurst: { loop: 4, hero: 1.4, build(S) {
+    const bed = new THREE.Group(); S.item.add(bed);
+    const H = 9 / 16;
+    const mk = (topTex, sideTex, endTex, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(1, H, 1), [sideTex, sideTex, topTex, btex("oak_planks"), endTex, endTex].map((t) => new THREE.MeshLambertMaterial({ map: t, transparent: true, alphaTest: .1 }))); m.position.set(0, H / 2, z); bed.add(m); };
+    mk(btex("bed_head_top"), btex("bed_head_side"), btex("bed_head_end"), -.5);
+    mk(btex("bed_feet_top"), btex("bed_feet_side"), btex("bed_feet_end"), .5);
+    let fired = false;
+    return (t, dt) => {
+      if (t > .7 && !fired) { fired = true; bed.visible = false;
+        for (let i = 0; i < 70; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.5, .5), rnd(.2, .6), rnd(-1, 1)), vel: V(rnd(-1, 1), rnd(1.5, 3.2), rnd(-1, 1)), life: rnd(2.2, 3), grav: 1.6, drag: .95, sway: .8, size: rnd(.12, .2), color: 0xffffff });
+        for (let i = 0; i < 30; i++) S.fx.spawn({ frames: SPELL, pos: V(rnd(-.5, .5), .4, rnd(-1, 1)), vel: sphere(1.2).add(V(0, 1, 0)), life: 1.2, size: .14, color: 0xfff4e0 });
+      }
+      if (!fired) bed.position.x = t > .45 ? Math.sin(t * 90) * .03 : 0;
+    };
+  } },
+  frostedBirch: { loop: 3.4, hero: 2.2, build(S) {
+    const frost = function frost(c) { const g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), w = c.width;
+      for (let i = 0; i < d.data.length; i += 4) { const x = (i / 4) % w, y = Math.floor(i / 4 / w), edge = Math.min(x, y, w - 1 - x, w - 1 - y);
+        const f = edge === 0 ? .7 : edge === 1 ? .35 : (Math.random() < .05 ? .4 : 0);
+        d.data[i] += (235 - d.data[i]) * f; d.data[i + 1] += (248 - d.data[i + 1]) * f; d.data[i + 2] += (255 - d.data[i + 2]) * f; }
+      g.putImageData(d, 0, 0); };
+    const tex = btex("birch_planks", frost); const blocks = [];
+    const spots = [[0, 0], [1, 0], [-1, 0], [0, 1], [1, 1], [-1, 1], [0, 2]];
+    for (const [x, y] of spots) { const b = makeBlock(tex); b.position.set(x, y + .5, 0); b.visible = false; S.item.add(b); blocks.push(b); }
+    return (t, dt) => {
+      blocks.forEach((b, i) => {
+        const st = .2 + i * .22, k = Math.max(0, Math.min(1, (t - st) / .18));
+        if (t > st && !b.visible) for (let j = 0; j < 6; j++) S.fx.spawn({ frames: [SMOKE[6]], pos: b.position.clone().add(sphere(.55)), vel: sphere(.4), life: .6, size: .1, color: 0xe8f6ff });
+        b.visible = t > st; b.scale.setScalar(.6 + .4 * (1 - Math.pow(1 - k, 3)) + (k < 1 && k > .7 ? .04 : 0));
+      });
+    };
+  } },
+  chat: { loop: 0, hero: 0, build(S) { const p = makePlayer(SKINS.steve); p.root.position.x = -.9; p.root.rotation.y = .5; const r = makePlayer(SKINS.rival); r.root.position.x = .9; r.root.rotation.y = -.5; S.item.add(p.root, r.root);
+    return (t) => { idle(p, t); idle(r, t + 1); p.armR.rotation.x = -Math.abs(Math.sin(t * 6)) * 1.1; }; } },
+};
+function makeArrow() {
+  const g = new THREE.Group();
+  const wood = new THREE.MeshLambertMaterial({ color: 0x8a6a40 }), tip = new THREE.MeshLambertMaterial({ color: 0xc8ccd2 }), feath = new THREE.MeshLambertMaterial({ color: 0xf2f2f2, side: THREE.DoubleSide });
+  const shaft = new THREE.Mesh(new THREE.BoxGeometry(.05, .05, .9), wood); g.add(shaft);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .14), tip); head.position.z = .48; g.add(head);
+  for (const r of [0, Math.PI / 2]) { const f = new THREE.Mesh(new THREE.BoxGeometry(.01, .16, .22), feath); f.position.z = -.38; f.rotation.z = r; g.add(f); }
+  return g;
+}
+function deathCry(S, ringColor, glitch = false) {
+  const p = makePlayer(SKINS.rival); S.item.add(p.root);
+  const rings = [];
+  for (let i = 0; i < 3; i++) {
+    const m = new THREE.Mesh(new THREE.TorusGeometry(.3, .025, 6, glitch ? 6 : 48), new THREE.MeshBasicMaterial({ color: ringColor, transparent: true, opacity: 0, depthWrite: false }));
+    m.position.set(0, 1.75, 0); S.item.add(m); rings.push(m);
+  }
+  return (t, dt) => {
+    idle(p, t); dieAnim(p, t, .6);
+    rings.forEach((m, i) => {
+      const k = (t - .6 - i * .18) / 1.1;
+      m.visible = k > 0 && k < 1;
+      if (!m.visible) return;
+      m.scale.setScalar(1 + k * 4); m.material.opacity = (1 - k) * .9;
+      m.rotation.y = S.camYaw(); m.position.y = 1.75 - Math.min(1, (t - .6) / .9) * .9;
+      if (glitch) m.position.x = (Math.random() - .5) * .1;
+    });
+  };
+}
+
+/* ------------------------------------------------------------------ studio renderer */
+function cssColor(v) { const el = document.createElement("i"); el.style.color = `var(${v})`; document.body.appendChild(el); const c = getComputedStyle(el).color; el.remove(); const m = c.match(/[\d.]+/g).map(Number); return new THREE.Color(m[0] / 255, m[1] / 255, m[2] / 255); }
+const ACCENT = cssColor("--accent"), ACCENT2 = cssColor("--accent-2");
+
+function makeStudio(canvas, w, h) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: !!canvas.dataset.thumb });
+  renderer.setPixelRatio(canvas.dataset.thumb ? 1 : Math.min(2, devicePixelRatio));
+  renderer.setSize(w, h, false);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(32, w / h, 0.1, 100);
+  camera.position.set(4.6, 3.1, 6.2);
+  scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x2a2420, 1.3));
+  const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 6, 4); scene.add(key);
+  const rim = new THREE.DirectionalLight(ACCENT, 2.2); rim.position.set(-4, -0.4, -6); scene.add(rim);
+  // Pedestal: a dark disc with an accent ring and a soft contact shadow.
+  const ped = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.25, .28, 64), new THREE.MeshStandardMaterial({ color: 0x0d0f14, roughness: .85, metalness: .1 }));
+  ped.position.y = -.14; scene.add(ped);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(2.12, .022, 8, 96), new THREE.MeshBasicMaterial({ color: ACCENT }));
+  ring.rotation.x = Math.PI / 2; ring.position.y = .005; scene.add(ring);
+  const sc = document.createElement("canvas"); sc.width = sc.height = 64; const sg = sc.getContext("2d");
+  const gr = sg.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, "rgba(0,0,0,.55)"); gr.addColorStop(1, "rgba(0,0,0,0)"); sg.fillStyle = gr; sg.fillRect(0, 0, 64, 64);
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.4), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sc), transparent: true, depthWrite: false }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = .006; scene.add(shadow);
+  // Slow motes drifting in the light, for depth.
+  const mg = new THREE.BufferGeometry(), mp = new Float32Array(120 * 3);
+  for (let i = 0; i < 120; i++) { mp[i * 3] = rnd(-7, 7); mp[i * 3 + 1] = rnd(-1, 7); mp[i * 3 + 2] = rnd(-7, 3); }
+  mg.setAttribute("position", new THREE.BufferAttribute(mp, 3));
+  const motes = new THREE.Points(mg, new THREE.PointsMaterial({ color: ACCENT2.clone().lerp(new THREE.Color(1, 1, 1), .5), size: .035, transparent: true, opacity: .45, depthWrite: false }));
+  scene.add(motes);
+
+  const item = new THREE.Group(); scene.add(item);
+  const S = { scene, camera, renderer, item, fx: new Fx(scene), camYaw: () => Math.atan2(camera.position.x, camera.position.z), tick: null, t: 0, def: null, motes };
+  S.load = (def) => {
+    S.fx.clear();
+    for (const c of [...item.children]) { item.remove(c); c.traverse?.((o) => { o.geometry?.dispose(); }); }
+    item.rotation.set(0, 0, 0);
+    S.def = def; S.t = 0; S.tick = def.build(S);
+  };
+  S.step = (dt) => {
+    S.t += dt;
+    if (S.def.loop && S.t > S.def.loop) S.load(S.def);
+    S.tick?.(S.t, dt); S.fx.update(dt);
+    motes.rotation.y += dt * 0.02;
+  };
+  return S;
+}
+
+/* Card pictures: one hidden renderer plays each preview to its hero moment and snapshots it. */
+const thumbs = {};
+async function makeThumbs() {
+  const c = document.createElement("canvas"); c.dataset.thumb = "1";
+  const T = makeStudio(c, 480, 360);
+  T.camera.position.set(4.4, 2.6, 5.9); T.camera.lookAt(0, 1.15, 0);
+  for (const it of ITEMS) {
+    if (it.preview === "chat") continue;
+    const def = PREVIEWS[it.preview];
+    Math.random = seeded(it.id.length * 97 + 13);
+    T.load(def);
+    const steps = Math.round(def.hero * 60);
+    for (let i = 0; i < steps; i++) T.step(1 / 60);
+    Math.random = realRandom;
+    T.renderer.render(T.scene, T.camera);
+    thumbs[it.id] = c.toDataURL("image/webp", 0.9);
+    const img = document.querySelector(`img[data-id="${it.id}"]`);
+    if (img) { img.src = thumbs[it.id]; img.classList.add("on"); img.nextElementSibling?.classList.contains("shimmer") && img.nextElementSibling.remove(); }
+    await new Promise((r) => setTimeout(r, 0));
+  }
+  T.renderer.dispose();
+}
+const realRandom = Math.random;
+function seeded(s) { return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }
+
+/* ------------------------------------------------------------------ studio dialog */
+let studio = null, controls = null, current = null, raf = 0, last = 0, speed = 1, spin = true;
+function ensureStudio() {
+  if (studio) return;
+  const canvas = document.createElement("canvas");
+  $("stage").prepend(canvas);
+  studio = makeStudio(canvas, 10, 10);
+  controls = new OrbitControls(studio.camera, canvas);
+  controls.target.set(0, 1.05, 0); controls.enableDamping = true; controls.enablePan = false;
+  controls.minDistance = 3.5; controls.maxDistance = 13; controls.maxPolarAngle = Math.PI * 0.53;
+  controls.autoRotateSpeed = 1.1; controls.autoRotate = true;
+  controls.addEventListener("start", () => { controls.autoRotate = false; });
+  controls.addEventListener("end", () => { setTimeout(() => { controls.autoRotate = spin; }, 1500); });
+  new ResizeObserver(resize).observe($("stage"));
+}
+function resize() {
+  const r = $("stage").getBoundingClientRect();
+  if (!r.width) return;
+  studio.renderer.setSize(r.width, r.height, false);
+  studio.camera.aspect = r.width / r.height; studio.camera.updateProjectionMatrix();
+}
+function frame(now) {
+  raf = requestAnimationFrame(frame);
+  const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
+  studio.step(dt * speed);
+  controls.update();
+  studio.renderer.render(studio.scene, studio.camera);
+}
+function openStudio(id, push = true) {
+  const it = ITEMS.find((i) => i.id === id); if (!it) return;
+  current = it;
+  const el = $("studio");
+  if (el.hidden) { el.hidden = false; requestAnimationFrame(() => el.classList.add("open")); document.body.style.overflow = "hidden"; }
+  ensureStudio(); resize();
+  studio.camera.position.set(5.4, 3.4, 7.6); controls.target.set(0, 1.2, 0);
+  studio.load(PREVIEWS[it.preview]);
+  cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(frame);
+  // Text panel
+  $("sCat").textContent = catOf(it.cat).name;
+  $("sRar").innerHTML = `<span style="color:${RAR[it.rar][1]};font-weight:700">${RAR[it.rar][0]}</span>`;
+  $("sName").textContent = it.name;
+  $("sDesc").textContent = it.desc;
+  $("sStatus").innerHTML = `<span class="st ${it.status}" style="margin:0;font-size:15px">${STATUS[it.status]}</span>`;
+  $("sSeen").textContent = it.seen ? `${it.seen}×` : "0";
+  $("sFirst").textContent = fmtDate(it.first); $("sLast").textContent = fmtDate(it.last);
+  $("sHow").textContent = it.how;
+  $("sWho").innerHTML = it.who.length ? it.who.map((n) => `<span class="chip">${n}</span>`).join("") : '<span class="soon">Nobody yet</span>';
+  $("unseenNote").hidden = it.status !== "unseen";
+  const chat = $("chatStage"); chat.hidden = it.preview !== "chat";
+  if (it.preview === "chat") chat.innerHTML = it.lines.map((l, i) => `<div class="chat-line" style="animation-delay:${i * 0.5 + .3}s">${l.join("")}</div>`).join("");
+  $("soundBox").hidden = !it.sound;
+  if (it.sound) { drawWave(it.sound); playSound(it.sound, 0.6); }
+  if (push) history.replaceState(null, "", "#" + it.id);
+}
+function closeStudio() {
+  const el = $("studio"); el.classList.remove("open");
+  cancelAnimationFrame(raf); document.body.style.overflow = "";
+  setTimeout(() => { el.hidden = true; }, 250);
+  history.replaceState(null, "", location.pathname + location.search);
+}
+function step(d) {
+  const list = visible.length ? visible : ITEMS;
+  const i = list.findIndex((x) => x.id === current.id);
+  openStudio(list[(i + d + list.length) % list.length].id);
+}
+$("closeBtn").onclick = closeStudio;
+$("studio").addEventListener("click", (e) => { if (e.target.id === "studio") closeStudio(); });
+$("prevBtn").onclick = () => step(-1); $("nextBtn").onclick = () => step(1);
+$("replayBtn").onclick = () => { studio.load(studio.def); if (current.preview === "chat") openStudio(current.id); if (current.sound) playSound(current.sound); };
+$("slowBtn").onclick = (e) => { speed = speed === 1 ? .25 : 1; e.currentTarget.setAttribute("aria-pressed", String(speed !== 1)); };
+$("spinBtn").onclick = (e) => { spin = !spin; controls.autoRotate = spin; e.currentTarget.setAttribute("aria-pressed", String(spin)); };
+$("copyBtn").onclick = async () => { try { await navigator.clipboard.writeText(location.href); $("copyBtn").textContent = "Copied"; setTimeout(() => { $("copyBtn").textContent = "Copy link"; }, 1400); } catch (e) {} };
+$("playSound").onclick = () => current?.sound && playSound(current.sound);
+
+/* ------------------------------------------------------------------ sounds (made up, synthesised) */
+let actx = null;
+function voice(ctx, kind, t0) {
+  const out = ctx.createGain(); out.connect(ctx.destination); out.gain.value = 0;
+  if (kind === "brass") {
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.setValueAtTime(1400, t0); lp.frequency.exponentialRampToValueAtTime(380, t0 + 1.1); lp.connect(out);
+    for (const det of [-8, 0, 7]) { const o = ctx.createOscillator(); o.type = "sawtooth"; o.detune.value = det; o.frequency.setValueAtTime(196, t0); o.frequency.exponentialRampToValueAtTime(98, t0 + 1.0); o.connect(lp); o.start(t0); o.stop(t0 + 1.3); }
+    out.gain.setValueAtTime(0, t0); out.gain.linearRampToValueAtTime(.22, t0 + .06); out.gain.setValueAtTime(.2, t0 + .7); out.gain.exponentialRampToValueAtTime(.001, t0 + 1.25);
+    return 1.3;
+  }
+  const o = ctx.createOscillator(); o.type = "square"; o.connect(out);
+  const notes = [1320, 880, 1760, 660, 1480, 990]; notes.forEach((f, i) => o.frequency.setValueAtTime(f, t0 + i * .045));
+  o.frequency.setValueAtTime(440, t0 + .27); o.frequency.exponentialRampToValueAtTime(110, t0 + .45);
+  out.gain.setValueAtTime(.09, t0); for (let i = 0; i < 6; i++) { out.gain.setValueAtTime(.09, t0 + i * .045); out.gain.setValueAtTime(.0, t0 + i * .045 + .032); }
+  out.gain.setValueAtTime(.08, t0 + .27); out.gain.exponentialRampToValueAtTime(.001, t0 + .5);
+  o.start(t0); o.stop(t0 + .55);
+  return .55;
+}
+function playSound(kind, delay = 0) {
+  try { actx = actx || new AudioContext(); actx.resume(); voice(actx, kind, actx.currentTime + delay); } catch (e) {}
+}
+async function drawWave(kind) {
+  const cv = $("wave"), g = cv.getContext("2d");
+  g.clearRect(0, 0, cv.width, cv.height);
+  try {
+    const len = kind === "brass" ? 1.3 : .55, rate = 22050;
+    const off = new OfflineAudioContext(1, Math.ceil(len * rate), rate);
+    voice(off, kind, 0);
+    const buf = await off.startRendering(), d = buf.getChannelData(0);
+    const col = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#0df";
+    const bars = 96, bw = cv.width / bars, per = Math.floor(d.length / bars);
+    let peak = 0; for (let i = 0; i < d.length; i++) peak = Math.max(peak, Math.abs(d[i]));
+    g.fillStyle = col;
+    for (let b = 0; b < bars; b++) {
+      let m = 0; for (let i = b * per; i < (b + 1) * per; i++) m = Math.max(m, Math.abs(d[i]));
+      const hgt = Math.max(2, (m / (peak || 1)) * (cv.height - 16));
+      g.fillRect(b * bw + 1, (cv.height - hgt) / 2, bw - 2, hgt);
+    }
+  } catch (e) {}
+}
+
+/* ------------------------------------------------------------------ start */
+buildRail(); tally(); render();
+const deep = location.hash.slice(1);
+if (deep && ITEMS.some((i) => i.id === deep)) openStudio(deep, false);
+makeThumbs();
+</script>
+</body>
+</html>

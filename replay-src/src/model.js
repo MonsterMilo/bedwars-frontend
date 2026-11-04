@@ -90,7 +90,11 @@ class Reader {
     const item = { id, count, damage }
     if (tag) {
       if (tag.display && typeof tag.display.color === 'number') item.color = tag.display.color
-      if (Array.isArray(tag.ench) && tag.ench.length) item.glint = true
+      if (Array.isArray(tag.ench) && tag.ench.length) {
+        item.glint = true
+        const eff = tag.ench.find(e => e && e.id === 32) // Efficiency
+        if (eff) item.eff = eff.lvl | 0
+      }
     }
     return item
   }
@@ -744,8 +748,48 @@ function buildTimeline (mcpr, onProgress = () => {}) {
  * (pieces flying): your own blocks never do, and Hypixel skips them for
  * most others' too. A block within reach turning to air at the end of a run
  * of someone's arm swings (they come every tick while digging) was mined by
- * them: the cracks grow evenly over that run, and the pieces fly at the end.
+ * them: the cracks grow evenly over that run (capped at the 1.8 dig time
+ * for their tool), and the pieces fly at the end. Swings aren't always
+ * passed on, so with none the nearest player within reach gets the 1.8
+ * dig time.
  */
+// How long 1.8 takes to mine a block with an item (vanilla dig speed:
+// per tick progress = tool speed / hardness / 30, or /100 without the
+// right tool). Haste isn't sent to us, so this can be a bit long.
+const HARD = {
+  1: 1.5, 2: 0.6, 3: 0.5, 4: 2, 5: 2, 12: 0.5, 13: 0.6, 17: 2, 18: 0.2, 19: 0.6, 20: 0.3, 22: 3, 24: 0.8,
+  26: 0.2, 30: 4, 35: 0.8, 41: 3, 42: 5, 44: 2, 45: 2, 47: 1.5, 48: 2, 49: 50, 53: 2, 54: 2.5, 57: 5,
+  58: 2.5, 65: 0.4, 67: 2, 79: 0.5, 80: 0.2, 81: 0.4, 82: 0.6, 85: 2, 86: 1, 87: 0.4, 88: 0.5, 89: 0.3,
+  91: 1, 95: 0.3, 98: 1.5, 101: 5, 102: 0.3, 103: 1, 108: 2, 109: 1.5, 112: 2, 114: 2, 121: 3, 125: 2,
+  126: 2, 128: 0.8, 133: 5, 134: 2, 135: 2, 136: 2, 139: 2, 152: 5, 155: 0.8, 156: 0.8, 159: 1.25,
+  160: 0.3, 162: 2, 163: 2, 164: 2, 168: 1.5, 170: 0.5, 171: 0.1, 172: 1.25, 174: 0.5, 179: 0.8, 180: 0.8
+}
+const AXE_BLOCKS = new Set([5, 17, 47, 53, 54, 58, 65, 85, 86, 91, 103, 125, 126, 134, 135, 136, 162, 163, 164])
+const SHOVEL_BLOCKS = new Set([2, 3, 12, 13, 80, 82, 88])
+// Stone-like blocks need a pickaxe to break at full speed.
+const PICK_BLOCKS = new Set([1, 4, 22, 24, 41, 42, 44, 45, 48, 49, 57, 67, 79, 98, 101, 108, 109, 112, 114, 121, 128, 133, 139, 152, 155, 156, 159, 168, 172, 174, 179, 180])
+const SWORDS = new Set([267, 268, 272, 276, 283])
+const TOOLS = { // item id -> [kind, speed]
+  270: ['pick', 2], 274: ['pick', 4], 257: ['pick', 6], 278: ['pick', 8], 285: ['pick', 12],
+  271: ['axe', 2], 275: ['axe', 4], 258: ['axe', 6], 279: ['axe', 8], 286: ['axe', 12],
+  269: ['shovel', 2], 273: ['shovel', 4], 256: ['shovel', 6], 277: ['shovel', 8], 284: ['shovel', 12],
+  359: ['shears', 0]
+}
+function digMs (block, item) {
+  const id = block >> 4; const h = HARD[id]
+  if (!h) return 0
+  const tool = item && TOOLS[item.id]
+  let speed = 1
+  if (tool) {
+    const [kind, s] = tool
+    if (kind === 'shears') speed = id === 35 ? 5 : id === 18 || id === 30 ? 15 : 1
+    else if ((kind === 'pick' && PICK_BLOCKS.has(id)) || (kind === 'axe' && AXE_BLOCKS.has(id)) || (kind === 'shovel' && SHOVEL_BLOCKS.has(id))) speed = s
+    if (speed > 1 && item.eff) speed += item.eff * item.eff + 1
+  } else if (item && SWORDS.has(item.id) && id === 30) speed = 15
+  const harvest = !PICK_BLOCKS.has(id) || (tool && tool[0] === 'pick' && (id !== 49 || item.id === 278))
+  return Math.ceil(1 / (speed / h / (harvest ? 30 : 100))) * 50
+}
+
 function rebuildBreaks (tracks, ch, cracks, effects) {
   const byTime = new Map()
   for (let i = 0; i < ch.n; i++) byTime.set(ch.t[i], (byTime.get(ch.t[i]) || 0) + 1)
@@ -759,8 +803,9 @@ function rebuildBreaks (tracks, ch, cracks, effects) {
     if (!pieces.has(k)) pieces.set(k, []); pieces.get(k).push(e.t)
   }
   const booms = effects.filter(e => e.kind === 'explosion').map(e => e.t)
-  const players = [...tracks.values()].filter(tr => tr.kind === 'player' && tr.swings.length)
+  const players = [...tracks.values()].filter(tr => tr.kind === 'player')
   const prevT = new Map() // one block at a time per player
+  const batch = new Map() // player -> { t, start, n }: blocks that arrived together
   const added = []
   for (let i = 0; i < ch.n; i++) {
     const from = ch.from[i]; const id = from >> 4
@@ -770,33 +815,60 @@ function rebuildBreaks (tracks, ch, cracks, effects) {
     const T = ch.t[i]
     if (booms.some(b => Math.abs(b - T) < 250)) continue // blown up
     const x = ch.x[i]; const y = ch.y[i]; const z = ch.z[i]; const k = key(x, y, z)
-    // Who broke it: the nearest player within reach who just swung.
-    let who = null; let best = 6
+    // Who broke it: the nearest player within reach who just swung. The
+    // server doesn't always pass on swings, so failing that, the nearest
+    // player within reach.
+    let who = null; let best = 6; let near = null; let nearD = 5
     for (const tr of players) {
-      const w = tr.lastBefore(tr.swings, T + 100)
-      if (w < T - 250) continue
       const st = tr.stateAt(T); if (!st) continue
       const d = Math.hypot(st.x - x - 0.5, st.y + 1.62 - y - 0.5, st.z - z - 0.5)
+      if (d < nearD) { nearD = d; near = tr }
+      const w = tr.lastBefore(tr.swings, T + 100)
+      if (w < T - 250) continue
       if (d < best) { best = d; who = tr }
     }
     if (!(pieces.get(k) || []).some(t => Math.abs(t - T) < 300)) {
       effects.push({ t: T, kind: 'break', x: x + 0.5, y: y + 0.5, z: z + 0.5, block: from, rebuilt: true })
     }
+    who = who || near
     if (!who) continue
     const hadCracks = (sent.get(k) || []).some(t => t <= T + 100 && t > T - 6000)
+    // Blocks that arrive together (lag, or both halves of a bed) were
+    // mined side by side: they share one start and crack at once.
+    const b = batch.get(who)
+    if (b && T - b.t < 60) {
+      b.n++
+      if (id === 26 && b.bed) continue // a bed cracks on the half that was hit only
+      if (!hadCracks && b.start != null) addCracks(added, 'r' + who.id + '#' + b.n, x, y, z, b.start, T)
+      continue
+    }
+    const est = digMs(from, who.equip[0].at(T))
+    let swingRun = 0
     const sw = who.swings
     let j = lastAt(sw, T + 100)
-    while (j > 0 && sw[j] - sw[j - 1] < 350 && T - sw[j - 1] < 6000) j--
-    const start = Math.max(sw[j], prevT.get(who) || -Infinity); const d = T - start
+    if (j >= 0 && sw[j] >= T - 250) {
+      while (j > 0 && sw[j] - sw[j - 1] < 350 && T - sw[j - 1] < 6000) j--
+      swingRun = T - Math.max(sw[j], prevT.get(who) || -Infinity)
+    }
     prevT.set(who, T)
-    if (hadCracks || d < 100) continue // the server's own cracks, or broken at once
-    for (let s = 0; s < 10; s++) added.push({ t: Math.round(start + d * s / 10), who: who.id, x, y, z, stage: s })
-    added.push({ t: T, who: who.id, x, y, z, stage: -1 })
+    // The swings show how long it took (faster than expected means
+    // Haste or a better tool); the dig time caps swings that started on
+    // something else.
+    const dur = swingRun >= 100 ? (est ? Math.min(swingRun, est) : swingRun) : est
+    const start = dur >= 100 ? T - dur : null
+    batch.set(who, { t: T, start, n: 0, bed: id === 26 })
+    if (hadCracks || start == null) continue // the server's own cracks, or broken at once
+    addCracks(added, 'r' + who.id, x, y, z, start, T)
   }
-  // Rebuilt cracks keep apart from the server's (a breaker shows one block).
-  for (const c of added) { c.who = 'r' + c.who; cracks.push(c) }
+  for (const c of added) cracks.push(c)
   cracks.sort((a, b) => a.t - b.t)
   effects.sort((a, b) => a.t - b.t)
+}
+
+function addCracks (out, who, x, y, z, start, T) {
+  const d = T - start
+  for (let s = 0; s < 10; s++) out.push({ t: Math.round(start + d * s / 10), who, x, y, z, stage: s })
+  out.push({ t: T, who, x, y, z, stage: -1 })
 }
 
 function popcount (m) { let c = 0; while (m) { c += m & 1; m >>>= 1 } return c }

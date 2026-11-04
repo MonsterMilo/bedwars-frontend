@@ -381,15 +381,15 @@ const ITEMS = [
     desc: "Killing an enemy will summon a vortex!", tags: "wind vortex sparks", preview: "tornado" },
   { id: "batcrux", cat: "final", name: "Batcrux", rar: "legendary", price: 300000, get: "event", season: "Halloween",
     desc: "Killing an enemy splits their soul into 7 Batcruxes.", tags: "bats smoke spooky", preview: "batcrux" },
-  // Victory dances (rarity/price filled from the in-game menu recording)
-  { id: "dragon-rider", cat: "dance", name: "Dragon Rider", rar: "legendary", price: null, get: "shop",
-    desc: "Ride an Ender Dragon around the map after you win.", tags: "dragon fly ender ride", preview: "dragonRider" },
-  { id: "anvil-rain", cat: "dance", name: "Anvil Rain", rar: "epic", price: null, get: "shop",
-    desc: "Anvils rain down from the sky around you.", tags: "anvils fall", preview: "anvilRain" },
-  { id: "fireworks", cat: "dance", name: "Fireworks", rar: "common", price: null, get: "shop",
-    desc: "Celebrate your win with fireworks.", tags: "rockets celebrate", preview: "fireworks" },
-  { id: "meteor-shower", cat: "dance", name: "Meteor Shower", rar: "legendary", price: null, get: "shop",
-    desc: "Fireballs rain down from the sky.", tags: "fireball meteor explosion", preview: "meteorShower" },
+  // Victory dances (rarity, price and wording from the in-game menu)
+  { id: "dragon-rider", cat: "dance", name: "Dragon Rider", rar: "legendary", price: 100000, get: "shop",
+    desc: "Ride a Dragon capable of destroying the map.", tags: "dragon fly ender ride", preview: "dragonRider" },
+  { id: "anvil-rain", cat: "dance", name: "Anvil Rain", rar: "common", price: 5000, get: "shop",
+    desc: "Anvils will rain from the sky.", tags: "anvils fall", preview: "anvilRain" },
+  { id: "fireworks", cat: "dance", name: "Fireworks", rar: "common", price: 5000, get: "shop",
+    desc: "Celebrate with a splendid fireworks show!", tags: "rockets celebrate", preview: "fireworks" },
+  { id: "meteor-shower", cat: "dance", name: "Meteor Shower", rar: "rare", price: 10000, get: "shop",
+    desc: "A meteor shower will rain down from the sky.", tags: "fireball meteor explosion", preview: "meteorShower" },
   // Death cries (sound, pitch as Hypixel plays them)
   { id: "bazinga", cat: "cry", name: "Bazinga", rar: "common", price: 5000, get: "shop", desc: "Plays the Bazinga Death Cry when you die.", tags: "sound blaze", preview: "cry", sound: ["mob.blaze.death", 2] },
   { id: "dinosaur", cat: "cry", name: "Dinosaur", rar: "common", price: 5000, get: "shop", desc: "Plays the Dinosaur Death Cry when you die.", tags: "sound donkey", preview: "cry", sound: ["mob.horse.donkey.death", 0.5] },
@@ -1164,7 +1164,7 @@ function makeClouds() {
 // Where the camera sits for each stage: [position, target, min, max distance, thumbnail position, thumbnail target].
 const STAGE_CAM = {
   island: [[6.2, 3.6, 9.1], [0, 1.15, 0], 4, 18, [3.7, 2.3, 5.2], [0, 1.05, 0]],
-  arena: [[12, 7.5, 17.5], [0, 1.4, 0], 7, 40, [9.5, 6, 13.5], [0, 1.6, 0]],
+  arena: [[12, 7.5, 17.5], [0, 1.4, 0], 7, 40, [6.6, 4.4, 9.8], [0, 2.2, 0]],
   sky: [[28, 11, 41], [0, 3.5, 0], 14, 80, [24, 9.5, 35], [0, 3.8, 0]],
 };
 

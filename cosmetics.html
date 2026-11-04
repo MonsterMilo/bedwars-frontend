@@ -164,6 +164,7 @@
   .tool:hover { background: rgba(10,12,18,.8); }
   .tool[aria-pressed="true"] { border-color: var(--accent); color: #fff; }
   .tool svg { width: 15px; height: 15px; }
+  @media (max-width: 640px) { .tools { gap: 5px; left: 10px; bottom: 10px; } .tool { padding: 0 10px; height: 32px; } .tool span { display: none; } }
   .hint { position: absolute; right: 16px; bottom: 20px; font-size: 12px; color: rgba(230,235,245,.55); pointer-events: none; }
   .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,18,.45); color: #fff; font-size: 22px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
   .nav.prev { left: 14px; } .nav.next { right: 14px; }
@@ -307,9 +308,10 @@
       <button class="nav prev" id="prevBtn" type="button" aria-label="Previous cosmetic">&#8249;</button>
       <button class="nav next" id="nextBtn" type="button" aria-label="Next cosmetic">&#8250;</button>
       <div class="tools">
-        <button class="tool" id="replayBtn" type="button"><svg viewBox="0 0 16 16"><path d="M3 8a5 5 0 1 0 1.5-3.5M3 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Replay</button>
+        <button class="tool" id="replayBtn" type="button"><svg viewBox="0 0 16 16"><path d="M3 8a5 5 0 1 0 1.5-3.5M3 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Replay</span></button>
         <button class="tool" id="slowBtn" type="button" aria-pressed="false">0.25×</button>
         <button class="tool" id="spinBtn" type="button" aria-pressed="true">Spin</button>
+        <button class="tool" id="muteBtn" type="button" aria-pressed="true" title="Sound"><svg viewBox="0 0 16 16"><path d="M2.5 6v4h2.5l3.5 3V3L5 6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path class="w" d="M11 5.5a3.5 3.5 0 0 1 0 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path class="x" d="M10.5 6l4 4m0-4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Sound on</span></button>
       </div>
       <span class="hint">Drag to turn · scroll to zoom</span>
     </div>
@@ -544,44 +546,86 @@ function recolor(img, fn) {
 function hueOf(r, g, b) { const c = new THREE.Color(r / 255, g / 255, b / 255), h = {}; c.getHSL(h); return h; }
 const SKIN_IDS = [...new Set(ITEMS.map((i) => i.skin).filter(Boolean)), "dummy", "killer"];
 const skinImgs = await Promise.all(SKIN_IDS.map((id) => loadImg(`cosmetics/skins/${id}.png`)));
-const SKINS = { steve: canvasTex(crop(steveImg, 0, 0, 64, 64)) };
-SKIN_IDS.forEach((id, i) => { const im = skinImgs[i]; const t = canvasTex(crop(im, 0, 0, 64, 64)); t.userData = { legacy: im.height === 32 }; SKINS[id] = t; });
+// A skin is two textures, like the game uses: the base layer forced fully opaque
+// (1.8 does the same, so holes in a skin never show the sky through a body) and
+// the original for the second layer (hat, jacket, sleeves, trousers).
+// Old 64x32 skins have no second layer except the hat and mirror the right arm
+// and leg; slim (Alex) skins have 3-pixel arms.
+function skinOf(img) {
+  const legacy = img.height === 32;
+  const over = crop(img, 0, 0, 64, img.height);
+  const base = crop(img, 0, 0, 64, img.height), g = base.getContext("2d"), d = g.getImageData(0, 0, 64, img.height);
+  const slim = !legacy && d.data[(20 * 64 + 54) * 4 + 3] === 0;
+  for (let i = 3; i < d.data.length; i += 4) d.data[i] = 255;
+  g.putImageData(d, 0, 0);
+  return { base: canvasTex(base), over: canvasTex(over), legacy, slim };
+}
+const SKINS = { steve: skinOf(steveImg) };
+SKIN_IDS.forEach((id, i) => { SKINS[id] = skinOf(skinImgs[i]); });
+const entityImgs = {};
+await Promise.all(["bat", "squid"].map(async (n) => { entityImgs[n] = await loadImg(`replay/entity/${n}.png`); }));
+const ENTITY = Object.fromEntries(Object.entries(entityImgs).map(([n, im]) => [n, { tex: canvasTex(crop(im, 0, 0, im.width, im.height)), w: im.width, h: im.height }]));
 
 /* ------------------------------------------------------------------ studio scene kit */
 const PX = 0.9375 / 16;
-function setBoxUV(geo, u, v, w, h, d, th = 64) {
+// Box UVs in the game's layout. Each face is pulled in by a hair so a face never
+// samples its neighbour's pixels (that was the thin lines along skin edges).
+function setBoxUV(geo, u, v, w, h, d, th = 64, tw = 64, mirror = false) {
   const F = [[u + d + w, v + d, d, h], [u, v + d, d, h], [u + d, v, w, d], [u + d + w, v, w, d], [u + d, v + d, w, h], [u + 2 * d + w, v + d, w, h]];
-  const uv = geo.attributes.uv;
+  if (mirror) { const a = F[0]; F[0] = F[1]; F[1] = a; }
+  const uv = geo.attributes.uv, e = 0.02;
   F.forEach(([x, y, fw, fh], f) => {
-    const u0 = x / 64, u1 = (x + fw) / 64, v0 = 1 - y / th, v1 = 1 - (y + fh) / th;
+    let u0 = (x + e) / tw, u1 = (x + fw - e) / tw;
+    if (mirror) [u0, u1] = [u1, u0];
+    const v0 = 1 - (y + e) / th, v1 = 1 - (y + fh - e) / th;
     const s = [[u0, v0], [u1, v0], [u0, v1], [u1, v1]];
     for (let k = 0; k < 4; k++) uv.setXY(f * 4 + k, s[k][0], s[k][1]);
   });
   uv.needsUpdate = true;
 }
-function makePlayer(skin = SKINS.steve, opts = {}) {
-  const root = new THREE.Group(), mats = [];
-  const mat = (overlay) => { const m = new THREE.MeshLambertMaterial({ map: skin, transparent: overlay, alphaTest: overlay ? 0.1 : 0.5, side: overlay ? THREE.DoubleSide : THREE.FrontSide }); mats.push(m); return m; };
-  const legacy = !!skin.userData?.legacy, TH = legacy ? 32 : 64;
-  const part = (w, h, d, u, v, pivot, inflate = 0, overlay = false) => {
+function makePlayer(skin = SKINS.steve) {
+  const root = new THREE.Group();
+  const baseM = new THREE.MeshLambertMaterial({ map: skin.base });
+  const overM = new THREE.MeshLambertMaterial({ map: skin.over, alphaTest: 0.5 });
+  const mats = [baseM, overM], TH = skin.legacy ? 32 : 64;
+  const box = (w, h, d, u, v, inflate, m, y, mirror) => {
     const g = new THREE.BoxGeometry((w + inflate) * PX, (h + inflate) * PX, (d + inflate) * PX);
-    setBoxUV(g, u, v, w, h, d, TH);
-    g.translate(0, -h * PX / 2, 0);
-    const m = new THREE.Mesh(g, mat(overlay));
-    const p = new THREE.Group(); p.position.set(pivot[0] * PX, pivot[1] * PX, pivot[2] * PX); p.add(m);
+    setBoxUV(g, u, v, w, h, d, TH, 64, mirror);
+    const mesh = new THREE.Mesh(g, m); mesh.position.y = y; return mesh;
+  };
+  // top = where the box's top edge sits above the pivot, in pixels.
+  const part = (w, h, d, uv, pivot, top, ov, mirror = false) => {
+    const p = new THREE.Group(); p.position.set(pivot[0] * PX, pivot[1] * PX, pivot[2] * PX);
+    const y = (top - h / 2) * PX;
+    p.add(box(w, h, d, uv[0], uv[1], 0, baseM, y, mirror));
+    if (ov) p.add(box(w, h, d, ov[0], ov[1], ov[2], overM, y, false));
     return p;
   };
+  const L = skin.legacy, aw = skin.slim ? 3 : 4, ax = skin.slim ? 5.5 : 6;
   const body = new THREE.Group(); root.add(body);
-  const head = part(8, 8, 8, 0, 0, [0, 24, 0]); head.children[0].position.y = 8 * PX;
-  const hat = part(8, 8, 8, 32, 0, [0, 0, 0], 1, true); hat.children[0].position.y = 8.5 * PX; head.add(hat);
-  const torso = part(8, 12, 4, 16, 16, [0, 24, 0]);
-  const armR = part(4, 12, 4, 40, 16, [-6, 22, 0]); armR.children[0].position.y = 2 * PX;
-  const armL = legacy ? part(4, 12, 4, 40, 16, [6, 22, 0]) : part(4, 12, 4, 32, 48, [6, 22, 0]); armL.children[0].position.y = 2 * PX;
-  const legR = part(4, 12, 4, 0, 16, [-2, 12, 0]);
-  const legL = legacy ? part(4, 12, 4, 0, 16, [2, 12, 0]) : part(4, 12, 4, 16, 48, [2, 12, 0]);
+  const head = part(8, 8, 8, [0, 0], [0, 24, 0], 8, [32, 0, 1]);
+  const torso = part(8, 12, 4, [16, 16], [0, 24, 0], 0, L ? null : [16, 32, .5]);
+  const armR = part(aw, 12, 4, [40, 16], [-ax, 22, 0], 2, L ? null : [40, 32, .5]);
+  const armL = L ? part(4, 12, 4, [40, 16], [ax, 22, 0], 2, null, true) : part(aw, 12, 4, [32, 48], [ax, 22, 0], 2, [48, 48, .5]);
+  const legR = part(4, 12, 4, [0, 16], [-2, 12, 0], 0, L ? null : [0, 32, .5]);
+  const legL = L ? part(4, 12, 4, [0, 16], [2, 12, 0], 0, null, true) : part(4, 12, 4, [16, 48], [2, 12, 0], 0, [0, 48, .5]);
   body.add(head, torso, armR, armL, legR, legL);
-  if (opts.silhouette) for (const m of mats) { m.map = null; m.color.set(0x0b0d12); }
   return { root, body, head, armR, armL, legR, legL, mats };
+}
+
+// Mob models built the way 1.8's ModelRenderer does: boxes in pixel units with
+// the y axis pointing down and the face toward -z; turned here to y up, face +z.
+function mcModel(name) {
+  const E = ENTITY[name], mat = new THREE.MeshLambertMaterial({ map: E.tex, alphaTest: 0.5, side: THREE.DoubleSide });
+  const piece = (rp = [0, 0, 0]) => { const g = new THREE.Group(); g.position.set(rp[0] * PX, -rp[1] * PX, -rp[2] * PX); g.rotation.order = "ZYX"; return g; };
+  const cube = (parent, u, v, [x, y, z, w, h, d], mirror = false) => {
+    const g = new THREE.BoxGeometry(w * PX, h * PX, d * PX);
+    setBoxUV(g, u, v, w, h, d, E.h, E.w, mirror);
+    g.translate((x + w / 2) * PX, -(y + h / 2) * PX, -(z + d / 2) * PX);
+    parent.add(new THREE.Mesh(g, mat));
+  };
+  const rot = (o, x = 0, y = 0, z = 0) => o.rotation.set(x, -y, -z);
+  return { piece, cube, rot, mat };
 }
 function makeBlock(tex, size = 1) {
   const mats = (Array.isArray(tex) ? tex : [tex, tex, tex, tex, tex, tex]).map((t) => new THREE.MeshLambertMaterial({ map: t, transparent: true, alphaTest: 0.05 }));
@@ -637,9 +681,8 @@ const SMOKE = [7, 6, 5, 4, 3, 2, 1, 0], SPELL = [135, 134, 133, 132, 131, 130, 1
 function dieAnim(p, t, start) {
   const k = Math.max(0, Math.min(1, (t - start) / 0.9));
   p.body.rotation.z = Math.sqrt(k) * Math.PI / 2;
-  p.body.position.x = Math.sqrt(k) * 0.05;
-  const red = t > start && k < 1;
-  for (const m of p.mats) m.color.setRGB(1, red ? 0.45 : 1, red ? 0.45 : 1);
+  const red = t > start;
+  for (const m of p.mats) m.color.setRGB(1, red ? 0.55 : 1, red ? 0.55 : 1);
   return k;
 }
 function idle(p, t) {
@@ -659,39 +702,109 @@ function killScene(S, victimAt = V(0, 0, 0)) {
   return { killer, victim };
 }
 // The kill: the killer swings at 0.8s, the hit lands at 1.0s (Hypixel plays game.neutral.hurt there).
-function killAnim(S, k, t, { vanish = true } = {}) {
+function killAnim(S, k, t, { vanish = true, hurt = true } = {}) {
   idle(k.killer, t);
   k.killer.armR.rotation.x = t > .75 && t < 1.05 ? -Math.sin((t - .75) / .3 * Math.PI) * 1.6 : k.killer.armR.rotation.x;
   if (t < 1) { idle(k.victim, t + 1); for (const m of k.victim.mats) m.color.setRGB(1, 1, 1); }
   else if (vanish) k.victim.root.visible = false;
-  else dieAnim(k.victim, t, 1);
-  S.at(1.0, () => S.sound("game.neutral.hurt", .79, .8));
+  else if (t < 2) dieAnim(k.victim, t, 1);
+  if (hurt) S.at(1.0, () => S.sound("game.neutral.hurt", .79, .8));
 }
-function bat(S) {
-  const g = new THREE.Group(), m = new THREE.MeshLambertMaterial({ color: 0x2b211b });
-  const body = new THREE.Mesh(new THREE.BoxGeometry(.18, .26, .14), m); g.add(body);
-  const head = new THREE.Mesh(new THREE.BoxGeometry(.18, .16, .16), m); head.position.y = .2; g.add(head);
-  const wl = new THREE.Mesh(new THREE.BoxGeometry(.4, .02, .22), m); wl.geometry.translate(-.2, 0, 0); wl.position.x = -.08; g.add(wl);
-  const wr = new THREE.Mesh(new THREE.BoxGeometry(.4, .02, .22), m); wr.geometry.translate(.2, 0, 0); wr.position.x = .08; g.add(wr);
-  g.userData.flap = (t) => { wl.rotation.z = Math.sin(t * 28) * .9; wr.rotation.z = -Math.sin(t * 28) * .9; };
+// 1.8 ModelBat in flight, with the game's own bat texture, drawn at the game's 0.35 scale.
+function makeBat() {
+  const M = mcModel("bat"), root = new THREE.Group(), g = new THREE.Group(); g.scale.setScalar(.35); root.add(g);
+  const head = M.piece(); M.cube(head, 0, 0, [-3, -3, -3, 6, 6, 6]); M.cube(head, 24, 0, [-4, -6, -2, 3, 4, 1]); M.cube(head, 24, 0, [1, -6, -2, 3, 4, 1], true);
+  const body = M.piece(); M.cube(body, 0, 16, [-3, 4, -3, 6, 12, 6]); M.cube(body, 0, 34, [-5, 16, 0, 10, 6, 1]);
+  const wr = M.piece(); M.cube(wr, 42, 0, [-12, 1, 1.5, 10, 16, 1]);
+  const wro = M.piece([-12, 1, 1.5]); M.cube(wro, 24, 16, [-8, 1, 0, 8, 12, 1]); wr.add(wro);
+  const wl = M.piece(); M.cube(wl, 42, 0, [2, 1, 1.5, 10, 16, 1], true);
+  const wlo = M.piece([12, 1, 1.5]); M.cube(wlo, 24, 16, [0, 1, 0, 8, 12, 1], true); wl.add(wlo);
+  body.add(wr, wl); g.add(head, body);
+  g.position.y = .25;
+  root.userData.flap = (ticks) => {
+    M.rot(body, Math.PI / 4 + Math.cos(ticks * .1) * .15);
+    const a = Math.cos(ticks * 1.3) * Math.PI * .25;
+    M.rot(wr, 0, a); M.rot(wl, 0, -a); M.rot(wro, 0, a * .5); M.rot(wlo, 0, -a * .5);
+  };
+  return root;
+}
+// 1.8 ModelSquid with the game's squid texture; tentacles pulse like an out-of-water squid.
+function makeSquid() {
+  const M = mcModel("squid"), root = new THREE.Group(), g = new THREE.Group(); root.add(g);
+  const body = M.piece([0, 8, 0]); M.cube(body, 0, 0, [-6, -8, -6, 12, 16, 12]); g.add(body);
+  const tents = [];
+  for (let k = 0; k < 8; k++) {
+    const a = k * Math.PI * 2 / 8, t = M.piece([Math.cos(a) * 5, 15, Math.sin(a) * 5]);
+    M.cube(t, 48, 0, [-1, 0, -1, 2, 18, 2]); t.userData.y = k * Math.PI * -2 / 8 + Math.PI / 2; g.add(t); tents.push(t);
+  }
+  g.position.y = 33 * PX; // tentacle tips at the feet
+  root.userData.wiggle = (t) => { const ang = Math.abs(Math.sin(t * 5)) * Math.PI * .25 + .1; for (const x of tents) M.rot(x, ang, x.userData.y); };
+  return root;
+}
+// 1.8 lightning: 4 nested additive tubes, 8 jagged 16-block segments from the sky
+// plus two side branches, the same random walk as RenderLightningBolt. Drawn at
+// a smaller scale so the zig-zag fits the stage.
+function lightningGeo(vertex) {
+  const r0 = seeded(vertex), ri = (n) => Math.floor(r0() * n);
+  const ax = [], az = []; let d0 = 0, d1 = 0;
+  for (let i = 7; i >= 0; i--) { ax[i] = d0; az[i] = d1; d0 += ri(11) - 5; d1 += ri(11) - 5; }
+  const pos = [], col = [];
+  const SY = 0.18, SXZ = 0.2, SW = 0.16;
+  const quad = (a, b, c, d, k) => { for (const p of [a, b, c, a, c, d]) pos.push(p[0], p[1], p[2]); for (let i = 0; i < 6; i++) col.push(.45, .45, .5); };
+  for (let k1 = 0; k1 < 4; k1++) {
+    const r1 = seeded(vertex); const rr = (n) => Math.floor(r1() * n);
+    for (let j = 0; j < 3; j++) {
+      const k = j > 0 ? 7 - j : 7, l = j > 0 ? k - 2 : 0;
+      let d2 = ax[k] - d0, d3 = az[k] - d1;
+      for (let i1 = k; i1 >= l; i1--) {
+        const d4 = d2, d5 = d3;
+        if (j === 0) { d2 += rr(11) - 5; d3 += rr(11) - 5; } else { d2 += rr(31) - 15; d3 += rr(31) - 15; }
+        let w0 = .1 + k1 * .2, w1 = .1 + k1 * .2;
+        if (j === 0) { w0 *= i1 * .1 + 1; w1 *= (i1 - 1) * .1 + 1; }
+        w0 *= SW; w1 *= SW;
+        const yb = i1 * 16 * SY, yt = (i1 + 1) * 16 * SY;
+        const bx = d2 * SXZ, bz = d3 * SXZ, tx = d4 * SXZ, tz = d5 * SXZ;
+        const C = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+        for (let s = 0; s < 4; s++) {
+          const a = C[s], b = C[(s + 1) % 4];
+          quad([bx + a[0] * w0, yb, bz + a[1] * w0], [bx + b[0] * w0, yb, bz + b[1] * w0], [tx + b[0] * w1, yt, tz + b[1] * w1], [tx + a[0] * w1, yt, tz + a[1] * w1]);
+        }
+      }
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
   return g;
 }
+const BOLT_MAT = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: .2, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+// The puff a mob leaves when it finishes dying: 20 "explode" particles in its box.
+function deathPuff(S, at) {
+  for (let i = 0; i < 20; i++) {
+    const g = rnd(.7, 1) * 255 | 0;
+    S.fx.spawn({ frames: SMOKE, pos: V(at.x + rnd(-.35, .35), at.y + rnd(0, 1.8), at.z + rnd(-.35, .35)), vel: V(rnd(-.5, .5), rnd(.1, .7), rnd(-.5, .5)), life: rnd(.45, 1.4), size: rnd(.1, .42), color: (g << 16) | (g << 8) | g, drag: .9, grav: -.08 });
+  }
+}
+const POP_PITCH = [.6, .62, .65, .67, .7, .75, .79, .86, .92, 1, 1.1, 1.21, 1.33, 1.49, 1.68];
 const PREVIEWS = {
-  lightning: { loop: 3.6, hero: 1.06, build(S) {
-    const k = killScene(S); let bolt = null, flash = null;
+  // The bolt shows for 3 ticks, then re-strikes 1 to 3 times with a new shape, like the game's.
+  lightning: { loop: 4.4, hero: 1.04, build(S) {
+    const k = killScene(S), flashes = []; let t0 = 1.0;
+    for (let n = 0, re = 1 + Math.floor(Math.random() * 3); n <= re; n++) {
+      const on = n ? .1 : .15; flashes.push({ a: t0, b: t0 + on, v: 1 + Math.floor(Math.random() * 1e6) });
+      t0 += on + (1 + Math.floor(Math.random() * 10)) / 20;
+    }
+    const bolt = new THREE.Mesh(new THREE.BufferGeometry(), BOLT_MAT); bolt.visible = false; S.item.add(bolt);
+    let shown = 0;
     return (t, dt) => {
       killAnim(S, k, t);
-      S.at(1.0, () => {
-        S.sound("ambient.weather.thunder", .95, 1); S.sound("random.explode", .57, .7);
-        bolt = new THREE.Group(); const mat = new THREE.MeshBasicMaterial({ color: 0xd8e4ff, transparent: true, opacity: .9, blending: THREE.AdditiveBlending, depthWrite: false });
-        let p = V(0, 14, 0);
-        for (let i = 0; i < 18; i++) { const n = V(p.x + rnd(-.45, .45), p.y - .78, p.z + rnd(-.45, .45)); if (i === 17) n.set(0, 0, 0);
-          const len = p.distanceTo(n), seg = new THREE.Mesh(new THREE.BoxGeometry(.12, len, .12), mat); seg.position.copy(p).add(n).multiplyScalar(.5); seg.lookAt(n); seg.rotateX(Math.PI / 2); bolt.add(seg); p = n; }
-        S.item.add(bolt);
-        flash = new THREE.PointLight(0xc8d8ff, 60, 14, 1.2); flash.position.set(0, 2, 0); S.item.add(flash);
-        for (let i = 0; i < 5; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(.2, 1.6), rnd(-.4, .4)), vel: V(0, .6, 0), life: 1.6, size: .5, color: 0x444444 });
-      });
-      if (bolt) { const k2 = (t - 1) / .45; bolt.visible = k2 < 1 && Math.sin(t * 70) > -.3; flash.intensity = Math.max(0, 1 - k2) * 60; }
+      S.at(1.0, () => { S.sound("ambient.weather.thunder", .95, 1); S.sound("random.explode", .57, .7); });
+      S.at(1.06, () => { for (let i = 0; i < 5; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.3, .3), rnd(.2, 1.4), rnd(-.3, .3)), vel: V(rnd(-.1, .1), .5, rnd(-.1, .1)), life: rnd(1.2, 2), size: rnd(.4, .6), color: 0x3c3c3c }); });
+      const f = flashes.find((x) => t >= x.a && t < x.b);
+      if (f && shown !== f.v) { bolt.geometry.dispose(); bolt.geometry = lightningGeo(f.v); shown = f.v; }
+      bolt.visible = !!f;
+      const ended = flashes.filter((x) => x.b <= t).pop();
+      S.flash(f ? 1 : ended ? Math.max(0, 1 - (t - ended.b) / .3) : 0);
     };
   } },
   tnt: { loop: 4, hero: 1.5, build(S) {
@@ -701,22 +814,24 @@ const PREVIEWS = {
       S.at(1.0, () => { S.sound("fireworks.launch", 1, 1);
         tnt = makeBlock([btex("tnt_side"), btex("tnt_side"), btex("tnt_top"), btex("tnt_bottom"), btex("tnt_side"), btex("tnt_side")]); tnt.position.set(0, .5, 0); S.item.add(tnt);
         for (let i = 0; i < 30; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(.1, 1.8), rnd(-.4, .4)), vel: V(0, rnd(.2, .6), 0), life: 1.2, size: .2, color: 0x555555 }); });
-      if (tnt && t < 2.5) { const flashOn = Math.floor(t * 6) % 2; for (const m of tnt.material) m.color.setScalar(flashOn ? 2.2 : 1); tnt.scale.setScalar(1 + Math.max(0, t - 2.2) * .5); }
-      S.at(2.5, () => { tnt.visible = false; S.sound("random.explode", .79, .8); S.explode(V(0, .6, 0)); });
+      // Primed TNT flashes white every 5 ticks and swells just before it goes.
+      if (tnt && t < 2.55) { const fuse = (2.55 - t) * 20, on = Math.floor(fuse / 5) % 2 === 0; for (const m of tnt.material) m.color.setScalar(on ? 2.4 : 1);
+        const sw = fuse < 10 ? 1 + (1 - fuse / 10) * .3 : 1; tnt.scale.setScalar(sw); }
+      S.at(2.55, () => { tnt.visible = false; S.sound("random.explode", .79, .8); S.explode(V(0, .6, 0)); });
     };
   } },
   squid: { loop: 4.2, hero: 1.9, build(S) {
     const k = killScene(S); let squid = null, pops = 0;
     return (t, dt) => {
       killAnim(S, k, t);
-      S.at(1.0, () => { squid = makeSquid(); squid.position.set(0, .4, 0); S.item.add(squid); });
+      S.at(1.02, () => { squid = makeSquid(); squid.position.set(0, 0, 0); S.item.add(squid); });
       if (squid && t < 2.67) {
-        const k2 = t - 1.0; squid.position.y = .4 + k2 * k2 * 2.6; squid.rotation.y += dt * 3;
+        const k2 = t - 1.02; squid.position.y = k2 * k2 * 1.3; squid.rotation.y += dt * 2.5;
         squid.userData.wiggle(t);
-        if (Math.random() < .9) S.fx.spawn({ frames: [48], pos: squid.position.clone().add(V(rnd(-.15, .15), -.3, rnd(-.15, .15))), vel: V(0, -.6, 0), life: .6, size: .16 });
-        while (pops < 15 && t > 1.17 + pops * .1) { S.sound("random.pop", .6 + pops * .08, .6); pops++; }
+        if (t > 1.17 && Math.random() < .7) S.fx.spawn({ frames: [48], pos: squid.position.clone().add(V(rnd(-.15, .15), rnd(-.1, .2), rnd(-.15, .15))), vel: V(rnd(-.1, .1), -.4, rnd(-.1, .1)), life: rnd(.4, .8), size: .14, shrink: true });
+        while (pops < POP_PITCH.length && t > 1.17 + pops * .1) { S.sound("random.pop", POP_PITCH[pops], .6); pops++; }
       }
-      S.at(2.67, () => { squid.visible = false; S.sound("fireworks.blast", 1, 1); S.firework(squid.position.clone(), [0x3a7bff, 0xffffff]); });
+      S.at(2.67, () => { squid.visible = false; S.sound("fireworks.blast", 1, 1); S.firework(squid.position.clone().add(V(0, .6, 0)), [0x3a7bff, 0xffffff]); });
     };
   } },
   hearts: { loop: 3.6, hero: 1.55, build(S) {
@@ -730,9 +845,8 @@ const PREVIEWS = {
     const k = killScene(S); let acc = 0;
     return (t, dt) => {
       killAnim(S, k, t);
-      if (t > 1.06 && t < 3.0 && (acc += dt) > .006) { acc = 0;
-        const f = k.killer.root.position; S.fx.spawn({ frames: [48], pos: V(f.x + rnd(-.3, .3), rnd(0, .25), f.z + rnd(-.25, .25)), vel: V(0, rnd(.1, .5), 0), life: rnd(.4, .8), size: .14, shrink: true }); }
-      if (t > .1 && t < 1 && Math.random() < .4) S.fx.spawn({ frames: [49], pos: V(rnd(-1.5, -1.1), 2.1, rnd(.7, 1.1)), vel: V(0, -2, 0), life: .5, size: .1, fade: false });
+      if (t > 1.06 && t < 3.0) for (acc += dt; acc > .0066; acc -= .0066) {
+        const f = k.killer.root.position; S.fx.spawn({ frames: [48], pos: V(f.x + rnd(-.25, .25), rnd(0, .2), f.z + rnd(-.2, .2)), vel: V(0, rnd(.1, .45), 0), life: rnd(.4, .8), size: .13, shrink: true }); }
     };
   } },
   tornado: { loop: 4.6, hero: 1.9, build(S) {
@@ -740,46 +854,44 @@ const PREVIEWS = {
     return (t, dt) => {
       killAnim(S, k, t);
       S.at(1.02, () => { for (let i = 0; i < 3; i++) S.sound("mob.enderdragon.wings", .5, .6, i * .25); });
-      if (t > 1.02 && t < 3.4 && (acc += dt) > .004) { acc = 0;
+      if (t > 1.06 && t < 3.4 && (acc += dt) > .004) { acc = 0;
         const h = rnd(0, 3.6), r = .15 + h * .32, a = t * 9 + h * 2.2 + rnd(0, Math.PI * 2);
         S.fx.spawn({ frames: SPARK, pos: V(Math.cos(a) * r, h, Math.sin(a) * r), vel: V(-Math.sin(a) * 2, .4, Math.cos(a) * 2), life: .55, size: .13, color: 0xffffff, add: true }); }
       if (t > 1.56 && t < 3.2 && Math.random() < .6) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(0, .4), rnd(-.4, .4)), vel: V(rnd(-.5, .5), rnd(.8, 1.6), rnd(-.5, .5)), life: 1.4, size: .4, color: 0x666666 });
     };
   } },
-  batcrux: { loop: 5, hero: 1.9, build(S) {
-    const k = killScene(S); const bats = [];
+  // Seven real bats leave the body a quarter second apart and flutter about the
+  // way 1.8 bats do: pick a nearby spot, dart at it, pick another.
+  batcrux: { loop: 5.6, hero: 2.3, build(S) {
+    const k = killScene(S), bats = [];
     return (t, dt) => {
       killAnim(S, k, t);
-      S.at(1.06, () => {
-        for (let i = 0; i < 160; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(0, 2), rnd(-.4, .4)), vel: sphere(rnd(.4, 2.4)), life: rnd(.9, 1.8), size: .4, color: 0x2a2a2a, drag: .94 });
-        for (let i = 0; i < 7; i++) { const b = bat(S); b.position.set(rnd(-.3, .3), rnd(.8, 1.6), rnd(-.3, .3)); S.item.add(b); bats.push({ b, a: i / 7 * Math.PI * 2, r: rnd(1.4, 2.4), h: rnd(1.4, 3), sp: rnd(1.4, 2.2) }); }
-        S.sound("mob.bat.takeoff", 1, .6);
+      S.at(1.06, () => { S.sound("mob.bat.takeoff", 1, .5);
+        for (let i = 0; i < 160; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.3, .3), rnd(.2, 1.8), rnd(-.3, .3)), vel: sphere(rnd(.4, 2.6)), life: rnd(.9, 1.8), size: rnd(.3, .5), color: 0x2e2e2e, drag: .93 }); });
+      for (let i = 0; i < 7; i++) S.at(1.06 + i * .25, () => {
+        const b = makeBat(); b.position.set(rnd(-.2, .2), rnd(.9, 1.4), rnd(-.2, .2)); S.item.add(b);
+        bats.push({ b, v: V(rnd(-1, 1), 2, rnd(-1, 1)), to: V(0, 0, 0), next: 0, born: t });
       });
-      S.at(2.4, () => S.sound("mob.bat.idle", .86, .3)); S.at(3.1, () => S.sound("mob.bat.idle", 1.06, .3));
+      for (const x of [2.4, 3.16, 3.61, 4.1]) S.at(x, () => S.sound("mob.bat.idle", rnd(.8, 1.1), .25));
+      const blend = 1 - Math.pow(.88, dt * 20);
       for (const x of bats) {
-        const age = t - 1.06, ease = Math.min(1, age / .7);
-        x.a += dt * x.sp; const tx = Math.cos(x.a) * x.r, tz = Math.sin(x.a) * x.r, ty = x.h + Math.sin(t * 3 + x.r) * .25;
-        x.b.position.lerp(V(tx, ty, tz), ease * .15); x.b.lookAt(V(Math.cos(x.a + .3) * x.r, ty, Math.sin(x.a + .3) * x.r)); x.b.userData.flap(t);
+        if ((x.next -= dt) <= 0 || x.b.position.distanceTo(x.to) < .4) { x.to.set(rnd(-3, 3), rnd(.8, 3.4), rnd(-3, 3)); x.next = rnd(.4, 1.1); }
+        const d = x.to.clone().sub(x.b.position);
+        x.v.x += (Math.sign(d.x) * 3.2 - x.v.x) * blend; x.v.z += (Math.sign(d.z) * 3.2 - x.v.z) * blend; x.v.y += (Math.sign(d.y) * 2.2 - x.v.y) * blend;
+        x.b.position.addScaledVector(x.v, dt);
+        const yaw = Math.atan2(x.v.x, x.v.z); let dy = yaw - x.b.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); x.b.rotation.y += dy * Math.min(1, dt * 10);
+        x.b.userData.flap((t - x.born) * 20);
       }
     };
   } },
-  cry: { loop: 3, hero: 1.1, build(S, it) {
-    const p = makePlayer(SKINS.dummy); p.root.rotation.y = -.4; S.item.add(p.root);
-    let hsh = 0; for (const ch of it.id) hsh = (hsh * 31 + ch.charCodeAt(0)) >>> 0;
-    const ringCol = new THREE.Color().setHSL((hsh % 360) / 360, .85, .62);
-    const rings = [];
-    for (let i = 0; i < 3; i++) {
-      const m = new THREE.Mesh(new THREE.TorusGeometry(.3, .022, 6, 48), new THREE.MeshBasicMaterial({ color: ringCol, transparent: true, opacity: 0, depthWrite: false }));
-      m.position.set(0, 1.75, 0); S.item.add(m); rings.push(m);
-    }
+  // Death cries have no lobby preview, so this shows the moment one plays:
+  // the hit, the cry, the 1.8 death tip-over and the white puff.
+  cry: { loop: 3.4, hero: 1.5, build(S, it) {
+    const k = killScene(S); k.victim.root.rotation.y = -.2; // turned so the fall is seen side-on
     return (t, dt) => {
-      idle(p, t); dieAnim(p, t, .6);
-      rings.forEach((m, i) => {
-        const k = (t - .6 - i * .18) / 1.1;
-        m.visible = k > 0 && k < 1; if (!m.visible) return;
-        m.scale.setScalar(1 + k * 4); m.material.opacity = (1 - k) * .9;
-        m.rotation.y = S.camYaw(); m.position.y = 1.75 - Math.min(1, (t - .6) / .9) * .9;
-      });
+      killAnim(S, k, t, { vanish: false, hurt: false });
+      S.at(1.0, () => { if (S.audible) playCry(it); });
+      S.at(2.0, () => { k.victim.root.visible = false; deathPuff(S, k.victim.root.position); });
     };
   } },
   shopkeeper: { loop: 6, hero: 1.2, thumbY: 1.45, build(S, it) {
@@ -789,17 +901,6 @@ const PREVIEWS = {
     return (t) => { idle(p, t); p.head.rotation.y = Math.sin(t * .9) * .55; p.head.rotation.x = Math.sin(t * .6) * .1 - .05; };
   } },
 };
-function makeSquid() {
-  const g = new THREE.Group(), m = new THREE.MeshLambertMaterial({ color: 0x24456a }), eye = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const body = new THREE.Mesh(new THREE.BoxGeometry(12 * PX, 16 * PX, 12 * PX), m); body.position.y = 8 * PX; g.add(body);
-  for (const s of [-1, 1]) { const e = new THREE.Mesh(new THREE.BoxGeometry(2 * PX, 2 * PX, .01), eye); e.position.set(s * 3 * PX, 4 * PX, 6.1 * PX); g.add(e); }
-  const tents = [];
-  for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; const tt = new THREE.Mesh(new THREE.BoxGeometry(2 * PX, 18 * PX, 2 * PX), m); tt.geometry.translate(0, -9 * PX, 0); tt.position.set(Math.cos(a) * 5 * PX, 0, Math.sin(a) * 5 * PX); tt.userData.a = a; g.add(tt); tents.push(tt); }
-  g.userData.wiggle = (t) => { for (const tt of tents) { tt.rotation.x = Math.sin(tt.userData.a) * (.3 + Math.sin(t * 9) * .25); tt.rotation.z = -Math.cos(tt.userData.a) * (.3 + Math.sin(t * 9) * .25); } };
-  g.rotation.x = Math.PI; // head up, tentacles trailing below
-  g.rotation.x = 0;
-  return g;
-}
 
 /* ------------------------------------------------------------------ studio renderer */
 function cssColor(v) { const el = document.createElement("i"); el.style.color = `var(${v})`; document.body.appendChild(el); const c = getComputedStyle(el).color; el.remove(); const m = c.match(/[\d.]+/g).map(Number); return new THREE.Color(m[0] / 255, m[1] / 255, m[2] / 255); }
@@ -825,23 +926,29 @@ function makeIsland(far = false) {
   const M = (arr) => arr.map((t) => new THREE.MeshLambertMaterial({ map: t }));
   const grassM = M([side, side, top, dirt, side, side]), dirtM = M([dirt, dirt, dirt, dirt, dirt, dirt]), stoneM = M([stone, stone, stone, stone, stone, stone]);
   const layers = [[6.2, grassM], [4.6, dirtM], [2.6, stoneM], [1.2, stoneM], [0.3, stoneM]];
-  const seed = seeded(far ? 7 : 3);
+  const seed = seeded(far ? 7 : 3), cells = [];
   layers.forEach(([r2, mat], L) => {
     for (let x = -2; x <= 2; x++) for (let z = -2; z <= 2; z++) {
       const d = x * x + z * z + (L ? seed() * 1.2 : 0);
       if (d > r2) continue;
       if (L === 0 && x * x + z * z > 4.5 && seed() < 0.35) continue;
       const m = new THREE.Mesh(geo, mat); m.position.set(x, -0.5 - L, z); g.add(m);
+      if (L === 0) cells.push([x, z]);
     }
   });
   if (!far) {
-    const plant = (name, x, z, tex) => {
-      const mat = new THREE.MeshLambertMaterial({ map: tex || btex(name), transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
-      for (const r of [Math.PI / 4, -Math.PI / 4]) { const p = new THREE.Mesh(new THREE.PlaneGeometry(.8, .8), mat); p.position.set(x, .4, z); p.rotation.y = r; g.add(p); }
+    // Plants stand on real grass blocks only (centre of a kept top block), like
+    // tall grass and flowers in the game, and keep clear of where people stand.
+    const plant = (name, [x, z], tex) => {
+      const mat = new THREE.MeshLambertMaterial({ map: tex || btex(name), alphaTest: 0.5, side: THREE.DoubleSide });
+      for (const r of [Math.PI / 4, -Math.PI / 4]) { const p = new THREE.Mesh(new THREE.PlaneGeometry(.9, .9), mat); p.position.set(x, .45, z); p.rotation.y = r; g.add(p); }
     };
+    const busy = new Set(["0,0", "-1,1", "-1,0", "0,1", "1,0", "0,-1", "-2,1", "-1,2"]);
+    const free = cells.filter(([x, z]) => !busy.has(x + "," + z) && x * x + z * z >= 2);
+    const pick = (want) => { let best = null, bd = 1e9; for (const c of free) { const d = (c[0] - want[0]) ** 2 + (c[1] - want[1]) ** 2; if (d < bd) { bd = d; best = c; } } if (best) free.splice(free.indexOf(best), 1); return best; };
     const tuft = btex("grass", tint(GRASS));
-    for (const [x, z] of [[-1.6, .9], [1.7, -.6], [-.9, -1.7], [1.3, 1.5]]) plant("grass", x, z, tuft);
-    plant("poppy", -1.7, -.9); plant("dandelion", 1.8, .6);
+    for (const w of [[2, -1], [-1, -2], [-2, -1], [1, -2]]) { const c = pick(w); if (c) plant("grass", c, tuft); }
+    for (const [name, w] of [["poppy", [-2, 0]], ["dandelion", [2, 1]], ["blue_orchid", [0, -2]]]) { const c = pick(w); if (c && blocksJson.textures["block/" + name]) plant(name, c); }
   }
   return g;
 }
@@ -854,7 +961,8 @@ function makeStudio(canvas, w, h) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(32, w / h, 0.1, 100);
   camera.position.set(5.6, 3.2, 8.2);
-  scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x2a2420, 1.3));
+  const hemi = new THREE.HemisphereLight(0xdfe8ff, 0x2a2420, 1.3); scene.add(hemi);
+  const sky = new THREE.PointLight(0xd0dcff, 0, 30, 1); sky.position.set(0, 6, 0); scene.add(sky);
   const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 6, 4); scene.add(key);
   const rim = new THREE.DirectionalLight(ACCENT, 2.2); rim.position.set(-4, -0.4, -6); scene.add(rim);
   const island = makeIsland(); scene.add(island);
@@ -874,6 +982,7 @@ function makeStudio(canvas, w, h) {
     S.fx.clear(); S.anims = []; S.fired = new Set();
     for (const c of [...item.children]) { item.remove(c); c.traverse?.((o) => { o.geometry?.dispose(); }); }
     item.rotation.set(0, 0, 0);
+    S.flash(0);
     S.def = def; S.it = it; S.t = 0; S.tick = def.build(S, it);
   };
   // Runs fn once, the first tick at or after `time` (calls are told apart by order).
@@ -892,10 +1001,12 @@ function makeStudio(canvas, w, h) {
     for (let i = 0; i < 90; i++) S.fx.spawn({ frames: SPARK, pos: pos.clone(), vel: sphere(rnd(2.2, 3.2)), life: rnd(.9, 1.4), grav: 1.2, drag: .93, size: .15, color: colors[i % colors.length], add: true });
   };
   S.island = island;
+  // Lightning lights up the whole world for a moment, as in the game.
+  S.flash = (k) => { hemi.intensity = 1.3 + k * 1.1; sky.intensity = k * 35; };
   S.step = (dt) => {
     S.t += dt; S.clock = (S.clock || 0) + dt;
     island.position.y = Math.sin(S.clock * 0.8) * 0.04; item.position.y = island.position.y; S.fx.g.position.y = island.position.y;
-    if (S.def.loop && S.t > S.def.loop) { S.load(S.def); S.audible = false; }
+    if (S.def.loop && S.t > S.def.loop) { if (S.audible) stopSounds(); S.load(S.def); }
     S.ci = 0; S.tick?.(S.t, dt); S.fx.update(dt);
     for (let i = S.anims.length - 1; i >= 0; i--) { const a = S.anims[i]; a.age += dt; const f = Math.floor(Math.max(0, a.age) / a.life * 16);
       if (f >= 16) { item.remove(a.sp); a.sp.material.dispose(); a.tex.dispose(); S.anims.splice(i, 1); continue; }
@@ -941,7 +1052,7 @@ function ensureStudio() {
   controls = new OrbitControls(studio.camera, canvas);
   controls.target.set(0, .55, 0); controls.enableDamping = true; controls.enablePan = false;
   controls.minDistance = 4; controls.maxDistance = 18; controls.maxPolarAngle = Math.PI * 0.62;
-  controls.autoRotateSpeed = 1.1; controls.autoRotate = true;
+  controls.autoRotateSpeed = 0.4; controls.autoRotate = true;
   controls.addEventListener("start", () => { controls.autoRotate = false; });
   controls.addEventListener("end", () => { setTimeout(() => { controls.autoRotate = spin; }, 1500); });
   new ResizeObserver(resize).observe($("stage"));
@@ -952,10 +1063,13 @@ function resize() {
   studio.renderer.setSize(r.width, r.height, false);
   studio.camera.aspect = r.width / r.height; studio.camera.updateProjectionMatrix();
 }
+// ?at=1.2 holds every preview still at that second (for checking a single moment).
+const HOLD = parseFloat(new URLSearchParams(location.search).get("at"));
 function frame(now) {
   raf = requestAnimationFrame(frame);
   const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
-  studio.step(dt * speed);
+  if (HOLD >= 0) { if (studio.t < HOLD) { studio.audible = false; while (studio.t < HOLD) studio.step(1 / 60); } }
+  else studio.step(dt * speed);
   controls.update();
   studio.renderer.render(studio.scene, studio.camera);
 }
@@ -967,10 +1081,10 @@ function openStudio(id, push = true) {
   ensureStudio(); resize();
   const chatOnly = !!it.lines;
   $("stage").classList.toggle("chat-mode", chatOnly);
-  cancelAnimationFrame(raf);
+  cancelAnimationFrame(raf); stopSounds();
   if (!chatOnly) {
-    studio.camera.position.set(7.6, 4.4, 11.2); controls.target.set(0, 1, 0);
-    studio.load(PREVIEWS[it.preview], it); studio.audible = !it.sound;
+    studio.camera.position.set(6.2, 3.6, 9.1); controls.target.set(0, 1.15, 0);
+    studio.audible = true; studio.load(PREVIEWS[it.preview], it);
     last = performance.now(); raf = requestAnimationFrame(frame);
   }
   const chat = $("chatStage"); chat.hidden = !chatOnly;
@@ -985,12 +1099,11 @@ function openStudio(id, push = true) {
   $("sGet").textContent = getText(it);
   $("soundBox").hidden = !it.sound;
   $("playSound").classList.remove("playing");
-  if (it.sound) playCry(it, 0.6);
   if (push) history.replaceState(null, "", "#" + it.id);
 }
 function closeStudio() {
   const el = $("studio"); el.classList.remove("open");
-  cancelAnimationFrame(raf); document.body.style.overflow = "";
+  cancelAnimationFrame(raf); stopSounds(); document.body.style.overflow = "";
   setTimeout(() => { el.hidden = true; }, 250);
   history.replaceState(null, "", location.pathname + location.search);
 }
@@ -1002,26 +1115,43 @@ function step(d) {
 $("closeBtn").onclick = closeStudio;
 $("studio").addEventListener("click", (e) => { if (e.target.id === "studio") closeStudio(); });
 $("prevBtn").onclick = () => step(-1); $("nextBtn").onclick = () => step(1);
-$("replayBtn").onclick = () => { if (current.lines) return; studio.load(studio.def); studio.audible = true; if (current.sound) playCry(current, .6); };
+$("replayBtn").onclick = () => { if (current.lines) return; stopSounds(); studio.load(studio.def); };
 $("slowBtn").onclick = (e) => { speed = speed === 1 ? .25 : 1; e.currentTarget.setAttribute("aria-pressed", String(speed !== 1)); };
 $("spinBtn").onclick = (e) => { spin = !spin; controls.autoRotate = spin; e.currentTarget.setAttribute("aria-pressed", String(spin)); };
 $("copyBtn").onclick = async () => { try { await navigator.clipboard.writeText(location.href); $("copyBtn").textContent = "Copied"; setTimeout(() => { $("copyBtn").textContent = "Copy link"; }, 1400); } catch (e) {} };
-$("playSound").onclick = () => current?.sound && playCry(current);
+$("playSound").onclick = () => { if (!current?.sound) return; stopSounds(); playCry(current); };
+$("muteBtn").onclick = () => { muted = !muted; if (muted) stopSounds(); try { localStorage.setItem("cosmeticsMuted", muted ? "1" : ""); } catch (e) {} syncMute(); };
+function syncMute() { const b = $("muteBtn"); b.setAttribute("aria-pressed", String(!muted)); b.querySelector("span").textContent = muted ? "Sound off" : "Sound on"; b.querySelector(".x").style.display = muted ? "" : "none"; b.querySelector(".w").style.display = muted ? "none" : ""; }
 
 /* ------------------------------------------------------------------ sounds
    Real Minecraft 1.8 sounds, fetched from Mojang's asset server by the hashes
    the replay viewer already ships (replay/sounds.json). */
-let soundIndex = null;
+let soundIndex = null, soundGen = 0, muted = false;
+try { muted = localStorage.getItem("cosmeticsMuted") === "1"; } catch (e) {}
+const liveAudio = new Set(), liveTimers = new Set();
+// Stops everything that is playing or waiting to play (switching cosmetic, closing, replaying, next loop).
+function stopSounds() {
+  soundGen++;
+  for (const a of liveAudio) { try { a.pause(); a.removeAttribute("src"); a.load(); } catch (e) {} }
+  liveAudio.clear();
+  for (const id of liveTimers) clearTimeout(id);
+  liveTimers.clear();
+  $("playSound").classList.remove("playing");
+}
 async function mcSound(name, pitch = 1, vol = 1, delay = 0) {
+  if (muted) return;
+  const gen = soundGen;
   try {
     if (!soundIndex) soundIndex = await fetch("replay/sounds.json").then((r) => r.json());
+    if (gen !== soundGen) return;
     const list = soundIndex[name]; if (!list) return;
     const h = list[Math.floor(Math.random() * list.length)];
     const a = new Audio(`https://resources.download.minecraft.net/${h.slice(0, 2)}/${h}`);
     a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false;
     a.playbackRate = Math.min(2, Math.max(.5, pitch)); a.volume = Math.min(1, vol) * .6;
-    const go = () => a.play().catch(() => {});
-    if (delay) setTimeout(go, delay * 1000); else go();
+    liveAudio.add(a); a.addEventListener("ended", () => liveAudio.delete(a));
+    const go = () => { if (gen === soundGen) a.play().catch(() => {}); };
+    if (delay) { const id = setTimeout(() => { liveTimers.delete(id); go(); }, delay * 1000); liveTimers.add(id); } else go();
     return a;
   } catch (e) {}
 }
@@ -1035,7 +1165,7 @@ async function playCry(it, delay = 0) {
 }
 
 /* ------------------------------------------------------------------ start */
-buildRail(); tally(); render();
+buildRail(); tally(); render(); syncMute();
 const deep = location.hash.slice(1);
 if (deep && ITEMS.some((i) => i.id === deep)) openStudio(deep, false);
 addEventListener("hashchange", () => { const h = location.hash.slice(1); if (h && h !== current?.id && ITEMS.some((i) => i.id === h)) openStudio(h, false); });

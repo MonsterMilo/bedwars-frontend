@@ -240,7 +240,9 @@ async function runViewer (tl, details) {
   $('rpSub').textContent = when.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) + ' · ' + fmt(tl.duration) + ' · ' + tl.tracks.size + ' players'
   if (clip) {
     // "Final kill · Steve" / "by Milo · Lighthouse · 3 Nov, 20:14"
-    $('rpTitle').textContent = (clip.kind === 'bed' ? 'Bed break' : 'Final kill') + ' · ' + (clip.victim || clip.username || '?')
+    $('rpTitle').textContent = clip.kind === 'manual'
+      ? 'Clip' + (clip.people && clip.people.length ? ' · ' + clip.people.slice(0, 3).map(p => p.name).join(', ') : '')
+      : (clip.kind === 'bed' ? 'Bed break' : 'Final kill') + ' · ' + (clip.victim || clip.username || '?')
     $('rpSub').textContent = [clip.by ? 'by ' + clip.by : null, clip.map, when.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })].filter(Boolean).join(' · ')
   }
   document.title = ($('rpTitle').textContent || 'Replay') + ' · Prism Replay'

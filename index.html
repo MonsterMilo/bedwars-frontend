@@ -23666,7 +23666,8 @@ const modalClipStatus = document.getElementById("modalClipStatus");
 const CLIP_TEAM_COLORS = { Red: "#ff5555", Blue: "#5577ff", Green: "#3fcf5f", Yellow: "#e8c930", Aqua: "#3fd6d6", White: "#c9ced8", Pink: "#ff66d0", Gray: "#9aa0a8" };
 const CLIP_ICONS = {
   final: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6M16 16l4 4M19 21l2-2"/></svg>',
-  bed: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4v16M2 8h18a2 2 0 012 2v10M2 17h20M6 8v9"/></svg>'
+  bed: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4v16M2 8h18a2 2 0 012 2v10M2 17h20M6 8v9"/></svg>',
+  manual: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>'
 };
 let activeClipId = null;
 function stopModalClip() {
@@ -23699,7 +23700,9 @@ async function loadModalClips(uuid) {
   stopModalClip();
   if (!uuid || !getAdminKey()) return;
   try {
-    const res = await fetch(`${backendBaseURL}/clips?uuid=${encodeURIComponent(uuid)}`, { headers: adminHeaders() });
+    // The name finds /clip clips they're in under it too.
+    const name = /^\w{1,16}$/.test(String(openPlayerName || "")) ? `&name=${encodeURIComponent(openPlayerName)}` : "";
+    const res = await fetch(`${backendBaseURL}/clips?uuid=${encodeURIComponent(uuid)}${name}`, { headers: adminHeaders() });
     if (!res.ok) return;
     const { clips = [] } = await res.json();
     if (modal.dataset.activeUuid !== uuid || !clips.length) return;
@@ -23709,19 +23712,23 @@ async function loadModalClips(uuid) {
       const card = document.createElement("button");
       card.type = "button";
       card.className = "clip-card";
-      if (c.team && CLIP_TEAM_COLORS[c.team]) card.style.setProperty("--team", CLIP_TEAM_COLORS[c.team]);
-      const what = c.kind === "bed" ? "Bed break" : "Final kill";
+      // A /clip is coloured by this player's team in it.
+      const me = c.kind === "manual" ? (c.people || []).find(p => p.uuid === uuid.replace(/-/g, "").toLowerCase() || p.name.toLowerCase() === String(openPlayerName || "").toLowerCase()) : null;
+      const team = c.kind === "manual" ? me && me.team : c.team;
+      if (team && CLIP_TEAM_COLORS[team]) card.style.setProperty("--team", CLIP_TEAM_COLORS[team]);
+      const what = c.kind === "bed" ? "Bed break" : c.kind === "manual" ? "Clip" : "Final kill";
       const played = c.playedAt ? new Date(c.playedAt) : null;
       const date = played && !isNaN(played) ? played.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
       const kind = document.createElement("span");
       kind.className = "clip-kind";
-      kind.innerHTML = CLIP_ICONS[c.kind === "bed" ? "bed" : "final"];
+      kind.innerHTML = CLIP_ICONS[CLIP_ICONS[c.kind] ? c.kind : "final"];
       kind.append(what);
       const by = document.createElement("span");
       by.className = "clip-by";
       // A nick they used that game shows too.
-      const asNick = c.victim && openPlayerName && c.victim.toLowerCase() !== String(openPlayerName).toLowerCase() ? ` (as ${c.victim})` : "";
-      by.textContent = (c.by ? `by ${c.by}` : "") + asNick;
+      const shownAs = c.kind === "manual" ? me && me.name : c.victim;
+      const asNick = shownAs && openPlayerName && shownAs.toLowerCase() !== String(openPlayerName).toLowerCase() ? ` (as ${shownAs})` : "";
+      by.textContent = (c.by ? `${c.kind === "manual" ? "clipped by" : "by"} ${c.by}` : "") + asNick;
       const meta = document.createElement("span");
       meta.className = "clip-meta";
       meta.textContent = [c.map, date, `${Math.round((c.durationMs || 0) / 1000)}s`].filter(Boolean).join(" · ");

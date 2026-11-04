@@ -39,10 +39,10 @@ function setStatus (text, { error = false, progress = null } = {}) {
   if (progress != null) bar.style.setProperty('--p', Math.round(progress * 100) + '%')
 }
 
-async function api (path) {
+async function api (path, opts = {}) {
   const key = getKey()
   if (!key) { const e = new Error('no key'); e.noKey = true; throw e }
-  const res = await fetch(BACKEND + path, { headers: { 'x-admin-key': key } })
+  const res = await fetch(BACKEND + path, { ...opts, headers: { 'x-admin-key': key } })
   if (!res.ok) {
     const msg = (await res.json().catch(() => ({}))).error
     const e = new Error(msg || `The server answered ${res.status}`)
@@ -147,7 +147,12 @@ async function showList () {
   try {
     const list = await (await api('/maps')).json()
     maps = list.maps; replays = list.replays
-    previews = (await (await api('/maps/previews')).json()).previews || {}
+    // The server lets the browser keep previews for 5 minutes: asking with
+    // the list's state in the address means a map added since gets its
+    // picture straight away (2026-11-04: new maps showed blank).
+    const v = maps.map(m => m.slug + ':' + (m.builtAt || '')).join('|')
+    let h = 0; for (let i = 0; i < v.length; i++) h = (h * 31 + v.charCodeAt(i)) | 0
+    previews = (await (await api('/maps/previews?v=' + (h >>> 0).toString(36))).json()).previews || {}
   } catch (err) {
     note = err.noKey
       ? 'The Atlas needs your tracker key. Open the tracker, enter your key there, then come back here. You can still open a replay file with the button above.'
@@ -414,7 +419,7 @@ async function openMap (slug) {
   const rotationP = loadRotation()
   setStatus('Waking up the server…', { progress: 0 })
   try {
-    const res = await api('/maps/' + encodeURIComponent(slug) + '/file')
+    const res = await api('/maps/' + encodeURIComponent(slug) + '/file', { cache: 'no-cache' }) // (a game added in the last 5 min shows too)
     setStatus('Loading the map…')
     const map = decodeMap(new Uint8Array(await res.arrayBuffer()))
     await showMap(map, rotationP)

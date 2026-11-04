@@ -726,7 +726,7 @@ function buildTimeline (mcpr, onProgress = () => {}) {
   }
   const selfTrack = [...tracks.values()].find(tr => tr.self)
   for (const b of bedsBroken) if (b.team === 'Your' && selfTrack && selfTrack.team) b.team = selfTrack.team.label
-  if (selfTrack) selfCracks(selfTrack, changes, cracks)
+  rebuildBreaks(tracks, changes, cracks, effects)
   // Chat deaths per player: after one, Hypixel turns them into an invisible
   // spectator (respawning, or for good after a final kill).
   for (const tr of tracks.values()) {
@@ -739,32 +739,64 @@ function buildTimeline (mcpr, onProgress = () => {}) {
 }
 
 /**
- * The server never tells you your own break progress, so rebuild it: a block
- * within reach turning to air at the end of a run of your arm swings (they
- * come every tick while you dig) was mined by you, and the cracks grow
- * evenly over that run.
+ * Rebuild the breaking of blocks Hypixel didn't show. In the recordings most
+ * broken blocks come with no break progress (cracks) and no break effect
+ * (pieces flying): your own blocks never do, and Hypixel skips them for
+ * most others' too. A block within reach turning to air at the end of a run
+ * of someone's arm swings (they come every tick while digging) was mined by
+ * them: the cracks grow evenly over that run, and the pieces fly at the end.
  */
-function selfCracks (tr, ch, cracks) {
-  const sw = tr.swings
-  if (!sw.length) return
-  let prevT = -Infinity // you mine one block at a time
-  for (let i = 0; i < ch.n; i++) {
-    if (!(ch.from[i] >> 4) || ch.to[i] >> 4) continue
-    const T = ch.t[i]
-    let k = lastAt(sw, T + 100)
-    if (k < 0 || sw[k] < T - 200) continue
-    const st = tr.stateAt(T); if (!st) continue
-    const x = ch.x[i]; const y = ch.y[i]; const z = ch.z[i]
-    if (Math.hypot(st.x - x - 0.5, st.y + 1.62 - y - 0.5, st.z - z - 0.5) > 6) continue
-    let j = k
-    while (j > 0 && sw[j] - sw[j - 1] < 350 && T - sw[j - 1] < 6000) j--
-    const start = Math.max(sw[j], prevT); const d = T - start
-    if (d < 150) { prevT = Math.max(prevT, T); continue } // broken at once (wool with shears, fire...)
-    prevT = T
-    for (let s = 0; s < 10; s++) cracks.push({ t: Math.round(start + d * s / 10), who: tr.id, x, y, z, stage: s })
-    cracks.push({ t: T, who: tr.id, x, y, z, stage: -1 })
+function rebuildBreaks (tracks, ch, cracks, effects) {
+  const byTime = new Map()
+  for (let i = 0; i < ch.n; i++) byTime.set(ch.t[i], (byTime.get(ch.t[i]) || 0) + 1)
+  const key = (x, y, z) => x + ',' + y + ',' + z
+  const sent = new Map() // block -> times the server sent cracks for it
+  for (const c of cracks) { const k = key(c.x, c.y, c.z); if (!sent.has(k)) sent.set(k, []); sent.get(k).push(c.t) }
+  const pieces = new Map()
+  for (const e of effects) {
+    if (e.kind !== 'break') continue
+    const k = key(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z))
+    if (!pieces.has(k)) pieces.set(k, []); pieces.get(k).push(e.t)
   }
+  const booms = effects.filter(e => e.kind === 'explosion').map(e => e.t)
+  const players = [...tracks.values()].filter(tr => tr.kind === 'player' && tr.swings.length)
+  const prevT = new Map() // one block at a time per player
+  const added = []
+  for (let i = 0; i < ch.n; i++) {
+    const from = ch.from[i]; const id = from >> 4
+    if (!id || ch.to[i] >> 4) continue
+    if (byTime.get(ch.t[i]) > 6) continue // map loading, cages, explosions
+    if ((id >= 8 && id <= 11) || id === 51) continue // water, lava, fire
+    const T = ch.t[i]
+    if (booms.some(b => Math.abs(b - T) < 250)) continue // blown up
+    const x = ch.x[i]; const y = ch.y[i]; const z = ch.z[i]; const k = key(x, y, z)
+    // Who broke it: the nearest player within reach who just swung.
+    let who = null; let best = 6
+    for (const tr of players) {
+      const w = tr.lastBefore(tr.swings, T + 100)
+      if (w < T - 250) continue
+      const st = tr.stateAt(T); if (!st) continue
+      const d = Math.hypot(st.x - x - 0.5, st.y + 1.62 - y - 0.5, st.z - z - 0.5)
+      if (d < best) { best = d; who = tr }
+    }
+    if (!(pieces.get(k) || []).some(t => Math.abs(t - T) < 300)) {
+      effects.push({ t: T, kind: 'break', x: x + 0.5, y: y + 0.5, z: z + 0.5, block: from, rebuilt: true })
+    }
+    if (!who) continue
+    const hadCracks = (sent.get(k) || []).some(t => t <= T + 100 && t > T - 6000)
+    const sw = who.swings
+    let j = lastAt(sw, T + 100)
+    while (j > 0 && sw[j] - sw[j - 1] < 350 && T - sw[j - 1] < 6000) j--
+    const start = Math.max(sw[j], prevT.get(who) || -Infinity); const d = T - start
+    prevT.set(who, T)
+    if (hadCracks || d < 100) continue // the server's own cracks, or broken at once
+    for (let s = 0; s < 10; s++) added.push({ t: Math.round(start + d * s / 10), who: who.id, x, y, z, stage: s })
+    added.push({ t: T, who: who.id, x, y, z, stage: -1 })
+  }
+  // Rebuilt cracks keep apart from the server's (a breaker shows one block).
+  for (const c of added) { c.who = 'r' + c.who; cracks.push(c) }
   cracks.sort((a, b) => a.t - b.t)
+  effects.sort((a, b) => a.t - b.t)
 }
 
 function popcount (m) { let c = 0; while (m) { c += m & 1; m >>>= 1 } return c }

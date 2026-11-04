@@ -346,9 +346,13 @@ async function showMap (map, rotationP) {
   cam.speed = 18
   cam.center.copy(mid)
   cam.yaw = cam.tYaw = Math.PI / 4
-  cam.setMode('overview')
-  cam.tDist = cam.dist = Math.min(400, span * 1.15)
-  cam.tPitch = cam.pitch = -0.85
+  // Starts flying, a little closer than the whole-map view (Milo 2026-11-04).
+  const startDist = Math.min(300, span * 0.8)
+  cam.tPitch = cam.pitch = -0.8
+  const back = new THREE.Vector3(Math.sin(cam.yaw) * Math.cos(cam.pitch), -Math.sin(cam.pitch), Math.cos(cam.yaw) * Math.cos(cam.pitch))
+  camera.position.copy(mid).addScaledVector(back, startDist)
+  camera.rotation.set(cam.pitch, cam.yaw, 0)
+  cam.setMode('free')
 
   // Overview centre glides when it's moved by a double-click.
   let centerTo = null
@@ -415,7 +419,7 @@ async function showMap (map, rotationP) {
     const k = e.key.toLowerCase()
     if (k === 'f') setMode('free')
     if (k === 'm') setMode('overview')
-    if (k === 'r') { cam.center.copy(mid); centerTo = null; cam.setMode('overview'); cam.tDist = Math.min(400, span * 1.15); cam.tPitch = -0.85 }
+    if (k === 'r') { cam.center.copy(mid); centerTo = null; cam.setMode('overview'); cam.tDist = Math.min(400, span * 0.8); cam.tPitch = -0.85 }
     if (k === '?' || (k === '/' && e.shiftKey)) $('atHelp').hidden = !$('atHelp').hidden
     if (k === 'escape') $('atHelp').hidden = true
   })

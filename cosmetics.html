@@ -8,7 +8,7 @@
      in a 3D studio preview. Every cosmetic on this page is a made-up example; real
      ones come later from the Cosmetics plugin's learning. three.js from jsDelivr (pinned),
      textures from replay/ (the replay viewer's 1.8 assets). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net; media-src 'self' data: blob:; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net; media-src 'self' data: blob: https://resources.download.minecraft.net; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'">
 <title>Prism Cosmetics</title>
 <link rel="icon" href="icons/icon-192.png">
 <script>
@@ -90,6 +90,7 @@
   .tally { margin: 10px 0 0; color: var(--dim); font-size: 15px; }
   .tally b { color: var(--text); font-weight: 700; }
 
+  .proto:empty { display: none; }
   .search { position: relative; }
   .search svg { position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
   .search input { width: 100%; padding: 14px 44px 14px 42px; border-radius: var(--r-m); border: 1px solid var(--border); background: var(--panel); font-size: 16px; transition: border-color .2s, box-shadow .2s; }
@@ -192,6 +193,35 @@
   .btn svg { width: 15px; height: 15px; }
   .soon { font-size: 12px; color: var(--faint); margin: -2px 0 0; }
 
+
+  /* v2 polish */
+  .card { --rc: #9aa3b2; }
+  .card::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--rc), transparent); opacity: .85; }
+  .card:hover { border-color: color-mix(in srgb, var(--rc) 55%, var(--border)); box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--rc) 35%, transparent); }
+  .thumb::after { content: ""; position: absolute; inset: auto 0 0 0; height: 40%; background: radial-gradient(60% 100% at 50% 100%, color-mix(in srgb, var(--rc) 22%, transparent), transparent 70%); pointer-events: none; }
+  .price { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .price.none { font-weight: 500; color: var(--faint); font-size: 12px; }
+  .tok { width: 14px; height: 14px; flex: none; }
+  .v .tok { width: 17px; height: 17px; margin-right: 5px; vertical-align: -2px; }
+  .season { position: absolute; right: 10px; top: 10px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; color: #1b1206; background: #ffb547; }
+  .season.inline { position: static; vertical-align: 1px; margin-right: 4px; }
+  html[data-theme="skyisles"] .season, html[data-theme="ledger"] .season { border-radius: 0; }
+  .fact.wide { grid-column: 1 / -1; }
+  .fact .v.small { font-size: 15px; font-weight: 600; line-height: 1.4; }
+  .muted { color: var(--faint); font-weight: 500; font-size: 15px; }
+  .rar-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; background: var(--rc); box-shadow: 0 0 10px var(--rc); vertical-align: 1px; }
+  .sound-btn .eq { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; margin-left: 4px; opacity: 0; transition: opacity .2s; }
+  .sound-btn .eq i { width: 3px; height: 4px; background: currentColor; border-radius: 1px; }
+  .sound-btn.playing .eq { opacity: 1; }
+  .sound-btn.playing .eq i { animation: eq .5s ease-in-out infinite alternate; }
+  .sound-btn.playing .eq i:nth-child(2) { animation-delay: .12s; } .sound-btn.playing .eq i:nth-child(3) { animation-delay: .24s; } .sound-btn.playing .eq i:nth-child(4) { animation-delay: .08s; }
+  @keyframes eq { to { height: 12px; } }
+  .stage.chat-mode canvas, .stage.chat-mode .tools, .stage.chat-mode .hint { display: none; }
+  .stage .chat-stage { position: absolute; inset: 0; display: grid; place-items: center; padding: 6%; }
+  .chat-box { width: 100%; max-width: 620px; display: grid; gap: 4px; }
+  .chat-box .chat-line { font-size: 16px; padding: 6px 10px; }
+  .thumb .chat-thumb { gap: 3px; justify-content: flex-start; padding: 40px 12px 12px; }
+
   @media (max-width: 900px) {
     .page { padding: 14px 16px 50px; }
     .hero { grid-template-columns: 1fr; margin: 16px 0 14px; }
@@ -207,6 +237,7 @@
     .sheet { height: 100%; width: 100%; border-radius: 0; grid-template-columns: 1fr; grid-template-rows: 48vh 1fr; }
     .info { padding: 18px 16px 24px; }
     .hint { display: none; }
+    .chat-box .chat-line { font-size: 13px; padding: 4px 8px; }
     .nav { top: auto; bottom: 14px; transform: none; width: 34px; height: 34px; }
     .nav.prev { left: auto; right: 56px; }
   }
@@ -223,7 +254,7 @@
 <div class="page">
   <header class="top">
     <a class="back" href="index.html"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Tracker</a>
-    <span class="proto">Prototype · all cosmetics here are made-up examples</span>
+    <span class="proto" id="proto"></span>
   </header>
 
   <section class="hero">
@@ -243,17 +274,24 @@
     <main>
       <div class="bar">
         <h2 id="heading">All cosmetics</h2>
-        <div class="seg" id="statusSeg" role="group" aria-label="Filter by status">
-          <button type="button" data-s="all" aria-pressed="true">All</button>
-          <button type="button" data-s="sure" aria-pressed="false">Sure</button>
-          <button type="button" data-s="maybe" aria-pressed="false">Maybe</button>
-          <button type="button" data-s="unseen" aria-pressed="false">Not seen yet</button>
+        <div class="seg" id="rarSeg" role="group" aria-label="Filter by rarity">
+          <button type="button" data-r="all" aria-pressed="true">All</button>
+          <button type="button" data-r="common" aria-pressed="false">Common</button>
+          <button type="button" data-r="rare" aria-pressed="false">Rare</button>
+          <button type="button" data-r="epic" aria-pressed="false">Epic</button>
+          <button type="button" data-r="legendary" aria-pressed="false">Legendary</button>
         </div>
+        <select id="avail" class="sort" aria-label="How to get">
+          <option value="all">Any way to get</option>
+          <option value="shop">In the shop</option>
+          <option value="season">Seasonal only</option>
+          <option value="other">Other ways</option>
+        </select>
         <select id="sort" class="sort" aria-label="Sort">
-          <option value="seen">Most seen</option>
-          <option value="recent">Recently seen</option>
-          <option value="name">A to Z</option>
           <option value="rarity">Rarity</option>
+          <option value="price-hi">Price, high to low</option>
+          <option value="price-lo">Price, low to high</option>
+          <option value="name">A to Z</option>
         </select>
       </div>
       <div class="grid" id="grid"></div>
@@ -266,7 +304,6 @@
   <div class="sheet">
     <div class="stage" id="stage">
       <div class="chat-stage" id="chatStage" hidden></div>
-      <div class="unseen-note" id="unseenNote" hidden>Not seen in a replay yet, so there's no exact preview</div>
       <button class="nav prev" id="prevBtn" type="button" aria-label="Previous cosmetic">&#8249;</button>
       <button class="nav next" id="nextBtn" type="button" aria-label="Next cosmetic">&#8250;</button>
       <div class="tools">
@@ -285,28 +322,16 @@
       <p class="desc" id="sDesc"></p>
       <div id="soundBox" hidden>
         <p class="block-h">Sound</p>
-        <canvas class="wave" id="wave" width="620" height="112"></canvas>
-        <div style="margin-top:8px"><button class="btn" id="playSound" type="button"><svg viewBox="0 0 16 16"><path d="M4 3v10l9-5z" fill="currentColor"/></svg>Play sound</button></div>
+        <button class="btn sound-btn" id="playSound" type="button"><svg viewBox="0 0 16 16"><path d="M4 3v10l9-5z" fill="currentColor"/></svg>Play sound<span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
       </div>
       <div class="facts">
-        <div class="fact"><div class="k">Status</div><div class="v" id="sStatus"></div></div>
-        <div class="fact"><div class="k">Times seen</div><div class="v" id="sSeen"></div></div>
-        <div class="fact"><div class="k">First seen</div><div class="v" id="sFirst"></div></div>
-        <div class="fact"><div class="k">Last seen</div><div class="v" id="sLast"></div></div>
-      </div>
-      <div>
-        <p class="block-h">How Prism spots it</p>
-        <p class="how" id="sHow"></p>
-      </div>
-      <div>
-        <p class="block-h">Seen on</p>
-        <div class="chips" id="sWho"></div>
+        <div class="fact"><div class="k">Rarity</div><div class="v" id="sRarity"></div></div>
+        <div class="fact"><div class="k">Price</div><div class="v" id="sPrice"></div></div>
+        <div class="fact wide"><div class="k">How to get it</div><div class="v small" id="sGet"></div></div>
       </div>
       <div class="actions">
-        <button class="btn primary" type="button" disabled>Watch a sighting</button>
-        <button class="btn" id="copyBtn" type="button">Copy link</button>
+        <button class="btn" id="copyBtn" type="button"><svg viewBox="0 0 16 16"><path d="M6.5 9.5 9.5 6.5M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Copy link</button>
       </div>
-      <p class="soon">"Watch a sighting" opens the replay at that moment once real data is in.</p>
     </div>
   </div>
 </div>
@@ -316,98 +341,85 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 /* ------------------------------------------------------------------ data
-   Made-up examples only. Real entries will come from the Cosmetics plugin's
-   learning (one entry per effect it can name), with sightings from replays. */
+   Real Bed Wars cosmetics. Names, descriptions, rarity, price and how to get
+   them come from the in-game cosmetics menu; previews are rebuilt from what
+   each one spawns (particles, mobs, sounds) when previewed in the lobby. */
 const CATS = [
-  { id: "kill", name: "Kill effects", icon: '<path d="M10 2.5 12 8l5.5 2-5.5 2-2 5.5L8 12l-5.5-2L8 8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
   { id: "final", name: "Final kill effects", icon: '<path d="M10 2.5v4M10 13.5v4M2.5 10h4M13.5 10h4M5 5l2.5 2.5M12.5 12.5 15 15M15 5l-2.5 2.5M7.5 12.5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
-  { id: "trail", name: "Projectile trails", icon: '<path d="M3 15c4-1 8-5 11-10M14 5l-3.5.5M14 5l-.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="8" cy="10" r=".8" fill="currentColor"/>' },
   { id: "cry", name: "Death cries", icon: '<path d="M3 8v4h3l4 3.5v-11L6 8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M13 7.5a3.5 3.5 0 0 1 0 5M15 5.5a6.5 6.5 0 0 1 0 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
-  { id: "topper", name: "Island toppers", icon: '<path d="M4 17h12M6 17V9h8v8M8 9V5h4v4M10 5V2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
   { id: "shop", name: "Shopkeeper skins", icon: '<rect x="6.5" y="2.5" width="7" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 17.5V10h10v7.5" fill="none" stroke="currentColor" stroke-width="1.5"/>' },
-  { id: "dance", name: "Victory dances", icon: '<path d="M10 3v4M10 13v4M5 5.5l2 2M13 12.5l2 2M15 5.5l-2 2M7 12.5l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/>' },
-  { id: "glyph", name: "Glyphs", icon: '<rect x="3" y="3" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 13l2.5-5 2 3.5L12 9l2 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
-  { id: "bed", name: "Bed destroys", icon: '<path d="M2.5 15V6M2.5 11h15v4M5 11V8.5h5V11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
-  { id: "wood", name: "Wood skins", icon: '<rect x="3" y="3" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M3 13h14M8 3v5M12 8v5M8 13v4" stroke="currentColor" stroke-width="1.2"/>' },
   { id: "msg", name: "Kill messages", icon: '<path d="M3 4h14v9H8l-4 3v-3H3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
 ];
 const RAR = { common: ["Common", "#9aa3b2"], rare: ["Rare", "#4f8cff"], epic: ["Epic", "#b05cff"], legendary: ["Legendary", "#ffb020"] };
 const RAR_ORDER = { legendary: 0, epic: 1, rare: 2, common: 3 };
-const STATUS = { sure: "Sure", maybe: "Maybe", unseen: "Not seen yet" };
+const GET = { shop: "Bed Wars shop", challenges: "Bed Wars challenges", slumber: "Slumber Hotel", dreamfeast: "Dreamfeast", pass: "Battle Pass season 1", event: "Event shop" };
+const GET_SHORT = { challenges: "Challenges", slumber: "Slumber", dreamfeast: "Dreamfeast", pass: "Battle Pass", event: "Event" };
 
+// Kill message packs: melee, void, bow, fall, mob, bed. {MOB} is a Dream Defender here.
+function pack(lines) {
+  const V = '<span class="c-red">Rival</span><span class="c-gray">', K = '</span><span class="c-blue">Milo</span><span class="c-gray">';
+  const out = lines.slice(0, 5).map((l, i) => l.replace("{V}", V).replace("{K}", K).replace("{MOB}", "Dream Defender") + "</span>" + (i === 0 ? ' <span class="c-aqua c-bold">FINAL KILL!</span>' : ""));
+  out.push('<span class="c-bold">BED DESTRUCTION &gt; </span>' + lines[5].replace("{BED}", '<span class="c-red">Red Bed</span><span class="c-gray">').replace("{K}", K) + "</span>");
+  return out;
+}
 const ITEMS = [
-  { id: "ember-bloom", cat: "kill", name: "Ember Bloom", rar: "rare", status: "sure", seen: 41, first: "2026-09-12", last: "2026-11-03",
-    desc: "The victim's body bursts into a short bloom of flame that curls upward and burns out as smoke.",
-    how: "30 or more flame particles within 0.4s at the death spot, and no lava drips. Never shows up without a kill.",
-    who: ["ExampleSweat", "DemoPlayer", "NotARealNick"], tags: "fire flame burst orange", preview: "emberBloom" },
-  { id: "static-snap", cat: "kill", name: "Static Snap", rar: "common", status: "maybe", seen: 6, first: "2026-10-20", last: "2026-11-01",
-    desc: "A ring of blue sparks snaps outward along the ground with a few crackles thrown upward.",
-    how: "A flat ring of magic crit particles at the death spot. Maybe, because sword crits on the same tick look close.",
-    who: ["SampleNick"], tags: "electric spark blue ring crit", preview: "staticSnap" },
-  { id: "prism-shatter", cat: "final", name: "Prism Shatter", rar: "legendary", status: "sure", seen: 12, first: "2026-10-02", last: "2026-11-02",
-    desc: "On a final kill the player breaks into coloured glass shards that scatter and tumble away in a rainbow mist.",
-    how: "Spell particles in six colours plus block-crack particles of stained glass, only on a FINAL KILL message.",
-    who: ["ExampleSweat", "PlaceholderPro"], tags: "glass rainbow shards break", preview: "prismShatter" },
-  { id: "comet-tail", cat: "trail", name: "Comet Tail", rar: "epic", status: "sure", seen: 88, first: "2026-08-30", last: "2026-11-04",
-    desc: "Arrows and fireballs drag a gold spark tail that fades into thin smoke behind them.",
-    how: "Firework sparks that follow a moving arrow entity every tick. Easy to spot, very common in late games.",
-    who: ["DemoPlayer", "TestAccount42", "ExampleSweat", "NotARealNick"], tags: "arrow bow gold sparks firework", preview: "cometTail" },
-  { id: "note-stream", cat: "trail", name: "Note Stream", rar: "common", status: "maybe", seen: 9, first: "2026-10-11", last: "2026-10-30",
-    desc: "A line of coloured music notes floats behind each arrow.",
-    how: "Note particles on an arrow's path. Maybe, because note blocks on some maps give the same particle.",
-    who: ["SampleNick", "PlaceholderPro"], tags: "music notes arrow colourful", preview: "noteStream" },
-  { id: "low-brass", cat: "cry", name: "Low Brass", rar: "rare", status: "sure", seen: 23, first: "2026-09-21", last: "2026-11-02",
-    desc: "A deep, falling horn note when the player dies.",
-    how: "Matched by sound name and pitch in the packet on the death tick, so it's never a guess.",
-    who: ["TestAccount42"], tags: "sound horn deep", preview: "lowBrass", sound: "brass" },
-  { id: "glitch-chirp", cat: "cry", name: "Glitch Chirp", rar: "common", status: "maybe", seen: 4, first: "2026-10-28", last: "2026-11-03",
-    desc: "A quick run of broken, robotic chirps.",
-    how: "Six short sounds in under 0.3s on the death tick. Maybe, because two of the sound names are shared with another cry.",
-    who: ["DemoPlayer"], tags: "sound robot glitch beep", preview: "glitchChirp", sound: "chirp" },
-  { id: "crystal-spire", cat: "topper", name: "Crystal Spire", rar: "epic", status: "sure", seen: 15, first: "2026-09-05", last: "2026-10-29",
-    desc: "A quartz plinth topped with a stack of glowing glass, built at the team's island when the game starts.",
-    how: "Exact block layout at the island topper spot in the first second of the game. Layouts are unique, so it's always sure.",
-    who: ["PlaceholderPro", "ExampleSweat"], tags: "quartz glass diamond tower", preview: "crystalSpire" },
-  { id: "night-merchant", cat: "shop", name: "Night Merchant", rar: "rare", status: "sure", seen: 31, first: "2026-09-02", last: "2026-11-04",
-    desc: "The team's item shop keeper wears a dark violet robe and gives off slow purple sparkles.",
-    how: "The shopkeeper NPC's skin texture is compared against the known skin list.",
-    who: ["NotARealNick", "TestAccount42"], tags: "npc villager robe purple", preview: "nightMerchant" },
-  { id: "copper-clerk", cat: "shop", name: "Copper Clerk", rar: "common", status: "unseen", seen: 0, first: null, last: null,
-    desc: "Known from the shop list but never spotted in a game yet.",
-    how: "Will be matched by skin texture like other shopkeepers once it shows up in a replay.",
-    who: [], tags: "npc copper orange", preview: "unseen" },
-  { id: "spark-ring", cat: "dance", name: "Spark Ring", rar: "epic", status: "sure", seen: 7, first: "2026-10-04", last: "2026-11-02",
-    desc: "After a win, rockets launch in a ring around the player and burst in the team colour.",
-    how: "Firework entities spawned in a circle around the winner during the victory screen.",
-    who: ["ExampleSweat"], tags: "fireworks win rockets", preview: "sparkRing" },
-  { id: "pixel-crown", cat: "glyph", name: "Pixel Crown", rar: "rare", status: "sure", seen: 19, first: "2026-09-18", last: "2026-11-03",
-    desc: "A small gold crown that hovers over the player's head for a few seconds.",
-    how: "Glyph particles drawn in a fixed pixel pattern above a player's head.",
-    who: ["DemoPlayer", "SampleNick"], tags: "crown gold king pixel", preview: "pixelCrown" },
-  { id: "feather-burst", cat: "bed", name: "Feather Burst", rar: "rare", status: "maybe", seen: 5, first: "2026-10-15", last: "2026-11-02",
-    desc: "The broken bed bursts into a cloud of feathers that drift slowly down.",
-    how: "White cloud particles at a bed spot right after a BED DESTRUCTION message. Maybe, until it's seen a few more times.",
-    who: ["PlaceholderPro"], tags: "feathers white pillow", preview: "featherBurst" },
-  { id: "frosted-birch", cat: "wood", name: "Frosted Birch", rar: "common", status: "sure", seen: 27, first: "2026-09-09", last: "2026-11-01",
-    desc: "Wood bought from the shop is pale birch with frost on the edges.",
-    how: "The wood block type placed by the player differs from the default wood the shop sells.",
-    who: ["TestAccount42", "SampleNick", "DemoPlayer"], tags: "wood planks ice snow", preview: "frostedBirch" },
-  { id: "weather-report", cat: "msg", name: "Weather Report", rar: "common", status: "sure", seen: 52, first: "2026-08-28", last: "2026-11-04",
-    desc: "Kill messages read like a forecast.",
-    how: "The wording of the kill message in chat. Every message pack has its own lines, so it's always sure.",
-    who: ["ExampleSweat", "NotARealNick"], tags: "chat forecast storm", preview: "chat",
-    lines: [
-      ['<span class="c-red">Rival</span><span class="c-gray"> got caught in </span><span class="c-blue">Milo</span><span class="c-gray">\'s storm.</span>'],
-      ['<span class="c-red">Rival</span><span class="c-gray"> was hit by a cold front from </span><span class="c-blue">Milo</span><span class="c-gray">.</span>'],
-      ['<span class="c-red">Rival</span><span class="c-gray"> was forecast to lose by </span><span class="c-blue">Milo</span><span class="c-gray">. </span><span class="c-aqua c-bold">FINAL KILL!</span>'],
-    ] },
+  // Final kill effects
+  { id: "lightning-strike", cat: "final", name: "Lightning Strike", rar: "common", price: 5000, get: "shop",
+    desc: "Killing an enemy will wake up Thor.", tags: "thunder bolt storm", preview: "lightning" },
+  { id: "tnt", cat: "final", name: "TNT", rar: "common", price: 5000, get: "shop",
+    desc: "Killing an enemy will make them disappear into TNT.", tags: "explosion boom", preview: "tnt" },
+  { id: "squid-missile", cat: "final", name: "Squid Missile", rar: "common", price: 5000, get: "shop",
+    desc: "Killing an enemy will spawn a fellow companion.", tags: "squid rocket firework", preview: "squid" },
+  { id: "heart-aura", cat: "final", name: "Heart Aura", rar: "rare", price: 10000, get: "shop",
+    desc: "Killing an enemy will spawn lots of love.", tags: "hearts love", preview: "hearts" },
+  { id: "burning-shoes", cat: "final", name: "Burning Shoes", rar: "rare", price: 10000, get: "shop",
+    desc: "Killing an enemy will set your feet on fire.", tags: "fire flame feet", preview: "burningShoes" },
+  { id: "tornado", cat: "final", name: "Tornado", rar: "legendary", price: 100000, get: "shop",
+    desc: "Killing an enemy will summon a vortex!", tags: "wind vortex sparks", preview: "tornado" },
+  { id: "batcrux", cat: "final", name: "Batcrux", rar: "legendary", price: 300000, get: "event", season: "Halloween",
+    desc: "Killing an enemy splits their soul into 7 Batcruxes.", tags: "bats smoke spooky", preview: "batcrux" },
+  // Death cries (sound, pitch as Hypixel plays them)
+  { id: "bazinga", cat: "cry", name: "Bazinga", rar: "common", price: 5000, get: "shop", desc: "Plays the Bazinga Death Cry when you die.", tags: "sound blaze", preview: "cry", sound: ["mob.blaze.death", 2] },
+  { id: "dinosaur", cat: "cry", name: "Dinosaur", rar: "common", price: 5000, get: "shop", desc: "Plays the Dinosaur Death Cry when you die.", tags: "sound donkey", preview: "cry", sound: ["mob.horse.donkey.death", 0.5] },
+  { id: "ding", cat: "cry", name: "Ding", rar: "rare", price: 10000, get: "shop", desc: "Plays the Ding Death Cry when you die.", tags: "sound orb xp", preview: "cry", sound: ["random.orb", 1] },
+  { id: "dragon-roar", cat: "cry", name: "Dragon Roar", rar: "rare", price: 10000, get: "shop", desc: "Plays the Dragon Roar Death Cry when you die.", tags: "sound ender dragon", preview: "cry", sound: ["mob.enderdragon.growl", 0.5] },
+  { id: "howl", cat: "cry", name: "Howl", rar: "epic", price: 25000, get: "shop", desc: "Plays the Howl Death Cry when you die.", tags: "sound wolf", preview: "cry", sound: ["mob.wolf.howl", 1] },
+  { id: "sad-moo", cat: "cry", name: "Sad Moo", rar: "epic", price: 25000, get: "shop", desc: "Plays the Sad Moo Death Cry when you die.", tags: "sound cow", preview: "cry", sound: ["mob.cow.say", 1] },
+  { id: "guardian", cat: "cry", name: "Guardian", rar: "legendary", price: null, get: "challenges", desc: "Plays the Guardian Death Cry when you die.", tags: "sound guardian", preview: "cry", sound: ["mob.guardian.death", 1] },
+  { id: "carol", cat: "cry", name: "Carol", rar: "legendary", price: null, get: "event", season: "Holidays", desc: "Plays the Carol Death Cry when you die.", tags: "sound christmas bell", preview: "cry", sound: ["random.orb", 1.1] },
+  // Shopkeeper skins
+  { id: "magic-vendor", cat: "shop", name: "Magic Vendor", rar: "common", price: 5000, get: "shop", desc: "Select Magic Vendor as your Shopkeeper!", tags: "npc wizard", preview: "shopkeeper", skin: "magic-vendor" },
+  { id: "bed-salesman", cat: "shop", name: "Bed Salesman", rar: "common", price: 5000, get: "shop", desc: "Select Bed Salesman as your Shopkeeper!", tags: "npc bed", preview: "shopkeeper", skin: "bed-salesman" },
+  { id: "king-of-beds", cat: "shop", name: "King Of Beds", rar: "rare", price: 10000, get: "shop", desc: "Select King Of Beds as your Shopkeeper!", tags: "npc crown king", preview: "shopkeeper", skin: "king-of-beds" },
+  { id: "bright-tiger", cat: "shop", name: "Bright Tiger", rar: "epic", price: 25000, get: "shop", desc: "Select Bright Tiger as your Shopkeeper!", tags: "npc tiger", preview: "shopkeeper", skin: "bright-tiger" },
+  { id: "gold-tiger", cat: "shop", name: "Gold Tiger", rar: "legendary", price: 100000, get: "shop", desc: "Select Gold Tiger as your Shopkeeper!", tags: "npc tiger gold", preview: "shopkeeper", skin: "gold-tiger" },
+  { id: "astronaut", cat: "shop", name: "Astronaut", rar: "legendary", price: 100000, get: "shop", desc: "Select Astronaut as your Shopkeeper!", tags: "npc space", preview: "shopkeeper", skin: "astronaut" },
+  // Kill messages
+  { id: "km-fire", cat: "msg", name: "Fire", rar: "common", price: 5000, get: "shop", desc: "Select the Fire Kill Messages!", tags: "chat burn",
+    lines: pack(["{V} was struck down by {K}.", "{V} was turned to dust by {K}.", "{V} was melted by {K}.", "{V} was turned to ash by {K}.", "{V} was fried by {K}'s {MOB}.", "{BED} was incinerated by {K}!"]) },
+  { id: "km-western", cat: "msg", name: "Western", rar: "common", price: 5000, get: "shop", desc: "Select the Western Kill Messages!", tags: "chat cowboy",
+    lines: pack(["{V} was filled full of lead by {K}.", "{V} met their end by {K}.", "{V} was killed with dynamite by {K}.", "{V} lost a drinking contest with {K}.", "{V} lost the draw to {K}'s {MOB}.", "{BED} was iced by {K}!"]) },
+  { id: "km-love", cat: "msg", name: "Love", rar: "rare", price: 10000, get: "shop", desc: "Select the Love Kill Messages!", tags: "chat cupid",
+    lines: pack(["{V} was given the cold shoulder by {K}.", "{V} was hit off by a love bomb from {K}.", "{V} was struck with Cupid's arrow by {K}.", "{V} was out of the league of {K}.", "{V} was no match for {K}'s {MOB}.", "{BED} was dismantled by {K}!"]) },
+  { id: "km-pirate", cat: "msg", name: "Pirate", rar: "epic", price: 25000, get: "shop", desc: "Select the Pirate Kill Messages!", tags: "chat sea",
+    lines: pack(["{V} be sent to Davy Jones' locker by {K}.", "{V} be cannonballed to death by {K}.", "{V} be shot and killed by {K}.", "{V} be killed with magic by {K}.", "{V} be killed with metal by {K}'s {MOB}.", "{BED} be shot with cannon by {K}!"]) },
+  { id: "km-to-the-moon", cat: "msg", name: "To The Moon", rar: "epic", price: 25000, get: "shop", desc: "Select the To The Moon Kill Messages!", tags: "chat space",
+    lines: pack(["{V} was crushed into moon dust by {K}.", "{V} was sent the wrong way by {K}.", "{V} was hit by an asteroid from {K}.", "{V} was blasted to the moon by {K}.", "{V} was blown up by {K}'s {MOB}.", "{BED} was blasted to dust by {K}!"]) },
+  { id: "km-roar", cat: "msg", name: "Roar", rar: "epic", price: 25000, get: "shop", desc: "Select the Roar Kill Messages!", tags: "chat animal",
+    lines: pack(["{V} was ripped to shreds by {K}.", "{V} was charged by {K}.", "{V} was pounced on by {K}.", "{V} was ripped and thrown by {K}.", "{V} was ripped to shreds by {K}'s {MOB}.", "{BED} was ripped to shreds by {K}!"]) },
 ];
 
 /* ------------------------------------------------------------------ list UI */
 const $ = (id) => document.getElementById(id);
-const state = { cat: "all", status: "all", sort: "seen", q: "" };
-const fmtDate = (d) => d ? new Date(d + "T12:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short" }) : "–";
+const state = { cat: "all", rar: "all", avail: "all", sort: "rarity", q: "" };
 const catOf = (id) => CATS.find((c) => c.id === id);
+const fmtPrice = (n) => n == null ? null : n.toLocaleString("en-US");
+const TOKEN = '<svg class="tok" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="#2fbf71" stroke="#1b7a46" stroke-width="1.4"/><path d="M8 4.6v6.8M5.8 6.2 8 4.6l2.2 1.6" fill="none" stroke="#dfffe9" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function getText(it) {
+  if (it.season) return `Only during the ${it.season} event${it.price != null ? ", for tokens" : ""}`;
+  return GET[it.get] || it.get;
+}
+function availOf(it) { return it.season ? "season" : it.get === "shop" ? "shop" : "other"; }
 
 function buildRail() {
   const rail = $("rail");
@@ -420,12 +432,12 @@ function buildRail() {
     rail.appendChild(b);
   };
   mk("all", "Everything", '<rect x="3" y="3" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/>', ITEMS.length);
-  for (const c of CATS) mk(c.id, c.name, c.icon, ITEMS.filter((i) => i.cat === c.id).length);
+  for (const c of CATS) { const n = ITEMS.filter((i) => i.cat === c.id).length; if (n) mk(c.id, c.name, c.icon, n); }
 }
 
 function matches(it, q) {
   if (!q) return true;
-  const hay = `${it.name} ${catOf(it.cat).name} ${it.tags} ${it.desc} ${RAR[it.rar][0]} ${STATUS[it.status]}`.toLowerCase();
+  const hay = `${it.name} ${catOf(it.cat).name} ${it.tags || ""} ${it.desc} ${RAR[it.rar][0]} ${it.season || ""} ${getText(it)}`.toLowerCase();
   return q.toLowerCase().split(/\s+/).filter(Boolean).every((w) => hay.includes(w) || fuzzy(hay, w));
 }
 // Lets small typos through ("flme" finds "flame").
@@ -445,17 +457,23 @@ function lev(a, b) {
   return d[a.length][b.length];
 }
 
+function chatHtml(it, cls = "") {
+  return it.lines.map((l, i) => `<div class="chat-line ${cls}" style="animation-delay:${i * 0.06}s">${l}</div>`).join("");
+}
+
 let visible = [];
 function render() {
   for (const b of document.querySelectorAll(".cat")) b.setAttribute("aria-pressed", String(b.dataset.cat === state.cat));
-  for (const b of document.querySelectorAll("#statusSeg button")) b.setAttribute("aria-pressed", String(b.dataset.s === state.status));
+  for (const b of document.querySelectorAll("#rarSeg button")) b.setAttribute("aria-pressed", String(b.dataset.r === state.rar));
   $("heading").textContent = state.cat === "all" ? "All cosmetics" : catOf(state.cat).name;
-  visible = ITEMS.filter((it) => (state.cat === "all" || it.cat === state.cat) && (state.status === "all" || it.status === state.status) && matches(it, state.q));
+  visible = ITEMS.filter((it) => (state.cat === "all" || it.cat === state.cat) && (state.rar === "all" || it.rar === state.rar)
+    && (state.avail === "all" || availOf(it) === state.avail) && matches(it, state.q));
+  const p = (x) => x.price ?? -1;
   const by = {
-    seen: (a, b) => b.seen - a.seen,
-    recent: (a, b) => (b.last || "").localeCompare(a.last || ""),
+    rarity: (a, b) => RAR_ORDER[a.rar] - RAR_ORDER[b.rar] || a.name.localeCompare(b.name),
+    "price-hi": (a, b) => p(b) - p(a) || a.name.localeCompare(b.name),
+    "price-lo": (a, b) => (p(a) < 0) - (p(b) < 0) || p(a) - p(b) || a.name.localeCompare(b.name),
     name: (a, b) => a.name.localeCompare(b.name),
-    rarity: (a, b) => RAR_ORDER[a.rar] - RAR_ORDER[b.rar] || b.seen - a.seen,
   }[state.sort];
   visible.sort(by);
   const grid = $("grid");
@@ -463,12 +481,14 @@ function render() {
   visible.forEach((it, i) => {
     const b = document.createElement("button");
     b.type = "button"; b.className = "card"; b.style.animationDelay = `${Math.min(i, 12) * 30}ms`;
-    b.setAttribute("aria-label", `${it.name}, ${catOf(it.cat).name}`);
-    const thumb = it.preview === "chat"
-      ? `<div class="chat-thumb">${it.lines.map((l) => `<div class="chat-line">${l.join("")}</div>`).join("")}</div>`
+    b.style.setProperty("--rc", RAR[it.rar][1]);
+    b.setAttribute("aria-label", `${it.name}, ${RAR[it.rar][0]} ${catOf(it.cat).name}`);
+    const thumb = it.lines
+      ? `<div class="chat-thumb">${chatHtml(it)}</div>`
       : `<img alt="" data-id="${it.id}"${thumbs[it.id] ? ` src="${thumbs[it.id]}" class="on"` : ""}>${thumbs[it.id] ? "" : '<div class="shimmer"></div>'}`;
-    b.innerHTML = `<div class="thumb">${thumb}<span class="rar" style="--rc:${RAR[it.rar][1]}">${RAR[it.rar][0]}</span></div>
-      <div class="meta"><span class="nm">${it.name}</span><span class="sub">${catOf(it.cat).name}<span class="st ${it.status}">${STATUS[it.status]}</span></span></div>`;
+    const price = it.price != null ? `<span class="price">${TOKEN}${fmtPrice(it.price)}</span>` : `<span class="price none">${GET_SHORT[it.get] || ""}</span>`;
+    b.innerHTML = `<div class="thumb">${thumb}<span class="rar">${RAR[it.rar][0]}</span>${it.season ? `<span class="season">${it.season}</span>` : ""}</div>
+      <div class="meta"><span class="nm">${it.name}</span><span class="sub">${catOf(it.cat).name}${price}</span></div>`;
     b.onclick = () => openStudio(it.id);
     grid.appendChild(b);
   });
@@ -476,14 +496,14 @@ function render() {
 }
 
 function tally() {
-  const seen = ITEMS.filter((i) => i.status !== "unseen");
-  const sure = ITEMS.filter((i) => i.status === "sure").length;
-  $("tally").innerHTML = `<b>${ITEMS.length}</b> cosmetics in <b>${CATS.length}</b> categories · <b>${seen.length}</b> seen in games, <b>${sure}</b> of them sure`;
+  const cats = new Set(ITEMS.map((i) => i.cat)).size;
+  $("tally").innerHTML = `<b>${ITEMS.length}</b> cosmetics in <b>${cats}</b> categories`;
 }
 
 $("q").addEventListener("input", (e) => { state.q = e.target.value.trim(); render(); });
 $("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
-for (const b of document.querySelectorAll("#statusSeg button")) b.onclick = () => { state.status = b.dataset.s; render(); };
+$("avail").addEventListener("change", (e) => { state.avail = e.target.value; render(); });
+for (const b of document.querySelectorAll("#rarSeg button")) b.onclick = () => { state.rar = b.dataset.r; render(); };
 document.addEventListener("keydown", (e) => {
   if (e.key === "/" && document.activeElement !== $("q") && $("studio").hidden) { e.preventDefault(); $("q").focus(); }
   if ($("studio").hidden) return;
@@ -494,8 +514,8 @@ document.addEventListener("keydown", (e) => {
 
 /* ------------------------------------------------------------------ textures */
 const loadImg = (src) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
-const [particlesImg, blocksImg, steveImg, blocksJson] = await Promise.all([
-  loadImg("replay/particles.png"), loadImg("replay/blocks.png"), loadImg("replay/steve.png"),
+const [particlesImg, blocksImg, steveImg, explosionImg, blocksJson] = await Promise.all([
+  loadImg("replay/particles.png"), loadImg("replay/blocks.png"), loadImg("replay/steve.png"), loadImg("replay/explosion.png"),
   fetch("replay/blocks.json").then((r) => r.json()),
 ]);
 function canvasTex(c) { const t = new THREE.CanvasTexture(c); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace; return t; }
@@ -522,24 +542,18 @@ function recolor(img, fn) {
   return c;
 }
 function hueOf(r, g, b) { const c = new THREE.Color(r / 255, g / 255, b / 255), h = {}; c.getHSL(h); return h; }
-const SKINS = {
-  steve: canvasTex(crop(steveImg, 0, 0, 64, 64)),
-  rival: canvasTex(recolor(steveImg, (r, g, b) => { const h = hueOf(r, g, b); if (h.s > .3 && h.h > .42 && h.h < .58) return [180 * h.l * 2, 40 * h.l * 2, 40 * h.l * 2]; })),
-  merchant: canvasTex(recolor(steveImg, (r, g, b, x, y) => {
-    const h = hueOf(r, g, b);
-    if (h.s > .3 && h.h > .42 && h.h < .58) return [92 * h.l * 2.2, 40 * h.l * 2.2, 150 * h.l * 2.2];
-    if (h.h > .58 && h.h < .75) return [30 * h.l * 2, 22 * h.l * 2, 48 * h.l * 2];
-    if (y < 16 && h.l < .25) return [40, 34, 60];
-  })),
-};
+const SKIN_IDS = [...new Set(ITEMS.map((i) => i.skin).filter(Boolean)), "dummy", "killer"];
+const skinImgs = await Promise.all(SKIN_IDS.map((id) => loadImg(`cosmetics/skins/${id}.png`)));
+const SKINS = { steve: canvasTex(crop(steveImg, 0, 0, 64, 64)) };
+SKIN_IDS.forEach((id, i) => { const im = skinImgs[i]; const t = canvasTex(crop(im, 0, 0, 64, 64)); t.userData = { legacy: im.height === 32 }; SKINS[id] = t; });
 
 /* ------------------------------------------------------------------ studio scene kit */
 const PX = 0.9375 / 16;
-function setBoxUV(geo, u, v, w, h, d) {
+function setBoxUV(geo, u, v, w, h, d, th = 64) {
   const F = [[u + d + w, v + d, d, h], [u, v + d, d, h], [u + d, v, w, d], [u + d + w, v, w, d], [u + d, v + d, w, h], [u + 2 * d + w, v + d, w, h]];
   const uv = geo.attributes.uv;
   F.forEach(([x, y, fw, fh], f) => {
-    const u0 = x / 64, u1 = (x + fw) / 64, v0 = 1 - y / 64, v1 = 1 - (y + fh) / 64;
+    const u0 = x / 64, u1 = (x + fw) / 64, v0 = 1 - y / th, v1 = 1 - (y + fh) / th;
     const s = [[u0, v0], [u1, v0], [u0, v1], [u1, v1]];
     for (let k = 0; k < 4; k++) uv.setXY(f * 4 + k, s[k][0], s[k][1]);
   });
@@ -548,9 +562,10 @@ function setBoxUV(geo, u, v, w, h, d) {
 function makePlayer(skin = SKINS.steve, opts = {}) {
   const root = new THREE.Group(), mats = [];
   const mat = (overlay) => { const m = new THREE.MeshLambertMaterial({ map: skin, transparent: overlay, alphaTest: overlay ? 0.1 : 0.5, side: overlay ? THREE.DoubleSide : THREE.FrontSide }); mats.push(m); return m; };
+  const legacy = !!skin.userData?.legacy, TH = legacy ? 32 : 64;
   const part = (w, h, d, u, v, pivot, inflate = 0, overlay = false) => {
     const g = new THREE.BoxGeometry((w + inflate) * PX, (h + inflate) * PX, (d + inflate) * PX);
-    setBoxUV(g, u, v, w, h, d);
+    setBoxUV(g, u, v, w, h, d, TH);
     g.translate(0, -h * PX / 2, 0);
     const m = new THREE.Mesh(g, mat(overlay));
     const p = new THREE.Group(); p.position.set(pivot[0] * PX, pivot[1] * PX, pivot[2] * PX); p.add(m);
@@ -561,9 +576,9 @@ function makePlayer(skin = SKINS.steve, opts = {}) {
   const hat = part(8, 8, 8, 32, 0, [0, 0, 0], 1, true); hat.children[0].position.y = 8.5 * PX; head.add(hat);
   const torso = part(8, 12, 4, 16, 16, [0, 24, 0]);
   const armR = part(4, 12, 4, 40, 16, [-6, 22, 0]); armR.children[0].position.y = 2 * PX;
-  const armL = part(4, 12, 4, 32, 48, [6, 22, 0]); armL.children[0].position.y = 2 * PX;
+  const armL = legacy ? part(4, 12, 4, 40, 16, [6, 22, 0]) : part(4, 12, 4, 32, 48, [6, 22, 0]); armL.children[0].position.y = 2 * PX;
   const legR = part(4, 12, 4, 0, 16, [-2, 12, 0]);
-  const legL = part(4, 12, 4, 16, 48, [2, 12, 0]);
+  const legL = legacy ? part(4, 12, 4, 0, 16, [2, 12, 0]) : part(4, 12, 4, 16, 48, [2, 12, 0]);
   body.add(head, torso, armR, armL, legR, legL);
   if (opts.silhouette) for (const m of mats) { m.map = null; m.color.set(0x0b0d12); }
   return { root, body, head, armR, armL, legR, legL, mats };
@@ -634,223 +649,202 @@ function idle(p, t) {
 
 /* ------------------------------------------------------------------ previews
    Each preview builds into `S.item` and returns tick(t, dt). `loop` is how long
-   one play takes; `hero` is the moment used for the card picture. */
-const PREVIEWS = {
-  emberBloom: { loop: 3.4, hero: 1.05, build(S) {
-    const p = makePlayer(SKINS.rival); S.item.add(p.root); let fired = false, smoke = 0;
-    return (t, dt) => {
-      idle(p, t);
-      const k = dieAnim(p, t, 0.5);
-      if (t > 0.75 && !fired) { fired = true;
-        for (let i = 0; i < 46; i++) S.fx.spawn({ frames: [48], pos: V(0.6 + rnd(-.3, .3), rnd(.2, .7), rnd(-.3, .3)), vel: sphere(rnd(.6, 2.2)).add(V(0, 1.2, 0)), life: rnd(.6, 1.2), size: rnd(.12, .2), drag: .93, shrink: true });
-        for (let i = 0; i < 7; i++) S.fx.spawn({ frames: [49], pos: V(0.6, .5, 0), vel: sphere(1.4).add(V(0, 2.5, 0)), life: 1.2, grav: 6, size: .14, fade: false });
-      }
-      if (fired && t < 2.2 && (smoke += dt) > 0.03) { smoke = 0; S.fx.spawn({ frames: SMOKE, pos: V(0.6 + rnd(-.4, .4), rnd(.3, .9), rnd(-.3, .3)), vel: V(0, rnd(.5, 1), 0), life: rnd(1, 1.6), size: .22, color: 0x333333 }); }
-      p.root.visible = !(t > 0.75 && k >= .3) || t < 0.78;
-    };
-  } },
-  staticSnap: { loop: 3, hero: 1.0, build(S) {
-    const p = makePlayer(SKINS.rival); S.item.add(p.root); let fired = false;
-    return (t, dt) => {
-      idle(p, t);
-      const k = dieAnim(p, t, 0.4);
-      if (t > 0.8 && !fired) { fired = true;
-        for (let i = 0; i < 60; i++) { const a = i / 60 * Math.PI * 2; S.fx.spawn({ frames: [66], pos: V(0.5, .15, 0), vel: V(Math.cos(a) * 3.2, rnd(0, .2), Math.sin(a) * 3.2), life: .9, size: .16, color: 0x7fd8ff, drag: .9, add: true }); }
-        for (let i = 0; i < 24; i++) S.fx.spawn({ frames: [65], pos: V(0.5 + rnd(-.3, .3), .3, rnd(-.3, .3)), vel: V(rnd(-.8, .8), rnd(2, 4), rnd(-.8, .8)), life: .8, grav: 5, size: .14, color: 0xbfe9ff });
-      }
-      p.root.visible = t < 0.85;
-    };
-  } },
-  prismShatter: { loop: 3.6, hero: 1.15, build(S) {
-    const p = makePlayer(SKINS.rival); S.item.add(p.root);
-    const colors = ["red", "orange", "yellow", "lime", "light_blue", "magenta"];
-    const shards = []; let fired = false;
-    return (t, dt) => {
-      idle(p, t);
-      if (t > 0.7 && !fired) { fired = true; p.root.visible = false;
-        for (let i = 0; i < 70; i++) {
-          const m = makeBlock(btex(colors[i % 6] + "_stained_glass"), rnd(.09, .2));
-          m.position.set(rnd(-.25, .25), rnd(.1, 1.8), rnd(-.15, .15));
-          const v = V(m.position.x, m.position.y - .9, m.position.z).normalize().multiplyScalar(rnd(1.5, 3.5)).add(V(0, 1.5, 0));
-          S.item.add(m); shards.push({ m, v, r: sphere(rnd(4, 10)) });
-        }
-        for (let i = 0; i < 80; i++) S.fx.spawn({ frames: SPELL, pos: V(rnd(-.4, .4), rnd(.1, 1.9), rnd(-.3, .3)), vel: sphere(rnd(.3, 1)).add(V(0, .6, 0)), life: rnd(1, 1.8), size: .16, color: new THREE.Color().setHSL(Math.random(), 1, .6) });
-      }
-      if (!fired) { const s = 1 + Math.max(0, t - .45) * 0.4; for (const m of p.mats) m.emissive?.setRGB(Math.max(0, t - .4) * 1.4, Math.max(0, t - .4) * 1.4, Math.max(0, t - .4) * 1.6); p.root.scale.setScalar(s); }
-      for (const s of shards) {
-        s.v.y -= 9 * dt; s.m.position.addScaledVector(s.v, dt);
-        if (s.m.position.y < .07) { s.m.position.y = .07; s.v.y *= -.3; s.v.x *= .7; s.v.z *= .7; s.r.multiplyScalar(.7); }
-        s.m.rotation.x += s.r.x * dt; s.m.rotation.y += s.r.y * dt;
-        if (t > 2.6) s.m.scale.multiplyScalar(Math.pow(0.1, dt));
-      }
-    };
-  } },
-  cometTail: { loop: 2.6, hero: 1.0, build(S) {
-    const arrow = makeArrow(); S.item.add(arrow); const target = makeBlock([btex("red_wool"), btex("red_wool"), btex("white_wool"), btex("white_wool"), btex("red_wool"), btex("red_wool")]);
-    target.position.set(1.9, 1.3, -.6); S.item.add(target);
-    const from = V(-2.6, 0.8, .8), to = V(1.75, 1.32, -.55); let acc = 0, prev = from.clone();
-    return (t, dt) => {
-      const k = Math.min(1, t / 1.4);
-      const pos = from.clone().lerp(to, k); pos.y += Math.sin(k * Math.PI) * 1.4;
-      arrow.position.copy(pos); if (k < 1) { arrow.lookAt(pos.clone().add(pos.clone().sub(prev))); } prev.copy(pos);
-      if (k < 1 && (acc += dt) > 0.012) { acc = 0;
-        S.fx.spawn({ frames: SPARK, pos: pos.clone().add(sphere(.05)), vel: sphere(.3), life: rnd(.5, .9), size: rnd(.1, .16), color: 0xffcf5a, add: true });
-        S.fx.spawn({ frames: SMOKE, pos: pos.clone(), vel: V(0, .2, 0), life: 1.1, size: .14, color: 0x99887a });
-      }
-      if (k >= 1 && k < 1.01) target.scale.setScalar(1.08);
-      target.scale.lerp(V(1, 1, 1), 0.1);
-    };
-  } },
-  noteStream: { loop: 2.6, hero: 1.0, build(S) {
-    const arrow = makeArrow(); S.item.add(arrow);
-    const from = V(-2.6, 0.8, .8), to = V(2.4, .6, -.6); let acc = 0, prev = from.clone(), n = 0;
-    return (t, dt) => {
-      const k = Math.min(1, t / 1.5);
-      const pos = from.clone().lerp(to, k); pos.y += Math.sin(k * Math.PI) * 1.6;
-      arrow.position.copy(pos); arrow.lookAt(pos.clone().add(pos.clone().sub(prev).add(V(0.0001, 0, 0)))); prev.copy(pos);
-      arrow.visible = k < 1;
-      if (k < 1 && (acc += dt) > 0.07) { acc = 0; n++;
-        S.fx.spawn({ frames: [64], pos: pos.clone(), vel: V(0, .4, 0), life: 1.3, size: .2, color: new THREE.Color().setHSL((n * 0.09) % 1, .9, .55), drag: .9 });
-      }
-    };
-  } },
-  lowBrass: { loop: 3, hero: 0.9, build(S) { return deathCry(S, 0xffb347); } },
-  glitchChirp: { loop: 3, hero: 0.9, build(S) { return deathCry(S, 0x55ffff, true); } },
-  crystalSpire: { loop: 4.2, hero: 3.0, build(S) {
-    const parts = [];
-    const add = (tex, x, y, z, s = 1) => { const b = makeBlock(tex, s); b.position.set(x, y + 4, z); b.userData = { y, s }; b.visible = false; S.item.add(b); parts.push(b); };
-    for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++) add(btex("quartz_block_side"), x * .5, .25, z * .5, .5);
-    add(btex("quartz_pillar"), 0, .75, 0, .5); add(btex("quartz_pillar"), 0, 1.25, 0, .5);
-    add(btex("diamond_block"), 0, 1.75, 0, .5);
-    add(btex("light_blue_stained_glass"), 0, 2.2, 0, .4); add(btex("white_stained_glass"), 0, 2.55, 0, .3); add(btex("light_blue_stained_glass"), 0, 2.82, 0, .22);
-    return (t, dt) => {
-      parts.forEach((b, i) => {
-        const st = 0.2 + i * 0.13, k = Math.max(0, Math.min(1, (t - st) / 0.35));
-        b.visible = t > st;
-        const e = 1 - Math.pow(1 - k, 3);
-        b.position.y = b.userData.y + (1 - e) * 2.5;
-        if (i >= parts.length - 3 && k >= 1) b.rotation.y = t * (i % 2 ? 1.2 : -0.8);
-      });
-      if (t > 2.2 && Math.random() < 0.5) S.fx.spawn({ frames: SPARK, pos: V(rnd(-.5, .5), rnd(1.8, 3), rnd(-.5, .5)), vel: V(0, rnd(.1, .4), 0), life: 1, size: .12, color: 0x9fe8ff, add: true });
-    };
-  } },
-  nightMerchant: { loop: 5, hero: 1.6, build(S) {
-    const p = makePlayer(SKINS.merchant); S.item.add(p.root);
-    const tag = textSprite("ITEM SHOP", "#ffd166"); tag.position.y = 2.45; S.item.add(tag);
-    const tag2 = textSprite("RIGHT CLICK", "#ffff55"); tag2.position.y = 2.18; tag2.scale.multiplyScalar(.7); S.item.add(tag2);
-    let acc = 0;
-    return (t, dt) => {
-      idle(p, t);
-      p.head.rotation.y = Math.sin(t * 0.9) * 0.5; p.head.rotation.x = Math.sin(t * 0.6) * 0.1;
-      if ((acc += dt) > 0.09) { acc = 0; S.fx.spawn({ frames: SPELL, pos: V(rnd(-.5, .5), rnd(.2, 1.9), rnd(-.4, .4)), vel: V(0, rnd(.2, .5), 0), life: 1.4, size: .14, color: 0xb36bff }); }
-    };
-  } },
-  unseen: { loop: 4, hero: 1, build(S) {
-    const p = makePlayer(SKINS.steve, { silhouette: true }); S.item.add(p.root);
-    const q = textSprite("?", "#c8ced8"); q.position.y = 2.3; S.item.add(q);
-    return (t) => { idle(p, t); q.position.y = 2.3 + Math.sin(t * 2) * 0.05; };
-  } },
-  sparkRing: { loop: 4, hero: 1.55, build(S) {
-    const p = makePlayer(SKINS.steve); S.item.add(p.root);
-    const rockets = []; let launched = 0;
-    return (t, dt) => {
-      p.armR.rotation.x = -Math.PI + Math.sin(t * 8) * .2; p.armL.rotation.x = -Math.PI - Math.sin(t * 8) * .2;
-      p.root.position.y = Math.abs(Math.sin(t * 4)) * 0.15;
-      while (launched < 8 && t > 0.2 + launched * 0.08) {
-        const a = launched / 8 * Math.PI * 2; launched++;
-        rockets.push({ pos: V(Math.cos(a) * 1.5, .1, Math.sin(a) * 1.5), v: V(Math.cos(a) * .3, 5.5, Math.sin(a) * .3), age: 0, col: new THREE.Color().setHSL(launched % 2 ? .55 : .12, 1, .6), done: false });
-      }
-      for (const r of rockets) {
-        if (r.done) continue;
-        r.age += dt; r.v.y -= 4 * dt; r.pos.addScaledVector(r.v, dt);
-        S.fx.spawn({ frames: SPARK, pos: r.pos.clone(), vel: V(rnd(-.1, .1), -.4, rnd(-.1, .1)), life: .45, size: .09, color: 0xffeecc, add: true });
-        if (r.age > .9) { r.done = true; for (let i = 0; i < 40; i++) S.fx.spawn({ frames: SPARK, pos: r.pos.clone(), vel: sphere(rnd(1.5, 2.6)), life: rnd(.8, 1.3), grav: 1.4, size: .14, color: r.col, add: true }); }
-      }
-    };
-  } },
-  pixelCrown: { loop: 4, hero: 1.2, build(S) {
-    const p = makePlayer(SKINS.steve); S.item.add(p.root);
-    const c = document.createElement("canvas"); c.width = c.height = 16; const g = c.getContext("2d");
-    const rows = ["................", "................", "..y....y....y...", "..yy..yyy..yy...", "..yyy.yyy.yyy...", "..yyyyyyyyyyy...", "..yyryybyyryy...", "..yyyyyyyyyyy...", "..ooooooooooo...", "................"];
-    const col = { y: "#ffcf3a", o: "#c98a0b", r: "#ff4d5e", b: "#4fb8ff" };
-    rows.forEach((row, y) => [...row].forEach((ch, x) => { if (col[ch]) { g.fillStyle = col[ch]; g.fillRect(x + 1, y + 3, 1, 1); } }));
-    const crown = new THREE.Sprite(new THREE.SpriteMaterial({ map: canvasTex(c), transparent: true, depthWrite: false }));
-    crown.scale.set(.9, .9, 1); S.item.add(crown);
-    return (t, dt) => {
-      idle(p, t);
-      const k = Math.min(1, t / .5), e = 1 - Math.pow(1 - k, 3);
-      crown.position.y = 2.35 + Math.sin(t * 2.4) * .06;
-      crown.material.opacity = t > 3.4 ? Math.max(0, 1 - (t - 3.4) / .5) : e;
-      crown.scale.setScalar(.9 * (0.6 + .4 * e)); crown.scale.z = 1;
-      if (Math.random() < .25 && t < 3.4) S.fx.spawn({ frames: SPARK, pos: V(rnd(-.4, .4), 2.35 + rnd(-.25, .25), rnd(-.1, .1)), vel: V(0, .3, 0), life: .7, size: .08, color: 0xffe08a, add: true });
-    };
-  } },
-  featherBurst: { loop: 4, hero: 1.4, build(S) {
-    const bed = new THREE.Group(); S.item.add(bed);
-    const H = 9 / 16;
-    const mk = (topTex, sideTex, endTex, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(1, H, 1), [sideTex, sideTex, topTex, btex("oak_planks"), endTex, endTex].map((t) => new THREE.MeshLambertMaterial({ map: t, transparent: true, alphaTest: .1 }))); m.position.set(0, H / 2, z); bed.add(m); };
-    mk(btex("bed_head_top"), btex("bed_head_side"), btex("bed_head_end"), -.5);
-    mk(btex("bed_feet_top"), btex("bed_feet_side"), btex("bed_feet_end"), .5);
-    let fired = false;
-    return (t, dt) => {
-      if (t > .7 && !fired) { fired = true; bed.visible = false;
-        for (let i = 0; i < 70; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.5, .5), rnd(.2, .6), rnd(-1, 1)), vel: V(rnd(-1, 1), rnd(1.5, 3.2), rnd(-1, 1)), life: rnd(2.2, 3), grav: 1.6, drag: .95, sway: .8, size: rnd(.12, .2), color: 0xffffff });
-        for (let i = 0; i < 30; i++) S.fx.spawn({ frames: SPELL, pos: V(rnd(-.5, .5), .4, rnd(-1, 1)), vel: sphere(1.2).add(V(0, 1, 0)), life: 1.2, size: .14, color: 0xfff4e0 });
-      }
-      if (!fired) bed.position.x = t > .45 ? Math.sin(t * 90) * .03 : 0;
-    };
-  } },
-  frostedBirch: { loop: 3.4, hero: 2.2, build(S) {
-    const frost = function frost(c) { const g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height), w = c.width;
-      for (let i = 0; i < d.data.length; i += 4) { const x = (i / 4) % w, y = Math.floor(i / 4 / w), edge = Math.min(x, y, w - 1 - x, w - 1 - y);
-        const f = edge === 0 ? .7 : edge === 1 ? .35 : (Math.random() < .05 ? .4 : 0);
-        d.data[i] += (235 - d.data[i]) * f; d.data[i + 1] += (248 - d.data[i + 1]) * f; d.data[i + 2] += (255 - d.data[i + 2]) * f; }
-      g.putImageData(d, 0, 0); };
-    const tex = btex("birch_planks", frost); const blocks = [];
-    const spots = [[0, 0], [1, 0], [-1, 0], [0, 1], [1, 1], [-1, 1], [0, 2]];
-    for (const [x, y] of spots) { const b = makeBlock(tex); b.position.set(x, y + .5, 0); b.visible = false; S.item.add(b); blocks.push(b); }
-    return (t, dt) => {
-      blocks.forEach((b, i) => {
-        const st = .2 + i * .22, k = Math.max(0, Math.min(1, (t - st) / .18));
-        if (t > st && !b.visible) for (let j = 0; j < 6; j++) S.fx.spawn({ frames: [SMOKE[6]], pos: b.position.clone().add(sphere(.55)), vel: sphere(.4), life: .6, size: .1, color: 0xe8f6ff });
-        b.visible = t > st; b.scale.setScalar(.6 + .4 * (1 - Math.pow(1 - k, 3)) + (k < 1 && k > .7 ? .04 : 0));
-      });
-    };
-  } },
-  chat: { loop: 0, hero: 0, build(S) { const p = makePlayer(SKINS.steve); p.root.position.x = -.9; p.root.rotation.y = .5; const r = makePlayer(SKINS.rival); r.root.position.x = .9; r.root.rotation.y = -.5; S.item.add(p.root, r.root);
-    return (t) => { idle(p, t); idle(r, t + 1); p.armR.rotation.x = -Math.abs(Math.sin(t * 6)) * 1.1; }; } },
-};
-function makeArrow() {
-  const g = new THREE.Group();
-  const wood = new THREE.MeshLambertMaterial({ color: 0x8a6a40 }), tip = new THREE.MeshLambertMaterial({ color: 0xc8ccd2 }), feath = new THREE.MeshLambertMaterial({ color: 0xf2f2f2, side: THREE.DoubleSide });
-  const shaft = new THREE.Mesh(new THREE.BoxGeometry(.05, .05, .9), wood); g.add(shaft);
-  const head = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .14), tip); head.position.z = .48; g.add(head);
-  for (const r of [0, Math.PI / 2]) { const f = new THREE.Mesh(new THREE.BoxGeometry(.01, .16, .22), feath); f.position.z = -.38; f.rotation.z = r; g.add(f); }
+   one play takes; `hero` is the moment used for the card picture. Timings,
+   particle kinds and counts follow what Hypixel's own lobby preview spawns.
+   The victim is the preview dummy Hypixel uses (Derperino). */
+const EXPLOSION = canvasTex(crop(explosionImg, 0, 0, 128, 128));
+function killScene(S, victimAt = V(0, 0, 0)) {
+  const killer = makePlayer(SKINS.killer); killer.root.position.set(-1.3, 0, .9); killer.root.rotation.y = 2.1; S.item.add(killer.root);
+  const victim = makePlayer(SKINS.dummy); victim.root.position.copy(victimAt); victim.root.rotation.y = -1; S.item.add(victim.root);
+  return { killer, victim };
+}
+// The kill: the killer swings at 0.8s, the hit lands at 1.0s (Hypixel plays game.neutral.hurt there).
+function killAnim(S, k, t, { vanish = true } = {}) {
+  idle(k.killer, t);
+  k.killer.armR.rotation.x = t > .75 && t < 1.05 ? -Math.sin((t - .75) / .3 * Math.PI) * 1.6 : k.killer.armR.rotation.x;
+  if (t < 1) { idle(k.victim, t + 1); for (const m of k.victim.mats) m.color.setRGB(1, 1, 1); }
+  else if (vanish) k.victim.root.visible = false;
+  else dieAnim(k.victim, t, 1);
+  S.at(1.0, () => S.sound("game.neutral.hurt", .79, .8));
+}
+function bat(S) {
+  const g = new THREE.Group(), m = new THREE.MeshLambertMaterial({ color: 0x2b211b });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(.18, .26, .14), m); g.add(body);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(.18, .16, .16), m); head.position.y = .2; g.add(head);
+  const wl = new THREE.Mesh(new THREE.BoxGeometry(.4, .02, .22), m); wl.geometry.translate(-.2, 0, 0); wl.position.x = -.08; g.add(wl);
+  const wr = new THREE.Mesh(new THREE.BoxGeometry(.4, .02, .22), m); wr.geometry.translate(.2, 0, 0); wr.position.x = .08; g.add(wr);
+  g.userData.flap = (t) => { wl.rotation.z = Math.sin(t * 28) * .9; wr.rotation.z = -Math.sin(t * 28) * .9; };
   return g;
 }
-function deathCry(S, ringColor, glitch = false) {
-  const p = makePlayer(SKINS.rival); S.item.add(p.root);
-  const rings = [];
-  for (let i = 0; i < 3; i++) {
-    const m = new THREE.Mesh(new THREE.TorusGeometry(.3, .025, 6, glitch ? 6 : 48), new THREE.MeshBasicMaterial({ color: ringColor, transparent: true, opacity: 0, depthWrite: false }));
-    m.position.set(0, 1.75, 0); S.item.add(m); rings.push(m);
-  }
-  return (t, dt) => {
-    idle(p, t); dieAnim(p, t, .6);
-    rings.forEach((m, i) => {
-      const k = (t - .6 - i * .18) / 1.1;
-      m.visible = k > 0 && k < 1;
-      if (!m.visible) return;
-      m.scale.setScalar(1 + k * 4); m.material.opacity = (1 - k) * .9;
-      m.rotation.y = S.camYaw(); m.position.y = 1.75 - Math.min(1, (t - .6) / .9) * .9;
-      if (glitch) m.position.x = (Math.random() - .5) * .1;
-    });
-  };
+const PREVIEWS = {
+  lightning: { loop: 3.6, hero: 1.06, build(S) {
+    const k = killScene(S); let bolt = null, flash = null;
+    return (t, dt) => {
+      killAnim(S, k, t);
+      S.at(1.0, () => {
+        S.sound("ambient.weather.thunder", .95, 1); S.sound("random.explode", .57, .7);
+        bolt = new THREE.Group(); const mat = new THREE.MeshBasicMaterial({ color: 0xd8e4ff, transparent: true, opacity: .9, blending: THREE.AdditiveBlending, depthWrite: false });
+        let p = V(0, 14, 0);
+        for (let i = 0; i < 18; i++) { const n = V(p.x + rnd(-.45, .45), p.y - .78, p.z + rnd(-.45, .45)); if (i === 17) n.set(0, 0, 0);
+          const len = p.distanceTo(n), seg = new THREE.Mesh(new THREE.BoxGeometry(.12, len, .12), mat); seg.position.copy(p).add(n).multiplyScalar(.5); seg.lookAt(n); seg.rotateX(Math.PI / 2); bolt.add(seg); p = n; }
+        S.item.add(bolt);
+        flash = new THREE.PointLight(0xc8d8ff, 60, 14, 1.2); flash.position.set(0, 2, 0); S.item.add(flash);
+        for (let i = 0; i < 5; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(.2, 1.6), rnd(-.4, .4)), vel: V(0, .6, 0), life: 1.6, size: .5, color: 0x444444 });
+      });
+      if (bolt) { const k2 = (t - 1) / .45; bolt.visible = k2 < 1 && Math.sin(t * 70) > -.3; flash.intensity = Math.max(0, 1 - k2) * 60; }
+    };
+  } },
+  tnt: { loop: 4, hero: 1.5, build(S) {
+    const k = killScene(S); let tnt = null;
+    return (t, dt) => {
+      killAnim(S, k, t);
+      S.at(1.0, () => { S.sound("fireworks.launch", 1, 1);
+        tnt = makeBlock([btex("tnt_side"), btex("tnt_side"), btex("tnt_top"), btex("tnt_bottom"), btex("tnt_side"), btex("tnt_side")]); tnt.position.set(0, .5, 0); S.item.add(tnt);
+        for (let i = 0; i < 30; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(.1, 1.8), rnd(-.4, .4)), vel: V(0, rnd(.2, .6), 0), life: 1.2, size: .2, color: 0x555555 }); });
+      if (tnt && t < 2.5) { const flashOn = Math.floor(t * 6) % 2; for (const m of tnt.material) m.color.setScalar(flashOn ? 2.2 : 1); tnt.scale.setScalar(1 + Math.max(0, t - 2.2) * .5); }
+      S.at(2.5, () => { tnt.visible = false; S.sound("random.explode", .79, .8); S.explode(V(0, .6, 0)); });
+    };
+  } },
+  squid: { loop: 4.2, hero: 1.9, build(S) {
+    const k = killScene(S); let squid = null, pops = 0;
+    return (t, dt) => {
+      killAnim(S, k, t);
+      S.at(1.0, () => { squid = makeSquid(); squid.position.set(0, .4, 0); S.item.add(squid); });
+      if (squid && t < 2.67) {
+        const k2 = t - 1.0; squid.position.y = .4 + k2 * k2 * 2.6; squid.rotation.y += dt * 3;
+        squid.userData.wiggle(t);
+        if (Math.random() < .9) S.fx.spawn({ frames: [48], pos: squid.position.clone().add(V(rnd(-.15, .15), -.3, rnd(-.15, .15))), vel: V(0, -.6, 0), life: .6, size: .16 });
+        while (pops < 15 && t > 1.17 + pops * .1) { S.sound("random.pop", .6 + pops * .08, .6); pops++; }
+      }
+      S.at(2.67, () => { squid.visible = false; S.sound("fireworks.blast", 1, 1); S.firework(squid.position.clone(), [0x3a7bff, 0xffffff]); });
+    };
+  } },
+  hearts: { loop: 3.6, hero: 1.55, build(S) {
+    const k = killScene(S);
+    return (t, dt) => {
+      killAnim(S, k, t);
+      S.at(1.3, () => { for (let i = 0; i < 100; i++) S.fx.spawn({ frames: [80], pos: V(rnd(-1, 1), rnd(.2, 2.2), rnd(-1, 1)), vel: V(rnd(-.2, .2), rnd(.3, .9), rnd(-.2, .2)), life: rnd(1.2, 2), size: rnd(.18, .26), drag: .97 }); });
+    };
+  } },
+  burningShoes: { loop: 3.6, hero: 1.4, build(S) {
+    const k = killScene(S); let acc = 0;
+    return (t, dt) => {
+      killAnim(S, k, t);
+      if (t > 1.06 && t < 3.0 && (acc += dt) > .006) { acc = 0;
+        const f = k.killer.root.position; S.fx.spawn({ frames: [48], pos: V(f.x + rnd(-.3, .3), rnd(0, .25), f.z + rnd(-.25, .25)), vel: V(0, rnd(.1, .5), 0), life: rnd(.4, .8), size: .14, shrink: true }); }
+      if (t > .1 && t < 1 && Math.random() < .4) S.fx.spawn({ frames: [49], pos: V(rnd(-1.5, -1.1), 2.1, rnd(.7, 1.1)), vel: V(0, -2, 0), life: .5, size: .1, fade: false });
+    };
+  } },
+  tornado: { loop: 4.6, hero: 1.9, build(S) {
+    const k = killScene(S); let acc = 0;
+    return (t, dt) => {
+      killAnim(S, k, t);
+      S.at(1.02, () => { for (let i = 0; i < 3; i++) S.sound("mob.enderdragon.wings", .5, .6, i * .25); });
+      if (t > 1.02 && t < 3.4 && (acc += dt) > .004) { acc = 0;
+        const h = rnd(0, 3.6), r = .15 + h * .32, a = t * 9 + h * 2.2 + rnd(0, Math.PI * 2);
+        S.fx.spawn({ frames: SPARK, pos: V(Math.cos(a) * r, h, Math.sin(a) * r), vel: V(-Math.sin(a) * 2, .4, Math.cos(a) * 2), life: .55, size: .13, color: 0xffffff, add: true }); }
+      if (t > 1.56 && t < 3.2 && Math.random() < .6) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(0, .4), rnd(-.4, .4)), vel: V(rnd(-.5, .5), rnd(.8, 1.6), rnd(-.5, .5)), life: 1.4, size: .4, color: 0x666666 });
+    };
+  } },
+  batcrux: { loop: 5, hero: 1.9, build(S) {
+    const k = killScene(S); const bats = [];
+    return (t, dt) => {
+      killAnim(S, k, t);
+      S.at(1.06, () => {
+        for (let i = 0; i < 160; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(0, 2), rnd(-.4, .4)), vel: sphere(rnd(.4, 2.4)), life: rnd(.9, 1.8), size: .4, color: 0x2a2a2a, drag: .94 });
+        for (let i = 0; i < 7; i++) { const b = bat(S); b.position.set(rnd(-.3, .3), rnd(.8, 1.6), rnd(-.3, .3)); S.item.add(b); bats.push({ b, a: i / 7 * Math.PI * 2, r: rnd(1.4, 2.4), h: rnd(1.4, 3), sp: rnd(1.4, 2.2) }); }
+        S.sound("mob.bat.takeoff", 1, .6);
+      });
+      S.at(2.4, () => S.sound("mob.bat.idle", .86, .3)); S.at(3.1, () => S.sound("mob.bat.idle", 1.06, .3));
+      for (const x of bats) {
+        const age = t - 1.06, ease = Math.min(1, age / .7);
+        x.a += dt * x.sp; const tx = Math.cos(x.a) * x.r, tz = Math.sin(x.a) * x.r, ty = x.h + Math.sin(t * 3 + x.r) * .25;
+        x.b.position.lerp(V(tx, ty, tz), ease * .15); x.b.lookAt(V(Math.cos(x.a + .3) * x.r, ty, Math.sin(x.a + .3) * x.r)); x.b.userData.flap(t);
+      }
+    };
+  } },
+  cry: { loop: 3, hero: 1.1, build(S, it) {
+    const p = makePlayer(SKINS.dummy); p.root.rotation.y = -.4; S.item.add(p.root);
+    let hsh = 0; for (const ch of it.id) hsh = (hsh * 31 + ch.charCodeAt(0)) >>> 0;
+    const ringCol = new THREE.Color().setHSL((hsh % 360) / 360, .85, .62);
+    const rings = [];
+    for (let i = 0; i < 3; i++) {
+      const m = new THREE.Mesh(new THREE.TorusGeometry(.3, .022, 6, 48), new THREE.MeshBasicMaterial({ color: ringCol, transparent: true, opacity: 0, depthWrite: false }));
+      m.position.set(0, 1.75, 0); S.item.add(m); rings.push(m);
+    }
+    return (t, dt) => {
+      idle(p, t); dieAnim(p, t, .6);
+      rings.forEach((m, i) => {
+        const k = (t - .6 - i * .18) / 1.1;
+        m.visible = k > 0 && k < 1; if (!m.visible) return;
+        m.scale.setScalar(1 + k * 4); m.material.opacity = (1 - k) * .9;
+        m.rotation.y = S.camYaw(); m.position.y = 1.75 - Math.min(1, (t - .6) / .9) * .9;
+      });
+    };
+  } },
+  shopkeeper: { loop: 6, hero: 1.2, thumbY: 1.45, build(S, it) {
+    const p = makePlayer(SKINS[it.skin]); p.root.rotation.y = .25; S.item.add(p.root);
+    const tag = textSprite("ITEM SHOP", "#55ffff"); tag.position.y = 2.42; S.item.add(tag);
+    const tag2 = textSprite("RIGHT CLICK", "#ffff55"); tag2.position.y = 2.15; tag2.scale.multiplyScalar(.7); S.item.add(tag2);
+    return (t) => { idle(p, t); p.head.rotation.y = Math.sin(t * .9) * .55; p.head.rotation.x = Math.sin(t * .6) * .1 - .05; };
+  } },
+};
+function makeSquid() {
+  const g = new THREE.Group(), m = new THREE.MeshLambertMaterial({ color: 0x24456a }), eye = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(12 * PX, 16 * PX, 12 * PX), m); body.position.y = 8 * PX; g.add(body);
+  for (const s of [-1, 1]) { const e = new THREE.Mesh(new THREE.BoxGeometry(2 * PX, 2 * PX, .01), eye); e.position.set(s * 3 * PX, 4 * PX, 6.1 * PX); g.add(e); }
+  const tents = [];
+  for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; const tt = new THREE.Mesh(new THREE.BoxGeometry(2 * PX, 18 * PX, 2 * PX), m); tt.geometry.translate(0, -9 * PX, 0); tt.position.set(Math.cos(a) * 5 * PX, 0, Math.sin(a) * 5 * PX); tt.userData.a = a; g.add(tt); tents.push(tt); }
+  g.userData.wiggle = (t) => { for (const tt of tents) { tt.rotation.x = Math.sin(tt.userData.a) * (.3 + Math.sin(t * 9) * .25); tt.rotation.z = -Math.cos(tt.userData.a) * (.3 + Math.sin(t * 9) * .25); } };
+  g.rotation.x = Math.PI; // head up, tentacles trailing below
+  g.rotation.x = 0;
+  return g;
 }
 
 /* ------------------------------------------------------------------ studio renderer */
 function cssColor(v) { const el = document.createElement("i"); el.style.color = `var(${v})`; document.body.appendChild(el); const c = getComputedStyle(el).color; el.remove(); const m = c.match(/[\d.]+/g).map(Number); return new THREE.Color(m[0] / 255, m[1] / 255, m[2] / 255); }
 const ACCENT = cssColor("--accent"), ACCENT2 = cssColor("--accent-2");
+
+// A small floating sky island: grass on top, dirt and stone tapering underneath,
+// a few tufts and flowers. Built once per renderer.
+function tint(rgb) { return function tinted(c) { const g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height);
+  for (let i = 0; i < d.data.length; i += 4) { d.data[i] = d.data[i] * rgb[0] / 255; d.data[i + 1] = d.data[i + 1] * rgb[1] / 255; d.data[i + 2] = d.data[i + 2] * rgb[2] / 255; }
+  g.putImageData(d, 0, 0); }; }
+const GRASS = blocksJson.tints.grass;
+function grassSide() {
+  if (bCache.__gs) return bCache.__gs;
+  const t = blocksJson.textures, a = t["block/grass_block_side"], o = t["block/grass_block_side_overlay"];
+  const c = crop(blocksImg, a.x, a.y, a.w, a.w), ov = crop(blocksImg, o.x, o.y, o.w, o.w);
+  tint(GRASS)(ov); c.getContext("2d").drawImage(ov, 0, 0);
+  return (bCache.__gs = canvasTex(c));
+}
+function makeIsland(far = false) {
+  const g = new THREE.Group();
+  const top = btex("grass_block_top", tint(GRASS)), side = grassSide(), dirt = btex("dirt"), stone = btex("stone");
+  const geo = new THREE.BoxGeometry(1, 1, 1);
+  const M = (arr) => arr.map((t) => new THREE.MeshLambertMaterial({ map: t }));
+  const grassM = M([side, side, top, dirt, side, side]), dirtM = M([dirt, dirt, dirt, dirt, dirt, dirt]), stoneM = M([stone, stone, stone, stone, stone, stone]);
+  const layers = [[6.2, grassM], [4.6, dirtM], [2.6, stoneM], [1.2, stoneM], [0.3, stoneM]];
+  const seed = seeded(far ? 7 : 3);
+  layers.forEach(([r2, mat], L) => {
+    for (let x = -2; x <= 2; x++) for (let z = -2; z <= 2; z++) {
+      const d = x * x + z * z + (L ? seed() * 1.2 : 0);
+      if (d > r2) continue;
+      if (L === 0 && x * x + z * z > 4.5 && seed() < 0.35) continue;
+      const m = new THREE.Mesh(geo, mat); m.position.set(x, -0.5 - L, z); g.add(m);
+    }
+  });
+  if (!far) {
+    const plant = (name, x, z, tex) => {
+      const mat = new THREE.MeshLambertMaterial({ map: tex || btex(name), transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
+      for (const r of [Math.PI / 4, -Math.PI / 4]) { const p = new THREE.Mesh(new THREE.PlaneGeometry(.8, .8), mat); p.position.set(x, .4, z); p.rotation.y = r; g.add(p); }
+    };
+    const tuft = btex("grass", tint(GRASS));
+    for (const [x, z] of [[-1.6, .9], [1.7, -.6], [-.9, -1.7], [1.3, 1.5]]) plant("grass", x, z, tuft);
+    plant("poppy", -1.7, -.9); plant("dandelion", 1.8, .6);
+  }
+  return g;
+}
 
 function makeStudio(canvas, w, h) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: !!canvas.dataset.thumb });
@@ -859,19 +853,14 @@ function makeStudio(canvas, w, h) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(32, w / h, 0.1, 100);
-  camera.position.set(4.6, 3.1, 6.2);
+  camera.position.set(5.6, 3.2, 8.2);
   scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x2a2420, 1.3));
   const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 6, 4); scene.add(key);
   const rim = new THREE.DirectionalLight(ACCENT, 2.2); rim.position.set(-4, -0.4, -6); scene.add(rim);
-  // Pedestal: a dark disc with an accent ring and a soft contact shadow.
-  const ped = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.25, .28, 64), new THREE.MeshStandardMaterial({ color: 0x0d0f14, roughness: .85, metalness: .1 }));
-  ped.position.y = -.14; scene.add(ped);
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(2.12, .022, 8, 96), new THREE.MeshBasicMaterial({ color: ACCENT }));
-  ring.rotation.x = Math.PI / 2; ring.position.y = .005; scene.add(ring);
-  const sc = document.createElement("canvas"); sc.width = sc.height = 64; const sg = sc.getContext("2d");
-  const gr = sg.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, "rgba(0,0,0,.55)"); gr.addColorStop(1, "rgba(0,0,0,0)"); sg.fillStyle = gr; sg.fillRect(0, 0, 64, 64);
-  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.4), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sc), transparent: true, depthWrite: false }));
-  shadow.rotation.x = -Math.PI / 2; shadow.position.y = .006; scene.add(shadow);
+  const island = makeIsland(); scene.add(island);
+  const glow = new THREE.PointLight(ACCENT, 6, 9, 1.6); glow.position.set(0, -2.6, 0); scene.add(glow);
+  // Two far-off islands for depth.
+  for (const [x, y, z, k] of [[-9, -1.5, -12, .45], [10, 1.2, -16, .35]]) { const f = makeIsland(true); f.position.set(x, y, z); f.scale.setScalar(k); scene.add(f); }
   // Slow motes drifting in the light, for depth.
   const mg = new THREE.BufferGeometry(), mp = new Float32Array(120 * 3);
   for (let i = 0; i < 120; i++) { mp[i * 3] = rnd(-7, 7); mp[i * 3 + 1] = rnd(-1, 7); mp[i * 3 + 2] = rnd(-7, 3); }
@@ -881,16 +870,36 @@ function makeStudio(canvas, w, h) {
 
   const item = new THREE.Group(); scene.add(item);
   const S = { scene, camera, renderer, item, fx: new Fx(scene), camYaw: () => Math.atan2(camera.position.x, camera.position.z), tick: null, t: 0, def: null, motes };
-  S.load = (def) => {
-    S.fx.clear();
+  S.load = (def, it = S.it) => {
+    S.fx.clear(); S.anims = []; S.fired = new Set();
     for (const c of [...item.children]) { item.remove(c); c.traverse?.((o) => { o.geometry?.dispose(); }); }
     item.rotation.set(0, 0, 0);
-    S.def = def; S.t = 0; S.tick = def.build(S);
+    S.def = def; S.it = it; S.t = 0; S.tick = def.build(S, it);
   };
+  // Runs fn once, the first tick at or after `time` (calls are told apart by order).
+  S.at = (time, fn) => { const k = S.ci++; if (S.t >= time && !S.fired.has(k)) { S.fired.add(k); fn(); } };
+  S.audible = false;
+  S.sound = (name, pitch = 1, vol = 1, delay = 0) => { if (S.audible) mcSound(name, pitch, vol, delay); };
+  S.explode = (pos) => {
+    for (let i = 0; i < 9; i++) {
+      const tex = EXPLOSION.clone(); tex.needsUpdate = true; tex.repeat.set(.25, .25);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+      sp.position.copy(pos).add(i ? sphere(rnd(.4, 1.4)) : V(0, 0, 0)); const sz = rnd(1.4, 2.4); sp.scale.set(sz, sz, 1); item.add(sp);
+      S.anims.push({ sp, tex, age: -i * .02, life: .5 });
+    }
+  };
+  S.firework = (pos, colors) => {
+    for (let i = 0; i < 90; i++) S.fx.spawn({ frames: SPARK, pos: pos.clone(), vel: sphere(rnd(2.2, 3.2)), life: rnd(.9, 1.4), grav: 1.2, drag: .93, size: .15, color: colors[i % colors.length], add: true });
+  };
+  S.island = island;
   S.step = (dt) => {
-    S.t += dt;
-    if (S.def.loop && S.t > S.def.loop) S.load(S.def);
-    S.tick?.(S.t, dt); S.fx.update(dt);
+    S.t += dt; S.clock = (S.clock || 0) + dt;
+    island.position.y = Math.sin(S.clock * 0.8) * 0.04; item.position.y = island.position.y; S.fx.g.position.y = island.position.y;
+    if (S.def.loop && S.t > S.def.loop) { S.load(S.def); S.audible = false; }
+    S.ci = 0; S.tick?.(S.t, dt); S.fx.update(dt);
+    for (let i = S.anims.length - 1; i >= 0; i--) { const a = S.anims[i]; a.age += dt; const f = Math.floor(Math.max(0, a.age) / a.life * 16);
+      if (f >= 16) { item.remove(a.sp); a.sp.material.dispose(); a.tex.dispose(); S.anims.splice(i, 1); continue; }
+      a.sp.visible = a.age >= 0; a.tex.offset.set((f % 4) * .25, 1 - .25 - Math.floor(f / 4) * .25); }
     motes.rotation.y += dt * 0.02;
   };
   return S;
@@ -901,12 +910,13 @@ const thumbs = {};
 async function makeThumbs() {
   const c = document.createElement("canvas"); c.dataset.thumb = "1";
   const T = makeStudio(c, 480, 360);
-  T.camera.position.set(4.4, 2.6, 5.9); T.camera.lookAt(0, 1.15, 0);
+  T.camera.position.set(3.7, 2.3, 5.2); T.camera.lookAt(0, 1.05, 0);
   for (const it of ITEMS) {
-    if (it.preview === "chat") continue;
+    if (it.lines) continue;
     const def = PREVIEWS[it.preview];
+    T.camera.position.set(3.7, 2.3 + (def.thumbY ? .4 : 0), 5.2); T.camera.lookAt(0, def.thumbY || 1.05, 0);
     Math.random = seeded(it.id.length * 97 + 13);
-    T.load(def);
+    T.load(def, it);
     const steps = Math.round(def.hero * 60);
     for (let i = 0; i < steps; i++) T.step(1 / 60);
     Math.random = realRandom;
@@ -929,8 +939,8 @@ function ensureStudio() {
   $("stage").prepend(canvas);
   studio = makeStudio(canvas, 10, 10);
   controls = new OrbitControls(studio.camera, canvas);
-  controls.target.set(0, 1.05, 0); controls.enableDamping = true; controls.enablePan = false;
-  controls.minDistance = 3.5; controls.maxDistance = 13; controls.maxPolarAngle = Math.PI * 0.53;
+  controls.target.set(0, .55, 0); controls.enableDamping = true; controls.enablePan = false;
+  controls.minDistance = 4; controls.maxDistance = 18; controls.maxPolarAngle = Math.PI * 0.62;
   controls.autoRotateSpeed = 1.1; controls.autoRotate = true;
   controls.addEventListener("start", () => { controls.autoRotate = false; });
   controls.addEventListener("end", () => { setTimeout(() => { controls.autoRotate = spin; }, 1500); });
@@ -955,24 +965,27 @@ function openStudio(id, push = true) {
   const el = $("studio");
   if (el.hidden) { el.hidden = false; requestAnimationFrame(() => el.classList.add("open")); document.body.style.overflow = "hidden"; }
   ensureStudio(); resize();
-  studio.camera.position.set(5.4, 3.4, 7.6); controls.target.set(0, 1.2, 0);
-  studio.load(PREVIEWS[it.preview]);
-  cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(frame);
+  const chatOnly = !!it.lines;
+  $("stage").classList.toggle("chat-mode", chatOnly);
+  cancelAnimationFrame(raf);
+  if (!chatOnly) {
+    studio.camera.position.set(7.6, 4.4, 11.2); controls.target.set(0, 1, 0);
+    studio.load(PREVIEWS[it.preview], it); studio.audible = !it.sound;
+    last = performance.now(); raf = requestAnimationFrame(frame);
+  }
+  const chat = $("chatStage"); chat.hidden = !chatOnly;
+  if (chatOnly) chat.innerHTML = `<div class="chat-box">${chatHtml(it)}</div>`;
   // Text panel
   $("sCat").textContent = catOf(it.cat).name;
   $("sRar").innerHTML = `<span style="color:${RAR[it.rar][1]};font-weight:700">${RAR[it.rar][0]}</span>`;
   $("sName").textContent = it.name;
   $("sDesc").textContent = it.desc;
-  $("sStatus").innerHTML = `<span class="st ${it.status}" style="margin:0;font-size:15px">${STATUS[it.status]}</span>`;
-  $("sSeen").textContent = it.seen ? `${it.seen}×` : "0";
-  $("sFirst").textContent = fmtDate(it.first); $("sLast").textContent = fmtDate(it.last);
-  $("sHow").textContent = it.how;
-  $("sWho").innerHTML = it.who.length ? it.who.map((n) => `<span class="chip">${n}</span>`).join("") : '<span class="soon">Nobody yet</span>';
-  $("unseenNote").hidden = it.status !== "unseen";
-  const chat = $("chatStage"); chat.hidden = it.preview !== "chat";
-  if (it.preview === "chat") chat.innerHTML = it.lines.map((l, i) => `<div class="chat-line" style="animation-delay:${i * 0.5 + .3}s">${l.join("")}</div>`).join("");
+  $("sRarity").innerHTML = `<span class="rar-dot" style="--rc:${RAR[it.rar][1]}"></span>${RAR[it.rar][0]}`;
+  $("sPrice").innerHTML = it.price != null ? `${TOKEN}${fmtPrice(it.price)}` : '<span class="muted">Not sold</span>';
+  $("sGet").textContent = getText(it);
   $("soundBox").hidden = !it.sound;
-  if (it.sound) { drawWave(it.sound); playSound(it.sound, 0.6); }
+  $("playSound").classList.remove("playing");
+  if (it.sound) playCry(it, 0.6);
   if (push) history.replaceState(null, "", "#" + it.id);
 }
 function closeStudio() {
@@ -989,57 +1002,43 @@ function step(d) {
 $("closeBtn").onclick = closeStudio;
 $("studio").addEventListener("click", (e) => { if (e.target.id === "studio") closeStudio(); });
 $("prevBtn").onclick = () => step(-1); $("nextBtn").onclick = () => step(1);
-$("replayBtn").onclick = () => { studio.load(studio.def); if (current.preview === "chat") openStudio(current.id); if (current.sound) playSound(current.sound); };
+$("replayBtn").onclick = () => { if (current.lines) return; studio.load(studio.def); studio.audible = true; if (current.sound) playCry(current, .6); };
 $("slowBtn").onclick = (e) => { speed = speed === 1 ? .25 : 1; e.currentTarget.setAttribute("aria-pressed", String(speed !== 1)); };
 $("spinBtn").onclick = (e) => { spin = !spin; controls.autoRotate = spin; e.currentTarget.setAttribute("aria-pressed", String(spin)); };
 $("copyBtn").onclick = async () => { try { await navigator.clipboard.writeText(location.href); $("copyBtn").textContent = "Copied"; setTimeout(() => { $("copyBtn").textContent = "Copy link"; }, 1400); } catch (e) {} };
-$("playSound").onclick = () => current?.sound && playSound(current.sound);
+$("playSound").onclick = () => current?.sound && playCry(current);
 
-/* ------------------------------------------------------------------ sounds (made up, synthesised) */
-let actx = null;
-function voice(ctx, kind, t0) {
-  const out = ctx.createGain(); out.connect(ctx.destination); out.gain.value = 0;
-  if (kind === "brass") {
-    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.setValueAtTime(1400, t0); lp.frequency.exponentialRampToValueAtTime(380, t0 + 1.1); lp.connect(out);
-    for (const det of [-8, 0, 7]) { const o = ctx.createOscillator(); o.type = "sawtooth"; o.detune.value = det; o.frequency.setValueAtTime(196, t0); o.frequency.exponentialRampToValueAtTime(98, t0 + 1.0); o.connect(lp); o.start(t0); o.stop(t0 + 1.3); }
-    out.gain.setValueAtTime(0, t0); out.gain.linearRampToValueAtTime(.22, t0 + .06); out.gain.setValueAtTime(.2, t0 + .7); out.gain.exponentialRampToValueAtTime(.001, t0 + 1.25);
-    return 1.3;
-  }
-  const o = ctx.createOscillator(); o.type = "square"; o.connect(out);
-  const notes = [1320, 880, 1760, 660, 1480, 990]; notes.forEach((f, i) => o.frequency.setValueAtTime(f, t0 + i * .045));
-  o.frequency.setValueAtTime(440, t0 + .27); o.frequency.exponentialRampToValueAtTime(110, t0 + .45);
-  out.gain.setValueAtTime(.09, t0); for (let i = 0; i < 6; i++) { out.gain.setValueAtTime(.09, t0 + i * .045); out.gain.setValueAtTime(.0, t0 + i * .045 + .032); }
-  out.gain.setValueAtTime(.08, t0 + .27); out.gain.exponentialRampToValueAtTime(.001, t0 + .5);
-  o.start(t0); o.stop(t0 + .55);
-  return .55;
-}
-function playSound(kind, delay = 0) {
-  try { actx = actx || new AudioContext(); actx.resume(); voice(actx, kind, actx.currentTime + delay); } catch (e) {}
-}
-async function drawWave(kind) {
-  const cv = $("wave"), g = cv.getContext("2d");
-  g.clearRect(0, 0, cv.width, cv.height);
+/* ------------------------------------------------------------------ sounds
+   Real Minecraft 1.8 sounds, fetched from Mojang's asset server by the hashes
+   the replay viewer already ships (replay/sounds.json). */
+let soundIndex = null;
+async function mcSound(name, pitch = 1, vol = 1, delay = 0) {
   try {
-    const len = kind === "brass" ? 1.3 : .55, rate = 22050;
-    const off = new OfflineAudioContext(1, Math.ceil(len * rate), rate);
-    voice(off, kind, 0);
-    const buf = await off.startRendering(), d = buf.getChannelData(0);
-    const col = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#0df";
-    const bars = 96, bw = cv.width / bars, per = Math.floor(d.length / bars);
-    let peak = 0; for (let i = 0; i < d.length; i++) peak = Math.max(peak, Math.abs(d[i]));
-    g.fillStyle = col;
-    for (let b = 0; b < bars; b++) {
-      let m = 0; for (let i = b * per; i < (b + 1) * per; i++) m = Math.max(m, Math.abs(d[i]));
-      const hgt = Math.max(2, (m / (peak || 1)) * (cv.height - 16));
-      g.fillRect(b * bw + 1, (cv.height - hgt) / 2, bw - 2, hgt);
-    }
+    if (!soundIndex) soundIndex = await fetch("replay/sounds.json").then((r) => r.json());
+    const list = soundIndex[name]; if (!list) return;
+    const h = list[Math.floor(Math.random() * list.length)];
+    const a = new Audio(`https://resources.download.minecraft.net/${h.slice(0, 2)}/${h}`);
+    a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false;
+    a.playbackRate = Math.min(2, Math.max(.5, pitch)); a.volume = Math.min(1, vol) * .6;
+    const go = () => a.play().catch(() => {});
+    if (delay) setTimeout(go, delay * 1000); else go();
+    return a;
   } catch (e) {}
+}
+async function playCry(it, delay = 0) {
+  if (!it.sound) return;
+  const btn = $("playSound");
+  const a = await mcSound(it.sound[0], it.sound[1], 1, delay);
+  if (!a) return;
+  a.addEventListener("playing", () => { if (current === it) btn.classList.add("playing"); });
+  a.addEventListener("ended", () => btn.classList.remove("playing"));
 }
 
 /* ------------------------------------------------------------------ start */
 buildRail(); tally(); render();
 const deep = location.hash.slice(1);
 if (deep && ITEMS.some((i) => i.id === deep)) openStudio(deep, false);
+addEventListener("hashchange", () => { const h = location.hash.slice(1); if (h && h !== current?.id && ITEMS.some((i) => i.id === h)) openStudio(h, false); });
 makeThumbs();
 </script>
 </body>

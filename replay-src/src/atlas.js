@@ -138,15 +138,37 @@ async function loadRotation () {
   }
 }
 
-// --- The list ---
+// --- The list (laid out like the Cosmetics Library) ---
+// Only what each map is: no games counted, no dates (Milo 2026-11-04).
+const CATS = [
+  { id: 'all', name: 'All maps', icon: '<rect x="3" y="3" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/>' },
+  { id: 'eight', name: 'Solo & Doubles', icon: '<circle cx="10" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.5v3M10 14.5v3M2.5 10h3M14.5 10h3M4.7 4.7l2.1 2.1M13.2 13.2l2.1 2.1M15.3 4.7l-2.1 2.1M6.8 13.2l-2.1 2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
+  { id: 'four', name: '3s & 4s', icon: '<circle cx="10" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.5v4M10 13.5v4M2.5 10h4M13.5 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
+  { id: 'event', name: 'Event maps', icon: '<path d="M10 2.5l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
+  { id: 'other', name: 'Other maps', icon: '<path d="M1.5 5v12.5l5.5-3 6 3 5.5-3V2l-5.5 3-6-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 2v12.5M13 5v12.5" stroke="currentColor" stroke-width="1.5"/>' }
+]
+const HAVES = { all: 'All maps', have: 'In the Atlas', need: 'Still needed', out: 'Out of rotation' }
+const MAP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg>'
+
+function catOfEntry (e) {
+  if (e.r && e.r.season) return 'event'
+  if (e.r) return e.r.teams === 8 ? 'eight' : 'four'
+  return 'other'
+}
+// Which of the four buttons above the grid it belongs to (besides "All").
+function haveOfEntry (e) {
+  if (e.map) return 'have'
+  return e.r && e.r.in ? 'need' : 'out'
+}
+
 async function showList () {
   document.body.dataset.view = 'list'
   const rotationP = loadRotation().catch(() => ({ maps: [] }))
-  let maps = []; let replays = null; let previews = {}
+  let maps = []; let previews = {}
   let note = ''
   try {
     const list = await (await api('/maps')).json()
-    maps = list.maps; replays = list.replays
+    maps = list.maps
     // The server lets the browser keep previews for 5 minutes: asking with
     // the list's state in the address means a map added since gets its
     // picture straight away (2026-11-04: new maps showed blank).
@@ -161,102 +183,104 @@ async function showList () {
   const rotation = await rotationP
   const rot = new Map()
   for (const r of rotation.maps || []) { rot.set(norm(r.name), r); if (r.aka && !rot.has(norm(r.aka))) rot.set(norm(r.aka), { ...r, via: r.name }) }
-  const have = new Set(maps.map(m => norm(m.name)))
-
-  // Summary.
-  const inRot = (rotation.maps || []).filter(r => r.in)
-  const covered = inRot.filter(r => have.has(norm(r.name)))
   const known = !note
-  $('atCount').textContent = known ? maps.length : '–'
-  $('atCovered').textContent = (known ? covered.length : '–') + ' / ' + inRot.length
-  $('atMissingTitle').textContent = known ? 'Not in the Atlas yet' : 'Maps in rotation now'
-  $('atGames').textContent = replays ? replays.total : '–'
-  $('atGamesNote').textContent = replays && replays.waiting ? replays.waiting + ' still being read' : 'saved replays'
-  $('atAsOf').textContent = rotation.asOf ? `Rotation from the ${rotation.live ? '' : 'saved '}player-kept list, ${rotation.asOf}.` : ''
+
+  // One entry per map: the Atlas's maps, then the rest of the rotation list.
+  const entries = []
+  const have = new Set()
+  for (const m of maps) {
+    const r = rot.get(norm(m.name)) || null
+    have.add(norm(m.name)); if (r) have.add(norm(r.via || r.name))
+    entries.push({ name: m.name, map: m, r })
+  }
+  for (const r of rotation.maps || []) if (!have.has(norm(r.name))) entries.push({ name: r.name, map: null, r })
+  for (const e of entries) { e.cat = catOfEntry(e); e.have = haveOfEntry(e); e.key = norm(e.name + ' ' + (e.r && e.r.aka || '')) }
+
+  const need = entries.filter(e => e.have === 'need').length
+  $('tally').innerHTML = known
+    ? `<b>${maps.length}</b> maps in the Atlas` + (need ? `, <b>${need}</b> in rotation still needed` : ', every map in rotation')
+    : ''
   $('atNote').hidden = !note
   $('atNote').textContent = note
 
-  // Your maps.
-  const grid = $('atGrid')
-  grid.textContent = ''
   const bd = maps.length ? await loadBlockData().catch(() => null) : null
-  for (const m of maps) {
-    const r = rot.get(norm(m.name))
-    const a = document.createElement('a')
-    a.className = 'at-card'
-    a.href = 'atlas.html?map=' + encodeURIComponent(m.slug)
-    a.dataset.name = norm(m.name)
-    const fig = document.createElement('div'); fig.className = 'at-thumb'
-    const cv = document.createElement('canvas'); fig.appendChild(cv)
-    if (previews[m.slug] && bd) {
-      try { drawPreview(cv, gunzipSync(Uint8Array.from(atob(previews[m.slug]), ch => ch.charCodeAt(0))), bd.colorOf) } catch { /* no picture */ }
-    }
-    const body = document.createElement('div'); body.className = 'at-card-body'
-    const h = document.createElement('h3'); h.textContent = m.name
-    const chips = document.createElement('div'); chips.className = 'at-chips'
-    const chip = (text, cls = '') => { const s = document.createElement('span'); s.className = 'at-chip ' + cls; s.textContent = text; chips.appendChild(s) }
-    if (r) chip(r.teams === 8 ? '8 teams' : '4 teams')
-    if (r && r.season) chip(r.season + (r.in ? ' · now' : ''), 'is-season')
-    else if (r) chip(r.in ? 'In rotation' : 'Out of rotation', r.in ? 'is-in' : '')
-    if (m.stats && !m.stats.complete) chip('Edges unsure', 'is-warn')
-    const meta = document.createElement('p'); meta.className = 'at-meta'
-    const newest = m.newestGame ? new Date(m.newestGame).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : null
-    meta.textContent = (m.games === 1 ? '1 game' : m.games + ' games') + (newest ? ' · newest ' + newest : '')
-    body.append(h, chips, meta)
-    a.append(fig, body)
-    grid.appendChild(a)
-  }
-  $('atEmpty').hidden = !!maps.length || !!note
+  const state = { cat: 'all', have: known ? 'all' : 'need', q: '' }
+  // Without the key only the rotation list is known: nothing is "in the Atlas".
+  if (!known) for (const b of document.querySelectorAll('#haveSeg button')) b.hidden = b.dataset.h === 'have'
 
-  // Not in the Atlas yet.
-  const missing = $('atMissing')
-  missing.textContent = ''
-  const groups = [
-    ['8 teams (Solo, Doubles)', inRot.filter(r => !r.season && r.teams === 8)],
-    ['4 teams (3s, 4s)', inRot.filter(r => !r.season && r.teams === 4)],
-    ['Event maps now', inRot.filter(r => r.season)]
-  ]
-  let missingCount = 0
-  for (const [title, list] of groups) {
-    const rows = list.filter(r => !have.has(norm(r.name)))
-    if (!list.length) continue
-    missingCount += rows.length
-    const g = document.createElement('div'); g.className = 'at-group'
-    const h = document.createElement('h3')
-    h.innerHTML = '<span></span> <span class="at-group-count"></span>'
-    h.firstChild.textContent = title
-    h.lastChild.textContent = !known ? list.length + ' maps' : rows.length ? rows.length + ' of ' + list.length + ' missing' : 'all ' + list.length + ' in the Atlas'
-    const ul = document.createElement('ul'); ul.className = 'at-pills'
-    for (const r of rows.sort((a, b) => a.name.localeCompare(b.name))) {
-      const li = document.createElement('li'); li.className = 'at-pill'; li.textContent = r.name
-      if (r.aka) li.title = 'Event version of ' + r.aka
-      li.dataset.name = norm(r.name)
-      ul.appendChild(li)
-    }
-    g.append(h, ul)
-    missing.appendChild(g)
+  const inHave = (e) => state.have === 'all' ? e.have !== 'out' || !!e.map : e.have === state.have
+  const rail = $('rail')
+  for (const c of CATS) {
+    const b = document.createElement('button')
+    b.type = 'button'; b.className = 'cat'; b.dataset.cat = c.id
+    b.innerHTML = `<svg class="ic" viewBox="0 0 20 20" aria-hidden="true">${c.icon}</svg><span>${c.name}</span><span class="n"></span>`
+    b.onclick = () => { state.cat = c.id; render() }
+    rail.appendChild(b)
   }
-  $('atMissingCount').textContent = !known ? '' : missingCount ? `${missingCount} maps in rotation` : 'none'
-  // Out of rotation (for later).
-  const out = (rotation.maps || []).filter(r => !r.in && !r.season)
-  $('atOutCount').textContent = out.length
-  const outUl = $('atOut')
-  outUl.textContent = ''
-  for (const r of out.sort((a, b) => a.name.localeCompare(b.name))) {
-    const li = document.createElement('li'); li.className = 'at-pill' + (have.has(norm(r.name)) ? ' is-have' : ''); li.textContent = r.name
-    li.dataset.name = norm(r.name)
-    outUl.appendChild(li)
-  }
-
-  // Search.
-  $('atSearch').addEventListener('input', () => {
-    const q = norm($('atSearch').value)
-    for (const el of document.querySelectorAll('[data-name]')) el.hidden = !!q && !el.dataset.name.includes(q)
+  for (const b of document.querySelectorAll('#haveSeg button')) b.onclick = () => { state.have = b.dataset.h; render() }
+  const q = $('q')
+  q.addEventListener('input', () => { state.q = norm(q.value); render() })
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement !== q && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && document.activeElement.tagName)) { e.preventDefault(); q.focus() }
   })
-  if (replays && replays.failed && replays.failed.length) {
-    $('atFailed').hidden = false
-    $('atFailed').textContent = `${replays.failed.length} replay${replays.failed.length === 1 ? '' : 's'} couldn't be read (${replays.failed[0].error}).`
+
+  function card (e, i) {
+    const a = document.createElement(e.map ? 'a' : 'div')
+    a.className = 'card' + (e.map ? '' : ' is-missing')
+    a.style.animationDelay = `${Math.min(i, 12) * 30}ms`
+    a.style.setProperty('--rc', e.cat === 'event' ? '#ffb547' : e.cat === 'four' ? 'var(--accent-2)' : e.cat === 'other' ? 'var(--faint)' : 'var(--accent)')
+    if (e.map) a.href = 'atlas.html?map=' + encodeURIComponent(e.map.slug)
+    const thumb = document.createElement('div'); thumb.className = 'thumb'
+    if (e.map) {
+      const cv = document.createElement('canvas'); thumb.appendChild(cv)
+      const p = previews[e.map.slug]
+      if (p && bd) { try { drawPreview(cv, gunzipSync(Uint8Array.from(atob(p), ch => ch.charCodeAt(0))), bd.colorOf) } catch { /* no picture */ } }
+    } else {
+      const blank = document.createElement('div'); blank.className = 'blank'
+      blank.innerHTML = MAP_ICON + '<span></span>'
+      blank.lastChild.textContent = 'Not in the Atlas yet'
+      thumb.appendChild(blank)
+    }
+    if (e.r) {
+      const t = document.createElement('span'); t.className = 'tag'; t.textContent = e.r.teams === 8 ? '8 teams' : '4 teams'
+      thumb.appendChild(t)
+    }
+    if (e.r && e.r.season) { const s = document.createElement('span'); s.className = 'season'; s.textContent = e.r.season; thumb.appendChild(s) }
+    const meta = document.createElement('div'); meta.className = 'meta'
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = e.name
+    if (e.r && e.r.aka) nm.title = 'Event version of ' + e.r.aka
+    const sub = document.createElement('span'); sub.className = 'sub'
+    const kind = document.createElement('span'); kind.textContent = CATS.find(c => c.id === e.cat).name.replace(/ maps$/, '')
+    const st = document.createElement('span')
+    if (e.map && e.map.stats && !e.map.stats.complete) { st.className = 'st maybe'; st.textContent = 'Edges unsure'; st.title = 'Parts of it were only seen after the start. Another game on it fixes that.' } else if (!e.r) { st.className = 'st unseen'; st.textContent = 'Not on the list' } else if (e.r.in) { st.className = 'st sure'; st.textContent = e.r.season ? 'On now' : 'In rotation' } else { st.className = 'st unseen'; st.textContent = 'Out of rotation' }
+    sub.append(kind, st)
+    meta.append(nm, sub)
+    a.append(thumb, meta)
+    return a
   }
+
+  function render () {
+    for (const b of document.querySelectorAll('.cat')) {
+      b.setAttribute('aria-pressed', String(b.dataset.cat === state.cat))
+      const n = entries.filter(e => (b.dataset.cat === 'all' || e.cat === b.dataset.cat) && inHave(e)).length
+      b.querySelector('.n').textContent = n
+      b.hidden = !n && b.dataset.cat !== 'all' && b.dataset.cat !== state.cat
+    }
+    for (const b of document.querySelectorAll('#haveSeg button')) b.setAttribute('aria-pressed', String(b.dataset.h === state.have))
+    const cat = CATS.find(c => c.id === state.cat)
+    $('heading').textContent = state.cat === 'all' ? HAVES[state.have] : cat.name
+    const shown = entries
+      .filter(e => (state.cat === 'all' || e.cat === state.cat) && inHave(e) && (!state.q || e.key.includes(state.q)))
+      .sort((a, b) => (!!b.map - !!a.map) || a.name.localeCompare(b.name))
+    const grid = $('grid')
+    grid.textContent = ''
+    shown.forEach((e, i) => grid.appendChild(card(e, i)))
+    $('empty').hidden = !!shown.length
+    $('emptyText').textContent = state.q ? 'Try another word, or another category.'
+      : state.have === 'need' ? 'Every map in rotation here is in the Atlas.'
+        : state.have === 'have' ? 'A map shows up here after a game on it.' : 'Try another category.'
+  }
+  render()
   setStatus('')
   window.__atlas = { ready: true, maps }
 }
@@ -268,13 +292,13 @@ async function showMap (map, rotationP) {
   const rotation = await rotationP.catch(() => ({ maps: [] }))
   const r = (rotation.maps || []).find(x => norm(x.name) === norm(h.name) || norm(x.aka) === norm(h.name))
   $('atMapTitle').textContent = h.name
-  const sources = h.sources || []
-  const newest = sources.reduce((a, s) => (s.playedAt && (!a || s.playedAt > a) ? s.playedAt : a), null)
+  // What the map is, not how often it was played (Milo 2026-11-04).
   const bits = []
   if (r) bits.push(r.teams === 8 ? '8 teams' : '4 teams')
   else if (h.modes && h.modes.length) bits.push(h.modes.map(modeName).join(', '))
-  bits.push(h.local ? 'from a replay file' : (sources.length === 1 ? 'from 1 game' : `from ${sources.length} games`))
-  if (newest) bits.push(new Date(newest).toLocaleDateString(undefined, { dateStyle: 'medium' }))
+  if (r && r.season) bits.push(r.season + ' map')
+  if (h.local) bits.push('from a replay file')
+  if (!bits.length) bits.push('Prism Atlas')
   $('atMapSub').textContent = bits.join(' · ')
   $('atMapWarn').hidden = !(h.stats && !h.stats.complete)
   document.title = h.name + ' · Prism Atlas'

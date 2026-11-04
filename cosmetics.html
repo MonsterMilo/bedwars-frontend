@@ -381,15 +381,9 @@ const ITEMS = [
     desc: "Killing an enemy will summon a vortex!", tags: "wind vortex sparks", preview: "tornado" },
   { id: "batcrux", cat: "final", name: "Batcrux", rar: "legendary", price: 300000, get: "event", season: "Halloween",
     desc: "Killing an enemy splits their soul into 7 Batcruxes.", tags: "bats smoke spooky", preview: "batcrux" },
-  // Victory dances (rarity, price and wording from the in-game menu)
+  // Victory dances: only ones seen in real games (rarity, price and wording from the in-game menu)
   { id: "dragon-rider", cat: "dance", name: "Dragon Rider", rar: "legendary", price: 100000, get: "shop",
     desc: "Ride a Dragon capable of destroying the map.", tags: "dragon fly ender ride", preview: "dragonRider" },
-  { id: "anvil-rain", cat: "dance", name: "Anvil Rain", rar: "common", price: 5000, get: "shop",
-    desc: "Anvils will rain from the sky.", tags: "anvils fall", preview: "anvilRain" },
-  { id: "fireworks", cat: "dance", name: "Fireworks", rar: "common", price: 5000, get: "shop",
-    desc: "Celebrate with a splendid fireworks show!", tags: "rockets celebrate", preview: "fireworks" },
-  { id: "meteor-shower", cat: "dance", name: "Meteor Shower", rar: "rare", price: 10000, get: "shop",
-    desc: "A meteor shower will rain down from the sky.", tags: "fireball meteor explosion", preview: "meteorShower" },
   // Death cries (sound, pitch as Hypixel plays them)
   { id: "bazinga", cat: "cry", name: "Bazinga", rar: "common", price: 5000, get: "shop", desc: "Plays the Bazinga Death Cry when you die.", tags: "sound blaze", preview: "cry", sound: ["mob.blaze.death", 2] },
   { id: "dinosaur", cat: "cry", name: "Dinosaur", rar: "common", price: 5000, get: "shop", desc: "Plays the Dinosaur Death Cry when you die.", tags: "sound donkey", preview: "cry", sound: ["mob.horse.donkey.death", 0.5] },
@@ -994,20 +988,39 @@ const PREVIEWS = {
     };
   } },
   // ---- Victory dances. Big ones play on the Arena (wide flat island); flying ones in the Sky.
-  dragonRider: { stage: "sky", loop: 10, hero: 2.2, build(S) {
+  // Rebuilt from 18 real games in the effect logs: the dragon (named
+  // "<player> the Dragon Rider") appears where the winner stands with a high
+  // growl (pitch 2), a small explosion and a cloud of fireballs, then flies
+  // straight where the rider looks at ~10 blocks/s, 8-10 blocks over the map.
+  // A fireball leaves every 0.3 s and blows a hole where it lands
+  // (random.explode pitch ~0.6). Wing beats and their sound are the 1.8
+  // client's own for a dragon moving that fast (about 0.67 beats a second).
+  dragonRider: { stage: "arena", loop: 4.5, hero: 1.3, cam: [[19, 13, 28], [0, 3.5, 0], 9, 60, [15, 11, 22], [0, 4, 0]], build(S) {
     const d = makeDragon(); S.item.add(d);
     const rider = makePlayer(SKINS.killer); rider.legR.rotation.x = rider.legL.rotation.x = -1.4; rider.legR.rotation.y = .25; rider.legL.rotation.y = -.25;
     rider.root.position.set(0, -.1 - 12 * PX, .15); d.children[0].add(rider.root);
-    const R = 8, w = .6; let beat = 0, acc = 0;
+    const tag = textSprite("Monster_Milo the Dragon Rider", "#ffffff"); tag.scale.multiplyScalar(1.6); S.item.add(tag);
+    const dir = V(1, 0, -.35).normalize(), yaw = Math.atan2(dir.x, dir.z), balls = [];
+    let beat = 0, next = .6, lastCos = 1;
+    const pathAt = (t) => { const along = t < 1 ? t * t * 4.5 : 4.5 + (t - 1) * 10; return V(0, 0, 0).addScaledVector(dir, along).add(V(0, Math.min(8.5, 1.5 + t * 7), 0)); };
     return (t, dt) => {
-      const a = t * w, h = 4 + Math.sin(t * .7) * 1.2;
-      d.position.set(Math.cos(a) * R, h, Math.sin(a) * R);
-      d.rotation.set(0, Math.atan2(-Math.sin(a), Math.cos(a)), 0); d.rotateZ(.22); // heading along the circle, banked into the turn
-      beat += dt * .9; d.userData.pose(beat, -.035);
-      idle(rider, t); rider.armR.rotation.x = rider.armL.rotation.x = -.5; rider.head.rotation.y = Math.sin(t * .5) * .4;
-      if (Math.floor(beat) !== Math.floor(beat - dt * .9)) S.sound("mob.enderdragon.wings", .8, .7);
-      S.at(.5, () => S.sound("mob.enderdragon.growl", 1, .5)); S.at(6.5, () => S.sound("mob.enderdragon.growl", .9, .4));
-      if ((acc += dt) > .05) { acc = 0; const tailEnd = d.localToWorld(V(0, 0, -6)); S.fx.spawn({ frames: [48], pos: tailEnd.add(sphere(.4)), vel: V(0, .2, 0), life: .8, size: .3, shrink: true }); }
+      const p = pathAt(t); d.position.copy(p); d.rotation.set(Math.max(0, .35 - t * .3), yaw, 0);
+      const speed = t < 1 ? t * 9 : 10;
+      beat += dt * 20 * (.2 / (speed / 20 * 10 + 1)); d.userData.pose(beat, 0);
+      const c = Math.cos(beat * Math.PI * 2); if (c <= -.3 && lastCos > -.3) S.sound("mob.enderdragon.wings", rnd(.8, 1.1), .6); lastCos = c;
+      tag.position.copy(p).add(V(0, 3.2, 0));
+      rider.armR.rotation.x = -.9; rider.armL.rotation.x = -.3; rider.head.rotation.x = .55;
+      S.at(0, () => { S.sound("mob.enderdragon.growl", 2, .6); S.explode(p.clone()); });
+      if (t > next && t < 4) { next += .3;
+        const from = d.localToWorld(V(0, .4, 1.4)), v = dir.clone().multiplyScalar(9).add(V(0, -10, 0));
+        const b = itemSprite("fireball", 1); b.position.copy(from); S.item.add(b); balls.push({ b, v, age: 0 }); }
+      for (let i = balls.length - 1; i >= 0; i--) {
+        const k = balls[i]; k.b.position.addScaledVector(k.v, dt); k.age += dt;
+        const q = k.b.position, cell = S.groundAt(q.x, q.z);
+        if (cell && q.y <= .5) { S.item.remove(k.b); balls.splice(i, 1); const at = V(Math.round(q.x), -.5, Math.round(q.z));
+          S.explode(at.clone().add(V(0, .8, 0))); S.sound("random.explode", rnd(.59, .71), .35); S.blast(at, 1.7); }
+        else if (q.y < -25 || k.age > 4) { S.item.remove(k.b); balls.splice(i, 1); }
+      }
     };
   } },
   anvilRain: { stage: "arena", loop: 7, hero: 2.6, build(S) {
@@ -1138,28 +1151,56 @@ function makeArena() {
     spots[L === 0 ? 0 : L < 3 ? 1 : 2].push([x, -.5 - L, z]);
     if (L === 0) cells.push([x, z]);
   }
-  const m4 = new THREE.Matrix4();
-  spots.forEach((list, k) => { const im = new THREE.InstancedMesh(geo, mats[k], list.length); list.forEach(([x, y, z], i) => im.setMatrixAt(i, m4.makeTranslation(x, y, z))); g.add(im); });
+  const m4 = new THREE.Matrix4(), meshes = [];
+  const place = () => spots.forEach((list, k) => { list.forEach(([x, y, z], i) => meshes[k].setMatrixAt(i, m4.makeTranslation(x, y, z))); meshes[k].instanceMatrix.needsUpdate = true; });
+  spots.forEach((list, k) => { const im = new THREE.InstancedMesh(geo, mats[k], list.length); meshes.push(im); g.add(im); });
+  place();
   const tuft = btex("grass", tint(GRASS)), fl = ["poppy", "dandelion", "blue_orchid", "oxeye_daisy"].filter((n) => blocksJson.textures["block/" + n]);
-  const outer = cells.filter(([x, z]) => x * x + z * z > 40);
+  const outer = cells.filter(([x, z]) => x * x + z * z > 40), plants = [];
   for (let i = 0; i < 26 && outer.length; i++) {
     const [x, z] = outer.splice(Math.floor(seed() * outer.length), 1)[0];
     const name = i % 4 === 3 ? fl[i % fl.length] : null;
     const mat = new THREE.MeshLambertMaterial({ map: name ? btex(name) : tuft, alphaTest: .5, side: THREE.DoubleSide });
-    for (const r of [Math.PI / 4, -Math.PI / 4]) { const pl = new THREE.Mesh(new THREE.PlaneGeometry(.9, .9), mat); pl.position.set(x, .45, z); pl.rotation.y = r; g.add(pl); }
+    for (const r of [Math.PI / 4, -Math.PI / 4]) { const pl = new THREE.Mesh(new THREE.PlaneGeometry(.9, .9), mat); pl.position.set(x, .45, z); pl.rotation.y = r; g.add(pl); plants.push(pl); }
   }
   g.userData.cells = cells;
+  // Explosions take blocks out of the island (a sphere of radius r), like a
+  // fireball does in a real map; reset() puts the island back for the next play.
+  const hidden = new THREE.Matrix4().makeScale(0, 0, 0);
+  g.userData.blast = (c, r) => {
+    spots.forEach((list, k) => { let hit = false; list.forEach(([x, y, z], i) => { if ((x - c.x) ** 2 + (y - c.y) ** 2 + (z - c.z) ** 2 < r * r) { meshes[k].setMatrixAt(i, hidden); hit = true; } }); if (hit) meshes[k].instanceMatrix.needsUpdate = true; });
+    for (const [x, z] of cells) if ((x - c.x) ** 2 + (-.5 - c.y) ** 2 + (z - c.z) ** 2 < r * r) gone.add(x + "," + z);
+    for (const pl of plants) if ((pl.position.x - c.x) ** 2 + (-.5 - c.y) ** 2 + (pl.position.z - c.z) ** 2 < r * r) pl.visible = false;
+  };
+  g.userData.reset = () => { place(); gone.clear(); for (const pl of plants) pl.visible = true; };
+  const cellSet = new Set(cells.map((c) => c + "")), gone = new Set();
+  g.userData.solid = (x, z) => cellSet.has(x + "," + z) && !gone.has(x + "," + z);
   return g;
 }
-// The Sky: Minecraft's own cloud layer (clouds.png, one pixel = one cloud block),
-// drawn as flat-shaded 3D clouds below the flight path.
+// Minecraft's own cloud layer (clouds.png: one pixel = one cloud block), drawn
+// like 1.8's fancy clouds: solid slabs with only their outside faces, a bright
+// top, shaded sides and a darker underside, softly see-through.
 function makeClouds() {
-  const im = entityImgs.clouds, c = crop(im, 64, 64, 40, 40), d = c.getContext("2d").getImageData(0, 0, 40, 40).data, list = [];
-  for (let y = 0; y < 40; y++) for (let x = 0; x < 40; x++) if (d[(y * 40 + x) * 4 + 3] > 128) list.push([x - 20, y - 20]);
-  const S = 3, geo = new THREE.BoxGeometry(S, 1.2, S);
-  const im3 = new THREE.InstancedMesh(geo, new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: .7, depthWrite: false }), list.length);
-  const m4 = new THREE.Matrix4(); list.forEach(([x, z], i) => im3.setMatrixAt(i, m4.makeTranslation(x * S, 0, z * S)));
-  const g = new THREE.Group(); g.add(im3); return g;
+  const N = 120, S = 4, H = 1.6, im = entityImgs.clouds, c = crop(im, 60, 60, N, N), d = c.getContext("2d").getImageData(0, 0, N, N).data;
+  const on = (x, z) => x >= 0 && z >= 0 && x < N && z < N && d[(z * N + x) * 4 + 3] > 128;
+  const pos = [], col = [], FAR = N * S / 2;
+  // Fades out toward the horizon instead of ending in a hard edge.
+  const face = (pts, shade) => { for (const k of [0, 1, 2, 0, 2, 3]) { const q = pts[k]; pos.push(...q); const a = .62 * Math.max(0, Math.min(1, 1.25 - Math.hypot(q[0], q[2]) / FAR)); col.push(shade, shade, shade * 1.02, a); } };
+  for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) {
+    if (!on(x, z)) continue;
+    const x0 = (x - N / 2) * S, x1 = x0 + S, z0 = (z - N / 2) * S, z1 = z0 + S;
+    face([[x0, H, z0], [x0, H, z1], [x1, H, z1], [x1, H, z0]], 1);
+    face([[x0, 0, z0], [x1, 0, z0], [x1, 0, z1], [x0, 0, z1]], .72);
+    if (!on(x - 1, z)) face([[x0, 0, z0], [x0, 0, z1], [x0, H, z1], [x0, H, z0]], .9);
+    if (!on(x + 1, z)) face([[x1, 0, z1], [x1, 0, z0], [x1, H, z0], [x1, H, z1]], .9);
+    if (!on(x, z - 1)) face([[x1, 0, z0], [x0, 0, z0], [x0, H, z0], [x1, H, z0]], .82);
+    if (!on(x, z + 1)) face([[x0, 0, z1], [x1, 0, z1], [x1, H, z1], [x0, H, z1]], .82);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 4));
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+  const g = new THREE.Group(); g.add(m); return g;
 }
 // Where the camera sits for each stage: [position, target, min, max distance, thumbnail position, thumbnail target].
 const STAGE_CAM = {
@@ -1174,7 +1215,7 @@ function makeStudio(canvas, w, h) {
   renderer.setSize(w, h, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(32, w / h, 0.1, 260);
+  const camera = new THREE.PerspectiveCamera(32, w / h, 0.1, 600);
   camera.position.set(5.6, 3.2, 8.2);
   const hemi = new THREE.HemisphereLight(0xdfe8ff, 0x2a2420, 1.3); scene.add(hemi);
   const sky = new THREE.PointLight(0xd0dcff, 0, 30, 1); sky.position.set(0, 6, 0); scene.add(sky);
@@ -1185,10 +1226,12 @@ function makeStudio(canvas, w, h) {
   // Two far-off islands for depth.
   for (const [x, y, z, k] of [[-9, -1.5, -12, .45], [10, 1.2, -16, .35]]) { const f = makeIsland(true); f.position.set(x, y, z); f.scale.setScalar(k); scene.add(f); }
   // Slow motes drifting in the light, for depth.
-  const mg = new THREE.BufferGeometry(), mp = new Float32Array(120 * 3);
-  for (let i = 0; i < 120; i++) { mp[i * 3] = rnd(-7, 7); mp[i * 3 + 1] = rnd(-1, 7); mp[i * 3 + 2] = rnd(-7, 3); }
+  // They fill a ball around the whole scene (scaled up on the bigger stages),
+  // so they never stop in a box behind the action.
+  const mg = new THREE.BufferGeometry(), mp = new Float32Array(260 * 3);
+  for (let i = 0; i < 260; i++) { const v = sphere(Math.cbrt(Math.random()) * 12); mp[i * 3] = v.x; mp[i * 3 + 1] = v.y * .7 + 3; mp[i * 3 + 2] = v.z; }
   mg.setAttribute("position", new THREE.BufferAttribute(mp, 3));
-  const motes = new THREE.Points(mg, new THREE.PointsMaterial({ color: ACCENT2.clone().lerp(new THREE.Color(1, 1, 1), .5), size: .035, transparent: true, opacity: .45, depthWrite: false }));
+  const motes = new THREE.Points(mg, new THREE.PointsMaterial({ color: ACCENT2.clone().lerp(new THREE.Color(1, 1, 1), .5), size: 2, sizeAttenuation: false, transparent: true, opacity: .5, depthWrite: false }));
   scene.add(motes);
 
   const item = new THREE.Group(); scene.add(item);
@@ -1197,7 +1240,7 @@ function makeStudio(canvas, w, h) {
     S.fx.clear(); S.anims = []; S.fired = new Set();
     for (const c of [...item.children]) { item.remove(c); c.traverse?.((o) => { o.geometry?.dispose(); }); }
     item.rotation.set(0, 0, 0);
-    S.flash(0); S.setStage(def.stage);
+    S.flash(0); S.setStage(def.stage); arena?.userData.reset();
     S.def = def; S.it = it; S.t = 0; S.tick = def.build(S, it);
   };
   // Runs fn once, the first tick at or after `time` (calls are told apart by order).
@@ -1219,19 +1262,22 @@ function makeStudio(canvas, w, h) {
   let arena = null, clouds = null; S.stage = "island";
   S.setStage = (k = "island") => {
     if (k === "arena" && !arena) { arena = makeArena(); scene.add(arena); }
-    if (k === "sky" && !clouds) { clouds = makeClouds(); clouds.position.y = -6; scene.add(clouds); }
+    if ((k === "sky" || k === "arena") && !clouds) { clouds = makeClouds(); scene.add(clouds); }
     S.stage = k;
-    island.visible = k === "island"; if (arena) arena.visible = k === "arena"; if (clouds) clouds.visible = k === "sky";
+    island.visible = k === "island"; if (arena) arena.visible = k === "arena"; if (clouds) { clouds.visible = k !== "island"; clouds.position.y = k === "sky" ? -6 : -24; }
+    motes.scale.setScalar(k === "island" ? 1 : 3.2);
     glow.position.y = k === "arena" ? -5 : -2.6; glow.distance = k === "arena" ? 16 : 9;
   };
   S.groundCells = () => (S.stage === "arena" ? arena.userData.cells : []);
+  S.blast = (c, r) => arena?.userData.blast(c, r);
+  S.groundAt = (x, z) => S.stage === "arena" && arena.userData.solid(Math.round(x), Math.round(z));
   // Lightning lights up the whole world for a moment, as in the game.
   S.flash = (k) => { hemi.intensity = 1.3 + k * 1.1; sky.intensity = k * 35; };
   S.step = (dt) => {
     S.t += dt; S.clock = (S.clock || 0) + dt;
     island.position.y = Math.sin(S.clock * 0.8) * 0.04; item.position.y = island.position.y; S.fx.g.position.y = island.position.y;
     if (arena) arena.position.y = island.position.y;
-    if (clouds) { clouds.position.x = ((S.clock * .4) % 3); }
+    if (clouds) clouds.position.x = (S.clock * .6) % 4;
     if (S.def.loop && S.t > S.def.loop) { if (S.audible) stopSounds(); S.load(S.def); }
     S.ci = 0; S.tick?.(S.t, dt); S.fx.update(dt);
     for (let i = S.anims.length - 1; i >= 0; i--) { const a = S.anims[i]; a.age += dt; const f = Math.floor(Math.max(0, a.age) / a.life * 16);
@@ -1251,7 +1297,7 @@ async function makeThumbs() {
   for (const it of ITEMS) {
     if (it.lines) continue;
     const def = PREVIEWS[it.preview];
-    const C = STAGE_CAM[def.stage || "island"];
+    const C = def.cam || STAGE_CAM[def.stage || "island"];
     T.camera.position.set(C[4][0], C[4][1] + (def.thumbY ? .4 : 0), C[4][2]); T.camera.lookAt(C[5][0], def.thumbY || C[5][1], C[5][2]);
     Math.random = seeded(it.id.length * 97 + 13);
     T.load(def, it);
@@ -1310,7 +1356,7 @@ function openStudio(id, push = true) {
   $("stage").classList.toggle("chat-mode", chatOnly);
   cancelAnimationFrame(raf); stopSounds();
   if (!chatOnly) {
-    const C = STAGE_CAM[PREVIEWS[it.preview].stage || "island"];
+    const C = PREVIEWS[it.preview].cam || STAGE_CAM[PREVIEWS[it.preview].stage || "island"];
     studio.camera.position.set(...C[0]); controls.target.set(...C[1]); controls.minDistance = C[2]; controls.maxDistance = C[3];
     studio.audible = true; studio.load(PREVIEWS[it.preview], it);
     last = performance.now(); raf = requestAnimationFrame(frame);

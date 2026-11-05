@@ -78,6 +78,20 @@ async function loadFromBackend (id, what = 'replays') {
 // view and the controls, playing on a loop.
 const EMBED = new URLSearchParams(location.search).get('embed') === '1'
 if (EMBED) document.documentElement.classList.add('rp-embed')
+// The clip's controls fade out after 2 s with no mouse movement over it
+// (not while a menu or the settings are open), and come back on any move.
+if (EMBED) {
+  const root = document.documentElement
+  let idleTimer = 0
+  const idle = () => {
+    const open = ['rpSettings', 'rpSpeedMenu'].some(id => { const el = document.getElementById(id); return el && !el.hidden })
+    if (open) { idleTimer = setTimeout(idle, 2000); return }
+    root.classList.add('rp-idle')
+  }
+  const wake = () => { root.classList.remove('rp-idle'); clearTimeout(idleTimer); idleTimer = setTimeout(idle, 2000) }
+  for (const ev of ['pointermove', 'pointerdown', 'wheel', 'keydown', 'touchstart']) document.addEventListener(ev, wake, { passive: true })
+  wake()
+}
 
 const tick = () => new Promise(r => setTimeout(r, 0))
 

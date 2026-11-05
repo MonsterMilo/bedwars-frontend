@@ -16852,6 +16852,9 @@ window.siteAudio = (function () {
   const save = () => { try { localStorage.setItem(STORE, JSON.stringify(settings)); } catch (e) {} };
 
   const AMBIENCE_LEVEL = 0.32;
+  // While a clip plays in the player popup the music sits well under it.
+  let ambQuiet = 1;
+  const ambLevel = () => AMBIENCE_LEVEL * ambQuiet;
   // What the page is doing, read by the ambience beds: depth is how far
   // down the page you've scrolled (0-1), busy is true while a lookup scans.
   const mood = { depth: 0, busy: false };
@@ -18221,7 +18224,7 @@ window.siteAudio = (function () {
     master.gain.linearRampToValueAtTime(masterLevel(), t + fade);
     ambBus.gain.cancelScheduledValues(t);
     ambBus.gain.setValueAtTime(ambBus.gain.value, t);
-    ambBus.gain.linearRampToValueAtTime(settings.ambience ? AMBIENCE_LEVEL : 0, t + fade * 4);
+    ambBus.gain.linearRampToValueAtTime(settings.ambience ? ambLevel() : 0, t + fade * 4);
     if (settings.ambience && !settings.muted) startAmbience(themeNow());
     else setTimeout(() => { if (!settings.ambience || settings.muted) stopAmbience(0.3); }, fade * 4000);
   }
@@ -18339,9 +18342,9 @@ window.siteAudio = (function () {
     const g = ambBus.gain;
     g.cancelScheduledValues(t);
     g.setValueAtTime(g.value, t);
-    g.linearRampToValueAtTime(AMBIENCE_LEVEL * 0.3, t + 0.15);
-    g.setValueAtTime(AMBIENCE_LEVEL * 0.3, t + secs);
-    g.linearRampToValueAtTime(AMBIENCE_LEVEL, t + secs + 1.2);
+    g.linearRampToValueAtTime(ambLevel() * 0.3, t + 0.15);
+    g.setValueAtTime(ambLevel() * 0.3, t + secs);
+    g.linearRampToValueAtTime(ambLevel(), t + secs + 1.2);
   }
   const DUCK = { switch: 2, bed: 3.2, techno: 1.2 };
 
@@ -18413,6 +18416,13 @@ window.siteAudio = (function () {
     renderOffline,
     get settings() { return { ...settings }; },
     setMood(patch) { Object.assign(mood, patch); },
+    // Turn the theme music down (true) or back up (false), e.g. under a clip.
+    quietMusic(on) {
+      const q = on ? 0.2 : 1;
+      if (q === ambQuiet) return;
+      ambQuiet = q;
+      if (ctx) applyLevels(0.2);
+    },
     // 0-1 loudness of the ambience's bass right now (0 when it isn't playing).
     ambienceBass() {
       if (!ambTap || !amb || ctx.state !== "running") return 0;
@@ -23687,6 +23697,7 @@ const CLIP_ICONS = {
 let activeClipId = null;
 function stopModalClip() {
   activeClipId = null;
+  siteAudio.quietMusic(false);
   modalClipStage.textContent = "";
   modalClipStage.hidden = true;
   modalClipBar.hidden = true;
@@ -23707,6 +23718,7 @@ function playModalClip(clip, card) {
   modalClipDownload.onclick = () => downloadClip(clip.id, modalClipDownload);
   modalClipBar.hidden = false;
   siteAudio.play("click");
+  siteAudio.quietMusic(true);
 }
 async function loadModalClips(uuid) {
   modalClips.hidden = true;

@@ -242,17 +242,43 @@
      camera buttons, the kill feed and the play bar. */
   .rp-embed .rp-side, .rp-embed .rp-home, .rp-embed #rpPanelBtn, .rp-embed #rpHelpBtn, .rp-embed #rpFullBtn,
   .rp-embed .rp-chat, .rp-embed .rp-noself { display: none !important; }
-  .rp-embed .rp-titlecard { padding: 6px 10px; }
-  .rp-embed .rp-title { font-size: 0.95em; }
-  .rp-embed .rp-sub { font-size: 0.78em; }
+  /* Compact: everything a size down so the clip itself has the room. */
+  .rp-embed .rp-titlecard { padding: 3px 8px; border-radius: var(--r-s); flex: 0 1 auto; }
+  .rp-embed .rp-title { font-size: 0.8em; }
+  .rp-embed .rp-sub { display: none; }
   .rp-embed .rp-modes span { display: none; }
-  .rp-embed .rp-top { top: 8px; left: 8px; right: 8px; }
-  .rp-embed .rp-dock { left: 8px; right: 8px; bottom: 8px; padding: 4px 10px 6px; }
-  .rp-embed .rp-btn { min-width: 30px; height: 30px; padding: 0 6px; }
-  .rp-embed .rp-play { width: 34px; height: 34px; }
-  .rp-embed .rp-play svg { width: 15px; height: 15px; }
-  .rp-embed .rp-time { font-size: 0.85em; }
-  .rp-embed .rp-feed { font-size: 0.8em; }
+  .rp-embed .rp-top { top: 6px; left: 6px; right: 6px; gap: 6px; }
+  .rp-embed .rp-modes, .rp-embed .rp-iconbar { padding: 2px; gap: 1px; border-radius: var(--r-s); }
+  .rp-embed .rp-mode { padding: 4px 7px; }
+  .rp-embed .rp-mode svg { width: 13px; height: 13px; }
+  .rp-embed .rp-icon { width: 24px; height: 24px; }
+  .rp-embed .rp-icon svg { width: 13px; height: 13px; }
+  .rp-embed .rp-follow { top: 40px; font-size: 0.72em; padding: 3px 6px 3px 3px; gap: 6px; }
+  .rp-embed .rp-follow canvas { width: 16px; height: 16px; }
+  .rp-embed .rp-follow button { padding: 1px 7px; }
+  .rp-embed .rp-feed { top: 40px; right: 8px; gap: 3px; }
+  .rp-embed .rp-follow:not([hidden]) ~ .rp-feed { top: 70px; }
+  .rp-embed .rp-feed-line { font-size: 10.5px; padding: 2px 7px; }
+  .rp-embed .rp-dock { left: 6px; right: 6px; bottom: 6px; padding: 0 8px 3px; border-radius: var(--r-m); }
+  .rp-embed .rp-timeline { height: 16px; margin: 0 2px 0; }
+  .rp-embed .rp-rail { top: 6px; height: 3px; }
+  .rp-embed .rp-timeline:hover .rp-rail { top: 5px; height: 5px; }
+  .rp-embed .rp-knob { top: 7.5px; width: 10px; height: 10px; margin: -5px 0 0 -5px; box-shadow: 0 0 0 2px var(--accent), 0 1px 4px rgba(0,0,0,0.4); }
+  .rp-embed .rp-marker { top: 3px; width: 8px; height: 8px; margin-left: -4px; border-width: 1.5px; }
+  .rp-embed .rp-hover { bottom: 20px; font-size: 0.72em; }
+  .rp-embed .rp-row { gap: 2px; }
+  .rp-embed .rp-btn { min-width: 24px; height: 24px; padding: 0 5px; font-size: 0.8em; }
+  .rp-embed .rp-btn svg { width: 14px; height: 14px; }
+  .rp-embed .rp-play { width: 26px; height: 26px; min-width: 26px; padding: 0; }
+  .rp-embed .rp-play svg { width: 12px; height: 12px; }
+  .rp-embed .rp-time { font-size: 0.75em; }
+  .rp-embed .rp-menu { bottom: 30px; }
+  .rp-embed .rp-pop { top: 36px; right: 6px; padding: 10px; font-size: 0.82em; max-height: calc(100% - 76px); overflow: auto; }
+  /* The controls fade out after 2 s without the mouse moving over the clip. */
+  .rp-embed .rp-top, .rp-embed .rp-dock, .rp-embed .rp-follow { transition: opacity .4s var(--ease); }
+  .rp-embed.rp-idle .rp-top, .rp-embed.rp-idle .rp-dock, .rp-embed.rp-idle .rp-follow { opacity: 0; pointer-events: none; }
+  .rp-embed.rp-idle .rp-top > * { pointer-events: none; }
+  .rp-embed.rp-idle .rp-stage canvas { cursor: none; }
 </style>
 </head>
 <body>

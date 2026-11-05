@@ -50,7 +50,8 @@ function img(name) {
 const ALL_TEX = ["particles", "entity_sign", "explosion", "ascii", "entity_chicken", "entity_wolf", "entity_bat", "entity_squid", "entity_skeleton", "entity_steve", "entity_experience_orb", "armor_leather_layer_1", "armor_leather_layer_1_overlay", "armor_leather_layer_2", "armor_leather_layer_2_overlay", "entity_armorstand", "entity_cow", "entity_iron_golem", "entity_witch", "entity_guardian", "entity_guardian_beam", "block_fire_layer_0_strip",
   "rabbit_brown", "rabbit_white", "rabbit_black", "rabbit_white_splotched", "rabbit_gold", "rabbit_salt", "cosmetics/skins/killer.png", "cosmetics/skins/dummy.png",
   "item_iron_sword", "item_stick", "item_bone", "item_cookie", "item_gold_ingot", "item_beef_raw", "item_beef_cooked", "item_leather", "item_egg", "item_fireworks", "item_leather_chestplate",
-  "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel"];
+  "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel", "entity_zombie", "entity_creeper", "entity_banner_base", "misc_enchanted_item_glint",
+  ...["iron", "gold", "diamond", "chainmail"].flatMap((m) => ["armor_" + m + "_layer_1", "armor_" + m + "_layer_2"])];
 const matCache = {};
 // Skin base layers are drawn solid, as the game makes them when it loads a skin
 // (ImageBufferDownload.setAreaOpaque): a see-through pixel keeps its colour.
@@ -171,6 +172,11 @@ function blockKey(id, d = 0) {
   if (MODELS?.[id + ":0"] && id !== 17 && id !== 18 && id !== 35 && id !== 159 && id !== 95 && id !== 171 && id !== 38) return id + ":0";
   return BLOCK_ITEM[id] || null;
 }
+// Item models baked from the game (models/item): "item#id:meta" holds a block item's elements
+// (e) or a flat item's layers (flat), plus its third-person transform (tp).
+const itemKey = (it) => "item#" + it.id + ":" + (it.d || 0);
+const itemDef = (it) => MODELS?.[itemKey(it)];
+const isBlockItem = (it) => (itemDef(it) ? !!itemDef(it).e : !!blockKey(it.id, it.d));
 
 const flatGeoCache = {};
 async function flatItemGeo(name) {
@@ -213,7 +219,39 @@ function fireMat(o) {
   if (!fireTex) { fireTex = tex("block_fire_layer_0_strip").clone(); img("block_fire_layer_0_strip").then((i) => { fireTex.image = i; fireTex.needsUpdate = true; }); fireTex.repeat.set(1, (16 - 0.02) / 512); } // a hair inside the frame so the next frame's edge never shows
   return new THREE.MeshLambertMaterial({ map: fireTex, alphaTest: 0.1, ...o, side: THREE.DoubleSide });
 }
-export function animateTextures(ticks) { if (fireTex) fireTex.offset.y = 1 - (FIRE_ORDER[((ticks % 32) + 32) % 32] + 1) / 32 + 0.01 / 512; }
+// Enchantment glint. Items (RenderItem.renderEffect): two passes of the glint texture added on
+// (blend SRC_COLOR, ONE; depth EQUAL) in colour 0x8040CC, texture matrix scale 8, translate by
+// system time (3000 ms and 4873 ms loops) and turn -50 / +10 degrees, over the item's atlas UVs
+// (taken here as a 512 px wide atlas). Worn armour (LayerArmorBase): scale 1/3, turn 30 - 60i,
+// translate by ticks * (0.001 + 0.003i) * 20, colour (0.5, 0.25, 0.8) * 0.76.
+const GLINT_U = { ms: { value: 0 }, ticks: { value: 0 } };
+const glintMats = {};
+function glintMat(kind, pass) {
+  const k = kind + pass; if (glintMats[k]) return glintMats[k];
+  const map = tex("misc_enchanted_item_glint"); map.wrapS = map.wrapT = THREE.RepeatWrapping; map.magFilter = THREE.LinearFilter; map.minFilter = THREE.LinearFilter;
+  const item = kind === "item";
+  const m = new THREE.ShaderMaterial({
+    uniforms: { map: { value: map }, ms: GLINT_U.ms, ticks: GLINT_U.ticks },
+    vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `uniform sampler2D map; uniform float ms; uniform float ticks; varying vec2 vUv;
+      vec2 rot(vec2 p, float a) { float c = cos(a), s = sin(a); return vec2(c * p.x - s * p.y, s * p.x + c * p.y); }
+      void main() {
+        vec2 t; vec3 col;
+        ${item ? `float f = ${pass ? "-mod(ms, 4873.0) / 4873.0 / 8.0" : "mod(ms, 3000.0) / 3000.0 / 8.0"};
+        t = 8.0 * (rot(vUv * (16.0 / 512.0), radians(${pass ? "10.0" : "-50.0"})) + vec2(f, 0.0)); col = vec3(0.502, 0.251, 0.8);`
+        : `t = (1.0 / 3.0) * rot(vUv + vec2(0.0, ticks * ${pass ? "0.004" : "0.001"} * 20.0), radians(${pass ? "-30.0" : "30.0"})); col = vec3(0.5, 0.25, 0.8) * 0.76;`}
+        vec3 c = texture2D(map, vec2(t.x, 1.0 - t.y)).rgb * col; c = c * c; // SRC_COLOR, ONE adds src squared; near mid tones that step is about the same in linear light
+        gl_FragColor = vec4(c, 1.0);
+      }`,
+    blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, depthWrite: false, depthFunc: THREE.EqualDepth, transparent: true, side: THREE.DoubleSide,
+  });
+  return (glintMats[k] = m);
+}
+function addItemGlint(g) { // a glint pass over every mesh of the item, sharing its geometry
+  const ms = []; g.traverse((o) => { if (o.isMesh && !o.userData.glint) ms.push(o); });
+  for (const o of ms) for (const pass of [0, 1]) { const q = new THREE.Mesh(o.geometry, glintMat("item", pass)); q.userData.glint = true; q.renderOrder = 2 + pass; o.add(q); }
+}
+export function animateTextures(ticks) { GLINT_U.ms.value = performance.now(); GLINT_U.ticks.value = ticks; if (fireTex) fireTex.offset.y = 1 - (FIRE_ORDER[((ticks % 32) + 32) % 32] + 1) / 32 + 0.01 / 512; }
 // A block model in 0..1 block space, faces as the game bakes them.
 const FACE = {
   north: (a, b) => [[b[0], b[1], a[2]], [a[0], b[1], a[2]], [a[0], a[1], a[2]], [b[0], a[1], a[2]]],
@@ -297,7 +335,9 @@ export function buildTopper(S, data) {
   const [W, , D] = data.size, ox = -(W - 1) / 2 - 0.5, oz = -(D - 1) / 2 - 0.5;
   const solid = new Set();
   for (const b of data.b) if (aoSolid(b[4])) solid.add(b[1] + "," + b[2] + "," + b[3]);
-  const occ = (x, y, z) => y < 0 || solid.has(x + "," + y + "," + z); // the island's ground is solid
+  // The ground is left out: it would darken the foot of every wall into a dark strip that reads as
+  // a gap (the grass gets no matching corner shadow); the ground shadow already sits the build down.
+  const occ = (x, y, z) => solid.has(x + "," + y + "," + z);
   const blocks = [];
   for (const [t, x, y, z, key, cull = 0] of data.b) {
     if (key.startsWith("tile#")) { const g = tileMesh(key.slice(5)); if (g) { g.position.x += x + ox; g.position.y += y; g.position.z += z + oz; root.add(g); } continue; }
@@ -432,7 +472,7 @@ function tileMesh(k) {
   return null;
 }
 export function preloadTopper(data) {
-  return modelsReady.then(() => { const t = new Set(); for (const b of data.b) { const d = MODELS[b[4]]; if (d) for (const e of (Array.isArray(d) ? d : d.e)) for (const f of Object.values(e.faces)) t.add("block_" + f.t); } return Promise.all([...t].map((n) => img(n).catch(() => {}))); });
+  return modelsReady.then(() => { const t = new Set(); for (const b of data.b) { const d = MODELS[b[4]]; if (d) for (const e of (Array.isArray(d) ? d : d.e || [])) for (const f of Object.values(e.faces)) t.add("block_" + f.t); } return Promise.all([...t].map((n) => img(n).catch(() => {}))); });
 }
 
 /* ------------------------------------------------------------ heads
@@ -442,6 +482,10 @@ function headMesh(kit, it) {
   const g = new THREE.Group();
   if (it.id === 397 && (it.d || 0) === 0) { // skeleton skull, 64x32
     const m = emat("entity_skeleton"); kit.cube(g, m, 64, 32, 0, 0, [-4, -8, -4, 8, 8, 8]);
+  } else if (it.id === 397 && it.d === 2) { // zombie head: ModelHumanoidHead, 64x64, with the hat layer
+    const m = emat("entity_zombie"); kit.cube(g, m, 64, 64, 0, 0, [-4, -8, -4, 8, 8, 8]); kit.cube(g, m, 64, 64, 32, 0, [-4, -8, -4, 8, 8, 8], false, 0.25);
+  } else if (it.id === 397 && it.d === 4) { // creeper head, 64x32
+    const m = emat("entity_creeper"); kit.cube(g, m, 64, 32, 0, 0, [-4, -8, -4, 8, 8, 8]);
   } else {
     const name = it.head ? `cosmetics/heads/${it.head}.png` : "entity_steve";
     const m = emat(name), base = emat(name, OPAQUE), th = TEX_H[name] || 64; // older skins are 64x32
@@ -726,8 +770,59 @@ export function createRecFx(kit0) {
   const BREAK_SOUND = { 152: ["dig.stone", 1, 1], 86: ["dig.wood", 1, 1], 41: ["dig.stone", 1, 1], 95: ["dig.glass", 1, 1], 79: ["dig.glass", 1, 1], 174: ["dig.stone", 1, 1], 35: ["dig.cloth", 1, 1] };
 
   // ---- held / worn items -------------------------------------------------
+  // Banners (TileEntityBannerRenderer as an item: standing, at the block's centre, 2/3 size).
+  // The texture is LayeredColorMaskTexture: banner_base, then each layer's mask (its blue channel
+  // as alpha) laid over it in the base texture's colour times the dye's map colour.
+  const DYE_MAP = [0x191919, 0x993333, 0x667f33, 0x664c33, 0x334cb2, 0x7f3fb2, 0x4c7f99, 0x999999, 0x4c4c4c, 0xf27fa5, 0x7fcc19, 0xe5e533, 0x6699d8, 0xb24cd8, 0xd87f33, 0xffffff]; // by dye damage
+  const PATTERN = { b: "base", bl: "square_bottom_left", br: "square_bottom_right", tl: "square_top_left", tr: "square_top_right", bs: "stripe_bottom", ts: "stripe_top", ls: "stripe_left", rs: "stripe_right", cs: "stripe_center", ms: "stripe_middle", drs: "stripe_downright", dls: "stripe_downleft", ss: "small_stripes", cr: "cross", sc: "straight_cross", bt: "triangle_bottom", tt: "triangle_top", bts: "triangles_bottom", tts: "triangles_top", ld: "diagonal_left", rd: "diagonal_up_right", lud: "diagonal_up_left", rud: "diagonal_right", mc: "circle", mr: "rhombus", vh: "half_vertical", hh: "half_horizontal", vhr: "half_vertical_right", hhb: "half_horizontal_bottom", bo: "border", cbo: "curly_border", cre: "creeper", gra: "gradient", gru: "gradient_up", bri: "bricks", sku: "skull", flo: "flower", moj: "mojang" };
+  const bannerTexCache = {};
+  function bannerTex(base, pats) {
+    const key = JSON.stringify([base, pats]); if (bannerTexCache[key]) return bannerTexCache[key];
+    const c = document.createElement("canvas"); c.width = 64; c.height = 64;
+    const t = new THREE.CanvasTexture(c); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace;
+    const layers = [["b", base], ...pats.slice(0, 6)];
+    Promise.all([img("entity_banner_base"), ...layers.map(([p]) => img("banner_" + (PATTERN[p] || "base")))]).then(([bi, ...masks]) => {
+      const g = c.getContext("2d"); g.drawImage(bi, 0, 0, 64, 64);
+      const B = g.getImageData(0, 0, 64, 64).data.slice();
+      const tmp = document.createElement("canvas"); tmp.width = 64; tmp.height = 64; const tg = tmp.getContext("2d");
+      masks.forEach((mi, k) => {
+        tg.clearRect(0, 0, 64, 64); tg.drawImage(mi, 0, 0, 64, 64); const M = tg.getImageData(0, 0, 64, 64), d = M.data, col = DYE_MAP[layers[k][1] & 15];
+        const cr = col >> 16 & 255, cg = col >> 8 & 255, cb = col & 255;
+        for (let i = 0; i < d.length; i += 4) {
+          if (d[i + 3] === 0) { d[i + 3] = 0; continue; }
+          const a = d[i + 2]; d[i] = B[i] * cr / 255 | 0; d[i + 1] = B[i + 1] * cg / 255 | 0; d[i + 2] = B[i + 2] * cb / 255 | 0; d[i + 3] = a;
+        }
+        tg.putImageData(M, 0, 0); g.drawImage(tmp, 0, 0);
+      });
+      t.needsUpdate = true;
+    }).catch(() => {});
+    return (bannerTexCache[key] = t);
+  }
+  function bannerMesh(it) {
+    const [base, pats] = it.banner || [it.d || 0, []];
+    const m = new THREE.MeshLambertMaterial({ map: bannerTex(base, pats), alphaTest: 0.1, side: THREE.DoubleSide });
+    // ModelBanner (64x64): slate swung by its rotation point at y -32, stand, top bar; rendered at 1/16.
+    const g = new THREE.Group();
+    const slate = kit.piece(g, [0, -32, 0]); slate.rotation.x = (-0.0125 + 0.01) * Math.PI; // cos(0): the item has no world time
+    kit.cube(slate, m, 64, 64, 0, 0, [-10, 0, -2, 20, 40, 1]);
+    kit.cube(g, m, 64, 64, 44, 0, [-1, -30, -1, 2, 42, 2]);
+    kit.cube(g, m, 64, 64, 0, 42, [-10, -32, -1, 20, 2, 2]);
+    return g;
+  }
   function itemMesh(it, onReady) { // returns a Group holding the model in 0..1 item space, centred later
     const g = new THREE.Group();
+    if (it.id === 425) { g.add(bannerMesh(it)); g.userData.gui3d = true; g.userData.builtin = true; return g; }
+    const def = itemDef(it);
+    if (def?.e) { g.add(blockMesh(itemKey(it))); if (it.glint) addItemGlint(g); g.userData.gui3d = true; return g; }
+    if (def?.flat) { // layer0, layer1... drawn over each other, each tinted as the item colours it
+      let left = def.flat.length;
+      def.flat.forEach((nm, n) => flatItemGeo(nm).then((geo) => {
+        const tn = def.tints?.[n];
+        const m = new THREE.MeshLambertMaterial({ map: tex(nm), alphaTest: 0.1, color: tn != null ? new THREE.Color(tn) : 0xffffff, polygonOffset: n > 0, polygonOffsetFactor: -n, polygonOffsetUnits: -n });
+        g.add(new THREE.Mesh(geo, m)); if (--left === 0) { if (it.glint) addItemGlint(g); onReady?.(); }
+      }));
+      return g;
+    }
     const block = blockKey(it.id, it.d);
     if (block) { modelsReady.then(() => g.add(blockMesh(block))); g.userData.gui3d = true; return g; }
     if (it.id === 397) { const h = headMesh(kit, it); h.userData.skull = true; g.add(h); g.userData.gui3d = true; g.userData.skull = true; return g; }
@@ -758,6 +853,12 @@ export function createRecFx(kit0) {
       const hh = new THREE.Group(); hh.position.set(0.5, 0, 0.5); hh.scale.set(-1, -1, 1); s2.add(hh);
       // skull model: box -4..4,-8..0 in model space with rotateAngleY = rotation (0) ; model space y down already handled by scale(-1,-1,1)
       const fix = new THREE.Group(); fix.scale.set(1, -1, -1); hh.add(fix); fix.add(h); // undo the kit's (x,-y,-z) so the GL scale reads directly
+    } else if (m.userData.builtin) { // banner: rotate 180, translate(-.5,-.5,-.5), then translate(.5, .75 * 2/3, .5), scale(2/3, -2/3, -2/3)
+      const r = new THREE.Group(); r.rotation.y = Math.PI; outer.add(r);
+      const s = new THREE.Group(); s.position.set(-0.5, -0.5, -0.5); r.add(s);
+      const b = new THREE.Group(); b.position.set(0.5, 0.75 * 2 / 3, 0.5); b.scale.set(2 / 3, -2 / 3, -2 / 3); s.add(b);
+      const fix = new THREE.Group(); fix.scale.set(1, -1, -1); b.add(fix); fix.add(m);
+      outer.userData.builtin = true;
     } else {
       m.position.set(-0.5, -0.5, -0.5); outer.add(m);
     }
@@ -781,8 +882,9 @@ export function createRecFx(kit0) {
     const node = renderItemNode(it), gui3d = node.userData.gui3d;
     // only blocks drawn as tile entities (render type 2: chests) get this extra turn and shrink
     if (it.id === 54 || it.id === 130 || it.id === 146) { const b = new THREE.Group(); b.position.set(0, 0.1875, -0.3125); b.rotation.order = "XYZ"; b.rotation.set(20 * D2R, 45 * D2R, 0); b.scale.set(-0.375, -0.375, 0.375); p.add(b); p = b; }
-    const pre = new THREE.Group(); pre.scale.setScalar(gui3d ? (blockKey(it.id, it.d) ? 2 : 1) : 2); p.add(pre); // ItemRenderer 2x for blocks, preTransform 2x for flat items
-    const tr = it.id === 397 ? THIRD.skull : blockKey(it.id, it.d) ? THIRD.block : HANDHELD.has(it.id) ? THIRD.handheld : THIRD.generated;
+    const pre = new THREE.Group(); pre.scale.setScalar(gui3d ? (isBlockItem(it) || node.userData.builtin ? 2 : 1) : 2); p.add(pre); // ItemRenderer 2x for blocks, preTransform 2x for flat items
+    const tp = itemDef(it)?.tp;
+    const tr = it.id === 425 ? [[0, 90, -90], [0, 0, -4], 0.5] : tp ? tp : it.id === 397 ? THIRD.skull : blockKey(it.id, it.d) ? THIRD.block : HANDHELD.has(it.id) ? THIRD.handheld : THIRD.generated;
     pre.add(applyTransform(node, ...tr));
     return gl;
   }
@@ -798,8 +900,9 @@ export function createRecFx(kit0) {
       const fix = new THREE.Group(); fix.scale.set(1, -1, -1); r.add(fix); fix.add(headMesh(kit, it));
     } else {
       const t = new THREE.Group(); t.position.set(0, -0.25, 0); t.rotation.y = Math.PI; t.scale.set(0.625, -0.625, -0.625); p.add(t);
-      const two = new THREE.Group(); two.scale.setScalar(blockKey(it.id, it.d) ? 2 : 1); t.add(two);
-      const node = renderItemNode(it); if (!node.userData.gui3d) node.scale.multiplyScalar(2); two.add(node);
+      const node0 = renderItemNode(it);
+      const two = new THREE.Group(); two.scale.setScalar(isBlockItem(it) || node0.userData.builtin ? 2 : 1); t.add(two);
+      const node = node0; if (!node.userData.gui3d) node.scale.multiplyScalar(2); two.add(node);
     }
     return gl;
   }
@@ -858,18 +961,36 @@ export function createRecFx(kit0) {
     const sideR = piece(m), sideL = piece(m), waist = piece(m), base = piece(m, [0, 12, 0]);
     add(sideR, 16, 0, [-3, 3, -1, 2, 7, 2]); add(sideL, 48, 16, [1, 3, -1, 2, 7, 2]); add(waist, 0, 48, [-4, 10, -1, 8, 2, 2]);
     const plate = cube(base, mat, 64, 64, 0, 32, [-6, 11, -6, 12, 1, 12]);
+    // Worn armour on a small stand: ModelBiped as a child draws body, arms and legs at half size,
+    // translate(0, 24px) in that scale, so they shrink toward the feet.
+    const kidG = new THREE.Group(); kidG.scale.setScalar(0.5); kidG.position.y = -0.75; m.add(kidG);
+    const kid = { body: piece(kidG), armR: piece(kidG, [-5, 2, 0]), armL: piece(kidG, [5, 2, 0]), legR: piece(kidG, [-1.9, 12, 0]), legL: piece(kidG, [1.9, 12, 0]) };
+    // ...and a shown small stand is drawn the same way (its head at 1.5/2 size, translate 16px).
+    const kidHG = new THREE.Group(); kidHG.scale.setScalar(0.75); kidHG.position.y = -0.75; m.add(kidHG);
+    const kHead = piece(kidHG, [0, 1, 0]), kSideR = piece(kidG), kSideL = piece(kidG), kWaist = piece(kidG), kBase = piece(kidG, [0, 12, 0]), kvis = [];
+    const kadd = (p, u, v, b) => { kvis.push(cube(p, mat, 64, 64, u, v, b)); };
+    kadd(kHead, 0, 0, [-1, -7, -1, 2, 7, 2]); kadd(kid.body, 0, 26, [-6, 0, -1.5, 12, 3, 3]);
+    const karms = [cube(kid.armR, mat, 64, 64, 24, 0, [-2, -2, -1, 2, 12, 2]), cube(kid.armL, mat, 64, 64, 32, 16, [0, -2, -1, 2, 12, 2])];
+    kadd(kid.legR, 8, 0, [-1, 0, -1, 2, 11, 2]); kadd(kid.legL, 40, 16, [-1, 0, -1, 2, 11, 2]);
+    kadd(kSideR, 16, 0, [-3, 3, -1, 2, 7, 2]); kadd(kSideL, 48, 16, [1, 3, -1, 2, 7, 2]); kadd(kWaist, 0, 48, [-4, 10, -1, 8, 2, 2]);
+    const kplate = cube(kBase, mat, 64, 64, 0, 32, [-6, 11, -6, 12, 1, 12]);
     return {
-      m, hl, al, scale: 1, parts: { head, body, armR, armL, legR, legL }, held, stand: true, legY: -1,
+      m, hl, al, scale: 1, parts: { head, body, armR, armL, legR, legL }, kid, held, stand: true, legY: -1,
       set(e) {
         const P = (k, d) => (e.meta[k] || d).map((v) => v * D2R);
         const [hx, hy, hz] = P("11", [0, 0, 0]), [bx, byy, bz] = P("12", [0, 0, 0]), [lx, ly, lz] = P("13", [-10, 0, -10]), [rx, ry, rz] = P("14", [-15, 0, 10]);
         const [llx, lly, llz] = P("15", [-1, 0, -1]), [rlx, rly, rlz] = P("16", [1, 0, 1]);
         rot(head, hx, hy, hz); rot(body, bx, byy, bz); rot(armL, lx, ly, lz); rot(armR, rx, ry, rz); rot(legL, llx, lly, llz); rot(legR, rlx, rly, rlz);
+        rot(kHead, hx, hy, hz); for (const p of [kSideR, kSideL, kWaist]) rot(p, bx, byy, bz);
+        rot(kid.body, bx, byy, bz); rot(kid.armL, lx, ly, lz); rot(kid.armR, rx, ry, rz); rot(kid.legL, llx, lly, llz); rot(kid.legR, rlx, rly, rlz);
         for (const p of [sideR, sideL, waist]) rot(p, bx, byy, bz);
-        const shown = !(e.meta["0"] & 32), flags = e.meta["10"] || 0;
-        for (const c of vis) c.visible = shown;
-        for (const c of arms) c.visible = shown && !!(flags & 4);
-        plate.visible = shown && !(flags & 8);
+        const shown = !(e.meta["0"] & 32), flags = e.meta["10"] || 0, sm = !!(flags & 1);
+        for (const c of vis) c.visible = shown && !sm;
+        for (const c of arms) c.visible = shown && !sm && !!(flags & 4);
+        plate.visible = shown && !sm && !(flags & 8);
+        for (const c of kvis) c.visible = shown && sm;
+        for (const c of karms) c.visible = shown && sm && !!(flags & 4);
+        kplate.visible = shown && sm && !(flags & 8);
       },
     };
   }
@@ -1238,32 +1359,42 @@ export function createRecFx(kit0) {
       e.mats = new Set(); e.model.m.traverse((o) => { if (o.material) e.mats.add(o.material); });
       refreshEquipment(e);
     }
+    // ItemArmor ids 298..317: leather, chainmail, iron, diamond, gold; helmet, chestplate, leggings, boots.
+    const ARMOR_MAT = ["leather", "chainmail", "iron", "diamond", "gold"];
+    const armorOf = (it, piece) => it.id >= 298 && it.id <= 317 && (it.id - 298) % 4 === piece;
+    function armorMats(it, layer) { // LayerBipedArmor: layer 2 for leggings, else layer 1; leather is tinted with its overlay on top
+      const mat = ARMOR_MAT[Math.floor((it.id - 298) / 4)], name = "armor_" + mat + "_layer_" + layer;
+      const glint = it.glint ? [glintMat("armor", 0), glintMat("armor", 1)] : [];
+      if (mat !== "leather") return [emat(name), ...glint];
+      const col = new THREE.Color(it.color != null ? it.color : 0xa06540);
+      return [new THREE.MeshLambertMaterial({ map: tex(name), alphaTest: 0.1, color: col, side: THREE.DoubleSide }), emat(name + "_overlay"), ...glint];
+    }
     function refreshEquipment(e) {
       const mdl = e.model; if (!mdl) return;
       const small = (e.type === 30 || e.type === 78) && (e.meta["10"] & 1);
       if (mdl.held) { mdl.held.clear(); if (e.eq[0]) mdl.held.add(heldItem(e.eq[0], false)); }
       if (mdl.parts?.head) { const h = mdl.parts.head; if (h.userData.worn) h.remove(h.userData.worn); h.userData.worn = null; if (e.eq[4]) { const w = wornHead(e.eq[4], false); h.add(w); h.userData.worn = w; } }
-      if (mdl.parts?.body) { // chestplate (LayerBipedArmor, ModelBiped inflated by 1, leather tinted)
-        const b = mdl.parts.body; if (b.userData.armor) { for (const a of b.userData.armor) a.parent.remove(a); } b.userData.armor = null;
+      const AP = small && mdl.kid ? mdl.kid : mdl.parts; // armour goes on the child-sized parts of a small stand
+      if (AP?.body) { // chestplate (LayerBipedArmor, ModelBiped inflated by 1, leather tinted)
+        const b = AP.body; if (b.userData.armor) { for (const a of b.userData.armor) a.parent.remove(a); } b.userData.armor = null;
         const it = e.eq[3];
-        if (it && it.id === 299) {
-          const col = new THREE.Color(it.color != null ? it.color : 0xa06540), base = new THREE.MeshLambertMaterial({ map: tex("armor_leather_layer_1"), alphaTest: 0.1, color: col, side: THREE.DoubleSide }), over = emat("armor_leather_layer_1_overlay");
+        if (it && armorOf(it, 1)) {
           const added = [];
-          for (const m of [base, over]) {
+          for (const m of armorMats(it, 1)) {
             const bb = piece(b); cube(bb, m, 64, 32, 16, 16, [-4, 0, -2, 8, 12, 4], false, 1); added.push(bb);
-            const ar = piece(mdl.parts.armR); cube(ar, m, 64, 32, 40, 16, [-3, -2, -2, 4, 12, 4], false, 1); added.push(ar);
-            const al = piece(mdl.parts.armL); cube(al, m, 64, 32, 40, 16, [-1, -2, -2, 4, 12, 4], true, 1); added.push(al);
+            const ar = piece(AP.armR); cube(ar, m, 64, 32, 40, 16, [-3, -2, -2, 4, 12, 4], false, 1); added.push(ar);
+            const al = piece(AP.armL); cube(al, m, 64, 32, 40, 16, [-1, -2, -2, 4, 12, 4], true, 1); added.push(al);
           }
           b.userData.armor = added;
         }
       }
-      if (mdl.parts?.legR) { // leggings (layer 2, inflated 0.5, with the body piece) and boots (layer 1, inflated 1)
-        const L = mdl.parts; if (L.legR.userData.armor) for (const a of L.legR.userData.armor) a.parent.remove(a); L.legR.userData.armor = null;
+      if (AP?.legR) { // leggings (layer 2, inflated 0.5, with the body piece) and boots (layer 1, inflated 1)
+        const L = AP; if (L.legR.userData.armor) for (const a of L.legR.userData.armor) a.parent.remove(a); L.legR.userData.armor = null;
         const added = [], dy = mdl.legY || 0; // ModelArmorStandArmor's legs hang 1px higher than the stand's own
-        const leather = (it, layer) => { const col = new THREE.Color(it.color != null ? it.color : 0xa06540); return [new THREE.MeshLambertMaterial({ map: tex(layer), alphaTest: 0.1, color: col, side: THREE.DoubleSide }), emat(layer + "_overlay")]; };
+
         const legs = (mats, inf) => { for (const m of mats) for (const [leg, mir] of [[L.legR, false], [L.legL, true]]) { const q = piece(leg, [0, dy, 0]); cube(q, m, 64, 32, 0, 16, [-2, 0, -2, 4, 12, 4], mir, inf); added.push(q); } };
-        if (e.eq[2]?.id === 300) { const mats = leather(e.eq[2], "armor_leather_layer_2"); legs(mats, 0.5); for (const m of mats) { const q = piece(L.body); cube(q, m, 64, 32, 16, 16, [-4, 0, -2, 8, 12, 4], false, 0.5); added.push(q); } }
-        if (e.eq[1]?.id === 301) legs(leather(e.eq[1], "armor_leather_layer_1"), 1);
+        if (e.eq[2] && armorOf(e.eq[2], 2)) { const mats = armorMats(e.eq[2], 2); legs(mats, 0.5); for (const m of mats) { const q = piece(L.body); cube(q, m, 64, 32, 16, 16, [-4, 0, -2, 8, 12, 4], false, 0.5); added.push(q); } }
+        if (e.eq[1] && armorOf(e.eq[1], 3)) legs(armorMats(e.eq[1], 1), 1);
         L.legR.userData.armor = added;
       }
       // small stands are "children": LayerCustomHead scales by 0.7 and moves 16px down,
@@ -1668,9 +1799,11 @@ export function createRecFx(kit0) {
   const skinShape = (n) => img(n).then((i) => { const c = document.createElement("canvas"); c.width = 64; c.height = 64; const x = c.getContext("2d"); x.drawImage(i, 0, 0); SLIM[n] = x.getImageData(54, 20, 1, 1).data[3] === 0; }).catch(() => {});
   function preload(data) {
     const heads = data ? [...new Set((JSON.stringify(data).match(/"head":"[0-9a-f]+"/g) || []).map((x) => x.slice(8, -1)))].map((h) => `cosmetics/heads/${h}.png`) : [];
-    const blockTex = () => { const t = new Set(); for (const d of Object.values(MODELS || {})) for (const e of (Array.isArray(d) ? d : d.e)) for (const f of Object.values(e.faces)) t.add("block_" + f.t); return [...t]; };
-    return Promise.all([modelsReady.then(() => Promise.all(blockTex().map((n) => img(n).catch(() => {})))), loadFont(), skinShape(KILLER_SKIN), skinShape(DUMMY_SKIN),
-      ...Object.values(ITEM_TEX).flatMap((n) => [img(n).catch(() => {}), n.startsWith("item_leather_") ? img(n + "_overlay").catch(() => {}) : null]), ...ALL_TEX.concat(DYES.map((d) => "item_dye_" + d), heads).map((n) => img(n).catch(() => {}))]);
+    const blockTex = () => { const t = new Set(); for (const d of Object.values(MODELS || {})) for (const e of (Array.isArray(d) ? d : d.e || [])) for (const f of Object.values(e.faces)) t.add("block_" + f.t); return [...t]; };
+    const itemTex = () => Object.values(MODELS || {}).flatMap((d) => d.flat || []);
+    const banners = data?.ev ? [...new Set(data.ev.flatMap((e) => (e[1] === "eq" && e[4]?.banner ? e[4].banner[1].map((p) => p[0]) : [])))] : [];
+    return Promise.all([modelsReady.then(() => Promise.all(blockTex().concat(itemTex()).map((n) => img(n).catch(() => {})))), loadFont(), skinShape(KILLER_SKIN), skinShape(DUMMY_SKIN),
+      ...Object.values(ITEM_TEX).flatMap((n) => [img(n).catch(() => {}), n.startsWith("item_leather_") ? img(n + "_overlay").catch(() => {}) : null]), ...ALL_TEX.concat(DYES.map((d) => "item_dye_" + d), heads, banners.length ? ["banner_base", ...banners.map((b) => "banner_" + (PATTERN[b] || "base"))] : []).map((n) => img(n).catch(() => {}))]);
   }
   return { build, preload };
 }

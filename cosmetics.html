@@ -1340,7 +1340,7 @@ for (const it of ITEMS) if (it.topper) {
   const cam = [[r * 0.55, ty + r * 0.22, r * 0.8], [0, ty, 0], r * 0.5, r * 2.2, [r * 0.5, ty + r * 0.2, r * 0.72], [0, ty, 0]];
   PREVIEWS[it.preview] = { stage: "arena", mc: true, top: it.topper, loop: 6, hero: it.built, cam, build(S) {
     const def = this; let run = null;
-    const go = (d) => { const last = Math.max(...d.b.map((b) => b[0])) / 1000; def.loop = Math.max(6, last + 4); run = buildTopper(S, d); };
+    const go = (d) => { run = buildTopper(S, d); };
     if (topData[it.topper]) go(topData[it.topper]);
     else loadTop(it.topper).then((d) => { if (S.def === def && S.it === it) { S.t = 0; go(d); } });
     return (t) => run?.(t);
@@ -1625,8 +1625,10 @@ function ensureStudio() {
   controls.target.set(0, .55, 0); controls.enableDamping = true; controls.enablePan = false;
   controls.minDistance = 4; controls.maxDistance = 18; controls.maxPolarAngle = Math.PI * 0.62;
   controls.autoRotateSpeed = 0.4; controls.autoRotate = true;
-  controls.addEventListener("start", () => { controls.autoRotate = false; });
-  controls.addEventListener("end", () => { setTimeout(() => { controls.autoRotate = spin; }, 1500); });
+  // Spinning waits a while after you let go, so the view you picked stays put.
+  let spinTimer = 0;
+  controls.addEventListener("start", () => { controls.autoRotate = false; clearTimeout(spinTimer); });
+  controls.addEventListener("end", () => { clearTimeout(spinTimer); spinTimer = setTimeout(() => { controls.autoRotate = spin; }, 6500); });
   new ResizeObserver(resize).observe($("stage"));
 }
 function resize() {
@@ -1643,13 +1645,16 @@ const CAMQ = new URLSearchParams(location.search).get("cam")?.split(",").map(Num
 // Recorded final kills: lean the view toward the effect (its entities and
 // particles), a little sideways and more upward, eased and capped, keeping
 // whatever angle the viewer has dragged to.
-const camOff = new THREE.Vector3(), camGoal = new THREE.Vector3(), clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const camOff = new THREE.Vector3(), camGoal = new THREE.Vector3(), camRaw = new THREE.Vector3(), clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 function followRec(dt) {
   const fo = studio.def?.rec ? studio.tick?.focus?.() : null;
   const base = PREVIEWS[current?.preview]?.cam?.[1];
-  if (fo && base) camGoal.set(clamp((fo.x - base[0]) * 0.5, -0.6, 0.6), clamp((fo.y - base[1]) * 0.5, -0.3, 1.3), clamp((fo.z - base[2]) * 0.5, -0.8, 0.8));
-  else camGoal.set(0, 0, 0);
-  const k = 1 - Math.exp(-dt * 1.6), dx = (camGoal.x - camOff.x) * k, dy = (camGoal.y - camOff.y) * k, dz = (camGoal.z - camOff.z) * k;
+  // Small, slow drift only: the focus point is smoothed twice so particles
+  // appearing and fading never jolt the view.
+  if (fo && base) camRaw.set(clamp((fo.x - base[0]) * 0.35, -0.35, 0.35), clamp((fo.y - base[1]) * 0.35, -0.2, 0.7), clamp((fo.z - base[2]) * 0.35, -0.45, 0.45));
+  else camRaw.set(0, 0, 0);
+  camGoal.lerp(camRaw, 1 - Math.exp(-dt * 0.7));
+  const k = 1 - Math.exp(-dt * 0.7), dx = (camGoal.x - camOff.x) * k, dy = (camGoal.y - camOff.y) * k, dz = (camGoal.z - camOff.z) * k;
   camOff.x += dx; camOff.y += dy; camOff.z += dz;
   controls.target.x += dx; controls.target.y += dy; controls.target.z += dz;
   studio.camera.position.x += dx; studio.camera.position.y += dy * 0.3; studio.camera.position.z += dz;
@@ -1675,7 +1680,7 @@ function openStudio(id, push = true) {
   cancelAnimationFrame(raf); stopSounds();
   if (!chatOnly) {
     const C = PREVIEWS[it.preview].cam || STAGE_CAM[PREVIEWS[it.preview].stage || "island"];
-    studio.camera.position.set(...C[0]); controls.target.set(...C[1]); camOff.set(0, 0, 0); controls.minDistance = C[2]; controls.maxDistance = C[3];
+    studio.camera.position.set(...C[0]); controls.target.set(...C[1]); camOff.set(0, 0, 0); camGoal.set(0, 0, 0); controls.minDistance = C[2]; controls.maxDistance = C[3];
     studio.audible = true; studio.load(PREVIEWS[it.preview], it);
     last = performance.now(); raf = requestAnimationFrame(frame);
   }

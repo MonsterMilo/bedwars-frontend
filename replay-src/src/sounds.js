@@ -42,7 +42,12 @@ class Sounds {
     const dist = Math.hypot(s.x - cam.x, s.y - cam.y, s.z - cam.z)
     // Minecraft: heard up to 16 blocks (more for loud sounds), fading out.
     // The replay stretches that by the hearing range setting.
-    const R = 16 * this.range
+    // The recorder's own sounds carry only as far as in the game (never
+    // stretched by the hearing setting, never extra loud), so they're not
+    // heard from across the map when watching someone else; sounds Hypixel
+    // played only to them carry even less.
+    const R = s.pov ? 8 : s.self ? 16 : 16 * this.range
+    if (s.self) s = { ...s, volume: Math.min(1, s.volume) }
     const v = s.everywhere ? Math.min(1, s.volume) : s.volume > 1 ? Math.max(0, 1 - dist / (R * s.volume)) : s.volume * Math.max(0, 1 - dist / R)
     if (v <= 0.01) return
     const h = files[Math.floor(Math.random() * files.length)]

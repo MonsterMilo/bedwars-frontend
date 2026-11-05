@@ -468,7 +468,7 @@ const NAVE_END_Z = COL_ZS[BAYS] - 4;                  // nave side of the wall w
 const ROT_R = 15, ROT_Z = NAVE_END_Z - 15.5, ROT_FACE = ROT_Z + 13.4, ROT_WALK = 13.2;
 const GATE_HW = 6, GATE_SPRING = 6;
 const PLINTH_D = 2.1, PLINTH_TOP = 1.61;
-const DAIS = [[6.2, 0.35], [4.6, 0.35], [3.2, 0.35]];
+const DAIS = [[8.0, 0.35], [7.1, 0.35], [6.2, 0.35]]; // radius, height of each step; the top step must hold all three podiums (#2/#3 corners reach r 5.87)
 const DAIS_TOP = DAIS.reduce((a, s) => a + s[1], 0);
 const byRank = new Map(DATA.map(d => [d.rank, d]));
 // hall slots: #20 + the dedication in the first bay, then 19..4 alternating left/right
@@ -988,17 +988,55 @@ function buildNicheExhibit(slot, N, skin) {
 
 // ---------- The podium, the prism and the Roll of Honour ----------
 let prism, prismBeams = [], beamIn, specRing, rollPlane;
+// a gilded lamp ring hung from the oculus on six rods; each podium's spotlight hangs from it (rotunda-local coordinates)
+const CORONA = { y: 14.2, r: 5.0, z: 0.6, rodTop: 27.55, rodR: 2.2 };
+function buildCorona() {
+  const at = (x, y, z, q) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, ROT_Z + z), q || new THREE.Quaternion(), new THREE.Vector3(1, 1, 1));
+  const { y, r, z } = CORONA;
+  add("gold", new THREE.TorusGeometry(r, 0.085, 10, 160), at(0, y, z, new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0))));
+  add("goldDull", new THREE.TorusGeometry(r, 0.05, 8, 160), at(0, y - 0.42, z, new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0))));
+  add("goldDull", new THREE.TorusGeometry(r - 0.02, 0.035, 6, 160), at(0, y + 0.3, z, new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0))));
+  for (let i = 0; i < 36; i++) { // balusters between the rings, a finial on every third
+    const a = i / 36 * Math.PI * 2, x = Math.sin(a) * r, zz = z + Math.cos(a) * r;
+    add("goldDull", lathe([[0.03, 0], [0.05, 0.08], [0.03, 0.2], [0.045, 0.36], [0.03, 0.5], [0.04, 0.72]], 8), at(x, y - 0.42, zz));
+    if (i % 3 === 0) { add("gold", new THREE.SphereGeometry(0.075, 12, 8), at(x, y + 0.42, zz)); add("gold", new THREE.ConeGeometry(0.04, 0.22, 8), at(x, y + 0.6, zz)); }
+  }
+  for (let i = 0; i < 6; i++) { // suspension rods up to the oculus rim
+    const a = (i + 0.5) / 6 * Math.PI * 2, lo = new THREE.Vector3(Math.sin(a) * r, y + 0.3, z + Math.cos(a) * r), hi = new THREE.Vector3(Math.sin(a) * CORONA.rodR, CORONA.rodTop, Math.cos(a) * CORONA.rodR);
+    const mid = lo.clone().add(hi).multiplyScalar(0.5), q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), hi.clone().sub(lo).normalize());
+    add("goldDull", new THREE.CylinderGeometry(0.028, 0.028, lo.distanceTo(hi), 6), at(mid.x, mid.y, mid.z, q));
+    add("gold", new THREE.SphereGeometry(0.07, 10, 8), at(lo.x, lo.y, lo.z));
+  }
+}
+const LAMP_CAN = lathe([[0.0001, 0.36], [0.11, 0.36], [0.16, 0.31], [0.17, 0.05], [0.2, -0.12], [0.245, -0.22], [0.25, -0.26], [0.225, -0.26], [0.205, -0.2]], 24);
+// a spotlight hung under the ring on a short stem, at the ring point nearest above-front of the podium, aimed at the statue
+function coronaLamp(p, target, flag) {
+  const { y, r, z } = CORONA, a = Math.atan2(p.x, p.z + (p.rank === 1 ? 6 : 2) - z);
+  const ring = new THREE.Vector3(Math.sin(a) * r, y - 0.42, z + Math.cos(a) * r), pivot = ring.clone().add(new THREE.Vector3(0, -0.55, 0));
+  const dir = target.clone().sub(pivot).normalize(), q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir);
+  const at = (v, qq) => new THREE.Matrix4().compose(new THREE.Vector3(v.x, v.y, ROT_Z + v.z), qq || new THREE.Quaternion(), new THREE.Vector3(1, 1, 1));
+  add("goldDull", new THREE.CylinderGeometry(0.025, 0.025, 0.5, 6), at(ring.clone().add(new THREE.Vector3(0, -0.25, 0))));
+  add("gold", new THREE.SphereGeometry(0.07, 10, 8), at(pivot));
+  add("gold", LAMP_CAN, at(pivot, q));
+  const lens = new THREE.Mesh(new THREE.CircleGeometry(0.205, 24), new THREE.MeshBasicMaterial({ color: 0x000000, toneMapped: false, fog: true }));
+  lens.userData.base = new THREE.Color(flag ? 0xff8592 : 0xfff0d6); lens.userData.noAO = true;
+  lens.quaternion.copy(q).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0)));
+  const mouth = pivot.clone().addScaledVector(dir, 0.21); lens.position.set(mouth.x, mouth.y, ROT_Z + mouth.z); world.add(lens);
+  return { mouth, lens };
+}
 const PODIUM = [{ rank: 1, x: 0, z: -1.2, h: 1.9, s: 2.0 }, { rank: 2, x: -3.9, z: 1.4, h: 1.25, s: 1.65 }, { rank: 3, x: 3.9, z: 1.4, h: 0.8, s: 1.65 }];
 function buildPodium(skinOf) {
   const R = new THREE.Group(); R.position.set(0, 0, ROT_Z); world.add(R);
-  specRing = new THREE.Mesh(new THREE.RingGeometry(6.6, 7.4, 160), new THREE.ShaderMaterial({
+  const SR = [5.9, 6.0, 6.08, 6.17]; // spectrum inlay just inside the rim of the dais top
+  specRing = new THREE.Mesh(new THREE.RingGeometry(SR[0], SR[3], 160), new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uPower: { value: 0 }, uTime: U.time },
     vertexShader: `varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
     fragmentShader: `uniform float uPower; uniform float uTime; varying vec3 vP; vec3 hue(float h){ return clamp(abs(mod(h * 6. + vec3(0., 4., 2.), 6.) - 3.) - 1., 0., 1.); }
-      void main(){ float a = atan(vP.y, vP.x) / 6.2831853 + .5; float r = length(vP.xy); float band = smoothstep(6.6, 6.9, r) * (1. - smoothstep(7.1, 7.4, r));
+      void main(){ float a = atan(vP.y, vP.x) / 6.2831853 + .5; float r = length(vP.xy); float band = smoothstep(${SR[0].toFixed(2)}, ${SR[1].toFixed(2)}, r) * (1. - smoothstep(${SR[2].toFixed(2)}, ${SR[3].toFixed(2)}, r));
         gl_FragColor = vec4(max(hue(a + uTime * .03) * band * uPower * 1.3, 0.), 1.); }`,
   }));
-  specRing.rotation.x = -Math.PI / 2; specRing.position.y = 0.025; specRing.userData.noAO = true; R.add(specRing);
+  specRing.rotation.x = -Math.PI / 2; specRing.position.y = DAIS_TOP + 0.012; specRing.userData.noAO = true; R.add(specRing);
+  buildCorona();
   PODIUM.forEach(p => {
     const d = byRank.get(p.rank); if (!d) return;
     const g = new THREE.Group(); g.position.set(p.x, DAIS_TOP, p.z); R.add(g);
@@ -1021,11 +1059,15 @@ function buildPodium(skinOf) {
     const back = new THREE.Mesh(new THREE.BoxGeometry(2.04, 1.12, 0.06), M.gold); back.position.set(0, 0.56, -0.04); lean.add(back);
     const plq = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.04), plaqueMaterial(reliefPanel(1024, 560, drawPlaque(d)))); plq.position.set(0, 0.56, 0.012); lean.add(plq);
     const lc = new THREE.Vector3(0, 0, -0.1).applyMatrix4(lect.matrixWorld); solidBox(lc.x - 1.15, lc.x + 1.15, lc.z - 0.75, lc.z + 0.75, 0.72);
-    const cone = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 2.1 * p.s / 1.3, 15 - DAIS_TOP - p.h, 40, 1, true), beamMaterial(d.cheating ? 0xff7080 : 0xfff0d0, 1.6, 0.4));
-    cone.position.set(0, p.h + (15 - DAIS_TOP - p.h) / 2, 0); cone.userData.noAO = true; g.add(cone);
     const headY = DAIS_TOP + p.h + 0.14 + 1.75 * p.s;
+    // the beam starts at this podium's lamp on the ring above and runs past the statue to its feet
+    const lamp = coronaLamp(p, new THREE.Vector3(p.x, headY - 1.2 * p.s, p.z), d.cheating);
+    const tgt = new THREE.Vector3(p.x, headY - 1.2 * p.s, p.z), dir = tgt.clone().sub(lamp.mouth).normalize();
+    const len = lamp.mouth.distanceTo(tgt) + 1.1 * p.s;
+    const cone = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 1.25 * p.s / 1.3, len, 40, 1, true), beamMaterial(d.cheating ? 0xff7080 : 0xfff0d0, 1.6, 0.4));
+    cone.position.copy(lamp.mouth).addScaledVector(dir, len / 2); cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().negate()); cone.userData.noAO = true; R.add(cone);
     const ex = { d, group: g, fig, cone, plaque: plq, banner: num, trim, power: 0, target: 0, near: 0, podium: true, rank: p.rank, flag: !!d.cheating, lightW: 0,
-      x: p.x, z: ROT_Z + p.z, lightPos: new THREE.Vector3(p.x * 0.7, 12.6, ROT_Z + p.z + 4.2), lightTarget: new THREE.Vector3(p.x, headY - 1.2 * p.s, ROT_Z + p.z),
+      x: p.x, z: ROT_Z + p.z, lightPos: lamp.mouth.clone().addScaledVector(dir, 0.15).add(new THREE.Vector3(0, 0, ROT_Z)), lightTarget: tgt.clone().add(new THREE.Vector3(0, 0, ROT_Z)), lens: lamp.lens,
       center: new THREE.Vector3(p.x, headY - p.s, ROT_Z + p.z), stand: new THREE.Vector3(p.x * 0.55, 0, ROT_Z + (p.rank === 1 ? 11.6 : 10.6)) };
     const hit = new THREE.Mesh(new THREE.BoxGeometry(2.8, p.h + 3.4 * p.s, 2.8), new THREE.MeshBasicMaterial({ visible: false })); hit.position.y = (p.h + 3.4 * p.s) / 2; g.add(hit); hit.userData.ex = ex; hitTargets.push(hit);
     exhibits.push(ex);
@@ -1555,6 +1597,7 @@ function updateExhibits(dt, time) {
     const p = ex.power; ex.near += ((ex === S.attn ? 1 : 0) - ex.near) * Math.min(1, dt * 3);
     ex.cone.material.uniforms.uPower.value = p * (ex.podium ? 0.38 : 0.5 - ex.near * 0.18);
     if (ex.pool) ex.pool.material.opacity = p * (0.2 + ex.near * 0.16);
+    if (ex.lens) ex.lens.material.color.copy(ex.lens.userData.base).multiplyScalar(0.05 + p * 2.6);
     ex.plaque.material.emissiveIntensity = p * (ex.podium ? 0.06 + ex.near * 0.05 : 0.1 + ex.near * 0.16);
     ex.banner.material.emissiveIntensity = p * (ex.podium ? 0.3 : 0.05 + ex.near * 0.06);
     ex.trim.material.color.setRGB(1, ex.flag ? 0.23 : 0.77, ex.flag ? 0.3 : 0.42).multiplyScalar(0.08 + p * (1.3 + ex.near * 0.8));
@@ -1577,7 +1620,7 @@ function updateExhibits(dt, time) {
   prism.rotation.y = Math.sin(time * 0.3) * 0.6; prism.position.y = 10.6 + Math.sin(time * 0.7) * 0.15;
   prismBeams.forEach(piv => { const { a } = piv.userData, aa = a + time * 0.25; piv.rotation.set(Math.cos(aa) * 0.62, 0, Math.sin(aa) * 0.62); piv.position.y = prism.position.y; piv.children[0].material.uniforms.uPower.value = rp * 1.05; });
 }
-function assignLight(l, e) { const u = l.userData; u.ex = e; u.w = 0; l.position.copy(e.lightPos); l.target.position.copy(e.lightTarget); l.target.updateMatrixWorld(); l.color.set(e.flag ? 0xff8592 : 0xffe0b0); l.angle = e.podium ? 0.34 : 0.5; l.distance = e.podium ? 24 : 15; }
+function assignLight(l, e) { const u = l.userData; u.ex = e; u.w = 0; l.position.copy(e.lightPos); l.target.position.copy(e.lightTarget); l.target.updateMatrixWorld(); l.color.set(e.flag ? 0xff8592 : 0xffe0b0); l.angle = e.podium ? 0.24 : 0.5; l.distance = e.podium ? 24 : 15; }
 function updateLights(dt) {
   const cp = camera.position; camera.getWorldDirection(fwd);
   const want = exhibits.filter(e => e.power > 0.02).map(e => { const dx = e.center.x - cp.x, dz = e.center.z - cp.z, d = Math.hypot(dx, dz) || 1; return [e, d - ((dx * fwd.x + dz * fwd.z) / d) * 5]; })

@@ -1,9 +1,9 @@
 {
-  "name": "Bedwars Sweat Tracker",
-  "short_name": "Sweat Tracker",
+  "name": "Prism Tracker",
+  "short_name": "Prism Tracker",
   "description": "Look up Bedwars sweats, log the wins and denick players.",
   "id": "./",
-  "start_url": "./",
+  "start_url": "tracker.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
@@ -15,8 +15,8 @@
     { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Sweat Lookup", "url": "./#sweatLookupSection", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Defeated Sweats", "url": "./#defeatedSweatsSection", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Denicking", "url": "./#denickingSection", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Sweat Lookup", "url": "tracker.html#sweatLookupSection", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Defeated Sweats", "url": "tracker.html#defeatedSweatsSection", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Denicking", "url": "tracker.html#denickingSection", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

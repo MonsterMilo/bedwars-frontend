@@ -1,6 +1,6 @@
 // Service worker for the installable app.
 //
-// The rule that matters: the page itself (index.html) is ALWAYS fetched
+// The rule that matters: the tracker page (tracker.html) is ALWAYS fetched
 // from the network first, revalidated past the browser's HTTP cache, so a
 // new deploy shows up on the very next load. The saved copy is only used
 // when the network fails (offline). Nothing here ever serves an old page
@@ -9,11 +9,11 @@
 // Also kept for offline use: Google Fonts and player skins (network first, so they stay
 // current online). The backend API is never touched here: the page keeps
 // its own saved copy of the sweat list (see saveSweatsForOffline in
-// index.html), in a cache this worker leaves alone.
+// tracker.html), in a cache this worker leaves alone.
 //
 // Bump VERSION when this file's caching changes; old caches are dropped
 // on activate.
-const VERSION = "v1";
+const VERSION = "v2"; // v2: the tracker moved from index.html to tracker.html (index.html is the Prism home page)
 const PREFIX = "bst-sw-";
 const PAGE_CACHE = `${PREFIX}page-${VERSION}`;
 const FONT_CACHE = `${PREFIX}fonts-${VERSION}`;
@@ -21,9 +21,9 @@ const SKIN_CACHE = `${PREFIX}skins-${VERSION}`;
 const SKIN_LIMIT = 150;
 
 const SCOPE = new URL(self.registration.scope);
-const PAGE_URL = new URL("./", SCOPE).href;
+const PAGE_URL = new URL("tracker.html", SCOPE).href;
 const SHELL = [
-  "./",
+  "tracker.html",
   "manifest.webmanifest",
   "icons/icon-192.png",
   "icons/icon-512.png",
@@ -59,9 +59,9 @@ self.addEventListener("fetch", (event) => {
   if (url.origin === SCOPE.origin && url.href.startsWith(SCOPE.href)) {
     if (req.mode === "navigate") {
       // Only the tracker page itself is saved for offline. Other pages (like
-      // hall-of-fame.html) go straight to the network, so they never replace
+      // hall-of-fame.html or the home page) go straight to the network, so they never replace
       // the saved copy of the tracker.
-      if (url.pathname === SCOPE.pathname || url.pathname === SCOPE.pathname + "index.html") event.respondWith(pageNetworkFirst(req));
+      if (url.pathname === SCOPE.pathname + "tracker.html") event.respondWith(pageNetworkFirst(req));
       return;
     }
     if (SHELL.includes(url.href.split("?")[0])) { event.respondWith(networkFirst(req, PAGE_CACHE)); return; }

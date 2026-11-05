@@ -7,10 +7,11 @@
 <title>Prism Replay</title>
 <link rel="icon" href="icons/icon-192.png">
 <script>
-  // Same theme as the tracker site (Neon, Case Files, Ledger, Deep Current,
+  // Same theme as the tracker site (Prism, Neon, Case Files, Ledger, Deep Current,
   // Sky Isles, Harvest), with its fonts.
   (function () {
     var FONTS = {
+      prism: 'family=Manrope:wght@400;500;600;700;800',
       neon: 'family=Manrope:wght@400;500;600;700;800',
       casefiles: 'family=Courier+Prime:wght@400;700&family=Anton',
       ledger: 'family=EB+Garamond:wght@400;600&family=Playfair+Display:wght@600;700',
@@ -18,9 +19,9 @@
       skyisles: 'family=Jersey+10&family=Silkscreen:wght@400;700',
       harvest: 'family=Bitter:wght@400;600;700&family=Ultra'
     }
-    var theme = 'neon'
-    try { theme = localStorage.getItem('siteTheme') || 'neon' } catch (e) {}
-    if (!FONTS[theme]) theme = 'neon'
+    var theme = 'prism'
+    try { theme = localStorage.getItem('siteTheme') || 'prism' } catch (e) {}
+    if (!FONTS[theme]) theme = 'prism'
     document.documentElement.setAttribute('data-theme', theme)
     var link = document.createElement('link')
     link.rel = 'stylesheet'
@@ -47,6 +48,10 @@
   html[data-theme="skyisles"] { --bg: #8fd0ff; --panel: #fbfdf5; --panel-2: #eef6fb; --border: #c3d6e3; --border-strong: #2d6a9f; --accent: #3f9a26; --accent-2: #2d6a9f; --accent-ink: #ffffff; --text: #173247; --dim: #4b6a82; --faint: #6c8294; --good: #2e8f2a; --bad: #d23a2e; --gold: #c98a0b; --glass: rgba(251,253,245,0.93); --glass-2: rgba(238,246,251,0.97); --glass-line: #173247; --r-s: 0px; --r-m: 0px; --r-l: 0px; --shadow: 4px 4px 0 rgba(23,50,71,0.28); --font: 'Jersey 10', 'Silkscreen', monospace; --font-title: 'Silkscreen', monospace; --glow: 0 0 0 2px #173247; }
   html[data-theme="skyisles"] body { font-size: 17px; }
   html[data-theme="harvest"] { --bg: #e7c99a; --panel: #fbf3e2; --panel-2: #f4e8cf; --border: rgba(91,58,34,0.2); --border-strong: rgba(168,50,43,0.45); --accent: #a8322b; --accent-2: #c98a1c; --accent-ink: #fbf3e2; --text: #3b2414; --dim: #6e5038; --faint: #8e7055; --good: #4f7a32; --bad: #b3261e; --gold: #c98a1c; --glass: rgba(251,243,226,0.93); --glass-2: rgba(244,232,207,0.97); --glass-line: rgba(91,58,34,0.25); --r-s: 3px; --r-m: 5px; --r-l: 7px; --shadow: 0 16px 30px -16px rgba(59,36,20,0.55); --font: 'Bitter', Georgia, serif; --font-title: 'Ultra', Georgia, serif; --glow: 0 0 0 2px #a8322b; }
+  /* Prism (the default theme): dark glass lit by a split beam. */
+  html[data-theme="prism"] { --bg: #06070b; --panel: #10121a; --panel-2: #171a26; --border: rgba(255,255,255,0.075); --border-strong: rgba(169,139,255,0.45); --accent: #5ee7ff; --accent-2: #a98bff; --accent-ink: #06121a; --text: #eef1f8; --dim: #959cb0; --faint: #6f7689; --good: #4be3a8; --bad: #ff6b81; --gold: #ffc46b; --glass: rgba(14,16,24,0.72); --glass-2: rgba(24,27,39,0.86); --glass-line: rgba(255,255,255,0.09); --r-s: 10px; --r-m: 16px; --r-l: 22px; --shadow: 0 24px 48px -24px rgba(0,0,0,0.85); --glow: 0 0 0 1px rgba(169,139,255,0.45), -8px 0 22px -12px rgba(94,231,255,0.6), 8px 0 22px -12px rgba(255,196,107,0.5); }
+  html[data-theme="prism"] body { background: radial-gradient(120% 60% at 50% -10%, #10131f, #06070b 60%) fixed; }
+  html[data-theme="prism"] .hero h1 span { background-image: linear-gradient(90deg, #5ee7ff, #a98bff 55%, #ffc46b); }
 
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.4 var(--font); overflow: hidden; }

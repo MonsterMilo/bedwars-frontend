@@ -210,10 +210,10 @@ function rotFn(r) {
 const FIRE_ORDER = [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 let fireTex = null;
 function fireMat(o) {
-  if (!fireTex) { fireTex = tex("block_fire_layer_0_strip").clone(); img("block_fire_layer_0_strip").then((i) => { fireTex.image = i; fireTex.needsUpdate = true; }); fireTex.repeat.set(1, 1 / 32); }
+  if (!fireTex) { fireTex = tex("block_fire_layer_0_strip").clone(); img("block_fire_layer_0_strip").then((i) => { fireTex.image = i; fireTex.needsUpdate = true; }); fireTex.repeat.set(1, (16 - 0.02) / 512); } // a hair inside the frame so the next frame's edge never shows
   return new THREE.MeshLambertMaterial({ map: fireTex, alphaTest: 0.1, ...o, side: THREE.DoubleSide });
 }
-export function animateTextures(ticks) { if (fireTex) fireTex.offset.y = 1 - (FIRE_ORDER[((ticks % 32) + 32) % 32] + 1) / 32; }
+export function animateTextures(ticks) { if (fireTex) fireTex.offset.y = 1 - (FIRE_ORDER[((ticks % 32) + 32) % 32] + 1) / 32 + 0.01 / 512; }
 // A block model in 0..1 block space, faces as the game bakes them.
 const FACE = {
   north: (a, b) => [[b[0], b[1], a[2]], [a[0], b[1], a[2]], [a[0], a[1], a[2]], [b[0], a[1], a[2]]],
@@ -347,7 +347,7 @@ export function buildTopper(S, data) {
         for (const i of [0, 3, 2, 0, 2, 1]) { G.pos.push(P[i].x, P[i].y, P[i].z); G.uv.push(...T[i]); G.col.push(...cols[i]); }
       }
     }
-    const g = new THREE.Group(); g.position.set(x + ox, y, z + oz); g.visible = false;
+    const g = new THREE.Group(); g.position.set(x + ox, y, z + oz);
     for (const G of Object.values(byMat)) {
       const geo = new THREE.BufferGeometry();
       geo.setAttribute("position", new THREE.Float32BufferAttribute(G.pos, 3));
@@ -357,7 +357,27 @@ export function buildTopper(S, data) {
     }
     root.add(g); blocks.push([t / 1000, g]);
   }
-  const run = (t) => { for (const [bt, g] of blocks) g.visible = t >= bt; };
+  // Soft shadows on the grass around the blocks, worked out like the blocks' own corner shadows.
+  const gpos = [], gcol = [], cells = new Set(), base = new Set();
+  for (const b of data.b) if (b[2] === 0) { const d = MODELS?.[b[4]]; if (d && (Array.isArray(d) ? d : d.e).some((e) => e.from[1] === 0 && (e.to[0] - e.from[0]) * (e.to[2] - e.from[2]) >= 128)) base.add(b[1] + ",0," + b[3]); }
+  for (const k of base) { const [bx, , bz] = k.split(",").map(Number); for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) cells.add(bx + dx + "," + (bz + dz)); }
+  const g0 = (x, z) => base.has(x + ",0," + z) ? 1 : 0;
+  for (const k of cells) {
+    const [cx, cz] = k.split(",").map(Number); if (g0(cx, cz)) continue;
+    const corner = (sx, sz) => g0(cx + sx, cz) || g0(cx, cz + sz) ? 1 : g0(cx + sx, cz + sz) ? 0.6 : 0;
+    const A = [[0, 0, corner(-1, -1)], [1, 0, corner(1, -1)], [1, 1, corner(1, 1)], [0, 1, corner(-1, 1)]];
+    if (A.every((q) => !q[2])) continue;
+    for (const i of [0, 3, 2, 0, 2, 1]) { const [u, v, a] = A[i]; gpos.push(cx + u + ox, 0.004, cz + v + oz); gcol.push(0, 0, 0, a * 0.6); }
+  }
+  if (gpos.length) {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(gpos, 3));
+    geo.setAttribute("color", new THREE.Float32BufferAttribute(gcol, 4));
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 }));
+    root.add(m);
+  }
+  // The whole build is shown at once (no building animation).
+  const run = () => {};
   run.focus = () => new THREE.Vector3(0, data.size[1] / 2, 0);
   return run;
 }
@@ -709,7 +729,8 @@ export function createRecFx(kit0) {
     if (child) { const c = new THREE.Group(); c.position.set(0, 0.625, 0); c.rotation.x = 20 * D2R; c.scale.setScalar(0.5); p.add(c); p = c; }
     const t = new THREE.Group(); t.position.set(-0.0625, 0.4375, 0.0625); p.add(t); p = t;
     const node = renderItemNode(it), gui3d = node.userData.gui3d;
-    if (blockKey(it.id, it.d)) { const b = new THREE.Group(); b.position.set(0, 0.1875, -0.3125); b.rotation.order = "XYZ"; b.rotation.set(20 * D2R, 45 * D2R, 0); b.scale.set(-0.375, -0.375, 0.375); p.add(b); p = b; }
+    // only blocks drawn as tile entities (render type 2: chests) get this extra turn and shrink
+    if (it.id === 54 || it.id === 130 || it.id === 146) { const b = new THREE.Group(); b.position.set(0, 0.1875, -0.3125); b.rotation.order = "XYZ"; b.rotation.set(20 * D2R, 45 * D2R, 0); b.scale.set(-0.375, -0.375, 0.375); p.add(b); p = b; }
     const pre = new THREE.Group(); pre.scale.setScalar(gui3d ? (blockKey(it.id, it.d) ? 2 : 1) : 2); p.add(pre); // ItemRenderer 2x for blocks, preTransform 2x for flat items
     const tr = it.id === 397 ? THIRD.skull : blockKey(it.id, it.d) ? THIRD.block : HANDHELD.has(it.id) ? THIRD.handheld : THIRD.generated;
     pre.add(applyTransform(node, ...tr));
@@ -1018,6 +1039,7 @@ export function createRecFx(kit0) {
   /* ---------------------------------------------------------- the world */
   function build(S, data, opts = {}) {
     const root = new THREE.Group(); S.item.add(root);
+    const plife = data.plife || 1; // Milo asked for longer-lived red dust in some (Rainbow: it lingers longer in his game)
     const batches = { particles: new Batch(root, tex("particles"), 128, 128), explosion: new Batch(root, tex("explosion"), 128, 128), tiles: new Batch(root, tileTex, 256, 256) };
     const ents = new Map();
     const W = {
@@ -1053,7 +1075,7 @@ export function createRecFx(kit0) {
         case 26: p = new Flame(x, y, z, a, b, c); break;
         case 27: p = new Lava(x, y, z); break;
         case 29: p = new Cloud(x, y, z, a, b, c); break;
-        case 30: p = new Reddust(x, y, z, a, b, c); break;
+        case 30: p = new Reddust(x, y, z, a, b, c); p.maxAge = Math.round(p.maxAge * plife); break;
         case 34: p = new Heart(x, y, z); break;
         case 36: { const t = tileOf(ITEM_TILE[data?.[0]]); if (t >= 0) p = new Iconcrack(x, y, z, a, b, c, t); break; }
         case 38: { const t = tileOf(BLOCK_TILE[(data?.[0] ?? 0) & 4095]); if (t >= 0) p = new Crumb(x, y, z, a, b, c, t, 0.6, true); break; }
@@ -1312,6 +1334,7 @@ export function createRecFx(kit0) {
           else if (s === 1 && e.type === 101) { e.jumpDur = 10; e.jumpTicks = 0; runningParticles(e); }
           break;
         }
+        case "bed": { const e = ents.get(ev[2]); if (e) e.sleeping = true; break; } // use_bed: the corpse lies on its back
         case "anim": { const e = ents.get(ev[2]); if (e && ev[3] === 0) { if (!e.swinging || e.swingInt >= 3 || e.swingInt < 0) { e.swingInt = -1; e.swinging = true; } } break; }
         case "kill": for (const id of ev[2]) { const e = ents.get(id); if (e) { e.dead = true; scene3.remove(e.g); ents.delete(id); if (e.rider) e.rider.vehicle = null; if (e.vehicle) e.vehicle.rider = null; } } break;
         case "attach": {
@@ -1493,6 +1516,9 @@ export function createRecFx(kit0) {
           let zr = 0;
           if (e.death > 0) { let f = (e.death + pt - 1) / 20 * 1.6; f = Math.sqrt(f); if (f > 1) f = 1; zr = f * 90; }
           e.corpse.rotation.set(0, 0, -zr * D2R);
+          if (e.sleeping) { // RenderPlayer.rotateCorpse while sleeping (no bed there, so facing 0): lies on its back, head toward -x
+            e.g.rotation.y = 0; e.corpse.quaternion.setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2, "ZYX"));
+          }
           if (e.model.squid) { // RenderSquid: translate 0.5, turn by the squid's own pitch, translate -1.2
             const p = lerp(e.pspitch, e.spitch, pt);
             e.corpse.position.y = 0.5; e.corpse.rotation.x = -p * D2R; e.bobG.position.y = -1.2;

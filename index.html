@@ -92,9 +92,10 @@
 
   .foot { display: flex; gap: 22px; flex-wrap: wrap; align-items: center; color: var(--faint); font-size: 13px; padding-block: 18px max(22px, env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); }
   .foot b { color: var(--text); font-variant-numeric: tabular-nums; }
-  .foot .live { display: inline-flex; align-items: center; gap: 8px; }
+  .foot .live { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
   .foot .live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #34e0a1; box-shadow: 0 0 10px #34e0a1; }
   .foot .by { margin-left: auto; }
+  .foot .stat:not([hidden]) ~ .stat:not([hidden])::before { content: ""; display: inline-block; width: 1px; height: 11px; background: var(--line); margin: 0 12px 0 4px; vertical-align: -1px; }
 
   h1 { animation: rise 1s var(--ease) both; }
   .lede, .eyebrow { animation: rise 1s var(--ease) both; animation-delay: .12s; }
@@ -148,7 +149,7 @@
     <nav class="cards" id="cards" aria-label="Prism pages"></nav>
   </div>
   <div class="wrap">
-    <footer class="foot"><span class="live" id="tally" hidden><span><b id="tallyN">0</b> players tracked</span></span><span class="by">Made by Milo</span></footer>
+    <footer class="foot"><span class="live" id="tally" hidden><span class="stat" id="tallyP" hidden><b id="tallyN">0</b> players tracked</span><span class="stat" id="tallyC" hidden><b id="tallyCN">0</b> cosmetics</span><span class="stat" id="tallyM" hidden><b id="tallyMN">0</b> maps in the Atlas</span></span><span class="by">Made by Milo</span></footer>
   </div>
 </main>
 
@@ -245,6 +246,30 @@
       setTimeout(function () { ol.style.transition = 'none'; offset = (offset + 1) % rows.length; render(); ol.style.transform = ''; void ol.offsetHeight; ol.style.transition = ''; }, 720);
     }, 2600);
   }
+  // footer counts: each one appears once it's known
+  function showTally(id, numId, n) {
+    document.getElementById(numId).textContent = Number(n).toLocaleString('en-US');
+    document.getElementById(id).hidden = false;
+    document.getElementById('tally').hidden = false;
+  }
+  // cosmetics: count the entries in the library's own list, so it always matches that page
+  fetch('cosmetics.html').then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
+    var a = t.indexOf('const ITEMS = ['), b = a < 0 ? -1 : t.indexOf('\n];', a);
+    var n = b < 0 ? 0 : (t.slice(a, b).match(/\bid: "/g) || []).length;
+    if (n) showTally('tallyC', 'tallyCN', n);
+  }).catch(function () {});
+  // maps: just the number from the Atlas (no map data needs a key for this)
+  (async function () {
+    for (var attempt = 0; attempt < 3; attempt++) {
+      try {
+        var r = await fetch(API + '/maps/count', { cache: 'no-store' });
+        if (r.ok) { var j = await r.json(); if (j && j.maps > 0) showTally('tallyM', 'tallyMN', j.maps); return; }
+        if (r.status === 404) return;
+      } catch (e) {}
+      await new Promise(function (res) { setTimeout(res, 4000); });
+    }
+  })();
+
   if (listEl) {
     playersList(null);
     var slow = setTimeout(function () { playersList(null, 'Waking server'); }, 3000);
@@ -266,8 +291,7 @@
         var old = best.get(key); if (!old || row.at > old.at) best.set(key, row); // latest record per player
       });
       var rows = Array.from(best.values()).sort(function (a, b) { return b.index - a.index; }).slice(0, 12);
-      document.getElementById('tallyN').textContent = best.size.toLocaleString('en-US');
-      document.getElementById('tally').hidden = false;
+      showTally('tallyP', 'tallyN', best.size);
       playersList(rows);
     })();
   }

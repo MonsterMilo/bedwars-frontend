@@ -37,14 +37,24 @@ class ReplayCamera {
     let drag = null
     dom.addEventListener('pointerdown', (e) => {
       if (e.button !== 0 && e.pointerType === 'mouse') return
-      drag = { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, moved: false }
+      drag = { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, moved: false, mouse: e.pointerType === 'mouse' }
       dom.setPointerCapture(e.pointerId)
     })
+    // Looking around with the mouse locks the cursor in place (like in
+    // game) and lets it go where it was when the button comes up.
+    const locked = () => document.pointerLockElement === dom
+    const lock = () => {
+      if (locked() || !dom.requestPointerLock) return
+      try { const p = dom.requestPointerLock(); if (p && p.catch) p.catch(() => {}) } catch (err) { /* not allowed */ }
+    }
+    const unlock = () => { if (locked()) document.exitPointerLock() }
     dom.addEventListener('pointermove', (e) => {
       if (!drag) return
-      const dx = e.clientX - drag.x; const dy = e.clientY - drag.y
+      let dx = e.clientX - drag.x; let dy = e.clientY - drag.y
+      if (locked()) { dx = e.movementX || 0; dy = e.movementY || 0 }
       drag.x = e.clientX; drag.y = e.clientY
       if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 4) return
+      if (!drag.moved && drag.mouse) lock()
       drag.moved = true
       if (this.mode === 'eyes') this.setMode('follow', this.model) // turning takes you out of their eyes
       const k = 0.0042 * this.sensitivity
@@ -55,6 +65,7 @@ class ReplayCamera {
     const end = (e) => {
       if (drag && !drag.moved && e.type === 'pointerup') this.onClick(e.clientX, e.clientY)
       drag = null
+      unlock()
     }
     dom.addEventListener('pointerup', end); dom.addEventListener('pointercancel', end)
     dom.addEventListener('dblclick', (e) => this.onDoubleClick(e.clientX, e.clientY))

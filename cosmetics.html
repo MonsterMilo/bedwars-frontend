@@ -696,7 +696,7 @@ function render() {
     b.setAttribute("aria-label", `${it.name}, ${RAR[it.rar][0]} ${catOf(it.cat).name}`);
     const thumb = it.lines
       ? `<div class="chat-thumb">${chatHtml(it)}</div>`
-      : `<img alt="" data-id="${it.id}"${thumbs[it.id] ? ` src="${thumbs[it.id]}" class="on"` : ""}>${thumbs[it.id] ? "" : '<div class="shimmer"></div>'}`;
+      : `<img alt="" loading="lazy" decoding="async" data-id="${it.id}"${thumbs[it.id] ? ` src="${thumbs[it.id]}" class="on"` : ""}>${thumbs[it.id] ? "" : '<div class="shimmer"></div>'}`;
     const price = it.price != null ? `<span class="price">${TOKEN}${fmtPrice(it.price)}</span>` : `<span class="price none">${GET_SHORT[it.get] || ""}</span>`;
     b.innerHTML = `<div class="thumb">${thumb}<span class="rar">${RAR[it.rar][0]}</span>${it.season ? `<span class="season">${it.season}</span>` : ""}</div>
       <div class="meta"><span class="nm">${it.name}</span><span class="sub">${catOf(it.cat).name}${price}</span></div>`;
@@ -1554,12 +1554,40 @@ function makeStudio(canvas, w, h) {
 
 /* Card pictures: one hidden renderer plays each preview to its hero moment and snapshots it. */
 const thumbs = {};
+// Card pictures are saved files (cosmetics/thumbs/<id>.webp, made by
+// tools/thumbs.js) so the grid shows at once; a card whose preview changed since
+// its picture was saved (its key no longer matches) is rendered live instead.
+const THUMB_DIR = "cosmetics/thumbs/";
+function thumbKey(it) {
+  const def = PREVIEWS[it.preview] || {};
+  const s = JSON.stringify(it) + "|" + JSON.stringify([def.hero, def.cam, def.stage, def.thumbY, def.rec]);
+  let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return (h >>> 0).toString(36);
+}
+function setThumb(id, src) {
+  thumbs[id] = src;
+  const img = document.querySelector(`img[data-id="${id}"]`);
+  if (img) { img.src = src; img.classList.add("on"); img.nextElementSibling?.classList.contains("shimmer") && img.nextElementSibling.remove(); }
+}
+const THUMB_ALL = new URLSearchParams(location.search).has("thumbs"); // tools/thumbs.js: render every card
 async function makeThumbs() {
+  let saved = {};
+  if (!THUMB_ALL) try { saved = await (await fetch(THUMB_DIR + "index.json", { cache: "no-cache" })).json(); } catch { saved = {}; }
+  const todo = [];
+  for (const it of ITEMS) {
+    if (it.lines) continue;
+    const k = thumbKey(it);
+    if (saved[it.id] === k) setThumb(it.id, `${THUMB_DIR}${it.id}.webp?k=${k}`);
+    else todo.push(it);
+  }
+  window.__thumbIds = ITEMS.filter((it) => !it.lines).map((it) => it.id);
+  window.__thumbsDone = !todo.length;
+  if (!todo.length) return;
   const c = document.createElement("canvas"); c.dataset.thumb = "1";
   const T = makeStudio(c, 480, 360);
   T.camera.position.set(3.7, 2.3, 5.2); T.camera.lookAt(0, 1.05, 0);
-  for (const it of ITEMS) {
-    if (it.lines) continue;
+  const out = {};
+  for (const it of todo) {
     const def = PREVIEWS[it.preview];
     if (def.rec) await loadRec(def.rec);
     const C = def.cam || STAGE_CAM[def.stage || "island"];
@@ -1571,12 +1599,13 @@ async function makeThumbs() {
     Math.random = realRandom;
     if (def.rec) await new Promise((r) => setTimeout(r, 0)); // let item and block meshes attach (they are added once their models load)
     T.renderer.render(T.scene, T.camera);
-    thumbs[it.id] = c.toDataURL("image/webp", 0.9);
-    const img = document.querySelector(`img[data-id="${it.id}"]`);
-    if (img) { img.src = thumbs[it.id]; img.classList.add("on"); img.nextElementSibling?.classList.contains("shimmer") && img.nextElementSibling.remove(); }
+    const url = c.toDataURL("image/webp", 0.9);
+    out[it.id] = { key: thumbKey(it), url };
+    setThumb(it.id, url);
     await new Promise((r) => setTimeout(r, 0));
   }
   T.renderer.dispose();
+  window.__thumbs = out; window.__thumbsDone = true;
 }
 const realRandom = Math.random;
 function seeded(s) { return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }

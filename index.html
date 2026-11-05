@@ -570,6 +570,28 @@ function start() {
     bgMat.uniforms.uRes.value.set(W, H);
   }
 
+  // Drag to spin: press on or near the prism and drag. Let go and it keeps spinning,
+  // then eases back to its slow turn. The prism ignores plain mouse movement.
+  const AUTO = 0.32;
+  const spin = { drag: false, id: null, lx: 0, ly: 0, vy: AUTO, vx: 0, tiltX: 0.12, lastL: null };
+  const nearPrism = (e) => { const L = spin.lastL; if (!L) return false; const r = canvas.getBoundingClientRect();
+    const dx = e.clientX - r.left - L.prism.x, dy = e.clientY - r.top - L.prism.y; return Math.hypot(dx, dy) < L.prism.size * 0.75; };
+  addEventListener("pointerdown", (e) => {
+    if (e.button !== 0 || !nearPrism(e) || e.target.closest("a, button")) return;
+    spin.drag = true; spin.id = e.pointerId; spin.lx = e.clientX; spin.ly = e.clientY; spin.vy = 0; spin.vx = 0;
+    document.body.style.cursor = "grabbing"; document.body.style.userSelect = "none"; e.preventDefault();
+  });
+  addEventListener("pointermove", (e) => {
+    if (!spin.drag) { if (e.pointerType === "mouse") document.body.style.cursor = nearPrism(e) && !e.target.closest("a, button") ? "grab" : ""; return; }
+    if (e.pointerId !== spin.id) return;
+    const dx = e.clientX - spin.lx, dy = e.clientY - spin.ly; spin.lx = e.clientX; spin.ly = e.clientY;
+    prismGroup.rotation.y += dx * 0.01; spin.tiltX = Math.max(-1.2, Math.min(1.2, spin.tiltX + dy * 0.01));
+    spin.vy = dx * 0.6; spin.vx = dy * 0.6;
+  });
+  const endDrag = (e) => { if (!spin.drag || (e && e.pointerId !== spin.id)) return; spin.drag = false; document.body.style.cursor = ""; document.body.style.userSelect = ""; };
+  addEventListener("pointerup", endDrag); addEventListener("pointercancel", endDrag);
+  document.querySelector(".prism-spot").style.touchAction = "none";
+
   const t0 = performance.now(); let shown = false, last = t0;
   function frame(now) {
     if (document.hidden && shown) { requestAnimationFrame(frame); return; }
@@ -597,16 +619,21 @@ function start() {
     splitSpot.position.set(px, py, 0); const ss = S * 0.55 * (1 + 0.06 * Math.sin(t * 2.2)); splitSpot.scale.set(ss, ss, 1); splitSpot.material.uniforms.uI.value = 0.2 + 0.4 * ease(grow) * (0.85 + 0.15 * Math.sin(t * 3.1));
     // prism: slow turn, leans toward the pointer
     prismGroup.position.set(px, py, 0); prismGroup.scale.setScalar(S * 0.5);
-    if (!P.reduce) prismGroup.rotation.y += dt * 0.32;
-    prismGroup.rotation.x = 0.12 + P.mouse.y * 0.18 + Math.sin(t * 0.45) * 0.06;
-    prismGroup.rotation.z = -P.mouse.x * 0.06;
+    spin.lastL = L;
+    if (!spin.drag) {
+      if (!P.reduce || spin.vy !== AUTO) { prismGroup.rotation.y += dt * spin.vy; spin.vy += (( P.reduce ? 0 : AUTO) - spin.vy) * Math.min(1, dt * 1.6); }
+      spin.tiltX += dt * spin.vx; spin.vx *= Math.max(0, 1 - dt * 3);
+      spin.tiltX += (0.12 - spin.tiltX) * Math.min(1, dt * 0.8);
+    }
+    prismGroup.rotation.x = spin.tiltX + (P.reduce ? 0 : Math.sin(t * 0.45) * 0.05);
+    prismGroup.rotation.z = 0;
     rimMat.uniforms.uT.value = t;
     composer.render();
     if (!shown) { shown = true; canvas.classList.add("on"); P.ready3d = true; }
     if (!P.reduce) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
-  if (P.reduce) addEventListener("resize", () => requestAnimationFrame(frame));
+  if (P.reduce) { addEventListener("resize", () => requestAnimationFrame(frame)); addEventListener("pointermove", () => { if (spin.drag) requestAnimationFrame(frame); }); }
 }
 </script>
 </body>

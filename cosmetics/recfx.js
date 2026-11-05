@@ -221,25 +221,29 @@ function fireMat(o) {
 }
 // Enchantment glint. Items (RenderItem.renderEffect): two passes of the glint texture added on
 // (blend SRC_COLOR, ONE; depth EQUAL) in colour 0x8040CC, texture matrix scale 8, translate by
-// system time (3000 ms and 4873 ms loops) and turn -50 / +10 degrees, over the item's atlas UVs
-// (taken here as a 512 px wide atlas). Worn armour (LayerArmorBase): scale 1/3, turn 30 - 60i,
-// translate by ticks * (0.001 + 0.003i) * 20, colour (0.5, 0.25, 0.8) * 0.76.
+// system time (3000 ms and 4873 ms loops) and turn -50 / +10 degrees, applied to the item's UVs
+// in the blocks/items atlas. mc/atlas.json is that atlas as 1.8.9 stitches it from the vanilla
+// textures (TextureMap + Stitcher). Worn armour (LayerArmorBase): scale 1/3, turn 30 - 60i,
+// translate by ticks * (0.001 + 0.003i) * 20, colour (0.5, 0.25, 0.8) * 0.76, over the armour UVs.
 const GLINT_U = { ms: { value: 0 }, ticks: { value: 0 } };
+let ATLAS = null;
+const atlasReady = fetch(MC + "atlas.json").then((r) => r.json()).then((j) => { ATLAS = j; }).catch(() => {});
 const glintMats = {};
-function glintMat(kind, pass) {
-  const k = kind + pass; if (glintMats[k]) return glintMats[k];
+function glintMat(kind, pass, texName) {
+  const spr = kind === "item" ? ATLAS?.s?.[texName] : null;
+  const k = kind + pass + (spr ? spr.join(",") : ""); if (glintMats[k]) return glintMats[k];
   const map = tex("misc_enchanted_item_glint"); map.wrapS = map.wrapT = THREE.RepeatWrapping; map.magFilter = THREE.LinearFilter; map.minFilter = THREE.LinearFilter;
-  const item = kind === "item";
+  const W = ATLAS?.w || 512, H = ATLAS?.h || 512, [x, y, w, h] = spr || [0, 0, 16, 16];
   const m = new THREE.ShaderMaterial({
-    uniforms: { map: { value: map }, ms: GLINT_U.ms, ticks: GLINT_U.ticks },
+    uniforms: { map: { value: map }, ms: GLINT_U.ms, ticks: GLINT_U.ticks, off: { value: new THREE.Vector2(x / W, y / H) }, sz: { value: new THREE.Vector2(w / W, h / H) } },
     vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-    fragmentShader: `uniform sampler2D map; uniform float ms; uniform float ticks; varying vec2 vUv;
+    fragmentShader: `uniform sampler2D map; uniform float ms; uniform float ticks; uniform vec2 off; uniform vec2 sz; varying vec2 vUv;
       vec2 rot(vec2 p, float a) { float c = cos(a), s = sin(a); return vec2(c * p.x - s * p.y, s * p.x + c * p.y); }
       void main() {
-        vec2 t; vec3 col;
-        ${item ? `float f = ${pass ? "-mod(ms, 4873.0) / 4873.0 / 8.0" : "mod(ms, 3000.0) / 3000.0 / 8.0"};
-        t = 8.0 * (rot(vUv * (16.0 / 512.0), radians(${pass ? "10.0" : "-50.0"})) + vec2(f, 0.0)); col = vec3(0.502, 0.251, 0.8);`
-        : `t = (1.0 / 3.0) * rot(vUv + vec2(0.0, ticks * ${pass ? "0.004" : "0.001"} * 20.0), radians(${pass ? "-30.0" : "30.0"})); col = vec3(0.5, 0.25, 0.8) * 0.76;`}
+        vec2 st = vec2(vUv.x, 1.0 - vUv.y), t; vec3 col; // GL texture space: t runs down the image
+        ${kind === "item" ? `float f = ${pass ? "-mod(ms, 4873.0) / 4873.0 / 8.0" : "mod(ms, 3000.0) / 3000.0 / 8.0"};
+        t = 8.0 * (rot(off + st * sz, radians(${pass ? "10.0" : "-50.0"})) + vec2(f, 0.0)); col = vec3(0.502, 0.251, 0.8);`
+        : `t = (1.0 / 3.0) * rot(st + vec2(0.0, ticks * ${pass ? "0.004" : "0.001"} * 20.0), radians(${pass ? "-30.0" : "30.0"})); col = vec3(0.5, 0.25, 0.8) * 0.76;`}
         vec3 c = texture2D(map, vec2(t.x, 1.0 - t.y)).rgb * col; c = c * c; // SRC_COLOR, ONE adds src squared; near mid tones that step is about the same in linear light
         gl_FragColor = vec4(c, 1.0);
       }`,
@@ -247,9 +251,9 @@ function glintMat(kind, pass) {
   });
   return (glintMats[k] = m);
 }
-function addItemGlint(g) { // a glint pass over every mesh of the item, sharing its geometry
+function addItemGlint(g) { // a glint pass over every mesh of the item, sharing its geometry and its atlas sprite
   const ms = []; g.traverse((o) => { if (o.isMesh && !o.userData.glint) ms.push(o); });
-  for (const o of ms) for (const pass of [0, 1]) { const q = new THREE.Mesh(o.geometry, glintMat("item", pass)); q.userData.glint = true; q.renderOrder = 2 + pass; o.add(q); }
+  for (const o of ms) for (const pass of [0, 1]) { const q = new THREE.Mesh(o.geometry, glintMat("item", pass, o.userData.tex)); q.userData.glint = true; q.renderOrder = 2 + pass; o.add(q); }
 }
 export function animateTextures(ticks) { GLINT_U.ms.value = performance.now(); GLINT_U.ticks.value = ticks; if (fireTex) fireTex.offset.y = 1 - (FIRE_ORDER[((ticks % 32) + 32) % 32] + 1) / 32 + 0.01 / 512; }
 // A block model in 0..1 block space, faces as the game bakes them.
@@ -296,7 +300,7 @@ blockMesh.raw = function (els, tint, g = new THREE.Group()) {
     geo.computeVertexNormals();
     const o = { side: THREE.FrontSide }; if (L.tint != null) o.color = new THREE.Color(L.tint).convertSRGBToLinear();
     if (TRANSLUCENT.has(L.t)) { o.transparent = true; o.alphaTest = 0; o.depthWrite = false; }
-    g.add(new THREE.Mesh(geo, L.t === "fire_layer_0" ? fireMat(o) : emat("block_" + L.t, o)));
+    const mesh = new THREE.Mesh(geo, L.t === "fire_layer_0" ? fireMat(o) : emat("block_" + L.t, o)); mesh.userData.tex = "block_" + L.t; g.add(mesh);
   }
   return g;
 };
@@ -819,7 +823,7 @@ export function createRecFx(kit0) {
       def.flat.forEach((nm, n) => flatItemGeo(nm).then((geo) => {
         const tn = def.tints?.[n];
         const m = new THREE.MeshLambertMaterial({ map: tex(nm), alphaTest: 0.1, color: tn != null ? new THREE.Color(tn) : 0xffffff, polygonOffset: n > 0, polygonOffsetFactor: -n, polygonOffsetUnits: -n });
-        g.add(new THREE.Mesh(geo, m)); if (--left === 0) { if (it.glint) addItemGlint(g); onReady?.(); }
+        const mesh = new THREE.Mesh(geo, m); mesh.userData.tex = nm; g.add(mesh); if (--left === 0) { if (it.glint) addItemGlint(g); onReady?.(); }
       }));
       return g;
     }
@@ -1802,7 +1806,7 @@ export function createRecFx(kit0) {
     const blockTex = () => { const t = new Set(); for (const d of Object.values(MODELS || {})) for (const e of (Array.isArray(d) ? d : d.e || [])) for (const f of Object.values(e.faces)) t.add("block_" + f.t); return [...t]; };
     const itemTex = () => Object.values(MODELS || {}).flatMap((d) => d.flat || []);
     const banners = data?.ev ? [...new Set(data.ev.flatMap((e) => (e[1] === "eq" && e[4]?.banner ? e[4].banner[1].map((p) => p[0]) : [])))] : [];
-    return Promise.all([modelsReady.then(() => Promise.all(blockTex().concat(itemTex()).map((n) => img(n).catch(() => {})))), loadFont(), skinShape(KILLER_SKIN), skinShape(DUMMY_SKIN),
+    return Promise.all([atlasReady, modelsReady.then(() => Promise.all(blockTex().concat(itemTex()).map((n) => img(n).catch(() => {})))), loadFont(), skinShape(KILLER_SKIN), skinShape(DUMMY_SKIN),
       ...Object.values(ITEM_TEX).flatMap((n) => [img(n).catch(() => {}), n.startsWith("item_leather_") ? img(n + "_overlay").catch(() => {}) : null]), ...ALL_TEX.concat(DYES.map((d) => "item_dye_" + d), heads, banners.length ? ["banner_base", ...banners.map((b) => "banner_" + (PATTERN[b] || "base"))] : []).map((n) => img(n).catch(() => {}))]);
   }
   return { build, preload };

@@ -97,7 +97,12 @@ function synthesize (tl) {
     return v
   }
 
+  const owned = new Set() // sounds made by one player's own body
+  function markOwner (tr, first) {
+    for (let i = first; i < out.length; i++) { owned.add(out[i]); if (tr.self) out[i].self = true }
+  }
   for (const tr of tl.tracks.values()) {
+    const first = out.length
     // Hits and deaths.
     for (const t of tr.hurts) {
       const s = tr.stateAt(t); if (!s) continue
@@ -146,7 +151,7 @@ function synthesize (tl) {
     }
     // Footsteps: Entity.moveEntity plays one each time the distance walked
     // (x 0.6) passes the next whole number, on the block underfoot.
-    if (!tr.tx) continue
+    if (!tr.tx) { markOwner(tr, first); continue }
     let walked = 0; let next = 1
     for (let k = 1; k < tr.tx.length; k++) {
       if (!tr.talive[k] || !tr.talive[k - 1]) continue
@@ -173,6 +178,7 @@ function synthesize (tl) {
       const st = soundType(below)
       add(t, st.step, tr.tx[k], tr.ty[k], tr.tz[k], st.vol * 0.15, st.pitch)
     }
+    markOwner(tr, first)
   }
 
   for (const e of tl.entities.values()) {
@@ -195,6 +201,18 @@ function synthesize (tl) {
   }
   for (const f of tl.effects) {
     if (f.kind === 'explosion') add(f.t, 'random.explode', f.x, f.y, f.z, 4, (1 + (rnd() - rnd()) * 0.2) * 0.7)
+  }
+  // The recording player's own sounds (their steps, hits, eating, and
+  // anything else that happened right where they stood, like the blocks
+  // they bridge with) get played quieter: in a replay you mostly watch
+  // from right next to them, and at full level they drown out everyone else.
+  const me = [...tl.tracks.values()].find(tr => tr.self)
+  if (me) {
+    for (const s of out) {
+      if (s.self || s.everywhere || owned.has(s)) continue
+      const p = me.stateAt(s.t)
+      if (p && Math.hypot(s.x - p.x, s.y - (p.y + 0.8), s.z - p.z) < 2) s.self = true
+    }
   }
   out.sort((a, b) => a.t - b.t)
   // Shared with the particles (sprint dust, eating crumbs).

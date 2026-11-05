@@ -41,9 +41,10 @@ function tex(name) {
   }
   return texCache[name];
 }
-const imgCache = {};
+const imgCache = {}, TEX_H = {};
+const KILLER_SKIN = "cosmetics/skins/killer.png", DUMMY_SKIN = "cosmetics/skins/dummy.png";
 function img(name) {
-  if (!imgCache[name]) imgCache[name] = new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = name.includes("/") ? name : MC + name + ".png"; });
+  if (!imgCache[name]) imgCache[name] = new Promise((res, rej) => { const i = new Image(); i.onload = () => { TEX_H[name] = i.height; res(i); }; i.onerror = rej; i.src = name.includes("/") ? name : MC + name + ".png"; });
   return imgCache[name];
 }
 const ALL_TEX = ["particles", "explosion", "ascii", "entity_chicken", "entity_wolf", "entity_bat", "entity_squid", "entity_skeleton", "entity_steve", "entity_experience_orb", "armor_leather_layer_1", "armor_leather_layer_1_overlay",
@@ -51,6 +52,9 @@ const ALL_TEX = ["particles", "explosion", "ascii", "entity_chicken", "entity_wo
   "item_iron_sword", "item_stick", "item_bone", "item_cookie", "item_gold_ingot", "item_beef_raw", "item_beef_cooked", "item_leather", "item_egg", "item_fireworks", "item_leather_chestplate",
   "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel"];
 const matCache = {};
+// Skin base layers are drawn solid, as the game makes them when it loads a skin
+// (ImageBufferDownload.setAreaOpaque): a see-through pixel keeps its colour.
+const OPAQUE = { alphaTest: 0, side: THREE.FrontSide };
 // Entity materials: lit like the rest of the studio. `hurt` tints them the way
 // the game's hurt overlay does (30% red over the lit texture).
 function emat(name, opts = {}) {
@@ -232,9 +236,9 @@ function headMesh(kit, it) {
     const m = emat("entity_skeleton"); kit.cube(g, m, 64, 32, 0, 0, [-4, -8, -4, 8, 8, 8]);
   } else {
     const name = it.head ? `cosmetics/heads/${it.head}.png` : "entity_steve";
-    const m = emat(name);
-    kit.cube(g, m, 64, 64, 0, 0, [-4, -8, -4, 8, 8, 8]);
-    kit.cube(g, m, 64, 64, 32, 0, [-4, -8, -4, 8, 8, 8], false, 0.25);
+    const m = emat(name), base = emat(name, OPAQUE), th = TEX_H[name] || 64; // older skins are 64x32
+    kit.cube(g, base, 64, th, 0, 0, [-4, -8, -4, 8, 8, 8]);
+    kit.cube(g, m, 64, th, 32, 0, [-4, -8, -4, 8, 8, 8], false, 0.25);
   }
   return g;
 }
@@ -576,15 +580,15 @@ export function createRecFx(kit0) {
   // ---- living models -----------------------------------------------------
   // Each returns {m (model group in the corpse group), set(e, pt) poses it}.
   function bipedSkin(e, skinTex, slim) {
-    const mat = emat(skinTex);
+    const mat = emat(skinTex), baseM = emat(skinTex, OPAQUE);
     const m = new THREE.Group();
-    const head = piece(m); cube(head, mat, 64, 64, 0, 0, [-4, -8, -4, 8, 8, 8]); cube(head, mat, 64, 64, 32, 0, [-4, -8, -4, 8, 8, 8], false, 0.5);
-    const body = piece(m); cube(body, mat, 64, 64, 16, 16, [-4, 0, -2, 8, 12, 4]); cube(body, mat, 64, 64, 16, 32, [-4, 0, -2, 8, 12, 4], false, 0.25);
+    const head = piece(m); cube(head, baseM, 64, 64, 0, 0, [-4, -8, -4, 8, 8, 8]); cube(head, mat, 64, 64, 32, 0, [-4, -8, -4, 8, 8, 8], false, 0.5);
+    const body = piece(m); cube(body, baseM, 64, 64, 16, 16, [-4, 0, -2, 8, 12, 4]); cube(body, mat, 64, 64, 16, 32, [-4, 0, -2, 8, 12, 4], false, 0.25);
     const aw = slim ? 3 : 4;
-    const armR = piece(m, [-5, slim ? 2.5 : 2, 0]); cube(armR, mat, 64, 64, 40, 16, [-3 + (slim ? 1 : 0), -2, -2, aw, 12, 4]); cube(armR, mat, 64, 64, 40, 32, [-3 + (slim ? 1 : 0), -2, -2, aw, 12, 4], false, 0.25);
-    const armL = piece(m, [5, slim ? 2.5 : 2, 0]); cube(armL, mat, 64, 64, 32, 48, [-1, -2, -2, aw, 12, 4]); cube(armL, mat, 64, 64, 48, 48, [-1, -2, -2, aw, 12, 4], false, 0.25);
-    const legR = piece(m, [-1.9, 12, 0]); cube(legR, mat, 64, 64, 0, 16, [-2, 0, -2, 4, 12, 4]); cube(legR, mat, 64, 64, 0, 32, [-2, 0, -2, 4, 12, 4], false, 0.25);
-    const legL = piece(m, [1.9, 12, 0]); cube(legL, mat, 64, 64, 16, 48, [-2, 0, -2, 4, 12, 4]); cube(legL, mat, 64, 64, 0, 48, [-2, 0, -2, 4, 12, 4], false, 0.25);
+    const armR = piece(m, [-5, slim ? 2.5 : 2, 0]); cube(armR, baseM, 64, 64, 40, 16, [-3 + (slim ? 1 : 0), -2, -2, aw, 12, 4]); cube(armR, mat, 64, 64, 40, 32, [-3 + (slim ? 1 : 0), -2, -2, aw, 12, 4], false, 0.25);
+    const armL = piece(m, [5, slim ? 2.5 : 2, 0]); cube(armL, baseM, 64, 64, 32, 48, [-1, -2, -2, aw, 12, 4]); cube(armL, mat, 64, 64, 48, 48, [-1, -2, -2, aw, 12, 4], false, 0.25);
+    const legR = piece(m, [-1.9, 12, 0]); cube(legR, baseM, 64, 64, 0, 16, [-2, 0, -2, 4, 12, 4]); cube(legR, mat, 64, 64, 0, 32, [-2, 0, -2, 4, 12, 4], false, 0.25);
+    const legL = piece(m, [1.9, 12, 0]); cube(legL, baseM, 64, 64, 16, 48, [-2, 0, -2, 4, 12, 4]); cube(legL, mat, 64, 64, 0, 48, [-2, 0, -2, 4, 12, 4], false, 0.25);
     const held = new THREE.Group(); armR.add(held);
     return {
       m, scale: 0.9375, parts: { head, body, armR, armL, legR, legL }, held,
@@ -615,7 +619,7 @@ export function createRecFx(kit0) {
   }
   function armorStand(e) { // ModelArmorStand: the stand is invisible in every effect, its layers are not
     const m = new THREE.Group(), hl = new THREE.Group(), al = new THREE.Group(); m.add(hl, al);
-    const head = piece(hl), body = piece(m), armR = piece(al, [-5, 2, 0]), armL = piece(m, [5, 2, 0]);
+    const head = piece(hl, [0, 1, 0]), body = piece(m), armR = piece(al, [-5, 2, 0]), armL = piece(m, [5, 2, 0]);
     const held = new THREE.Group(); armR.add(held);
     return {
       m, hl, al, scale: 1, parts: { head, body, armR, armL }, held, stand: true,
@@ -872,7 +876,8 @@ export function createRecFx(kit0) {
     function setupLiving(e) {
       const corpse = new THREE.Group(); e.g.add(corpse); e.corpse = corpse;
       const bob = new THREE.Group(); corpse.add(bob); e.bobG = bob;
-      e.model = e.kind === "player" ? bipedSkin(e, e.killer ? "cosmetics/skins/killer.png" : "cosmetics/skins/dummy.png", false) : MOB_MODEL[e.type]?.(e);
+      const skin = e.killer ? KILLER_SKIN : DUMMY_SKIN;
+      e.model = e.kind === "player" ? bipedSkin(e, skin, !!SLIM[skin]) : MOB_MODEL[e.type]?.(e);
       if (!e.model) return;
       const mg = new THREE.Group(); const s = e.model.scale; mg.scale.setScalar(s); mg.position.y = 1.5078125 * s; mg.add(e.model.m); bob.add(mg); e.mg = mg;
       e.height = HEIGHT[e.kind === "player" ? "player" : e.type] || 1;
@@ -1049,7 +1054,7 @@ export function createRecFx(kit0) {
     const blocks = {};
     function runningParticles(e) { // Entity.createRunningParticles on the floor block (grass/dirt crumbs)
       const t = tileOf("block_dirt"); if (t < 0) return;
-      W.spawn(new Crumb(e.x + (rand() - 0.5) * 0.6, e.y + 0.1, e.z + (rand() - 0.5) * 0.6, -e.mx * 4, 1.5, -e.mz * 4, t, 0.6, true));
+      W.spawn(new Crumb(e.x + (rand() - 0.5) * 0.6, e.y + 0.1, e.z + (rand() - 0.5) * 0.6, -e.mx * 4, 1.5, -e.mz * 4, t, 0.6, false)); // EntityDiggingFX: speeds are randomised and normalised like every particle
     }
 
     // ---- per tick
@@ -1183,7 +1188,21 @@ export function createRecFx(kit0) {
     // ---- run: packets are handled at the start of the tick they arrived in
     const ev = data.ev; let k = 0, n = 0;
     const T0 = Math.floor((ev[0][0] - 60) / TICK) * TICK;
-    return (t) => {
+    // Where the effect is happening, for a camera that drifts after it: the middle of
+    // every effect entity and live particle, held toward the fight so it only leans.
+    function focus() {
+      let x = 0, y = 1, z = -1, sx = 0, sy = 0, sz = 0, sw = 0;
+      const addP = (px, py, pz, k) => { sx += px * k; sy += py * k; sz += pz * k; sw += k; };
+      for (const e of ents.values()) {
+        if (e.kind === "player" || (e.type === 30 && Math.abs(e.sx + 5) < 0.01 && Math.abs(e.sz) < 0.01)) continue; // fighters and the preview camera stand
+        if (e.g && !e.g.visible) continue;
+        addP(e.x, e.y + (e.height || 0.5) / 2, e.z, 3);
+      }
+      for (const b of Object.values(batches)) for (let i = 0; i < b.list.length; i += Math.max(1, b.list.length >> 7)) { const q = b.list[i]; addP(q.x, q.y, q.z, 1); }
+      if (sw > 0) { const k = Math.min(1, sw / 12); x += (sx / sw - x) * k; y += (sy / sw - y) * k; z += (sz / sw - z) * k; }
+      return { x, y, z, w: sw };
+    }
+    const run = (t) => {
       const ms = T0 + t * 1000;
       while (T0 + n * TICK <= ms) {
         const until = T0 + n * TICK;
@@ -1193,6 +1212,8 @@ export function createRecFx(kit0) {
       const pt = clamp((ms - (T0 + (n - 1) * TICK)) / TICK, 0, 1);
       draw(pt);
     };
+    run.focus = focus;
+    return run;
   }
 
   // RenderLightningBolt at the game's size: eight 16-block segments wandering
@@ -1227,9 +1248,12 @@ export function createRecFx(kit0) {
   }
 
   // Everything a recording can show, so a picture taken right away is complete.
+  // A skin is slim (3-pixel arms) when the strip a 4-pixel arm would use is empty.
+  const SLIM = {};
+  const skinShape = (n) => img(n).then((i) => { const c = document.createElement("canvas"); c.width = 64; c.height = 64; const x = c.getContext("2d"); x.drawImage(i, 0, 0); SLIM[n] = x.getImageData(54, 20, 1, 1).data[3] === 0; }).catch(() => {});
   function preload(data) {
     const heads = data ? [...new Set((JSON.stringify(data).match(/"head":"[0-9a-f]+"/g) || []).map((x) => x.slice(8, -1)))].map((h) => `cosmetics/heads/${h}.png`) : [];
-    return Promise.all([modelsReady, loadFont(), ...ALL_TEX.concat(DYES.map((d) => "item_dye_" + d), heads).map((n) => img(n).catch(() => {}))]);
+    return Promise.all([modelsReady, loadFont(), skinShape(KILLER_SKIN), skinShape(DUMMY_SKIN), ...ALL_TEX.concat(DYES.map((d) => "item_dye_" + d), heads).map((n) => img(n).catch(() => {}))]);
   }
   return { build, preload };
 }

@@ -341,6 +341,7 @@
 <script type="module">
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { createRecFx } from "./cosmetics/recfx.js";
 
 /* ------------------------------------------------------------------ data
    Real Bed Wars cosmetics. Names, descriptions, rarity, price and how to get
@@ -377,16 +378,48 @@ function km(lines) {
 }
 const ITEMS = [
   // Final kill effects
-  { id: "lightning-strike", cat: "final", name: "Lightning Strike", rar: "common", price: 5000, get: "shop",
-    desc: "Killing an enemy will wake up Thor.", tags: "thunder bolt storm", preview: "lightning" },
-  { id: "tnt", cat: "final", name: "TNT", rar: "common", price: 5000, get: "shop",
-    desc: "Killing an enemy will make them disappear into TNT.", tags: "explosion boom", preview: "tnt" },
-  { id: "squid-missile", cat: "final", name: "Squid Missile", rar: "common", price: 5000, get: "shop",
-    desc: "Killing an enemy will spawn a fellow companion.", tags: "squid rocket firework", preview: "squid" },
-  { id: "heart-aura", cat: "final", name: "Heart Aura", rar: "rare", price: 10000, get: "shop",
-    desc: "Killing an enemy will spawn lots of love.", tags: "hearts love", preview: "hearts" },
-  { id: "burning-shoes", cat: "final", name: "Burning Shoes", rar: "rare", price: 10000, get: "shop",
-    desc: "Killing an enemy will set your feet on fire.", tags: "fire flame feet", preview: "burningShoes" },
+  // Final kill effects recorded from Hypixel's own lobby preview (cosmetics/fx/<id>.json,
+  // replayed by cosmetics/recfx.js). Rarity, price and wording from the in-game menu.
+  { id: "squid-missile", cat: "final", name: "Squid Missile", rar: "common", price: 5000, get: "shop", desc: "Killing an enemy will spawn a fellow companion.", tags: "squid rocket firework", rec: "squid-missile", hero: 1.5 },
+  { id: "firework", cat: "final", name: "Firework", rar: "common", price: 5000, get: "shop", desc: "Killing an enemy will launch fireworks.", tags: "rocket", rec: "firework", hero: 2.0 },
+  { id: "lightning-strike", cat: "final", name: "Lightning Strike", rar: "common", price: 5000, get: "shop", desc: "Killing an enemy will wake up Thor.", tags: "thunder bolt storm", rec: "lightning-strike", hero: 1.1 },
+  { id: "tnt", cat: "final", name: "TNT", rar: "common", price: 5000, get: "shop", desc: "Killing an enemy will make them disappear into TNT.", tags: "explosion boom", rec: "tnt", hero: 2.2 },
+  { id: "heart-aura", cat: "final", name: "Heart Aura", rar: "rare", price: 10000, get: "shop", desc: "Killing an enemy will spawn lots of love.", tags: "hearts love", rec: "heart-aura", hero: 2.2 },
+  { id: "burning-shoes", cat: "final", name: "Burning Shoes", rar: "rare", price: 10000, get: "shop", desc: "Killing an enemy will set your feet on fire.", tags: "fire flame feet", rec: "burning-shoes", hero: 1.5 },
+  { id: "cookie-fountain", cat: "final", name: "Cookie Fountain", rar: "rare", price: 10000, get: "shop", desc: "Killing an enemy will let cookies sprinkle out of you.", tags: "cookies food", rec: "cookie-fountain", hero: 2.2 },
+  { id: "campfire", cat: "final", name: "Campfire", rar: "rare", price: 10000, get: "shop", desc: "Killing an enemy will place down a campfire.", tags: "fire sticks smoke", rec: "campfire", hero: 2.2 },
+  { id: "wing-gusts", cat: "final", name: "Wing Gusts", rar: "rare", price: 10000, get: "shop", desc: "Scatter your enemies to the wind!", tags: "wind dragon wings", rec: "wing-gusts", hero: 2.2 },
+  { id: "head-rocket", cat: "final", name: "Head Rocket", rar: "rare", price: 10000, get: "shop", desc: "Killing an enemy will launch their head up in the skies.", tags: "skull firework", rec: "head-rocket", hero: 1.5 },
+  { id: "easter-egg-theft", cat: "final", name: "Easter Egg Theft", rar: "rare", price: null, get: "event", season: "Easter", desc: "Killing an enemy will make them drop easter eggs.", tags: "eggs easter", rec: "easter-egg-theft", hero: 2.1 },
+  { id: "magnolia", cat: "final", name: "Magnolia", rar: "rare", price: null, get: "event", season: "Easter", desc: "They're only around for a short time but they're beautiful!", tags: "flowers pink petals", rec: "magnolia", hero: 2.2 },
+  { id: "black-mark", cat: "final", name: "Black Mark", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Killing an enemy will make them *poof* out of the realm existence.", tags: "smoke poof", rec: "black-mark", hero: 1.6 },
+  { id: "last-candle", cat: "final", name: "Last Candle", rar: "rare", price: null, get: "event", season: "Holidays", desc: "Killing an enemy will spawn a torch in their place.", tags: "torch candle hologram", rec: "last-candle", hero: 2.2 },
+  { id: "fire-breath", cat: "final", name: "Fire Breath", rar: "rare", price: 10000, get: "shop", desc: "Killing an enemy will spawn a fire breath effect.", tags: "fire flame", rec: "fire-breath", hero: 2.2 },
+  { id: "its-raining-gold", cat: "final", name: "Its Raining Gold", rar: "rare", price: null, get: "challenges", desc: "Killing an enemy will rain gold upon you.", tags: "gold ingots blocks", rec: "its-raining-gold", hero: 2.2 },
+  { id: "blood-explosion", cat: "final", name: "Blood Explosion", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will make them explode in blood.", tags: "blood redstone", rec: "blood-explosion", hero: 2.1 },
+  { id: "rekt", cat: "final", name: "Rekt", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will drop a hologram remembering your victory.", tags: "hologram text", rec: "rekt", hero: 2.2 },
+  { id: "pinata", cat: "final", name: "Piñata", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will make them explode like a Piñata.", tags: "pinata dye candy", rec: "pi-ata", hero: 1.6 },
+  { id: "experience-orb", cat: "final", name: "Experience Orb", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will make it rain experience on top of their corpse.", tags: "xp exp orbs", rec: "experience-orb", hero: 1.8 },
+  { id: "smiley", cat: "final", name: "Smiley", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will show your smiley in the air.", tags: "smiley face flames", rec: "smiley", hero: 2.3, cam: [[-9, 3.4, -3], [0.2, 2.6, 1.6], 5, 40, [-7, 4.2, -2.5], [0.4, 3.6, 3]] },
+  { id: "raining-easter-eggs", cat: "final", name: "Raining Easter Eggs", rar: "epic", price: null, get: "event", season: "Easter", desc: "It's raining Easter Eggs!", tags: "eggs easter", rec: "raining-easter-eggs", hero: 3.0 },
+  { id: "hatching-eggs", cat: "final", name: "Hatching Eggs", rar: "epic", price: null, get: "event", season: "Easter", desc: "Hatching eggs are falling from the sky!", tags: "eggs chickens", rec: "hatching-eggs", hero: 5.5 },
+  { id: "lantern-spiral", cat: "final", name: "Lantern Spiral", rar: "epic", price: 25000, get: "shop", desc: "Create a fabulous display of lanterns spiraling into the sky.", tags: "lanterns heads spiral", rec: "lantern-spiral", hero: 2.2 },
+  { id: "blood-bats", cat: "final", name: "Blood Bats", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Spawn some blood hungry bats.", tags: "bats blood", rec: "blood-bats", hero: 2.0 },
+  { id: "skeletal-remains", cat: "final", name: "Skeletal Remains", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Turn your victim into a pile of bones!", tags: "skull bones skeleton", rec: "skeletal-remains", hero: 2.4 },
+  { id: "bunny-explosion", cat: "final", name: "Bunny Explosion", rar: "epic", price: null, get: "event", season: "Easter", desc: "Killing an enemy will spawn easter bunnies around them.", tags: "rabbits bunnies", rec: "bunny-explosion", hero: 3.0 },
+  { id: "chicken-tower", cat: "final", name: "Chicken Tower", rar: "epic", price: null, get: "event", season: "Easter", desc: "Killing an enemy will spawn chicken that will stack up to a tower.", tags: "chickens stack", rec: "chicken-tower", hero: 5.5 },
+  { id: "rain-on-my-parade", cat: "final", name: "Rain on my Parade", rar: "epic", price: null, get: "event", season: "Easter", desc: "Who doesn't love a good rain shower?", tags: "rain cloud water", rec: "rain-on-my-parade", hero: 2.2 },
+  { id: "kill-counter", cat: "final", name: "Kill Counter", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Killing an enemy drops a hologram showing your total number of final kills.", tags: "hologram number", rec: "kill-counter", hero: 2.2 },
+  { id: "haunted", cat: "final", name: "Haunted", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Killing an enemy will cause their soul to separate from their body and fly around!", tags: "ghost soul", rec: "haunted", hero: 1.5 },
+  { id: "pumpkin-rocket", cat: "final", name: "Pumpkin Rocket", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Launch pumpkins into the sky from where your victim died!", tags: "pumpkins rocket", rec: "pumpkin-rocket", hero: 2.6 },
+  { id: "jack-o-twister", cat: "final", name: "Jack O' Twister", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Send your victims into a twist.", tags: "pumpkins jack o lantern tornado", rec: "jack-o-twister", hero: 1.5 },
+  { id: "snow-globe", cat: "final", name: "Snow Globe", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Killing an enemy will spawn a musical snow globe that will play 1 of 6 Festive jingles.", tags: "snow music notes", rec: "snow-globe", hero: 2.2 },
+  { id: "gift-explosion", cat: "final", name: "Gift Explosion", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Make your enemies burst into holiday gift!", tags: "presents gifts", rec: "gift-explosion", hero: 2.2 },
+  { id: "holiday-fireworks", cat: "final", name: "Holiday Fireworks", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Launches holiday-colored fireworks into the sky!", tags: "fireworks christmas", rec: "holiday-fireworks", hero: 2.2 },
+  { id: "spirit", cat: "final", name: "Spirit", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will spawn the Spirit kill effect.", tags: "wolf", rec: "spirit", hero: 2.2 },
+  { id: "beef-everywhere", cat: "final", name: "Beef Everywhere", rar: "epic", price: 25000, get: "shop", desc: "Explosion of beef!", tags: "beef steak meat", rec: "beef-everywhere", hero: 1.5 },
+  { id: "anvil-smash", cat: "final", name: "Anvil Smash", rar: "epic", price: null, get: "challenges", desc: "An anvil will smash into the ground when you kill a player.", tags: "anvil", rec: "anvil-smash", hero: 1.6 },
+  // Older previews built by hand (not recorded yet)
   { id: "tornado", cat: "final", name: "Tornado", rar: "legendary", price: 100000, get: "shop",
     desc: "Killing an enemy will summon a vortex!", tags: "wind vortex sparks", preview: "tornado" },
   { id: "batcrux", cat: "final", name: "Batcrux", rar: "legendary", price: 300000, get: "event", season: "Halloween",
@@ -905,19 +938,6 @@ function makeBat() {
   };
   return root;
 }
-// 1.8 ModelSquid with the game's squid texture; tentacles pulse like an out-of-water squid.
-function makeSquid() {
-  const M = mcModel("squid"), root = new THREE.Group(), g = new THREE.Group(); root.add(g);
-  const body = M.piece([0, 8, 0]); M.cube(body, 0, 0, [-6, -8, -6, 12, 16, 12]); g.add(body);
-  const tents = [];
-  for (let k = 0; k < 8; k++) {
-    const a = k * Math.PI * 2 / 8, t = M.piece([Math.cos(a) * 5, 15, Math.sin(a) * 5]);
-    M.cube(t, 48, 0, [-1, 0, -1, 2, 18, 2]); t.userData.y = k * Math.PI * -2 / 8 + Math.PI / 2; g.add(t); tents.push(t);
-  }
-  g.position.y = 33 * PX; // tentacle tips at the feet
-  root.userData.wiggle = (t) => { const ang = Math.abs(Math.sin(t * 5)) * Math.PI * .25 + .1; for (const x of tents) M.rot(x, ang, x.userData.y); };
-  return root;
-}
 // 1.8 ModelDragon (256x256 texture, 1 px = 1/16 block), posed the way the game
 // draws a dragon in steady flight: neck and tail swaying with the wing beat,
 // wings and wing tips beating, legs tucked. A second, glowing pass draws the eyes.
@@ -1096,43 +1116,6 @@ function itemSprite(name, size) {
 }
 const FW_COLORS = [0xff5555, 0x55ffff, 0xffff55, 0xff55ff, 0x55ff55, 0x5555ff, 0xffaa00, 0xffffff];
 
-// 1.8 lightning: 4 nested additive tubes, 8 jagged 16-block segments from the sky
-// plus two side branches, the same random walk as RenderLightningBolt. Drawn at
-// a smaller scale so the zig-zag fits the stage.
-function lightningGeo(vertex) {
-  const r0 = seeded(vertex), ri = (n) => Math.floor(r0() * n);
-  const ax = [], az = []; let d0 = 0, d1 = 0;
-  for (let i = 7; i >= 0; i--) { ax[i] = d0; az[i] = d1; d0 += ri(11) - 5; d1 += ri(11) - 5; }
-  const pos = [], col = [];
-  const SY = 0.18, SXZ = 0.2, SW = 0.16;
-  const quad = (a, b, c, d, k) => { for (const p of [a, b, c, a, c, d]) pos.push(p[0], p[1], p[2]); for (let i = 0; i < 6; i++) col.push(.45, .45, .5); };
-  for (let k1 = 0; k1 < 4; k1++) {
-    const r1 = seeded(vertex); const rr = (n) => Math.floor(r1() * n);
-    for (let j = 0; j < 3; j++) {
-      const k = j > 0 ? 7 - j : 7, l = j > 0 ? k - 2 : 0;
-      let d2 = ax[k] - d0, d3 = az[k] - d1;
-      for (let i1 = k; i1 >= l; i1--) {
-        const d4 = d2, d5 = d3;
-        if (j === 0) { d2 += rr(11) - 5; d3 += rr(11) - 5; } else { d2 += rr(31) - 15; d3 += rr(31) - 15; }
-        let w0 = .1 + k1 * .2, w1 = .1 + k1 * .2;
-        if (j === 0) { w0 *= i1 * .1 + 1; w1 *= (i1 - 1) * .1 + 1; }
-        w0 *= SW; w1 *= SW;
-        const yb = i1 * 16 * SY, yt = (i1 + 1) * 16 * SY;
-        const bx = d2 * SXZ, bz = d3 * SXZ, tx = d4 * SXZ, tz = d5 * SXZ;
-        const C = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
-        for (let s = 0; s < 4; s++) {
-          const a = C[s], b = C[(s + 1) % 4];
-          quad([bx + a[0] * w0, yb, bz + a[1] * w0], [bx + b[0] * w0, yb, bz + b[1] * w0], [tx + b[0] * w1, yt, tz + b[1] * w1], [tx + a[0] * w1, yt, tz + a[1] * w1]);
-        }
-      }
-    }
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
-  return g;
-}
-const BOLT_MAT = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: .2, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
 // The puff a mob leaves when it finishes dying: 20 "explode" particles in its box.
 function deathPuff(S, at) {
   for (let i = 0; i < 20; i++) {
@@ -1144,70 +1127,7 @@ function deathPuff(S, at) {
 function burst(S, pos, colors) {
   for (let i = 0; i < 110; i++) S.fx.spawn({ frames: SPARK, pos: pos.clone(), vel: sphere(rnd(3.5, 4.5)), life: rnd(1.1, 1.7), grav: 1.4, drag: .9, size: .2, color: colors[i % colors.length], add: true });
 }
-const POP_PITCH = [.6, .62, .65, .67, .7, .75, .79, .86, .92, 1, 1.1, 1.21, 1.33, 1.49, 1.68];
 const PREVIEWS = {
-  // The bolt shows for 3 ticks, then re-strikes 1 to 3 times with a new shape, like the game's.
-  lightning: { loop: 4.4, hero: 1.04, build(S) {
-    const k = killScene(S), flashes = []; let t0 = 1.0;
-    for (let n = 0, re = 1 + Math.floor(Math.random() * 3); n <= re; n++) {
-      const on = n ? .1 : .15; flashes.push({ a: t0, b: t0 + on, v: 1 + Math.floor(Math.random() * 1e6) });
-      t0 += on + (1 + Math.floor(Math.random() * 10)) / 20;
-    }
-    const bolt = new THREE.Mesh(new THREE.BufferGeometry(), BOLT_MAT); bolt.visible = false; S.item.add(bolt);
-    let shown = 0;
-    return (t, dt) => {
-      killAnim(S, k, t);
-      S.at(1.0, () => { S.sound("ambient.weather.thunder", .95, 1); S.sound("random.explode", .57, .7); });
-      S.at(1.06, () => { for (let i = 0; i < 5; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.3, .3), rnd(.2, 1.4), rnd(-.3, .3)), vel: V(rnd(-.1, .1), .5, rnd(-.1, .1)), life: rnd(1.2, 2), size: rnd(.4, .6), color: 0x3c3c3c }); });
-      const f = flashes.find((x) => t >= x.a && t < x.b);
-      if (f && shown !== f.v) { bolt.geometry.dispose(); bolt.geometry = lightningGeo(f.v); shown = f.v; }
-      bolt.visible = !!f;
-      const ended = flashes.filter((x) => x.b <= t).pop();
-      S.flash(f ? 1 : ended ? Math.max(0, 1 - (t - ended.b) / .3) : 0);
-    };
-  } },
-  tnt: { loop: 4, hero: 1.5, build(S) {
-    const k = killScene(S); let tnt = null;
-    return (t, dt) => {
-      killAnim(S, k, t);
-      S.at(1.0, () => { S.sound("fireworks.launch", 1, 1);
-        tnt = makeBlock([btex("tnt_side"), btex("tnt_side"), btex("tnt_top"), btex("tnt_bottom"), btex("tnt_side"), btex("tnt_side")]); tnt.position.set(0, .5, 0); S.item.add(tnt);
-        for (let i = 0; i < 30; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(.1, 1.8), rnd(-.4, .4)), vel: V(0, rnd(.2, .6), 0), life: 1.2, size: .2, color: 0x555555 }); });
-      // Primed TNT flashes white every 5 ticks and swells just before it goes.
-      if (tnt && t < 2.55) { const fuse = (2.55 - t) * 20, on = Math.floor(fuse / 5) % 2 === 0; for (const m of tnt.material) m.color.setScalar(on ? 2.4 : 1);
-        const sw = fuse < 10 ? 1 + (1 - fuse / 10) * .3 : 1; tnt.scale.setScalar(sw); }
-      S.at(2.55, () => { tnt.visible = false; S.sound("random.explode", .79, .8); S.explode(V(0, .6, 0)); });
-    };
-  } },
-  squid: { loop: 4.2, hero: 1.9, build(S) {
-    const k = killScene(S); let squid = null, pops = 0;
-    return (t, dt) => {
-      killAnim(S, k, t);
-      S.at(1.02, () => { squid = makeSquid(); squid.position.set(0, 0, 0); S.item.add(squid); });
-      if (squid && t < 2.67) {
-        const k2 = t - 1.02; squid.position.y = k2 * k2 * 1.3; squid.rotation.y += dt * 2.5;
-        squid.userData.wiggle(t);
-        if (t > 1.17 && Math.random() < .7) S.fx.spawn({ frames: [48], pos: squid.position.clone().add(V(rnd(-.15, .15), rnd(-.1, .2), rnd(-.15, .15))), vel: V(rnd(-.1, .1), -.4, rnd(-.1, .1)), life: rnd(.4, .8), size: .14, shrink: true });
-        while (pops < POP_PITCH.length && t > 1.17 + pops * .1) { S.sound("random.pop", POP_PITCH[pops], .6); pops++; }
-      }
-      S.at(2.67, () => { squid.visible = false; S.sound("fireworks.blast", 1, 1); S.firework(squid.position.clone().add(V(0, .6, 0)), [0x3a7bff, 0xffffff]); });
-    };
-  } },
-  hearts: { loop: 3.6, hero: 1.55, build(S) {
-    const k = killScene(S);
-    return (t, dt) => {
-      killAnim(S, k, t);
-      S.at(1.3, () => { for (let i = 0; i < 100; i++) S.fx.spawn({ frames: [80], pos: V(rnd(-1, 1), rnd(.2, 2.2), rnd(-1, 1)), vel: V(rnd(-.2, .2), rnd(.3, .9), rnd(-.2, .2)), life: rnd(1.2, 2), size: rnd(.18, .26), drag: .97 }); });
-    };
-  } },
-  burningShoes: { loop: 3.6, hero: 1.4, build(S) {
-    const k = killScene(S); let acc = 0;
-    return (t, dt) => {
-      killAnim(S, k, t);
-      if (t > 1.06 && t < 3.0) for (acc += dt; acc > .0066; acc -= .0066) {
-        const f = k.killer.root.position; S.fx.spawn({ frames: [48], pos: V(f.x + rnd(-.25, .25), rnd(0, .2), f.z + rnd(-.2, .2)), vel: V(0, rnd(.1, .45), 0), life: rnd(.4, .8), size: .13, shrink: true }); }
-    };
-  } },
   tornado: { loop: 4.6, hero: 1.9, build(S) {
     const k = killScene(S); let acc = 0;
     return (t, dt) => {
@@ -1402,6 +1322,23 @@ const PREVIEWS = {
 };
 
 /* ------------------------------------------------------------------ studio renderer */
+// Recorded final kill effects: each item with `rec` plays its recording on the
+// arena (the in-game preview walks the killer in from five blocks away). The
+// camera starts where Hypixel's preview camera stands, a little further back.
+const REC = createRecFx({ setBoxUV });
+const recData = {}, recLoading = {};
+const loadRec = (id) => recLoading[id] || (recLoading[id] = fetch(`cosmetics/fx/${id}.json`).then((r) => r.json()).then((d) => REC.preload(d).then(() => (recData[id] = d))));
+const REC_CAM = [[-8.6, 3.1, -2.4], [0, 1.3, -1.6], 5, 40, [-7.6, 3.1, -2.6], [0, 1.7, -1.0]];
+for (const it of ITEMS) if (it.rec) {
+  it.preview = "rec:" + it.id;
+  PREVIEWS[it.preview] = { stage: "arena", cam: it.cam || REC_CAM, rec: it.rec, loop: null, hero: it.hero || 2.1, build(S) {
+    const def = this; let run = null;
+    const go = (d) => { def.loop = (Math.max(d.end, d.cam) - d.ev[0][0]) / 1000 + 1.4; run = REC.build(S, d); };
+    if (recData[it.rec]) go(recData[it.rec]);
+    else loadRec(it.rec).then((d) => { if (S.def === def && S.it === it) { S.t = 0; go(d); } });
+    return (t) => run?.(t);
+  } };
+}
 function cssColor(v) { const el = document.createElement("i"); el.style.color = `var(${v})`; document.body.appendChild(el); const c = getComputedStyle(el).color; el.remove(); const m = c.match(/[\d.]+/g).map(Number); return new THREE.Color(m[0] / 255, m[1] / 255, m[2] / 255); }
 const ACCENT = cssColor("--accent"), ACCENT2 = cssColor("--accent-2");
 
@@ -1540,6 +1477,11 @@ function makeStudio(canvas, w, h) {
   const rim = new THREE.DirectionalLight(ACCENT, 2.2); rim.position.set(-4, -0.4, -6); scene.add(rim);
   const island = makeIsland(); scene.add(island);
   const glow = new THREE.PointLight(ACCENT, 6, 9, 1.6); glow.position.set(0, -2.6, 0); scene.add(glow);
+  // Recorded previews use the game's own entity light (RenderHelper standard lighting:
+  // two white lights from fixed directions at 0.6 plus 0.4 ambient), so colours match the game.
+  const mcAmb = new THREE.AmbientLight(0xffffff, 0.4 * Math.PI), mcL0 = new THREE.DirectionalLight(0xffffff, 0.6 * Math.PI), mcL1 = new THREE.DirectionalLight(0xffffff, 0.6 * Math.PI);
+  mcL0.position.set(0.2, 1, -0.7); mcL1.position.set(-0.2, 1, 0.7);
+  for (const l of [mcAmb, mcL0, mcL1]) { l.visible = false; scene.add(l); }
   // Two far-off islands for depth.
   for (const [x, y, z, k] of [[-9, -1.5, -12, .45], [10, 1.2, -16, .35]]) { const f = makeIsland(true); f.position.set(x, y, z); f.scale.setScalar(k); scene.add(f); }
   // Slow motes drifting in the light, for depth.
@@ -1557,6 +1499,7 @@ function makeStudio(canvas, w, h) {
     S.fx.clear(); S.anims = []; S.fired = new Set();
     for (const c of [...item.children]) { item.remove(c); c.traverse?.((o) => { o.geometry?.dispose(); }); }
     item.rotation.set(0, 0, 0);
+    S.mc = !!def.rec; for (const l of [hemi, key, rim, glow]) l.visible = !S.mc; for (const l of [mcAmb, mcL0, mcL1]) l.visible = S.mc;
     S.flash(0); S.setStage(def.stage); arena?.userData.reset();
     S.def = def; S.it = it; S.t = 0; S.tick = def.build(S, it);
   };
@@ -1589,7 +1532,7 @@ function makeStudio(canvas, w, h) {
   S.blast = (c, r) => arena?.userData.blast(c, r);
   S.groundAt = (x, z) => S.stage === "arena" && arena.userData.solid(Math.round(x), Math.round(z));
   // Lightning lights up the whole world for a moment, as in the game.
-  S.flash = (k) => { hemi.intensity = 1.3 + k * 1.1; sky.intensity = k * 35; };
+  S.flash = (k) => { hemi.intensity = 1.3 + k * 1.1; sky.intensity = S.mc ? 0 : k * 35; mcAmb.intensity = (0.4 + k * 0.6) * Math.PI; };
   S.step = (dt) => {
     S.t += dt; S.clock = (S.clock || 0) + dt;
     island.position.y = Math.sin(S.clock * 0.8) * 0.04; item.position.y = island.position.y; S.fx.g.position.y = island.position.y;
@@ -1614,6 +1557,7 @@ async function makeThumbs() {
   for (const it of ITEMS) {
     if (it.lines) continue;
     const def = PREVIEWS[it.preview];
+    if (def.rec) await loadRec(def.rec);
     const C = def.cam || STAGE_CAM[def.stage || "island"];
     T.camera.position.set(C[4][0], C[4][1] + (def.thumbY ? .4 : 0), C[4][2]); T.camera.lookAt(C[5][0], def.thumbY || C[5][1], C[5][2]);
     Math.random = seeded(it.id.length * 97 + 13);
@@ -1621,6 +1565,7 @@ async function makeThumbs() {
     const steps = Math.round(def.hero * 60);
     for (let i = 0; i < steps; i++) T.step(1 / 60);
     Math.random = realRandom;
+    if (def.rec) await new Promise((r) => setTimeout(r, 0)); // let item and block meshes attach (they are added once their models load)
     T.renderer.render(T.scene, T.camera);
     thumbs[it.id] = c.toDataURL("image/webp", 0.9);
     const img = document.querySelector(`img[data-id="${it.id}"]`);
@@ -1654,11 +1599,15 @@ function resize() {
   studio.camera.aspect = r.width / r.height; studio.camera.updateProjectionMatrix();
 }
 // ?at=1.2 holds every preview still at that second (for checking a single moment).
-const HOLD = parseFloat(new URLSearchParams(location.search).get("at"));
+let HOLD = parseFloat(new URLSearchParams(location.search).get("at"));
+window.__seek = (t) => { if (t < studio.t) studio.load(PREVIEWS[current.preview], current); HOLD = t; };
+// ?cam=x,y,z,tx,ty,tz places the camera (and stops the spin) for checking a view.
+const CAMQ = new URLSearchParams(location.search).get("cam")?.split(",").map(Number);
 function frame(now) {
+  if (CAMQ?.length === 6) { controls.autoRotate = false; studio.camera.position.set(CAMQ[0], CAMQ[1], CAMQ[2]); controls.target.set(CAMQ[3], CAMQ[4], CAMQ[5]); }
   raf = requestAnimationFrame(frame);
   const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
-  if (HOLD >= 0) { if (studio.t < HOLD) { studio.audible = false; while (studio.t < HOLD) studio.step(1 / 60); } }
+  if (HOLD >= 0) { if (studio.t < HOLD) { studio.audible = false; for (let n = 0; studio.t < HOLD && n < 3000; n++) studio.step(1 / 60); } }
   else studio.step(dt * speed);
   controls.update();
   studio.renderer.render(studio.scene, studio.camera);
@@ -1760,7 +1709,7 @@ buildRail(); tally(); render(); syncMute();
 const deep = location.hash.slice(1);
 if (deep && ITEMS.some((i) => i.id === deep)) openStudio(deep, false);
 addEventListener("hashchange", () => { const h = location.hash.slice(1); if (h && h !== current?.id && ITEMS.some((i) => i.id === h)) openStudio(h, false); });
-makeThumbs();
+if (!(HOLD >= 0)) makeThumbs(); // checking a moment skips the thumbnails
 </script>
 </body>
 </html>

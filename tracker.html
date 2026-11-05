@@ -7061,6 +7061,9 @@ html[data-theme="deepcurrent"] .card-stat-value { font-family: 'JetBrains Mono',
 .clip-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--team, var(--accent)); }
 .clip-card:hover { transform: translateY(-2px); border-color: var(--accent); }
 .clip-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.clip-card-other { background: transparent; border-style: dashed; }
+.clip-card-other.is-active, .clip-card-other:hover { border-style: solid; }
+.clip-strip li.clip-game-start { margin-left: 10px; padding-left: 12px; border-left: 1px solid var(--border); }
 .clip-card.is-active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 6px 18px var(--accent-soft); }
 .clip-kind { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 0.9em; }
 .clip-kind svg { width: 16px; height: 16px; flex: 0 0 auto; color: var(--team, var(--accent)); }
@@ -23708,6 +23711,44 @@ function playModalClip(clip, card) {
   modalClipBar.hidden = false;
   siteAudio.play("click");
 }
+/** One card in a player's clip strip. `other`: a clip from the same game
+ *  that's about someone else (named on the card). */
+function buildClipCard(c, uuid, other) {
+  const li = document.createElement("li");
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = other ? "clip-card clip-card-other" : "clip-card";
+  // A /clip is coloured by this player's team in it.
+  const me = c.kind === "manual" && !other ? (c.people || []).find(p => p.uuid === uuid.replace(/-/g, "").toLowerCase() || p.name.toLowerCase() === String(openPlayerName || "").toLowerCase()) : null;
+  const team = c.kind === "manual" ? me && me.team : c.team;
+  if (team && CLIP_TEAM_COLORS[team]) card.style.setProperty("--team", CLIP_TEAM_COLORS[team]);
+  const what = c.kind === "bed" ? "Bed break" : c.kind === "manual" ? "Clip" : "Final kill";
+  const played = c.playedAt ? new Date(c.playedAt) : null;
+  const date = played && !isNaN(played) ? played.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+  const kind = document.createElement("span");
+  kind.className = "clip-kind";
+  kind.innerHTML = CLIP_ICONS[CLIP_ICONS[c.kind] ? c.kind : "final"];
+  kind.append(what);
+  const by = document.createElement("span");
+  by.className = "clip-by";
+  // Someone else's: whose it is. Theirs: a nick they used that game.
+  const whose = other ? (c.kind === "manual" ? (c.people || []).map(p => p.name).slice(0, 3).join(", ") : c.victim || c.username) : "";
+  const shownAs = other ? "" : c.kind === "manual" ? me && me.name : c.victim;
+  const asNick = shownAs && openPlayerName && shownAs.toLowerCase() !== String(openPlayerName).toLowerCase() ? ` (as ${shownAs})` : "";
+  const byText = c.by ? `${c.kind === "manual" ? "clipped by" : "by"} ${c.by}` : "";
+  by.textContent = other ? [whose, byText].filter(Boolean).join(" · ") : byText + asNick;
+  const meta = document.createElement("span");
+  meta.className = "clip-meta";
+  meta.textContent = [other ? "Same game" : c.map, date, `${Math.round((c.durationMs || 0) / 1000)}s`].filter(Boolean).join(" · ");
+  const playIcon = document.createElement("span");
+  playIcon.className = "clip-play";
+  playIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 001.5.86l12-7.5a1 1 0 000-1.72l-12-7.5A1 1 0 007 4.5z"/></svg>';
+  card.append(kind, by, meta, playIcon);
+  card.setAttribute("aria-label", `Play ${what.toLowerCase()}${whose ? " of " + whose : ""}${c.by ? " by " + c.by : ""}${other ? ", same game" : ""}${date ? ", " + date : ""}`);
+  card.addEventListener("click", () => playModalClip(c, card));
+  li.appendChild(card);
+  return li;
+}
 async function loadModalClips(uuid) {
   modalClips.hidden = true;
   modalClipsList.textContent = "";
@@ -23719,43 +23760,29 @@ async function loadModalClips(uuid) {
     const name = /^\w{1,16}$/.test(String(openPlayerName || "")) ? `&name=${encodeURIComponent(openPlayerName)}` : "";
     const res = await fetch(`${backendBaseURL}/clips?uuid=${encodeURIComponent(uuid)}${name}`, { headers: adminHeaders() });
     if (!res.ok) return;
-    const { clips = [] } = await res.json();
+    const { clips = [], sameGame = [] } = await res.json();
     if (modal.dataset.activeUuid !== uuid || !clips.length) return;
-    modalClipsCount.textContent = String(clips.length);
+    // Their clips, with the other clips from the same games next to them
+    // (Milo 2026-11-05: a tracked team's four final kills show on each of
+    // them). Newest game first; each game in the order it happened.
+    const games = new Map();
     for (const c of clips) {
-      const li = document.createElement("li");
-      const card = document.createElement("button");
-      card.type = "button";
-      card.className = "clip-card";
-      // A /clip is coloured by this player's team in it.
-      const me = c.kind === "manual" ? (c.people || []).find(p => p.uuid === uuid.replace(/-/g, "").toLowerCase() || p.name.toLowerCase() === String(openPlayerName || "").toLowerCase()) : null;
-      const team = c.kind === "manual" ? me && me.team : c.team;
-      if (team && CLIP_TEAM_COLORS[team]) card.style.setProperty("--team", CLIP_TEAM_COLORS[team]);
-      const what = c.kind === "bed" ? "Bed break" : c.kind === "manual" ? "Clip" : "Final kill";
-      const played = c.playedAt ? new Date(c.playedAt) : null;
-      const date = played && !isNaN(played) ? played.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
-      const kind = document.createElement("span");
-      kind.className = "clip-kind";
-      kind.innerHTML = CLIP_ICONS[CLIP_ICONS[c.kind] ? c.kind : "final"];
-      kind.append(what);
-      const by = document.createElement("span");
-      by.className = "clip-by";
-      // A nick they used that game shows too.
-      const shownAs = c.kind === "manual" ? me && me.name : c.victim;
-      const asNick = shownAs && openPlayerName && shownAs.toLowerCase() !== String(openPlayerName).toLowerCase() ? ` (as ${shownAs})` : "";
-      by.textContent = (c.by ? `${c.kind === "manual" ? "clipped by" : "by"} ${c.by}` : "") + asNick;
-      const meta = document.createElement("span");
-      meta.className = "clip-meta";
-      meta.textContent = [c.map, date, `${Math.round((c.durationMs || 0) / 1000)}s`].filter(Boolean).join(" · ");
-      const playIcon = document.createElement("span");
-      playIcon.className = "clip-play";
-      playIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 001.5.86l12-7.5a1 1 0 000-1.72l-12-7.5A1 1 0 007 4.5z"/></svg>';
-      card.append(kind, by, meta, playIcon);
-      card.setAttribute("aria-label", `Play ${what.toLowerCase()}${c.by ? " by " + c.by : ""}${date ? ", " + date : ""}`);
-      card.addEventListener("click", () => playModalClip(c, card));
-      li.appendChild(card);
-      modalClipsList.appendChild(li);
+      const g = String(c.replayId || c.id);
+      if (!games.has(g)) games.set(g, []);
+      games.get(g).push({ c, other: false });
     }
+    for (const c of sameGame) { const g = games.get(String(c.replayId)); if (g) g.push({ c, other: true }); }
+    let first = true;
+    for (const list of games.values()) {
+      list.sort((a, b) => (a.c.at || 0) - (b.c.at || 0));
+      list.forEach(({ c, other }, i) => {
+        const li = buildClipCard(c, uuid, other);
+        if (i === 0 && !first) li.classList.add("clip-game-start");
+        modalClipsList.appendChild(li);
+      });
+      first = false;
+    }
+    modalClipsCount.textContent = String(modalClipsList.children.length);
     modalClips.hidden = false;
   } catch (err) {
     // No clips then - the rest of the popup is unaffected.

@@ -50,7 +50,7 @@ function img(name) {
 const ALL_TEX = ["particles", "entity_sign", "explosion", "ascii", "entity_chicken", "entity_wolf", "entity_bat", "entity_squid", "entity_skeleton", "entity_steve", "entity_experience_orb", "armor_leather_layer_1", "armor_leather_layer_1_overlay", "armor_leather_layer_2", "armor_leather_layer_2_overlay", "entity_armorstand", "entity_cow", "entity_iron_golem", "entity_witch", "entity_guardian", "entity_guardian_beam", "block_fire_layer_0_strip",
   "rabbit_brown", "rabbit_white", "rabbit_black", "rabbit_white_splotched", "rabbit_gold", "rabbit_salt", "cosmetics/skins/killer.png", "cosmetics/skins/dummy.png",
   "item_iron_sword", "item_stick", "item_bone", "item_cookie", "item_gold_ingot", "item_beef_raw", "item_beef_cooked", "item_leather", "item_egg", "item_fireworks", "item_leather_chestplate",
-  "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel", "entity_zombie", "entity_creeper", "entity_banner_base", "misc_enchanted_item_glint",
+  "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel", "entity_zombie", "entity_creeper", "entity_banner_base", "misc_enchanted_item_glint", "entity_wither_skeleton", "entity_zombie_pigman", "entity_zombie_villager", "entity_blaze", "entity_creeper_armor", "entity_snowman", "entity_enderman", "entity_enderman_eyes", "entity_villager_smith", "entity_wither", "entity_wither_invulnerable",
   ...["iron", "gold", "diamond", "chainmail"].flatMap((m) => ["armor_" + m + "_layer_1", "armor_" + m + "_layer_2"])];
 const matCache = {};
 // Skin base layers are drawn solid, as the game makes them when it loads a skin
@@ -622,6 +622,19 @@ class Smoke extends FX { // EntitySmokeFX (smoke 11 at 1x, largesmoke 12 at 2.5x
   update() { this.prev(); if (this.age++ >= this.maxAge) this.dead = true; this.tex = 7 - Math.floor(this.age * 8 / this.maxAge); this.my += 0.004; const y0 = this.y; this.move(this.mx, this.my, this.mz); if (this.y === y0) { this.mx *= 1.1; this.mz *= 1.1; } this.mx *= 0.96; this.my *= 0.96; this.mz *= 0.96; if (this.onGround) { this.mx *= 0.7; this.mz *= 0.7; } }
   size(pt) { return 0.1 * this.base * grow32(this, pt); }
 }
+class Portal extends FX { // EntityPortalFX (portal, 24): pulled back in from where it starts
+  constructor(x, y, z, mx, my, mz) {
+    super(x, y, z, mx, my, mz, true); this.mx = mx; this.my = my; this.mz = mz; this.ox = x; this.oy = y; this.oz = z;
+    const f = rand() * 0.6 + 0.4; this.base = this.scale = rand() * 0.2 + 0.5; this.r = 0.9 * f; this.g = 0.3 * f; this.b = f;
+    this.maxAge = Math.floor(rand() * 10) + 40; this.noClip = true; this.tex = Math.floor(rand() * 8);
+  }
+  update() {
+    this.prev(); const f = this.age / this.maxAge, f1 = 1 - (-f + f * f * 2);
+    this.x = this.ox + this.mx * f1; this.y = this.oy + this.my * f1 + (1 - f); this.z = this.oz + this.mz * f1;
+    if (this.age++ >= this.maxAge) this.dead = true;
+  }
+  size(pt) { let f = (this.age + pt) / this.maxAge; f = 1 - f; f *= f; f = 1 - f; return 0.1 * this.base * f; }
+}
 class Cloud extends FX { // EntityCloudFX (cloud, 29)
   constructor(x, y, z, mx, my, mz) {
     super(x, y, z, 0, 0, 0, true); const f = 2.5; this.mx = this.mx * 0.1 + mx; this.my = this.my * 0.1 + my; this.mz = this.mz * 0.1 + mz;
@@ -1109,8 +1122,10 @@ export function createRecFx(kit0) {
   }
   const headAngles = (e, pt) => [lerp(e.ppitch, e.pitch, pt) * D2R, wrap(lerpAng(e.phead, e.head, pt) - lerpAng(e.pbody, e.body, pt)) * D2R];
   function cow(e) { // ModelCow (ModelQuadruped 12, 64x32)
-    const mat = emat("entity_cow"), m = new THREE.Group(), g = new THREE.Group(); m.add(g);
-    const head = piece(g, [0, 4, -8]); cube(head, mat, 64, 32, 0, 0, [-4, -4, -6, 8, 8, 6]); cube(head, mat, 64, 32, 22, 0, [-5, -5, -4, 1, 3, 1]); cube(head, mat, 64, 32, 22, 0, [4, -5, -4, 1, 3, 1]);
+    const mat = emat("entity_cow"), m = new THREE.Group(), g = new THREE.Group(), hg = new THREE.Group(); m.add(g, hg);
+    // ModelQuadruped as a child: the head full size, 8px lower and 4px back; the rest at half size, 24px down in that scale
+    if (e.child) { hg.position.set(0, -8 / 16, -4 / 16); g.scale.setScalar(0.5); g.position.y = -24 / 16 * 0.5; }
+    const head = piece(hg, [0, 4, -8]); cube(head, mat, 64, 32, 0, 0, [-4, -4, -6, 8, 8, 6]); cube(head, mat, 64, 32, 22, 0, [-5, -5, -4, 1, 3, 1]); cube(head, mat, 64, 32, 22, 0, [4, -5, -4, 1, 3, 1]);
     const body = piece(g, [0, 5, 2]); cube(body, mat, 64, 32, 18, 4, [-6, -10, -7, 12, 18, 10]); cube(body, mat, 64, 32, 52, 0, [-2, 2, -8, 4, 6, 1]);
     const legs = [[-4, 12, 7], [4, 12, 7], [-4, 12, -6], [4, 12, -6]].map((rp) => { const p = piece(g, rp); cube(p, mat, 64, 32, 0, 16, [-2, 0, -2, 4, 12, 4]); return p; });
     return {
@@ -1208,8 +1223,168 @@ export function createRecFx(kit0) {
       },
     };
   }
-  const MOB_MODEL = { 30: armorStand, 78: armorStand, 93: chicken, 101: rabbit, 95: wolf, 65: bat, 94: squid, 92: cow, 99: ironGolem, 66: witch, 68: guardian };
-  const HEIGHT = { 30: 1.975, 78: 1.975, 93: 0.7, 101: 0.7, 95: 0.85, 65: 0.9, 94: 0.95, 92: 1.3, 99: 2.9, 66: 1.95, 68: 0.85, player: 1.8 };
+  // ---- shopkeeper mobs: the 1.8 client's own models (ModelZombie, ModelSkeleton, ModelZombieVillager,
+  // ModelCreeper, ModelBlaze, ModelSnowMan, ModelEnderman, ModelVillager, ModelWither) and renderers.
+  const idleArms = (age) => [Math.sin(age * 0.067) * 0.05, Math.cos(age * 0.09) * 0.05 + 0.05]; // ModelBiped's arm drift (x, z)
+  function zombieLike(e, texName, th, thin, villager, scale = 1) {
+    const mat = emat(texName), m = new THREE.Group();
+    const head = piece(m);
+    if (villager) { cube(head, mat, 64, th, 0, 32, [-4, -10, -4, 8, 10, 8]); cube(head, mat, 64, th, 24, 32, [-1, -3, -6, 2, 4, 2]); }
+    else cube(head, mat, 64, th, 0, 0, [-4, -8, -4, 8, 8, 8]);
+    cube(head, mat, 64, th, 32, 0, [-4, -8, -4, 8, 8, 8], false, 0.5);
+    const body = piece(m); cube(body, mat, 64, th, 16, 16, [-4, 0, -2, 8, 12, 4]);
+    const armR = piece(m, [-5, 2, 0]), armL = piece(m, [5, 2, 0]);
+    const legR = piece(m, [thin ? -2 : -1.9, 12, 0]), legL = piece(m, [thin ? 2 : 1.9, 12, 0]);
+    if (thin) { // ModelSkeleton: 2-pixel arms and legs
+      cube(armR, mat, 64, th, 40, 16, [-1, -2, -1, 2, 12, 2]); cube(armL, mat, 64, th, 40, 16, [-1, -2, -1, 2, 12, 2], true);
+      cube(legR, mat, 64, th, 0, 16, [-1, 0, -1, 2, 12, 2]); cube(legL, mat, 64, th, 0, 16, [-1, 0, -1, 2, 12, 2], true);
+    } else {
+      cube(armR, mat, 64, th, 40, 16, [-3, -2, -2, 4, 12, 4]); cube(armL, mat, 64, th, 40, 16, [-1, -2, -2, 4, 12, 4], true);
+      cube(legR, mat, 64, th, 0, 16, [-2, 0, -2, 4, 12, 4]); cube(legL, mat, 64, th, 0, 16, [-2, 0, -2, 4, 12, 4], true);
+    }
+    const held = new THREE.Group(); armR.add(held);
+    return {
+      m, scale, parts: { head, body, armR, armL, legR, legL }, held,
+      set(e, pt) { // ModelZombie.setRotationAngles: both arms held straight out, drifting
+        const ls = lerp(e.pls, e.ls, pt), la = lerp(e.pla, e.la, pt), [hx, hy] = headAngles(e, pt), [dx, dz] = idleArms(e.age + pt);
+        const sw = e.swingAt(pt), f6 = Math.sin(sw * Math.PI), f7 = Math.sin((1 - (1 - sw) * (1 - sw)) * Math.PI);
+        rot(head, hx, hy, 0);
+        rot(armR, -Math.PI / 2 - (f6 * 1.2 - f7 * 0.4) + dx, -(0.1 - f6 * 0.6), dz);
+        rot(armL, -Math.PI / 2 - (f6 * 1.2 - f7 * 0.4) - dx, 0.1 - f6 * 0.6, -dz);
+        rot(legR, Math.cos(ls * 0.6662) * 1.4 * la); rot(legL, Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la);
+      },
+    };
+  }
+  const skeleton = (e) => e.meta["13"] === 1 ? zombieLike(e, "entity_wither_skeleton", 32, true, false, 1.2) : zombieLike(e, "entity_skeleton", 32, true, false);
+  const zombie = (e) => e.meta["13"] === 1 ? zombieLike(e, "entity_zombie_villager", 64, false, true) : zombieLike(e, "entity_zombie", 64, false, false);
+  const pigman = (e) => zombieLike(e, "entity_zombie_pigman", 64, false, false);
+  function creeperBoxes(parent, mat, inf) {
+    const head = piece(parent, [0, 6, 0]); cube(head, mat, 64, 32, 0, 0, [-4, -8, -4, 8, 8, 8], false, inf);
+    const body = piece(parent, [0, 6, 0]); cube(body, mat, 64, 32, 16, 16, [-4, 0, -2, 8, 12, 4], false, inf);
+    const legs = [[-2, 18, 4], [2, 18, 4], [-2, 18, -4], [2, 18, -4]].map((rp) => { const p = piece(parent, rp); cube(p, mat, 64, 32, 0, 16, [-2, 0, -2, 4, 6, 4], false, inf); return p; });
+    return { head, body, legs };
+  }
+  function creeper(e) { // ModelCreeper; LayerCreeperCharge draws ModelCreeper(2.0) over a powered one, its texture sliding
+    const m = new THREE.Group(), base = new THREE.Group(); m.add(base);
+    const B = creeperBoxes(base, emat("entity_creeper"), 0);
+    let C = null, ct = null;
+    if (e.meta["17"] === 1) {
+      ct = tex("entity_creeper_armor").clone(); ct.wrapS = ct.wrapT = THREE.RepeatWrapping; ct.needsUpdate = true;
+      const cm = new THREE.MeshBasicMaterial({ map: ct, color: new THREE.Color(0.5, 0.5, 0.5).convertSRGBToLinear(), transparent: true, depthWrite: !(e.meta["0"] & 32),
+        blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, side: THREE.DoubleSide });
+      const cg = new THREE.Group(); m.add(cg); C = creeperBoxes(cg, cm, 2);
+    }
+    const pose = (P, hx, hy, ls, la) => { rot(P.head, hx, hy, 0); rot(P.legs[0], Math.cos(ls * 0.6662) * 1.4 * la); rot(P.legs[1], Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la); rot(P.legs[2], Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la); rot(P.legs[3], Math.cos(ls * 0.6662) * 1.4 * la); };
+    return {
+      m, scale: 1, base,
+      set(e, pt) {
+        const ls = lerp(e.pls, e.ls, pt), la = lerp(e.pla, e.la, pt), [hx, hy] = headAngles(e, pt);
+        pose(B, hx, hy, ls, la);
+        if (C) { pose(C, hx, hy, ls, la); const f = e.age + pt; if (ct.image) { ct.offset.set(f * 0.01, -f * 0.01); } }
+      },
+    };
+  }
+  function blaze(e) { // ModelBlaze: a head and three rings of rods circling and bobbing
+    const mat = emat("entity_blaze"), m = new THREE.Group();
+    const head = piece(m); cube(head, mat, 64, 32, 0, 0, [-4, -4, -4, 8, 8, 8]);
+    const rods = []; for (let i = 0; i < 12; i++) { const p = piece(m); cube(p, mat, 64, 32, 0, 16, [0, 0, 0, 2, 8, 2]); rods.push(p); }
+    return {
+      m, scale: 1, bright: true,
+      set(e, pt) {
+        const a = e.age + pt, [hx, hy] = headAngles(e, pt);
+        let f = a * Math.PI * -0.1; for (let i = 0; i < 4; i++, f++) setRP(rods[i], [Math.cos(f) * 9, -2 + Math.cos((i * 2 + a) * 0.25), Math.sin(f) * 9]);
+        f = Math.PI / 4 + a * Math.PI * 0.03; for (let i = 4; i < 8; i++, f++) setRP(rods[i], [Math.cos(f) * 7, 2 + Math.cos((i * 2 + a) * 0.25), Math.sin(f) * 7]);
+        f = 0.47123894 + a * Math.PI * -0.05; for (let i = 8; i < 12; i++, f++) setRP(rods[i], [Math.cos(f) * 5, 11 + Math.cos((i * 1.5 + a) * 0.5), Math.sin(f) * 5]);
+        rot(head, hx, hy, 0);
+      },
+    };
+  }
+  function snowman(e) { // ModelSnowMan (64x64, every box 0.5 smaller) and LayerSnowmanHead's pumpkin
+    const mat = emat("entity_snowman"), m = new THREE.Group();
+    const head = piece(m, [0, 4, 0]); cube(head, mat, 64, 64, 0, 0, [-4, -8, -4, 8, 8, 8], false, -0.5);
+    const body = piece(m, [0, 13, 0]); cube(body, mat, 64, 64, 0, 16, [-5, -10, -5, 10, 10, 10], false, -0.5);
+    const bottom = piece(m, [0, 24, 0]); cube(bottom, mat, 64, 64, 0, 36, [-6, -12, -6, 12, 12, 12], false, -0.5);
+    const handR = piece(m, [0, 6, 0]), handL = piece(m, [0, 6, 0]);
+    cube(handR, mat, 64, 64, 32, 0, [-1, 0, -1, 12, 2, 2], false, -0.5); cube(handL, mat, 64, 64, 32, 0, [-1, 0, -1, 12, 2, 2], false, -0.5);
+    // head.postRender, translate(0, -0.34375, 0), turn 180, scale(0.625, -0.625, -0.625), the pumpkin as worn (HEAD)
+    const gl = new THREE.Group(); gl.scale.set(1, -1, -1); head.add(gl);
+    const t = new THREE.Group(); t.position.set(0, -0.34375, 0); t.rotation.y = Math.PI; t.scale.set(0.625, -0.625, -0.625); gl.add(t);
+    const two = new THREE.Group(); two.scale.setScalar(2); t.add(two); two.add(renderItemNode({ id: 86 }));
+    return {
+      m, scale: 1,
+      set(e, pt) {
+        const [hx, hy] = headAngles(e, pt), by = hy * 0.25, f = Math.sin(by), f1 = Math.cos(by);
+        rot(head, hx, hy, 0); rot(body, 0, by, 0);
+        setRP(handR, [f1 * 5, 6, -f * 5]); rot(handR, 0, by, 1);
+        setRP(handL, [-f1 * 5, 6, f * 5]); rot(handL, 0, Math.PI + by, -1);
+      },
+    };
+  }
+  function enderman(e) { // ModelEnderman (ModelBiped at -14) and LayerEndermanEyes
+    const mat = emat("entity_enderman"), m = new THREE.Group();
+    const eyes = new THREE.MeshBasicMaterial({ map: tex("entity_enderman_eyes"), transparent: true, depthWrite: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, side: THREE.DoubleSide });
+    const head = piece(m, [0, -13, 0]); cube(head, mat, 64, 32, 0, 0, [-4, -8, -4, 8, 8, 8]); cube(head, mat, 64, 32, 0, 16, [-4, -8, -4, 8, 8, 8], false, -0.5);
+    cube(head, eyes, 64, 32, 0, 0, [-4, -8, -4, 8, 8, 8]);
+    const body = piece(m, [0, -14, 0]); cube(body, mat, 64, 32, 32, 16, [-4, 0, -2, 8, 12, 4]);
+    const armR = piece(m, [-5, -12, 0]); cube(armR, mat, 64, 32, 56, 0, [-1, -2, -1, 2, 30, 2]);
+    const armL = piece(m, [5, -12, 0]); cube(armL, mat, 64, 32, 56, 0, [-1, -2, -1, 2, 30, 2], true);
+    const legR = piece(m, [-2, -5, 0]); cube(legR, mat, 64, 32, 56, 0, [-1, 0, -1, 2, 30, 2]);
+    const legL = piece(m, [2, -5, 0]); cube(legL, mat, 64, 32, 56, 0, [-1, 0, -1, 2, 30, 2], true);
+    const cl = (v) => clamp(v, -0.4, 0.4);
+    return {
+      m, scale: 1,
+      set(e, pt) { // biped angles, arms and legs halved and kept within 0.4
+        const ls = lerp(e.pls, e.ls, pt), la = lerp(e.pla, e.la, pt), [hx, hy] = headAngles(e, pt), [dx, dz] = idleArms(e.age + pt);
+        rot(head, hx, hy, 0);
+        rot(armR, cl((Math.cos(ls * 0.6662 + Math.PI) * 2 * la * 0.5 + dx) * 0.5), 0, dz); rot(armL, cl((Math.cos(ls * 0.6662) * 2 * la * 0.5 - dx) * 0.5), 0, -dz);
+        rot(legR, cl(Math.cos(ls * 0.6662) * 1.4 * la * 0.5)); rot(legL, cl(Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la * 0.5));
+      },
+    };
+  }
+  const PROFESSION = ["farmer", "librarian", "priest", "smith", "butcher"];
+  function villager(e) { // ModelVillager (64x64); RenderVillager scales 0.9375
+    const mat = emat("entity_villager_" + (PROFESSION[e.meta["16"]] || "farmer")), m = new THREE.Group();
+    const head = piece(m); cube(head, mat, 64, 64, 0, 0, [-4, -10, -4, 8, 10, 8]);
+    const nose = piece(head, [0, -2, 0]); cube(nose, mat, 64, 64, 24, 0, [-1, -1, -6, 2, 4, 2]);
+    const body = piece(m); cube(body, mat, 64, 64, 16, 20, [-4, 0, -3, 8, 12, 6]); cube(body, mat, 64, 64, 0, 38, [-4, 0, -3, 8, 18, 6], false, 0.5);
+    const arms = piece(m, [0, 3, -1]); cube(arms, mat, 64, 64, 44, 22, [-8, -2, -2, 4, 8, 4]); cube(arms, mat, 64, 64, 44, 22, [4, -2, -2, 4, 8, 4], true); cube(arms, mat, 64, 64, 40, 38, [-4, 2, -2, 8, 4, 4]); rot(arms, -0.75);
+    const legR = piece(m, [-2, 12, 0]); cube(legR, mat, 64, 64, 0, 22, [-2, 0, -2, 4, 12, 4]);
+    const legL = piece(m, [2, 12, 0]); cube(legL, mat, 64, 64, 0, 22, [-2, 0, -2, 4, 12, 4], true);
+    return {
+      m, scale: 0.9375,
+      set(e, pt) {
+        const ls = lerp(e.pls, e.ls, pt), la = lerp(e.pla, e.la, pt), [hx, hy] = headAngles(e, pt);
+        rot(head, hx, hy, 0); rot(legR, Math.cos(ls * 0.6662) * 1.4 * la * 0.5); rot(legL, Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la * 0.5);
+      },
+    };
+  }
+  function wither(e) { // ModelWither (64x64); RenderWither scales 2 (less while it is still being summoned)
+    const invul = e.meta["20"] || 0;
+    const mat = emat(invul > 0 && (invul > 80 || Math.floor(invul / 5) % 2 !== 1) ? "entity_wither_invulnerable" : "entity_wither"), m = new THREE.Group();
+    const s0 = piece(m); cube(s0, mat, 64, 64, 0, 16, [-10, 3.9, -0.5, 20, 3, 3]);
+    const s1 = piece(m, [-2, 6.9, -0.5]); cube(s1, mat, 64, 64, 0, 22, [0, 0, 0, 3, 10, 3]);
+    for (const y of [1.5, 4, 6.5]) cube(s1, mat, 64, 64, 24, 22, [-4, y, 0.5, 11, 2, 2]);
+    const s2 = piece(m); cube(s2, mat, 64, 64, 12, 22, [0, 0, 0, 3, 6, 3]);
+    const h0 = piece(m); cube(h0, mat, 64, 64, 0, 0, [-4, -4, -4, 8, 8, 8]);
+    const h1 = piece(m, [-8, 4, 0]); cube(h1, mat, 64, 64, 32, 0, [-4, -4, -4, 6, 6, 6]);
+    const h2 = piece(m, [10, 4, 0]); cube(h2, mat, 64, 64, 32, 0, [-4, -4, -4, 6, 6, 6]);
+    e.wy = [0, 0]; e.pwy = [0, 0]; // the side heads' own yaw (EntityWither: turns toward the body 10 degrees a tick without a target)
+    return {
+      m, scale: invul > 0 ? 2 - invul / 220 * 0.5 : 2,
+      set(e, pt) {
+        const a = e.age + pt, f6 = Math.cos(a * 0.1), [hx, hy] = headAngles(e, pt), body = lerpAng(e.pbody, e.body, pt);
+        const x1 = (0.065 + 0.05 * f6) * Math.PI; rot(s1, x1);
+        setRP(s2, [-2, 6.9 + Math.cos(x1) * 10, -0.5 + Math.sin(x1) * 10]); rot(s2, (0.265 + 0.1 * f6) * Math.PI);
+        rot(h0, hx, hy, 0);
+        rot(h1, 0, wrap(lerpAng(e.pwy[0], e.wy[0], pt) - body) * D2R, 0); rot(h2, 0, wrap(lerpAng(e.pwy[1], e.wy[1], pt) - body) * D2R, 0);
+      },
+    };
+  }
+  const MOB_MODEL = { 30: armorStand, 78: armorStand, 93: chicken, 101: rabbit, 95: wolf, 65: bat, 94: squid, 92: cow, 99: ironGolem, 66: witch, 68: guardian,
+    51: skeleton, 54: zombie, 57: pigman, 50: creeper, 61: blaze, 97: snowman, 58: enderman, 120: villager, 64: wither };
+  const HEIGHT = { 30: 1.975, 78: 1.975, 93: 0.7, 101: 0.7, 95: 0.85, 65: 0.9, 94: 0.95, 92: 1.3, 99: 2.9, 66: 1.95, 68: 0.85, player: 1.8,
+    51: 1.95, 54: 1.95, 57: 1.95, 50: 1.7, 61: 1.8, 97: 1.9, 58: 2.9, 120: 1.95, 64: 3.5 };
+  const WIDTH = { 61: 0.6, 58: 0.6 };
 
   /* ---------------------------------------------------------- the world */
   function build(S, data, opts = {}) {
@@ -1247,6 +1422,7 @@ export function createRecFx(kit0) {
         case 15: p = new Spell(x, y, z, a, b, c); break;
         case 18: p = new Drip(x, y, z); break;
         case 23: p = new Note(x, y, z, a); break;
+        case 24: p = new Portal(x, y, z, a, b, c); break;
         case 26: p = new Flame(x, y, z, a, b, c); break;
         case 27: p = new Lava(x, y, z); break;
         case 29: p = new Cloud(x, y, z, a, b, c); break;
@@ -1353,7 +1529,7 @@ export function createRecFx(kit0) {
     function setupLiving(e) {
       const corpse = new THREE.Group(); e.g.add(corpse); e.corpse = corpse;
       const bob = new THREE.Group(); corpse.add(bob); e.bobG = bob;
-      const skin = e.killer ? KILLER_SKIN : DUMMY_SKIN;
+      const skin = e.skin || (e.killer ? KILLER_SKIN : DUMMY_SKIN);
       e.model = e.kind === "player" ? bipedSkin(e, skin, !!SLIM[skin]) : MOB_MODEL[e.type]?.(e);
       if (!e.model) return;
       const mg = new THREE.Group(); const s = e.model.scale; mg.scale.setScalar(s); mg.position.y = 1.5078125 * s; mg.add(e.model.m); bob.add(mg); e.mg = mg;
@@ -1361,7 +1537,8 @@ export function createRecFx(kit0) {
       if ((e.type === 30 || e.type === 78) && (e.meta["10"] & 16)) e.height = 0; // marker stands have no size
       else if ((e.type === 30 || e.type === 78) && e.small) e.height /= 2;
       e.mats = new Set(); e.model.m.traverse((o) => { if (o.material) e.mats.add(o.material); });
-      refreshEquipment(e);
+      e.baseMeshes = []; (e.model.base || e.model.m).traverse((o) => { if (o.isMesh) e.baseMeshes.push(o); });
+      refreshEquipment(e); showBody(e);
     }
     // ItemArmor ids 298..317: leather, chainmail, iron, diamond, gold; helmet, chestplate, leggings, boots.
     const ARMOR_MAT = ["leather", "chainmail", "iron", "diamond", "gold"];
@@ -1408,6 +1585,14 @@ export function createRecFx(kit0) {
         mdl.al.scale.setScalar(small ? 0.5 : 1); mdl.al.position.y = small ? -0.625 : 0; mdl.al.rotation.x = small ? 20 * D2R : 0;
       }
     }
+    // RendererLivingEntity: an invisible mob's own model is not drawn (its layers still are).
+    function showBody(e) {
+      if (!e.model || e.type === 30 || e.type === 78) return;
+      const shown = !(e.meta["0"] & 32); for (const o of e.baseMeshes) o.visible = shown;
+      // rotateCorpse: named Dinnerbone or Grumm (a player only while showing the cape) is drawn upside down
+      const nm = e.kind === "player" ? e.pname : e.meta["2"];
+      e.flip = (nm === "Dinnerbone" || nm === "Grumm") && (e.kind !== "player" || !!((e.meta["10"] ?? 0) & 1));
+    }
     function nameRefresh(e) {
       const nm = e.meta["2"], show = e.meta["3"] === 1 && nm;
       if (e.tagText === (show ? nm : null)) return;
@@ -1421,6 +1606,22 @@ export function createRecFx(kit0) {
       else if (e.type === 70) { const id = data & 4095; e.blockG = new THREE.Group(); e.g.add(e.blockG); modelsReady.then(() => { const b = blockMesh(blockKey(id, (data >> 12) & 15) || "gold_block"); b.position.set(-0.5, 0, -0.5); e.blockG.add(b); }); }
       else if (e.type === 76 || e.type === 62 || e.type === 61) { e.sprite = new THREE.Group(); e.g.add(e.sprite); const it = { id: e.type === 76 ? 401 : e.type === 61 ? 332 : 344 }; const n = new THREE.Group(); n.scale.setScalar(0.5); const r = renderItemNode(it); r.scale.multiplyScalar(2); n.add(r); e.sprite.add(n); }
       else if (e.type === 78) { e.living = true; setupLiving(e); }
+      else if (e.type === 71) { // RenderItemFrame: about the hanging block's centre, turned 180 - yaw (south 0, west 90, north 180, east 270)
+        e.frameG = new THREE.Group(); e.frameG.rotation.y = (180 - ((data & 3) * 90)) * D2R; e.g.add(e.frameG);
+      }
+    }
+    // The item in a frame. A map: the frame's map model, then the map itself, 1/128 of a block a pixel,
+    // turned 180 degrees about z, 0.4375 out from the frame's centre and 1/128 + 0.01 px more (MapItemRenderer);
+    // its pixels are drawn with blend (1, 1 - alpha) and no lighting.
+    function frameItem(e) {
+      const it = e.meta["8"], key = JSON.stringify(it || null); if (e.frameKey === key) return; e.frameKey = key; e.frameG.clear();
+      const isMap = it?.id === 358;
+      modelsReady.then(() => { const b = blockMesh(isMap ? "item_frame_map" : "item_frame"); b.position.set(-0.5, -0.5, -0.5); e.frameG.add(b); });
+      if (isMap) {
+        const src = data.maps?.[it.d]; if (!src) return;
+        const m = new THREE.MeshBasicMaterial({ map: tex(src), side: THREE.DoubleSide, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, transparent: true });
+        const q = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), m); q.rotation.y = Math.PI; q.position.z = 0.4375 - 1.01 / 128; e.frameG.add(q);
+      }
     }
     function setItemStack(e) {
       const it = e.meta["10"]; if (!it || !e.itemG) return;
@@ -1444,7 +1645,8 @@ export function createRecFx(kit0) {
       if (e.type === 2) setItemStack(e);
       if (e.type === 68 && "17" in m) { e.target = m["17"] || 0; e.beamT = 0; } // a new (or re-sent) target restarts the beam
       if (e.type === 76) e.fw = e.meta["8"]?.fw;
-      if (e.living) { refreshEquipment(e); nameRefresh(e); }
+      if (e.type === 71 && e.frameG) frameItem(e);
+      if (e.living) { refreshEquipment(e); nameRefresh(e); showBody(e); }
       if (e.kind === "orb") {}
     }
     function setPos2(e, x, y, z, yaw, pitch) { // setPositionAndRotation2
@@ -1458,13 +1660,14 @@ export function createRecFx(kit0) {
         case "player": {
           const [, , id, x, y, z, yaw, pitch, killer] = ev;
           const e = makeEnt(id, "player", "player", x, y, z, yaw * B2D, pitch * B2D); e.living = true; e.killer = !!killer; e.sx = x; e.sy = y; e.sz = z;
+          const sk = data.skins?.[id]; if (sk) { e.skin = sk[0]; SLIM[sk[0]] = !!sk[1]; e.pname = sk[2]; }
           e.head = e.phead = e.yaw; e.body = e.pbody = 0; setupLiving(e); break;
         }
         case "mob": {
           const [, , id, type, x, y, z, yaw, pitch, headYaw, meta] = ev;
           const e = makeEnt(id, "mob", type, x, y, z, yaw * B2D, pitch * B2D); e.living = true; e.sx = x; e.sy = y; e.sz = z;
           e.head = e.phead = e.body = e.pbody = headYaw * B2D;
-          Object.assign(e.meta, meta); e.small = type === 30 && !!(meta["10"] & 1); e.child = (type === 93 || type === 101 || type === 95) && (meta["12"] ?? 0) < 0;
+          Object.assign(e.meta, meta); e.small = type === 30 && !!(meta["10"] & 1); e.child = (type === 93 || type === 101 || type === 95 || type === 92) && (meta["12"] ?? 0) < 0;
           if (type === 94) { e.rv = 1 / (rand() + 1) * 0.2; e.srot = 0; e.spitch = e.pspitch = 0; e.tent = e.ptent = 0; }
           if (type === 93) { e.wing = e.pwing = 0; e.dest = e.pdest = 0; e.wingD = 1; }
           if (type === 101) { e.jumpTicks = 0; e.jumpDur = 0; }
@@ -1571,7 +1774,16 @@ export function createRecFx(kit0) {
       } else if (e.kind !== "player") { e.mx *= 0.98; e.my *= 0.98; e.mz *= 0.98; }
       // body yaw (EntityLivingBase.onUpdate / func_110146_f); armor stands keep body = yaw
       if (e.type === 30 || e.type === 78) e.body = e.yaw;
-      else {
+      else if (e.kind === "mob") { // EntityLiving: EntityBodyHelper keeps the body near the head, then turns it fully after the head holds still
+        const bound = (a, b, mx) => a - clamp(wrap(a - b), -mx, mx);
+        const dx = e.x - e.px, dz = e.z - e.pz;
+        if (dx * dx + dz * dz > 2.5e-7) { e.body = e.yaw; e.head = bound(e.body, e.head, 75); e.prh = e.head; e.rtc = 0; }
+        else {
+          let f = 75; e.prh ??= 0; e.rtc ??= 0;
+          if (Math.abs(e.head - e.prh) > 15) { e.rtc = 0; e.prh = e.head; } else if (++e.rtc > 10) f = Math.max(1 - (e.rtc - 10) / 10, 0) * 75;
+          e.body = bound(e.head, e.body, f);
+        }
+      } else {
         const dx = e.x - e.px, dz = e.z - e.pz, f = dx * dx + dz * dz; let f1 = e.body;
         if (f > 0.0025000002) f1 = Math.atan2(dz, dx) * 180 / Math.PI - 90;
         if (e.swing > 0) f1 = e.yaw;
@@ -1587,6 +1799,20 @@ export function createRecFx(kit0) {
       if (e.type === 94) { e.pspitch = e.spitch; e.ptent = e.tent; e.srot += e.rv; if (e.srot > Math.PI * 2) e.srot = Math.PI * 2; e.tent = Math.abs(Math.sin(e.srot)) * Math.PI * 0.25; e.spitch += (-90 - e.spitch) * 0.02; }
       if (e.type === 93) { e.pwing = e.wing; e.pdest = e.dest; e.dest = clamp(e.dest + (e.onGround ? -1 : 4) * 0.3, 0, 1); if (!e.onGround && e.wingD < 1) e.wingD = 1; e.wingD *= 0.9; e.wing += e.wingD * 2; }
       if (e.type === 99 && e.attack > 0) e.attack--;
+      // client-side particles mobs give off every tick (onLivingUpdate)
+      if (e.type === 61) { // EntityBlaze: large smoke, now and then the crackle of fire
+        if (rand() * 24 < 1) sound("fire.fire", e.x + 0.5, e.y + 0.5, e.z + 0.5, 1 + rand(), rand() * 0.7 + 0.3);
+        for (let i = 0; i < 2; i++) W.spawn(new Smoke(e.x + (rand() - 0.5) * 0.6, e.y + rand() * 1.8, e.z + (rand() - 0.5) * 0.6, 0, 0, 0, 2.5));
+      }
+      if (e.type === 58) for (let i = 0; i < 2; i++) W.spawn(new Portal(e.x + (rand() - 0.5) * 0.6, e.y + rand() * 2.9 - 0.25, e.z + (rand() - 0.5) * 0.6, (rand() - 0.5) * 2, -rand(), (rand() - 0.5) * 2)); // EntityEnderman
+      if (e.type === 64 && e.wy) { // EntityWither: side heads turn to the body, smoke from all three heads, summoning sparkles
+        for (let j = 0; j < 2; j++) { e.pwy[j] = e.wy[j]; e.wy[j] += clamp(wrap(e.body - e.wy[j]), -10, 10); }
+        for (let l = 0; l < 3; l++) {
+          const f = (e.body + 180 * (l - 1)) * D2R, hx = l ? e.x + Math.cos(f) * 1.3 : e.x, hy = l ? e.y + 2.2 : e.y + 3, hz = l ? e.z + Math.sin(f) * 1.3 : e.z;
+          W.spawn(new Smoke(hx + gauss() * 0.3, hy + gauss() * 0.3, hz + gauss() * 0.3, 0, 0, 0, 1));
+        }
+        if ((e.meta["20"] || 0) > 0) for (let i = 0; i < 3; i++) W.spawn(new Spell(e.x + gauss(), e.y + rand() * 3.3, e.z + gauss(), 0.7, 0.7, 0.9));
+      }
       if (e.type === 68) { // out of water: the tail beats fast and the spikes twitch at random; the beam charges while it has a target
         e.ptail = e.tail || 0; e.tail = e.ptail + 2; e.pspike = e.spike ?? 0; e.spike = rand();
         if (e.target) { if (e.beamT < 80) e.beamT++; } else e.beamT = 0;
@@ -1701,6 +1927,7 @@ export function createRecFx(kit0) {
           let zr = 0;
           if (e.death > 0) { let f = (e.death + pt - 1) / 20 * 1.6; f = Math.sqrt(f); if (f > 1) f = 1; zr = f * 90; }
           e.corpse.rotation.set(0, 0, -zr * D2R);
+          if (e.flip) { e.corpse.position.y = e.height + 0.1; e.corpse.rotation.z += Math.PI; } else e.corpse.position.y = 0;
           if (e.sleeping) { // RenderPlayer.rotateCorpse while sleeping (no bed there, so facing 0): lies on its back, head toward -x
             e.g.rotation.y = 0; e.corpse.quaternion.setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2, "ZYX"));
           }
@@ -1805,9 +2032,10 @@ export function createRecFx(kit0) {
     const heads = data ? [...new Set((JSON.stringify(data).match(/"head":"[0-9a-f]+"/g) || []).map((x) => x.slice(8, -1)))].map((h) => `cosmetics/heads/${h}.png`) : [];
     const blockTex = () => { const t = new Set(); for (const d of Object.values(MODELS || {})) for (const e of (Array.isArray(d) ? d : d.e || [])) for (const f of Object.values(e.faces)) t.add("block_" + f.t); return [...t]; };
     const itemTex = () => Object.values(MODELS || {}).flatMap((d) => d.flat || []);
+    const maps = Object.values(data?.maps || {});
     const banners = data?.ev ? [...new Set(data.ev.flatMap((e) => (e[1] === "eq" && e[4]?.banner ? e[4].banner[1].map((p) => p[0]) : [])))] : [];
-    return Promise.all([atlasReady, modelsReady.then(() => Promise.all(blockTex().concat(itemTex()).map((n) => img(n).catch(() => {})))), loadFont(), skinShape(KILLER_SKIN), skinShape(DUMMY_SKIN),
-      ...Object.values(ITEM_TEX).flatMap((n) => [img(n).catch(() => {}), n.startsWith("item_leather_") ? img(n + "_overlay").catch(() => {}) : null]), ...ALL_TEX.concat(DYES.map((d) => "item_dye_" + d), heads, banners.length ? ["banner_base", ...banners.map((b) => "banner_" + (PATTERN[b] || "base"))] : []).map((n) => img(n).catch(() => {}))]);
+    return Promise.all([atlasReady, modelsReady.then(() => Promise.all(blockTex().concat(itemTex()).map((n) => img(n).catch(() => {})))), loadFont(), skinShape(KILLER_SKIN), skinShape(DUMMY_SKIN), ...Object.values(data?.skins || {}).map((k) => img(k[0]).catch(() => {})),
+      ...Object.values(ITEM_TEX).flatMap((n) => [img(n).catch(() => {}), n.startsWith("item_leather_") ? img(n + "_overlay").catch(() => {}) : null]), ...ALL_TEX.concat(DYES.map((d) => "item_dye_" + d), heads, banners.length ? ["banner_base", ...banners.map((b) => "banner_" + (PATTERN[b] || "base"))] : [], maps).map((n) => img(n).catch(() => {}))]);
   }
   return { build, preload };
 }

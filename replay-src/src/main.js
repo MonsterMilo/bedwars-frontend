@@ -693,6 +693,8 @@ async function runViewer (tl, details) {
     particles.update(now, camera, renderer.getDrawingBufferSize(drawSize).y)
     // Following someone: hear from where they are, not from the camera behind them.
     const ear = (cam.mode === 'follow' || cam.mode === 'eyes') && cam.focus ? cam.focus : camera.position
+    // Sounds Hypixel played only to the recorder are heard only from their view.
+    sounds.selfView = (cam.mode === 'follow' || cam.mode === 'eyes') && !!(cam.model && cam.model.track && cam.model.track.self)
     sounds.update(prevNow, now, playing, speed, ear)
     prevNow = now
     blocks.tick(ts / 1000)

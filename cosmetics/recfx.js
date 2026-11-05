@@ -47,7 +47,7 @@ function img(name) {
   if (!imgCache[name]) imgCache[name] = new Promise((res, rej) => { const i = new Image(); i.onload = () => { TEX_H[name] = i.height; res(i); }; i.onerror = rej; i.src = name.includes("/") ? name : MC + name + ".png"; });
   return imgCache[name];
 }
-const ALL_TEX = ["particles", "explosion", "ascii", "entity_chicken", "entity_wolf", "entity_bat", "entity_squid", "entity_skeleton", "entity_steve", "entity_experience_orb", "armor_leather_layer_1", "armor_leather_layer_1_overlay", "armor_leather_layer_2", "armor_leather_layer_2_overlay", "entity_armorstand", "entity_cow", "entity_iron_golem", "entity_witch", "entity_guardian", "entity_guardian_beam", "block_fire_layer_0_strip",
+const ALL_TEX = ["particles", "entity_sign", "explosion", "ascii", "entity_chicken", "entity_wolf", "entity_bat", "entity_squid", "entity_skeleton", "entity_steve", "entity_experience_orb", "armor_leather_layer_1", "armor_leather_layer_1_overlay", "armor_leather_layer_2", "armor_leather_layer_2_overlay", "entity_armorstand", "entity_cow", "entity_iron_golem", "entity_witch", "entity_guardian", "entity_guardian_beam", "block_fire_layer_0_strip",
   "rabbit_brown", "rabbit_white", "rabbit_black", "rabbit_white_splotched", "rabbit_gold", "rabbit_salt", "cosmetics/skins/killer.png", "cosmetics/skins/dummy.png",
   "item_iron_sword", "item_stick", "item_bone", "item_cookie", "item_gold_ingot", "item_beef_raw", "item_beef_cooked", "item_leather", "item_egg", "item_fireworks", "item_leather_chestplate",
   "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel"];
@@ -291,6 +291,7 @@ function aoSolid(key) {
   if (e.from.some((v) => v !== 0) || e.to.some((v) => v !== 16)) return false;
   return !Object.values(e.faces).some((f) => /glass/.test(f.t));
 }
+let topKit = null; // the model kit, set once createRecFx runs (signs and skulls need it)
 export function buildTopper(S, data) {
   const root = new THREE.Group(); S.item.add(root);
   const [W, , D] = data.size, ox = -(W - 1) / 2 - 0.5, oz = -(D - 1) / 2 - 0.5;
@@ -299,6 +300,7 @@ export function buildTopper(S, data) {
   const occ = (x, y, z) => y < 0 || solid.has(x + "," + y + "," + z); // the island's ground is solid
   const blocks = [];
   for (const [t, x, y, z, key, cull = 0] of data.b) {
+    if (key.startsWith("tile#")) { const g = tileMesh(key.slice(5)); if (g) { g.position.x += x + ox; g.position.y += y; g.position.z += z + oz; root.add(g); } continue; }
     const def = MODELS?.[key]; if (!def) continue;
     const els = Array.isArray(def) ? def : def.e;
     const R = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(-(def.x || 0) * D2R, -(def.y || 0) * D2R, 0, "YXZ"));
@@ -380,6 +382,34 @@ export function buildTopper(S, data) {
   const run = () => {};
   run.focus = () => new THREE.Vector3(0, data.size[1] / 2, 0);
   return run;
+}
+// Blocks the game draws as tile entities. The server sends no data for them in
+// the preview, so the client shows its defaults: a skeleton skull turned 0, a blank sign.
+function tileMesh(k) {
+  if (!topKit) return null;
+  const [kind, arg] = k.split(","), n = +(arg || "=0").split("=")[1];
+  const g = new THREE.Group();
+  if (kind === "skull") {
+    // TileEntitySkullRenderer: on the floor translate(.5, 0, .5); on a wall pushed toward the wall and up .25
+    const f = n, wall = { 2: [0.5, 0.25, 0.74, 0], 3: [0.5, 0.25, 0.26, 180], 4: [0.74, 0.25, 0.5, 270], 5: [0.26, 0.25, 0.5, 90] }[f];
+    g.position.set(...(wall ? wall.slice(0, 3) : [0.5, 0, 0.5]));
+    const s2 = new THREE.Group(); s2.scale.set(-1, -1, 1); g.add(s2);
+    const r = new THREE.Group(); r.rotation.y = wall ? wall[3] * D2R : 0; s2.add(r);
+    const fix = new THREE.Group(); fix.scale.set(1, -1, -1); r.add(fix); fix.add(headMesh(topKit, { id: 397, d: 0 }));
+    return g;
+  }
+  if (kind === "sign") {
+    // TileEntitySignRenderer (wall sign): board only, turned by facing, scale 2/3
+    const wall = arg.startsWith("wall"), f = wall ? ({ 2: 180, 3: 0, 4: 90, 5: -90 }[n] ?? 0) : n * 360 / 16;
+    g.position.set(0.5, 0.5, 0.5); g.rotation.y = -f * D2R;
+    const t = new THREE.Group(); if (wall) t.position.set(0, -0.3125, -0.4375); g.add(t);
+    const sc = new THREE.Group(); sc.scale.setScalar(2 / 3); t.add(sc);
+    const m = emat("entity_sign", OPAQUE);
+    topKit.cube(sc, m, 64, 32, 0, 0, [-12, -14, -1, 24, 12, 2]);
+    if (!wall) topKit.cube(sc, m, 64, 32, 0, 14, [-1, -2, -1, 2, 14, 2]);
+    return g;
+  }
+  return null;
 }
 export function preloadTopper(data) {
   return modelsReady.then(() => { const t = new Set(); for (const b of data.b) { const d = MODELS[b[4]]; if (d) for (const e of (Array.isArray(d) ? d : d.e)) for (const f of Object.values(e.faces)) t.add("block_" + f.t); } return Promise.all([...t].map((n) => img(n).catch(() => {}))); });
@@ -662,7 +692,7 @@ class Iconcrack extends Crumb { // EntityBreakingFX built from a packet: motion 
 
 /* ------------------------------------------------------------ the player */
 export function createRecFx(kit0) {
-  const kit = makeModelKit(kit0.setBoxUV);
+  const kit = makeModelKit(kit0.setBoxUV); topKit = kit;
   const { cube, piece, setRP, rot } = kit;
 
   // Tile sheet for block/item crumbs (16px tiles, built once from single pictures).

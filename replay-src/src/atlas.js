@@ -119,7 +119,23 @@ function drawPreview (canvas, raw, colorOf) {
 }
 
 // --- Hypixel's rotation (a player-kept list; a saved copy if it can't be reached) ---
-async function loadRotation () {
+// The list isn't always kept up to date. What Milo has seen in game since its
+// last update wins; each fix stops counting once the list is newer than it.
+const ROTATION_FIXES = [
+  // Not in the in-game map selector on 2026-11-04 (Milo); the list still had it in from 2026-10-05.
+  { name: 'Ghoulish', in: false, seen: '2026-11-04' }
+]
+function withFixes (rot) {
+  const asOf = Date.parse(rot.asOf || '') || 0
+  for (const f of ROTATION_FIXES) {
+    if (Date.parse(f.seen) <= asOf) continue
+    const m = rot.maps.find(x => x.name.toLowerCase() === f.name.toLowerCase())
+    if (m) m.in = f.in
+  }
+  return rot
+}
+async function loadRotation () { return withFixes(await loadRotationList()) }
+async function loadRotationList () {
   const fromLive = async () => {
     const [core, seasonal] = await Promise.all(['maps.json', 'seasonal_maps.json'].map(f => fetch(ROTATION_LIVE + f).then(r => { if (!r.ok) throw new Error(); return r.json() })))
     const row = (m, isSeasonal) => {

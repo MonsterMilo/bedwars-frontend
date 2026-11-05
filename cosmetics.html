@@ -341,7 +341,7 @@
 <script type="module">
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { createRecFx } from "./cosmetics/recfx.js";
+import { createRecFx, buildTopper, preloadTopper } from "./cosmetics/recfx.js";
 
 /* ------------------------------------------------------------------ data
    Real Bed Wars cosmetics. Names, descriptions, rarity, price and how to get
@@ -354,11 +354,12 @@ const CATS = [
   { id: "dance", name: "Victory dances", icon: '<path d="M6 3h8v3.5a4 4 0 0 1-8 0zM6 4.5H3.5a2.5 2.5 0 0 0 2.6 3M14 4.5h2.5a2.5 2.5 0 0 1-2.6 3M10 10.5v3M7 17h6M8 13.5h4V17H8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
   { id: "wood", name: "Wood skins", icon: '<rect x="3.5" y="3.5" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 7v-1M3.5 8h3M13.5 13h3" stroke="currentColor" stroke-width="1.5"/>' },
   { id: "msg", name: "Kill messages", icon: '<path d="M3 4h14v9H8l-4 3v-3H3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
+  { id: "topper", name: "Island toppers", icon: '<path d="M3 15.5h14M5 15.5v-3h10v3M7.5 12.5V9h5v3.5M10 9V3.5M10 3.5l3.5 2-3.5 2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>' },
 ];
 const RAR = { common: ["Common", "#9aa3b2"], rare: ["Rare", "#4f8cff"], epic: ["Epic", "#b05cff"], legendary: ["Legendary", "#ffb020"], none: ["No rarity", "#8a93a3"] };
 const RAR_ORDER = { legendary: 0, epic: 1, rare: 2, common: 3, none: 4 };
-const GET = { shop: "Bed Wars shop", challenges: "Bed Wars challenges", slumber: "Slumber Hotel", dreamfeast: "Dreamfeast", pass: "Battle Pass season 1", event: "Event shop", mvp: "MVP++ rank", megagift: "Holidays Megagift", retired: "No longer available" };
-const GET_SHORT = { challenges: "Challenges", slumber: "Slumber", dreamfeast: "Dreamfeast", pass: "Battle Pass", event: "Event", mvp: "MVP++", megagift: "Megagift", retired: "Retired" };
+const GET = { shop: "Bed Wars shop", challenges: "Bed Wars challenges", slumber: "Slumber Hotel", dreamfeast: "Dreamfeast", pass: "Battle Pass season 1", event: "Event shop", mvp: "MVP++ rank", megagift: "Holidays Megagift", ticket: "Ticket Machine", retired: "No longer available" };
+const GET_SHORT = { challenges: "Challenges", slumber: "Slumber", dreamfeast: "Dreamfeast", pass: "Battle Pass", event: "Event", mvp: "MVP++", megagift: "Megagift", ticket: "Tickets", retired: "Retired" };
 
 // Kill message packs, as Hypixel words them: melee, void, bow, fall, mob, then the
 // bed line ({MOB}: Golem, the word Hypixel uses). The first line shows as a final kill:
@@ -419,11 +420,32 @@ const ITEMS = [
   { id: "spirit", cat: "final", name: "Spirit", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will spawn the Spirit kill effect.", tags: "wolf", rec: "spirit", hero: 2.2 },
   { id: "beef-everywhere", cat: "final", name: "Beef Everywhere", rar: "epic", price: 25000, get: "shop", desc: "Explosion of beef!", tags: "beef steak meat", rec: "beef-everywhere", hero: 1.5 },
   { id: "anvil-smash", cat: "final", name: "Anvil Smash", rar: "epic", price: null, get: "challenges", desc: "An anvil will smash into the ground when you kill a player.", tags: "anvil", rec: "anvil-smash", hero: 1.6 },
+  { id: "crackling-ice", cat: "final", name: "Crackling Ice", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Smash ice upon your enemies.", tags: "ice frozen shards", rec: "crackling-ice", hero: 2.3 },
+  { id: "present-rain", cat: "final", name: "Present Rain", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Spawn a present and get some gifts with every kill!", tags: "presents gifts christmas", rec: "present-rain", hero: 3.5 },
+  { id: "balloons", cat: "final", name: "Balloons", rar: "epic", price: null, get: "ticket", desc: "Unleash a parade of colorful balloons!", tags: "balloons party heads", rec: "balloons", hero: 1.5 },
+  { id: "tornado", cat: "final", name: "Tornado", rar: "legendary", price: 100000, get: "shop", desc: "Killing an enemy will summon a vortex!", tags: "wind vortex sparks", rec: "tornado", hero: 3.0 },
+  { id: "rising-dragon", cat: "final", name: "Rising Dragon", rar: "legendary", price: 100000, get: "shop", desc: "A fiery dragon rises from the ashes of your battles.", tags: "dragon fire flames", rec: "rising-dragon", hero: 1.5 },
+  { id: "ring-of-fire", cat: "final", name: "Ring of Fire", rar: "legendary", price: null, get: "event", season: "Summer", desc: "Find the fire within and send it forth.", tags: "fire flames circle", rec: "ring-of-fire", hero: 1.4 },
+  { id: "draculas-flight", cat: "final", name: "Dracula's Flight", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Have a swarm of bats lift your enemy's corpse up into the sky.", tags: "bats vampire spooky", rec: "dracula-s-flight", hero: 1.8 },
+  { id: "bee-abduction", cat: "final", name: "Bee Abduction", rar: "legendary", price: null, get: "event", season: "Easter", desc: "Where are they taking them??", tags: "bees honey heads", rec: "bee-abduction", hero: 1.6 },
+  { id: "witch-ritual", cat: "final", name: "Witch Ritual", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Raise your victim as three witches circle and chant around them.", tags: "witches spell magic", rec: "witch-ritual", hero: 1.5 },
+  { id: "lit", cat: "final", name: "Lit", rar: "legendary", price: 100000, get: "shop", desc: "Killing an enemy will set their body on fire.", tags: "fire flames burning", rec: "lit", hero: 2.5 },
+  { id: "final-smash", cat: "final", name: "Final Smash", rar: "legendary", price: 100000, get: "shop", desc: "Killing an enemy will smash them out of the world.", tags: "armor stand launch", rec: "final-smash", hero: 1.2 },
+  { id: "rainbow", cat: "final", name: "Rainbow", rar: "legendary", price: null, get: "event", season: "Easter", desc: "Whoa, that's a full rainbow all the way!", tags: "rainbow colors", rec: "rainbow", hero: 2.0 },
+  { id: "petal-gust", cat: "final", name: "Petal Gust", rar: "legendary", price: null, get: "event", season: "Easter", desc: "Create a gust of petals around your foe!", tags: "flowers petals tulips", rec: "petal-gust", hero: 2.5 },
+  { id: "batcrux", cat: "final", name: "Batcrux", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Killing an enemy splits their soul into 7 Batcruxes.", tags: "bats smoke spooky", rec: "batcrux", hero: 2.5 },
+  { id: "soul-ripper", cat: "final", name: "Soul Ripper", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Killing an enemy rips their soul of their body, leaving them lingering a few more seconds in the common world.", tags: "soul ghost spooky", rec: "soul-ripper", hero: 1.6 },
+  { id: "shattered", cat: "final", name: "Shattered", rar: "legendary", price: null, get: "retired", desc: "Shatter your enemies to dust!", tags: "glass shards", rec: "shattered", hero: 1.3 },
+  { id: "pumpkin-popper", cat: "final", name: "Pumpkin Popper", rar: "legendary", price: null, get: "retired", desc: "Killing a player will cause Pumpkins to explode from their body.", tags: "pumpkins pie", rec: "pumpkin-popper", hero: 1.5 },
+  { id: "snowplosion", cat: "final", name: "Snowplosion", rar: "legendary", price: null, get: "event", season: "Holidays", desc: "Killing an enemy will make them explode into snowballs, splattering snow everywhere.", tags: "snow snowballs christmas", rec: "snowplosion", hero: 2.0 },
+  { id: "fke-holiday-tree", cat: "final", name: "Holiday Tree", rar: "legendary", price: null, get: "event", season: "Holidays", desc: "Killing an enemy will place down a holiday tree.", tags: "christmas tree star", rec: "holiday-tree", hero: 3.0 },
+  { id: "cow-rocket", cat: "final", name: "Cow Rocket", rar: "legendary", price: 100000, get: "shop", desc: "Killing an enemy will launch a cow over the moon.", tags: "cow moon rocket", rec: "cow-rocket", hero: 1.5 },
+  { id: "guardian-rocket", cat: "final", name: "Guardian Rocket", rar: "legendary", price: null, get: "challenges", desc: "Killing an enemy will spawn some angry Guardians.", tags: "guardians laser rocket", rec: "guardian-rocket", hero: 1.7 },
+  { id: "shock-wave", cat: "final", name: "Shock Wave", rar: "legendary", price: null, get: "event", season: "Summer", desc: "Send a shock wave through your opponent's body.", tags: "shockwave lightning", rec: "shock-wave", hero: 1.6 },
+  { id: "frozen-in-time", cat: "final", name: "Frozen in Time", rar: "legendary", price: null, get: "event", season: "Holidays", desc: "Freeze your victim in time.", tags: "ice frozen", rec: "frozen-in-time", hero: 2.5 },
+  { id: "team-destroy", cat: "final", name: "Team Destroy", rar: "legendary", price: null, get: "slumber", desc: "Explode your victim into a ball of their team's color.", tags: "wool team color", rec: "team-destroy", hero: 1.3 },
+  { id: "golem-yeet", cat: "final", name: "Golem Yeet", rar: "legendary", price: null, get: "slumber", desc: "YEEEEET your enemies with the help of an Iron Golem!", tags: "iron golem launch", rec: "golem-yeet", hero: 1.6 },
   // Older previews built by hand (not recorded yet)
-  { id: "tornado", cat: "final", name: "Tornado", rar: "legendary", price: 100000, get: "shop",
-    desc: "Killing an enemy will summon a vortex!", tags: "wind vortex sparks", preview: "tornado" },
-  { id: "batcrux", cat: "final", name: "Batcrux", rar: "legendary", price: 300000, get: "event", season: "Halloween",
-    desc: "Killing an enemy splits their soul into 7 Batcruxes.", tags: "bats smoke spooky", preview: "batcrux" },
   // Victory dances: only ones seen in real games (rarity, price and wording from the in-game menu)
   { id: "dragon-rider", cat: "dance", name: "Dragon Rider", rar: "legendary", price: 100000, get: "shop",
     desc: "Ride a Dragon capable of destroying the map.", tags: "dragon fly ender ride", preview: "dragonRider" },
@@ -553,6 +575,24 @@ const ITEMS = [
   { id: "wood-jungle-log", cat: "wood", name: "Jungle Log", rar: "epic", price: null, get: "dreamfeast", desc: "Select the Jungle Log Wood Skin to be used when placing wood blocks.", tags: "block log wood bridge", preview: "wood", wood: "jungle" },
   { id: "wood-dark-oak-log", cat: "wood", name: "Dark Oak Log", rar: "legendary", price: null, get: "dreamfeast", desc: "Select the Dark Oak Log Wood Skin to be used when placing wood blocks.", tags: "block log wood bridge", preview: "wood", wood: "dark_oak" },
   { id: "wood-dark-oak-plank", cat: "wood", name: "Dark Oak Plank", rar: "legendary", price: null, get: "mvp", desc: "Select the Dark Oak Plank Wood Skin to be used when placing wood blocks.", tags: "block log wood bridge", preview: "wood", wood: "dark_oak_planks" },
+  // Island toppers: the exact blocks Hypixel's preview builds (cosmetics/toppers/<id>.json), in the order it places them
+  { id: "topper-sheep", cat: "topper", name: "Sheep", rar: "common", price: 5000, get: "shop", desc: "Select the Sheep Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "sheep", size: [6, 7, 7], built: 0.8 },
+  { id: "topper-slime", cat: "topper", name: "Slime", rar: "common", price: 5000, get: "shop", desc: "Select the Slime Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "slime", size: [5, 5, 5], built: 0.6 },
+  { id: "topper-tnt", cat: "topper", name: "TNT", rar: "common", price: 5000, get: "shop", desc: "Select the TNT Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "tnt", size: [7, 7, 7], built: 0.8 },
+  { id: "topper-tree", cat: "topper", name: "Tree", rar: "common", price: 5000, get: "shop", desc: "Select the Tree Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "tree", size: [7, 8, 6], built: 0.5 },
+  { id: "topper-flame", cat: "topper", name: "Flame", rar: "common", price: 5000, get: "shop", desc: "Select the Flame Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "flame", size: [7, 13, 5], built: 0.5 },
+  { id: "topper-heart", cat: "topper", name: "Heart", rar: "common", price: 5000, get: "shop", desc: "Select the Heart Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "heart", size: [3, 7, 7], built: 0.5 },
+  { id: "topper-candy-cane", cat: "topper", name: "Candy Cane", rar: "common", price: null, get: "event", season: "Holidays", desc: "Select the Candy Cane Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "candy-cane", size: [2, 8, 5], built: 0.4 },
+  { id: "topper-fancy-santa-hat", cat: "topper", name: "Fancy Santa Hat", rar: "common", price: null, get: "event", season: "Holidays", desc: "Select the Fancy Santa Hat Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "fancy-santa-hat", size: [7, 8, 7], built: 0.5 },
+  { id: "topper-bunch-of-presents", cat: "topper", name: "Bunch of Presents", rar: "common", price: null, get: "event", season: "Holidays", desc: "Select the Bunch of Presents Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "bunch-of-presents", size: [7, 8, 7], built: 0.7 },
+  { id: "topper-comet-the-reindeer", cat: "topper", name: "Comet the Reindeer", rar: "common", price: null, get: "event", season: "Holidays", desc: "Select the Comet the Reindeer Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "comet-the-reindeer", size: [7, 9, 7], built: 0.5 },
+  { id: "topper-bunny", cat: "topper", name: "Bunny", rar: "common", price: null, get: "event", season: "Easter", desc: "Select the Bunny Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "bunny", size: [7, 15, 5], built: 0.6 },
+  { id: "topper-firework-rocket", cat: "topper", name: "Firework Rocket", rar: "common", price: 5000, get: "shop", desc: "Select the Firework Rocket Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "firework-rocket", size: [7, 13, 7], built: 0.5 },
+  { id: "topper-fountain-firework", cat: "topper", name: "Fountain Firework", rar: "common", price: 5000, get: "shop", desc: "Select the Fountain Firework Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "fountain-firework", size: [7, 14, 7], built: 1.3 },
+  { id: "topper-mark-of-the-paw", cat: "topper", name: "Mark of the Paw", rar: "common", price: 5000, get: "shop", desc: "Select the Mark of the Paw Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "mark-of-the-paw", size: [1, 6, 7], built: 0.4 },
+  { id: "topper-year-of-the-pig", cat: "topper", name: "Year of the Pig", rar: "common", price: 5000, get: "shop", desc: "Select the Year of the Pig Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "year-of-the-pig", size: [2, 8, 7], built: 0.5 },
+  { id: "topper-sword", cat: "topper", name: "Sword", rar: "rare", price: 10000, get: "shop", desc: "Select the Sword Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "sword", size: [3, 17, 7], built: 0.5 },
+  { id: "topper-bomb", cat: "topper", name: "Bomb", rar: "rare", price: 10000, get: "shop", desc: "Select the Bomb Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "bomb", size: [7, 13, 7], built: 0.8 },
   // Kill messages: Hypixel's exact wording
   { id: "km-fire", cat: "msg", name: "Fire", rar: "common", price: 5000, get: "shop", desc: "Select the Fire Kill Messages!", tags: "chat",
     lines: km(["{V} was struck down by {K}.", "{V} was turned to dust {K}.", "{V} was melted by {K}.", "{V} was turned to ash by {K}.", "{V} was fried by {K}'s {MOB}.", "{BED} was incinerated by {K}!"]) },
@@ -920,24 +960,6 @@ function killAnim(S, k, t, { vanish = true, hurt = true } = {}) {
   else if (t < 2) dieAnim(k.victim, t, 1);
   if (hurt) S.at(1.0, () => S.sound("game.neutral.hurt", .79, .8));
 }
-// 1.8 ModelBat in flight, with the game's own bat texture, drawn at the game's 0.35 scale.
-function makeBat() {
-  const M = mcModel("bat"), root = new THREE.Group(), g = new THREE.Group(); g.scale.setScalar(.35); root.add(g);
-  const head = M.piece(); M.cube(head, 0, 0, [-3, -3, -3, 6, 6, 6]); M.cube(head, 24, 0, [-4, -6, -2, 3, 4, 1]); M.cube(head, 24, 0, [1, -6, -2, 3, 4, 1], true);
-  const body = M.piece(); M.cube(body, 0, 16, [-3, 4, -3, 6, 12, 6]); M.cube(body, 0, 34, [-5, 16, 0, 10, 6, 1]);
-  const wr = M.piece(); M.cube(wr, 42, 0, [-12, 1, 1.5, 10, 16, 1]);
-  const wro = M.piece([-12, 1, 1.5]); M.cube(wro, 24, 16, [-8, 1, 0, 8, 12, 1]); wr.add(wro);
-  const wl = M.piece(); M.cube(wl, 42, 0, [2, 1, 1.5, 10, 16, 1], true);
-  const wlo = M.piece([12, 1, 1.5]); M.cube(wlo, 24, 16, [0, 1, 0, 8, 12, 1], true); wl.add(wlo);
-  body.add(wr, wl); g.add(head, body);
-  g.position.y = .25;
-  root.userData.flap = (ticks) => {
-    M.rot(body, Math.PI / 4 + Math.cos(ticks * .1) * .15);
-    const a = Math.cos(ticks * 1.3) * Math.PI * .25;
-    M.rot(wr, 0, a); M.rot(wl, 0, -a); M.rot(wro, 0, a * .5); M.rot(wlo, 0, -a * .5);
-  };
-  return root;
-}
 // 1.8 ModelDragon (256x256 texture, 1 px = 1/16 block), posed the way the game
 // draws a dragon in steady flight: neck and tail swaying with the wing beat,
 // wings and wing tips beating, legs tucked. A second, glowing pass draws the eyes.
@@ -1128,41 +1150,6 @@ function burst(S, pos, colors) {
   for (let i = 0; i < 110; i++) S.fx.spawn({ frames: SPARK, pos: pos.clone(), vel: sphere(rnd(3.5, 4.5)), life: rnd(1.1, 1.7), grav: 1.4, drag: .9, size: .2, color: colors[i % colors.length], add: true });
 }
 const PREVIEWS = {
-  tornado: { loop: 4.6, hero: 1.9, build(S) {
-    const k = killScene(S); let acc = 0;
-    return (t, dt) => {
-      killAnim(S, k, t);
-      S.at(1.02, () => { for (let i = 0; i < 3; i++) S.sound("mob.enderdragon.wings", .5, .6, i * .25); });
-      if (t > 1.06 && t < 3.4 && (acc += dt) > .004) { acc = 0;
-        const h = rnd(0, 3.6), r = .15 + h * .32, a = t * 9 + h * 2.2 + rnd(0, Math.PI * 2);
-        S.fx.spawn({ frames: SPARK, pos: V(Math.cos(a) * r, h, Math.sin(a) * r), vel: V(-Math.sin(a) * 2, .4, Math.cos(a) * 2), life: .55, size: .13, color: 0xffffff, add: true }); }
-      if (t > 1.56 && t < 3.2 && Math.random() < .6) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.4, .4), rnd(0, .4), rnd(-.4, .4)), vel: V(rnd(-.5, .5), rnd(.8, 1.6), rnd(-.5, .5)), life: 1.4, size: .4, color: 0x666666 });
-    };
-  } },
-  // Seven real bats leave the body a quarter second apart and flutter about the
-  // way 1.8 bats do: pick a nearby spot, dart at it, pick another.
-  batcrux: { loop: 5.6, hero: 2.3, build(S) {
-    const k = killScene(S), bats = [];
-    return (t, dt) => {
-      killAnim(S, k, t);
-      S.at(1.06, () => { S.sound("mob.bat.takeoff", 1, .5);
-        for (let i = 0; i < 160; i++) S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.3, .3), rnd(.2, 1.8), rnd(-.3, .3)), vel: sphere(rnd(.4, 2.6)), life: rnd(.9, 1.8), size: rnd(.3, .5), color: 0x2e2e2e, drag: .93 }); });
-      for (let i = 0; i < 7; i++) S.at(1.06 + i * .25, () => {
-        const b = makeBat(); b.position.set(rnd(-.2, .2), rnd(.9, 1.4), rnd(-.2, .2)); S.item.add(b);
-        bats.push({ b, v: V(rnd(-1, 1), 2, rnd(-1, 1)), to: V(0, 0, 0), next: 0, born: t });
-      });
-      for (const x of [2.4, 3.16, 3.61, 4.1]) S.at(x, () => S.sound("mob.bat.idle", rnd(.8, 1.1), .25));
-      const blend = 1 - Math.pow(.88, dt * 20);
-      for (const x of bats) {
-        if ((x.next -= dt) <= 0 || x.b.position.distanceTo(x.to) < .4) { x.to.set(rnd(-3, 3), rnd(.8, 3.4), rnd(-3, 3)); x.next = rnd(.4, 1.1); }
-        const d = x.to.clone().sub(x.b.position);
-        x.v.x += (Math.sign(d.x) * 3.2 - x.v.x) * blend; x.v.z += (Math.sign(d.z) * 3.2 - x.v.z) * blend; x.v.y += (Math.sign(d.y) * 2.2 - x.v.y) * blend;
-        x.b.position.addScaledVector(x.v, dt);
-        const yaw = Math.atan2(x.v.x, x.v.z); let dy = yaw - x.b.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); x.b.rotation.y += dy * Math.min(1, dt * 10);
-        x.b.userData.flap((t - x.born) * 20);
-      }
-    };
-  } },
   // Death cries have no lobby preview, so this shows the moment one plays:
   // the hit, the cry, the 1.8 death tip-over and the white puff.
   cry: { loop: 3.4, hero: 1.5, build(S, it) {
@@ -1343,6 +1330,22 @@ for (const it of ITEMS) if (it.rec) {
     return f;
   } };
 }
+// Island toppers: built block by block on the arena as the in-game preview does,
+// held, then built again. The camera is set back far enough to see the whole build.
+const topData = {}, topLoading = {};
+const loadTop = (id) => topLoading[id] || (topLoading[id] = fetch(`cosmetics/toppers/${id}.json`).then((r) => r.json()).then((d) => preloadTopper(d).then(() => (topData[id] = d))));
+for (const it of ITEMS) if (it.topper) {
+  it.preview = "top:" + it.id;
+  const [w, h, d] = it.size, r = Math.max(h, w * 1.1, d * 1.1) * 2.4 + 3, ty = h / 2;
+  const cam = [[r * 0.55, ty + r * 0.22, r * 0.8], [0, ty, 0], r * 0.5, r * 2.2, [r * 0.5, ty + r * 0.2, r * 0.72], [0, ty, 0]];
+  PREVIEWS[it.preview] = { stage: "arena", mc: true, top: it.topper, loop: 6, hero: it.built, cam, build(S) {
+    const def = this; let run = null;
+    const go = (d) => { const last = Math.max(...d.b.map((b) => b[0])) / 1000; def.loop = Math.max(6, last + 4); run = buildTopper(S, d); };
+    if (topData[it.topper]) go(topData[it.topper]);
+    else loadTop(it.topper).then((d) => { if (S.def === def && S.it === it) { S.t = 0; go(d); } });
+    return (t) => run?.(t);
+  } };
+}
 function cssColor(v) { const el = document.createElement("i"); el.style.color = `var(${v})`; document.body.appendChild(el); const c = getComputedStyle(el).color; el.remove(); const m = c.match(/[\d.]+/g).map(Number); return new THREE.Color(m[0] / 255, m[1] / 255, m[2] / 255); }
 const ACCENT = cssColor("--accent"), ACCENT2 = cssColor("--accent-2");
 
@@ -1503,7 +1506,7 @@ function makeStudio(canvas, w, h) {
     S.fx.clear(); S.anims = []; S.fired = new Set();
     for (const c of [...item.children]) { item.remove(c); c.traverse?.((o) => { o.geometry?.dispose(); }); }
     item.rotation.set(0, 0, 0);
-    S.mc = !!def.rec; for (const l of [hemi, key, rim, glow]) l.visible = !S.mc; for (const l of [mcAmb, mcL0, mcL1]) l.visible = S.mc;
+    S.mc = !!(def.rec || def.mc); for (const l of [hemi, key, rim, glow]) l.visible = !S.mc; for (const l of [mcAmb, mcL0, mcL1]) l.visible = S.mc;
     S.flash(0); S.setStage(def.stage); arena?.userData.reset();
     S.def = def; S.it = it; S.t = 0; S.tick = def.build(S, it);
   };
@@ -1590,6 +1593,7 @@ async function makeThumbs() {
   for (const it of todo) {
     const def = PREVIEWS[it.preview];
     if (def.rec) await loadRec(def.rec);
+    if (def.top) await loadTop(def.top);
     const C = def.cam || STAGE_CAM[def.stage || "island"];
     T.camera.position.set(C[4][0], C[4][1] + (def.thumbY ? .4 : 0), C[4][2]); T.camera.lookAt(C[5][0], def.thumbY || C[5][1], C[5][2]);
     Math.random = seeded(it.id.length * 97 + 13);

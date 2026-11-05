@@ -47,7 +47,7 @@ function img(name) {
   if (!imgCache[name]) imgCache[name] = new Promise((res, rej) => { const i = new Image(); i.onload = () => { TEX_H[name] = i.height; res(i); }; i.onerror = rej; i.src = name.includes("/") ? name : MC + name + ".png"; });
   return imgCache[name];
 }
-const ALL_TEX = ["particles", "explosion", "ascii", "entity_chicken", "entity_wolf", "entity_bat", "entity_squid", "entity_skeleton", "entity_steve", "entity_experience_orb", "armor_leather_layer_1", "armor_leather_layer_1_overlay",
+const ALL_TEX = ["particles", "explosion", "ascii", "entity_chicken", "entity_wolf", "entity_bat", "entity_squid", "entity_skeleton", "entity_steve", "entity_experience_orb", "armor_leather_layer_1", "armor_leather_layer_1_overlay", "armor_leather_layer_2", "armor_leather_layer_2_overlay", "entity_armorstand", "entity_cow", "entity_iron_golem", "entity_witch", "entity_guardian", "entity_guardian_beam", "block_fire_layer_0_strip",
   "rabbit_brown", "rabbit_white", "rabbit_black", "rabbit_white_splotched", "rabbit_gold", "rabbit_salt", "cosmetics/skins/killer.png", "cosmetics/skins/dummy.png",
   "item_iron_sword", "item_stick", "item_bone", "item_cookie", "item_gold_ingot", "item_beef_raw", "item_beef_cooked", "item_leather", "item_egg", "item_fireworks", "item_leather_chestplate",
   "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel"];
@@ -156,11 +156,21 @@ let MODELS = null;
 const modelsReady = fetch(MC + "models.json").then((r) => r.json()).then((j) => { MODELS = j; });
 const ITEM_TEX = {
   267: "item_iron_sword", 280: "item_stick", 352: "item_bone", 357: "item_cookie", 266: "item_gold_ingot", 363: "item_beef_raw", 364: "item_beef_cooked",
-  334: "item_leather", 344: "item_egg", 401: "item_fireworks", 299: "item_leather_chestplate",
+  334: "item_leather", 344: "item_egg", 401: "item_fireworks", 299: "item_leather_chestplate", 300: "item_leather_leggings", 301: "item_leather_boots",
+  276: "item_diamond_sword", 312: "item_diamond_leggings", 313: "item_diamond_boots", 314: "item_gold_helmet", 316: "item_gold_leggings", 399: "item_nether_star",
+  400: "item_pumpkin_pie", 332: "item_snowball", "38:4": "block_flower_tulip_red", "38:6": "block_flower_tulip_white",
 };
 const DYES = ["black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "light_blue", "magenta", "orange", "white"];
 const BLOCK_ITEM = { 41: "gold_block", 86: "pumpkin", 91: "lit_pumpkin", 46: "tnt", 145: "anvil" };
-function itemTexName(it) { if (it.id === 351) return "item_dye_" + DYES[(it.d || 0) & 15]; return ITEM_TEX[it.id]; }
+function itemTexName(it) { if (it.id === 351) return "item_dye_" + DYES[(it.d || 0) & 15]; return ITEM_TEX[it.id + ":" + (it.d || 0)] || ITEM_TEX[it.id]; }
+// The block model an item or block uses: a baked "id:meta" model, or an older named one.
+// Flowers and other flat blocks are drawn as flat items instead (ITEM_TEX).
+function blockKey(id, d = 0) {
+  if (ITEM_TEX[id + ":" + d]) return null;
+  if (MODELS?.[id + ":" + d]) return id + ":" + d;
+  if (MODELS?.[id + ":0"] && id !== 17 && id !== 18 && id !== 35 && id !== 159 && id !== 95 && id !== 171 && id !== 38) return id + ":0";
+  return BLOCK_ITEM[id] || null;
+}
 
 const flatGeoCache = {};
 async function flatItemGeo(name) {
@@ -187,6 +197,23 @@ async function flatItemGeo(name) {
   geo.setAttribute("normal", new THREE.Float32BufferAttribute(nor, 3));
   return (flatGeoCache[name] = geo);
 }
+// An element's own turn (FaceBakery.rotatePart): about its origin, then, with
+// "rescale", stretched across the turn so a 22.5/45 degree plane still spans the block.
+function rotFn(r) {
+  const o = new THREE.Vector3(...r.origin.map((v) => v / 16)), ax = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] }[r.axis];
+  const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...ax), r.angle * D2R);
+  const f = r.rescale ? 1 / Math.cos((Math.abs(r.angle) === 22.5 ? 22.5 : 45) * D2R) : 1;
+  const sc = new THREE.Vector3(...ax.map((a) => (a ? 1 : f)));
+  return (p) => new THREE.Vector3(...p).sub(o).applyQuaternion(q).multiply(sc).add(o).toArray();
+}
+// Fire's texture is animated: 32 frames down a strip, one per tick, in this order.
+const FIRE_ORDER = [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+let fireTex = null;
+function fireMat(o) {
+  if (!fireTex) { fireTex = tex("block_fire_layer_0_strip").clone(); img("block_fire_layer_0_strip").then((i) => { fireTex.image = i; fireTex.needsUpdate = true; }); fireTex.repeat.set(1, 1 / 32); }
+  return new THREE.MeshLambertMaterial({ map: fireTex, alphaTest: 0.1, ...o, side: THREE.DoubleSide });
+}
+export function animateTextures(ticks) { if (fireTex) fireTex.offset.y = 1 - (FIRE_ORDER[((ticks % 32) + 32) % 32] + 1) / 32; }
 // A block model in 0..1 block space, faces as the game bakes them.
 const FACE = {
   north: (a, b) => [[b[0], b[1], a[2]], [a[0], b[1], a[2]], [a[0], a[1], a[2]], [b[0], a[1], a[2]]],
@@ -198,33 +225,144 @@ const FACE = {
 };
 function blockMesh(name) {
   const g = new THREE.Group();
-  const els = MODELS?.[name]; if (!els) return g;
+  const def = MODELS?.[name]; if (!def) return g;
+  const els = Array.isArray(def) ? def : def.e;
+  if (!Array.isArray(def) && (def.x || def.y)) { // blockstate turn about the block's centre
+    const inner = blockMesh.raw(els, def.tint); const c = new THREE.Group(); c.position.set(0.5, 0.5, 0.5); c.rotation.order = "YXZ";
+    c.rotation.set(-(def.x || 0) * D2R, -(def.y || 0) * D2R, 0); inner.position.set(-0.5, -0.5, -0.5); c.add(inner); g.add(c); return g;
+  }
+  return blockMesh.raw(els, def.tint, g);
+}
+blockMesh.raw = function (els, tint, g = new THREE.Group()) {
   const byTex = {};
   for (const e of els) {
     const a = e.from.map((v) => v / 16), b = e.to.map((v) => v / 16);
     let rotM = null;
     if (e.rot) {
-      const o = new THREE.Vector3(...e.rot.origin.map((v) => v / 16)), ax = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] }[e.rot.axis];
-      const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...ax), e.rot.angle * D2R);
-      rotM = (p) => new THREE.Vector3(...p).sub(o).applyQuaternion(q).add(o).toArray();
+      rotM = rotFn(e.rot);
     }
     for (const [dir, f] of Object.entries(e.faces)) {
       let P = FACE[dir](a, b); if (rotM) P = P.map(rotM);
       const [u0, v0, u1, v1] = f.uv.map((v) => v / 16);
       const C = [[u0, 1 - v0], [u1, 1 - v0], [u1, 1 - v1], [u0, 1 - v1]], k = (f.r || 0) / 90;
       const T = [0, 1, 2, 3].map((i) => C[(i - k + 4) % 4]);
-      const L = byTex[f.t] || (byTex[f.t] = { pos: [], uv: [] });
+      const key = f.t + (f.tint && tint != null ? "#" + tint : "");
+      const L = byTex[key] || (byTex[key] = { pos: [], uv: [], t: f.t, tint: f.tint && tint != null ? tint : null });
       for (const i of [0, 3, 2, 0, 2, 1]) { L.pos.push(...P[i]); L.uv.push(...T[i]); }
     }
   }
-  for (const [t, L] of Object.entries(byTex)) {
+  for (const L of Object.values(byTex)) {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.Float32BufferAttribute(L.pos, 3));
     geo.setAttribute("uv", new THREE.Float32BufferAttribute(L.uv, 2));
     geo.computeVertexNormals();
-    g.add(new THREE.Mesh(geo, emat("block_" + t, { side: THREE.FrontSide })));
+    const o = { side: THREE.FrontSide }; if (L.tint != null) o.color = new THREE.Color(L.tint).convertSRGBToLinear();
+    if (TRANSLUCENT.has(L.t)) { o.transparent = true; o.alphaTest = 0; o.depthWrite = false; }
+    g.add(new THREE.Mesh(geo, L.t === "fire_layer_0" ? fireMat(o) : emat("block_" + L.t, o)));
   }
   return g;
+};
+const TRANSLUCENT = new Set(["ice", "slime", "glass_white", "glass_orange", "glass_magenta", "glass_light_blue", "glass_yellow", "glass_lime", "glass_pink", "glass_gray", "glass_silver", "glass_cyan", "glass_purple", "glass_blue", "glass_brown", "glass_green", "glass_red", "glass_black"]);
+
+/* ------------------------------------------------------------ island toppers
+   A topper is plain blocks (cosmetics/toppers/<id>.json: [ms, x, y, z, model, cull]),
+   drawn the way the game draws blocks in the world: unlit, each face darkened by
+   its direction (up 1, north/south 0.8, east/west 0.6, down 0.5) and by smooth
+   lighting's corner shadows (a solid block next to a corner counts 0.2, air 1,
+   four averaged). `cull` holds the faces the game hides because a neighbour covers
+   them (bits: down, up, north, south, west, east, before the block's turn).
+   Blocks show up at the moment they were placed in the preview. */
+const CULL_ORDER = ["down", "up", "north", "south", "west", "east"];
+const DIRV = { up: [0, 1, 0], down: [0, -1, 0], north: [0, 0, -1], south: [0, 0, 1], west: [-1, 0, 0], east: [1, 0, 0] };
+const SHADE = { up: 1, down: 0.5, north: 0.8, south: 0.8, west: 0.6, east: 0.6 };
+const blockMatCache = {};
+function blockMat(t, translucent) {
+  const k = t + (translucent ? "#t" : "");
+  if (!blockMatCache[k]) blockMatCache[k] = new THREE.MeshBasicMaterial({ map: tex("block_" + t), vertexColors: true, side: THREE.FrontSide,
+    ...(translucent ? { transparent: true, depthWrite: false, alphaTest: 0 } : { alphaTest: 0.1 }) });
+  return blockMatCache[k];
+}
+// Smooth lighting counts a block as solid when it is a whole cube that is not glass.
+function aoSolid(key) {
+  const d = MODELS?.[key]; if (!d) return false;
+  const els = Array.isArray(d) ? d : d.e;
+  if (els.length !== 1) return false;
+  const e = els[0];
+  if (e.from.some((v) => v !== 0) || e.to.some((v) => v !== 16)) return false;
+  return !Object.values(e.faces).some((f) => /glass/.test(f.t));
+}
+export function buildTopper(S, data) {
+  const root = new THREE.Group(); S.item.add(root);
+  const [W, , D] = data.size, ox = -(W - 1) / 2 - 0.5, oz = -(D - 1) / 2 - 0.5;
+  const solid = new Set();
+  for (const b of data.b) if (aoSolid(b[4])) solid.add(b[1] + "," + b[2] + "," + b[3]);
+  const occ = (x, y, z) => y < 0 || solid.has(x + "," + y + "," + z); // the island's ground is solid
+  const blocks = [];
+  for (const [t, x, y, z, key, cull = 0] of data.b) {
+    const def = MODELS?.[key]; if (!def) continue;
+    const els = Array.isArray(def) ? def : def.e;
+    const R = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(-(def.x || 0) * D2R, -(def.y || 0) * D2R, 0, "YXZ"));
+    const M = new THREE.Matrix4().makeTranslation(0.5, 0.5, 0.5).multiply(R).multiply(new THREE.Matrix4().makeTranslation(-0.5, -0.5, -0.5));
+    const byMat = {};
+    for (const e of els) {
+      const a = e.from.map((v) => v / 16), b2 = e.to.map((v) => v / 16);
+      let rotM = null;
+      if (e.rot) {
+        rotM = rotFn(e.rot);
+      }
+      for (const [dir, f] of Object.entries(e.faces)) {
+        if (f.c && cull & (1 << CULL_ORDER.indexOf(f.c))) continue;
+        let P = FACE[dir](a, b2); if (rotM) P = P.map(rotM);
+        P = P.map((p) => new THREE.Vector3(...p).applyMatrix4(M));
+        // The face's direction after the turn, snapped to the nearest side.
+        const n = new THREE.Vector3(...DIRV[dir]); if (e.rot) n.applyQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...{ x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] }[e.rot.axis]), e.rot.angle * D2R)); n.applyMatrix4(R);
+        const axis = Math.abs(n.x) > Math.abs(n.y) ? (Math.abs(n.x) > Math.abs(n.z) ? 0 : 2) : (Math.abs(n.y) > Math.abs(n.z) ? 1 : 2);
+        const sgn = Math.sign(n.getComponent(axis)) || 1;
+        const side = [["west", "east"], ["down", "up"], ["north", "south"]][axis][sgn > 0 ? 1 : 0];
+        // UVs: the model's own, or worked out from where the face sits (uvlock), so the texture stays put when the block turns.
+        let T;
+        if (def.uvlock && (def.x || def.y)) {
+          T = P.map((p) => { const { x: px, y: py, z: pz } = p; const uv = { down: [px, 1 - pz], up: [px, pz], north: [1 - px, 1 - py], south: [px, 1 - py], west: [pz, 1 - py], east: [1 - pz, 1 - py] }[side]; return [uv[0], 1 - uv[1]]; });
+        } else {
+          const [u0, v0, u1, v1] = f.uv.map((v) => v / 16);
+          const C = [[u0, 1 - v0], [u1, 1 - v0], [u1, 1 - v1], [u0, 1 - v1]], k = (f.r || 0) / 90;
+          T = [0, 1, 2, 3].map((i) => C[(i - k + 4) % 4]);
+        }
+        // Corner shadows: the layer of blocks the face looks into (the neighbour when the face is flush, else the block's own layer).
+        const flush = P.every((p) => Math.abs(p.getComponent(axis) - (sgn > 0 ? 1 : 0)) < 1e-4);
+        const L = [x, y, z]; if (flush) L[axis] += sgn;
+        const [ta, tb] = [0, 1, 2].filter((k2) => k2 !== axis);
+        const at = (da, db) => { const q = L.slice(); q[ta] += da; q[tb] += db; return occ(q[0], q[1], q[2]) ? 0.2 : 1; };
+        const corner = (sa, sb) => { const s1 = at(sa, 0), s2 = at(0, sb), c = s1 < 1 && s2 < 1 ? 0.2 : at(sa, sb); return (s1 + s2 + c + at(0, 0)) / 4; };
+        const c00 = corner(-1, -1), c10 = corner(1, -1), c01 = corner(-1, 1), c11 = corner(1, 1);
+        const sh = SHADE[side] * (e.shade === false ? 1 / SHADE[side] : 1);
+        const tint = f.tint && def.tint != null ? new THREE.Color(def.tint) : new THREE.Color(1, 1, 1);
+        const cols = P.map((p) => {
+          const u = clamp(p.getComponent(ta), 0, 1), v = clamp(p.getComponent(tb), 0, 1);
+          const ao = c00 * (1 - u) * (1 - v) + c10 * u * (1 - v) + c01 * (1 - u) * v + c11 * u * v, k2 = sh * ao;
+          return [tint.r * k2, tint.g * k2, tint.b * k2].map((c) => Math.pow(c, 2.2)); // the game multiplies in screen colours
+        });
+        const translucent = TRANSLUCENT.has(f.t), mk = f.t + (translucent ? "#t" : "");
+        const G = byMat[mk] || (byMat[mk] = { pos: [], uv: [], col: [], t: f.t, translucent });
+        for (const i of [0, 3, 2, 0, 2, 1]) { G.pos.push(P[i].x, P[i].y, P[i].z); G.uv.push(...T[i]); G.col.push(...cols[i]); }
+      }
+    }
+    const g = new THREE.Group(); g.position.set(x + ox, y, z + oz); g.visible = false;
+    for (const G of Object.values(byMat)) {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.Float32BufferAttribute(G.pos, 3));
+      geo.setAttribute("uv", new THREE.Float32BufferAttribute(G.uv, 2));
+      geo.setAttribute("color", new THREE.Float32BufferAttribute(G.col, 3));
+      const m = new THREE.Mesh(geo, blockMat(G.t, G.translucent)); if (G.translucent) m.renderOrder = 1; g.add(m);
+    }
+    root.add(g); blocks.push([t / 1000, g]);
+  }
+  const run = (t) => { for (const [bt, g] of blocks) g.visible = t >= bt; };
+  run.focus = () => new THREE.Vector3(0, data.size[1] / 2, 0);
+  return run;
+}
+export function preloadTopper(data) {
+  return modelsReady.then(() => { const t = new Set(); for (const b of data.b) { const d = MODELS[b[4]]; if (d) for (const e of (Array.isArray(d) ? d : d.e)) for (const f of Object.values(e.faces)) t.add("block_" + f.t); } return Promise.all([...t].map((n) => img(n).catch(() => {}))); });
 }
 
 /* ------------------------------------------------------------ heads
@@ -397,6 +535,21 @@ class Crit extends FX { // EntityCritFX (crit, 9)
   update() { this.prev(); if (this.age++ >= this.maxAge) this.dead = true; this.move(this.mx, this.my, this.mz); this.g *= 0.96; this.b *= 0.9; this.mx *= 0.7; this.my *= 0.7; this.mz *= 0.7; this.my -= 0.02; if (this.onGround) { this.mx *= 0.7; this.mz *= 0.7; } }
   size(pt) { return 0.1 * this.base * grow32(this, pt); }
 }
+class Aura extends FX { // EntityAuraFX as happyVillager (21): a slow green spark
+  constructor(x, y, z, mx, my, mz) {
+    super(x, y, z, mx, my, mz, true); const f = rand() * 0.1 + 0.2; this.r = this.g = this.b = f; this.tex = 0;
+    this.scale *= rand() * 0.6 + 0.5; this.mx *= 0.02; this.my *= 0.02; this.mz *= 0.02; this.maxAge = Math.floor(20 / (rand() * 0.8 + 0.2)); this.noClip = true;
+  }
+  update() { this.prev(); this.move(this.mx, this.my, this.mz); this.mx *= 0.99; this.my *= 0.99; this.mz *= 0.99; if (this.maxAge-- <= 0) this.dead = true; }
+}
+class SnowShovel extends FX { // EntitySnowShovelFX (snowshovel, 32)
+  constructor(x, y, z, mx, my, mz) {
+    super(x, y, z, 0, 0, 0, true); this.mx = this.mx * 0.1 + mx; this.my = this.my * 0.1 + my; this.mz = this.mz * 0.1 + mz;
+    this.r = this.g = this.b = 1 - rand() * 0.3; this.scale *= 0.75; this.base = this.scale; this.maxAge = Math.floor(8 / (rand() * 0.8 + 0.2));
+  }
+  update() { this.prev(); if (this.age++ >= this.maxAge) this.dead = true; this.tex = 7 - Math.floor(this.age * 8 / this.maxAge); this.my -= 0.03; this.move(this.mx, this.my, this.mz); this.mx *= 0.99; this.my *= 0.99; this.mz *= 0.99; if (this.onGround) { this.mx *= 0.7; this.mz *= 0.7; } }
+  size(pt) { return 0.1 * this.base * grow32(this, pt); }
+}
 class Note extends FX { // EntityNoteFX (note, 23): the x speed picks the colour
   constructor(x, y, z, c) {
     super(x, y, z, 0, 0, 0, true); this.mx *= 0.01; this.my *= 0.01; this.mz *= 0.01; this.my += 0.2;
@@ -411,14 +564,16 @@ class Lava extends FX { // EntityLavaFX (lava, 27)
   update(w) { this.prev(); if (this.age++ >= this.maxAge) this.dead = true; if (rand() > this.age / this.maxAge) w.spawn(new Smoke(this.x, this.y, this.z, this.mx, this.my, this.mz)); this.my -= 0.03; this.move(this.mx, this.my, this.mz); this.mx *= 0.999; this.my *= 0.999; this.mz *= 0.999; if (this.onGround) { this.mx *= 0.7; this.mz *= 0.7; } }
   size(pt) { const f = (this.age + pt) / this.maxAge; return 0.1 * this.base * (1 - f * f); }
 }
-class Drip extends FX { // EntityDropParticleFX, water (dripWater, 18)
-  constructor(x, y, z) { super(x, y, z, 0, 0, 0, true); this.mx = this.my = this.mz = 0; this.r = 0; this.g = 0; this.b = 1; this.tex = 113; this.grav = 0.06; this.bob = 40; this.maxAge = Math.floor(64 / (rand() * 0.8 + 0.2)); this.hw = 0.005; }
+class Drip extends FX { // EntityDropParticleFX, water (dripWater, 18) or lava (dripLava, 19)
+  constructor(x, y, z, lava = false) { super(x, y, z, 0, 0, 0, true); this.lava = lava; this.mx = this.my = this.mz = 0; this.r = lava ? 1 : 0; this.g = 0; this.b = lava ? 0 : 1; this.tex = 113; this.grav = 0.06; this.bob = lava ? 40 : 40; this.maxAge = Math.floor(64 / (rand() * 0.8 + 0.2)); this.hw = 0.005; }
   update(w) {
-    this.prev(); this.r = 0.2; this.g = 0.3; this.b = 1; this.my -= this.grav;
+    this.prev();
+    if (this.lava) { this.r = 1; this.g = 16 / (40 - this.bob + 16); this.b = 4 / (40 - this.bob + 8); } else { this.r = 0.2; this.g = 0.3; this.b = 1; }
+    this.my -= this.grav;
     if (this.bob-- > 0) { this.mx *= 0.02; this.my *= 0.02; this.mz *= 0.02; this.tex = 113; } else this.tex = 112;
     this.move(this.mx, this.my, this.mz); this.mx *= 0.98; this.my *= 0.98; this.mz *= 0.98;
     if (this.maxAge-- <= 0) this.dead = true;
-    if (this.onGround) { this.dead = true; w.spawn(new Splash(this.x, this.y, this.z, 0, 0, 0)); this.mx *= 0.7; this.mz *= 0.7; }
+    if (this.onGround) { if (this.lava) { this.tex = 114; } else { this.dead = true; w.spawn(new Splash(this.x, this.y, this.z, 0, 0, 0)); } this.mx *= 0.7; this.mz *= 0.7; }
   }
 }
 class Splash extends FX { // EntitySplashFX (splash after a drip lands)
@@ -491,27 +646,28 @@ export function createRecFx(kit0) {
   const { cube, piece, setRP, rot } = kit;
 
   // Tile sheet for block/item crumbs (16px tiles, built once from single pictures).
-  const TILES = ["block_redstone_block", "block_pumpkin_side", "block_dirt", "block_gravel", "item_egg", "block_gold_block", "block_anvil_base"];
+  const TILES = ["block_redstone_block", "block_pumpkin_side", "block_dirt", "block_gravel", "item_egg", "block_gold_block", "block_anvil_base", "item_snowball", "block_ice", "block_glass_white", "block_wool_colored_red", "block_ice_packed"];
   const tileCanvas = document.createElement("canvas"); tileCanvas.width = 256; tileCanvas.height = 256;
   const tileTex = new THREE.CanvasTexture(tileCanvas); tileTex.magFilter = tileTex.minFilter = THREE.NearestFilter; tileTex.colorSpace = THREE.SRGBColorSpace; tileTex.generateMipmaps = false;
   Promise.all(TILES.map((n) => img(n))).then((ims) => { const g = tileCanvas.getContext("2d"); ims.forEach((im, i) => g.drawImage(im, 0, 0, 16, 16, (i % 16) * 16, Math.floor(i / 16) * 16, 16, 16)); tileTex.needsUpdate = true; });
   const tileOf = (name) => TILES.indexOf(name);
-  const BLOCK_TILE = { 152: "block_redstone_block", 86: "block_pumpkin_side", 41: "block_gold_block", 2: "block_dirt", 3: "block_dirt", 13: "block_gravel", 145: "block_anvil_base" };
-  const ITEM_TILE = { 344: "item_egg" };
-  const BREAK_SOUND = { 152: ["dig.stone", 1, 1], 86: ["dig.wood", 1, 1], 41: ["dig.stone", 1, 1] };
+  const BLOCK_TILE = { 152: "block_redstone_block", 86: "block_pumpkin_side", 41: "block_gold_block", 2: "block_dirt", 3: "block_dirt", 13: "block_gravel", 145: "block_anvil_base", 79: "block_ice", 174: "block_ice_packed", "95:0": "block_glass_white", "35:14": "block_wool_colored_red" };
+  const ITEM_TILE = { 344: "item_egg", 332: "item_snowball", 79: "block_ice", 174: "block_ice_packed", 95: "block_glass_white" };
+  const BREAK_SOUND = { 152: ["dig.stone", 1, 1], 86: ["dig.wood", 1, 1], 41: ["dig.stone", 1, 1], 95: ["dig.glass", 1, 1], 79: ["dig.glass", 1, 1], 174: ["dig.stone", 1, 1], 35: ["dig.cloth", 1, 1] };
 
   // ---- held / worn items -------------------------------------------------
   function itemMesh(it, onReady) { // returns a Group holding the model in 0..1 item space, centred later
     const g = new THREE.Group();
-    const block = BLOCK_ITEM[it.id];
+    const block = blockKey(it.id, it.d);
     if (block) { modelsReady.then(() => g.add(blockMesh(block))); g.userData.gui3d = true; return g; }
     if (it.id === 397) { const h = headMesh(kit, it); h.userData.skull = true; g.add(h); g.userData.gui3d = true; g.userData.skull = true; return g; }
     const name = itemTexName(it); if (!name) return g;
     flatItemGeo(name).then((geo) => {
       let m = emat(name);
-      if (it.id === 299) { // leather armour piece: tinted base with the overlay on top
+      if (it.id >= 298 && it.id <= 301) { // leather armour piece: tinted base (layer0) with the untinted overlay (layer1) on top
         const c = new THREE.Color(it.color != null ? it.color : 0xa06540);
         m = new THREE.MeshLambertMaterial({ map: tex(name), alphaTest: 0.1, color: c });
+        flatItemGeo(name + "_overlay").then((g2) => g.add(new THREE.Mesh(g2, emat(name + "_overlay")))).catch(() => {});
       }
       g.add(new THREE.Mesh(geo, m)); onReady?.();
     });
@@ -544,7 +700,7 @@ export function createRecFx(kit0) {
     const c = new THREE.Group(); c.scale.setScalar(s); b.add(c); c.add(g); return a;
   }
   const THIRD = { handheld: [[0, 90, -35], [0, 1.25, -3.5], 0.85], generated: [[-90, 0, 0], [0, 1, -3], 0.55], block: [[10, -45, 170], [0, 1.5, -2.75], 0.375], skull: [[180, -45, 0], [0, 1, -2.5], 0.25] };
-  const HANDHELD = new Set([267, 280, 352]);
+  const HANDHELD = new Set([267, 276, 280, 352]);
   // LayerHeldItem on a biped's right arm (the arm group already holds the arm's pivot and turn).
   function heldItem(it, child) {
     // GL space of the arm (y down, z forward as in model space). Build in GL axes then flip with (1,-1,-1).
@@ -553,9 +709,9 @@ export function createRecFx(kit0) {
     if (child) { const c = new THREE.Group(); c.position.set(0, 0.625, 0); c.rotation.x = 20 * D2R; c.scale.setScalar(0.5); p.add(c); p = c; }
     const t = new THREE.Group(); t.position.set(-0.0625, 0.4375, 0.0625); p.add(t); p = t;
     const node = renderItemNode(it), gui3d = node.userData.gui3d;
-    if (BLOCK_ITEM[it.id]) { const b = new THREE.Group(); b.position.set(0, 0.1875, -0.3125); b.rotation.order = "XYZ"; b.rotation.set(20 * D2R, 45 * D2R, 0); b.scale.set(-0.375, -0.375, 0.375); p.add(b); p = b; }
-    const pre = new THREE.Group(); pre.scale.setScalar(gui3d ? (BLOCK_ITEM[it.id] ? 2 : 1) : 2); p.add(pre); // ItemRenderer 2x for blocks, preTransform 2x for flat items
-    const tr = it.id === 397 ? THIRD.skull : BLOCK_ITEM[it.id] ? THIRD.block : HANDHELD.has(it.id) ? THIRD.handheld : THIRD.generated;
+    if (blockKey(it.id, it.d)) { const b = new THREE.Group(); b.position.set(0, 0.1875, -0.3125); b.rotation.order = "XYZ"; b.rotation.set(20 * D2R, 45 * D2R, 0); b.scale.set(-0.375, -0.375, 0.375); p.add(b); p = b; }
+    const pre = new THREE.Group(); pre.scale.setScalar(gui3d ? (blockKey(it.id, it.d) ? 2 : 1) : 2); p.add(pre); // ItemRenderer 2x for blocks, preTransform 2x for flat items
+    const tr = it.id === 397 ? THIRD.skull : blockKey(it.id, it.d) ? THIRD.block : HANDHELD.has(it.id) ? THIRD.handheld : THIRD.generated;
     pre.add(applyTransform(node, ...tr));
     return gl;
   }
@@ -571,7 +727,7 @@ export function createRecFx(kit0) {
       const fix = new THREE.Group(); fix.scale.set(1, -1, -1); r.add(fix); fix.add(headMesh(kit, it));
     } else {
       const t = new THREE.Group(); t.position.set(0, -0.25, 0); t.rotation.y = Math.PI; t.scale.set(0.625, -0.625, -0.625); p.add(t);
-      const two = new THREE.Group(); two.scale.setScalar(BLOCK_ITEM[it.id] ? 2 : 1); t.add(two);
+      const two = new THREE.Group(); two.scale.setScalar(blockKey(it.id, it.d) ? 2 : 1); t.add(two);
       const node = renderItemNode(it); if (!node.userData.gui3d) node.scale.multiplyScalar(2); two.add(node);
     }
     return gl;
@@ -617,16 +773,32 @@ export function createRecFx(kit0) {
       },
     };
   }
-  function armorStand(e) { // ModelArmorStand: the stand is invisible in every effect, its layers are not
+  function armorStand(e) { // ModelArmorStand: usually invisible (only its worn and held items show), sometimes shown
     const m = new THREE.Group(), hl = new THREE.Group(), al = new THREE.Group(); m.add(hl, al);
     const head = piece(hl, [0, 1, 0]), body = piece(m), armR = piece(al, [-5, 2, 0]), armL = piece(m, [5, 2, 0]);
+    const legR = piece(m, [-1.9, 12, 0]), legL = piece(m, [1.9, 12, 0]);
     const held = new THREE.Group(); armR.add(held);
+    // the stand itself (64x64): neck, shoulders, arms, legs, the two side sticks, waist and base plate
+    const mat = emat("entity_armorstand"), vis = [];
+    const add = (p, u, v, b) => { vis.push(cube(p, mat, 64, 64, u, v, b)); };
+    add(head, 0, 0, [-1, -7, -1, 2, 7, 2]); add(body, 0, 26, [-6, 0, -1.5, 12, 3, 3]);
+    const arms = [cube(armR, mat, 64, 64, 24, 0, [-2, -2, -1, 2, 12, 2]), cube(armL, mat, 64, 64, 32, 16, [0, -2, -1, 2, 12, 2])];
+    add(legR, 8, 0, [-1, 0, -1, 2, 11, 2]); add(legL, 40, 16, [-1, 0, -1, 2, 11, 2]);
+    const sideR = piece(m), sideL = piece(m), waist = piece(m), base = piece(m, [0, 12, 0]);
+    add(sideR, 16, 0, [-3, 3, -1, 2, 7, 2]); add(sideL, 48, 16, [1, 3, -1, 2, 7, 2]); add(waist, 0, 48, [-4, 10, -1, 8, 2, 2]);
+    const plate = cube(base, mat, 64, 64, 0, 32, [-6, 11, -6, 12, 1, 12]);
     return {
-      m, hl, al, scale: 1, parts: { head, body, armR, armL }, held, stand: true,
+      m, hl, al, scale: 1, parts: { head, body, armR, armL, legR, legL }, held, stand: true, legY: -1,
       set(e) {
         const P = (k, d) => (e.meta[k] || d).map((v) => v * D2R);
         const [hx, hy, hz] = P("11", [0, 0, 0]), [bx, byy, bz] = P("12", [0, 0, 0]), [lx, ly, lz] = P("13", [-10, 0, -10]), [rx, ry, rz] = P("14", [-15, 0, 10]);
-        rot(head, hx, hy, hz); rot(body, bx, byy, bz); rot(armL, lx, ly, lz); rot(armR, rx, ry, rz);
+        const [llx, lly, llz] = P("15", [-1, 0, -1]), [rlx, rly, rlz] = P("16", [1, 0, 1]);
+        rot(head, hx, hy, hz); rot(body, bx, byy, bz); rot(armL, lx, ly, lz); rot(armR, rx, ry, rz); rot(legL, llx, lly, llz); rot(legR, rlx, rly, rlz);
+        for (const p of [sideR, sideL, waist]) rot(p, bx, byy, bz);
+        const shown = !(e.meta["0"] & 32), flags = e.meta["10"] || 0;
+        for (const c of vis) c.visible = shown;
+        for (const c of arms) c.visible = shown && !!(flags & 4);
+        plate.visible = shown && !(flags & 8);
       },
     };
   }
@@ -739,8 +911,109 @@ export function createRecFx(kit0) {
       set(e, pt) { const a = lerp(e.ptent, e.tent, pt); for (const p of t) rot(p, a, p.userData.y); },
     };
   }
-  const MOB_MODEL = { 30: armorStand, 78: armorStand, 93: chicken, 101: rabbit, 95: wolf, 65: bat, 94: squid };
-  const HEIGHT = { 30: 1.975, 78: 1.975, 93: 0.7, 101: 0.7, 95: 0.85, 65: 0.9, 94: 0.95, player: 1.8 };
+  const headAngles = (e, pt) => [lerp(e.ppitch, e.pitch, pt) * D2R, wrap(lerpAng(e.phead, e.head, pt) - lerpAng(e.pbody, e.body, pt)) * D2R];
+  function cow(e) { // ModelCow (ModelQuadruped 12, 64x32)
+    const mat = emat("entity_cow"), m = new THREE.Group(), g = new THREE.Group(); m.add(g);
+    const head = piece(g, [0, 4, -8]); cube(head, mat, 64, 32, 0, 0, [-4, -4, -6, 8, 8, 6]); cube(head, mat, 64, 32, 22, 0, [-5, -5, -4, 1, 3, 1]); cube(head, mat, 64, 32, 22, 0, [4, -5, -4, 1, 3, 1]);
+    const body = piece(g, [0, 5, 2]); cube(body, mat, 64, 32, 18, 4, [-6, -10, -7, 12, 18, 10]); cube(body, mat, 64, 32, 52, 0, [-2, 2, -8, 4, 6, 1]);
+    const legs = [[-4, 12, 7], [4, 12, 7], [-4, 12, -6], [4, 12, -6]].map((rp) => { const p = piece(g, rp); cube(p, mat, 64, 32, 0, 16, [-2, 0, -2, 4, 12, 4]); return p; });
+    return {
+      m, scale: 1,
+      set(e, pt) {
+        const ls = lerp(e.pls, e.ls, pt), la = lerp(e.pla, e.la, pt), [hx, hy] = headAngles(e, pt);
+        rot(head, hx, hy, 0); rot(body, Math.PI / 2);
+        rot(legs[0], Math.cos(ls * 0.6662) * 1.4 * la); rot(legs[1], Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la);
+        rot(legs[2], Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la); rot(legs[3], Math.cos(ls * 0.6662) * 1.4 * la);
+      },
+    };
+  }
+  const tri = (f, f1) => (Math.abs((((f % f1) + f1) % f1) - f1 * 0.5) - f1 * 0.25) / (f1 * 0.25);
+  function ironGolem(e) { // ModelIronGolem (128x128); RenderIronGolem rocks it while it walks
+    const mat = emat("entity_iron_golem"), m = new THREE.Group();
+    const head = piece(m, [0, -7, -2]); cube(head, mat, 128, 128, 0, 0, [-4, -12, -5.5, 8, 10, 8]); cube(head, mat, 128, 128, 24, 0, [-1, -5, -7.5, 2, 4, 2]);
+    const body = piece(m, [0, -7, 0]); cube(body, mat, 128, 128, 0, 40, [-9, -2, -6, 18, 12, 11]); cube(body, mat, 128, 128, 0, 70, [-4.5, 10, -3, 9, 5, 6], false, 0.5);
+    const armR = piece(m, [0, -7, 0]); cube(armR, mat, 128, 128, 60, 21, [-13, -2.5, -3, 4, 30, 6]);
+    const armL = piece(m, [0, -7, 0]); cube(armL, mat, 128, 128, 60, 58, [9, -2.5, -3, 4, 30, 6]);
+    const legL = piece(m, [-4, 11, 0]); cube(legL, mat, 128, 128, 37, 0, [-3.5, -3, -3, 6, 16, 5]);
+    const legR = piece(m, [5, 11, 0]); cube(legR, mat, 128, 128, 60, 0, [-3.5, -3, -3, 6, 16, 5]);
+    return {
+      m, scale: 1,
+      set(e, pt) {
+        const ls = lerp(e.pls, e.ls, pt), la = lerp(e.pla, e.la, pt), [hx, hy] = headAngles(e, pt);
+        rot(head, hx, hy, 0);
+        rot(legL, -1.5 * tri(ls, 13) * la); rot(legR, 1.5 * tri(ls, 13) * la);
+        if (e.attack > 0) { const a = -2 + 1.5 * tri(e.attack - pt, 10); rot(armR, a); rot(armL, a); }
+        else { rot(armR, (-0.2 + 1.5 * tri(ls, 13)) * la); rot(armL, (-0.2 - 1.5 * tri(ls, 13)) * la); }
+      },
+      corpse(e, pt, g) {
+        const la = lerp(e.pla, e.la, pt);
+        if (la >= 0.01) { const f = e.ls - e.la * (1 - pt) + 6; g.rotation.z = -6.5 * tri(f, 13) * D2R; } else g.rotation.z = 0;
+      },
+    };
+  }
+  function witch(e) { // ModelWitch (ModelVillager 64x128 plus the hat and wart); RenderWitch scales 0.9375
+    const mat = emat("entity_witch"), m = new THREE.Group();
+    const head = piece(m, [0, 0, 0]); cube(head, mat, 64, 128, 0, 0, [-4, -10, -4, 8, 10, 8]);
+    const nose = piece(head, [0, -2, 0]); cube(nose, mat, 64, 128, 24, 0, [-1, -1, -6, 2, 4, 2]);
+    const wart = piece(nose, [0, -2, 0]); cube(wart, mat, 64, 128, 0, 0, [0, 3, -6.75, 1, 1, 1], false, -0.25);
+    const hat = piece(head, [-5, -10.03125, -5]); cube(hat, mat, 64, 128, 0, 64, [0, 0, 0, 10, 2, 10]);
+    const hat2 = piece(hat, [1.75, -4, 2]); cube(hat2, mat, 64, 128, 0, 76, [0, 0, 0, 7, 4, 7]); rot(hat2, -0.05235988, 0, 0.02617994);
+    const hat3 = piece(hat2, [1.75, -4, 2]); cube(hat3, mat, 64, 128, 0, 87, [0, 0, 0, 4, 4, 4]); rot(hat3, -0.10471976, 0, 0.05235988);
+    const hat4 = piece(hat3, [1.75, -2, 2]); cube(hat4, mat, 64, 128, 0, 95, [0, 0, 0, 1, 2, 1], false, 0.25); rot(hat4, -0.20943952, 0, 0.10471976);
+    const body = piece(m); cube(body, mat, 64, 128, 16, 20, [-4, 0, -3, 8, 12, 6]); cube(body, mat, 64, 128, 0, 38, [-4, 0, -3, 8, 18, 6], false, 0.5);
+    const arms = piece(m, [0, 3, -1]); cube(arms, mat, 64, 128, 44, 22, [-8, -2, -2, 4, 8, 4]); cube(arms, mat, 64, 128, 44, 22, [4, -2, -2, 4, 8, 4], true); cube(arms, mat, 64, 128, 40, 38, [-4, 2, -2, 8, 4, 4]); rot(arms, -0.75);
+    const legR = piece(m, [-2, 12, 0]); cube(legR, mat, 64, 128, 0, 22, [-2, 0, -2, 4, 12, 4]);
+    const legL = piece(m, [2, 12, 0]); cube(legL, mat, 64, 128, 0, 22, [-2, 0, -2, 4, 12, 4], true);
+    return {
+      m, scale: 0.9375,
+      set(e, pt) {
+        const ls = lerp(e.pls, e.ls, pt), la = lerp(e.pla, e.la, pt), [hx, hy] = headAngles(e, pt);
+        rot(head, hx, hy, 0);
+        rot(legR, Math.cos(ls * 0.6662) * 1.4 * la * 0.5); rot(legL, Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la * 0.5);
+        const f = 0.01 * (e.id % 10);
+        rot(nose, Math.sin(e.age * f) * 4.5 * D2R, 0, Math.cos(e.age * f) * 2.5 * D2R);
+      },
+    };
+  }
+  // ModelGuardian: twelve spikes that twitch in and out of water, a swaying tail, an eye that
+  // follows its target (or the camera).
+  const GS = [[1.75, 0.25, 0, 0, 0.5, 0.5, 0.5, 0.5, 1.25, 0.75, 0, 0], [0, 0, 0, 0, 0.25, 1.75, 1.25, 0.75, 0, 0, 0, 0], [0, 0, 0.25, 1.75, 0, 0, 0, 0, 0, 0, 0.75, 1.25],
+    [0, 0, 8, -8, -8, 8, 8, -8, 0, 0, 8, -8], [-8, -8, -8, -8, 0, 0, 0, 0, 8, 8, 8, 8], [8, -8, 0, 0, -8, -8, 8, 8, 8, -8, 0, 0]];
+  function guardian(e) {
+    const mat = emat("entity_guardian"), m = new THREE.Group();
+    const body = piece(m);
+    cube(body, mat, 64, 64, 0, 0, [-6, 10, -8, 12, 12, 16]); cube(body, mat, 64, 64, 0, 28, [-8, 10, -6, 2, 12, 12]); cube(body, mat, 64, 64, 0, 28, [6, 10, -6, 2, 12, 12], true);
+    cube(body, mat, 64, 64, 16, 40, [-6, 8, -6, 12, 2, 12]); cube(body, mat, 64, 64, 16, 40, [-6, 22, -6, 12, 2, 12]);
+    const spines = []; for (let i = 0; i < 12; i++) { const sp = piece(body); cube(sp, mat, 64, 64, 0, 0, [-1, -4.5, -1, 2, 9, 2]); spines.push(sp); }
+    const eye = piece(body, [0, 0, -8.25]); cube(eye, mat, 64, 64, 8, 0, [-1, 15, 0, 2, 2, 1]);
+    const t0 = piece(body); cube(t0, mat, 64, 64, 40, 0, [-2, 14, 7, 4, 4, 8]);
+    const t1 = piece(t0, [-1.5, 0.5, 14]); cube(t1, mat, 64, 64, 0, 54, [0, 14, 0, 3, 3, 7]);
+    const t2 = piece(t1, [0.5, 0.5, 6]); cube(t2, mat, 64, 64, 41, 32, [0, 14, 0, 2, 2, 6]); cube(t2, mat, 64, 64, 25, 19, [1, 10.5, 3, 1, 9, 9]);
+    return {
+      m, scale: 1,
+      set(e, pt) {
+        const age = e.age + pt, hy = wrap(lerpAng(e.phead, e.head, pt) - lerpAng(e.pbody, e.body, pt)) * D2R, hx = lerp(e.ppitch, e.pitch, pt) * D2R;
+        rot(body, hx, hy, 0);
+        const f1 = (1 - lerp(e.pspike, e.spike, pt)) * 0.55;
+        for (let i = 0; i < 12; i++) {
+          const k = 1 + Math.cos(age * 1.5 + i) * 0.01 - f1;
+          rot(spines[i], Math.PI * GS[0][i], Math.PI * GS[1][i], Math.PI * GS[2][i]); setRP(spines[i], [GS[3][i] * k, 16 + GS[4][i] * k, GS[5][i] * k]);
+        }
+        // the eye looks toward its target
+        let ex = 0, ey = 0;
+        const me = new THREE.Vector3(e.x, e.y + 0.425, e.z), to = e.lookAt || me.clone().add(new THREE.Vector3(0, 0, -1));
+        ey = to.y - me.y > 0 ? 0 : 1;
+        const yaw = lerpAng(e.phead, e.head, pt) * D2R, look = new THREE.Vector3(-Math.sin(yaw), 0, Math.cos(yaw));
+        const d = me.clone().sub(to).normalize(); const side = new THREE.Vector3(d.z, d.y, -d.x); // rotated a quarter turn about y
+        const dd = look.dot(side); ex = Math.sqrt(Math.abs(dd)) * 2 * Math.sign(dd);
+        setRP(eye, [ex, ey, -8.25]);
+        const tail = lerp(e.ptail, e.tail, pt);
+        rot(t0, 0, Math.sin(tail) * Math.PI * 0.05); rot(t1, 0, Math.sin(tail) * Math.PI * 0.1); rot(t2, 0, Math.sin(tail) * Math.PI * 0.15);
+      },
+    };
+  }
+  const MOB_MODEL = { 30: armorStand, 78: armorStand, 93: chicken, 101: rabbit, 95: wolf, 65: bat, 94: squid, 92: cow, 99: ironGolem, 66: witch, 68: guardian };
+  const HEIGHT = { 30: 1.975, 78: 1.975, 93: 0.7, 101: 0.7, 95: 0.85, 65: 0.9, 94: 0.95, 92: 1.3, 99: 2.9, 66: 1.95, 68: 0.85, player: 1.8 };
 
   /* ---------------------------------------------------------- the world */
   function build(S, data, opts = {}) {
@@ -764,7 +1037,14 @@ export function createRecFx(kit0) {
         case 0: p = new Explode(x, y, z, a, b, c); break;
         case 1: p = new LargeExplode(x, y, z, a); break;
         case 2: p = new HugeExplode(x, y, z); break;
+        case 3: p = new Spark(x, y, z, a, b, c); p.a = 0.99; break; // fireworksSpark
         case 9: p = new Crit(x, y, z, a, b, c); break;
+        case 10: p = new Crit(x, y, z, a, b, c); p.r *= 0.3; p.g *= 0.8; p.tex = 66; break; // magicCrit
+        case 17: { p = new Spell(x, y, z, a, b, c); const f = rand() * 0.5 + 0.35; p.r = f; p.g = 0; p.b = f; break; } // witchMagic
+        case 19: p = new Drip(x, y, z, true); break;
+        case 21: p = new Aura(x, y, z, a, b, c); p.tex = 82; p.r = p.g = p.b = 1; break; // happyVillager
+        case 31: { const t = tileOf("item_snowball"); if (t >= 0) p = new Crumb(x, y, z, 0, 0, 0, t, 1, false); break; } // snowballpoof
+        case 32: p = new SnowShovel(x, y, z, a, b, c); break;
         case 11: p = new Smoke(x, y, z, a, b, c, 1); break;
         case 12: p = new Smoke(x, y, z, a, b, c, 2.5); break;
         case 15: p = new Spell(x, y, z, a, b, c); break;
@@ -786,7 +1066,7 @@ export function createRecFx(kit0) {
       else for (let i = 0; i < n; i++) { const dx = gauss() * ox, dy = gauss() * oy, dz = gauss() * oz, a = gauss() * sp, b = gauss() * sp, c = gauss() * sp; spawnParticle(id, x + dx, y + dy, z + dz, a, b, c, data); }
     }
     function blockBreak(x, y, z, state) { // RenderGlobal.playAuxSFX 2001 / EffectRenderer.addBlockDestroyEffects
-      const id = state & 4095, t = tileOf(BLOCK_TILE[id]);
+      const id = state & 4095, t = tileOf(BLOCK_TILE[id + ":" + (state >> 12)] || BLOCK_TILE[id]);
       if (t >= 0) for (let j = 0; j < 4; j++) for (let k = 0; k < 4; k++) for (let l = 0; l < 4; l++) {
         const dx = (j + 0.5) / 4, dy = (k + 0.5) / 4, dz = (l + 0.5) / 4;
         W.spawn(new Crumb(x + dx, y + dy, z + dz, dx - 0.5, dy - 0.5, dz - 0.5, t, 0.6, false));
@@ -867,7 +1147,7 @@ export function createRecFx(kit0) {
         id, kind, type, x, y, z, px: x, py: y, pz: z, yaw, pitch, pyaw: yaw, ppitch: pitch, head: yaw, phead: yaw, body: 0, pbody: 0,
         mx: 0, my: 0, mz: 0, inc: 0, nx: x, ny: y, nz: z, nyaw: yaw, npitch: pitch, onGround: false, age: 0,
         meta: {}, eq: [null, null, null, null, null], ls: 0, pls: 0, la: 0, pla: 0, swingInt: 0, swinging: false, swing: 0, pswing: 0,
-        hurt: 0, death: 0, health: 1, vehicle: null, rider: null, dead: false,
+        hurt: 0, death: 0, health: 1, vehicle: null, rider: null, dead: false, attack: 0, tail: 0, ptail: 0, spike: 0, pspike: 0, target: 0, beamT: 0,
         g: new THREE.Group(),
       };
       e.swingAt = (pt) => { let d = e.swing - e.pswing; if (d < 0) d += 1; return e.pswing + d * pt; };
@@ -905,6 +1185,15 @@ export function createRecFx(kit0) {
           b.userData.armor = added;
         }
       }
+      if (mdl.parts?.legR) { // leggings (layer 2, inflated 0.5, with the body piece) and boots (layer 1, inflated 1)
+        const L = mdl.parts; if (L.legR.userData.armor) for (const a of L.legR.userData.armor) a.parent.remove(a); L.legR.userData.armor = null;
+        const added = [], dy = mdl.legY || 0; // ModelArmorStandArmor's legs hang 1px higher than the stand's own
+        const leather = (it, layer) => { const col = new THREE.Color(it.color != null ? it.color : 0xa06540); return [new THREE.MeshLambertMaterial({ map: tex(layer), alphaTest: 0.1, color: col, side: THREE.DoubleSide }), emat(layer + "_overlay")]; };
+        const legs = (mats, inf) => { for (const m of mats) for (const [leg, mir] of [[L.legR, false], [L.legL, true]]) { const q = piece(leg, [0, dy, 0]); cube(q, m, 64, 32, 0, 16, [-2, 0, -2, 4, 12, 4], mir, inf); added.push(q); } };
+        if (e.eq[2]?.id === 300) { const mats = leather(e.eq[2], "armor_leather_layer_2"); legs(mats, 0.5); for (const m of mats) { const q = piece(L.body); cube(q, m, 64, 32, 16, 16, [-4, 0, -2, 8, 12, 4], false, 0.5); added.push(q); } }
+        if (e.eq[1]?.id === 301) legs(leather(e.eq[1], "armor_leather_layer_1"), 1);
+        L.legR.userData.armor = added;
+      }
       // small stands are "children": LayerCustomHead scales by 0.7 and moves 16px down,
       // LayerHeldItem moves 0.625 down, tips 20 degrees and halves, before the part's own turn.
       if (mdl.stand) {
@@ -922,8 +1211,8 @@ export function createRecFx(kit0) {
     function objectModel(e, data) {
       if (e.type === 2) { e.itemG = new THREE.Group(); e.g.add(e.itemG); e.hover = rand() * Math.PI * 2; }
       else if (e.type === 50) { e.blockG = new THREE.Group(); e.g.add(e.blockG); modelsReady.then(() => { const b = blockMesh("tnt"); b.position.set(-0.5, -0.5, -0.5); e.blockG.add(b); e.tntMats = []; b.traverse((o) => { if (o.material) { o.material = o.material.clone(); e.tntMats.push(o.material); } }); }); e.fuse = 80; }
-      else if (e.type === 70) { const id = data & 4095; e.blockG = new THREE.Group(); e.g.add(e.blockG); modelsReady.then(() => { const b = blockMesh(BLOCK_ITEM[id] || "gold_block"); b.position.set(-0.5, 0, -0.5); e.blockG.add(b); }); }
-      else if (e.type === 76 || e.type === 62) { e.sprite = new THREE.Group(); e.g.add(e.sprite); const it = { id: e.type === 76 ? 401 : 344 }; const n = new THREE.Group(); n.scale.setScalar(0.5); const r = renderItemNode(it); r.scale.multiplyScalar(2); n.add(r); e.sprite.add(n); }
+      else if (e.type === 70) { const id = data & 4095; e.blockG = new THREE.Group(); e.g.add(e.blockG); modelsReady.then(() => { const b = blockMesh(blockKey(id, (data >> 12) & 15) || "gold_block"); b.position.set(-0.5, 0, -0.5); e.blockG.add(b); }); }
+      else if (e.type === 76 || e.type === 62 || e.type === 61) { e.sprite = new THREE.Group(); e.g.add(e.sprite); const it = { id: e.type === 76 ? 401 : e.type === 61 ? 332 : 344 }; const n = new THREE.Group(); n.scale.setScalar(0.5); const r = renderItemNode(it); r.scale.multiplyScalar(2); n.add(r); e.sprite.add(n); }
       else if (e.type === 78) { e.living = true; setupLiving(e); }
     }
     function setItemStack(e) {
@@ -946,6 +1235,7 @@ export function createRecFx(kit0) {
       if (e.type === 30 || e.type === 78) { e.small = !!(e.meta["10"] & 1); if (e.model) e.height = e.meta["10"] & 16 ? 0 : e.small ? 0.9875 : 1.975; }
       if ("6" in m && e.living) { const h = m["6"]; if (h <= 0 && e.health > 0) e.health = 0; else if (h > 0) e.health = h; }
       if (e.type === 2) setItemStack(e);
+      if (e.type === 68 && "17" in m) { e.target = m["17"] || 0; e.beamT = 0; } // a new (or re-sent) target restarts the beam
       if (e.type === 76) e.fw = e.meta["8"]?.fw;
       if (e.living) { refreshEquipment(e); nameRefresh(e); }
       if (e.kind === "orb") {}
@@ -1018,6 +1308,7 @@ export function createRecFx(kit0) {
           if (s === 2 && e.living) { e.la = 1.5; e.hurt = 10; }
           else if (s === 3 && e.living) { e.health = 0; }
           else if (s === 17 && e.type === 76) firework(e.x, e.y, e.z, e.mx, e.my, e.mz, e.fw);
+          else if (s === 4 && e.type === 99) e.attack = 10;
           else if (s === 1 && e.type === 101) { e.jumpDur = 10; e.jumpTicks = 0; runningParticles(e); }
           break;
         }
@@ -1045,6 +1336,12 @@ export function createRecFx(kit0) {
           if (id === 50) { // torch: meta 1-4 wall torch facing east/west/south/north (blockstate y 0/180/90/270)
             const g = new THREE.Group(); g.position.set(x, y, z);
             modelsReady.then(() => { const b = blockMesh("torch_wall"); b.position.set(-0.5, 0, -0.5); const w = new THREE.Group(); w.position.set(0.5, 0, 0.5); w.rotation.y = -([0, 0, 180, 90, 270][meta] || 0) * D2R; w.add(b); g.add(w); });
+            root.add(g); blocks[key] = g;
+          } else if ((id === 80 || id === 78) && (y === -1 || y === 0) && Math.abs(x) <= 8 && Math.abs(z) <= 8) {
+            // Snow laid over the preview floor (Snowplosion). Anything else the effect sets
+            // back is the lobby's own ground, which the stage stands in for.
+            const g = new THREE.Group(); g.position.set(x, y, z);
+            modelsReady.then(() => { const b = blockMesh(blockKey(id, meta)); if (y === -1) { b.scale.setScalar(1.002); b.position.set(-0.001, -0.001, -0.001); } g.add(b); });
             root.add(g); blocks[key] = g;
           }
           break;
@@ -1081,6 +1378,11 @@ export function createRecFx(kit0) {
       if (e.health <= 0) { e.death++; if (e.death === 20) { for (let k = 0; k < 20; k++) W.spawn(new Explode(e.x + (rand() * 0.6 * 2 - 0.6), e.y + rand() * e.height, e.z + (rand() * 0.6 * 2 - 0.6), gauss() * 0.02, gauss() * 0.02, gauss() * 0.02)); e.g.visible = false; } }
       if (e.type === 94) { e.pspitch = e.spitch; e.ptent = e.tent; e.srot += e.rv; if (e.srot > Math.PI * 2) e.srot = Math.PI * 2; e.tent = Math.abs(Math.sin(e.srot)) * Math.PI * 0.25; e.spitch += (-90 - e.spitch) * 0.02; }
       if (e.type === 93) { e.pwing = e.wing; e.pdest = e.dest; e.dest = clamp(e.dest + (e.onGround ? -1 : 4) * 0.3, 0, 1); if (!e.onGround && e.wingD < 1) e.wingD = 1; e.wingD *= 0.9; e.wing += e.wingD * 2; }
+      if (e.type === 99 && e.attack > 0) e.attack--;
+      if (e.type === 68) { // out of water: the tail beats fast and the spikes twitch at random; the beam charges while it has a target
+        e.ptail = e.tail || 0; e.tail = e.ptail + 2; e.pspike = e.spike ?? 0; e.spike = rand();
+        if (e.target) { if (e.beamT < 80) e.beamT++; } else e.beamT = 0;
+      }
       if (e.type === 101) { if (e.jumpTicks !== e.jumpDur) e.jumpTicks++; else if (e.jumpDur !== 0) { e.jumpTicks = 0; e.jumpDur = 0; } }
     }
     function limbs(e) {
@@ -1108,7 +1410,7 @@ export function createRecFx(kit0) {
       } else if (e.type === 76) { // EntityFireworkRocket
         e.mx *= 1.15; e.mz *= 1.15; e.my += 0.04; e.x += e.mx; e.y += e.my; e.z += e.mz;
         W.spawn(new Spark(e.x, e.y - 0.3, e.z, gauss() * 0.05, -e.my * 0.5, gauss() * 0.05));
-      } else if (e.type === 62) { // thrown egg (EntityThrowable): gravity 0.03, drag 0.99
+      } else if (e.type === 62 || e.type === 61) { // thrown egg / snowball (EntityThrowable): gravity 0.03, drag 0.99
         e.x += e.mx; e.y += e.my; e.z += e.mz; e.mx *= 0.99; e.my *= 0.99; e.mz *= 0.99; e.my -= 0.03;
       }
       e.age++;
@@ -1142,10 +1444,46 @@ export function createRecFx(kit0) {
       if (r.vehicle && r.kind !== "player") { r.nx = r.x; r.ny = r.y; r.nz = r.z; r.inc = 0; }
     }
 
+    // ---- guardian beams (RenderGuardian): two crossed strips from the eye to the
+    // target's middle, scrolling, coloured by how far the attack has charged.
+    const beamTex = tex("entity_guardian_beam"); beamTex.wrapS = beamTex.wrapT = THREE.RepeatWrapping;
+    const beamMat = new THREE.MeshBasicMaterial({ map: beamTex, side: THREE.DoubleSide, alphaTest: 0.1 });
+    function drawBeam(e, pt) {
+      const t = e.target && ents.get(e.target);
+      if (!t || e.dead) { if (e.beam) e.beam.visible = false; return; }
+      if (!e.beam) {
+        const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(36), 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(24), 2));
+        geo.setIndex([0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11]);
+        e.beam = new THREE.Mesh(geo, beamMat.clone()); e.beam.rotation.order = "YXZ"; scene3.add(e.beam);
+      }
+      const b = e.beam; b.visible = true;
+      const f = Math.min(1, (e.beamT + pt) / 80), f1 = n + pt, f2 = (f1 * 0.5) % 1, eh = 0.425;
+      const me = new THREE.Vector3(lerp(e.px, e.x, pt), lerp(e.py, e.y, pt) + eh, lerp(e.pz, e.z, pt));
+      const to = new THREE.Vector3(lerp(t.px, t.x, pt), lerp(t.py, t.y, pt) + (t.height || 1) * 0.5, lerp(t.pz, t.z, pt));
+      const v = to.sub(me), d0 = v.length() + 1; v.normalize();
+      b.position.copy(me); b.rotation.set(Math.acos(v.y), Math.PI / 2 - Math.atan2(v.z, v.x), 0);
+      const d1 = f1 * 0.05 * -1.5, f7 = f * f;
+      b.material.color.setRGB((64 + Math.floor(f7 * 240)) / 255, (32 + Math.floor(f7 * 192)) / 255, (128 - Math.floor(f7 * 64)) / 255).convertSRGBToLinear();
+      const c = (a, r) => [Math.cos(d1 + a) * r, Math.sin(d1 + a) * r];
+      const [x12, z12] = c(Math.PI, 0.2), [x14, z14] = c(0, 0.2), [x16, z16] = c(Math.PI / 2, 0.2), [x18, z18] = c(Math.PI * 1.5, 0.2);
+      const [x4, z4] = c(2.356194490192345, 0.282), [x6, z6] = c(Math.PI / 4, 0.282), [x8, z8] = c(3.9269908169872414, 0.282), [x10, z10] = c(5.497787143782138, 0.282);
+      const v24 = -1 + f2, v25 = d0 * 2.5 + v24, cap = e.age % 2 === 0 ? 0.5 : 0;
+      const P = [x12, d0, z12, x12, 0, z12, x14, 0, z14, x14, d0, z14, x16, d0, z16, x16, 0, z16, x18, 0, z18, x18, d0, z18, x4, d0, z4, x6, d0, z6, x10, d0, z10, x8, d0, z8];
+      const U = [0.4999, v25, 0.4999, v24, 0, v24, 0, v25, 0.4999, v25, 0.4999, v24, 0, v24, 0, v25, 0.5, cap + 0.5, 1, cap + 0.5, 1, cap, 0.5, cap];
+      for (let i = 1; i < U.length; i += 2) U[i] = 1 - U[i]; // the game's v runs down the picture
+      b.geometry.attributes.position.array.set(P); b.geometry.attributes.position.needsUpdate = true;
+      b.geometry.attributes.uv.array.set(U); b.geometry.attributes.uv.needsUpdate = true; b.geometry.computeBoundingSphere();
+    }
+
     // ---- per frame
     const camPos = new THREE.Vector3();
     function draw(pt) {
       S.camera.getWorldPosition(camPos);
+      for (const e of ents.values()) if (e.type === 68) {
+        const t = e.target && ents.get(e.target); // its eye follows the target, or else the viewer
+        e.lookAt = t ? new THREE.Vector3(t.x, t.y + (t.height || 1) * 0.85, t.z) : camPos.clone();
+        drawBeam(e, pt);
+      }
       for (const e of ents.values()) {
         const x = lerp(e.px, e.x, pt), y = lerp(e.py, e.y, pt), z = lerp(e.pz, e.z, pt);
         e.g.position.set(x, y, z);
@@ -1209,6 +1547,7 @@ export function createRecFx(kit0) {
         while (k < ev.length && ev[k][0] <= until) handle(ev[k++]);
         tick(); n++;
       }
+      animateTextures(n);
       const pt = clamp((ms - (T0 + (n - 1) * TICK)) / TICK, 0, 1);
       draw(pt);
     };
@@ -1253,7 +1592,9 @@ export function createRecFx(kit0) {
   const skinShape = (n) => img(n).then((i) => { const c = document.createElement("canvas"); c.width = 64; c.height = 64; const x = c.getContext("2d"); x.drawImage(i, 0, 0); SLIM[n] = x.getImageData(54, 20, 1, 1).data[3] === 0; }).catch(() => {});
   function preload(data) {
     const heads = data ? [...new Set((JSON.stringify(data).match(/"head":"[0-9a-f]+"/g) || []).map((x) => x.slice(8, -1)))].map((h) => `cosmetics/heads/${h}.png`) : [];
-    return Promise.all([modelsReady, loadFont(), skinShape(KILLER_SKIN), skinShape(DUMMY_SKIN), ...ALL_TEX.concat(DYES.map((d) => "item_dye_" + d), heads).map((n) => img(n).catch(() => {}))]);
+    const blockTex = () => { const t = new Set(); for (const d of Object.values(MODELS || {})) for (const e of (Array.isArray(d) ? d : d.e)) for (const f of Object.values(e.faces)) t.add("block_" + f.t); return [...t]; };
+    return Promise.all([modelsReady.then(() => Promise.all(blockTex().map((n) => img(n).catch(() => {})))), loadFont(), skinShape(KILLER_SKIN), skinShape(DUMMY_SKIN),
+      ...Object.values(ITEM_TEX).flatMap((n) => [img(n).catch(() => {}), n.startsWith("item_leather_") ? img(n + "_overlay").catch(() => {}) : null]), ...ALL_TEX.concat(DYES.map((d) => "item_dye_" + d), heads).map((n) => img(n).catch(() => {}))]);
   }
   return { build, preload };
 }

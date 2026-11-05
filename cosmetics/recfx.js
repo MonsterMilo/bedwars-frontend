@@ -359,17 +359,37 @@ export function buildTopper(S, data) {
     }
     root.add(g); blocks.push([t / 1000, g]);
   }
-  // Soft shadows on the grass around the blocks, worked out like the blocks' own corner shadows.
-  const gpos = [], gcol = [], cells = new Set(), base = new Set();
-  for (const b of data.b) if (b[2] === 0) { const d = MODELS?.[b[4]]; if (d && (Array.isArray(d) ? d : d.e).some((e) => e.from[1] === 0 && (e.to[0] - e.from[0]) * (e.to[2] - e.from[2]) >= 128)) base.add(b[1] + ",0," + b[3]); }
-  for (const k of base) { const [bx, , bz] = k.split(",").map(Number); for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) cells.add(bx + dx + "," + (bz + dz)); }
-  const g0 = (x, z) => base.has(x + ",0," + z) ? 1 : 0;
-  for (const k of cells) {
-    const [cx, cz] = k.split(",").map(Number); if (g0(cx, cz)) continue;
-    const corner = (sx, sz) => g0(cx + sx, cz) || g0(cx, cz + sz) ? 1 : g0(cx + sx, cz + sz) ? 0.6 : 0;
-    const A = [[0, 0, corner(-1, -1)], [1, 0, corner(1, -1)], [1, 1, corner(1, 1)], [0, 1, corner(-1, 1)]];
-    if (A.every((q) => !q[2])) continue;
-    for (const i of [0, 3, 2, 0, 2, 1]) { const [u, v, a] = A[i]; gpos.push(cx + u + ox, 0.004, cz + v + oz); gcol.push(0, 0, 0, a * 0.6); }
+  // Soft shadows on the grass: every block standing on the ground (or just above it)
+  // darkens the grass around it, fading out over about a block. Glass casts a lighter one.
+  const gpos = [], gcol = [], cast = new Map();
+  for (const bl of data.b) {
+    const [, x, y, z, key] = bl; if (y > 1 || key.startsWith("tile#")) continue;
+    const d = MODELS?.[key]; if (!d) continue;
+    const els = Array.isArray(d) ? d : d.e;
+    const area = Math.max(0, ...els.map((e) => (e.to[0] - e.from[0]) * (e.to[2] - e.from[2]) / 256));
+    if (area < 0.2) continue; // torches, flowers, grass
+    const glass = els.some((e) => Object.values(e.faces).some((f) => /glass|ice/.test(f.t)));
+    const low = els.some((e) => e.from[1] === 0);
+    const w = (glass ? 0.35 : 1) * (y === 0 ? (low ? 1 : 0.8) : 0.45) * Math.min(1, 0.4 + area);
+    const k = x + "," + z; cast.set(k, Math.max(cast.get(k) || 0, w));
+  }
+  if (cast.size) {
+    const R = 1.3, N = 4, cs = [...cast].map(([k, w]) => [...k.split(",").map(Number), w]);
+    const x0 = Math.min(...cs.map((c) => c[0])) - 2, x1 = Math.max(...cs.map((c) => c[0])) + 3, z0 = Math.min(...cs.map((c) => c[1])) - 2, z1 = Math.max(...cs.map((c) => c[1])) + 3;
+    const W = (x1 - x0) * N + 1, H = (z1 - z0) * N + 1, A = new Float32Array(W * H);
+    for (let i = 0; i < W; i++) for (let j = 0; j < H; j++) {
+      const px = x0 + i / N, pz = z0 + j / N; let sh = 0;
+      for (const [cx, cz, w] of cs) {
+        const dx = Math.max(cx - px, 0, px - cx - 1), dz = Math.max(cz - pz, 0, pz - cz - 1), d = Math.hypot(dx, dz);
+        if (d < R) { const f = 1 - d / R; sh = Math.max(sh, w * f * f * (3 - 2 * f)); }
+      }
+      A[i * H + j] = sh;
+    }
+    for (let i = 0; i < W - 1; i++) for (let j = 0; j < H - 1; j++) {
+      const q = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]];
+      if (q.every(([a, b]) => A[a * H + b] < 0.005)) continue;
+      for (const n of [0, 3, 2, 0, 2, 1]) { const [a, b] = q[n]; gpos.push(x0 + a / N + ox, 0.004, z0 + b / N + oz); gcol.push(0, 0, 0, A[a * H + b] * 0.62); }
+    }
   }
   if (gpos.length) {
     const geo = new THREE.BufferGeometry();

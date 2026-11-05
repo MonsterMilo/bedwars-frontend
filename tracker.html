@@ -23699,7 +23699,7 @@ function playModalClip(clip, card) {
   const frame = document.createElement("iframe");
   frame.src = `replay.html?clip=${encodeURIComponent(clip.id)}&embed=1`;
   frame.title = card.getAttribute("aria-label") || "Clip";
-  frame.allow = "fullscreen";
+  frame.allow = "autoplay; fullscreen";
   modalClipStage.textContent = "";
   modalClipStage.appendChild(frame);
   modalClipStage.hidden = false;

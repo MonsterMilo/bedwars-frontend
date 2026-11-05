@@ -83,6 +83,7 @@
   .card:hover::after, .card:focus-visible::after { opacity: 1; }
   .thumb { position: relative; aspect-ratio: 16 / 11; border-radius: clamp(10px, .8vw, 14px); overflow: hidden; background: #080a11; box-shadow: 0 0 0 1px rgba(255,255,255,0.05) inset; }
   .thumb canvas, .thumb .tlist { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .thumb.open { background: none; box-shadow: none; overflow: visible; }
   .card h2 { margin: 0 0 6px; font-size: clamp(20px, 1.45vw, 28px); font-weight: 800; letter-spacing: -.015em; }
   .card p { margin: 0; color: var(--dim); font-size: clamp(14px, .9vw, 16px); line-height: 1.5; text-wrap: pretty; }
   .go { margin-top: clamp(10px, .9vw, 14px); display: inline-flex; align-items: center; gap: 8px; font-size: clamp(13px, .85vw, 15px); font-weight: 700; color: rgb(var(--c)); }
@@ -175,7 +176,7 @@
     a.style.setProperty('--c', pg.color.join(',')); a.style.animationDelay = (0.7 + i * 0.14) + 's';
     var thumb = '';
     if (pg.preview === 'players') thumb = '<div class="thumb"><div class="tlist" id="players"></div></div>';
-    else if (pg.preview) thumb = '<div class="thumb"><canvas data-draw="' + pg.preview + '"></canvas></div>';
+    else if (pg.preview) thumb = '<div class="thumb open"><canvas data-draw="' + pg.preview + '"></canvas></div>';
     else a.style.gridTemplateColumns = 'minmax(0,1fr)';
     a.innerHTML = thumb + '<div><h2>' + esc(pg.name) + '</h2><p>' + esc(pg.text) + '</p><span class="go">' + esc(pg.go || 'Open') + ' ' + ARROW + '</span></div>';
     cardsEl.appendChild(a);
@@ -205,7 +206,7 @@
       var targets = cards.map(function (card, i) {
         var cr = card.getBoundingClientRect();
         if (narrow) return { x: first.left - r.left + first.width * ((i + 0.8) / (cards.length + 0.6)), y: first.top - r.top + 1 };
-        return { x: cr.left - r.left + 1, y: cr.top - r.top + cr.height / 2 };
+        return { x: cr.left - r.left + 14, y: cr.top - r.top + cr.height / 2 }; // ends just under the card's edge: no gap
       });
       for (var i = 0; i < hot.length; i++) hot[i] += (hotT[i] - hot[i]) * 0.1;
       mouse.x += (mouse.tx - mouse.x) * 0.05; mouse.y += (mouse.ty - mouse.y) * 0.05;
@@ -271,90 +272,62 @@
     })();
   }
 
-  /* ---------- pixel diamond sword that spins ---------- */
-  var SWORD = [
-    '............ooo.',
-    '...........obbo.',
-    '..........obBBo.',
-    '.........obBBo..',
-    '........obBBo...',
-    '.......obBBo....',
-    '......obBBo.....',
-    '..oo.obBBo......',
-    '..ogoobBo.......',
-    '...ogobo........',
-    '....ogo.........',
-    '...ohoog........',
-    '..oho..oo.......',
-    '.oho............',
-    'ooo.............',
-    '.o..............'
-  ];
-  var SC = { o: '#0b3b44', b: '#c8fbff', B: '#2bd4e0', g: '#1d8a95', h: '#7a4f25' };
-  function drawCosmetic(ctx, w, h, t, big) {
-    var g = ctx.createRadialGradient(w / 2, h * .45, 0, w / 2, h * .45, Math.max(w, h) * .7);
-    g.addColorStop(0, '#2a1d47'); g.addColorStop(.55, '#120f22'); g.addColorStop(1, '#07080f');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-    var size = Math.min(w, h) * (big ? .42 : .62), px = size / 16;
-    var cx = w / 2, cy = h * (big ? .4 : .48) + Math.sin(t * 1.6) * px * .8;
-    // floor glow
-    ctx.save(); ctx.globalAlpha = .55; var fg = ctx.createRadialGradient(cx, cy + size * .62, 0, cx, cy + size * .62, size * .6); fg.addColorStop(0, 'rgba(168,85,247,.55)'); fg.addColorStop(1, 'rgba(168,85,247,0)'); ctx.fillStyle = fg; ctx.fillRect(cx - size, cy + size * .3, size * 2, size * .7); ctx.restore();
-    // orbiting sparks
-    for (var i = 0; i < (big ? 26 : 12); i++) {
-      var a = t * (.6 + (i % 5) * .08) + i * 2.399, r = size * (.55 + (i % 4) * .09), y = Math.sin(a * 1.3 + i) * size * .35;
-      var x = Math.cos(a) * r, z = Math.sin(a); if (z < 0) continue;
-      ctx.globalAlpha = .35 + z * .6; ctx.fillStyle = i % 3 ? '#c9a2ff' : '#7ff3ff';
-      var s = px * (.35 + z * .35); ctx.fillRect(cx + x - s / 2, cy + y - s / 2, s, s);
+  /* ---------- the real 1.8 diamond sword, spinning like a dropped item (1 texel thick) ---------- */
+  function loadImg(src) { var im = new Image(); im.src = src; return im; }
+  var swordImg = loadImg('home/diamond-sword.png'), swordDark = null;
+  function darkCopy(im, k) { var c = document.createElement('canvas'); c.width = im.width; c.height = im.height; var x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(0,0,0,' + k + ')'; x.fillRect(0, 0, c.width, c.height); return c; }
+  function drawCosmetic(ctx, w, h, t) {
+    ctx.clearRect(0, 0, w, h);
+    var size = Math.min(w, h) * 0.66, cx = w / 2, cy = h * 0.47 + Math.sin(t * 1.6) * size * 0.035;
+    // soft round glow (no box edges)
+    var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 0.72); g.addColorStop(0, 'rgba(168,85,247,0.30)'); g.addColorStop(0.55, 'rgba(168,85,247,0.08)'); g.addColorStop(1, 'rgba(168,85,247,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, size * 0.72, 0, Math.PI * 2); ctx.fill();
+    var sg = ctx.createRadialGradient(cx, h * 0.9, 0, cx, h * 0.9, size * 0.5); sg.addColorStop(0, 'rgba(0,0,0,0.45)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.save(); ctx.translate(0, h * 0.9); ctx.scale(1, 0.22); ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(cx, 0, size * 0.5 * (0.8 + 0.2 * Math.cos(t * 1.6)), 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    // sparkles behind
+    function sparks(front) {
+      for (var i = 0; i < 14; i++) {
+        var a = t * (0.5 + (i % 5) * 0.07) + i * 2.399, r = size * (0.5 + (i % 4) * 0.08), z = Math.sin(a);
+        if ((z >= 0) === front) continue;
+        var x = cx + Math.cos(a) * r, y = cy + Math.sin(a * 1.3 + i) * size * 0.36, s = Math.max(1, size / 16 * (0.35 + Math.abs(z) * 0.3));
+        ctx.globalAlpha = 0.35 + Math.abs(z) * 0.55; ctx.fillStyle = i % 3 ? '#d6bcff' : '#9ff6ff'; ctx.fillRect(x - s / 2, y - s / 2, s, s);
+      }
+      ctx.globalAlpha = 1;
     }
-    ctx.globalAlpha = 1;
-    var sx = Math.cos(t * 1.25); var shade = .55 + .45 * Math.abs(sx);
-    ctx.save(); ctx.translate(cx, cy); ctx.scale(sx < 0 ? -Math.max(.06, -sx) : Math.max(.06, sx), 1); ctx.translate(-size / 2, -size / 2);
-    for (var yy = 0; yy < 16; yy++) for (var xx = 0; xx < 16; xx++) {
-      var k = SWORD[yy][xx]; if (k === '.') continue; ctx.fillStyle = SC[k]; ctx.fillRect(xx * px, yy * px, px + .6, px + .6);
+    sparks(false);
+    if (swordImg.complete && swordImg.naturalWidth) {
+      if (!swordDark) swordDark = darkCopy(swordImg, 0.55);
+      ctx.imageSmoothingEnabled = false;
+      var a = t * 1.2, c = Math.cos(a), s = Math.sin(a), px = size / 16;
+      var faceW = Math.max(0.04, Math.abs(c)) * size;
+      // the 1-texel edge, seen as the item turns
+      var steps = Math.max(2, Math.round(px));
+      for (var k = steps; k >= 1; k--) {
+        var off = s * px * (k / steps) * (c >= 0 ? 1 : -1);
+        ctx.save(); ctx.translate(cx + off, cy); ctx.scale(c >= 0 ? 1 : -1, 1); ctx.drawImage(swordDark, -faceW / 2, -size / 2, faceW, size); ctx.restore();
+      }
+      ctx.save(); ctx.translate(cx, cy); ctx.scale(c >= 0 ? 1 : -1, 1);
+      ctx.drawImage(swordImg, -faceW / 2, -size / 2, faceW, size);
+      // light falls off as the face turns away
+      ctx.globalCompositeOperation = 'source-atop'; ctx.globalAlpha = (1 - Math.abs(c)) * 0.5; ctx.fillStyle = '#000'; ctx.fillRect(-faceW / 2, -size / 2, faceW, size);
+      ctx.restore(); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
     }
-    ctx.globalAlpha = 1 - shade; ctx.fillStyle = '#000'; ctx.globalCompositeOperation = 'source-atop'; ctx.fillRect(0, 0, size, size);
-    ctx.restore(); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
-    // front sparks
-    for (var j = 0; j < (big ? 26 : 12); j++) {
-      var a2 = t * (.6 + (j % 5) * .08) + j * 2.399, r2 = size * (.55 + (j % 4) * .09), y2 = Math.sin(a2 * 1.3 + j) * size * .35, z2 = Math.sin(a2);
-      if (z2 >= 0) continue; ctx.globalAlpha = .9; ctx.fillStyle = j % 3 ? '#e2ccff' : '#b8fbff'; var s2 = px * (.5 - z2 * .4); ctx.fillRect(cx + Math.cos(a2) * r2 - s2 / 2, cy + y2 - s2 / 2, s2, s2);
-    }
-    ctx.globalAlpha = 1;
+    sparks(true);
   }
 
-  /* ---------- top-down 8-team map ---------- */
-  var TEAMS = ['#ff5555', '#5555ff', '#55ff55', '#ffff55', '#55ffff', '#ffffff', '#ff55ff', '#aaaaaa'];
-  function drawAtlas(ctx, w, h, t, big) {
-    ctx.fillStyle = '#05070d'; ctx.fillRect(0, 0, w, h);
-    var R = Math.min(w, h) * (big ? .36 : .42), p = R / 13, cx = w / 2, cy = h * (big ? .42 : .5);
-    // faint void grid
-    ctx.strokeStyle = 'rgba(255,184,77,0.06)'; ctx.lineWidth = 1;
-    for (var gx = (cx % (p * 4)); gx < w; gx += p * 4) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke(); }
-    for (var gy = (cy % (p * 4)); gy < h; gy += p * 4) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke(); }
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * .06); ctx.scale(1, big ? .78 : .8);
-    function block(x, y, bw, bh, c) { ctx.fillStyle = c; ctx.fillRect(x * p, y * p, bw * p, bh * p); ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.fillRect(x * p, (y + bh) * p - p * .35, bw * p, p * .35); }
-    // bridges
-    ctx.strokeStyle = 'rgba(200,190,170,.18)'; ctx.lineWidth = p * .45; ctx.setLineDash([p * .5, p * .35]);
-    for (var b = 0; b < 8; b++) { var a = b / 8 * Math.PI * 2; ctx.beginPath(); ctx.moveTo(Math.cos(a) * 2.6 * p, Math.sin(a) * 2.6 * p); ctx.lineTo(Math.cos(a) * 9 * p, Math.sin(a) * 9 * p); ctx.stroke(); }
-    ctx.setLineDash([]);
-    // centre island
-    block(-2.5, -2.5, 5, 5, '#6b6f7a'); block(-1.5, -1.5, 3, 3, '#8a8f9c');
-    // emerald islands
-    for (var e = 0; e < 4; e++) { var ea = e / 4 * Math.PI * 2 + Math.PI / 4; var ex = Math.cos(ea) * 4.2, ey = Math.sin(ea) * 4.2; block(ex - 1, ey - 1, 2, 2, '#4b7a3a'); var pe = .5 + .5 * Math.sin(t * 2 + e); ctx.fillStyle = 'rgba(80,255,140,' + (.45 + pe * .5) + ')'; ctx.fillRect((ex - .35) * p, (ey - .35) * p, .7 * p, .7 * p); }
-    // team + diamond islands
-    for (var i = 0; i < 8; i++) {
-      var ta = i / 8 * Math.PI * 2, tx = Math.cos(ta) * 10.2, ty = Math.sin(ta) * 10.2;
-      ctx.save(); ctx.translate(tx * p, ty * p); ctx.rotate(ta + Math.PI / 2);
-      block(-2, -1.6, 4, 3.4, '#5c8a3e'); block(-1.6, -1.2, 3.2, 1.2, TEAMS[i]);
-      ctx.fillStyle = '#c62828'; ctx.fillRect(-.5 * p, .3 * p, 1 * p, .55 * p); // bed
-      ctx.restore();
-      var da = ta + Math.PI / 8, dx = Math.cos(da) * 7.2, dy = Math.sin(da) * 7.2; block(dx - .8, dy - .8, 1.6, 1.6, '#55606d');
-      var pd = .5 + .5 * Math.sin(t * 2.6 + i * .9); ctx.fillStyle = 'rgba(90,240,255,' + (.35 + pd * .6) + ')'; ctx.fillRect((dx - .3) * p, (dy - .3) * p, .6 * p, .6 * p);
-    }
+  /* ---------- a real Bed Wars map (Whiskers, from the Atlas) seen from above, slowly turning ---------- */
+  var mapImg = loadImg('home/map-whiskers.png');
+  function drawAtlas(ctx, w, h, t) {
+    ctx.clearRect(0, 0, w, h);
+    var size = Math.min(w, h) * 0.98, cx = w / 2, cy = h / 2;
+    var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 0.6); g.addColorStop(0, 'rgba(255,184,77,0.16)'); g.addColorStop(1, 'rgba(255,184,77,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, size * 0.6, 0, Math.PI * 2); ctx.fill();
+    if (!(mapImg.complete && mapImg.naturalWidth)) return;
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * 0.12);
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = size * 0.03; ctx.shadowOffsetY = size * 0.015;
+    ctx.drawImage(mapImg, -size / 2, -size / 2, size, size);
     ctx.restore();
-    // sweep of sunlight
-    var sw = ((t * .18) % 1.6 - .3) * w; var lg = ctx.createLinearGradient(sw - w * .2, 0, sw + w * .2, h);
-    lg.addColorStop(0, 'rgba(255,184,77,0)'); lg.addColorStop(.5, 'rgba(255,184,77,.07)'); lg.addColorStop(1, 'rgba(255,184,77,0)'); ctx.fillStyle = lg; ctx.fillRect(0, 0, w, h);
   }
 
   /* ---------- card preview canvases + the flat fallback beams ---------- */

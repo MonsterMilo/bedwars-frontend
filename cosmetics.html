@@ -400,7 +400,7 @@ const ITEMS = [
   { id: "rekt", cat: "final", name: "Rekt", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will drop a hologram remembering your victory.", tags: "hologram text", rec: "rekt", hero: 2.2 },
   { id: "pinata", cat: "final", name: "Piñata", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will make them explode like a Piñata.", tags: "pinata dye candy", rec: "pi-ata", hero: 1.6 },
   { id: "experience-orb", cat: "final", name: "Experience Orb", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will make it rain experience on top of their corpse.", tags: "xp exp orbs", rec: "experience-orb", hero: 1.8 },
-  { id: "smiley", cat: "final", name: "Smiley", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will show your smiley in the air.", tags: "smiley face flames", rec: "smiley", hero: 2.3, cam: [[-9, 3.4, -3], [0.2, 2.6, 1.6], 5, 40, [-7, 4.2, -2.5], [0.4, 3.6, 3]] },
+  { id: "smiley", cat: "final", name: "Smiley", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will show your smiley in the air.", tags: "smiley face flames", rec: "smiley", hero: 2.3 },
   { id: "raining-easter-eggs", cat: "final", name: "Raining Easter Eggs", rar: "epic", price: null, get: "event", season: "Easter", desc: "It's raining Easter Eggs!", tags: "eggs easter", rec: "raining-easter-eggs", hero: 3.0 },
   { id: "hatching-eggs", cat: "final", name: "Hatching Eggs", rar: "epic", price: null, get: "event", season: "Easter", desc: "Hatching eggs are falling from the sky!", tags: "eggs chickens", rec: "hatching-eggs", hero: 5.5 },
   { id: "lantern-spiral", cat: "final", name: "Lantern Spiral", rar: "epic", price: 25000, get: "shop", desc: "Create a fabulous display of lanterns spiraling into the sky.", tags: "lanterns heads spiral", rec: "lantern-spiral", hero: 2.2 },
@@ -1328,7 +1328,9 @@ const PREVIEWS = {
 const REC = createRecFx({ setBoxUV });
 const recData = {}, recLoading = {};
 const loadRec = (id) => recLoading[id] || (recLoading[id] = fetch(`cosmetics/fx/${id}.json`).then((r) => r.json()).then((d) => REC.preload(d).then(() => (recData[id] = d))));
-const REC_CAM = [[-8.6, 3.1, -2.4], [0, 1.3, -1.6], 5, 40, [-7.6, 3.1, -2.6], [0, 1.7, -1.0]];
+// Close to eye level and a little further out than before; the camera then drifts
+// toward wherever the effect is (see followRec), within a small range.
+const REC_CAM = [[-10.4, 2.2, -2.6], [0, 1.45, -1.3], 5, 40, [-8.4, 2.6, -2.6], [0, 1.8, -1.0]];
 for (const it of ITEMS) if (it.rec) {
   it.preview = "rec:" + it.id;
   PREVIEWS[it.preview] = { stage: "arena", cam: it.cam || REC_CAM, rec: it.rec, loop: null, hero: it.hero || 2.1, build(S) {
@@ -1336,7 +1338,9 @@ for (const it of ITEMS) if (it.rec) {
     const go = (d) => { def.loop = (Math.max(d.end, d.cam) - d.ev[0][0]) / 1000 + 1.4; run = REC.build(S, d); };
     if (recData[it.rec]) go(recData[it.rec]);
     else loadRec(it.rec).then((d) => { if (S.def === def && S.it === it) { S.t = 0; go(d); } });
-    return (t) => run?.(t);
+    const f = (t) => run?.(t);
+    f.focus = () => run?.focus?.();
+    return f;
   } };
 }
 function cssColor(v) { const el = document.createElement("i"); el.style.color = `var(${v})`; document.body.appendChild(el); const c = getComputedStyle(el).color; el.remove(); const m = c.match(/[\d.]+/g).map(Number); return new THREE.Color(m[0] / 255, m[1] / 255, m[2] / 255); }
@@ -1603,12 +1607,27 @@ let HOLD = parseFloat(new URLSearchParams(location.search).get("at"));
 window.__seek = (t) => { if (t < studio.t) studio.load(PREVIEWS[current.preview], current); HOLD = t; };
 // ?cam=x,y,z,tx,ty,tz places the camera (and stops the spin) for checking a view.
 const CAMQ = new URLSearchParams(location.search).get("cam")?.split(",").map(Number);
+// Recorded final kills: lean the view toward the effect (its entities and
+// particles), a little sideways and more upward, eased and capped, keeping
+// whatever angle the viewer has dragged to.
+const camOff = new THREE.Vector3(), camGoal = new THREE.Vector3(), clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+function followRec(dt) {
+  const fo = studio.def?.rec ? studio.tick?.focus?.() : null;
+  const base = PREVIEWS[current?.preview]?.cam?.[1];
+  if (fo && base) camGoal.set(clamp((fo.x - base[0]) * 0.5, -0.6, 0.6), clamp((fo.y - base[1]) * 0.5, -0.3, 1.3), clamp((fo.z - base[2]) * 0.5, -0.8, 0.8));
+  else camGoal.set(0, 0, 0);
+  const k = 1 - Math.exp(-dt * 1.6), dx = (camGoal.x - camOff.x) * k, dy = (camGoal.y - camOff.y) * k, dz = (camGoal.z - camOff.z) * k;
+  camOff.x += dx; camOff.y += dy; camOff.z += dz;
+  controls.target.x += dx; controls.target.y += dy; controls.target.z += dz;
+  studio.camera.position.x += dx; studio.camera.position.y += dy * 0.3; studio.camera.position.z += dz;
+}
 function frame(now) {
   if (CAMQ?.length === 6) { controls.autoRotate = false; studio.camera.position.set(CAMQ[0], CAMQ[1], CAMQ[2]); controls.target.set(CAMQ[3], CAMQ[4], CAMQ[5]); }
   raf = requestAnimationFrame(frame);
   const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
   if (HOLD >= 0) { if (studio.t < HOLD) { studio.audible = false; for (let n = 0; studio.t < HOLD && n < 3000; n++) studio.step(1 / 60); } }
   else studio.step(dt * speed);
+  if (!(CAMQ?.length === 6)) followRec(HOLD >= 0 ? 1 : dt);
   controls.update();
   studio.renderer.render(studio.scene, studio.camera);
 }
@@ -1623,7 +1642,7 @@ function openStudio(id, push = true) {
   cancelAnimationFrame(raf); stopSounds();
   if (!chatOnly) {
     const C = PREVIEWS[it.preview].cam || STAGE_CAM[PREVIEWS[it.preview].stage || "island"];
-    studio.camera.position.set(...C[0]); controls.target.set(...C[1]); controls.minDistance = C[2]; controls.maxDistance = C[3];
+    studio.camera.position.set(...C[0]); controls.target.set(...C[1]); camOff.set(0, 0, 0); controls.minDistance = C[2]; controls.maxDistance = C[3];
     studio.audible = true; studio.load(PREVIEWS[it.preview], it);
     last = performance.now(); raf = requestAnimationFrame(frame);
   }

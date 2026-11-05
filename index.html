@@ -8,7 +8,7 @@
      To add a page, add one entry to PAGES in the script below (name, link, colour, preview);
      the card and its beam are made from that list. Old tracker links (anything with ?query or
      #hash) are sent on to tracker.html so shared links keep working. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://mc-heads.net; connect-src 'self' https://bedwars-backend.onrender.com; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://mc-heads.net; connect-src 'self' https://bedwars-backend.onrender.com https://cdn.jsdelivr.net; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'">
 <script>
   // The tracker used to live here. Its links carry ?player=, ?lb= or #section, so pass those on.
   if (location.search || (location.hash && location.hash !== '#')) location.replace('tracker.html' + location.search + location.hash);
@@ -56,6 +56,8 @@
   @keyframes sheen { from { background-position: 0% 0; } to { background-position: 100% 0; } }
 
   main { position: relative; }
+  #glassCanvas { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 2; opacity: 0; transition: opacity .8s ease; }
+  #glassCanvas.on { opacity: 1; }
   #beamCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
   .hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 560px); gap: 40px; align-items: center; padding-block: 30px 70px; min-height: 620px; }
   .hero-left { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 18px; }
@@ -115,6 +117,7 @@
 <body>
 <main>
   <canvas id="beamCanvas" aria-hidden="true"></canvas>
+  <canvas id="glassCanvas" aria-hidden="true"></canvas>
   <div class="wrap">
     <header class="topbar">
       <a class="mark" href="./"><svg viewBox="0 0 26 26" aria-hidden="true"><path d="M13 2 24 22H2Z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M13 9v13" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/></svg>Prism</a>
@@ -194,7 +197,7 @@
   }
   if (listEl) {
     playersList(null);
-    var slow = setTimeout(function () { playersList(null, 'Waking up the server'); }, 3000);
+    var slow = setTimeout(function () { playersList(null, 'Waking server'); }, 3000);
     (async function () {
       var res = null;
       for (var attempt = 0; attempt < 3; attempt++) {
@@ -332,6 +335,8 @@
     var pts = [0, 1, 2].map(function (k) { var a = -Math.PI / 2 + k * Math.PI * 2 / 3 + sway; return [pcx + Math.cos(a) * size * .58, pcy + Math.sin(a) * size * .58]; });
     var inP = [(pts[0][0] + pts[2][0]) / 2, (pts[0][1] + pts[2][1]) / 2];
     var outP = narrow ? [(pts[1][0] + pts[2][0]) / 2, (pts[1][1] + pts[2][1]) / 2] : [(pts[0][0] + pts[1][0]) / 2 + size * .02, (pts[0][1] + pts[1][1]) / 2 + size * .06];
+    var G = window.PRISM_GLASS; window.PRISM_AT = { x: pcx, y: pcy, size: size };
+    if (G && G.ready) { inP = [pcx - size * .12, pcy + size * .04]; outP = narrow ? [pcx, pcy + size * .12] : [pcx + size * .12, pcy + size * .02]; }
     var grow = Math.min(1, Math.max(0, it / .5)), split = Math.min(1, Math.max(0, (it - .45) / .6));
     ctx.globalCompositeOperation = 'lighter';
     var x0 = -20, y0 = narrow ? inP[1] - 70 : inP[1] - 30;
@@ -354,6 +359,7 @@
       if (split >= 1) { var lgr = ctx.createRadialGradient(tx, ty, 0, tx, ty, 50 + hot[i] * 40); lgr.addColorStop(0, rgba(c, .35 * k)); lgr.addColorStop(1, rgba(c, 0)); ctx.fillStyle = lgr; ctx.fillRect(tx - 100, ty - 100, 200, 200); }
     });
     ctx.globalCompositeOperation = 'source-over';
+    if (G && G.ready) return;
     ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); ctx.lineTo(pts[1][0], pts[1][1]); ctx.lineTo(pts[2][0], pts[2][1]); ctx.closePath();
     var pg = ctx.createLinearGradient(pts[2][0], pts[0][1], pts[1][0], pts[1][1]); pg.addColorStop(0, 'rgba(255,255,255,.10)'); pg.addColorStop(.5, 'rgba(160,200,255,.04)'); pg.addColorStop(1, 'rgba(255,255,255,.12)');
     ctx.fillStyle = pg; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 1.5; ctx.stroke();
@@ -373,6 +379,129 @@
   requestAnimationFrame(frame);
   if (reduce) { addEventListener('resize', function () { requestAnimationFrame(frame); }); document.fonts && document.fonts.ready.then(function () { requestAnimationFrame(frame); }); }
 })();
+</script>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+// The 3D glass prism. If WebGL or the download fails, the flat 2D prism stays.
+import * as THREE from "three";
+const canvas = document.getElementById("glassCanvas");
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "high-performance" }); }
+catch (e) { renderer = null; }
+if (renderer) {
+  const DPR = Math.min(2, window.devicePixelRatio || 1);
+  renderer.setPixelRatio(DPR);
+  renderer.setClearColor(0x000000, 0);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  const scene = new THREE.Scene();
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  // A dark studio with a few light strips, so the glass reads as clear with sharp highlights
+  // (a bright room would turn it milky). Glass faces add light (additive), so only reflections show.
+  const studio = new THREE.Scene(); studio.background = new THREE.Color(0x020308);
+  const strip = (w, h, color, k, pos, look) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide }));
+    m.position.set(...pos); m.lookAt(...look); studio.add(m);
+  };
+  strip(6, 0.5, 0xffffff, 3.5, [0, 4, 2], [0, 0, 0]);
+  strip(0.4, 5, 0xffffff, 2.5, [4, 0, 1], [0, 0, 0]);
+  strip(0.6, 4, 0x00d9ff, 5, [-4, 0.5, 0.5], [0, 0, 0]);
+  strip(3, 0.6, 0xa855f7, 5, [0, -3.5, 1.5], [0, 0, 0]);
+  strip(2, 2, 0xffb84d, 3, [2, 1, -4], [0, 0, 0]);
+  strip(3, 0.3, 0xffffff, 4, [-1.5, 2, 4], [0, 0, 0]);
+  strip(8, 1.2, 0xffffff, 3, [0, 0.5, 6], [0, 0, 0]);
+  strip(1.2, 8, 0x9fd8ff, 2.5, [-3, 0, 5], [0, 0, 0]);
+  strip(1.2, 8, 0xe0c8ff, 2.5, [3.5, 0, 4.5], [0, 0, 0]);
+  strip(10, 0.25, 0xffffff, 4, [0, -1.2, 5.5], [0, 0, 0]);
+  scene.environment = pmrem.fromScene(studio, 0).texture;
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+  camera.position.set(0, 0, 6.2);
+
+  // Equilateral triangle with softly rounded corners, extruded with a bevel.
+  const R = 1, r = 0.07, shape = new THREE.Shape();
+  const corners = [0, 1, 2].map(k => { const a = Math.PI / 2 + k * Math.PI * 2 / 3; return new THREE.Vector2(Math.cos(a) * R, Math.sin(a) * R); });
+  corners.forEach((c, i) => {
+    const prev = corners[(i + 2) % 3], next = corners[(i + 1) % 3];
+    const a = c.clone().add(prev.clone().sub(c).setLength(r * 2.2)), b = c.clone().add(next.clone().sub(c).setLength(r * 2.2));
+    if (i === 0) shape.moveTo(a.x, a.y); else shape.lineTo(a.x, a.y);
+    shape.quadraticCurveTo(c.x, c.y, b.x, b.y);
+  });
+  shape.closePath();
+  const depth = 0.85;
+  const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.045, bevelSegments: 6, curveSegments: 10 });
+  geo.translate(0, -0.08, -depth / 2);
+  geo.computeVertexNormals();
+  // Glass drawn in two passes (inside faces, then outside faces), see-through with
+  // sharp coloured reflections of the studio strips and a thin-film rainbow sheen.
+  const glassProps = { color: 0x000000, metalness: 0, roughness: 0.02, transparent: true, depthWrite: false,
+    // Add light to what's under the canvas without covering it (the canvas has a see-through background).
+    blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor, premultipliedAlpha: true,
+    clearcoat: 1, clearcoatRoughness: 0.02, iridescence: 1, iridescenceIOR: 1.4, iridescenceThicknessRange: [180, 620],
+    specularIntensity: 1, ior: 1.6, envMapIntensity: 4 };
+  const glassBack = new THREE.MeshPhysicalMaterial({ ...glassProps, side: THREE.BackSide, opacity: 0.55 });
+  const glass = new THREE.MeshPhysicalMaterial({ ...glassProps, side: THREE.FrontSide, opacity: 1 });
+  // A faint body so the glass has some mass against the dark page.
+  const body = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x14213a, transparent: true, opacity: 0.28, depthWrite: false })); body.renderOrder = 0;
+  const back = new THREE.Mesh(geo, glassBack); back.renderOrder = 1;
+  const prism = new THREE.Mesh(geo, glass); prism.renderOrder = 2;
+  // Fresnel glow: faces light up toward their edges with a cyan-violet-gold sheen, so the
+  // prism reads as glass at every angle.
+  const rimMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false,
+    blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor,
+    uniforms: { uTime: { value: 0 } },
+    vertexShader: `varying vec3 vN; varying vec3 vV; varying vec3 vP;
+      void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position; gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `uniform float uTime; varying vec3 vN; varying vec3 vV; varying vec3 vP;
+      void main() {
+        float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 2.2);
+        float h = fract(vP.x * 0.35 + vP.y * 0.25 + uTime * 0.05);
+        vec3 c = mix(vec3(0.0, 0.85, 1.0), vec3(0.66, 0.33, 0.97), smoothstep(0.0, 0.5, h));
+        c = mix(c, vec3(1.0, 0.72, 0.3), smoothstep(0.5, 1.0, h));
+        vec3 col = c * f * 0.75 + vec3(0.02, 0.03, 0.05);
+        gl_FragColor = vec4(col, 1.0);
+      }`
+  });
+  const rim = new THREE.Mesh(geo, rimMat); rim.renderOrder = 3;
+  prism.add(back); prism.add(body); prism.add(rim);
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, depthWrite: false }));
+  prism.add(edges);
+  const group = new THREE.Group(); group.add(prism); scene.add(group);
+
+
+  const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 4, 5); scene.add(key);
+  const back2 = new THREE.DirectionalLight(0x9fd8ff, 1.4); back2.position.set(-4, -1, -3); scene.add(back2);
+
+  window.PRISM_GLASS = { ready: false };
+  let shown = false;
+  const t0 = performance.now();
+  function frame(now) {
+    const at = window.PRISM_AT;
+    if (at) {
+      const box = Math.round(at.size * 1.9);
+      canvas.style.width = box + "px"; canvas.style.height = box + "px";
+      canvas.style.transform = `translate(${Math.round(at.x - box / 2)}px, ${Math.round(at.y - box / 2)}px)`;
+      if (canvas.width !== Math.round(box * DPR)) renderer.setSize(box, box, false);
+      const t = reduce ? 1.2 : (now - t0) / 1000;
+      group.rotation.y = t * 0.45;
+      group.rotation.x = Math.sin(t * 0.5) * 0.18;
+      group.rotation.z = Math.sin(t * 0.33) * 0.05;
+      rimMat.uniforms.uTime.value = t;
+      renderer.render(scene, camera);
+      if (!shown) { shown = true; canvas.classList.add("on"); window.PRISM_GLASS.ready = true; }
+    }
+    if (!reduce || !shown) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  if (reduce) addEventListener("resize", () => requestAnimationFrame(frame));
+}
 </script>
 </body>
 </html>

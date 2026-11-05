@@ -4,6 +4,8 @@
 // only while the replay is playing at up to 2x speed.
 const BASE = 'https://resources.download.minecraft.net/'
 const MAX_PLAYING = 24
+// The recording player's own sounds, relative to everyone else's.
+const SELF_LEVEL = 0.35
 
 class Sounds {
   constructor (timeline) {
@@ -45,7 +47,7 @@ class Sounds {
     if (v <= 0.01) return
     const h = files[Math.floor(Math.random() * files.length)]
     const a = new Audio(BASE + h.slice(0, 2) + '/' + h)
-    a.volume = Math.min(1, v * this.volume)
+    a.volume = Math.min(1, v * this.volume * (s.self ? SELF_LEVEL : 1))
     a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false
     a.playbackRate = Math.max(0.5, Math.min(4, (s.pitch || 1) * speed))
     const done = () => this.playing.delete(a)

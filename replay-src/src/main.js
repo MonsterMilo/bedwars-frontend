@@ -178,9 +178,9 @@ async function runViewer (tl, details) {
   const settings = { chat: true, feed: true, names: true, invis: true, particles: true, hearing: 2, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860 }
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) } catch { /* private window */ }
   const saveSettings = () => { if (EMBED) return; try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ } }
-  // A clip in the popup: no side panel or chat, and starts muted (the
-  // popup shouldn't suddenly make noise).
-  if (EMBED) { settings.panel = false; settings.chat = false; settings.volume = 0 }
+  // A clip in the popup: no side panel or chat. It plays with sound (it only
+  // starts after a card is clicked), even if the full viewer was muted.
+  if (EMBED) { settings.panel = false; settings.chat = false; if (!(settings.volume > 0)) settings.volume = settings.lastVolume || 0.7 }
   const clip = details && details.isClip ? details : null
 
   const cam = new ReplayCamera(camera, renderer.domElement)

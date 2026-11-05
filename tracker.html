@@ -16560,7 +16560,6 @@ html[data-theme="prism"] .filter-prefix { color: var(--text-faint); font-size: 1
 
 /* ---------- Sweat cards: glass slabs ---------- */
 html[data-theme="prism"] .sweat-card {
-  overflow: hidden;
   background: linear-gradient(180deg, rgba(24,27,39,0.72), rgba(14,16,24,0.72));
   border: 1px solid var(--border);
   border-radius: 20px;
@@ -16573,8 +16572,19 @@ html[data-theme="prism"] .sweat-card:hover {
   border-color: rgba(255,255,255,0.16);
   box-shadow: var(--pr-hi), var(--pr-split), 0 26px 50px -28px rgba(0,0,0,0.9);
 }
-html[data-theme="prism"] .sweat-card:hover::after { animation: prGlint 1.1s var(--ease); }
-html[data-theme="prism"] .sweat-card::after { width: 22%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.12) 45%, rgba(169,139,255,0.08) 55%, transparent); }
+/* The card is not clipped (the rival tag hangs over its top edge), so its
+   glint is a card-sized layer whose streak slides through the background. */
+html[data-theme="prism"] .sweat-card::after {
+  inset: 0; width: auto; border-radius: inherit; transform: none;
+  background: linear-gradient(100deg, transparent 40%, rgba(255,255,255,0.12) 48%, rgba(169,139,255,0.08) 52%, transparent 60%) no-repeat;
+  background-size: 300% 100%; background-position: 130% 0;
+}
+html[data-theme="prism"] .sweat-card:hover::after { animation: prCardGlint 1.1s var(--ease); }
+@keyframes prCardGlint {
+  0% { background-position: 130% 0; opacity: 0; }
+  20% { opacity: 1; }
+  100% { background-position: -30% 0; opacity: 0; }
+}
 html[data-theme="prism"] .sweat-card-index {
   font-family: var(--pr-mono); font-weight: 500; letter-spacing: 0.04em;
   color: var(--text-dim);
@@ -16634,7 +16644,7 @@ html[data-theme="prism"] .card-note-ghost { border-radius: 12px; border-color: r
 
 /* Live: a new card arrives in a wash of white light; an edited one gets a glint. */
 html[data-theme="prism"] .sweat-card.live-new { animation: prArrive 1.4s var(--ease) both; }
-html[data-theme="prism"] .sweat-card.live-edit::after { animation: prGlint 1.2s var(--ease) 2; opacity: 1; }
+html[data-theme="prism"] .sweat-card.live-edit::after { animation: prCardGlint 1.2s var(--ease) 2; opacity: 1; }
 @keyframes prArrive {
   0% { opacity: 0; transform: translateY(10px) scale(0.98); filter: brightness(2.4) saturate(0); }
   45% { opacity: 1; filter: brightness(1.4) saturate(1.4); }

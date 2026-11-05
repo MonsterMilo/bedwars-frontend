@@ -156,7 +156,7 @@
   .chat-line { font: 600 15px/1.35 'Courier New', monospace; color: #fff; background: rgba(0,0,0,.45); padding: 4px 8px; width: fit-content; max-width: 100%; text-shadow: 2px 2px 0 rgba(0,0,0,.6); animation: chatin .45s var(--ease) both; }
   .thumb .chat-line { font-size: 10.5px; padding: 3px 6px; }
   @keyframes chatin { from { opacity: 0; transform: translateX(-10px); } }
-  .c-red { color: #ff5555; } .c-blue { color: #5555ff; } .c-gray { color: #aaaaaa; } .c-bold { font-weight: 800; } .c-aqua { color: #55ffff; } .c-gold { color: #ffaa00; }
+  .c-red { color: #ff5555; } .c-blue { color: #5555ff; } .c-gray { color: #aaaaaa; } .c-bold { font-weight: 800; } .c-aqua { color: #55ffff; } .c-gold { color: #ffaa00; } .c-yellow { color: #ffff55; } .c-italic { font-style: italic; }
   .unseen-note { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); padding: 8px 14px; border-radius: 999px; background: rgba(0,0,0,.5); color: #dfe3ea; font-size: 13px; white-space: nowrap; }
   .tools { position: absolute; left: 14px; bottom: 14px; display: flex; gap: 6px; }
   .tool { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,18,.55); color: #e9edf5; font-size: 12.5px; cursor: pointer; backdrop-filter: blur(6px); }
@@ -351,18 +351,28 @@ const CATS = [
   { id: "cry", name: "Death cries", icon: '<path d="M3 8v4h3l4 3.5v-11L6 8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M13 7.5a3.5 3.5 0 0 1 0 5M15 5.5a6.5 6.5 0 0 1 0 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
   { id: "shop", name: "Shopkeeper skins", icon: '<rect x="6.5" y="2.5" width="7" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 17.5V10h10v7.5" fill="none" stroke="currentColor" stroke-width="1.5"/>' },
   { id: "dance", name: "Victory dances", icon: '<path d="M6 3h8v3.5a4 4 0 0 1-8 0zM6 4.5H3.5a2.5 2.5 0 0 0 2.6 3M14 4.5h2.5a2.5 2.5 0 0 1-2.6 3M10 10.5v3M7 17h6M8 13.5h4V17H8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
+  { id: "wood", name: "Wood skins", icon: '<rect x="3.5" y="3.5" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 7v-1M3.5 8h3M13.5 13h3" stroke="currentColor" stroke-width="1.5"/>' },
   { id: "msg", name: "Kill messages", icon: '<path d="M3 4h14v9H8l-4 3v-3H3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
 ];
-const RAR = { common: ["Common", "#9aa3b2"], rare: ["Rare", "#4f8cff"], epic: ["Epic", "#b05cff"], legendary: ["Legendary", "#ffb020"] };
-const RAR_ORDER = { legendary: 0, epic: 1, rare: 2, common: 3 };
-const GET = { shop: "Bed Wars shop", challenges: "Bed Wars challenges", slumber: "Slumber Hotel", dreamfeast: "Dreamfeast", pass: "Battle Pass season 1", event: "Event shop" };
-const GET_SHORT = { challenges: "Challenges", slumber: "Slumber", dreamfeast: "Dreamfeast", pass: "Battle Pass", event: "Event" };
+const RAR = { common: ["Common", "#9aa3b2"], rare: ["Rare", "#4f8cff"], epic: ["Epic", "#b05cff"], legendary: ["Legendary", "#ffb020"], none: ["No rarity", "#8a93a3"] };
+const RAR_ORDER = { legendary: 0, epic: 1, rare: 2, common: 3, none: 4 };
+const GET = { shop: "Bed Wars shop", challenges: "Bed Wars challenges", slumber: "Slumber Hotel", dreamfeast: "Dreamfeast", pass: "Battle Pass season 1", event: "Event shop", mvp: "MVP++ rank", megagift: "Holidays Megagift", retired: "No longer available" };
+const GET_SHORT = { challenges: "Challenges", slumber: "Slumber", dreamfeast: "Dreamfeast", pass: "Battle Pass", event: "Event", mvp: "MVP++", megagift: "Megagift", retired: "Retired" };
 
-// Kill message packs: melee, void, bow, fall, mob, bed. {MOB} is a Dream Defender here.
-function pack(lines) {
+// Kill message packs, as Hypixel words them: melee, void, bow, fall, mob, then the
+// bed line ({MOB}: Golem, the word Hypixel uses). The first line shows as a final kill:
+// packs that count (Noble, Triumph, Glorious) use their "final #N" line for it.
+// [6:word] / [e:word] / [o:word] = a word Hypixel colours gold / yellow / italic.
+function km(lines) {
   const V = '<span class="c-red">Rival</span><span class="c-gray">', K = '</span><span class="c-blue">Milo</span><span class="c-gray">';
-  const out = lines.slice(0, 5).map((l, i) => l.replace("{V}", V).replace("{K}", K).replace("{MOB}", "Dream Defender") + "</span>" + (i === 0 ? ' <span class="c-aqua c-bold">FINAL KILL!</span>' : ""));
-  out.push('<span class="c-bold">BED DESTRUCTION &gt; </span>' + lines[5].replace("{BED}", '<span class="c-red">Red Bed</span><span class="c-gray">').replace("{K}", K) + "</span>");
+  const CODE = { 6: "c-gold", e: "c-yellow", o: "c-italic" };
+  const fmt = (l) => l.replace(/\[(\w):([^\]]+)\]/g, (m, c, w) => `</span><span class="${CODE[c]}">${w}</span><span class="c-gray">`)
+    .replace("{V}", V).replace("{K}", K).replace("{MOB}", "Golem").replace("{N}", "87");
+  const bed = lines[lines.length - 1], rest = lines.slice(0, -1);
+  const fin = rest.findIndex((l) => l.includes("final #{N}"));
+  const order = fin >= 0 ? [rest[fin], ...rest.filter((_, i) => i !== fin)] : rest;
+  const out = order.map((l, i) => fmt(l) + "</span>" + (i === 0 ? ' <span class="c-aqua c-bold">FINAL KILL!</span>' : ""));
+  out.push('<span class="c-bold">BED DESTRUCTION &gt; </span>' + bed.replace("{BED}", '<span class="c-red">Red Bed</span><span class="c-gray">').replace("{K}", K).replace("{N}", "12") + "</span>");
   return out;
 }
 const ITEMS = [
@@ -384,35 +394,197 @@ const ITEMS = [
   // Victory dances: only ones seen in real games (rarity, price and wording from the in-game menu)
   { id: "dragon-rider", cat: "dance", name: "Dragon Rider", rar: "legendary", price: 100000, get: "shop",
     desc: "Ride a Dragon capable of destroying the map.", tags: "dragon fly ender ride", preview: "dragonRider" },
-  // Death cries (sound, pitch as Hypixel plays them)
+  // Death cries: the sound and pitch Hypixel plays (the packet's pitch byte, as the 1.8 client clamps it)
   { id: "bazinga", cat: "cry", name: "Bazinga", rar: "common", price: 5000, get: "shop", desc: "Plays the Bazinga Death Cry when you die.", tags: "sound blaze", preview: "cry", sound: ["mob.blaze.death", 2] },
-  { id: "dinosaur", cat: "cry", name: "Dinosaur", rar: "common", price: 5000, get: "shop", desc: "Plays the Dinosaur Death Cry when you die.", tags: "sound donkey", preview: "cry", sound: ["mob.horse.donkey.death", 0.5] },
-  { id: "ding", cat: "cry", name: "Ding", rar: "rare", price: 10000, get: "shop", desc: "Plays the Ding Death Cry when you die.", tags: "sound orb xp", preview: "cry", sound: ["random.orb", 1] },
-  { id: "dragon-roar", cat: "cry", name: "Dragon Roar", rar: "rare", price: 10000, get: "shop", desc: "Plays the Dragon Roar Death Cry when you die.", tags: "sound ender dragon", preview: "cry", sound: ["mob.enderdragon.growl", 0.5] },
-  { id: "howl", cat: "cry", name: "Howl", rar: "epic", price: 25000, get: "shop", desc: "Plays the Howl Death Cry when you die.", tags: "sound wolf", preview: "cry", sound: ["mob.wolf.howl", 1] },
-  { id: "sad-moo", cat: "cry", name: "Sad Moo", rar: "epic", price: 25000, get: "shop", desc: "Plays the Sad Moo Death Cry when you die.", tags: "sound cow", preview: "cry", sound: ["mob.cow.say", 1] },
-  { id: "guardian", cat: "cry", name: "Guardian", rar: "legendary", price: null, get: "challenges", desc: "Plays the Guardian Death Cry when you die.", tags: "sound guardian", preview: "cry", sound: ["mob.guardian.death", 1] },
-  { id: "carol", cat: "cry", name: "Carol", rar: "legendary", price: null, get: "event", season: "Holidays", desc: "Plays the Carol Death Cry when you die.", tags: "sound christmas bell", preview: "cry", sound: ["random.orb", 1.1] },
-  // Shopkeeper skins
-  { id: "magic-vendor", cat: "shop", name: "Magic Vendor", rar: "common", price: 5000, get: "shop", desc: "Select Magic Vendor as your Shopkeeper!", tags: "npc wizard", preview: "shopkeeper", skin: "magic-vendor" },
-  { id: "bed-salesman", cat: "shop", name: "Bed Salesman", rar: "common", price: 5000, get: "shop", desc: "Select Bed Salesman as your Shopkeeper!", tags: "npc bed", preview: "shopkeeper", skin: "bed-salesman" },
-  { id: "king-of-beds", cat: "shop", name: "King Of Beds", rar: "rare", price: 10000, get: "shop", desc: "Select King Of Beds as your Shopkeeper!", tags: "npc crown king", preview: "shopkeeper", skin: "king-of-beds" },
-  { id: "bright-tiger", cat: "shop", name: "Bright Tiger", rar: "epic", price: 25000, get: "shop", desc: "Select Bright Tiger as your Shopkeeper!", tags: "npc tiger", preview: "shopkeeper", skin: "bright-tiger" },
-  { id: "gold-tiger", cat: "shop", name: "Gold Tiger", rar: "legendary", price: 100000, get: "shop", desc: "Select Gold Tiger as your Shopkeeper!", tags: "npc tiger gold", preview: "shopkeeper", skin: "gold-tiger" },
-  { id: "astronaut", cat: "shop", name: "Astronaut", rar: "legendary", price: 100000, get: "shop", desc: "Select Astronaut as your Shopkeeper!", tags: "npc space", preview: "shopkeeper", skin: "astronaut" },
-  // Kill messages
-  { id: "km-fire", cat: "msg", name: "Fire", rar: "common", price: 5000, get: "shop", desc: "Select the Fire Kill Messages!", tags: "chat burn",
-    lines: pack(["{V} was struck down by {K}.", "{V} was turned to dust by {K}.", "{V} was melted by {K}.", "{V} was turned to ash by {K}.", "{V} was fried by {K}'s {MOB}.", "{BED} was incinerated by {K}!"]) },
-  { id: "km-western", cat: "msg", name: "Western", rar: "common", price: 5000, get: "shop", desc: "Select the Western Kill Messages!", tags: "chat cowboy",
-    lines: pack(["{V} was filled full of lead by {K}.", "{V} met their end by {K}.", "{V} was killed with dynamite by {K}.", "{V} lost a drinking contest with {K}.", "{V} lost the draw to {K}'s {MOB}.", "{BED} was iced by {K}!"]) },
-  { id: "km-love", cat: "msg", name: "Love", rar: "rare", price: 10000, get: "shop", desc: "Select the Love Kill Messages!", tags: "chat cupid",
-    lines: pack(["{V} was given the cold shoulder by {K}.", "{V} was hit off by a love bomb from {K}.", "{V} was struck with Cupid's arrow by {K}.", "{V} was out of the league of {K}.", "{V} was no match for {K}'s {MOB}.", "{BED} was dismantled by {K}!"]) },
-  { id: "km-pirate", cat: "msg", name: "Pirate", rar: "epic", price: 25000, get: "shop", desc: "Select the Pirate Kill Messages!", tags: "chat sea",
-    lines: pack(["{V} be sent to Davy Jones' locker by {K}.", "{V} be cannonballed to death by {K}.", "{V} be shot and killed by {K}.", "{V} be killed with magic by {K}.", "{V} be killed with metal by {K}'s {MOB}.", "{BED} be shot with cannon by {K}!"]) },
-  { id: "km-to-the-moon", cat: "msg", name: "To The Moon", rar: "epic", price: 25000, get: "shop", desc: "Select the To The Moon Kill Messages!", tags: "chat space",
-    lines: pack(["{V} was crushed into moon dust by {K}.", "{V} was sent the wrong way by {K}.", "{V} was hit by an asteroid from {K}.", "{V} was blasted to the moon by {K}.", "{V} was blown up by {K}'s {MOB}.", "{BED} was blasted to dust by {K}!"]) },
-  { id: "km-roar", cat: "msg", name: "Roar", rar: "epic", price: 25000, get: "shop", desc: "Select the Roar Kill Messages!", tags: "chat animal",
-    lines: pack(["{V} was ripped to shreds by {K}.", "{V} was charged by {K}.", "{V} was pounced on by {K}.", "{V} was ripped and thrown by {K}.", "{V} was ripped to shreds by {K}'s {MOB}.", "{BED} was ripped to shreds by {K}!"]) },
+  { id: "cry-deflated-toy", cat: "cry", name: "Deflated Toy", rar: "common", price: 5000, get: "shop", desc: "Plays the Deflated Toy Death Cry when you die.", tags: "sound bat", preview: "cry", sound: ["mob.bat.death", 0.5] },
+  { id: "dinosaur", cat: "cry", name: "Dinosaur", rar: "common", price: 5000, get: "shop", desc: "Plays the Dinosaur Death Cry when you die.", tags: "sound horse", preview: "cry", sound: ["mob.horse.donkey.death", 0.5] },
+  { id: "cry-dry-bones", cat: "cry", name: "Dry Bones", rar: "common", price: 5000, get: "shop", desc: "Plays the Dry Bones Death Cry when you die.", tags: "sound skeleton", preview: "cry", sound: ["mob.skeleton.death", 1.0] },
+  { id: "cry-enderman", cat: "cry", name: "Enderman", rar: "common", price: 5000, get: "shop", desc: "Plays the Enderman Death Cry when you die.", tags: "sound endermen", preview: "cry", sound: ["mob.endermen.death", 1.0] },
+  { id: "cry-fireball", cat: "cry", name: "Fireball", rar: "common", price: 5000, get: "shop", desc: "Plays the Fireball Death Cry when you die.", tags: "sound ghast", preview: "cry", sound: ["mob.ghast.fireball", 1.0] },
+  { id: "cry-grumpy-villager", cat: "cry", name: "Grumpy Villager", rar: "common", price: 5000, get: "shop", desc: "Plays the Grumpy Villager Death Cry when you die.", tags: "sound villager", preview: "cry", sound: ["mob.villager.death", 0.5] },
+  { id: "cry-monster-burp", cat: "cry", name: "Monster Burp", rar: "common", price: 5000, get: "shop", desc: "Plays the Monster Burp Death Cry when you die.", tags: "sound zombie", preview: "cry", sound: ["mob.zombie.death", 0.5] },
+  { id: "cry-pig", cat: "cry", name: "Pig", rar: "common", price: 5000, get: "shop", desc: "Plays the Pig Death Cry when you die.", tags: "sound pig", preview: "cry", sound: ["mob.pig.death", 1.0] },
+  { id: "cry-robot-mouse", cat: "cry", name: "Robot Mouse", rar: "common", price: 5000, get: "shop", desc: "Plays the Robot Mouse Death Cry when you die.", tags: "sound guardian", preview: "cry", sound: ["mob.guardian.land.death", 0.5] },
+  { id: "cry-sad-puppy", cat: "cry", name: "Sad Puppy", rar: "common", price: 5000, get: "shop", desc: "Plays the Sad Puppy Death Cry when you die.", tags: "sound wolf", preview: "cry", sound: ["mob.wolf.death", 0.5] },
+  { id: "cry-bat", cat: "cry", name: "Bat", rar: "rare", price: 10000, get: "shop", desc: "Plays the Bat Death Cry when you die.", tags: "sound bat", preview: "cry", sound: ["mob.bat.death", 1.0] },
+  { id: "cry-burp", cat: "cry", name: "Burp", rar: "rare", price: null, get: "pass", desc: "Plays the Burp Death Cry when you die.", tags: "sound burp", preview: "cry", sound: ["random.burp", 1.0] },
+  { id: "cry-cat", cat: "cry", name: "Cat", rar: "rare", price: null, get: "challenges", desc: "Plays the Cat Death Cry when you die.", tags: "sound cat", preview: "cry", sound: ["mob.cat.hitt", 0.889] },
+  { id: "ding", cat: "cry", name: "Ding", rar: "rare", price: 10000, get: "shop", desc: "Plays the Ding Death Cry when you die.", tags: "sound orb", preview: "cry", sound: ["random.orb", 1.0] },
+  { id: "cry-doused-lantern", cat: "cry", name: "Doused Lantern", rar: "rare", price: 10000, get: "shop", desc: "Plays the Doused Lantern Death Cry when you die.", tags: "sound fizz", preview: "cry", sound: ["random.fizz", 0.5] },
+  { id: "dragon-roar", cat: "cry", name: "Dragon Roar", rar: "rare", price: 10000, get: "shop", desc: "Plays the Dragon Roar Death Cry when you die.", tags: "sound enderdragon", preview: "cry", sound: ["mob.enderdragon.growl", 0.5] },
+  { id: "cry-evil-laugh", cat: "cry", name: "Evil Laugh", rar: "rare", price: null, get: "challenges", desc: "Plays the Evil Laugh Death Cry when you die.", tags: "sound bat", preview: "cry", sound: ["mob.bat.death", 1.587, 0.8] },
+  { id: "cry-gone", cat: "cry", name: "Gone", rar: "rare", price: 30000, get: "event", season: "Holidays", desc: "Plays the Gone Death Cry when you die.", tags: "sound enderdragon", preview: "cry", sound: ["mob.enderdragon.hit", 0.5] },
+  { id: "cry-plop", cat: "cry", name: "Plop", rar: "rare", price: 10000, get: "shop", desc: "Plays the Plop Death Cry when you die.", tags: "sound chicken", preview: "cry", sound: ["mob.chicken.plop", 1.0] },
+  { id: "cry-scurry", cat: "cry", name: "Scurry", rar: "rare", price: 10000, get: "shop", desc: "Plays the Scurry Death Cry when you die.", tags: "sound spider", preview: "cry", sound: ["mob.spider.step", 0.5] },
+  { id: "cry-splash", cat: "cry", name: "Splash", rar: "rare", price: 10000, get: "shop", desc: "Plays the Splash Death Cry when you die.", tags: "sound swim", preview: "cry", sound: ["game.neutral.swim", 1.0] },
+  { id: "cry-squeal", cat: "cry", name: "Squeal", rar: "rare", price: 30000, get: "event", season: "Easter", desc: "Plays the Squeal Death Cry when you die.", tags: "sound rabbit", preview: "cry", sound: ["mob.rabbit.death", 0.5] },
+  { id: "cry-aww", cat: "cry", name: "Aww", rar: "epic", price: 25000, get: "shop", desc: "Plays the Aww Death Cry when you die.", tags: "sound wolf", preview: "cry", sound: ["mob.wolf.whine", 1.0] },
+  { id: "cry-energy", cat: "cry", name: "Energy", rar: "epic", price: 25000, get: "shop", desc: "Plays the Energy Death Cry when you die.", tags: "sound zombie", preview: "cry", sound: ["mob.zombie.remedy", 1.0] },
+  { id: "cry-firework", cat: "cry", name: "Firework", rar: "epic", price: 25000, get: "shop", desc: "Plays the Firework Death Cry when you die.", tags: "sound launch", preview: "cry", sound: ["fireworks.launch", 1.0] },
+  { id: "cry-ghosts-cry", cat: "cry", name: "Ghost's Cry", rar: "epic", price: 75000, get: "event", season: "Halloween", desc: "Plays the Ghost's Cry Death Cry when you die.", tags: "sound blaze", preview: "cry", sound: ["mob.blaze.death", 0.5] },
+  { id: "cry-grumble", cat: "cry", name: "Grumble", rar: "epic", price: 25000, get: "shop", desc: "Plays the Grumble Death Cry when you die.", tags: "sound zombiepig", preview: "cry", sound: ["mob.zombiepig.zpigdeath", 0.5] },
+  { id: "howl", cat: "cry", name: "Howl", rar: "epic", price: 25000, get: "shop", desc: "Plays the Howl Death Cry when you die.", tags: "sound wolf", preview: "cry", sound: ["mob.wolf.howl", 1.0] },
+  { id: "sad-moo", cat: "cry", name: "Sad Moo", rar: "epic", price: 25000, get: "shop", desc: "Plays the Sad Moo Death Cry when you die.", tags: "sound cow", preview: "cry", sound: ["mob.cow.say", 1.0] },
+  { id: "cry-sniff", cat: "cry", name: "Sniff", rar: "epic", price: 75000, get: "event", season: "Easter", desc: "Plays the Sniff Death Cry when you die.", tags: "sound rabbit", preview: "cry", sound: ["mob.rabbit.idle", 0.5] },
+  { id: "cry-squeak", cat: "cry", name: "Squeak", rar: "epic", price: 75000, get: "event", season: "Easter", desc: "Plays the Squeak Death Cry when you die.", tags: "sound rabbit", preview: "cry", sound: ["mob.rabbit.hurt", 0.5] },
+  { id: "cry-arcade", cat: "cry", name: "Arcade", rar: "legendary", price: 300000, get: "event", season: "Holidays", desc: "Plays the Arcade Death Cry when you die.", tags: "sound pling", preview: "cry", sound: ["note.pling", 1.048] },
+  { id: "carol", cat: "cry", name: "Carol", rar: "legendary", price: null, get: "event", season: "Holidays", desc: "Plays the Carol Death Cry when you die.", tags: "sound orb", preview: "cry", sound: ["random.orb", 1.095] },
+  { id: "cry-dark-portal", cat: "cry", name: "Dark Portal", rar: "legendary", price: 300000, get: "event", season: "Halloween", desc: "Plays the Dark Portal Death Cry when you die.", tags: "sound zombie", preview: "cry", sound: ["mob.zombie.remedy", 0.5] },
+  { id: "guardian", cat: "cry", name: "Guardian", rar: "legendary", price: null, get: "challenges", desc: "Plays the Guardian Death Cry when you die.", tags: "sound guardian", preview: "cry", sound: ["mob.guardian.death", 1.0] },
+  { id: "cry-haunted-curse", cat: "cry", name: "Haunted Curse", rar: "legendary", price: 300000, get: "event", season: "Halloween", desc: "Plays the Haunted Curse Death Cry when you die.", tags: "sound guardian", preview: "cry", sound: ["mob.guardian.curse", 0.5] },
+  { id: "cry-miracle", cat: "cry", name: "Miracle", rar: "legendary", price: 300000, get: "event", season: "Holidays", desc: "Plays the Miracle Death Cry when you die.", tags: "sound successful_hit", preview: "cry", sound: ["random.successful_hit", 1.048] },
+  { id: "cry-rage", cat: "cry", name: "Rage", rar: "legendary", price: null, get: "pass", desc: "Plays the Rage Death Cry when you die.", tags: "sound horse", preview: "cry", sound: ["mob.horse.zombie.death", 1.0] },
+  // Shopkeeper skins: the exact skins and mobs the in-game preview spawns
+  { id: "bed-salesman", cat: "shop", name: "Bed Salesman", rar: "common", price: 5000, get: "shop", desc: "Select Bed Salesman as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "bed-salesman" },
+  { id: "npc-blaze", cat: "shop", name: "Blaze", rar: "common", price: 5000, get: "shop", desc: "Select Blaze as your Shopkeeper!", tags: "npc shopkeeper blaze nether fire", preview: "shopkeeper", mob: "blaze" },
+  { id: "chen", cat: "shop", name: "Chen", rar: "common", price: 5000, get: "shop", desc: "Select Chen as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "chen" },
+  { id: "holiday-bartender", cat: "shop", name: "Holiday Bartender", rar: "common", price: 5000, get: "shop", desc: "Select Holiday Bartender as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "holiday-bartender" },
+  { id: "li", cat: "shop", name: "Li", rar: "common", price: 5000, get: "shop", desc: "Select Li as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "li" },
+  { id: "magic-vendor", cat: "shop", name: "Magic Vendor", rar: "common", price: 5000, get: "shop", desc: "Select Magic Vendor as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "magic-vendor" },
+  { id: "npc-skeleton", cat: "shop", name: "Skeleton", rar: "common", price: 5000, get: "shop", desc: "Select Skeleton as your Shopkeeper!", tags: "npc shopkeeper skeleton bones", preview: "shopkeeper", mob: "skeleton" },
+  { id: "stellar", cat: "shop", name: "Stellar", rar: "common", price: 5000, get: "shop", desc: "Select Stellar as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "stellar" },
+  { id: "villager-zombie", cat: "shop", name: "Villager Zombie", rar: "common", price: 5000, get: "shop", desc: "Select Villager Zombie as your Shopkeeper!", tags: "npc shopkeeper zombie villager undead", preview: "shopkeeper", mob: "zombie_villager" },
+  { id: "wither-skeleton", cat: "shop", name: "Wither Skeleton", rar: "common", price: 5000, get: "shop", desc: "Select Wither Skeleton as your Shopkeeper!", tags: "npc shopkeeper wither skeleton nether", preview: "shopkeeper", mob: "wither_skeleton" },
+  { id: "xiu", cat: "shop", name: "Xiu", rar: "common", price: 5000, get: "shop", desc: "Select Xiu as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "xiu" },
+  { id: "zhao", cat: "shop", name: "Zhao", rar: "common", price: 5000, get: "shop", desc: "Select Zhao as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "zhao" },
+  { id: "npc-zombie", cat: "shop", name: "Zombie", rar: "common", price: 5000, get: "shop", desc: "Select Zombie as your Shopkeeper!", tags: "npc shopkeeper zombie undead", preview: "shopkeeper", mob: "zombie" },
+  { id: "zombie-pigman", cat: "shop", name: "Zombie Pigman", rar: "common", price: 5000, get: "shop", desc: "Select Zombie Pigman as your Shopkeeper!", tags: "npc shopkeeper pigman nether", preview: "shopkeeper", mob: "zombie_pigman" },
+  { id: "bao", cat: "shop", name: "Bao", rar: "rare", price: 10000, get: "shop", desc: "Select Bao as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "bao" },
+  { id: "bed-researcher", cat: "shop", name: "Bed Researcher", rar: "rare", price: 10000, get: "shop", desc: "Select Bed Researcher as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "bed-researcher" },
+  { id: "blue-sheep-pajamas", cat: "shop", name: "Blue Sheep Pajamas", rar: "rare", price: 30000, get: "event", season: "Easter", desc: "Select Blue Sheep Pajamas as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "blue-sheep-pajamas" },
+  { id: "bunny-costume", cat: "shop", name: "Bunny Costume", rar: "rare", price: 30000, get: "event", season: "Easter", desc: "Select Bunny Costume as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "bunny-costume" },
+  { id: "cheesy", cat: "shop", name: "Cheesy", rar: "rare", price: 10000, get: "shop", desc: "Select Cheesy as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "cheesy" },
+  { id: "npc-creeper", cat: "shop", name: "Creeper", rar: "rare", price: 10000, get: "shop", desc: "Select Creeper as your Shopkeeper!", tags: "npc shopkeeper creeper", preview: "shopkeeper", mob: "creeper" },
+  { id: "egg-delivery", cat: "shop", name: "Egg Delivery", rar: "rare", price: 30000, get: "event", season: "Easter", desc: "Select Egg Delivery as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "egg-delivery" },
+  { id: "frog-man", cat: "shop", name: "Frog Man", rar: "rare", price: null, get: "event", season: "Summer", desc: "Select Frog Man as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "frog-man" },
+  { id: "green-cow-pajamas", cat: "shop", name: "Green Cow Pajamas", rar: "rare", price: 30000, get: "event", season: "Easter", desc: "Select Green Cow Pajamas as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "green-cow-pajamas" },
+  { id: "killer", cat: "shop", name: "Killer", rar: "rare", price: 30000, get: "event", season: "Halloween", desc: "Select Killer as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "killer" },
+  { id: "king-of-beds", cat: "shop", name: "King Of Beds", rar: "rare", price: 10000, get: "shop", desc: "Select King Of Beds as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "king-of-beds" },
+  { id: "present-man", cat: "shop", name: "Present Man", rar: "rare", price: 30000, get: "event", season: "Holidays", desc: "Select Present Man as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "present-man" },
+  { id: "purple-pig-pajamas", cat: "shop", name: "Purple Pig Pajamas", rar: "rare", price: 30000, get: "event", season: "Easter", desc: "Select Purple Pig Pajamas as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "purple-pig-pajamas" },
+  { id: "red-frog-pajamas", cat: "shop", name: "Red Frog Pajamas", rar: "rare", price: 30000, get: "event", season: "Easter", desc: "Select Red Frog Pajamas as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "red-frog-pajamas" },
+  { id: "slumber-hotel-receptionist", cat: "shop", name: "Slumber Hotel Receptionist", rar: "rare", price: null, get: "slumber", desc: "Select Slumber Hotel Receptionist as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "slumber-hotel-receptionist" },
+  { id: "npc-snowman", cat: "shop", name: "Snowman", rar: "rare", price: 30000, get: "event", season: "Holidays", desc: "Select Snowman as your Shopkeeper!", tags: "npc shopkeeper snow golem pumpkin", preview: "shopkeeper", mob: "snowman" },
+  { id: "wei", cat: "shop", name: "Wei", rar: "rare", price: 10000, get: "shop", desc: "Select Wei as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "wei" },
+  { id: "npc-witch", cat: "shop", name: "Witch", rar: "rare", price: 10000, get: "shop", desc: "Select Witch as your Shopkeeper!", tags: "npc shopkeeper witch hat", preview: "shopkeeper", mob: "witch" },
+  { id: "aqua-duck-pajamas", cat: "shop", name: "Aqua Duck Pajamas", rar: "epic", price: 75000, get: "event", season: "Easter", desc: "Select Aqua Duck Pajamas as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "aqua-duck-pajamas" },
+  { id: "blue-rabbit", cat: "shop", name: "Blue Rabbit", rar: "epic", price: 75000, get: "event", season: "Easter", desc: "Select Blue Rabbit as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "blue-rabbit" },
+  { id: "bright-tiger", cat: "shop", name: "Bright Tiger", rar: "epic", price: 25000, get: "shop", desc: "Select Bright Tiger as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "bright-tiger" },
+  { id: "bundled-snowman", cat: "shop", name: "Bundled Snowman", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Select Bundled Snowman as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "bundled-snowman" },
+  { id: "bunny-in-a-suit", cat: "shop", name: "Bunny in a Suit", rar: "epic", price: 75000, get: "event", season: "Easter", desc: "Select Bunny in a Suit as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "bunny-in-a-suit" },
+  { id: "dark-dragon", cat: "shop", name: "Dark Dragon", rar: "epic", price: null, get: "event", season: "Summer", desc: "Select Dark Dragon as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "dark-dragon" },
+  { id: "npc-enderman", cat: "shop", name: "Enderman", rar: "epic", price: 75000, get: "event", season: "Halloween", desc: "Select Enderman as your Shopkeeper!", tags: "npc shopkeeper enderman end", preview: "shopkeeper", mob: "enderman" },
+  { id: "ghost", cat: "shop", name: "Ghost", rar: "epic", price: 75000, get: "event", season: "Halloween", desc: "Select Ghost as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "ghost" },
+  { id: "grinch", cat: "shop", name: "Grinch", rar: "epic", price: 75000, get: "event", season: "Holidays", desc: "Select Grinch as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "grinch" },
+  { id: "hammer", cat: "shop", name: "Hammer", rar: "epic", price: null, get: "slumber", desc: "Select Hammer as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "hammer" },
+  { id: "heatwave", cat: "shop", name: "Heatwave", rar: "epic", price: null, get: "slumber", desc: "Select Heatwave as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "heatwave" },
+  { id: "holiday-tree", cat: "shop", name: "Holiday Tree", rar: "epic", price: 75000, get: "event", season: "Holidays", desc: "Select Holiday Tree as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "holiday-tree" },
+  { id: "ice-queen", cat: "shop", name: "Ice Queen", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Select Ice Queen as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "ice-queen" },
+  { id: "john-indigos", cat: "shop", name: "John Indigos", rar: "epic", price: null, get: "slumber", desc: "Select John Indigos as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "john-indigos" },
+  { id: "lester-brody", cat: "shop", name: "Lester Brody", rar: "epic", price: null, get: "slumber", desc: "Select Lester Brody as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "lester-brody" },
+  { id: "lumberjack", cat: "shop", name: "Lumberjack", rar: "epic", price: null, get: "challenges", desc: "Select Lumberjack as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "lumberjack" },
+  { id: "man-wearing-suit", cat: "shop", name: "Man Wearing Suit", rar: "epic", price: null, get: "slumber", desc: "Select Man Wearing Suit as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "man-wearing-suit" },
+  { id: "mouse", cat: "shop", name: "Mouse", rar: "epic", price: 25000, get: "shop", desc: "Select Mouse as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "mouse" },
+  { id: "mr-giftman", cat: "shop", name: "Mr. Giftman", rar: "epic", price: 75000, get: "event", season: "Holidays", desc: "Select Mr. Giftman as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "mr-giftman" },
+  { id: "oasis-spirit", cat: "shop", name: "Oasis Spirit", rar: "epic", price: null, get: "slumber", desc: "Select Oasis Spirit as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "oasis-spirit" },
+  { id: "penguin", cat: "shop", name: "Penguin", rar: "epic", price: 75000, get: "event", season: "Holidays", desc: "Select Penguin as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "penguin" },
+  { id: "pink-bunny-pajamas", cat: "shop", name: "Pink Bunny Pajamas", rar: "epic", price: 75000, get: "event", season: "Easter", desc: "Select Pink Bunny Pajamas as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "pink-bunny-pajamas" },
+  { id: "pink-rabbit", cat: "shop", name: "Pink Rabbit", rar: "epic", price: 75000, get: "event", season: "Easter", desc: "Select Pink Rabbit as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "pink-rabbit" },
+  { id: "ratman", cat: "shop", name: "Ratman", rar: "epic", price: null, get: "slumber", desc: "Select Ratman as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "ratman" },
+  { id: "reindeer", cat: "shop", name: "Reindeer", rar: "epic", price: 75000, get: "event", season: "Holidays", desc: "Select Reindeer as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "reindeer" },
+  { id: "scarecrow", cat: "shop", name: "Scarecrow", rar: "epic", price: 75000, get: "event", season: "Halloween", desc: "Select Scarecrow as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "scarecrow" },
+  { id: "skeletor", cat: "shop", name: "Skeletor", rar: "epic", price: 75000, get: "event", season: "Halloween", desc: "Select Skeletor as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "skeletor" },
+  { id: "spaceman", cat: "shop", name: "Spaceman", rar: "epic", price: null, get: "slumber", desc: "Select Spaceman as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "spaceman" },
+  { id: "upside-down-snowman", cat: "shop", name: "Upside Down Snowman", rar: "epic", price: 75000, get: "event", season: "Holidays", desc: "Select Upside Down Snowman as your Shopkeeper!", tags: "npc shopkeeper snow golem pumpkin dinnerbone upside down", preview: "shopkeeper", mob: "snowman_flip" },
+  { id: "warrior", cat: "shop", name: "Warrior", rar: "epic", price: null, get: "challenges", desc: "Select Warrior as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "warrior" },
+  { id: "watcher", cat: "shop", name: "Watcher", rar: "epic", price: 75000, get: "event", season: "Halloween", desc: "Select Watcher as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "watcher" },
+  { id: "aiden-allpillow", cat: "shop", name: "Aiden Allpillow", rar: "legendary", price: null, get: "dreamfeast", desc: "Select Aiden Allpillow as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "aiden-allpillow" },
+  { id: "defuser", cat: "shop", name: "Defuser", rar: "legendary", price: null, get: "challenges", desc: "Select Defuser as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "defuser" },
+  { id: "ginger", cat: "shop", name: "Ginger", rar: "legendary", price: null, get: "event", season: "Holidays", desc: "Select Ginger as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "ginger" },
+  { id: "gold-tiger", cat: "shop", name: "Gold Tiger", rar: "legendary", price: 100000, get: "shop", desc: "Select Gold Tiger as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "gold-tiger" },
+  { id: "hotel-owner", cat: "shop", name: "Hotel Owner", rar: "legendary", price: null, get: "dreamfeast", desc: "Select Hotel Owner as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "hotel-owner" },
+  { id: "marksman", cat: "shop", name: "Marksman", rar: "legendary", price: null, get: "challenges", desc: "Select Marksman as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "marksman" },
+  { id: "merchant", cat: "shop", name: "Merchant", rar: "legendary", price: null, get: "challenges", desc: "Select Merchant as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "merchant" },
+  { id: "patriotic-eagle", cat: "shop", name: "Patriotic Eagle", rar: "legendary", price: null, get: "challenges", desc: "Select Patriotic Eagle as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "patriotic-eagle" },
+  { id: "piglin", cat: "shop", name: "Piglin", rar: "legendary", price: null, get: "challenges", desc: "Select Piglin as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "piglin" },
+  { id: "president-sloth", cat: "shop", name: "President Sloth", rar: "legendary", price: null, get: "challenges", desc: "Select President Sloth as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "president-sloth" },
+  { id: "strider", cat: "shop", name: "Strider", rar: "legendary", price: null, get: "challenges", desc: "Select Strider as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "strider" },
+  { id: "visions-of-lucid", cat: "shop", name: "Visions of Lucid", rar: "legendary", price: null, get: "dreamfeast", desc: "Select Visions of Lucid as your Shopkeeper!", tags: "npc shopkeeper", preview: "shopkeeper", skin: "visions-of-lucid" },
+  { id: "you", cat: "shop", name: "You!", rar: "legendary", price: 300000, get: "event", season: "Holidays", desc: "Select yourself as your own Shopkeeper! Your own skin will be displayed.", tags: "npc shopkeeper you own skin", preview: "shopkeeper", skin: "killer" },
+  { id: "you-upside-down", cat: "shop", name: "You! Upside-Down", rar: "legendary", price: null, get: "dreamfeast", desc: "Select yourself as your own Shopkeeper, but upside-down! Your own skin will be displayed.", tags: "npc shopkeeper you own skin dinnerbone", preview: "shopkeeper", skin: "killer", flip: true },
+  // Wood skins: the 1.8 block each one places
+  { id: "wood-oak-log", cat: "wood", name: "Oak Log", rar: "common", price: null, get: "dreamfeast", desc: "Select the Oak Log Wood Skin to be used when placing wood blocks.", tags: "block log wood bridge", preview: "wood", wood: "oak" },
+  { id: "wood-birch-log", cat: "wood", name: "Birch Log", rar: "rare", price: null, get: "dreamfeast", desc: "Select the Birch Log Wood Skin to be used when placing wood blocks.", tags: "block log wood bridge", preview: "wood", wood: "birch" },
+  { id: "wood-spruce-log", cat: "wood", name: "Spruce Log", rar: "rare", price: null, get: "dreamfeast", desc: "Select the Spruce Log Wood Skin to be used when placing wood blocks.", tags: "block log wood bridge", preview: "wood", wood: "spruce" },
+  { id: "wood-acacia-log", cat: "wood", name: "Acacia Log", rar: "epic", price: null, get: "dreamfeast", desc: "Select the Acacia Log Wood Skin to be used when placing wood blocks.", tags: "block log wood bridge", preview: "wood", wood: "acacia" },
+  { id: "wood-jungle-log", cat: "wood", name: "Jungle Log", rar: "epic", price: null, get: "dreamfeast", desc: "Select the Jungle Log Wood Skin to be used when placing wood blocks.", tags: "block log wood bridge", preview: "wood", wood: "jungle" },
+  { id: "wood-dark-oak-log", cat: "wood", name: "Dark Oak Log", rar: "legendary", price: null, get: "dreamfeast", desc: "Select the Dark Oak Log Wood Skin to be used when placing wood blocks.", tags: "block log wood bridge", preview: "wood", wood: "dark_oak" },
+  { id: "wood-dark-oak-plank", cat: "wood", name: "Dark Oak Plank", rar: "legendary", price: null, get: "mvp", desc: "Select the Dark Oak Plank Wood Skin to be used when placing wood blocks.", tags: "block log wood bridge", preview: "wood", wood: "dark_oak_planks" },
+  // Kill messages: Hypixel's exact wording
+  { id: "km-fire", cat: "msg", name: "Fire", rar: "common", price: 5000, get: "shop", desc: "Select the Fire Kill Messages!", tags: "chat",
+    lines: km(["{V} was struck down by {K}.", "{V} was turned to dust {K}.", "{V} was melted by {K}.", "{V} was turned to ash by {K}.", "{V} was fried by {K}'s {MOB}.", "{BED} was incinerated by {K}!"]) },
+  { id: "km-honourable", cat: "msg", name: "Honourable", rar: "common", price: 5000, get: "shop", desc: "Select the Honourable Kill Messages!", tags: "chat",
+    lines: km(["{V} died in close combat to {K}.", "{V} fought to the edge with {K}.", "{V} fell to the great marksmanship of {K}.", "{V} stumbled off a ledge with help by {K}.", "{V} tangoed with {K}'s {MOB}.", "{BED} had to raise the white flag to {K}!"]) },
+  { id: "km-western", cat: "msg", name: "Western", rar: "common", price: 5000, get: "shop", desc: "Select the Western Kill Messages!", tags: "chat",
+    lines: km(["{V} was filled full of lead by {K}.", "{V} met their end by {K}.", "{V} was killed with dynamite by {K}.", "{V} lost a drinking contest with {K}.", "{V} lost the draw to {K}'s {MOB}.", "{BED} was iced by {K}!"]) },
+  { id: "km-bbq", cat: "msg", name: "BBQ", rar: "rare", price: 10000, get: "shop", desc: "Select the BBQ Kill Messages!", tags: "chat",
+    lines: km(["{V} was glazed in BBQ sauce by {K}.", "{V} slipped in BBQ sauce off the edge spilled by {K}.", "{V} was thrown chili powder at by {K}.", "{V} was not spicy enough for {K}.", "{V} was sliced up by {K}'s {MOB}.", "{BED} was deep fried by {K}!"]) },
+  { id: "km-buzz", cat: "msg", name: "Buzz", rar: "rare", price: 30000, get: "event", season: "Easter", desc: "Select the Buzz Kill Messages!", tags: "chat",
+    lines: km(["{V} was buzzed to death by {K}.", "{V} was bzzz'd into the void by {K}.", "{V} was startled by {K}.", "{V} was stung off the edge by {K}.", "{V} was bee'd by {K}'s {MOB}.", "{BED} was stung by {K}!"]) },
+  { id: "km-love", cat: "msg", name: "Love", rar: "rare", price: 10000, get: "shop", desc: "Select the Love Kill Messages!", tags: "chat",
+    lines: km(["{V} was given the cold shoulder by {K}.", "{V} was hit off by a love bomb from {K}.", "{V} was struck with Cupid's arrow by {K}.", "{V} was out of the league of {K}.", "{V} was no match for {K}'s {MOB}.", "{BED} was dismantled by {K}!"]) },
+  { id: "km-oink", cat: "msg", name: "Oink", rar: "rare", price: 10000, get: "shop", desc: "Select the Oink Kill Messages!", tags: "chat",
+    lines: km(["{V} was oinked by {K}.", "{V} slipped into void for {K}.", "{V} got attacked by a carrot from {K}.", "{V} was distracted by a piglet from {K}.", "{V} was oinked by {K}'s {MOB}.", "{BED} was gulped by {K}!"]) },
+  { id: "km-oxd", cat: "msg", name: "Ox'd", rar: "rare", price: 10000, get: "shop", desc: "Select the Ox'd Kill Messages!", tags: "chat",
+    lines: km(["{V} was trampled by {K}.", "{V} was back kicked into the void by {K}.", "{V} was impaled from a distance by {K}.", "{V} was headbutted off a cliff by {K}.", "{V} was trampled by {K}'s {MOB}.", "{BED} was impaled by {K}!"]) },
+  { id: "km-primal", cat: "msg", name: "Primal", rar: "rare", price: 30000, get: "event", season: "Halloween", desc: "Select the Primal Kill Messages!", tags: "chat",
+    lines: km(["{V} was hunted down by {K}.", "{V} stumbled on a trap set by {K}.", "{V} got skewered by {K}.", "{V} was thrown into a volcano by {K}.", "{V} was mauled by {K}'s {MOB}.", "{BED} was sacrificed by {K}!"]) },
+  { id: "km-santas-workshop", cat: "msg", name: "Santa's Workshop", rar: "rare", price: 30000, get: "event", season: "Holidays", desc: "Select the Santa's Workshop Kill Messages!", tags: "chat",
+    lines: km(["{V} was wrapped into a gift by {K}.", "{V} hit the hard-wood floor because of {K}.", "{V} was put on the naughty list by {K}.", "{V} was pushed down a slope by {K}.", "{V} was turned to gingerbread by {K}'s {MOB}.", "{BED} was traded in for milk and cookies by {K}!"]) },
+  { id: "km-squeak", cat: "msg", name: "Squeak", rar: "rare", price: 10000, get: "shop", desc: "Select the Squeak Kill Messages!", tags: "chat",
+    lines: km(["{V} was chewed up by {K}.", "{V} was scared into the void by {K}.", "{V} stepped in a mouse trap placed by {K}.", "{V} was distracted by a rat dragging pizza from {K}.", "{V} squeaked around with {K}'s {MOB}.", "{BED} was squeaked apart by {K}!"]) },
+  { id: "km-woof-woof", cat: "msg", name: "Woof Woof", rar: "rare", price: 10000, get: "shop", desc: "Select the Woof Woof Kill Messages!", tags: "chat",
+    lines: km(["{V} was bitten by {K}.", "{V} howled into the void for {K}.", "{V} caught the ball thrown by {K}.", "{V} was distracted by a puppy placed by {K}.", "{V} played too rough with {K}'s {MOB}.", "{BED} was ripped apart by {K}!"]) },
+  { id: "km-celebratory", cat: "msg", name: "Celebratory", rar: "epic", price: 75000, get: "event", season: "Holidays", desc: "Select the Celebratory Kill Messages!", tags: "chat",
+    lines: km(["{V} was whacked with a party balloon by {K}.", "{V} was popped into the void by {K}.", "{V} was shot with a roman candle by {K}.", "{V} was launched like a firework by {K}.", "{V} was lit up by {K}'s {MOB}.", "{BED} exploded from a firework by {K}!"]) },
+  { id: "km-dramatic", cat: "msg", name: "Dramatic", rar: "epic", price: 75000, get: "event", season: "Halloween", desc: "Select the Dramatic Kill Messages!", tags: "chat",
+    lines: km(["{V} was tragically backstabbed by {K}.", "{V} was heartlessly let go by {K}.", "{V}'s heart was pierced by {K}.", "{V} was delivered into nothingness by {K}.", "{V} was dismembered by {K}'s {MOB}.", "{BED} was dreadfully corrupted by {K}!"]) },
+  { id: "km-eggy", cat: "msg", name: "Eggy", rar: "epic", price: 75000, get: "event", season: "Easter", desc: "Select the Eggy Kill Messages!", tags: "chat",
+    lines: km(["{V} was painted pretty by {K}.", "{V} was deviled into the void by {K}.", "{V} slipped into a pan placed by {K}.", "{V} was flipped off the edge by {K}.", "{V} was made sunny side up by {K}'s {MOB}.", "{BED} was scrambled by {K}!"]) },
+  { id: "km-festive", cat: "msg", name: "Festive", rar: "epic", price: 75000, get: "event", season: "Holidays", desc: "Select the Festive Kill Messages!", tags: "chat",
+    lines: km(["{V} was smothered in holiday cheer by {K}.", "{V} was banished into the ether by {K}'s holiday spirit.", "{V} was sniped by a missile of festivity by {K}.", "{V} was pushed by {K}'s holiday spirit.", "{V} was sung holiday tunes to by {K}'s {MOB}.", "{BED} was melted by {K}'s holiday spirit!"]) },
+  { id: "km-literally-spooky", cat: "msg", name: "Literally Spooky", rar: "epic", price: 75000, get: "event", season: "Halloween", desc: "Select the Literally Spooky Kill Messages!", tags: "chat",
+    lines: km(["{V} was spooked by {K}.", "{V} was spooked off the map by {K}.", "{V} was remotely spooked by {K}.", "{V} was totally spooked by {K}.", "{V} was spooked by {K}'s {MOB}.", "{BED} was spooked by {K}!"]) },
+  { id: "km-memed", cat: "msg", name: "Memed", rar: "epic", price: 75000, get: "event", season: "Holidays", desc: "Select the Memed Kill Messages!", tags: "chat",
+    lines: km(["{V} got rekt by {K}.", "{V} took the L to {K}.", "{V} got smacked by {K}.", "{V} got roasted by {K}.", "{V} got bamboozled by {K}'s {MOB}.", "{BED} got memed by {K}!"]) },
+  { id: "km-noble", cat: "msg", name: "Noble", rar: "epic", price: null, get: "pass", desc: "Select the Noble Kill Messages! This kill message shouts your number of final kills and bed destroys.", tags: "chat",
+    lines: km(["{V} was [6:crushed] by {K}.", "{V} was {K}'s final #{N}.", "{V} was [6:dominated] by {K}.", "{V} was [6:assassinated] by {K}.", "{V} was thrown off their high horse by {K}.", "{V} was [6:degraded] by {K}'s {MOB}.", "{BED} was bed #{N} destroyed by {K}!"]) },
+  { id: "km-pirate", cat: "msg", name: "Pirate", rar: "epic", price: 25000, get: "shop", desc: "Select the Pirate Kill Messages!", tags: "chat",
+    lines: km(["{V} be sent to Davy Jones' locker by {K}.", "{V} be cannonballed to death by {K}.", "{V} be shot and killed by {K}.", "{V} be killed with magic by {K}.", "{V} be killed with metal by {K}'s {MOB}.", "{BED} be shot with cannon by {K}!"]) },
+  { id: "km-roar", cat: "msg", name: "Roar", rar: "epic", price: 25000, get: "shop", desc: "Select the Roar Kill Messages!", tags: "chat",
+    lines: km(["{V} was ripped to shreds by {K}.", "{V} was charged by {K}.", "{V} was pounced on by {K}.", "{V} was ripped and thrown by {K}.", "{V} was ripped to shreds by {K}'s {MOB}.", "{BED} was ripped to shreds by {K}!"]) },
+  { id: "km-snow-storm", cat: "msg", name: "Snow Storm", rar: "epic", price: 75000, get: "event", season: "Holidays", desc: "Select the Snow Storm Kill Messages!", tags: "chat",
+    lines: km(["{V} was locked outside during a snow storm by {K}.", "{V} was pushed into a snowbank by {K}.", "{V} was hit with a snowball from {K}.", "{V} was shoved down an icy slope by {K}.", "{V} got snowed in by {K}'s {MOB}.", "{BED} was made into a snowman by {K}!"]) },
+  { id: "km-to-the-moon", cat: "msg", name: "To The Moon", rar: "epic", price: 25000, get: "shop", desc: "Select the To The Moon Kill Messages!", tags: "chat",
+    lines: km(["{V} was crushed into moon dust by {K}.", "{V} was sent the wrong way by {K}.", "{V} was hit by an asteroid from {K}.", "{V} was blasted to the moon by {K}.", "{V} was blown up by {K}'s {MOB}.", "{BED} was blasted to dust by {K}!"]) },
+  { id: "km-wrapped-up", cat: "msg", name: "Wrapped Up", rar: "epic", price: 75000, get: "event", season: "Holidays", desc: "Select the Wrapped Up Kill Messages!", tags: "chat",
+    lines: km(["{V} was wrapped up by {K}.", "{V} was tied into a bow by {K}.", "{V} was glued up by {K}.", "{V} tripped over a present placed by {K}.", "{V} was taped together by {K}'s {MOB}.", "{BED} was stuffed with tissue paper by {K}!"]) },
+  { id: "km-bridging-for-dummies", cat: "msg", name: "Bridging for Dummies", rar: "legendary", price: null, get: "challenges", desc: "Select the Bridging for Dummies Kill Messages!", tags: "chat",
+    lines: km(["{V} had a small brain moment while fighting {K}.", "{V} was not able to block clutch against {K}.", "{V} got 360 no-scoped by {K}.", "{V} forgot how many blocks they had left while fighting {K}.", "{V} got absolutely destroyed by {K}'s {MOB}.", "{BED} has left the game after seeing {K}!"]) },
+  { id: "km-glorious", cat: "msg", name: "Glorious", rar: "legendary", price: null, get: "dreamfeast", desc: "Select the Glorious Kill Messages! This kill message shouts your number of final kills and bed destroys.", tags: "chat",
+    lines: km(["{V} was [6:stomped] by {K}.", "{V} was {K}'s final #{N}.", "{V} was thrown down a [6:pit] by {K}.", "{V} was [6:shot] by {K}.", "{V} was thrown to the [6:ground] by {K}.", "{V} was [6:outclassed] by {K}'s {MOB}.", "{BED} was bed #{N} destroyed by {K}!"]) },
+  { id: "km-lucid", cat: "msg", name: "Lucid", rar: "legendary", price: null, get: "dreamfeast", desc: "Select the Lucid Kill Messages!", tags: "chat",
+    lines: km(["{V} was put to bed by {K}.", "{V} fell asleep and was then knocked into the void by {K}.", "{V} was knocked unconscious by {K}'s arrow.", "{V} wishes they hit the hay instead of the ground after being pushed by {K}.", "{V} fell asleep to {K}'s {MOB}.", "{BED} was destroyed by a half-awake {K}!"]) },
+  { id: "km-old-man", cat: "msg", name: "Old Man", rar: "legendary", price: null, get: "challenges", desc: "Select the Old Man Kill Messages!", tags: "chat",
+    lines: km(["{V} was yelled at by {K}.", "{V} was thrown off the lawn by {K}.", "{V} was [o:accidentally] spit on by {K}.", "{V} slipped on the fake teeth of {K}.", "{V} was chased away by {K}'s {MOB}.", "{BED} was sold in a garage sale by {K}!"]) },
+  { id: "km-social-distance", cat: "msg", name: "Social Distance", rar: "legendary", price: null, get: "challenges", desc: "Select the Social Distance Kill Messages!", tags: "chat",
+    lines: km(["{V} was too shy to meet {K}.", "{V} didn't distance themselves properly from {K}.", "{V} was coughed at by {K}.", "{V} tripped while trying to run away from {K}.", "{V} got too close to {K}'s {MOB}.", "{BED} was contaminated by {K}!"]) },
+  { id: "km-triumph", cat: "msg", name: "Triumph", rar: "legendary", price: 300000, get: "event", season: "Halloween", desc: "Select the Triumph Kill Messages! This kill message shouts your number of final kills and bed destroys.", tags: "chat",
+    lines: km(["{V} was [e:bested] by {K}.", "{V} was {K}'s final #{N}.", "{V} was knocked into the [e:void] by {K}.", "{V} was [e:shot] by {K}.", "{V} was knocked off an edge by {K}.", "{V} was [e:bested] by {K}'s {MOB}.", "{BED} was bed #{N} destroyed by {K}!"]) },
+  { id: "km-limbo", cat: "msg", name: "Limbo", rar: "none", price: null, get: "slumber", desc: "Select the Limbo Kill Messages!", tags: "chat",
+    lines: km(["{V} was sent to limbo by {K}.", "{V} was pushed into limbo by {K}.", "{V} was shot into limbo by {K}.", "{V} was launched into limbo by {K}'s {MOB}.", "{BED} was sent to limbo by {K}."]) },
+  { id: "km-multiverse", cat: "msg", name: "Multiverse", rar: "none", price: null, get: "slumber", desc: "Select the Multiverse Kill Messages!", tags: "chat",
+    lines: km(["{V} was distorted by {K}.", "{V} was thrown into the singularity by {K}.", "{V} was shot into another dimension by {K}.", "{V} was thrown into a black hole by {K}.", "{V} was launched into a wormhole by {K}'s {MOB}.", "{BED} was sucked into a black hole by {K}."]) },
 ];
 
 /* ------------------------------------------------------------------ list UI */
@@ -567,7 +739,7 @@ function skinOf(img) {
 const SKINS = { steve: skinOf(steveImg) };
 SKIN_IDS.forEach((id, i) => { SKINS[id] = skinOf(skinImgs[i]); });
 const entityImgs = {};
-await Promise.all(["bat", "squid", "dragon", "dragon_eyes", "fireball", "fireworks", "clouds"].map(async (n) => { entityImgs[n] = await loadImg(`replay/entity/${n}.png`); }));
+await Promise.all(["bat", "squid", "dragon", "dragon_eyes", "fireball", "fireworks", "clouds", "skeleton", "wither_skeleton", "zombie", "zombie_pigman", "zombie_villager", "creeper", "blaze", "snowman", "enderman", "enderman_eyes", "witch"].map(async (n) => { entityImgs[n] = await loadImg(`replay/entity/${n}.png`); }));
 const ENTITY = Object.fromEntries(Object.entries(entityImgs).map(([n, im]) => [n, { tex: canvasTex(crop(im, 0, 0, im.width, im.height)), w: im.width, h: im.height }]));
 
 /* ------------------------------------------------------------------ studio scene kit */
@@ -619,11 +791,11 @@ function makePlayer(skin = SKINS.steve) {
 
 // Mob models built the way 1.8's ModelRenderer does: boxes in pixel units with
 // the y axis pointing down and the face toward -z; turned here to y up, face +z.
-function mcModel(name) {
-  const E = ENTITY[name], mat = new THREE.MeshLambertMaterial({ map: E.tex, alphaTest: 0.5, side: THREE.DoubleSide });
+function mcModel(name, bright = false) {
+  const E = ENTITY[name], mat = bright ? new THREE.MeshBasicMaterial({ map: E.tex, alphaTest: 0.5, side: THREE.DoubleSide }) : new THREE.MeshLambertMaterial({ map: E.tex, alphaTest: 0.5, side: THREE.DoubleSide });
   const piece = (rp = [0, 0, 0]) => { const g = new THREE.Group(); g.position.set(rp[0] * PX, -rp[1] * PX, -rp[2] * PX); g.rotation.order = "ZYX"; return g; };
-  const cube = (parent, u, v, [x, y, z, w, h, d], mirror = false) => {
-    const g = new THREE.BoxGeometry(w * PX, h * PX, d * PX);
+  const cube = (parent, u, v, [x, y, z, w, h, d], mirror = false, inf = 0) => {
+    const g = new THREE.BoxGeometry((w + 2 * inf) * PX, (h + 2 * inf) * PX, (d + 2 * inf) * PX);
     setBoxUV(g, u, v, w, h, d, E.h, E.w, mirror);
     g.translate((x + w / 2) * PX, -(y + h / 2) * PX, -(z + d / 2) * PX);
     parent.add(new THREE.Mesh(g, mat));
@@ -659,19 +831,20 @@ class Fx {
     const s = new THREE.Sprite(m);
     s.position.copy(o.pos); const size = o.size ?? 0.18; s.scale.set(size, size, 1);
     this.g.add(s);
-    this.list.push({ s, m, frames, v: o.vel ? o.vel.clone() : new THREE.Vector3(), age: 0, life: o.life ?? 1, size, grav: o.grav ?? 0, drag: o.drag ?? 0.96, fade: o.fade ?? true, shrink: o.shrink ?? false, sway: o.sway || 0, seed: Math.random() * 10 });
+    this.list.push({ s, m, frames, v: o.vel ? o.vel.clone() : new THREE.Vector3(), age: 0, life: o.life ?? 1, size, grav: o.grav ?? 0, drag: o.drag ?? 0.96, fade: o.fade ?? true, shrink: o.shrink ?? false, sway: o.sway || 0, seed: Math.random() * 10, path: o.path, grow: o.grow });
   }
   update(dt) {
     for (let i = this.list.length - 1; i >= 0; i--) {
       const p = this.list[i]; p.age += dt;
       const k = p.age / p.life;
       if (k >= 1) { this.g.remove(p.s); p.m.dispose(); this.list.splice(i, 1); continue; }
-      p.v.y -= p.grav * dt; p.v.multiplyScalar(Math.pow(p.drag, dt * 60));
-      p.s.position.addScaledVector(p.v, dt);
+      if (p.path) p.s.position.copy(p.path(k));
+      else { p.v.y -= p.grav * dt; p.v.multiplyScalar(Math.pow(p.drag, dt * 60)); p.s.position.addScaledVector(p.v, dt); }
       if (p.sway) p.s.position.x += Math.sin(p.age * 3 + p.seed) * p.sway * dt;
       if (p.frames.length > 1) { const f = p.frames[Math.min(p.frames.length - 1, Math.floor(k * p.frames.length))]; const t = ptex(f); if (p.m.map !== t) p.m.map = t; }
       if (p.fade) p.m.opacity = k > 0.6 ? 1 - (k - 0.6) / 0.4 : 1;
       if (p.shrink) { const s = p.size * (1 - k * 0.7); p.s.scale.set(s, s, 1); }
+      if (p.grow) { const s = p.size * p.grow(k); p.s.scale.set(s, s, 1); }
     }
   }
   clear() { for (const p of this.list) { this.g.remove(p.s); p.m.dispose(); } this.list = []; }
@@ -814,6 +987,99 @@ function makeDragon() {
 }
 
 // An anvil block, built from the 1.8 anvil model's four boxes.
+// Mob shopkeepers: the 1.8 client's own models (ModelZombie, ModelSkeleton,
+// ModelCreeper, ModelBlaze, ModelSnowMan, ModelEnderman, ModelVillager,
+// ModelWitch, ModelZombieVillager) with the game's own textures, posed the way
+// the client animates a mob that stands still. 1 px = 1/16 block; model y 24 is
+// the ground. Returns { root, head, height, tick(t) }.
+function makeMob(kind) {
+  const tex = { skeleton: "skeleton", wither_skeleton: "wither_skeleton", zombie: "zombie", zombie_pigman: "zombie_pigman", zombie_villager: "zombie_villager",
+    creeper: "creeper", blaze: "blaze", snowman: "snowman", snowman_flip: "snowman", enderman: "enderman", witch: "witch" }[kind];
+  const M = mcModel(tex, kind === "blaze"), root = new THREE.Group(), g = new THREE.Group();
+  const s = (kind === "wither_skeleton" ? 1.2 : 1) / 0.9375;
+  g.scale.setScalar(s); g.position.y = 24 * PX * s; root.add(g);
+  const part = (rp) => { const p = M.piece(rp); g.add(p); return p; };
+  let head, height = 1.95, tick = () => {}, look = null;
+  if (["skeleton", "wither_skeleton", "zombie", "zombie_pigman", "zombie_villager"].includes(kind)) {
+    const thin = kind.includes("skeleton");
+    head = part([0, 0, 0]);
+    if (kind === "zombie_villager") { M.cube(head, 0, 32, [-4, -10, -4, 8, 10, 8]); M.cube(head, 24, 32, [-1, -3, -6, 2, 4, 2]); }
+    else M.cube(head, 0, 0, [-4, -8, -4, 8, 8, 8]);
+    M.cube(head, 32, 0, [-4, -8, -4, 8, 8, 8], false, .5);
+    const body = part([0, 0, 0]); M.cube(body, 16, 16, [-4, 0, -2, 8, 12, 4]);
+    const armR = part([-5, 2, 0]), armL = part([5, 2, 0]);
+    const legR = part([thin ? -2 : -1.9, 12, 0]), legL = part([thin ? 2 : 1.9, 12, 0]);
+    if (thin) {
+      M.cube(armR, 40, 16, [-1, -2, -1, 2, 12, 2]); M.cube(armL, 40, 16, [-1, -2, -1, 2, 12, 2], true);
+      M.cube(legR, 0, 16, [-1, 0, -1, 2, 12, 2]); M.cube(legL, 0, 16, [-1, 0, -1, 2, 12, 2], true);
+    } else {
+      M.cube(armR, 40, 16, [-3, -2, -2, 4, 12, 4]); M.cube(armL, 40, 16, [-1, -2, -2, 4, 12, 4], true);
+      M.cube(legR, 0, 16, [-2, 0, -2, 4, 12, 4]); M.cube(legL, 0, 16, [-2, 0, -2, 4, 12, 4], true);
+    }
+    // ModelZombie (skeletons and zombie pigmen use it in 1.8): arms held out, drifting.
+    tick = (t) => { const a = t * 20, z = Math.cos(a * .09) * .05 + .05, x = Math.sin(a * .067) * .05;
+      M.rot(armR, -Math.PI / 2 + x, -.1, z); M.rot(armL, -Math.PI / 2 - x, .1, -z); };
+    height = kind === "wither_skeleton" ? 2.39 : kind === "skeleton" ? 1.99 : 1.95;
+  } else if (kind === "creeper") {
+    head = part([0, 6, 0]); M.cube(head, 0, 0, [-4, -8, -4, 8, 8, 8]);
+    const body = part([0, 6, 0]); M.cube(body, 16, 16, [-4, 0, -2, 8, 12, 4]);
+    for (const [x, z] of [[-2, 4], [2, 4], [-2, -4], [2, -4]]) M.cube(part([x, 18, z]), 0, 16, [-2, 0, -2, 4, 6, 4]);
+    height = 1.7;
+  } else if (kind === "blaze") {
+    head = part([0, 0, 0]); M.cube(head, 0, 0, [-4, -4, -4, 8, 8, 8]);
+    const sticks = []; for (let i = 0; i < 12; i++) { const p = part([0, 0, 0]); M.cube(p, 0, 16, [0, 0, 0, 2, 8, 2]); sticks.push(p); }
+    const at = (p, x, y, z) => p.position.set(x * PX, -y * PX, -z * PX);
+    // ModelBlaze.setRotationAngles: three rings of rods circling and bobbing.
+    tick = (t) => { const a = t * 20;
+      let f = a * Math.PI * -.1; for (let i = 0; i < 4; i++, f++) at(sticks[i], Math.cos(f) * 9, -2 + Math.cos((i * 2 + a) * .25), Math.sin(f) * 9);
+      f = Math.PI / 4 + a * Math.PI * .03; for (let i = 4; i < 8; i++, f++) at(sticks[i], Math.cos(f) * 7, 2 + Math.cos((i * 2 + a) * .25), Math.sin(f) * 7);
+      f = .47123894 + a * Math.PI * -.05; for (let i = 8; i < 12; i++, f++) at(sticks[i], Math.cos(f) * 5, 11 + Math.cos((i * 1.5 + a) * .5), Math.sin(f) * 5); };
+    height = 1.8;
+  } else if (kind === "snowman" || kind === "snowman_flip") {
+    head = part([0, 4, 0]); M.cube(head, 0, 0, [-4, -8, -4, 8, 8, 8], false, -.5);
+    // LayerSnowmanHead: a pumpkin block, 0.625 big, 0.34375 above the head's pivot.
+    const pk = makeBlock([btex("pumpkin_side"), btex("pumpkin_side"), btex("pumpkin_top"), btex("pumpkin_top"), btex("carved_pumpkin"), btex("pumpkin_side")], .625 / s);
+    pk.position.y = .34375 / s; head.add(pk);
+    const body = part([0, 13, 0]); M.cube(body, 0, 16, [-5, -10, -5, 10, 10, 10], false, -.5);
+    M.cube(part([0, 24, 0]), 0, 36, [-6, -12, -6, 12, 12, 12], false, -.5);
+    const handR = part([5, 6, 0]), handL = part([-5, 6, 0]);
+    M.cube(handR, 32, 0, [-1, 0, -1, 12, 2, 2], false, -.5); M.cube(handL, 32, 0, [-1, 0, -1, 12, 2, 2], false, -.5);
+    // ModelSnowMan: the body turns a quarter as far as the head, the arms with it.
+    look = (yaw) => { const by = -yaw * .25, c = Math.cos(by) * 5, sn = Math.sin(by) * 5;
+      body.rotation.y = yaw * .25;
+      handR.position.set(c * PX, -6 * PX, sn * PX); M.rot(handR, 0, by, 1);
+      handL.position.set(-c * PX, -6 * PX, -sn * PX); M.rot(handL, 0, Math.PI + by, -1); };
+    look(0); height = 1.9;
+    if (kind === "snowman_flip") { g.rotation.z = Math.PI; g.position.y = (1.9 + .1) - 24 * PX * s; } // named Dinnerbone: drawn upside down
+  } else if (kind === "enderman") {
+    head = part([0, -13, 0]); M.cube(head, 0, 0, [-4, -8, -4, 8, 8, 8]); M.cube(head, 0, 16, [-4, -8, -4, 8, 8, 8], false, -.5);
+    const body = part([0, -14, 0]); M.cube(body, 32, 16, [-4, 0, -2, 8, 12, 4]);
+    const arms = [-5, 5].map((x) => { const a = part([x, -12, 0]); M.cube(a, 56, 0, [-1, -2, -1, 2, 30, 2], x > 0); return a; });
+    for (const x of [-2, 2]) M.cube(part([x, -5, 0]), 56, 0, [-1, 0, -1, 2, 30, 2], x > 0);
+    // ModelBiped's idle arm drift, which ModelEnderman halves.
+    tick = (t) => { const a = t * 20, z = Math.cos(a * .09) * .05 + .05, x = Math.sin(a * .067) * .05 * .5;
+      M.rot(arms[0], x, 0, z); M.rot(arms[1], -x, 0, -z); };
+    // LayerEndermanEyes: the same model again, glowing.
+    const eyes = mcModel("enderman_eyes", true); eyes.mat.blending = THREE.AdditiveBlending; eyes.mat.depthWrite = false;
+    eyes.cube(head, 0, 0, [-4, -8, -4, 8, 8, 8], false, .01);
+    height = 2.9;
+  } else {
+    // ModelVillager (and ModelWitch, which adds the hat and the mole).
+    head = part([0, 0, 0]); M.cube(head, 0, 0, [-4, -10, -4, 8, 10, 8]);
+    const nose = M.piece([0, -2, 0]); head.add(nose); M.cube(nose, 24, 0, [-1, -1, -6, 2, 4, 2]);
+    const body = part([0, 0, 0]); M.cube(body, 16, 20, [-4, 0, -3, 8, 12, 6]); M.cube(body, 0, 38, [-4, 0, -3, 8, 18, 6], false, .5);
+    const arms = part([0, 3, -1]); M.cube(arms, 44, 22, [-8, -2, -2, 4, 8, 4]); M.cube(arms, 44, 22, [4, -2, -2, 4, 8, 4]); M.cube(arms, 40, 38, [-4, 2, -2, 8, 4, 4]); M.rot(arms, -.75);
+    M.cube(part([-2, 12, 0]), 0, 22, [-2, 0, -2, 4, 12, 4]); M.cube(part([2, 12, 0]), 0, 22, [-2, 0, -2, 4, 12, 4], true);
+    if (kind === "witch") {
+      const mole = M.piece([0, -2, 0]); nose.add(mole); M.cube(mole, 0, 0, [0, 3, -6.75, 1, 1, 1], false, -.25);
+      const h1 = M.piece([-5, -10.03125, -5]); head.add(h1); M.cube(h1, 0, 64, [0, 0, 0, 10, 2, 10]);
+      const h2 = M.piece([1.75, -4, 2]); h1.add(h2); M.cube(h2, 0, 76, [0, 0, 0, 7, 4, 7]); M.rot(h2, -.05235988, 0, .02617994);
+      const h3 = M.piece([1.75, -4, 2]); h2.add(h3); M.cube(h3, 0, 87, [0, 0, 0, 4, 4, 4]); M.rot(h3, -.10471976, 0, .05235988);
+      const h4 = M.piece([1.75, -2, 2]); h3.add(h4); M.cube(h4, 0, 95, [0, 0, 0, 1, 2, 1], false, .25); M.rot(h4, -.20943952, 0, .10471976);
+    }
+  }
+  return { root, head, height, tick, look, M };
+}
 function makeAnvil() {
   const side = btex("anvil"), top = btex("anvil_top");
   const mats = [side, side, top, side, side, side].map((t) => new THREE.MeshLambertMaterial({ map: t }));
@@ -1076,11 +1342,62 @@ const PREVIEWS = {
       }
     };
   } },
+  // The shopkeeper: the exact skin (or mob) Hypixel's own preview spawns, with
+  // the shop's two name lines over it. A mob is the 1.8 client's own model;
+  // blazes and endermen give off the smoke and portal specks the client always
+  // draws around them.
   shopkeeper: { loop: 6, hero: 1.2, thumbY: 1.45, build(S, it) {
-    const p = makePlayer(SKINS[it.skin]); p.root.rotation.y = .25; S.item.add(p.root);
-    const tag = textSprite("ITEM SHOP", "#55ffff"); tag.position.y = 2.42; S.item.add(tag);
-    const tag2 = textSprite("RIGHT CLICK", "#ffff55"); tag2.position.y = 2.15; tag2.scale.multiplyScalar(.7); S.item.add(tag2);
-    return (t) => { idle(p, t); p.head.rotation.y = Math.sin(t * .9) * .55; p.head.rotation.x = Math.sin(t * .6) * .1 - .05; };
+    let p = null, mob = null, h = 1.8;
+    if (it.mob) { mob = makeMob(it.mob); mob.root.rotation.y = .25; S.item.add(mob.root); h = mob.height; }
+    else {
+      p = makePlayer(SKINS[it.skin]); p.root.rotation.y = .25; S.item.add(p.root);
+      if (it.flip) { p.body.rotation.z = Math.PI; p.body.position.y = 1.8 + .1; } // named Dinnerbone: drawn upside down
+    }
+    if (it.mob === "witch") h = 2.45; // the lines sit over the witch's hat
+    const tag = textSprite("ITEM SHOP", "#55ffff"); tag.position.y = h + .62; S.item.add(tag);
+    const tag2 = textSprite("RIGHT CLICK", "#ffff55"); tag2.position.y = h + .35; tag2.scale.multiplyScalar(.7); S.item.add(tag2);
+    for (const x of [tag, tag2]) { x.material.depthTest = false; x.renderOrder = 10; } // name lines show through smoke, as in the game
+    let acc = 0;
+    return (t, dt) => {
+      const yaw = Math.sin(t * .9) * .55, pitch = Math.sin(t * .6) * .1 - .05;
+      if (p) { idle(p, t); p.head.rotation.y = yaw; p.head.rotation.x = pitch; return; }
+      mob.tick(t); mob.head.rotation.y = yaw; mob.head.rotation.x = pitch; mob.look?.(yaw);
+      // The client spawns 2 particles a tick (40 a second) for these two mobs.
+      acc += dt * 40;
+      for (; acc >= 1; acc--) {
+        const r = mob.root.rotation.y;
+        if (it.mob === "blaze") {
+          // EntitySmokeFX at 2.5x: dark grey, rising slowly, 1 to 5 seconds.
+          const g = Math.floor(Math.random() * .3 * 255), life = Math.floor(8 / (Math.random() * .8 + .2)) * 2.5 / 20;
+          S.fx.spawn({ frames: SMOKE, pos: V(rnd(-.3, .3), Math.random() * 1.8, rnd(-.3, .3)), vel: sphere(.04), life, size: .2 * (Math.random() * .5 + .5) * 2 * .75 * 2.5,
+            color: (g << 16) | (g << 8) | g, grav: -1.6, drag: .9865, fade: false, grow: (k) => Math.min(1, k * 32) });
+        } else if (it.mob === "enderman") {
+          // EntityPortalFX: starts out away from the enderman and is pulled back in.
+          const at = V(rnd(-.3, .3), Math.random() * 2.9 - .25, rnd(-.3, .3)), m = V(rnd(-1, 1), -Math.random(), rnd(-1, 1));
+          const f = Math.random() * .6 + .4, life = (Math.floor(Math.random() * 10) + 40) / 20;
+          S.fx.spawn({ tex: Math.floor(Math.random() * 8), pos: at.clone(), life, size: .2 * (Math.random() * .2 + .5), fade: false,
+            color: new THREE.Color(.9 * f, .3 * f, f), path: (k) => { const q = 1 - (-k + k * k * 2); return V(at.x + m.x * q, at.y + m.y * q + (1 - k), at.z + m.z * q); },
+            grow: (k) => 1 - (1 - k) * (1 - k) });
+        }
+      }
+    };
+  } },
+  // Wood skins: the block every wood block you place turns into (1.8 textures),
+  // stacked the way you build up: each one placed on top of the last.
+  wood: { loop: 4.2, hero: 3.2, build(S, it) {
+    const w = it.wood, plank = w.endsWith("_planks");
+    const tex = plank ? btex(w) : [btex(w + "_log"), btex(w + "_log"), btex(w + "_log_top"), btex(w + "_log_top"), btex(w + "_log"), btex(w + "_log")];
+    const pl = makePlayer(SKINS.killer); pl.root.position.set(-1.25, 0, .55); pl.root.rotation.y = 1.25; S.item.add(pl.root);
+    const blocks = [];
+    for (let i = 0; i < 3; i++) { const b = makeBlock(tex); b.position.set(.25, .5 + i, -.25); b.visible = false; S.item.add(b); blocks.push(b); }
+    return (t) => {
+      idle(pl, t);
+      for (let i = 0; i < 3; i++) {
+        const at = .7 + i * .8;
+        if (t > at - .15 && t < at + .1) pl.armR.rotation.x = -Math.sin((t - at + .15) / .25 * Math.PI) * 1.1;
+        S.at(at, () => { blocks[i].visible = true; S.sound("dig.wood", .8, 1); });
+      }
+    };
   } },
 };
 
@@ -1432,7 +1749,7 @@ async function mcSound(name, pitch = 1, vol = 1, delay = 0) {
 async function playCry(it, delay = 0) {
   if (!it.sound) return;
   const btn = $("playSound");
-  const a = await mcSound(it.sound[0], it.sound[1], 1, delay);
+  const a = await mcSound(it.sound[0], it.sound[1], it.sound[2] ?? 1, delay);
   if (!a) return;
   a.addEventListener("playing", () => { if (current === it) btn.classList.add("playing"); });
   a.addEventListener("ended", () => btn.classList.remove("playing"));

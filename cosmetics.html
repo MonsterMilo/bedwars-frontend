@@ -1610,7 +1610,7 @@ async function makeThumbs() {
   for (const it of ITEMS) {
     if (it.lines) continue;
     const k = thumbKey(it);
-    if (saved[it.id] === k) setThumb(it.id, `${THUMB_DIR}${it.id}.webp?k=${k}`);
+    if (saved[it.id] && saved[it.id].split(".")[0] === k) setThumb(it.id, `${THUMB_DIR}${it.id}.webp?k=${saved[it.id]}`);
     else todo.push(it);
   }
   window.__thumbIds = ITEMS.filter((it) => !it.lines).map((it) => it.id);

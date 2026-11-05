@@ -19,8 +19,10 @@ const all = process.argv.includes("--all");
   const idxFile = path.join(dir, "index.json");
   const index = all ? {} : JSON.parse(fs.existsSync(idxFile) ? fs.readFileSync(idxFile, "utf8") : "{}");
   for (const [id, { key, url }] of Object.entries(got)) {
-    fs.writeFileSync(path.join(dir, id + ".webp"), Buffer.from(url.split(",")[1], "base64"));
-    index[id] = key;
+    const buf = Buffer.from(url.split(",")[1], "base64");
+    fs.writeFileSync(path.join(dir, id + ".webp"), buf);
+    // key.picture-hash: the page matches the key, and the hash in the picture's URL makes browsers fetch a redone picture
+    index[id] = key + "." + require("crypto").createHash("sha1").update(buf).digest("hex").slice(0, 8);
   }
   // Drop pictures of cards that no longer exist.
   const ids = new Set(await page.evaluate(() => window.__thumbIds));

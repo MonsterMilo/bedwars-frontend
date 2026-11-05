@@ -55,6 +55,7 @@ function synthesize (tl) {
   let seed = 12345
   const rnd = () => { seed = (seed * 1103515245 + 12345) >>> 0; return seed / 4294967296 }
   const out = tl.sounds.filter(s => s.name && !REPLACED.test(s.name) && !POV_ONLY.test(s.name))
+  const recorded = new Set(out) // what the server actually sent (the rest is rebuilt)
   const add = (t, name, x, y, z, volume, pitch) => out.push({ t, name, x, y, z, volume, pitch })
   // Bed breaks: Hypixel plays everyone a dragon growl (or a wither death
   // when it's your own bed) at their own spot. Keep the recorded one with
@@ -209,9 +210,15 @@ function synthesize (tl) {
   const me = [...tl.tracks.values()].find(tr => tr.self)
   if (me) {
     for (const s of out) {
-      if (s.self || s.everywhere || owned.has(s)) continue
+      if (s.self || s.everywhere || owned.has(s) || s.name === 'random.explode') continue
       const p = me.stateAt(s.t)
-      if (p && Math.hypot(s.x - p.x, s.y - (p.y + 0.8), s.z - p.z) < 2) s.self = true
+      if (p && Math.hypot(s.x - p.x, s.y - (p.y + 0.8), s.z - p.z) < 2) {
+        s.self = true
+        // A recorded sound right where the recorder stood is mostly one
+        // Hypixel played only to them (often extra loud so it can't be
+        // missed): heard just near them, not across the map.
+        if (recorded.has(s)) s.pov = true
+      }
     }
   }
   out.sort((a, b) => a.t - b.t)

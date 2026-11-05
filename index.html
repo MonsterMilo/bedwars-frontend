@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<!-- Prism home page: a beam of light goes through a prism and splits into one beam per page.
-     To add a page, add one entry to PAGES in the script below (name, link, colour, preview);
-     the card and its beam are made from that list. Old tracker links (anything with ?query or
-     #hash) are sent on to tracker.html so shared links keep working. -->
+<!-- Prism home page. One three.js scene behind the page draws the background, the light beams
+     and the glass prism (real refraction + bloom). The cards are normal HTML on top.
+     To add a page, add one entry to PAGES below: it gets a card and its own beam.
+     If WebGL or three.js can't load, a flat 2D version of the beams is drawn instead.
+     Old tracker links (anything with ?query or #hash) are sent on to tracker.html. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://mc-heads.net; connect-src 'self' https://bedwars-backend.onrender.com https://cdn.jsdelivr.net; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'">
 <script>
   // The tracker used to live here. Its links carry ?player=, ?lb= or #section, so pass those on.
@@ -22,93 +23,105 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
-  /* Layout: wordmark + prism on the left, one card per page on the right, light beams joining them.
-     Phones: prism on top, cards stacked below. Uses the site's Neon colours. */
+  /* Layout: one screen. Wordmark + prism on the left, a column of page cards on the right,
+     beams joining them. Everything scales with the window so big screens don't look shrunk.
+     Phones: prism on top, cards stacked below. */
   :root {
-    --bg: #04050a; --panel: #12151f; --panel-2: #1a1f2d;
-    --line: rgba(255,255,255,0.09); --text: #eef0f6; --dim: #8f98ab; --faint: #6c7486;
+    --bg: #04050a; --panel: rgba(16,19,30,0.72); --panel-solid: #10131e; --line: rgba(255,255,255,0.08); --line-2: rgba(255,255,255,0.14);
+    --text: #eef0f6; --dim: #9aa2b5; --faint: #6c7486;
     --cyan: #00d9ff; --violet: #a855f7; --gold: #ffb84d;
     --font: 'Manrope', 'Segoe UI', system-ui, sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
     --ease: cubic-bezier(.22,.85,.32,1);
+    --gutter: max(16px, min(5vw, 72px));
     color-scheme: dark;
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
-  html, body { margin: 0; }
-  body { background: var(--bg); color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased; overflow-x: hidden; min-height: 100vh;
-    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
   a { color: inherit; text-decoration: none; }
   :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 
-  .wrap { max-width: 1320px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-  .eyebrow { font: 600 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+  main { position: relative; min-height: 100%; display: flex; flex-direction: column; isolation: isolate; }
+  #scene, #flat { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; }
+  #flat { pointer-events: none; }
+  #scene { opacity: 0; transition: opacity 1.2s ease; }
+  #scene.on { opacity: 1; }
 
-  .topbar { display: flex; align-items: center; gap: 18px; padding-block: 22px; }
-  .mark { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .02em; font-size: 17px; }
-  .mark svg { width: 26px; height: 26px; }
-  .topbar nav { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
-  .topbar nav a { color: var(--dim); font-size: 14px; padding: 7px 12px; border-radius: 8px; transition: color .2s, background .2s; }
-  .topbar nav a:hover { color: var(--text); background: var(--panel); }
+  .wrap { width: 100%; max-width: 1760px; margin: 0 auto; padding-left: max(var(--gutter), env(safe-area-inset-left, 0px)); padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
 
-  .grad { background: linear-gradient(100deg, #fff 0%, var(--cyan) 38%, var(--violet) 68%, var(--gold) 100%); background-size: 220% 100%;
-    -webkit-background-clip: text; background-clip: text; color: transparent; animation: sheen 9s ease-in-out infinite alternate; }
+  .topbar { display: flex; align-items: center; gap: 18px; padding-block: max(22px, env(safe-area-inset-top, 0px)) 0; }
+  .mark { display: inline-flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: .01em; font-size: clamp(17px, 1.1vw, 20px); }
+  .mark svg { width: 1.5em; height: 1.5em; }
+  .topbar nav { margin-left: auto; display: flex; gap: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; color: var(--dim); font-size: clamp(13px, .85vw, 15px); font-weight: 600; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,0.02); transition: color .2s, border-color .2s, background .2s; }
+  .pill:hover { color: var(--text); border-color: var(--line-2); background: rgba(255,255,255,0.05); }
+
+  .hero { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, clamp(520px, 37vw, 720px)); gap: clamp(32px, 5vw, 120px); align-items: center; padding-block: clamp(24px, 4vh, 60px); }
+  .hero-left { display: flex; flex-direction: column; gap: clamp(14px, 1.6vh, 22px); }
+  .eyebrow { display: inline-flex; align-items: center; gap: 10px; font: 600 clamp(11px, .7vw, 13px) var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--dim); }
+  .eyebrow i { width: 26px; height: 1px; background: linear-gradient(90deg, transparent, var(--dim)); }
+  h1 { margin: 0; font-size: clamp(72px, 9.2vw, 184px); line-height: .86; font-weight: 800; letter-spacing: -.045em; }
+  .grad { background: linear-gradient(100deg, #ffffff 0%, #bff5ff 22%, var(--cyan) 42%, var(--violet) 70%, var(--gold) 100%); background-size: 220% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent; animation: sheen 10s ease-in-out infinite alternate; }
   @keyframes sheen { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+  .lede { margin: 0; color: var(--dim); font-size: clamp(17px, 1.2vw, 22px); line-height: 1.55; max-width: 32ch; text-wrap: pretty; }
+  .prism-spot { height: clamp(240px, 34vh, 420px); margin-top: clamp(0px, 1vh, 16px); }
 
-  main { position: relative; }
-  #glassCanvas { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 2; opacity: 0; transition: opacity .8s ease; }
-  #glassCanvas.on { opacity: 1; }
-  #beamCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
-  .hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 560px); gap: 40px; align-items: center; padding-block: 30px 70px; min-height: 620px; }
-  .hero-left { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 18px; }
-  .hero-left h1 { margin: 0; font-size: clamp(64px, 10vw, 128px); line-height: .9; font-weight: 800; letter-spacing: -.035em; }
-  .hero-left p { margin: 0; color: var(--dim); font-size: 18px; line-height: 1.55; max-width: 34ch; }
-  .prism-spot { height: 240px; }
-
-  .cards { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 16px; }
-  .card { --c: var(--cyan); position: relative; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 18px; align-items: center; padding: 12px 20px 12px 12px;
-    background: rgba(18,21,31,0.84); border: 1px solid var(--line); border-radius: 18px; transition: transform .45s var(--ease), border-color .3s, box-shadow .3s; }
-  .card::before { content: ""; position: absolute; left: -1px; top: 18%; bottom: 18%; width: 3px; border-radius: 3px; background: var(--c); box-shadow: 0 0 14px var(--c); opacity: .9; }
-  .card:hover, .card:focus-visible { transform: translateX(-8px); border-color: color-mix(in srgb, var(--c) 55%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 30%, transparent), 0 18px 40px -18px var(--c); }
-  .card .thumb { position: relative; height: 112px; border-radius: 12px; overflow: hidden; background: #0a0c13; }
-  .card .thumb canvas, .card .thumb .tlist { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .card h2 { margin: 0 0 4px; font-size: 21px; font-weight: 800; letter-spacing: -.01em; }
-  .card p { margin: 0; color: var(--dim); font-size: 14px; line-height: 1.45; }
-  .card .go { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--c); }
-  .card .go svg { transition: transform .3s var(--ease); }
+  .cards { display: flex; flex-direction: column; gap: clamp(14px, 1.6vh, 22px); }
+  .card { --c: 0,217,255; position: relative; display: grid; grid-template-columns: clamp(150px, 11vw, 220px) minmax(0, 1fr); gap: clamp(16px, 1.4vw, 26px); align-items: center;
+    padding: clamp(12px, .9vw, 16px); padding-right: clamp(18px, 1.6vw, 30px); border-radius: clamp(16px, 1.2vw, 22px);
+    background: linear-gradient(180deg, rgba(22,26,40,0.78), rgba(12,14,22,0.78)); border: 1px solid var(--line);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 24px 50px -30px rgba(0,0,0,0.8);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    transition: transform .5s var(--ease), border-color .3s, box-shadow .4s; animation: cardIn .9s var(--ease) both; }
+  .card::before { content: ""; position: absolute; left: -1px; top: 16%; bottom: 16%; width: 2px; border-radius: 2px; background: rgb(var(--c)); box-shadow: 0 0 12px rgb(var(--c)), 0 0 28px rgba(var(--c), .6); }
+  .card::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .4s;
+    background: linear-gradient(90deg, rgba(var(--c), .55), rgba(var(--c), 0) 45%) border-box; -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; border: 1px solid transparent; }
+  .card:hover, .card:focus-visible { transform: translateX(-6px); box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 30px 60px -28px rgba(var(--c), .45); }
+  .card:hover::after, .card:focus-visible::after { opacity: 1; }
+  .thumb { position: relative; aspect-ratio: 16 / 11; border-radius: clamp(10px, .8vw, 14px); overflow: hidden; background: #080a11; box-shadow: 0 0 0 1px rgba(255,255,255,0.05) inset; }
+  .thumb canvas, .thumb .tlist { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .card h2 { margin: 0 0 6px; font-size: clamp(20px, 1.45vw, 28px); font-weight: 800; letter-spacing: -.015em; }
+  .card p { margin: 0; color: var(--dim); font-size: clamp(14px, .9vw, 16px); line-height: 1.5; text-wrap: pretty; }
+  .go { margin-top: clamp(10px, .9vw, 14px); display: inline-flex; align-items: center; gap: 8px; font-size: clamp(13px, .85vw, 15px); font-weight: 700; color: rgb(var(--c)); }
+  .go svg { transition: transform .3s var(--ease); }
   .card:hover .go svg { transform: translateX(4px); }
 
-  .foot { position: relative; z-index: 2; display: flex; gap: 22px; flex-wrap: wrap; color: var(--faint); font-size: 13px; padding-block: 18px 40px; border-top: 1px solid var(--line); }
+  .foot { display: flex; gap: 22px; flex-wrap: wrap; align-items: center; color: var(--faint); font-size: 13px; padding-block: 18px max(22px, env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); }
   .foot b { color: var(--text); font-variant-numeric: tabular-nums; }
+  .foot .live { display: inline-flex; align-items: center; gap: 8px; }
+  .foot .live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #34e0a1; box-shadow: 0 0 10px #34e0a1; }
   .foot .by { margin-left: auto; }
 
-  /* Intro: the beam lights first (canvas), then the cards slide in */
-  .card { animation: cardIn .8s var(--ease) both; }
-  .hero-left h1 { animation: rise .9s var(--ease) both; }
-  @keyframes cardIn { from { transform: translateX(26px); opacity: .25; } }
-  @keyframes rise { from { transform: translateY(14px); opacity: .25; letter-spacing: .02em; } }
+  h1 { animation: rise 1s var(--ease) both; }
+  .lede, .eyebrow { animation: rise 1s var(--ease) both; animation-delay: .12s; }
+  @keyframes cardIn { from { transform: translateX(28px); opacity: 0.2; } }
+  @keyframes rise { from { transform: translateY(16px); opacity: 0.2; } }
 
   /* Tracker preview: top players, scrolling */
-  .tlist { overflow: hidden; font-size: 12px; }
-  .tlist ol { list-style: none; margin: 0; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; transition: transform .7s var(--ease); }
-  .tlist li { display: grid; grid-template-columns: 16px 18px minmax(0,1fr) auto; align-items: center; gap: 7px; height: 22px; padding: 0 6px; border-radius: 6px; background: rgba(255,255,255,0.035); }
-  .card .tlist .rk { display: none; }
-  .card .tlist li { grid-template-columns: 18px minmax(0,1fr) auto; gap: 6px; }
-  .tlist .rk { color: var(--faint); font: 700 10px var(--mono); text-align: right; }
-  .tlist .av { width: 18px; height: 18px; border-radius: 4px; image-rendering: pixelated; background: var(--panel-2); }
+  .tlist { overflow: hidden; font-size: clamp(11px, .72vw, 13px); }
+  .tlist ol { list-style: none; margin: 0; padding: 7px; display: flex; flex-direction: column; gap: 4px; transition: transform .7s var(--ease); }
+  .tlist li { display: grid; grid-template-columns: 1.6em minmax(0,1fr) auto; align-items: center; gap: 7px; height: 2.05em; padding: 0 7px; border-radius: 6px; background: rgba(255,255,255,0.04); }
+  .tlist .av { width: 1.6em; height: 1.6em; border-radius: 4px; image-rendering: pixelated; background: rgba(255,255,255,.06); }
   .tlist .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
-  .tlist .st { font: 700 11px var(--mono); }
+  .tlist .st { font: 700 .92em var(--mono); }
   .tlist li.ghost .nm, .tlist li.ghost .st { height: 8px; border-radius: 4px; background: rgba(255,255,255,.08); color: transparent; animation: pulse 1.4s ease-in-out infinite; }
   .tlist li.ghost .nm { width: 70%; } .tlist li.ghost .st { width: 38px; }
   .tlist .msg { position: absolute; inset: auto 0 6px; text-align: center; font: 600 10px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
   @keyframes pulse { 50% { opacity: .45; } }
 
-  @media (max-width: 860px) {
-    .hero { grid-template-columns: minmax(0, 1fr); gap: 16px; min-height: 0; padding-block: 10px 40px; }
-    .prism-spot { height: 170px; }
-    .card { grid-template-columns: 104px minmax(0, 1fr); gap: 14px; }
-    .card .thumb { height: 92px; }
+  @media (max-width: 980px) {
+    .hero { grid-template-columns: minmax(0, 1fr); gap: 18px; padding-block: 18px 36px; }
+    .prism-spot { height: clamp(200px, 46vw, 300px); }
+    .lede { max-width: 40ch; }
+  }
+  @media (max-width: 560px) {
+    .card { grid-template-columns: 112px minmax(0, 1fr); gap: 14px; }
     .card:hover { transform: none; }
+    .card .tlist .av { display: none; }
+    .card .tlist li { grid-template-columns: minmax(0,1fr) auto; }
     .foot .by { margin-left: 0; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
@@ -116,30 +129,33 @@
 </head>
 <body>
 <main>
-  <canvas id="beamCanvas" aria-hidden="true"></canvas>
-  <canvas id="glassCanvas" aria-hidden="true"></canvas>
+  <canvas id="scene" aria-hidden="true"></canvas>
+  <canvas id="flat" aria-hidden="true"></canvas>
   <div class="wrap">
     <header class="topbar">
-      <a class="mark" href="./"><svg viewBox="0 0 26 26" aria-hidden="true"><path d="M13 2 24 22H2Z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M13 9v13" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/></svg>Prism</a>
-      <nav aria-label="More"><a href="hall-of-fame.html">Hall of Fame</a></nav>
+      <a class="mark" href="./"><svg viewBox="0 0 26 26" aria-hidden="true"><defs><linearGradient id="mk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#9fe9ff"/><stop offset="1" stop-color="#c79bff"/></linearGradient></defs><path d="M13 2.5 23.5 21.5h-21Z" fill="none" stroke="url(#mk)" stroke-width="2" stroke-linejoin="round"/><path d="M13 9.5v12" stroke="#fff" stroke-opacity=".3" stroke-width="1.4"/></svg>Prism</a>
+      <nav aria-label="More"><a class="pill" href="hall-of-fame.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 6h3v1a3 3 0 0 1-3 3M7 6H4v1a3 3 0 0 0 3 3"/></svg>Hall of Fame</a></nav>
     </header>
-    <div class="hero">
-      <div class="hero-left">
-        <span class="eyebrow">Bed Wars, split into colours</span>
-        <h1><span class="grad">Prism</span></h1>
-        <p>Track the sweats you queue into. Browse every cosmetic in 3D. Fly over every map in rotation.</p>
-        <div class="prism-spot" id="prismSpot"></div>
-      </div>
-      <nav class="cards" id="cards" aria-label="Prism pages"></nav>
+  </div>
+  <div class="wrap hero">
+    <div class="hero-left">
+      <span class="eyebrow"><i></i>Bed Wars, split into colours</span>
+      <h1><span class="grad">Prism</span></h1>
+      <p class="lede">Track the sweats you queue into. Browse every cosmetic in 3D. Fly over every map in rotation.</p>
+      <div class="prism-spot" id="prismSpot"></div>
     </div>
-    <footer class="foot"><span id="tally" hidden><b id="tallyN">0</b> players tracked</span><span class="by">Made by Milo</span></footer>
+    <nav class="cards" id="cards" aria-label="Prism pages"></nav>
+  </div>
+  <div class="wrap">
+    <footer class="foot"><span class="live" id="tally" hidden><span><b id="tallyN">0</b> players tracked</span></span><span class="by">Made by Milo</span></footer>
   </div>
 </main>
 
 <script>
 (function () {
   /* ---------- The pages. Add one entry here to add a card and a beam. ----------
-     preview: 'players' (live top players), 'cosmetic' (spinning sword), 'atlas' (map from above), or none. */
+     color: the beam colour (r, g, b). preview: 'players' (live top players), 'cosmetic'
+     (spinning sword), 'atlas' (map from above), or leave it out for a card with no picture. */
   var PAGES = [
     { name: 'Prism Tracker', href: 'tracker.html', color: [0, 217, 255], text: 'The players worth knowing: stars, FKDR, notes and nicks.', go: 'Open tracker', preview: 'players' },
     { name: 'Cosmetics Library', href: 'cosmetics.html', color: [168, 85, 247], text: 'Every kill effect, death cry and skin, with rarity and price.', go: 'Browse cosmetics', preview: 'cosmetic' },
@@ -149,15 +165,14 @@
   var API = 'https://bedwars-backend.onrender.com';
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var DPR = Math.min(2, window.devicePixelRatio || 1);
-  function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
-  /* ---------- build the cards ---------- */
+  /* ---------- cards ---------- */
   var cardsEl = document.getElementById('cards');
-  var ARROW = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  var ARROW = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
   PAGES.forEach(function (pg, i) {
     var a = document.createElement('a'); a.className = 'card'; a.href = pg.href;
-    a.style.setProperty('--c', 'rgb(' + pg.color.join(',') + ')'); a.style.animationDelay = (0.55 + i * 0.15) + 's';
+    a.style.setProperty('--c', pg.color.join(',')); a.style.animationDelay = (0.7 + i * 0.14) + 's';
     var thumb = '';
     if (pg.preview === 'players') thumb = '<div class="thumb"><div class="tlist" id="players"></div></div>';
     else if (pg.preview) thumb = '<div class="thumb"><canvas data-draw="' + pg.preview + '"></canvas></div>';
@@ -165,6 +180,40 @@
     a.innerHTML = thumb + '<div><h2>' + esc(pg.name) + '</h2><p>' + esc(pg.text) + '</p><span class="go">' + esc(pg.go || 'Open') + ' ' + ARROW + '</span></div>';
     cardsEl.appendChild(a);
   });
+  var cards = Array.prototype.slice.call(cardsEl.children);
+  var hot = cards.map(function () { return 0; }), hotT = hot.slice();
+  cards.forEach(function (c, i) {
+    function on() { hotT[i] = 1; } function off() { hotT[i] = 0; }
+    c.addEventListener('mouseenter', on); c.addEventListener('mouseleave', off); c.addEventListener('focus', on); c.addEventListener('blur', off);
+  });
+
+  /* ---------- where things are, in page pixels relative to <main> (shared with the 3D scene) ---------- */
+  var main = document.querySelector('main');
+  var mouse = { x: 0, y: 0, tx: 0, ty: 0, px: -9999, py: -9999 };
+  addEventListener('pointermove', function (e) { var r = main.getBoundingClientRect(); mouse.tx = (e.clientX / innerWidth) * 2 - 1; mouse.ty = (e.clientY / innerHeight) * 2 - 1; mouse.px = e.clientX - r.left; mouse.py = e.clientY - r.top; }, { passive: true });
+  document.addEventListener('pointerleave', function () { mouse.tx = 0; mouse.ty = 0; mouse.px = mouse.py = -9999; });
+  var introStart = performance.now();
+  window.PRISM = {
+    pages: PAGES, reduce: reduce, mouse: mouse, introStart: introStart,
+    layout: function () {
+      var r = main.getBoundingClientRect(), spot = document.getElementById('prismSpot').getBoundingClientRect();
+      var narrow = innerWidth <= 980;
+      var size = Math.min(spot.height * 0.92, spot.width * 0.62, 400);
+      var x = narrow ? spot.left - r.left + spot.width / 2 : spot.left - r.left + Math.min(spot.width * 0.42, size * 1.15);
+      var y = spot.top - r.top + spot.height * 0.5;
+      var first = cards[0] && cards[0].getBoundingClientRect();
+      var targets = cards.map(function (card, i) {
+        var cr = card.getBoundingClientRect();
+        if (narrow) return { x: first.left - r.left + first.width * ((i + 0.8) / (cards.length + 0.6)), y: first.top - r.top + 1 };
+        return { x: cr.left - r.left + 1, y: cr.top - r.top + cr.height / 2 };
+      });
+      for (var i = 0; i < hot.length; i++) hot[i] += (hotT[i] - hot[i]) * 0.1;
+      mouse.x += (mouse.tx - mouse.x) * 0.05; mouse.y += (mouse.ty - mouse.y) * 0.05;
+      return { W: r.width, H: r.height, prism: { x: x, y: y, size: size }, targets: targets, hot: hot, narrow: narrow,
+        source: narrow ? { x: -40, y: y - size * 0.95 } : { x: -60, y: y - size * 0.32 } };
+    },
+    ready3d: false
+  };
 
   /* ---------- live top players (same index as the site: FKDR² × stars) ---------- */
   var PRESTIGE = ['#aaaaaa', '#ffffff', '#ffaa00', '#55ffff', '#00aa00', '#00aaaa', '#aa0000', '#ff55ff', '#5555ff', '#aa00aa'];
@@ -174,7 +223,7 @@
     if (!listEl) return;
     listEl.innerHTML = ''; var ol = document.createElement('ol'); listEl.appendChild(ol);
     if (!rows) {
-      for (var g = 0; g < 5; g++) ol.insertAdjacentHTML('beforeend', '<li class="ghost"><span class="rk">' + (g + 1) + '</span><span class="av"></span><span class="nm">.</span><span class="st">.</span></li>');
+      for (var g = 0; g < 5; g++) ol.insertAdjacentHTML('beforeend', '<li class="ghost"><span class="av"></span><span class="nm">.</span><span class="st">.</span></li>');
       if (msg) listEl.insertAdjacentHTML('beforeend', '<div class="msg">' + esc(msg) + '</div>');
       return;
     }
@@ -182,8 +231,8 @@
     function render() {
       ol.innerHTML = '';
       for (var i = 0; i < Math.min(n + 1, rows.length); i++) {
-        var k = (i + offset) % rows.length, p = rows[k];
-        ol.insertAdjacentHTML('beforeend', '<li><span class="rk">' + (k + 1) + '</span><img class="av" alt="" loading="lazy" src="https://mc-heads.net/avatar/' + encodeURIComponent(p.uuid || p.name) + '/18"><span class="nm">' + esc(p.name) + '</span><span class="st" style="color:' + starColor(p.star) + '">[' + p.star + '✫]</span></li>');
+        var p = rows[(i + offset) % rows.length];
+        ol.insertAdjacentHTML('beforeend', '<li><img class="av" alt="" loading="lazy" src="https://mc-heads.net/avatar/' + encodeURIComponent(p.uuid || p.name) + '/24"><span class="nm">' + esc(p.name) + '</span><span class="st" style="color:' + starColor(p.star) + '">[' + p.star + '✫]</span></li>');
       }
     }
     render();
@@ -193,7 +242,7 @@
       var row = ol.firstChild; if (!row) return;
       ol.style.transform = 'translateY(-' + (row.offsetHeight + 4) + 'px)';
       setTimeout(function () { ol.style.transition = 'none'; offset = (offset + 1) % rows.length; render(); ol.style.transform = ''; void ol.offsetHeight; ol.style.transition = ''; }, 720);
-    }, 2400);
+    }, 2600);
   }
   if (listEl) {
     playersList(null);
@@ -308,76 +357,41 @@
     lg.addColorStop(0, 'rgba(255,184,77,0)'); lg.addColorStop(.5, 'rgba(255,184,77,.07)'); lg.addColorStop(1, 'rgba(255,184,77,0)'); ctx.fillStyle = lg; ctx.fillRect(0, 0, w, h);
   }
 
-  /* ---------- preview canvases ---------- */
+  /* ---------- card preview canvases + the flat fallback beams ---------- */
   var previews = [];
   document.querySelectorAll('canvas[data-draw]').forEach(function (c) { previews.push({ c: c, ctx: c.getContext('2d'), fn: c.dataset.draw === 'atlas' ? drawAtlas : drawCosmetic }); });
-  function sizeCanvas(c) { var r = c.getBoundingClientRect(); if (!r.width) return false; var W = Math.round(r.width * DPR), H = Math.round(r.height * DPR); if (c.width !== W || c.height !== H) { c.width = W; c.height = H; } return true; }
+  function sizeCanvas(c, w, h) { var W = Math.round(w * DPR), H = Math.round(h * DPR); if (c.width !== W || c.height !== H) { c.width = W; c.height = H; } }
 
-  /* ---------- the beam through the prism ---------- */
-  var main = document.querySelector('main'), beam = document.getElementById('beamCanvas'), bctx = beam.getContext('2d');
-  var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
-  var hot = cards.map(function () { return 0; }), hotT = hot.slice();
-  cards.forEach(function (c, i) {
-    function on() { hotT[i] = 1; } function off() { hotT[i] = 0; }
-    c.addEventListener('mouseenter', on); c.addEventListener('mouseleave', off); c.addEventListener('focus', on); c.addEventListener('blur', off);
-  });
-  var introStart = performance.now();
-  function drawBeams(now) {
-    var r = main.getBoundingClientRect(); var W = Math.round(r.width * DPR), H = Math.round(r.height * DPR);
-    if (beam.width !== W || beam.height !== H) { beam.width = W; beam.height = H; }
-    var ctx = bctx; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, r.width, r.height);
-    var t = now / 1000, it = reduce ? 9 : (now - introStart) / 1000;
-    var spot = document.getElementById('prismSpot').getBoundingClientRect();
-    var narrow = innerWidth <= 860;
-    var size = Math.min(spot.height * .95, 210);
-    var pcx = narrow ? spot.left - r.left + spot.width / 2 : spot.left - r.left + Math.min(spot.width * .45, 220), pcy = spot.top - r.top + spot.height * .52;
-    var sway = reduce ? 0 : Math.sin(t * .7) * .06;
-    var pts = [0, 1, 2].map(function (k) { var a = -Math.PI / 2 + k * Math.PI * 2 / 3 + sway; return [pcx + Math.cos(a) * size * .58, pcy + Math.sin(a) * size * .58]; });
-    var inP = [(pts[0][0] + pts[2][0]) / 2, (pts[0][1] + pts[2][1]) / 2];
-    var outP = narrow ? [(pts[1][0] + pts[2][0]) / 2, (pts[1][1] + pts[2][1]) / 2] : [(pts[0][0] + pts[1][0]) / 2 + size * .02, (pts[0][1] + pts[1][1]) / 2 + size * .06];
-    var G = window.PRISM_GLASS; window.PRISM_AT = { x: pcx, y: pcy, size: size };
-    if (G && G.ready) { inP = [pcx - size * .12, pcy + size * .04]; outP = narrow ? [pcx, pcy + size * .12] : [pcx + size * .12, pcy + size * .02]; }
-    var grow = Math.min(1, Math.max(0, it / .5)), split = Math.min(1, Math.max(0, (it - .45) / .6));
-    ctx.globalCompositeOperation = 'lighter';
-    var x0 = -20, y0 = narrow ? inP[1] - 70 : inP[1] - 30;
-    var ex = x0 + (inP[0] - x0) * grow, ey = y0 + (inP[1] - y0) * grow;
-    for (var L = 0; L < 3; L++) { ctx.strokeStyle = 'rgba(255,255,255,' + [0.06, 0.16, 0.9][L] + ')'; ctx.lineWidth = [16, 7, 1.8][L]; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(ex, ey); ctx.stroke(); }
-    var first = cards[0] && cards[0].getBoundingClientRect();
-    cards.forEach(function (card, i) {
-      hot[i] += (hotT[i] - hot[i]) * .12;
-      var cr = card.getBoundingClientRect(), tx, ty;
-      if (narrow) { tx = first.left - r.left + first.width * ((i + .7) / (cards.length + .4)); ty = first.top - r.top + 2; }
-      else { tx = cr.left - r.left + 2; ty = cr.top - r.top + cr.height / 2; }
-      var fx = outP[0] + (tx - outP[0]) * split, fy = outP[1] + (ty - outP[1]) * split;
-      var c = PAGES[i].color, k = .55 + hot[i] * .9;
-      var dx = fx - outP[0], dy = fy - outP[1], len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
-      var wEnd = (narrow ? 10 : 22) * (1 + hot[i] * .6);
-      var grd = ctx.createLinearGradient(outP[0], outP[1], fx, fy); grd.addColorStop(0, rgba(c, .5 * k)); grd.addColorStop(1, rgba(c, .16 * k));
-      ctx.fillStyle = grd; ctx.beginPath(); ctx.moveTo(outP[0] + nx * 1.5, outP[1] + ny * 1.5); ctx.lineTo(fx + nx * wEnd, fy + ny * wEnd); ctx.lineTo(fx - nx * wEnd, fy - ny * wEnd); ctx.lineTo(outP[0] - nx * 1.5, outP[1] - ny * 1.5); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = rgba(c, .85 * k); ctx.lineWidth = 1.4 + hot[i]; ctx.beginPath(); ctx.moveTo(outP[0], outP[1]); ctx.lineTo(fx, fy); ctx.stroke();
-      if (split >= 1 && !reduce) for (var q = 0; q < 5; q++) { var u = ((t * (.35 + hot[i] * .5) + q / 5 + i * .13) % 1); ctx.fillStyle = rgba(c, .9); ctx.beginPath(); ctx.arc(outP[0] + dx * u, outP[1] + dy * u, 1.6 + hot[i] * 1.4, 0, 6.3); ctx.fill(); }
-      if (split >= 1) { var lgr = ctx.createRadialGradient(tx, ty, 0, tx, ty, 50 + hot[i] * 40); lgr.addColorStop(0, rgba(c, .35 * k)); lgr.addColorStop(1, rgba(c, 0)); ctx.fillStyle = lgr; ctx.fillRect(tx - 100, ty - 100, 200, 200); }
+  var flat = document.getElementById('flat'), fctx = flat.getContext('2d');
+  function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
+  function drawFlat(now, L) {
+    sizeCanvas(flat, L.W, L.H); var ctx = fctx; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, L.W, L.H);
+    var bg = ctx.createRadialGradient(L.prism.x, L.prism.y, 0, L.prism.x, L.prism.y, L.W * 0.6); bg.addColorStop(0, 'rgba(60,90,160,0.10)'); bg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = bg; ctx.fillRect(0, 0, L.W, L.H);
+    var t = now / 1000, it = reduce ? 9 : (now - introStart) / 1000, P = L.prism;
+    var grow = Math.min(1, Math.max(0, it / 0.6)), split = Math.min(1, Math.max(0, (it - 0.55) / 0.7));
+    ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+    var ex = L.source.x + (P.x - L.source.x) * grow, ey = L.source.y + (P.y - L.source.y) * grow;
+    [[18, .05], [8, .14], [2, .95]].forEach(function (s) { ctx.strokeStyle = 'rgba(255,255,255,' + s[1] + ')'; ctx.lineWidth = s[0]; ctx.beginPath(); ctx.moveTo(L.source.x, L.source.y); ctx.lineTo(ex, ey); ctx.stroke(); });
+    L.targets.forEach(function (tg, i) {
+      var c = PAGES[i].color, k = 0.6 + L.hot[i] * 0.8, fx = P.x + (tg.x - P.x) * split, fy = P.y + (tg.y - P.y) * split;
+      [[22 + L.hot[i] * 16, .07], [9, .2], [2, .95]].forEach(function (s) { ctx.strokeStyle = rgba(c, s[1] * k); ctx.lineWidth = s[0]; ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(fx, fy); ctx.stroke(); });
     });
     ctx.globalCompositeOperation = 'source-over';
-    if (G && G.ready) return;
+    var pts = [0, 1, 2].map(function (k) { var a = -Math.PI / 2 + k * Math.PI * 2 / 3; return [P.x + Math.cos(a) * P.size * 0.5, P.y + 0.08 * P.size + Math.sin(a) * P.size * 0.5]; });
     ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); ctx.lineTo(pts[1][0], pts[1][1]); ctx.lineTo(pts[2][0], pts[2][1]); ctx.closePath();
-    var pg = ctx.createLinearGradient(pts[2][0], pts[0][1], pts[1][0], pts[1][1]); pg.addColorStop(0, 'rgba(255,255,255,.10)'); pg.addColorStop(.5, 'rgba(160,200,255,.04)'); pg.addColorStop(1, 'rgba(255,255,255,.12)');
-    ctx.fillStyle = pg; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.save(); ctx.clip(); ctx.globalCompositeOperation = 'lighter';
-    var cg = ctx.createLinearGradient(inP[0], inP[1], outP[0], outP[1]); cg.addColorStop(0, 'rgba(255,255,255,' + .35 * grow + ')'); cg.addColorStop(.6, 'rgba(0,217,255,' + .25 * split + ')'); cg.addColorStop(1, 'rgba(168,85,247,' + .35 * split + ')');
-    ctx.strokeStyle = cg; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(inP[0], inP[1]); ctx.lineTo(outP[0], outP[1]); ctx.stroke(); ctx.restore();
-    ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); ctx.lineTo(pts[0][0] + (pts[1][0] - pts[0][0]) * .3, pts[0][1] + (pts[1][1] - pts[0][1]) * .3); ctx.stroke();
+    ctx.fillStyle = 'rgba(200,220,255,0.06)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
   }
 
-  var start = performance.now();
+  var start = performance.now(), flatOff = false;
   function frame(now) {
     var t = reduce ? 2 : (now - start) / 1000;
-    previews.forEach(function (o) { if (!sizeCanvas(o.c)) return; o.ctx.setTransform(1, 0, 0, 1, 0, 0); o.fn(o.ctx, o.c.width, o.c.height, t, false); });
-    drawBeams(now);
+    previews.forEach(function (o) { var r = o.c.getBoundingClientRect(); if (!r.width) return; sizeCanvas(o.c, r.width, r.height); o.ctx.setTransform(1, 0, 0, 1, 0, 0); o.fn(o.ctx, o.c.width, o.c.height, t, false); });
+    if (!window.PRISM.ready3d) drawFlat(now, window.PRISM.layout());
+    else if (!flatOff) { flatOff = true; flat.hidden = true; }
     if (!reduce) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
-  if (reduce) { addEventListener('resize', function () { requestAnimationFrame(frame); }); document.fonts && document.fonts.ready.then(function () { requestAnimationFrame(frame); }); }
+  if (reduce) addEventListener('resize', function () { requestAnimationFrame(frame); });
 })();
 </script>
 
@@ -388,119 +402,211 @@
 } }
 </script>
 <script type="module">
-// The 3D glass prism. If WebGL or the download fails, the flat 2D prism stays.
+// The 3D scene: soft background, drifting dust that reacts to the mouse, glowing beams and a
+// glass prism that really refracts them. 1 world unit = 1 page pixel on the z = 0 plane.
 import * as THREE from "three";
-const canvas = document.getElementById("glassCanvas");
-const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+
+const P = window.PRISM, canvas = document.getElementById("scene");
 let renderer;
-try { renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "high-performance" }); }
-catch (e) { renderer = null; }
-if (renderer) {
-  const DPR = Math.min(2, window.devicePixelRatio || 1);
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" }); } catch (e) { renderer = null; }
+if (renderer) start();
+
+function start() {
+  const DPR = Math.min(1.75, window.devicePixelRatio || 1);
   renderer.setPixelRatio(DPR);
-  renderer.setClearColor(0x000000, 0);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
-  const scene = new THREE.Scene();
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  // A dark studio with a few light strips, so the glass reads as clear with sharp highlights
-  // (a bright room would turn it milky). Glass faces add light (additive), so only reflections show.
-  const studio = new THREE.Scene(); studio.background = new THREE.Color(0x020308);
-  const strip = (w, h, color, k, pos, look) => {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide }));
-    m.position.set(...pos); m.lookAt(...look); studio.add(m);
-  };
-  strip(6, 0.5, 0xffffff, 3.5, [0, 4, 2], [0, 0, 0]);
-  strip(0.4, 5, 0xffffff, 2.5, [4, 0, 1], [0, 0, 0]);
-  strip(0.6, 4, 0x00d9ff, 5, [-4, 0.5, 0.5], [0, 0, 0]);
-  strip(3, 0.6, 0xa855f7, 5, [0, -3.5, 1.5], [0, 0, 0]);
-  strip(2, 2, 0xffb84d, 3, [2, 1, -4], [0, 0, 0]);
-  strip(3, 0.3, 0xffffff, 4, [-1.5, 2, 4], [0, 0, 0]);
-  strip(8, 1.2, 0xffffff, 3, [0, 0.5, 6], [0, 0, 0]);
-  strip(1.2, 8, 0x9fd8ff, 2.5, [-3, 0, 5], [0, 0, 0]);
-  strip(1.2, 8, 0xe0c8ff, 2.5, [3.5, 0, 4.5], [0, 0, 0]);
-  strip(10, 0.25, 0xffffff, 4, [0, -1.2, 5.5], [0, 0, 0]);
-  scene.environment = pmrem.fromScene(studio, 0).texture;
-  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
-  camera.position.set(0, 0, 6.2);
+  const BG = new THREE.Color(0x04050a);
+  const scene = new THREE.Scene(); scene.background = BG;
+  const FOV = 22, camera = new THREE.PerspectiveCamera(FOV, 1, 10, 20000);
 
-  // Equilateral triangle with softly rounded corners, extruded with a bevel.
-  const R = 1, r = 0.07, shape = new THREE.Shape();
+  // Environment: a dark studio with light strips, for crisp reflections on the glass.
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const studio = new THREE.Scene(); studio.background = new THREE.Color(0x010206);
+  const strip = (w, h, color, k, pos) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide })); m.position.set(...pos); m.lookAt(0, 0, 0); studio.add(m); };
+  strip(7, 0.35, 0xffffff, 3, [0, 4, 2.5]);
+  strip(0.3, 6, 0xffffff, 2, [4.5, 0, 1.5]);
+  strip(0.5, 5, 0x00d9ff, 3, [-4.5, 0.5, 0.5]);
+  strip(4, 0.4, 0xa855f7, 3, [0, -4, 1.5]);
+  strip(2.2, 2.2, 0xffb84d, 1.6, [2.5, 1, -4]);
+  strip(1, 7, 0x9fd8ff, 1.2, [-3.5, 0, 5]);
+  scene.environment = pmrem.fromScene(studio, 0).texture;
+
+  /* ---- background: faint colour wash + vignette, far behind everything ---- */
+  const bgMat = new THREE.ShaderMaterial({
+    depthWrite: false,
+    uniforms: { uRes: { value: new THREE.Vector2(1, 1) }, uPrism: { value: new THREE.Vector2() }, uT: { value: 0 }, uMouse: { value: new THREE.Vector2() } },
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.9999, 1.0); }`,
+    fragmentShader: `uniform vec2 uRes, uPrism, uMouse; uniform float uT; varying vec2 vUv;
+      float blob(vec2 p, vec2 c, float r){ float d = length(p - c) / r; return exp(-d * d); }
+      void main(){
+        vec2 p = vUv * uRes;
+        vec3 col = vec3(0.016, 0.02, 0.039);
+        col += vec3(0.07, 0.14, 0.26) * 0.55 * blob(p, uPrism, uRes.y * 0.7);
+        col += vec3(0.0, 0.5, 0.65) * 0.09 * blob(p, vec2(uRes.x * (0.62 + 0.03 * sin(uT * 0.07)), uRes.y * 0.78), uRes.y * 0.55);
+        col += vec3(0.42, 0.2, 0.62) * 0.11 * blob(p, vec2(uRes.x * (0.82 + 0.03 * cos(uT * 0.05)), uRes.y * 0.35), uRes.y * 0.6);
+        col += vec3(0.5, 0.6, 0.9) * 0.05 * blob(p, (uMouse * 0.5 + 0.5) * uRes, uRes.y * 0.35);
+        float v = smoothstep(1.25, 0.25, length((vUv - 0.5) * vec2(uRes.x / uRes.y, 1.0)));
+        col *= mix(0.55, 1.0, v);
+        gl_FragColor = vec4(pow(col, vec3(2.2)), 1.0); // written in sRGB terms, output is linear
+      }`
+  });
+  const bgQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bgMat); bgQuad.frustumCulled = false; bgQuad.renderOrder = -10; scene.add(bgQuad);
+
+  /* ---- dust: slow drift, parallax, brighter and pushed aside near the pointer ---- */
+  const DUST = 900, dpos = new Float32Array(DUST * 3), dseed = new Float32Array(DUST);
+  for (let i = 0; i < DUST; i++) { dpos[i * 3] = (Math.random() - 0.5) * 2; dpos[i * 3 + 1] = (Math.random() - 0.5) * 2; dpos[i * 3 + 2] = -Math.random() * 1600 + 150; dseed[i] = Math.random(); }
+  const dgeo = new THREE.BufferGeometry(); dgeo.setAttribute("position", new THREE.BufferAttribute(dpos, 3)); dgeo.setAttribute("aSeed", new THREE.BufferAttribute(dseed, 1));
+  const dustMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: { uT: { value: 0 }, uSpan: { value: new THREE.Vector2(1, 1) }, uPtr: { value: new THREE.Vector2(-1e5, -1e5) }, uPar: { value: new THREE.Vector2() }, uPx: { value: DPR }, uCamZ: { value: 1000 } },
+    vertexShader: `attribute float aSeed; uniform float uT, uPx, uCamZ; uniform vec2 uSpan, uPtr, uPar; varying float vA;
+      void main(){
+        vec3 p = position; float depth = (uCamZ - p.z) / uCamZ;
+        p.xy *= uSpan * depth * 0.62;
+        p.x += sin(uT * 0.04 + aSeed * 40.0) * 30.0 + uT * (4.0 + aSeed * 6.0);
+        p.x = mod(p.x + uSpan.x * depth * 0.62, uSpan.x * depth * 1.24) - uSpan.x * depth * 0.62;
+        p.y += cos(uT * 0.05 + aSeed * 23.0) * 22.0;
+        p.xy += uPar * (1.0 - 1.0 / depth) * 40.0;
+        vec2 proj = p.xy / depth; vec2 d = proj - uPtr; float near = exp(-dot(d, d) / 9000.0);
+        p.xy += normalize(d + 0.001) * near * 26.0 * depth;
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = (1.0 + aSeed * 1.6) * uPx * (1.0 + near * 0.8) * clamp(uCamZ / -mv.z, 0.6, 1.6);
+        float tw = 0.65 + 0.35 * sin(uT * (0.6 + aSeed * 1.4) + aSeed * 60.0);
+        vA = (0.10 + 0.22 * fract(aSeed * 7.31)) * tw + near * 0.45;
+      }`,
+    fragmentShader: `varying float vA; void main(){ vec2 c = gl_PointCoord - 0.5; float r = length(c); if (r > 0.5) discard; gl_FragColor = vec4(vec3(0.75, 0.85, 1.0) * vA * smoothstep(0.5, 0.0, r), 1.0); }`
+  });
+  const dust = new THREE.Points(dgeo, dustMat); dust.frustumCulled = false; scene.add(dust);
+
+  /* ---- beams: a glowing core plus a soft halo, with pulses running along ---- */
+  const beamVS = `uniform vec2 uA, uB; uniform float uW0, uW1, uGrow; varying vec2 vUv; varying float vW, vLen;
+    void main(){ vUv = uv; vec2 d = uB - uA; float L = max(length(d), 0.001); vec2 dir = d / L; vec2 n = vec2(-dir.y, dir.x);
+      float a = uv.x * uGrow; vW = mix(uW0, uW1, a); vLen = L;
+      vec2 p = uA + d * a + n * (uv.y - 0.5) * vW;
+      gl_Position = projectionMatrix * viewMatrix * vec4(p, 0.0, 1.0); }`;
+  const beamFS = `uniform vec3 uColor; uniform float uI, uT, uCore, uSpeed, uFade; varying vec2 vUv; varying float vW, vLen;
+    void main(){ float dpx = abs(vUv.y - 0.5) * vW;
+      float core = exp(-pow(dpx / uCore, 2.0));
+      float halo = exp(-pow(dpx / (vW * 0.28), 2.0));
+      float s = vUv.x * vLen;
+      float pulse = pow(max(0.0, sin(s * 0.018 - uT * uSpeed)), 30.0);
+      float fade = mix(1.0, smoothstep(0.0, 0.06, vUv.x), uFade);
+      vec3 hot = mix(uColor, vec3(1.0), 0.3);
+      vec3 c = uColor * halo * 0.16 * uI + hot * core * (0.75 + pulse * 1.4) * uI;
+      gl_FragColor = vec4(c * fade, 1.0); }`;
+  function makeBeam(color, fadeStart) {
+    const m = new THREE.ShaderMaterial({
+      vertexShader: beamVS, fragmentShader: beamFS, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, transparent: false,
+      uniforms: { uA: { value: new THREE.Vector2() }, uB: { value: new THREE.Vector2() }, uW0: { value: 6 }, uW1: { value: 30 }, uGrow: { value: 0 }, uColor: { value: new THREE.Color(...color.map(v => v / 255)) }, uI: { value: 1 }, uT: { value: 0 }, uCore: { value: 1.4 }, uSpeed: { value: 3 }, uFade: { value: fadeStart ? 1 : 0 } }
+    });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 48, 1), m); mesh.frustumCulled = false; mesh.renderOrder = 1; scene.add(mesh); return m;
+  }
+  const inBeam = makeBeam([255, 255, 255], false);
+  const outBeams = P.pages.map(pg => makeBeam(pg.color, true));
+
+  // Glow spots: where the light splits inside the prism, and where each beam lands on its card.
+  const spotMat = (color) => new THREE.ShaderMaterial({ transparent: false, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
+    uniforms: { uColor: { value: new THREE.Color(color) }, uI: { value: 1 } },
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `uniform vec3 uColor; uniform float uI; varying vec2 vUv; void main(){ float d = length(vUv - 0.5) * 2.0; float g = exp(-d * d * 9.0) * 0.35 + exp(-d * d * 80.0) * 0.8; gl_FragColor = vec4(uColor * g * uI, 1.0); }` });
+  const mkSpot = (color) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), spotMat(color)); m.frustumCulled = false; m.renderOrder = 2; scene.add(m); return m; };
+  const splitSpot = mkSpot(0xffffff);
+  const landSpots = P.pages.map(pg => mkSpot(new THREE.Color(...pg.color.map(v => v / 255))));
+
+  /* ---- the prism: rounded, bevelled glass with real refraction and dispersion ---- */
+  const R = 1, rc = 0.075, shape = new THREE.Shape();
   const corners = [0, 1, 2].map(k => { const a = Math.PI / 2 + k * Math.PI * 2 / 3; return new THREE.Vector2(Math.cos(a) * R, Math.sin(a) * R); });
   corners.forEach((c, i) => {
     const prev = corners[(i + 2) % 3], next = corners[(i + 1) % 3];
-    const a = c.clone().add(prev.clone().sub(c).setLength(r * 2.2)), b = c.clone().add(next.clone().sub(c).setLength(r * 2.2));
+    const a = c.clone().add(prev.clone().sub(c).setLength(rc * 2.2)), b = c.clone().add(next.clone().sub(c).setLength(rc * 2.2));
     if (i === 0) shape.moveTo(a.x, a.y); else shape.lineTo(a.x, a.y);
     shape.quadraticCurveTo(c.x, c.y, b.x, b.y);
   });
   shape.closePath();
-  const depth = 0.85;
-  const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.045, bevelSegments: 6, curveSegments: 10 });
-  geo.translate(0, -0.08, -depth / 2);
-  geo.computeVertexNormals();
-  // Glass drawn in two passes (inside faces, then outside faces), see-through with
-  // sharp coloured reflections of the studio strips and a thin-film rainbow sheen.
-  const glassProps = { color: 0x000000, metalness: 0, roughness: 0.02, transparent: true, depthWrite: false,
-    // Add light to what's under the canvas without covering it (the canvas has a see-through background).
-    blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor, premultipliedAlpha: true,
-    clearcoat: 1, clearcoatRoughness: 0.02, iridescence: 1, iridescenceIOR: 1.4, iridescenceThicknessRange: [180, 620],
-    specularIntensity: 1, ior: 1.6, envMapIntensity: 4 };
-  const glassBack = new THREE.MeshPhysicalMaterial({ ...glassProps, side: THREE.BackSide, opacity: 0.55 });
-  const glass = new THREE.MeshPhysicalMaterial({ ...glassProps, side: THREE.FrontSide, opacity: 1 });
-  // A faint body so the glass has some mass against the dark page.
-  const body = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x14213a, transparent: true, opacity: 0.28, depthWrite: false })); body.renderOrder = 0;
-  const back = new THREE.Mesh(geo, glassBack); back.renderOrder = 1;
-  const prism = new THREE.Mesh(geo, glass); prism.renderOrder = 2;
-  // Fresnel glow: faces light up toward their edges with a cyan-violet-gold sheen, so the
-  // prism reads as glass at every angle.
-  const rimMat = new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false,
-    blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor,
-    uniforms: { uTime: { value: 0 } },
-    vertexShader: `varying vec3 vN; varying vec3 vV; varying vec3 vP;
-      void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position; gl_Position = projectionMatrix * mv; }`,
-    fragmentShader: `uniform float uTime; varying vec3 vN; varying vec3 vV; varying vec3 vP;
-      void main() {
-        float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 2.2);
-        float h = fract(vP.x * 0.35 + vP.y * 0.25 + uTime * 0.05);
-        vec3 c = mix(vec3(0.0, 0.85, 1.0), vec3(0.66, 0.33, 0.97), smoothstep(0.0, 0.5, h));
-        c = mix(c, vec3(1.0, 0.72, 0.3), smoothstep(0.5, 1.0, h));
-        vec3 col = c * f * 0.75 + vec3(0.02, 0.03, 0.05);
-        gl_FragColor = vec4(col, 1.0);
-      }`
+  const depth = 0.9;
+  const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.045, bevelSize: 0.04, bevelSegments: 8, curveSegments: 16 });
+  geo.translate(0, -0.12, -depth / 2); geo.computeVertexNormals();
+  const glass = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff, metalness: 0, roughness: 0.015, transmission: 1, thickness: 1.25, ior: 1.52, dispersion: 4.5,
+    attenuationColor: new THREE.Color(0xcfe6ff), attenuationDistance: 600,
+    clearcoat: 1, clearcoatRoughness: 0.02, specularIntensity: 1, specularColor: new THREE.Color(0xffffff), envMapIntensity: 1.0,
+    iridescence: 0.35, iridescenceIOR: 1.3, iridescenceThicknessRange: [200, 600]
   });
-  const rim = new THREE.Mesh(geo, rimMat); rim.renderOrder = 3;
-  prism.add(back); prism.add(body); prism.add(rim);
-  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, depthWrite: false }));
-  prism.add(edges);
-  const group = new THREE.Group(); group.add(prism); scene.add(group);
+  const prism = new THREE.Mesh(geo, glass); prism.renderOrder = 3;
+  // A faint fresnel rim so the edges always catch some light.
+  const rimMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: { uT: { value: 0 } },
+    vertexShader: `varying vec3 vN, vV, vP; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position; gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `uniform float uT; varying vec3 vN, vV, vP; void main(){ float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 3.0);
+      float h = fract(vP.x * 0.3 + vP.y * 0.22 + uT * 0.04); vec3 c = mix(vec3(0.0, 0.85, 1.0), vec3(0.66, 0.33, 0.97), smoothstep(0.0, 0.5, h)); c = mix(c, vec3(1.0, 0.72, 0.3), smoothstep(0.5, 1.0, h));
+      gl_FragColor = vec4(c * f * 0.35, 1.0); }` });
+  const rim = new THREE.Mesh(geo, rimMat); rim.renderOrder = 4; prism.add(rim);
+  const prismGroup = new THREE.Group(); prismGroup.add(prism); scene.add(prismGroup);
+  const key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(300, 500, 800); scene.add(key);
 
+  /* ---- post: bloom makes the beams and highlights glow ---- */
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.55, 0.45, 0.42);
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
 
-  const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(3, 4, 5); scene.add(key);
-  const back2 = new THREE.DirectionalLight(0x9fd8ff, 1.4); back2.position.set(-4, -1, -3); scene.add(back2);
+  let W = 0, H = 0, camZ = 1000;
+  function resize(L) {
+    if (L.W === W && L.H === H) return;
+    W = L.W; H = L.H;
+    renderer.setSize(W, H, false); composer.setSize(W, H);
+    bloom.resolution.set(W * DPR * 0.5, H * DPR * 0.5);
+    camZ = (H / 2) / Math.tan(THREE.MathUtils.degToRad(FOV / 2));
+    camera.aspect = W / H; camera.position.set(W / 2, -H / 2, camZ); camera.near = camZ * 0.05; camera.far = camZ * 4; camera.updateProjectionMatrix();
+    camera.lookAt(W / 2, -H / 2, 0);
+    dustMat.uniforms.uSpan.value.set(W, H); dustMat.uniforms.uCamZ.value = camZ; dust.position.set(W / 2, -H / 2, 0);
+    bgMat.uniforms.uRes.value.set(W, H);
+  }
 
-  window.PRISM_GLASS = { ready: false };
-  let shown = false;
-  const t0 = performance.now();
+  const t0 = performance.now(); let shown = false, last = t0;
   function frame(now) {
-    const at = window.PRISM_AT;
-    if (at) {
-      const box = Math.round(at.size * 1.9);
-      canvas.style.width = box + "px"; canvas.style.height = box + "px";
-      canvas.style.transform = `translate(${Math.round(at.x - box / 2)}px, ${Math.round(at.y - box / 2)}px)`;
-      if (canvas.width !== Math.round(box * DPR)) renderer.setSize(box, box, false);
-      const t = reduce ? 1.2 : (now - t0) / 1000;
-      group.rotation.y = t * 0.45;
-      group.rotation.x = Math.sin(t * 0.5) * 0.18;
-      group.rotation.z = Math.sin(t * 0.33) * 0.05;
-      rimMat.uniforms.uTime.value = t;
-      renderer.render(scene, camera);
-      if (!shown) { shown = true; canvas.classList.add("on"); window.PRISM_GLASS.ready = true; }
-    }
-    if (!reduce || !shown) requestAnimationFrame(frame);
+    if (document.hidden && shown) { requestAnimationFrame(frame); return; }
+    const L = P.layout(); resize(L);
+    const t = P.reduce ? 3 : (now - t0) / 1000, dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const it = P.reduce ? 9 : (now - P.introStart) / 1000;
+    const grow = Math.min(1, Math.max(0, it / 0.7)), split = Math.min(1, Math.max(0, (it - 0.6) / 0.8));
+    const ease = (x) => 1 - Math.pow(1 - x, 3);
+    const px = L.prism.x, py = -L.prism.y, S = L.prism.size;
+    // background + dust
+    bgMat.uniforms.uT.value = t; bgMat.uniforms.uPrism.value.set(px, H - L.prism.y); bgMat.uniforms.uMouse.value.set(P.mouse.x, -P.mouse.y);
+    dustMat.uniforms.uT.value = t; dustMat.uniforms.uPar.value.set(-P.mouse.x, P.mouse.y);
+    dustMat.uniforms.uPtr.value.set(P.mouse.px - W / 2, -(P.mouse.py - H / 2));
+    // incoming white beam: from off screen into the middle of the prism
+    inBeam.uniforms.uA.value.set(L.source.x, -L.source.y); inBeam.uniforms.uB.value.set(px, py);
+    inBeam.uniforms.uGrow.value = ease(grow); inBeam.uniforms.uW0.value = S * 0.06; inBeam.uniforms.uW1.value = S * 0.05; inBeam.uniforms.uCore.value = Math.max(1.3, S * 0.006); inBeam.uniforms.uT.value = t; inBeam.uniforms.uSpeed.value = 2.2;
+    // split beams: from the middle of the prism to each card's edge
+    L.targets.forEach((tg, i) => {
+      const u = outBeams[i].uniforms, h = L.hot[i];
+      u.uA.value.set(px, py); u.uB.value.set(tg.x, -tg.y); u.uGrow.value = ease(split);
+      u.uW0.value = S * 0.03; u.uW1.value = (L.narrow ? 18 : S * 0.13) * (1 + h * 0.5); u.uCore.value = Math.max(1.2, S * 0.0045) * (1 + h * 0.7);
+      u.uI.value = (0.75 + h * 0.75); u.uT.value = t; u.uSpeed.value = 2.6 + h * 2.5;
+      const sp = landSpots[i]; sp.position.set(tg.x, -tg.y, 0); const sz = (L.narrow ? 70 : S * 0.42) * (1 + h * 0.6); sp.scale.set(sz, sz, 1); sp.material.uniforms.uI.value = split >= 1 ? 0.4 + h * 0.5 : 0;
+    });
+    splitSpot.position.set(px, py, 0); const ss = S * 0.55 * (1 + 0.06 * Math.sin(t * 2.2)); splitSpot.scale.set(ss, ss, 1); splitSpot.material.uniforms.uI.value = 0.2 + 0.4 * ease(grow) * (0.85 + 0.15 * Math.sin(t * 3.1));
+    // prism: slow turn, leans toward the pointer
+    prismGroup.position.set(px, py, 0); prismGroup.scale.setScalar(S * 0.5);
+    if (!P.reduce) prismGroup.rotation.y += dt * 0.32;
+    prismGroup.rotation.x = 0.12 + P.mouse.y * 0.18 + Math.sin(t * 0.45) * 0.06;
+    prismGroup.rotation.z = -P.mouse.x * 0.06;
+    rimMat.uniforms.uT.value = t;
+    composer.render();
+    if (!shown) { shown = true; canvas.classList.add("on"); P.ready3d = true; }
+    if (!P.reduce) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
-  if (reduce) addEventListener("resize", () => requestAnimationFrame(frame));
+  if (P.reduce) addEventListener("resize", () => requestAnimationFrame(frame));
 }
 </script>
 </body>

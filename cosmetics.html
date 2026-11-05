@@ -163,6 +163,7 @@
   @keyframes chatin { from { opacity: 0; transform: translateX(-10px); } }
   .c-red { color: #ff5555; } .c-blue { color: #5555ff; } .c-gray { color: #aaaaaa; } .c-bold { font-weight: 800; } .c-aqua { color: #55ffff; } .c-gold { color: #ffaa00; } .c-yellow { color: #ffff55; } .c-italic { font-style: italic; }
   .unseen-note { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); padding: 8px 14px; border-radius: 999px; background: rgba(0,0,0,.5); color: #dfe3ea; font-size: 13px; white-space: nowrap; }
+  .takes { position: absolute; left: 14px; top: 14px; z-index: 2; display: flex; gap: 6px; flex-wrap: wrap; max-width: calc(100% - 80px); }
   .tools { position: absolute; left: 14px; bottom: 14px; display: flex; gap: 6px; }
   .tool { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,18,.55); color: #e9edf5; font-size: 12.5px; cursor: pointer; backdrop-filter: blur(6px); }
   html[data-theme="skyisles"] .tool, html[data-theme="ledger"] .tool { border-radius: 0; }
@@ -312,6 +313,7 @@
       <div class="chat-stage" id="chatStage" hidden></div>
       <button class="nav prev" id="prevBtn" type="button" aria-label="Previous cosmetic">&#8249;</button>
       <button class="nav next" id="nextBtn" type="button" aria-label="Next cosmetic">&#8250;</button>
+      <div class="takes" id="takes" hidden></div>
       <div class="tools">
         <button class="tool" id="replayBtn" type="button"><svg viewBox="0 0 16 16"><path d="M3 8a5 5 0 1 0 1.5-3.5M3 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Replay</span></button>
         <button class="tool" id="slowBtn" type="button" aria-pressed="false">0.25×</button>
@@ -419,7 +421,7 @@ const ITEMS = [
   { id: "haunted", cat: "final", name: "Haunted", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Killing an enemy will cause their soul to separate from their body and fly around!", tags: "ghost soul", rec: "haunted", hero: 1.5 },
   { id: "pumpkin-rocket", cat: "final", name: "Pumpkin Rocket", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Launch pumpkins into the sky from where your victim died!", tags: "pumpkins rocket", rec: "pumpkin-rocket", hero: 2.6 },
   { id: "jack-o-twister", cat: "final", name: "Jack O' Twister", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Send your victims into a twist.", tags: "pumpkins jack o lantern tornado", rec: "jack-o-twister", hero: 1.5 },
-  { id: "snow-globe", cat: "final", name: "Snow Globe", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Killing an enemy will spawn a musical snow globe that will play 1 of 6 Festive jingles.", tags: "snow music notes", rec: "snow-globe", hero: 2.2 },
+  { id: "snow-globe", cat: "final", name: "Snow Globe", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Killing an enemy will spawn a musical snow globe that will play 1 of 6 Festive jingles.", tags: "snow music notes", rec: "snow-globe", songs: ["snow-globe", "snow-globe-2", "snow-globe-3", "snow-globe-4", "snow-globe-5", "snow-globe-6"], hero: 2.2 },
   { id: "gift-explosion", cat: "final", name: "Gift Explosion", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Make your enemies burst into holiday gift!", tags: "presents gifts", rec: "gift-explosion", hero: 2.2 },
   { id: "holiday-fireworks", cat: "final", name: "Holiday Fireworks", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Launches holiday-colored fireworks into the sky!", tags: "fireworks christmas", rec: "holiday-fireworks", hero: 2.2 },
   { id: "spirit", cat: "final", name: "Spirit", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will spawn the Spirit kill effect.", tags: "wolf", rec: "spirit", hero: 2.2 },
@@ -581,6 +583,7 @@ const ITEMS = [
   { id: "wood-dark-oak-log", cat: "wood", name: "Dark Oak Log", rar: "legendary", price: null, get: "dreamfeast", desc: "Select the Dark Oak Log Wood Skin to be used when placing wood blocks.", tags: "block log wood bridge", preview: "wood", wood: "dark_oak" },
   { id: "wood-dark-oak-plank", cat: "wood", name: "Dark Oak Plank", rar: "legendary", price: null, get: "mvp", desc: "Select the Dark Oak Plank Wood Skin to be used when placing wood blocks.", tags: "block log wood bridge", preview: "wood", wood: "dark_oak_planks" },
   // Island toppers: the exact blocks Hypixel's preview builds (cosmetics/toppers/<id>.json), in the order it places them
+  { id: "topper-note", cat: "topper", name: "Note", rar: "common", price: 5000, get: "shop", desc: "Select the Note Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "note", size: [3, 7, 4], built: 0.4 },
   { id: "topper-sheep", cat: "topper", name: "Sheep", rar: "common", price: 5000, get: "shop", desc: "Select the Sheep Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "sheep", size: [6, 7, 7], built: 0.8 },
   { id: "topper-slime", cat: "topper", name: "Slime", rar: "common", price: 5000, get: "shop", desc: "Select the Slime Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "slime", size: [5, 5, 5], built: 0.6 },
   { id: "topper-tnt", cat: "topper", name: "TNT", rar: "common", price: 5000, get: "shop", desc: "Select the TNT Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "tnt", size: [7, 7, 7], built: 0.8 },
@@ -598,6 +601,26 @@ const ITEMS = [
   { id: "topper-year-of-the-pig", cat: "topper", name: "Year of the Pig", rar: "common", price: 5000, get: "shop", desc: "Select the Year of the Pig Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "year-of-the-pig", size: [2, 8, 7], built: 0.5 },
   { id: "topper-sword", cat: "topper", name: "Sword", rar: "rare", price: 10000, get: "shop", desc: "Select the Sword Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "sword", size: [3, 17, 7], built: 0.5 },
   { id: "topper-bomb", cat: "topper", name: "Bomb", rar: "rare", price: 10000, get: "shop", desc: "Select the Bomb Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "bomb", size: [7, 13, 7], built: 0.8 },
+  { id: "topper-gong", cat: "topper", name: "Gong", rar: "rare", price: 10000, get: "shop", desc: "Select the Gong Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "gong", size: [3, 7, 7], built: 0.4 },
+  { id: "topper-smiley-face", cat: "topper", name: "Smiley Face", rar: "rare", price: 10000, get: "shop", desc: "Select the Smiley Face Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "smiley-face", size: [1, 7, 7], built: 0.3 },
+  { id: "topper-rubix-cube", cat: "topper", name: "Rubix Cube", rar: "rare", price: 10000, get: "shop", desc: "Select the Rubix Cube Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "rubix-cube", size: [6, 6, 6], built: 0.8 },
+  { id: "topper-brick-house", cat: "topper", name: "Brick House", rar: "rare", price: 10000, get: "shop", desc: "Select the Brick House Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "brick-house", size: [7, 9, 7], built: 1.0 },
+  { id: "topper-candle", cat: "topper", name: "Candle", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Select the Candle Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "candle", size: [3, 12, 4], built: 0.5 },
+  { id: "topper-ghost", cat: "topper", name: "Ghost", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Select the Ghost Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "ghost", size: [5, 9, 5], built: 0.7 },
+  { id: "topper-sinister-pot", cat: "topper", name: "Sinister Pot", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Select the Sinister Pot Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "sinister-pot", size: [7, 11, 7], built: 0.8 },
+  { id: "topper-thunder", cat: "topper", name: "Thunder", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Select the Thunder Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "thunder", size: [7, 10, 7], built: 0.5 },
+  { id: "topper-gargoyle", cat: "topper", name: "Gargoyle", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Select the Gargoyle Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "gargoyle", size: [5, 9, 7], built: 0.6 },
+  { id: "topper-suspicious-tree", cat: "topper", name: "Suspicious Tree", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Select the Suspicious Tree Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "suspicious-tree", size: [7, 11, 7], built: 0.4 },
+  { id: "topper-wicked-z-type", cat: "topper", name: "Wicked Z-type", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Select the Wicked Z-type Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "wicked-z-type", size: [7, 12, 7], built: 0.9 },
+  { id: "topper-boo", cat: "topper", name: "Boo!", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Select the Boo! Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "boo", size: [5, 14, 7], built: 0.7 },
+  { id: "topper-gravestone", cat: "topper", name: "Gravestone", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Select the Gravestone Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "gravestone", size: [6, 11, 7], built: 0.8 },
+  { id: "topper-witch-s-potion", cat: "topper", name: "Witch's Potion", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Select the Witch's Potion Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "witch-s-potion", size: [7, 17, 7], built: 0.8 },
+  { id: "topper-spooky-lantern", cat: "topper", name: "Spooky Lantern", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Select the Spooky Lantern Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "spooky-lantern", size: [5, 15, 5], built: 0.8 },
+  { id: "topper-wingless-angel", cat: "topper", name: "Wingless Angel", rar: "rare", price: null, get: "event", season: "Holidays", desc: "Select the Wingless Angel Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "wingless-angel", size: [6, 13, 5], built: 0.7 },
+  { id: "topper-robin", cat: "topper", name: "Robin", rar: "rare", price: null, get: "event", season: "Holidays", desc: "Select the Robin Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "robin", size: [7, 12, 7], built: 0.6 },
+  { id: "topper-basket", cat: "topper", name: "Basket", rar: "rare", price: null, get: "event", season: "Easter", desc: "Select the Basket Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "basket", size: [7, 8, 7], built: 0.7 },
+  { id: "topper-carrot", cat: "topper", name: "Carrot", rar: "rare", price: null, get: "event", season: "Easter", desc: "Select the Carrot Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "carrot", size: [6, 3, 6], built: 0.3 },
+  { id: "topper-easter-bell", cat: "topper", name: "Easter Bell", rar: "rare", price: null, get: "event", season: "Easter", desc: "Select the Easter Bell Island Topper to spawn above your island.", tags: "island topper build blocks", topper: "easter-bell", size: [5, 8, 7], built: 0.5 },
   // Kill messages: Hypixel's exact wording
   { id: "km-fire", cat: "msg", name: "Fire", rar: "common", price: 5000, get: "shop", desc: "Select the Fire Kill Messages!", tags: "chat",
     lines: km(["{V} was struck down by {K}.", "{V} was turned to dust {K}.", "{V} was melted by {K}.", "{V} was turned to ash by {K}.", "{V} was fried by {K}'s {MOB}.", "{BED} was incinerated by {K}!"]) },
@@ -1327,9 +1350,11 @@ for (const it of ITEMS) if (it.rec) {
   it.preview = "rec:" + it.id;
   PREVIEWS[it.preview] = { stage: "arena", cam: it.cam || REC_CAM, rec: it.rec, loop: null, hero: it.hero || 2.1, build(S) {
     const def = this; let run = null;
+    // Snow Globe plays one of several jingles; the viewer picks which (def.take).
+    const rec = it.songs?.[def.take || 0] || it.rec;
     const go = (d) => { def.loop = (Math.max(d.end, d.cam) - d.ev[0][0]) / 1000 + 1.4; run = REC.build(S, d); };
-    if (recData[it.rec]) go(recData[it.rec]);
-    else loadRec(it.rec).then((d) => { if (S.def === def && S.it === it) { S.t = 0; go(d); } });
+    if (recData[rec]) go(recData[rec]);
+    else loadRec(rec).then((d) => { if (S.def === def && S.it === it && (it.songs?.[def.take || 0] || it.rec) === rec) { S.t = 0; go(d); } });
     const f = (t) => run?.(t);
     f.focus = () => run?.focus?.();
     return f;
@@ -1606,7 +1631,7 @@ async function makeThumbs() {
     const steps = Math.round(def.hero * 60);
     for (let i = 0; i < steps; i++) T.step(1 / 60);
     Math.random = realRandom;
-    if (def.rec) await new Promise((r) => setTimeout(r, 0)); // let item and block meshes attach (they are added once their models load)
+    if (def.rec || def.top) await new Promise((r) => setTimeout(r, 0)); // let item and block meshes attach (they are added once their models load)
     T.renderer.render(T.scene, T.camera);
     const url = c.toDataURL("image/webp", 0.9);
     out[it.id] = { key: thumbKey(it), url };
@@ -1688,6 +1713,16 @@ function openStudio(id, push = true) {
     studio.camera.position.set(...C[0]); controls.target.set(...C[1]); camOff.set(0, 0, 0); camGoal.set(0, 0, 0); controls.minDistance = C[2]; controls.maxDistance = C[3];
     studio.audible = true; studio.load(PREVIEWS[it.preview], it);
     last = performance.now(); raf = requestAnimationFrame(frame);
+  }
+  const takes = $("takes"); takes.hidden = !it.songs || chatOnly;
+  if (it.songs) {
+    const def = PREVIEWS[it.preview];
+    takes.innerHTML = it.songs.map((_, i) => `<button class="tool" type="button" data-take="${i}" aria-pressed="${(def.take || 0) === i}">Song ${i + 1}</button>`).join("");
+    takes.onclick = (e) => {
+      const b = e.target.closest("[data-take]"); if (!b) return;
+      def.take = +b.dataset.take; for (const x of takes.children) x.setAttribute("aria-pressed", x === b);
+      stopSounds(); studio.load(def, it);
+    };
   }
   const chat = $("chatStage"); chat.hidden = !chatOnly;
   if (chatOnly) chat.innerHTML = `<div class="chat-box">${chatHtml(it)}</div>`;

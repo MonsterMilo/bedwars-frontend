@@ -134,7 +134,38 @@ function withFixes (rot) {
   }
   return rot
 }
-async function loadRotation () { return withFixes(await loadRotationList()) }
+// Hypixel's own map selector, as the proxy last saw it (one list per team
+// size): newer than the player-kept list, it decides what's in rotation.
+async function fromSelector () {
+  const ctl = typeof AbortController === 'function' ? new AbortController() : null
+  const t = ctl && setTimeout(() => ctl.abort(), 20000) // a sleeping server: go on without it
+  try {
+    const r = await fetch(BACKEND + '/maps/rotation', ctl ? { signal: ctl.signal } : {})
+    if (!r.ok) return []
+    const j = await r.json()
+    return Array.isArray(j.rotation) ? j.rotation : []
+  } catch { return [] } finally { if (t) clearTimeout(t) }
+}
+const nameKey = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+function withSelector (rot, lists) {
+  const asOf = Date.parse(rot.asOf || '') || 0
+  for (const l of lists) {
+    if (!Array.isArray(l.maps) || !l.maps.length || !(Date.parse(l.at) > asOf)) continue
+    const listed = new Map(l.maps.map(n => [nameKey(n), n]))
+    for (const m of rot.maps) {
+      if (m.teams !== l.teams) continue
+      m.in = listed.has(nameKey(m.name))
+      listed.delete(nameKey(m.name))
+    }
+    // In the selector but not in the player-kept list yet: a new map.
+    for (const n of listed.values()) rot.maps.push({ name: n, teams: l.teams, in: true })
+  }
+  return rot
+}
+async function loadRotation () {
+  const [list, lists] = await Promise.all([loadRotationList(), fromSelector()])
+  return withSelector(withFixes(list), lists)
+}
 async function loadRotationList () {
   const fromLive = async () => {
     const [core, seasonal] = await Promise.all(['maps.json', 'seasonal_maps.json'].map(f => fetch(ROTATION_LIVE + f).then(r => { if (!r.ok) throw new Error(); return r.json() })))

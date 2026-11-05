@@ -41,7 +41,7 @@ class Sounds {
     // Minecraft: heard up to 16 blocks (more for loud sounds), fading out.
     // The replay stretches that by the hearing range setting.
     const R = 16 * this.range
-    const v = s.volume > 1 ? Math.max(0, 1 - dist / (R * s.volume)) : s.volume * Math.max(0, 1 - dist / R)
+    const v = s.everywhere ? Math.min(1, s.volume) : s.volume > 1 ? Math.max(0, 1 - dist / (R * s.volume)) : s.volume * Math.max(0, 1 - dist / R)
     if (v <= 0.01) return
     const h = files[Math.floor(Math.random() * files.length)]
     const a = new Audio(BASE + h.slice(0, 2) + '/' + h)

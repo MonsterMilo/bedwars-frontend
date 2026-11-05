@@ -56,6 +56,14 @@ function synthesize (tl) {
   const rnd = () => { seed = (seed * 1103515245 + 12345) >>> 0; return seed / 4294967296 }
   const out = tl.sounds.filter(s => s.name && !REPLACED.test(s.name) && !POV_ONLY.test(s.name))
   const add = (t, name, x, y, z, volume, pitch) => out.push({ t, name, x, y, z, volume, pitch })
+  // Bed breaks: Hypixel plays everyone a dragon growl (or a wither death
+  // when it's your own bed) at their own spot. Keep the recorded one with
+  // its pitch, heard everywhere; add a growl for any bed break it missed.
+  for (const bed of tl.bedsBroken || []) {
+    const rec = tl.sounds.find(s => /^mob\.(enderdragon\.growl|wither\.death)$/.test(s.name) && Math.abs(s.t - bed.t) < 1500)
+    if (rec) out.push({ ...rec, everywhere: true })
+    else out.push({ t: bed.t, name: 'mob.enderdragon.growl', x: 0, y: 0, z: 0, volume: 1, pitch: 1, everywhere: true })
+  }
   const ch = tl.changes
   const uses = [] // eating and drinking: { tr, start, end, kind, item }
 

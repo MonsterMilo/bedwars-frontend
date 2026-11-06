@@ -2182,6 +2182,7 @@ const realRandom = Math.random;
 function seeded(s) { return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }
 
 /* ------------------------------------------------------------------ studio dialog */
+let zoomGoal = null;
 let studio = null, controls = null, current = null, raf = 0, last = 0, speed = 1, spin = true;
 function ensureStudio() {
   if (studio) return;
@@ -2196,6 +2197,16 @@ function ensureStudio() {
   let spinTimer = 0;
   controls.addEventListener("start", () => { controls.autoRotate = false; clearTimeout(spinTimer); });
   controls.addEventListener("end", () => { clearTimeout(spinTimer); spinTimer = setTimeout(() => { controls.autoRotate = spin; }, 6500); });
+  // Scroll zoom glides to the new distance instead of jumping a step per notch
+  // (pinch zoom on touch screens still goes through OrbitControls).
+  $("stage").addEventListener("wheel", (e) => {
+    if (!controls.enabled || $("stage").classList.contains("chat-mode")) return;
+    e.preventDefault(); e.stopPropagation();
+    const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1);
+    const d = zoomGoal ?? studio.camera.position.distanceTo(controls.target);
+    zoomGoal = clamp(d * Math.exp(clamp(dy, -300, 300) * 0.001), controls.minDistance, controls.maxDistance);
+    controls.autoRotate = false; clearTimeout(spinTimer); spinTimer = setTimeout(() => { controls.autoRotate = spin; }, 6500);
+  }, { capture: true, passive: false });
   new ResizeObserver(resize).observe($("stage"));
 }
 function resize() {
@@ -2233,6 +2244,12 @@ function frame(now) {
   if (HOLD >= 0) { if (studio.t < HOLD) { studio.audible = false; for (let n = 0; studio.t < HOLD && n < 3000; n++) studio.step(1 / 60); } }
   else studio.step(dt * speed);
   if (!(CAMQ?.length === 6)) followRec(HOLD >= 0 ? 1 : dt);
+  if (zoomGoal != null) {
+    const off = studio.camera.position.clone().sub(controls.target), d = off.length();
+    const nd = d + (zoomGoal - d) * (1 - Math.exp(-dt * 10));
+    studio.camera.position.copy(controls.target).addScaledVector(off, nd / d);
+    if (Math.abs(zoomGoal - nd) < 0.002) zoomGoal = null;
+  }
   controls.update();
   studio.renderer.render(studio.scene, studio.camera);
 }
@@ -2247,7 +2264,7 @@ function openStudio(id, push = true) {
   cancelAnimationFrame(raf); stopSounds();
   if (!chatOnly) {
     const C = PREVIEWS[it.preview].cam || STAGE_CAM[PREVIEWS[it.preview].stage || "island"];
-    studio.camera.position.set(...C[0]); controls.target.set(...C[1]); camOff.set(0, 0, 0); camGoal.set(0, 0, 0); controls.minDistance = C[2]; controls.maxDistance = C[3];
+    studio.camera.position.set(...C[0]); controls.target.set(...C[1]); camOff.set(0, 0, 0); camGoal.set(0, 0, 0); zoomGoal = null; controls.minDistance = C[2]; controls.maxDistance = C[3];
     studio.audible = true; studio.load(PREVIEWS[it.preview], it);
     last = performance.now(); raf = requestAnimationFrame(frame);
   }

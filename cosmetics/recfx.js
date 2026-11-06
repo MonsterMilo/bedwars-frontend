@@ -1788,6 +1788,7 @@ export function createRecFx(kit0) {
         case "wev": {
           const [, , id, x, y, z, d] = ev;
           if (id === 2001) blockBreak(x, y, z, d);
+          else if (id === 1022) sound("random.anvil_land", x + 0.5, y + 0.5, z + 0.5, 0.3, rand() * 0.1 + 0.9); // RenderGlobal.playAuxSFX: an anvil landing
           else if (id === 1015) sound("mob.bat.takeoff", x + 0.5, y + 0.5, z + 0.5, 0.05, (rand() - rand()) * 0.2 + 1);
           break;
         }
@@ -1895,7 +1896,7 @@ export function createRecFx(kit0) {
           if (best) { const dx = (best.x - e.x) / 8, dy = (best.y + 1.62 / 2 - e.y) / 8, dz = (best.z - e.z) / 8, d = Math.sqrt(dx * dx + dy * dy + dz * dz); let k = 1 - d; if (k > 0) { k *= k; e.mx += dx / d * k * 0.1; e.my += dy / d * k * 0.1; e.mz += dz / d * k * 0.1; } }
         }
         let dy = e.my; e.onGround = false;
-        if (e.y >= 0 && e.y + dy < 0) { dy = -e.y; e.onGround = true; }
+        if (!data.noFloor && e.y >= 0 && e.y + dy < 0) { dy = -e.y; e.onGround = true; } // staged scenes (noFloor) end each fall with its landing instead
         e.x += e.mx; e.y += dy; e.z += e.mz; if (e.onGround) e.my = 0; // Block.onLanded
         const f = e.onGround ? 0.6 * 0.98 : 0.98;
         e.mx *= f; e.my *= 0.98; e.mz *= f;

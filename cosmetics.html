@@ -364,6 +364,7 @@ const CATS = [
   { id: "topper", name: "Island toppers", icon: '<path d="M3 15.5h14M5 15.5v-3h10v3M7.5 12.5V9h5v3.5M10 9V3.5M10 3.5l3.5 2-3.5 2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>' },
   { id: "figurine", name: "Figurines", icon: '<circle cx="10" cy="5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 13.5v-4.5h6v4.5M5 17.5h10M6.5 17.5v-4h7v4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
   { id: "glyph", name: "Glyphs", icon: '<rect x="3.5" y="3.5" width="13" height="13" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 7h2v2H7zM11 7h2v2h-2zM7 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
+  { id: "trail", name: "Projectile trails", icon: '<circle cx="14.5" cy="5.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 7.5 3.5 16.5M10 7l-4 4M13 10l-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
   { id: "bed", name: "Bed destroys", icon: '<path d="M2.5 15V7M2.5 12h15v3M17.5 12V9.5a2 2 0 0 0-2-2H8v4.5M4.5 9.5h2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>' },
   { id: "spray", name: "Sprays", icon: '<rect x="4" y="4" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 13.5l2.5-3 2 2 1.5-1.5 1.5 2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1" fill="currentColor"/>' },
 ];
@@ -1168,6 +1169,14 @@ const ITEMS = [
   { id: "bed-thief", cat: "bed", name: "Thief", rar: "epic", price: 25000, get: "shop", desc: "Plays the Thief Bed Destroy when you break a bed.", tags: "bed break", rec: "bed-thief", hero: 2.38, cam: [[-8.46, 3.84, -3.37], [0, 2.2, 0], 4.6, 27.3, [-7.28, 3.66, -2.9], [0, 2.2, 0]] },
   { id: "bed-pigsplosion", cat: "bed", name: "Pigsplosion", rar: "legendary", price: 100000, get: "shop", desc: "Breaking a bed will spawn a bunch of baby pigs.", tags: "bed break", rec: "bed-pigsplosion", hero: 1.15, cam: [[-6.76, 2.51, -2.69], [0, 1.2, 0], 3.6, 21.8, [-5.82, 2.36, -2.31], [0, 1.2, 0]] },
   { id: "bed-pig-missile", cat: "bed", name: "Pig Missile", rar: "rare", price: 10000, get: "shop", desc: "Breaking a bed will spawn a fellow companion.", tags: "bed break", rec: "bed-pig-missile", hero: 2.9, cam: [[-27, 7, -10.8], [0, 8.5, 0], 8, 50, [-24, 7, -9.6], [0, 9, 0]] },
+  // Projectile trails (begin): real players' fireballs from Milo's recorded games, named by the cosmetic denicker's trail signs, copied by tgen.py
+  { id: "trail-ender", cat: "trail", name: "Ender", rar: "common", price: 5000, get: "shop", desc: "Selects the Ender Projectile Trail.", tags: "projectile fireball arrow", rec: "trail-ender", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
+  { id: "trail-red-dust", cat: "trail", name: "Red Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Red Dust Projectile Trail.", tags: "projectile fireball arrow", rec: "trail-red-dust", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
+  { id: "trail-purple-dust", cat: "trail", name: "Purple Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Purple Dust Projectile Trail.", tags: "projectile fireball arrow", rec: "trail-purple-dust", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
+  { id: "trail-angry-villager", cat: "trail", name: "Angry Villager", rar: "epic", price: 25000, get: "shop", desc: "Selects the Angry Villager Projectile Trail.", tags: "projectile fireball arrow", rec: "trail-angry-villager", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
+  { id: "trail-hearts", cat: "trail", name: "Hearts", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Hearts Projectile Trail.", tags: "projectile fireball arrow", rec: "trail-hearts", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
+  { id: "trail-rainbow", cat: "trail", name: "Rainbow", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Rainbow Projectile Trail.", tags: "projectile fireball arrow", rec: "trail-rainbow", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
+  // Projectile trails (end)
   // Kill messages: Hypixel's exact wording
   { id: "km-fire", cat: "msg", name: "Fire", rar: "common", price: 5000, get: "shop", desc: "Select the Fire Kill Messages!", tags: "chat",
     lines: km(["{V} was struck down by {K}.", "{V} was turned to dust {K}.", "{V} was melted by {K}.", "{V} was turned to ash by {K}.", "{V} was fried by {K}'s {MOB}.", "{BED} was incinerated by {K}!"]) },
@@ -2338,7 +2347,7 @@ function frame(now) {
   if (!(CAMQ?.length === 6)) followRec(HOLD >= 0 ? 1 : dt);
   // Victory dances fade out over their last moments and back in as they start again, instead of jumping back.
   const L = studio.def?.loop, cv = studio.renderer.domElement;
-  const op = current?.cat === "dance" && L && !(HOLD >= 0) ? clamp((L - studio.t) / 0.7, 0, 1) * clamp(studio.t / 0.45, 0, 1) : 1;
+  const op = (current?.cat === "dance" || current?.cat === "trail") && L && !(HOLD >= 0) ? clamp((L - studio.t) / 0.7, 0, 1) * clamp(studio.t / 0.45, 0, 1) : 1;
   if (cv.style.opacity !== String(op)) cv.style.opacity = op === 1 ? "" : op.toFixed(3);
   if (zoomGoal != null) {
     const off = studio.camera.position.clone().sub(controls.target), d = off.length();

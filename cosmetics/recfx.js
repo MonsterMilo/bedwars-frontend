@@ -2043,6 +2043,7 @@ export function createRecFx(kit0) {
       }
       if (e.kind === "obj" && (e.type === 63 || e.type === 64 || e.type === 66)) { // EntityFireball: moves by its motion, which slows by 0.95 a tick (the server's velocity packets keep it going)
         e.x += e.mx; e.y += e.my; e.z += e.mz; const f = e.type === 66 && e.meta?.["10"] ? 0.73 : 0.95; e.mx *= f; e.my *= f; e.mz *= f;
+        W.spawn(new Smoke(e.x, e.y + 0.5, e.z, 0, 0, 0)); // and leaves a puff of smoke every tick, like the game draws behind every fireball
       }
       if (e.type === 2 || e.kind === "orb" || e.type === 50 || e.type === 70) {
         const grav = e.kind === "orb" ? 0.03 : 0.04;

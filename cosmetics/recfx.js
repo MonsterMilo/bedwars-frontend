@@ -418,21 +418,21 @@ export function buildTopper(S, data) {
     const k = x + "," + z; cast.set(k, Math.max(cast.get(k) || 0, w));
   }
   if (cast.size) {
-    const R = 1.3, N = 4, cs = [...cast].map(([k, w]) => [...k.split(",").map(Number), w]);
+    const R = 1.0, N = 4, cs = [...cast].map(([k, w]) => [...k.split(",").map(Number), w]);
     const x0 = Math.min(...cs.map((c) => c[0])) - 2, x1 = Math.max(...cs.map((c) => c[0])) + 3, z0 = Math.min(...cs.map((c) => c[1])) - 2, z1 = Math.max(...cs.map((c) => c[1])) + 3;
     const W = (x1 - x0) * N + 1, H = (z1 - z0) * N + 1, A = new Float32Array(W * H);
     for (let i = 0; i < W; i++) for (let j = 0; j < H; j++) {
       const px = x0 + i / N, pz = z0 + j / N; let sh = 0;
       for (const [cx, cz, w] of cs) {
         const dx = Math.max(cx - px, 0, px - cx - 1), dz = Math.max(cz - pz, 0, pz - cz - 1), d = Math.hypot(dx, dz);
-        if (d < R) { const f = 1 - d / R; sh = Math.max(sh, w * f * f * (3 - 2 * f)); }
+        if (d < R) { const f = 1 - d / R; sh = Math.max(sh, w * f); } // fades over a block like the game's corner shading
       }
       A[i * H + j] = sh;
     }
     for (let i = 0; i < W - 1; i++) for (let j = 0; j < H - 1; j++) {
       const q = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]];
       if (q.every(([a, b]) => A[a * H + b] < 0.005)) continue;
-      for (const n of [0, 3, 2, 0, 2, 1]) { const [a, b] = q[n]; gpos.push(x0 + a / N + ox, 0.004, z0 + b / N + oz); gcol.push(0, 0, 0, A[a * H + b] * 0.62); }
+      for (const n of [0, 3, 2, 0, 2, 1]) { const [a, b] = q[n]; gpos.push(x0 + a / N + ox, 0.004, z0 + b / N + oz); gcol.push(0, 0, 0, A[a * H + b] * 0.4); } // smooth lighting darkens the grass at a wall's foot to about 0.6
     }
   }
   if (gpos.length) {
@@ -1775,7 +1775,7 @@ export function createRecFx(kit0) {
         }
         case "bed": { const e = ents.get(ev[2]); if (e) e.sleeping = true; break; } // use_bed: the corpse lies on its back
         case "anim": { const e = ents.get(ev[2]); if (e && ev[3] === 0) { if (!e.swinging || e.swingInt >= 3 || e.swingInt < 0) { e.swingInt = -1; e.swinging = true; } } break; }
-        case "kill": for (const id of ev[2]) { const e = ents.get(id); if (e) { e.dead = true; scene3.remove(e.g); ents.delete(id); if (e.rider) e.rider.vehicle = null; if (e.vehicle) e.vehicle.rider = null; } } break;
+        case "kill": for (const id of ev[2]) { const e = ents.get(id); if (e) { e.dead = true; scene3.remove(e.g); if (e.shadow) root.remove(e.shadow); ents.delete(id); if (e.rider) e.rider.vehicle = null; if (e.vehicle) e.vehicle.rider = null; } } break;
         case "attach": {
           const e = ents.get(ev[2]); if (!e) break;
           if (e.vehicle) { e.vehicle.rider = null; e.vehicle = null; }
@@ -1792,10 +1792,11 @@ export function createRecFx(kit0) {
           else if (id === 1015) sound("mob.bat.takeoff", x + 0.5, y + 0.5, z + 0.5, 0.05, (rand() - rand()) * 0.2 + 1);
           break;
         }
+        case "time": if (data.sky) S.skyTime?.(ev[3]); break; // world time (only for dances that change it)
         case "tb": { // a world block by its baked model name (terrain around a victory dance); null clears it
           const [, , x, y, z, name] = ev, key = x + "," + y + "," + z;
           if (blocks[key]) { root.remove(blocks[key]); delete blocks[key]; }
-          if (name) { const g = new THREE.Group(); g.position.set(x, y, z); root.add(g); blocks[key] = g; modelsReady.then(() => g.add(blockMesh(name))); }
+          if (name) { anyBlocks = true; const g = new THREE.Group(); g.position.set(x, y, z); root.add(g); blocks[key] = g; modelsReady.then(() => g.add(blockMesh(name))); }
           break;
         }
         case "block": {
@@ -1821,7 +1822,7 @@ export function createRecFx(kit0) {
         }
       }
     }
-    const blocks = {};
+    const blocks = {}; let anyBlocks = false; // anyBlocks: a staged world (victory dances), shadows fall on its blocks
     function runningParticles(e) { // Entity.createRunningParticles on the floor block (grass/dirt crumbs)
       const t = tileOf("block_dirt"); if (t < 0) return;
       W.spawn(new Crumb(e.x + (rand() - 0.5) * 0.6, e.y + 0.1, e.z + (rand() - 0.5) * 0.6, -e.mx * 4, 1.5, -e.mz * 4, t, 0.6, false)); // EntityDiggingFX: speeds are randomised and normalised like every particle
@@ -1973,6 +1974,27 @@ export function createRecFx(kit0) {
 
     // ---- per frame
     const camPos = new THREE.Vector3();
+    // Render.renderShadow: the soft round shadow under a mob or player on the block below it,
+    // alpha (1 - height above it / 2) * 0.5, radius the renderer's shadowSize (half for babies).
+    const SHADOW = { player: 0.5, 90: 0.7, 92: 0.7, 91: 0.7, 94: 0.7, 93: 0.3, 101: 0.3, 65: 0.25, 95: 0.5, 100: 0.75, 64: 1, 53: 3, 63: 0.5 };
+    let shadowMat = null;
+    function groundBelow(x, y, z) {
+      const bx = Math.floor(x), bz = Math.floor(z);
+      if (anyBlocks) { for (let yy = Math.floor(y + 0.01); yy > y - 3; yy--) if (blocks[bx + "," + (yy - 1) + "," + bz]) return yy; return null; }
+      return data.noFloor || y < -0.01 || Math.hypot(x, z) > 8.5 ? null : 0;
+    }
+    function drawShadow(e, x, y, z) {
+      const r = (e.kind === "player" ? SHADOW.player : SHADOW[e.type] ?? 0.5) * (e.child ? 0.5 : 1);
+      const inv = ((e.meta["0"] ?? 0) & 32) && e.kind !== "player";
+      const gy = !inv && !e.dead && !(e.type === 30 || e.type === 78) ? groundBelow(x, y, z) : null;
+      const a = gy == null ? 0 : (1 - (y - gy) / 2) * 0.5;
+      if (a <= 0.01) { if (e.shadow) e.shadow.visible = false; return; }
+      if (!e.shadow) {
+        shadowMat ||= new THREE.MeshBasicMaterial({ map: tex("misc_shadow"), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+        e.shadow = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), shadowMat.clone()); root.add(e.shadow);
+      }
+      e.shadow.visible = true; e.shadow.position.set(x, gy + 0.002, z); e.shadow.scale.set(r * 2, 1, r * 2); e.shadow.material.opacity = Math.min(1, a);
+    }
     function draw(pt) {
       S.camera.getWorldPosition(camPos);
       for (const e of ents.values()) if (e.type === 68) {
@@ -1984,6 +2006,7 @@ export function createRecFx(kit0) {
         const x = lerp(e.px, e.x, pt), y = lerp(e.py, e.y, pt), z = lerp(e.pz, e.z, pt);
         e.g.position.set(x, y, z);
         if (e.living && e.model) {
+          drawShadow(e, x, y, z);
           const body = lerpAng(e.pbody, e.body, pt);
           e.g.rotation.y = -body * D2R;
           let zr = 0;

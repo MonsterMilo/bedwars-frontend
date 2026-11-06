@@ -3980,10 +3980,11 @@ html[data-theme="deepcurrent"] .flip-sheen { --sheen: rgba(80,255,220,0.3); }
       "live live"
       "skin stats"
       "record urchin"
+      "record match"
       "notes notes"
       "clips clips"
       "replays replays";
-    grid-template-rows: auto auto auto 1fr auto auto auto;
+    grid-template-rows: auto auto auto auto 1fr auto auto auto;
     column-gap: 22px;
     align-items: start;
   }
@@ -3999,6 +4000,8 @@ html[data-theme="deepcurrent"] .flip-sheen { --sheen: rgba(80,255,220,0.3); }
   #playerModal .modal-replays { grid-area: replays; }
   #playerModal .modal-clips { grid-area: clips; }
   #playerModal .modal-record[hidden] + .modal-tags-urchin { grid-column: 1 / -1; }
+  #playerModal .modal-match { grid-area: match; }
+  #playerModal .modal-record[hidden] ~ .modal-match { grid-column: 1 / -1; }
   #playerModal .modal-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #playerModal .modal-stat-tile { padding: 12px 12px 10px; }
   #playerModal .modal-stat-value { font-size: 1.55em; }
@@ -4051,6 +4054,35 @@ html[data-theme="deepcurrent"] .modal-standing-bar > span { box-shadow: 0 0 6px 
   flex-wrap: wrap;
   color: var(--text-dim);
   font-size: 0.85em;
+}
+
+/* MATCH STATS - how our team did in each game with this player (the
+   Starfish proxy sends them from its game recording; kept after a replay is
+   deleted). One small table per game, newest first. */
+#playerModal .modal-match { display: block; padding: 12px 14px; }
+#playerModal .modal-match .modal-tags-label { margin-bottom: 8px; }
+#playerModal .modal-match + .modal-notes { margin-top: 16px; }
+.match-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.match-game + .match-game { border-top: 1px solid var(--border); padding-top: 10px; }
+.match-head { display: flex; align-items: baseline; gap: 8px; font-size: 0.8em; color: var(--text-dim); margin-bottom: 4px; }
+.match-head b { color: var(--text); font-weight: 600; }
+.match-result { margin-left: auto; font-size: 0.85em; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
+.match-result.win { color: var(--good, #4ade80); }
+.match-result.loss { color: var(--bad, #f87171); }
+#playerModal .match-table { width: 100%; min-width: 0; table-layout: auto; margin: 0; background: none; border: 0; box-shadow: none; }
+#playerModal .match-table th, #playerModal .match-table td { background: none; border: 0; position: static; }
+.match-table { width: 100%; border-collapse: collapse; font-size: 0.78em; font-variant-numeric: tabular-nums; }
+.match-table th { font-weight: 600; color: var(--text-faint); text-align: right; padding: 2px 4px; font-size: 0.9em; }
+.match-table td { text-align: right; padding: 2px 4px; color: var(--text-dim); }
+.match-table th:first-child, .match-table td:first-child { text-align: left; padding-left: 0; }
+.match-table td:first-child { color: var(--text); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.match-table tr.me td:first-child { font-weight: 700; }
+.match-table td.out { opacity: 0.55; }
+.match-more { margin-top: 8px; }
+@media (max-width: 520px) {
+  #playerModal .match-table { font-size: 0.7em; }
+  #playerModal .match-table th, #playerModal .match-table td { padding: 2px 2px; }
+  #playerModal .match-table td:first-child { max-width: 78px; }
 }
 
 /* Responsive */
@@ -17447,6 +17479,11 @@ html[data-theme="prism"] .bnav-link.active::before { background: var(--pr-spectr
         <div id="modalTags" class="modal-tags-row">Checking...</div>
         <div id="modalTagsReason" class="urchin-reason-text" hidden></div>
       </div>
+      <div id="modalMatch" class="modal-tags-section modal-match" hidden>
+        <div class="modal-tags-label">Match stats <span id="modalMatchCount" class="modal-notes-count"></span></div>
+        <ol id="modalMatchList" class="match-list"></ol>
+        <button type="button" id="modalMatchMore" class="btn btn-ghost note-btn-small match-more" hidden>Show all</button>
+      </div>
       <div id="modalNotes" class="modal-notes" hidden>
         <div class="modal-notes-head">
           <div class="modal-tags-label">Notes <span id="modalNotesCount" class="modal-notes-count"></span></div>
@@ -24624,6 +24661,83 @@ async function loadModalReplays(uuid) {
     // No list then - the rest of the popup is unaffected.
   }
 }
+// --- Match stats: our team in each game with this player (backend /match-stats, keys only) ---
+// Hidden when there are none. The newest few show; Show all opens the rest.
+const modalMatch = document.getElementById("modalMatch");
+const modalMatchList = document.getElementById("modalMatchList");
+const modalMatchCount = document.getElementById("modalMatchCount");
+const modalMatchMore = document.getElementById("modalMatchMore");
+const MATCH_SHOWN = 3;
+function matchGameItem(g) {
+  const li = document.createElement("li");
+  li.className = "match-game";
+  const head = document.createElement("div");
+  head.className = "match-head";
+  const when = document.createElement("b");
+  const played = g.playedAt ? new Date(g.playedAt) : null;
+  when.textContent = played && !isNaN(played) ? played.toLocaleDateString([], { month: "short", day: "numeric" }) : "Game";
+  const where = document.createElement("span");
+  const mins = Math.round((g.durationMs || 0) / 60000);
+  where.textContent = [g.mode, g.map, mins ? `${mins}m` : null, g.nick ? `as ${g.nick}` : null].filter(Boolean).join(" · ");
+  head.append(when, where);
+  if (g.result) {
+    const res = document.createElement("span");
+    res.className = `match-result ${g.result}`;
+    res.textContent = g.result === "win" ? "Win" : "Loss";
+    head.append(res);
+  }
+  const table = document.createElement("table");
+  table.className = "match-table";
+  const cols = [["", null], ["K/D", "Kills / deaths"], ["Finals", null], ["Beds", null], ["Dia", "Diamonds picked up"], ["Em", "Emeralds picked up"], ["Press.", "Pressure: time on an enemy island while their bed was alive and one of them was there"]];
+  const hr = document.createElement("tr");
+  for (const [label, tip] of cols) {
+    const th = document.createElement("th");
+    th.textContent = label;
+    if (tip) th.title = tip;
+    hr.append(th);
+  }
+  table.append(hr);
+  for (const p of g.players || []) {
+    const tr = document.createElement("tr");
+    if (p.me) tr.className = "me";
+    const secs = Math.round((p.pressureMs || 0) / 1000);
+    const pressure = secs >= 60 ? `${Math.floor(secs / 60)}m ${secs % 60}s` : `${secs}s`;
+    const cells = [p.name, `${p.kills}/${p.deaths}`, p.finals, p.beds, p.dia, p.em, pressure];
+    cells.forEach((v, i) => {
+      const td = document.createElement("td");
+      td.textContent = String(v);
+      if (i === 0 && p.finalDeath) { td.classList.add("out"); td.title = "Final killed in this game"; }
+      tr.append(td);
+    });
+    table.append(tr);
+  }
+  li.append(head, table);
+  return li;
+}
+async function loadModalMatchStats(uuid) {
+  modalMatch.hidden = true;
+  modalMatchList.textContent = "";
+  modalMatchMore.hidden = true;
+  if (!uuid || !getAdminKey()) return;
+  try {
+    const res = await fetch(`${backendBaseURL}/match-stats?uuid=${encodeURIComponent(uuid)}`, { headers: adminHeaders() });
+    if (!res.ok) return;
+    const { games = [] } = await res.json();
+    if (modal.dataset.activeUuid !== uuid || !games.length) return;
+    modalMatchCount.textContent = String(games.length);
+    games.slice(0, MATCH_SHOWN).forEach(g => modalMatchList.appendChild(matchGameItem(g)));
+    if (games.length > MATCH_SHOWN) {
+      modalMatchMore.hidden = false;
+      modalMatchMore.onclick = () => {
+        games.slice(MATCH_SHOWN).forEach(g => modalMatchList.appendChild(matchGameItem(g)));
+        modalMatchMore.hidden = true;
+      };
+    }
+    modalMatch.hidden = false;
+  } catch (err) {
+    // No box then - the rest of the popup is unaffected.
+  }
+}
 // --- Clips: the moments this player was beaten (backend /clips, keys only) ---
 // The final kill and bed break from each recorded game, cut by the backend
 // when it was close enough to see. Picking a card plays it above the strip
@@ -24803,6 +24917,7 @@ async function openPlayerModal(item, { retry = false } = {}) {
   renderModalNotes(item);
   loadModalClips(uuid);
   loadModalReplays(uuid);
+  loadModalMatchStats(uuid);
   modalTags.textContent = "Checking...";
   modalTagsReason.hidden = true;
 

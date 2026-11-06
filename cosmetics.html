@@ -1947,7 +1947,8 @@ const ACCENT = cssColor("--accent"), ACCENT2 = cssColor("--accent-2");
 function tint(rgb) { return function tinted(c) { const g = c.getContext("2d"), d = g.getImageData(0, 0, c.width, c.height);
   for (let i = 0; i < d.data.length; i += 4) { d.data[i] = d.data[i] * rgb[0] / 255; d.data[i + 1] = d.data[i + 1] * rgb[1] / 255; d.data[i + 2] = d.data[i + 2] * rgb[2] / 255; }
   g.putImageData(d, 0, 0); }; }
-const GRASS = blocksJson.tints.grass;
+// A touch greener than the game tint (Milo 2026-11-06: "just a tiny bit greener").
+const GRASS = [133, 192, 74];
 function grassSide() {
   if (bCache.__gs) return bCache.__gs;
   const t = blocksJson.textures, a = t["block/grass_block_side"], o = t["block/grass_block_side_overlay"];

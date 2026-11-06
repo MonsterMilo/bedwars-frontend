@@ -1955,6 +1955,27 @@ function grassSide() {
   tint(GRASS)(ov); c.getContext("2d").drawImage(ov, 0, 0);
   return (bCache.__gs = canvasTex(c));
 }
+// The staged victory dance islands are drawn with the same blocks as the topper island (Milo 2026-11-06:
+// "less green and dark like the toppers"): lit grass, dirt and stone cubes and crossed tufts and flowers.
+// Dances light their scene brighter (def.bright), so the terrain is toned back to the topper island's level.
+const terrainKit = {};
+const terrainK = (b) => { const L = (v) => 0.4 * v + 2 * 0.6 * Math.min(v, 1.25) * 0.808; return L(1) / L(b); }; // a lit top face at brightness b vs 1
+function terrainMesh(name, bright = 1) {
+  const k = terrainK(bright), kk = Math.round(k * 100);
+  const kit = terrainKit[kk] || (terrainKit[kk] = (() => {
+    const col = new THREE.Color(k, k, k), M = (t, o = {}) => new THREE.MeshLambertMaterial({ map: t, color: col, ...o });
+    const top = M(btex("grass_block_top", tint(GRASS))), side = M(grassSide()), dirt = M(btex("dirt")), stone = M(btex("stone"));
+    const plant = (n, fn) => blocksJson.textures["block/" + n] ? M(btex(n, fn), { alphaTest: .5, side: THREE.DoubleSide }) : null;
+    return { geo: new THREE.BoxGeometry(1, 1, 1), pgeo: new THREE.PlaneGeometry(.9, .9),
+      "grass#snowy=false": [side, side, top, dirt, side, side], "dirt#normal": dirt, "stone#normal": stone,
+      "tall_grass#normal": plant("grass", tint(GRASS)), "dandelion#normal": plant("dandelion"), "poppy#normal": plant("poppy"), "oxeye_daisy#normal": plant("oxeye_daisy") };
+  })());
+  const m = kit[name]; if (!m) return null;
+  if (name.startsWith("grass#") || name === "dirt#normal" || name === "stone#normal") { const b = new THREE.Mesh(kit.geo, m); b.position.set(.5, .5, .5); return b; }
+  const g = new THREE.Group();
+  for (const r of [Math.PI / 4, -Math.PI / 4]) { const pl = new THREE.Mesh(kit.pgeo, m); pl.position.set(.5, .45, .5); pl.rotation.y = r; g.add(pl); }
+  return g;
+}
 function makeIsland(far = false) {
   const g = new THREE.Group();
   const top = btex("grass_block_top", tint(GRASS)), side = grassSide(), dirt = btex("dirt"), stone = btex("stone");
@@ -2132,6 +2153,8 @@ function makeStudio(canvas, w, h) {
     for (let i = 0; i < 90; i++) S.fx.spawn({ frames: SPARK, pos: pos.clone(), vel: sphere(rnd(2.2, 3.2)), life: rnd(.9, 1.4), grav: 1.2, drag: .93, size: .15, color: colors[i % colors.length], add: true });
   };
   S.island = island;
+  S.terrain = (name) => (S.stage === "void" ? terrainMesh(name, S.bright || 1) : null);
+  S.terrainK = () => (S.stage === "void" ? terrainK(S.bright || 1) : 1); // other blocks in a staged dance are toned the same way
   let arena = null, clouds = null; S.stage = "island";
   S.setStage = (k = "island") => {
     if (k === "arena" && !arena) { arena = makeArena(); scene.add(arena); }

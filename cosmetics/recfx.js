@@ -1561,6 +1561,17 @@ export function createRecFx(kit0) {
     const W = {
       spawn(p) { batches[p.sheet || "particles"].add(p); },
     };
+    // Blocks in a staged dance scene are toned to the studio island's brightness (S.terrainK), like its own grass.
+    const toneCache = new Map();
+    function tone(g) {
+      const k = S.terrainK?.() ?? 1; if (Math.abs(k - 1) < 1e-3) return g;
+      g.traverse((o) => {
+        if (!o.material || Array.isArray(o.material) || /fire/.test(o.userData.tex || "")) return;
+        let m = toneCache.get(o.material); if (!m) { m = o.material.clone(); m.color.multiplyScalar(k); toneCache.set(o.material, m); }
+        o.material = m;
+      });
+      return g;
+    }
     const listener = new THREE.Vector3(-5, 1.68, 0), earPos = new THREE.Vector3(); // the preview camera (an armor stand's eyes)
     function sound(name, x, y, z, vol, pitch) {
       // staged victory dances are heard where the winner is (riding or standing), as he hears them in game
@@ -1771,7 +1782,7 @@ export function createRecFx(kit0) {
     function objectModel(e, data) {
       if (e.type === 2) { e.itemG = new THREE.Group(); e.g.add(e.itemG); e.hover = rand() * Math.PI * 2; }
       else if (e.type === 50) { e.blockG = new THREE.Group(); e.g.add(e.blockG); modelsReady.then(() => { const b = blockMesh("tnt"); b.position.set(-0.5, -0.5, -0.5); e.blockG.add(b); e.tntMats = []; b.traverse((o) => { if (o.material) { o.material = o.material.clone(); e.tntMats.push(o.material); } }); }); e.fuse = 80; }
-      else if (e.type === 70) { const id = data & 4095; e.blockG = new THREE.Group(); e.g.add(e.blockG); modelsReady.then(() => { const b = blockMesh(blockKey(id, (data >> 12) & 15) || "gold_block"); b.position.set(-0.5, 0, -0.5); e.blockG.add(b); }); }
+      else if (e.type === 70) { const id = data & 4095; e.blockG = new THREE.Group(); e.g.add(e.blockG); modelsReady.then(() => { const nm = blockKey(id, (data >> 12) & 15) || "gold_block", b = S.terrain?.(nm) || tone(blockMesh(nm)); b.position.x -= 0.5; b.position.z -= 0.5; e.blockG.add(b); }); }
       else if (e.type === 76 || e.type === 62 || e.type === 61) { e.sprite = new THREE.Group(); e.g.add(e.sprite); const it = { id: e.type === 76 ? 401 : e.type === 61 ? 332 : 344 }; const n = new THREE.Group(); n.scale.setScalar(0.5); const r = renderItemNode(it); r.scale.multiplyScalar(2); n.add(r); e.sprite.add(n); }
       else if (e.type === 63 || e.type === 64) { // RenderFireball: the fire charge sprite, 2 blocks for a big fireball, half for a small one
         e.sprite = new THREE.Group(); e.g.add(e.sprite); const n = new THREE.Group(); n.scale.setScalar(e.type === 63 ? 2 : 0.5); const r = renderItemNode({ id: 385 }); r.scale.multiplyScalar(2); n.add(r); e.sprite.add(n);
@@ -1930,7 +1941,11 @@ export function createRecFx(kit0) {
         case "tb": { // a world block by its baked model name (terrain around a victory dance); null clears it
           const [, , x, y, z, name] = ev, key = x + "," + y + "," + z;
           if (blocks[key]) { root.remove(blocks[key]); delete blocks[key]; }
-          if (name) { anyBlocks = true; const g = new THREE.Group(); g.position.set(x, y, z); root.add(g); blocks[key] = g; modelsReady.then(() => g.add(blockMesh(name))); }
+          if (name) {
+            anyBlocks = true; const g = new THREE.Group(); g.position.set(x, y, z); root.add(g); blocks[key] = g;
+            const own = S.terrain?.(name); // the studio's own island blocks for staged dances
+            if (own) g.add(own); else modelsReady.then(() => g.add(tone(blockMesh(name))));
+          }
           break;
         }
         case "block": {

@@ -42,13 +42,13 @@ function tex(name) {
   return texCache[name];
 }
 const imgCache = {}, TEX_H = {};
-const KILLER_SKIN = "cosmetics/skins/killer.png", DUMMY_SKIN = "cosmetics/skins/dummy.png";
+const KILLER_SKIN = "cosmetics/skins/player-16241cca.png", DUMMY_SKIN = "cosmetics/skins/dummy.png";
 function img(name) {
   if (!imgCache[name]) imgCache[name] = new Promise((res, rej) => { const i = new Image(); i.onload = () => { TEX_H[name] = i.height; res(i); }; i.onerror = rej; i.src = name.includes("/") ? name : MC + name + ".png"; });
   return imgCache[name];
 }
 const ALL_TEX = ["entity_horse_white", "entity_horse_creamy", "entity_horse_chestnut", "entity_horse_brown", "entity_horse_black", "entity_horse_gray", "entity_horse_darkbrown", "entity_horse_markings_white", "entity_horse_markings_whitefield", "entity_horse_markings_whitedots", "entity_horse_markings_blackdots", "particles", "entity_sign", "explosion", "ascii", "entity_chicken", "entity_wolf", "entity_bat", "entity_squid", "entity_skeleton", "entity_steve", "entity_experience_orb", "armor_leather_layer_1", "armor_leather_layer_1_overlay", "armor_leather_layer_2", "armor_leather_layer_2_overlay", "entity_armorstand", "entity_cow", "entity_iron_golem", "entity_witch", "entity_guardian", "entity_guardian_beam", "block_fire_layer_0_strip",
-  "rabbit_brown", "rabbit_white", "rabbit_black", "rabbit_white_splotched", "rabbit_gold", "rabbit_salt", "cosmetics/skins/killer.png", "cosmetics/skins/dummy.png",
+  "rabbit_brown", "rabbit_white", "rabbit_black", "rabbit_white_splotched", "rabbit_gold", "rabbit_salt", "cosmetics/skins/player-16241cca.png", "cosmetics/skins/dummy.png",
   "item_iron_sword", "item_stick", "item_bone", "item_cookie", "item_gold_ingot", "item_beef_raw", "item_beef_cooked", "item_leather", "item_egg", "item_fireworks", "item_leather_chestplate",
   "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel", "entity_zombie", "entity_creeper", "entity_banner_base", "misc_enchanted_item_glint", "entity_wither_skeleton", "entity_zombie_pigman", "entity_zombie_villager", "entity_blaze", "entity_creeper_armor", "entity_snowman", "entity_enderman", "entity_enderman_eyes", "entity_villager_smith", "entity_villager_farmer", "entity_villager_librarian", "entity_villager_priest", "entity_villager_butcher", "entity_wither", "entity_wither_invulnerable", "entity_pig", "entity_endermite", "block_planks_oak", "block_lava_still", "entity_sheep", "entity_sheep_fur", "entity_dragon", "entity_dragon_eyes", "entity_minecart", "item_fireball",
   ...["iron", "gold", "diamond", "chainmail"].flatMap((m) => ["armor_" + m + "_layer_1", "armor_" + m + "_layer_2"])];

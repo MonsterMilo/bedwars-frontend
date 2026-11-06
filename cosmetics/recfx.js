@@ -960,7 +960,11 @@ export function createRecFx(kit0) {
         }
         raz += Math.cos(age * 0.09) * 0.05 + 0.05; laz -= Math.cos(age * 0.09) * 0.05 + 0.05;
         rax += Math.sin(age * 0.067) * 0.05; lax -= Math.sin(age * 0.067) * 0.05;
-        rot(head, hx, hy, 0); rot(body, 0, by, 0);
+        // isSneak (entity flag 0x02): body leans 0.5, arms +0.4, legs pulled in under it, head down a pixel
+        const sn = !e.vehicle && ((e.meta?.["0"] ?? 0) & 2);
+        if (sn) { rax += 0.4; lax += 0.4; }
+        setRP(head, [0, sn ? 1 : 0, 0]); setRP(legR, [-1.9, sn ? 9 : 12, sn ? 4 : 0.1]); setRP(legL, [1.9, sn ? 9 : 12, sn ? 4 : 0.1]);
+        rot(head, hx, hy, 0); rot(body, sn ? 0.5 : 0, by, 0);
         setRP(armR, rp); setRP(armL, lp); rot(armR, rax, ray, raz); rot(armL, lax, lay, laz); rot(legR, rlx, rly, 0); rot(legL, llx, lly, 0);
       },
     };
@@ -1557,9 +1561,11 @@ export function createRecFx(kit0) {
     const W = {
       spawn(p) { batches[p.sheet || "particles"].add(p); },
     };
-    const listener = new THREE.Vector3(-5, 1.68, 0); // the preview camera (an armor stand's eyes)
+    const listener = new THREE.Vector3(-5, 1.68, 0), earPos = new THREE.Vector3(); // the preview camera (an armor stand's eyes)
     function sound(name, x, y, z, vol, pitch) {
-      const d = listener.distanceTo(new THREE.Vector3(x, y, z)), roll = 16 * Math.max(1, vol);
+      // staged victory dances are heard where the winner is (riding or standing), as he hears them in game
+      const me = data.noFloor && ents.get(1), L = me ? earPos.set(me.x, me.y + 1.62, me.z) : listener;
+      const d = L.distanceTo(new THREE.Vector3(x, y, z)), roll = 16 * Math.max(1, vol);
       const gain = Math.min(1, vol) * Math.max(0, 1 - d / roll);
       if (gain > 0.01) S.sound(name, pitch, gain);
     }
@@ -2144,7 +2150,7 @@ export function createRecFx(kit0) {
       }
       for (const e of ents.values()) {
         const x = lerp(e.px, e.x, pt), y = lerp(e.py, e.y, pt), z = lerp(e.pz, e.z, pt);
-        e.g.position.set(x, y, z);
+        e.g.position.set(x, y - (e.kind === "player" && !e.vehicle && ((e.meta?.["0"] ?? 0) & 2) ? 0.125 : 0), z); // RenderPlayer: a sneaking player is drawn 0.125 lower
         if (e.living && e.model) {
           drawShadow(e, x, y, z);
           const body = lerpAng(e.pbody, e.body, pt);

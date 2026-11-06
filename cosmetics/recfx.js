@@ -899,7 +899,7 @@ export function createRecFx(kit0) {
     const node = renderItemNode(it), gui3d = node.userData.gui3d;
     // only blocks drawn as tile entities (render type 2: chests) get this extra turn and shrink
     if (it.id === 54 || it.id === 130 || it.id === 146) { const b = new THREE.Group(); b.position.set(0, 0.1875, -0.3125); b.rotation.order = "XYZ"; b.rotation.set(20 * D2R, 45 * D2R, 0); b.scale.set(-0.375, -0.375, 0.375); p.add(b); p = b; }
-    const pre = new THREE.Group(); pre.scale.setScalar(gui3d ? (isBlockItem(it) || node.userData.builtin ? 2 : 1) : 2); p.add(pre); // ItemRenderer 2x for blocks, preTransform 2x for flat items
+    const pre = new THREE.Group(); pre.scale.setScalar(gui3d ? (isBlockItem(it) || node.userData.builtin || it.id === 397 ? 2 : 1) : 2); p.add(pre); // ItemRenderer 2x for blocks and built-in models (skulls: BuiltInModel.isGui3d is true), preTransform 2x for flat items
     const tp = itemDef(it)?.tp;
     const tr = it.id === 425 ? [[0, 90, -90], [0, 0, -4], 0.5] : tp ? tp : it.id === 397 ? THIRD.skull : blockKey(it.id, it.d) ? THIRD.block : HANDHELD.has(it.id) ? THIRD.handheld : THIRD.generated;
     pre.add(applyTransform(node, ...tr));

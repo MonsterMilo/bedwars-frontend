@@ -24832,17 +24832,21 @@ async function loadModalClips(uuid) {
     const res = await fetch(`${backendBaseURL}/clips?uuid=${encodeURIComponent(uuid)}${name}`, { headers: adminHeaders() });
     if (!res.ok) return;
     const { clips = [], sameGame = [] } = await res.json();
-    if (modal.dataset.activeUuid !== uuid || !clips.length) return;
+    if (modal.dataset.activeUuid !== uuid || (!clips.length && !sameGame.length)) return;
     // Their clips, with the other clips from the same games next to them
     // (Milo 2026-11-05: a tracked team's four final kills show on each of
     // them). Newest game first; each game in the order it happened.
+    // (A game uploaded twice is still one game: the backend's `game`.)
+    const gameOf = (c) => String(c.game || c.replayId || c.id);
     const games = new Map();
-    for (const c of clips) {
-      const g = String(c.replayId || c.id);
+    const add = (c, other) => {
+      const g = gameOf(c);
       if (!games.has(g)) games.set(g, []);
-      games.get(g).push({ c, other: false });
-    }
-    for (const c of sameGame) { const g = games.get(String(c.replayId)); if (g) g.push({ c, other: true }); }
+      games.get(g).push({ c, other });
+    };
+    for (const c of clips) add(c, false);
+    // Games they were in with none of their own clips: after the rest.
+    for (const c of sameGame) add(c, true);
     let first = true;
     for (const list of games.values()) {
       list.sort((a, b) => (a.c.at || 0) - (b.c.at || 0));

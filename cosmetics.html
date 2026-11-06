@@ -1368,8 +1368,10 @@ function recolor(img, fn) {
   return c;
 }
 function hueOf(r, g, b) { const c = new THREE.Color(r / 255, g / 255, b / 255), h = {}; c.getHSL(h); return h; }
+// The stand-in player (killer, dance winner) is Milo's pick from NameMC; its file name changes with the skin so browsers never keep an old one.
+const KILLER_FILE = "player-16241cca";
 const SKIN_IDS = [...new Set(ITEMS.map((i) => i.skin).filter(Boolean)), "dummy", "killer"];
-const skinImgs = await Promise.all(SKIN_IDS.map((id) => loadImg(`cosmetics/skins/${id}.png`)));
+const skinImgs = await Promise.all(SKIN_IDS.map((id) => loadImg(`cosmetics/skins/${id === "killer" ? KILLER_FILE : id}.png`)));
 // A skin is two textures, like the game uses: the base layer forced fully opaque
 // (1.8 does the same, so holes in a skin never show the sky through a body) and
 // the original for the second layer (hat, jacket, sleeves, trousers).

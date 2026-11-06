@@ -460,11 +460,10 @@ const ITEMS = [
   // Victory dances: only ones seen in real games (rarity, price and wording from the in-game menu)
   { id: "dragon-rider", cat: "dance", name: "Dragon Rider", rar: "legendary", price: 100000, get: "shop",
     desc: "Ride a Dragon capable of destroying the map.", tags: "dragon fly ender ride", preview: "dragonRider" },
-  // Anvil Rain falls over the whole map: shown is the patch around the winner (Milo's private win, 2026-11-06).
-  { id: "dance-anvil-rain", cat: "dance", name: "Anvil Rain", rar: "common", price: 5000, get: "shop", desc: "Anvils will rain from the sky.", tags: "anvils fall sky", rec: "dance-anvil-rain", stage: "void", hero: 4, cam: [[-24, 14, -18], [0, 1, 0], 10, 70, [-21, 12, -16], [0, 1, 0]] },
-  // Toy Stick: copied from a real game (Milo's private win, 2026-11-06). Each click of the Magic Toy Stick is its own take, with the
-  // patch of the map it blew up around it; clicks 2 and 3 landed next to each other, so they play together.
-  { id: "dance-toy-stick", cat: "dance", name: "Toy Stick", rar: "epic", price: null, get: "event", season: "Holidays", desc: "This humble baton sold at \"Sticks R Us\" is actually a magic wand. Also, it blows up things.", tags: "magic wand stick explode blocks", rec: "dance-toy-stick-1", songs: ["dance-toy-stick-1", "dance-toy-stick-2", "dance-toy-stick-3"], takeLabel: "Blast", stage: "void", hero: 1.4, cam: [[-30, 17, -22], [0, 0, 0], 10, 70, [-27, 15, -20], [0, 0, 0]] },
+  { id: "dance-anvil-rain", cat: "dance", name: "Anvil Rain", rar: "common", price: 5000, get: "shop", desc: "Anvils will rain from the sky.", tags: "anvils fall sky", rec: "dance-anvil-rain", stage: "void", hero: 9, cam: [[-24, 16, -22], [0, -1, 0], 10, 70, [-21, 14, -19], [0, -1, 0]] },
+  // Toy Stick and Anvil Rain are staged on a clean island (Milo 2026-11-06): the blasts and anvils are the real ones measured
+  // from his recorded wins (blast sizes, which blocks fly and how fast, anvil drop times, heights and spread).
+  { id: "dance-toy-stick", cat: "dance", name: "Toy Stick", rar: "epic", price: null, get: "event", season: "Holidays", desc: "This humble baton sold at \"Sticks R Us\" is actually a magic wand. Also, it blows up things.", tags: "magic wand stick explode blocks", rec: "dance-toy-stick", stage: "void", hero: 5.0, cam: [[-24, 16, -22], [0, -1, 0], 10, 70, [-21, 14, -19], [0, -1, 0]] },
   // Death cries: the sound and pitch Hypixel plays (the packet's pitch byte, as the 1.8 client clamps it)
   { id: "bazinga", cat: "cry", name: "Bazinga", rar: "common", price: 5000, get: "shop", desc: "Plays the Bazinga Death Cry when you die.", tags: "sound blaze", preview: "cry", sound: ["mob.blaze.death", 2] },
   { id: "cry-deflated-toy", cat: "cry", name: "Deflated Toy", rar: "common", price: 5000, get: "shop", desc: "Plays the Deflated Toy Death Cry when you die.", tags: "sound bat", preview: "cry", sound: ["mob.bat.death", 0.5] },
@@ -2188,6 +2187,8 @@ function seeded(s) { return () => { s = (s * 16807) % 2147483647; return (s - 1)
 
 /* ------------------------------------------------------------------ studio dialog */
 let zoomGoal = null;
+// Sprays only read face-on, so they never spin by themselves (Milo 2026-11-06); dragging still turns them.
+const autoSpin = () => spin && current?.cat !== "spray";
 let studio = null, controls = null, current = null, raf = 0, last = 0, speed = 1, spin = true;
 function ensureStudio() {
   if (studio) return;
@@ -2201,7 +2202,7 @@ function ensureStudio() {
   // Spinning waits a while after you let go, so the view you picked stays put.
   let spinTimer = 0;
   controls.addEventListener("start", () => { controls.autoRotate = false; clearTimeout(spinTimer); });
-  controls.addEventListener("end", () => { clearTimeout(spinTimer); spinTimer = setTimeout(() => { controls.autoRotate = spin; }, 6500); });
+  controls.addEventListener("end", () => { clearTimeout(spinTimer); spinTimer = setTimeout(() => { controls.autoRotate = autoSpin(); }, 6500); });
   // Scroll zoom glides to the new distance instead of jumping a step per notch
   // (pinch zoom on touch screens still goes through OrbitControls).
   $("stage").addEventListener("wheel", (e) => {
@@ -2210,7 +2211,7 @@ function ensureStudio() {
     const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1);
     const d = zoomGoal ?? studio.camera.position.distanceTo(controls.target);
     zoomGoal = clamp(d * Math.exp(clamp(dy, -300, 300) * 0.001), controls.minDistance, controls.maxDistance);
-    controls.autoRotate = false; clearTimeout(spinTimer); spinTimer = setTimeout(() => { controls.autoRotate = spin; }, 6500);
+    controls.autoRotate = false; clearTimeout(spinTimer); spinTimer = setTimeout(() => { controls.autoRotate = autoSpin(); }, 6500);
   }, { capture: true, passive: false });
   new ResizeObserver(resize).observe($("stage"));
 }
@@ -2269,7 +2270,7 @@ function openStudio(id, push = true) {
   cancelAnimationFrame(raf); stopSounds();
   if (!chatOnly) {
     const C = PREVIEWS[it.preview].cam || STAGE_CAM[PREVIEWS[it.preview].stage || "island"];
-    studio.camera.position.set(...C[0]); controls.target.set(...C[1]); camOff.set(0, 0, 0); camGoal.set(0, 0, 0); zoomGoal = null; controls.minDistance = C[2]; controls.maxDistance = C[3];
+    studio.camera.position.set(...C[0]); controls.target.set(...C[1]); camOff.set(0, 0, 0); camGoal.set(0, 0, 0); zoomGoal = null; controls.autoRotate = autoSpin(); controls.minDistance = C[2]; controls.maxDistance = C[3];
     studio.audible = true; studio.load(PREVIEWS[it.preview], it);
     last = performance.now(); raf = requestAnimationFrame(frame);
   }

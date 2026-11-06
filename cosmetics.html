@@ -458,12 +458,39 @@ const ITEMS = [
   { id: "golem-yeet", cat: "final", name: "Golem Yeet", rar: "legendary", price: null, get: "slumber", desc: "YEEEEET your enemies with the help of an Iron Golem!", tags: "iron golem launch", rec: "golem-yeet", hero: 1.6, rise: 13 },
   // Older previews built by hand (not recorded yet)
   // Victory dances: only ones seen in real games (rarity, price and wording from the in-game menu)
-  { id: "dragon-rider", cat: "dance", name: "Dragon Rider", rar: "legendary", price: 100000, get: "shop",
-    desc: "Ride a Dragon capable of destroying the map.", tags: "dragon fly ender ride", preview: "dragonRider" },
   { id: "dance-anvil-rain", cat: "dance", name: "Anvil Rain", rar: "common", price: 5000, get: "shop", desc: "Anvils will rain from the sky.", tags: "anvils fall sky", rec: "dance-anvil-rain", stage: "void", bright: 1.9, hero: 9, cam: [[-24, 16, -22], [0, -1, 0], 10, 70, [-21, 14, -19], [0, -1, 0]] },
   // Toy Stick and Anvil Rain are staged on a clean island (Milo 2026-11-06): the blasts and anvils are the real ones measured
   // from his recorded wins (blast sizes, which blocks fly and how fast, anvil drop times, heights and spread).
   { id: "dance-toy-stick", cat: "dance", name: "Toy Stick", rar: "epic", price: null, get: "event", season: "Holidays", desc: "This humble baton sold at \"Sticks R Us\" is actually a magic wand. Also, it blows up things.", tags: "magic wand stick explode blocks", rec: "dance-toy-stick", stage: "void", bright: 1.9, hero: 5.0, cam: [[-24, 16, -22], [0, -1, 0], 10, 70, [-21, 14, -19], [0, -1, 0]] },
+  // Recorded victory dances (begin): copied from Milo's own wins (2026-11-06) onto the staged island by dgen.py
+  { id: "dance-cold-snap", cat: "dance", name: "Cold Snap", rar: "common", price: 5000, get: "shop", desc: "Chill an area around you to absolute zero.", tags: "ice freeze snow", rec: "dance-cold-snap", stage: "void", bright: 1.9, hero: 5, cam: [[-16.0, 13.9, -15.5], [0, 1, 0], 9.0, 64.3, [-14.1, 12.4, -13.6], [0, 1, 0]] },
+  { id: "dance-yeehaw", cat: "dance", name: "Yeehaw", rar: "common", price: 5000, get: "shop", desc: "Ride a horse like it's 1876.", tags: "horse ride cowboy", rec: "dance-yeehaw", stage: "void", bright: 1.9, hero: 3, cam: [[-9.9, 9.0, -9.6], [0, 1, 0], 5.6, 40.0, [-8.7, 8.1, -8.4], [0, 1, 0]], follow: 1 },
+  { id: "dance-fireworks", cat: "dance", name: "Fireworks", rar: "common", price: 5000, get: "shop", desc: "Celebrate with a splendid fireworks show!", tags: "fireworks sky", rec: "dance-fireworks", stage: "void", bright: 1.9, hero: 5, cam: [[-17.5, 15.1, -16.9], [0, 1, 0], 9.8, 70.2, [-15.4, 13.4, -14.9], [0, 1, 0]] },
+  { id: "dance-meteor-shower", cat: "dance", name: "Meteor Shower", rar: "rare", price: 10000, get: "shop", desc: "A meteor shower will rain down from the sky.", tags: "fireballs explode sky", rec: "dance-meteor-shower", stage: "void", bright: 1.9, hero: 5, cam: [[-24, 12, -28], [0, 9, 0], 20, 140, [-21.6, 10.8, -25.2], [0, 9, 0]] },
+  { id: "dance-guardians", cat: "dance", name: "Guardians", rar: "rare", price: 10000, get: "shop", desc: "Perform a Guardian summoning ritual.", tags: "guardian beam ritual", rec: "dance-guardians", stage: "void", bright: 1.9, hero: 5, cam: [[-12.8, 11.3, -12.4], [0, 1, 0], 7.2, 51.3, [-11.3, 10.1, -10.9], [0, 1, 0]] },
+  { id: "dance-night-shift", cat: "dance", name: "Night Shift", rar: "rare", price: 10000, get: "shop", desc: "Set it to day, set it to night, repeat, like a god.", tags: "day night time sky", rec: "dance-night-shift", stage: "void", bright: 1.9, hero: 5, cam: [[-9.3, 8.5, -9.0], [0, 1, 0], 5.2, 37.5, [-8.2, 7.6, -7.9], [0, 1, 0]] },
+  { id: "dance-floating-lanterns", cat: "dance", name: "Floating Lanterns", rar: "rare", price: 10000, get: "shop", desc: "Spawn floating lanterns to brighten up the night.", tags: "lanterns float bats", rec: "dance-floating-lanterns", stage: "void", bright: 1.9, hero: 5, cam: [[-18.7, 16.0, -18.1], [0, 1, 0], 10.5, 75.0, [-16.5, 14.2, -15.9], [0, 1, 0]] },
+  { id: "dance-raining-pigs", cat: "dance", name: "Raining Pigs", rar: "rare", price: 10000, get: "shop", desc: "The sky will rain with pigs.", tags: "pigs fall sky", rec: "dance-raining-pigs", stage: "void", bright: 1.9, hero: 5, cam: [[-18.7, 16.8, -18.1], [0, 1.8, 0], 10.5, 75.0, [-16.5, 15.0, -15.9], [0, 1.8, 0]] },
+  { id: "dance-special-fireworks", cat: "dance", name: "Special Fireworks", rar: "epic", price: 25000, get: "shop", desc: "Write your name in the sky!", tags: "fireworks name sky", rec: "dance-special-fireworks", stage: "void", bright: 1.9, hero: 5, cam: [[-9.3, 17.5, -9.0], [0, 10, 0], 5.2, 37.5, [-8.2, 16.6, -7.9], [0, 10, 0]] },
+  { id: "dance-wither-rider", cat: "dance", name: "Wither Rider", rar: "epic", price: 25000, get: "shop", desc: "Ride a Wither straight from the nether - click to shoot Wither Skulls.", tags: "wither skulls ride", rec: "dance-wither-rider", stage: "void", bright: 1.9, hero: 5, cam: [[-9.9, 16.5, -9.6], [0, 8.4, 0], 5.6, 40.0, [-8.7, 15.5, -8.4], [0, 8.4, 0]], follow: 1 },
+  { id: "dance-pumpkin-laser", cat: "dance", name: "Veggy SpringLazor™", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Fire a huge Pumpkin Laser that destroys everything in its path! Watch out for the recoil.", tags: "pumpkin laser beam explode", rec: "dance-pumpkin-laser", stage: "void", bright: 1.9, hero: 5, cam: [[-17.4, 21.3, -16.8], [0, 7.2, 0], 9.8, 70.0, [-15.3, 19.6, -14.8], [0, 7.2, 0]], follow: 1 },
+  { id: "dance-rabbit-meteors", cat: "dance", name: "Rabbit Meteors", rar: "epic", price: 25000, get: "shop", desc: "Rabbits fall from the sky and explode around you!", tags: "rabbits explode sky", rec: "dance-rabbit-meteors", stage: "void", bright: 1.9, hero: 5, cam: [[-18.7, 23.1, -18.1], [0, 8.1, 0], 10.5, 75.0, [-16.5, 21.3, -15.9], [0, 8.1, 0]] },
+  { id: "dance-rainbow-dolly", cat: "dance", name: "Rainbow Dolly", rar: "epic", price: 25000, get: "shop", desc: "Spawn Dolly the sheep. When you hit Dolly, she clones herself.", tags: "sheep rainbow clone", rec: "dance-rainbow-dolly", stage: "void", bright: 1.9, hero: 5, cam: [[-9.3, 8.5, -9.0], [0, 1, 0], 5.2, 37.5, [-8.2, 7.6, -7.9], [0, 1, 0]] },
+  { id: "dance-terror", cat: "dance", name: "Terror", rar: "epic", price: null, get: "event", season: "Halloween", desc: "The fear doesn't actually creep in until you're alone in the dark and think of this victory dance.", tags: "scary dark ghast", rec: "dance-terror", stage: "void", bright: 1.9, hero: 5, cam: [[-10.5, 9.5, -10.2], [0, 1, 0], 5.9, 42.3, [-9.2, 8.5, -9.0], [0, 1, 0]] },
+  { id: "dance-pumpkin-patch", cat: "dance", name: "Pumpkin Patch", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Spread pumpkins wherever you walk!", tags: "pumpkins jack o lantern", rec: "dance-pumpkin-patch", stage: "void", bright: 1.9, hero: 5, cam: [[-9.3, 8.5, -9.0], [0, 1, 0], 5.2, 37.5, [-8.2, 7.6, -7.9], [0, 1, 0]] },
+  { id: "dance-chinese-dragon", cat: "dance", name: "Chinese Dragon", rar: "epic", price: 25000, get: "shop", desc: "Spawn a chinese dragon.", tags: "dragon lunar new year", rec: "dance-chinese-dragon", stage: "void", bright: 1.9, hero: 5, cam: [[-9.9, 18.0, -9.6], [0, 10, 0], 5.6, 40.0, [-8.7, 17.1, -8.4], [0, 10, 0]], follow: 1 },
+  { id: "dance-kart-away", cat: "dance", name: "Kart Away", rar: "epic", price: 25000, get: "shop", desc: "Flying minecarts?! Who knew!", tags: "minecart fly", rec: "dance-kart-away", stage: "void", bright: 1.9, hero: 5, cam: [[-9.9, 9.0, -9.6], [0, 1, 0], 5.6, 40.0, [-8.7, 8.1, -8.4], [0, 1, 0]], follow: 1 },
+  { id: "dragon-rider", cat: "dance", name: "Dragon Rider", rar: "legendary", price: 100000, get: "shop", desc: "Ride a Dragon capable of destroying the map.", tags: "dragon fly ender ride", rec: "dragon-rider", stage: "void", bright: 1.9, hero: 5, cam: [[-9.9, 9.0, -9.6], [0, 1, 0], 5.6, 40.0, [-8.7, 8.1, -8.4], [0, 1, 0]], follow: 1 },
+  { id: "dance-haunted", cat: "dance", name: "Haunted", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "It's spooky-time! This Victory Dance releases the souls of a bunch of poor players you killed in past games to celebrate your victory.", tags: "ghosts bats night", rec: "dance-haunted", stage: "void", bright: 1.9, hero: 5, cam: [[-18.7, 16.0, -18.1], [0, 1, 0], 10.5, 75.0, [-16.5, 14.2, -15.9], [0, 1, 0]] },
+  { id: "dance-graveyard-rave", cat: "dance", name: "Graveyard Rave", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "The ghosts are dancing.", tags: "zombies skeletons witches music dance", rec: "dance-graveyard-rave", stage: "void", bright: 1.9, hero: 5, cam: [[-18.7, 16.0, -18.1], [0, 1, 0], 10.5, 75.0, [-16.5, 14.2, -15.9], [0, 1, 0]] },
+  { id: "dance-dragon-fire", cat: "dance", name: "Dragon Fire", rar: "legendary", price: 100000, get: "shop", desc: "Rain fire down on your former enemies.", tags: "dragons fireballs explode", rec: "dance-dragon-fire", stage: "void", bright: 1.9, hero: 5, cam: [[-10, 30, -66], [0, 26, 0], 20, 140, [-9.0, 27.0, -59.4], [0, 26, 0]] },
+  { id: "dance-twerk-apocalypse", cat: "dance", name: "Twerk Apocalypse", rar: "legendary", price: 100000, get: "shop", desc: "Spawn tons more of yourself and have them twerk.", tags: "clones twerk sneak", rec: "dance-twerk-apocalypse", stage: "void", bright: 1.9, hero: 5, cam: [[-16.0, 13.9, -15.5], [0, 1, 0], 9.0, 64.2, [-14.1, 12.3, -13.6], [0, 1, 0]] },
+  { id: "dance-infection", cat: "dance", name: "Infection", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Spawns villagers around you only for them all to be infected!", tags: "villagers zombies lightning", rec: "dance-infection", stage: "void", bright: 1.9, hero: 5, cam: [[-14.3, 12.5, -13.8], [0, 1, 0], 8.0, 57.3, [-12.6, 11.1, -12.1], [0, 1, 0]] },
+  { id: "dance-pumpkin-bomber", cat: "dance", name: "Pumpkin Bomber", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Right-click with a wand to spawn giant pumpkins that will destroy the map.", tags: "giant pumpkins explode wand", rec: "dance-pumpkin-bomber", stage: "void", bright: 1.9, hero: 5, cam: [[-12.9, 11.4, -12.5], [0, 1, 0], 7.3, 51.9, [-11.4, 10.2, -11.0], [0, 1, 0]] },
+  { id: "dance-puppy-party", cat: "dance", name: "Puppy Party", rar: "legendary", price: 100000, get: "shop", desc: "Spawn a horde of wolves.", tags: "wolves dogs", rec: "dance-puppy-party", stage: "void", bright: 1.9, hero: 5, cam: [[-10.0, 9.1, -9.7], [0, 1, 0], 5.6, 40.2, [-8.8, 8.1, -8.5], [0, 1, 0]] },
+  { id: "dance-hurricane-hell", cat: "dance", name: "Hurricane Hell", rar: "legendary", price: 100000, get: "shop", desc: "The worst thing to happen to bedwars.", tags: "tornado blocks storm", rec: "dance-hurricane-hell", stage: "void", bright: 1.9, hero: 5, cam: [[-18.7, 19.0, -18.1], [0, 4, 0], 10.5, 75.0, [-16.5, 17.2, -15.9], [0, 4, 0]] },
+  { id: "dance-dreamscape", cat: "dance", name: "Dreamscape", rar: "legendary", price: null, get: "slumber", desc: "Put the whole map into a mythical dream-like state.", tags: "dream portal particles", rec: "dance-dreamscape", stage: "void", bright: 1.9, hero: 5, cam: [[-5.6, 6.1, -5.4], [0, 1.6, 0], 3.1, 22.5, [-4.9, 5.6, -4.8], [0, 1.6, 0]] },
+  // Recorded victory dances (end)
   // Death cries: the sound and pitch Hypixel plays (the packet's pitch byte, as the 1.8 client clamps it)
   { id: "bazinga", cat: "cry", name: "Bazinga", rar: "common", price: 5000, get: "shop", desc: "Plays the Bazinga Death Cry when you die.", tags: "sound blaze", preview: "cry", sound: ["mob.blaze.death", 2] },
   { id: "cry-deflated-toy", cat: "cry", name: "Deflated Toy", rar: "common", price: 5000, get: "shop", desc: "Plays the Deflated Toy Death Cry when you die.", tags: "sound bat", preview: "cry", sound: ["mob.bat.death", 0.5] },
@@ -1890,7 +1917,7 @@ for (const it of ITEMS) if (it.rec) {
     if (recData[rec]) go(recData[rec]);
     else loadRec(rec).then((d) => { if (S.def === def && S.it === it && (it.songs?.[def.take || 0] || it.rec) === rec) { S.t = 0; go(d); } });
     const f = (t) => run?.(t);
-    f.focus = () => run?.focus?.();
+    f.focus = () => run?.focus?.(); f.me = () => run?.me?.();
     return f;
   } };
 }
@@ -2082,7 +2109,7 @@ function makeStudio(canvas, w, h) {
     item.rotation.set(0, 0, 0);
     S.mc = !!(def.rec || def.mc); for (const l of [hemi, key, rim, glow]) l.visible = !S.mc; for (const l of [mcAmb, mcL0, mcL1]) l.visible = S.mc;
     // Staged world scenes (victory dances on an island) are lit like daylight terrain: brighter than the entity light.
-    S.bright = def.bright || 1; mcAmb.intensity = 0.4 * Math.PI * S.bright; mcL0.intensity = mcL1.intensity = 0.6 * Math.PI * Math.min(S.bright, 1.25);
+    S.bright = def.bright || 1; S.skyK = 1; scene.background = null; mcAmb.intensity = 0.4 * Math.PI * S.bright; mcL0.intensity = mcL1.intensity = 0.6 * Math.PI * Math.min(S.bright, 1.25);
     S.flash(0); S.setStage(def.stage); arena?.userData.reset();
     S.def = def; S.it = it; S.t = 0; S.tick = def.build(S, it);
   };
@@ -2115,7 +2142,18 @@ function makeStudio(canvas, w, h) {
   S.blast = (c, r) => arena?.userData.blast(c, r);
   S.groundAt = (x, z) => S.stage === "arena" && arena.userData.solid(Math.round(x), Math.round(z));
   // Lightning lights up the whole world for a moment, as in the game.
-  S.flash = (k) => { hemi.intensity = 1.3 + k * 1.1; sky.intensity = S.mc ? 0 : k * 35; mcAmb.intensity = (0.4 * (S.bright || 1) + k * 0.6) * Math.PI; };
+  S.flash = (k) => { hemi.intensity = 1.3 + k * 1.1; sky.intensity = S.mc ? 0 : k * 35; mcAmb.intensity = (0.4 * (S.bright || 1) * (S.skyK ?? 1) + k * 0.6) * Math.PI; };
+  // Time of day from the recording (dances that change it: Night Shift, Haunted...): the game's sun angle
+  // (WorldProvider.calculateCelestialAngle) gives the sky's brightness; the sky colour and the light follow it.
+  const daySky = new THREE.Color(0x78a7ff), nightSky = new THREE.Color(0x03050c);
+  S.skyTime = (t) => {
+    let a = (Math.abs(t) % 24000) / 24000 - 0.25; if (a < 0) a += 1; if (a > 1) a -= 1;
+    const f2 = 1 - (Math.cos(a * Math.PI) + 1) / 2; a += (f2 - a) / 3;
+    const sun = clamp(Math.cos(a * Math.PI * 2) * 2 + 0.5, 0, 1);
+    S.skyK = 0.22 + 0.78 * sun;
+    scene.background = (scene.background instanceof THREE.Color ? scene.background : new THREE.Color()).copy(nightSky).lerp(daySky, sun);
+    mcL0.intensity = mcL1.intensity = 0.6 * Math.PI * Math.min(S.bright, 1.25) * S.skyK; S.flash(0);
+  };
   S.step = (dt) => {
     S.t += dt; S.clock = (S.clock || 0) + dt;
     island.position.y = Math.sin(S.clock * 0.8) * 0.04; item.position.y = island.position.y; S.fx.g.position.y = island.position.y;
@@ -2178,6 +2216,8 @@ async function makeThumbs() {
     for (let i = 0; i < steps; i++) T.step(1 / 60);
     Math.random = realRandom;
     if (def.rec || def.top) await new Promise((r) => setTimeout(r, 0)); // let item and block meshes attach (they are added once their models load)
+    const me = it.follow && T.tick?.me?.(); // dances that ride off: the picture keeps the same view of the winner
+    if (me) { T.camera.position.set(me.x + C[4][0] - C[5][0], me.y + 1 + C[4][1] - C[5][1], me.z + C[4][2] - C[5][2]); T.camera.lookAt(me.x, me.y + 1, me.z); }
     T.renderer.render(T.scene, T.camera);
     const url = c.toDataURL("image/webp", 0.9);
     out[it.id] = { key: thumbKey(it), url };
@@ -2242,7 +2282,17 @@ function followRec(dt) {
   // Small, slow drift only: the focus point is smoothed twice so particles
   // appearing and fading never jolt the view.
   // Effects that climb high (Rising Dragon...) carry rise: how far up the view may follow them.
-  const rise = current?.rise || 0;
+  const rise = current?.rise || 0, follow = current?.follow && studio.def?.rec;
+  if (follow) { // riding dances: the view goes along with the winner
+    const me = studio.tick?.me?.(), base0 = PREVIEWS[current?.preview]?.cam?.[1];
+    if (me && base0) camRaw.set(me.x - base0[0] * 0, me.y + 1 - base0[1], me.z); else camRaw.set(0, 0, 0);
+    const k = 1 - Math.exp(-dt * 2.2); camGoal.lerp(camRaw, k);
+    const dx = camGoal.x - camOff.x, dy = camGoal.y - camOff.y, dz = camGoal.z - camOff.z;
+    camOff.x += dx; camOff.y += dy; camOff.z += dz;
+    controls.target.x += dx; controls.target.y += dy; controls.target.z += dz;
+    studio.camera.position.x += dx; studio.camera.position.y += dy; studio.camera.position.z += dz;
+    return;
+  }
   if (fo && base && current?.cat !== "figurine" && current?.cat !== "glyph" && current?.cat !== "spray" && current?.cat !== "shop") camRaw.set(clamp((fo.x - base[0]) * 0.35, -0.35, 0.35), rise ? clamp((fo.y - base[1]) * 0.85, -0.2, rise) : clamp((fo.y - base[1]) * 0.35, -0.2, 0.7), clamp((fo.z - base[2]) * 0.35, -0.45, 0.45));
   else camRaw.set(0, 0, 0);
   const rate = rise ? 2.5 : 0.7; // a climbing effect is followed closely enough to keep it in view

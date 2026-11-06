@@ -47,10 +47,10 @@ function img(name) {
   if (!imgCache[name]) imgCache[name] = new Promise((res, rej) => { const i = new Image(); i.onload = () => { TEX_H[name] = i.height; res(i); }; i.onerror = rej; i.src = name.includes("/") ? name : MC + name + ".png"; });
   return imgCache[name];
 }
-const ALL_TEX = ["particles", "entity_sign", "explosion", "ascii", "entity_chicken", "entity_wolf", "entity_bat", "entity_squid", "entity_skeleton", "entity_steve", "entity_experience_orb", "armor_leather_layer_1", "armor_leather_layer_1_overlay", "armor_leather_layer_2", "armor_leather_layer_2_overlay", "entity_armorstand", "entity_cow", "entity_iron_golem", "entity_witch", "entity_guardian", "entity_guardian_beam", "block_fire_layer_0_strip",
+const ALL_TEX = ["entity_horse_white", "entity_horse_creamy", "entity_horse_chestnut", "entity_horse_brown", "entity_horse_black", "entity_horse_gray", "entity_horse_darkbrown", "entity_horse_markings_white", "entity_horse_markings_whitefield", "entity_horse_markings_whitedots", "entity_horse_markings_blackdots", "particles", "entity_sign", "explosion", "ascii", "entity_chicken", "entity_wolf", "entity_bat", "entity_squid", "entity_skeleton", "entity_steve", "entity_experience_orb", "armor_leather_layer_1", "armor_leather_layer_1_overlay", "armor_leather_layer_2", "armor_leather_layer_2_overlay", "entity_armorstand", "entity_cow", "entity_iron_golem", "entity_witch", "entity_guardian", "entity_guardian_beam", "block_fire_layer_0_strip",
   "rabbit_brown", "rabbit_white", "rabbit_black", "rabbit_white_splotched", "rabbit_gold", "rabbit_salt", "cosmetics/skins/killer.png", "cosmetics/skins/dummy.png",
   "item_iron_sword", "item_stick", "item_bone", "item_cookie", "item_gold_ingot", "item_beef_raw", "item_beef_cooked", "item_leather", "item_egg", "item_fireworks", "item_leather_chestplate",
-  "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel", "entity_zombie", "entity_creeper", "entity_banner_base", "misc_enchanted_item_glint", "entity_wither_skeleton", "entity_zombie_pigman", "entity_zombie_villager", "entity_blaze", "entity_creeper_armor", "entity_snowman", "entity_enderman", "entity_enderman_eyes", "entity_villager_smith", "entity_wither", "entity_wither_invulnerable", "entity_pig", "entity_endermite", "block_planks_oak", "block_lava_still",
+  "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel", "entity_zombie", "entity_creeper", "entity_banner_base", "misc_enchanted_item_glint", "entity_wither_skeleton", "entity_zombie_pigman", "entity_zombie_villager", "entity_blaze", "entity_creeper_armor", "entity_snowman", "entity_enderman", "entity_enderman_eyes", "entity_villager_smith", "entity_wither", "entity_wither_invulnerable", "entity_pig", "entity_endermite", "block_planks_oak", "block_lava_still", "entity_sheep", "entity_sheep_fur", "entity_dragon", "entity_dragon_eyes", "entity_minecart", "item_fireball",
   ...["iron", "gold", "diamond", "chainmail"].flatMap((m) => ["armor_" + m + "_layer_1", "armor_" + m + "_layer_2"])];
 const matCache = {};
 // Skin base layers are drawn solid, as the game makes them when it loads a skin
@@ -157,7 +157,7 @@ let MODELS = null;
 const modelsReady = fetch(MC + "models.json").then((r) => r.json()).then((j) => { MODELS = j; });
 const ITEM_TEX = {
   267: "item_iron_sword", 280: "item_stick", 352: "item_bone", 357: "item_cookie", 266: "item_gold_ingot", 363: "item_beef_raw", 364: "item_beef_cooked",
-  334: "item_leather", 344: "item_egg", 401: "item_fireworks", 299: "item_leather_chestplate", 300: "item_leather_leggings", 301: "item_leather_boots",
+  334: "item_leather", 344: "item_egg", 401: "item_fireworks", 385: "item_fireball", 299: "item_leather_chestplate", 300: "item_leather_leggings", 301: "item_leather_boots",
   276: "item_diamond_sword", 312: "item_diamond_leggings", 313: "item_diamond_boots", 314: "item_gold_helmet", 316: "item_gold_leggings", 399: "item_nether_star",
   400: "item_pumpkin_pie", 332: "item_snowball", "38:4": "block_flower_tulip_red", "38:6": "block_flower_tulip_white",
 };
@@ -945,7 +945,8 @@ export function createRecFx(kit0) {
         const hx = pitch * D2R, hy = wrap(headYaw - bodyYaw) * D2R;
         let rax = Math.cos(ls * 0.6662 + Math.PI) * 2 * la * 0.5, lax = Math.cos(ls * 0.6662) * 2 * la * 0.5;
         let raz = 0, laz = 0, ray = 0, lay = 0, by = 0;
-        const rlx = Math.cos(ls * 0.6662) * 1.4 * la, llx = Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la;
+        let rlx = Math.cos(ls * 0.6662) * 1.4 * la, llx = Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la, rly = 0, lly = 0;
+        if (e.vehicle) { rax -= Math.PI / 5; lax -= Math.PI / 5; rlx = llx = -Math.PI * 2 / 5; rly = Math.PI / 10; lly = -Math.PI / 10; } // isRiding: sat down
         if (e.eq[0]) rax = rax * 0.5 - Math.PI / 10;
         let rp = [-5, slim ? 2.5 : 2, 0], lp = [5, slim ? 2.5 : 2, 0];
         const sw = e.swingAt(pt);
@@ -960,7 +961,7 @@ export function createRecFx(kit0) {
         raz += Math.cos(age * 0.09) * 0.05 + 0.05; laz -= Math.cos(age * 0.09) * 0.05 + 0.05;
         rax += Math.sin(age * 0.067) * 0.05; lax -= Math.sin(age * 0.067) * 0.05;
         rot(head, hx, hy, 0); rot(body, 0, by, 0);
-        setRP(armR, rp); setRP(armL, lp); rot(armR, rax, ray, raz); rot(armL, lax, lay, laz); rot(legR, rlx, 0, 0); rot(legL, llx, 0, 0);
+        setRP(armR, rp); setRP(armL, lp); rot(armR, rax, ray, raz); rot(armL, lax, lay, laz); rot(legR, rlx, rly, 0); rot(legL, llx, lly, 0);
       },
     };
   }
@@ -1426,11 +1427,125 @@ export function createRecFx(kit0) {
       },
     };
   }
-  const CHILD_TYPES = new Set([93, 101, 95, 92, 90]); // EntityAgeable: data 12 below 0 is a baby
+  // ---- models for the victory dances (ModelSheep1/2, ModelZombie at 6x, ModelHorse, ModelDragon, ModelMinecart)
+  const FLEECE = [[1, 1, 1], [0.85, 0.5, 0.2], [0.7, 0.3, 0.85], [0.4, 0.6, 0.85], [0.9, 0.9, 0.2], [0.5, 0.8, 0.1], [0.95, 0.5, 0.65], [0.3, 0.3, 0.3], [0.6, 0.6, 0.6], [0.3, 0.5, 0.6], [0.5, 0.25, 0.7], [0.2, 0.3, 0.7], [0.4, 0.3, 0.2], [0.4, 0.5, 0.2], [0.6, 0.2, 0.2], [0.1, 0.1, 0.1]];
+  function sheep(e) { // ModelSheep2 (body) with ModelSheep1 (wool, tinted by the fleece colour) on top; jeb_ cycles the colours
+    const mat = emat("entity_sheep"), wool = new THREE.MeshLambertMaterial({ map: tex("entity_sheep_fur"), alphaTest: 0.1, side: THREE.DoubleSide });
+    const m = new THREE.Group(), g = new THREE.Group(), hg = new THREE.Group(); m.add(g, hg);
+    if (e.child) { hg.position.set(0, -8 / 16, -4 / 16); g.scale.setScalar(0.5); g.position.y = -24 / 16 * 0.5; }
+    const head = piece(hg, [0, 6, -8]); cube(head, mat, 64, 32, 0, 0, [-3, -4, -6, 6, 6, 8]);
+    const body = piece(g, [0, 5, 2]); cube(body, mat, 64, 32, 28, 8, [-4, -10, -7, 8, 16, 6]);
+    const legs = [[-3, 12, 7], [3, 12, 7], [-3, 12, -5], [3, 12, -5]].map((rp) => { const p = piece(g, rp); cube(p, mat, 64, 32, 0, 16, [-2, 0, -2, 4, 12, 4]); return p; });
+    const wHead = piece(head); cube(wHead, wool, 64, 32, 0, 0, [-3, -4, -4, 6, 6, 6], false, 0.6);
+    const wBody = piece(body); cube(wBody, wool, 64, 32, 28, 8, [-4, -10, -7, 8, 16, 6], false, 1.75);
+    const wLegs = legs.map((p) => { const q = piece(p); cube(q, wool, 64, 32, 0, 16, [-2, 0, -2, 4, 6, 4], false, 0.5); return q; });
+    const woolParts = [wHead, wBody, ...wLegs];
+    return {
+      m, scale: 1,
+      set(e, pt) {
+        const ls = lerp(e.pls, e.ls, pt), la = lerp(e.pla, e.la, pt), [hx, hy] = headAngles(e, pt), f = e.meta["16"] || 0;
+        for (const p of woolParts) p.visible = !(f & 16);
+        if (e.meta["2"] === "jeb_") { // RenderSheep/LayerSheepWool: 25 ticks a colour, blended into the next
+          const t = (e.age + pt) / 25 + e.id, i = Math.floor(t) % 16, j = (i + 1) % 16, k = t - Math.floor(t), a = FLEECE[i], b = FLEECE[j];
+          wool.color.setRGB(a[0] * (1 - k) + b[0] * k, a[1] * (1 - k) + b[1] * k, a[2] * (1 - k) + b[2] * k);
+        } else { const c = FLEECE[f & 15]; wool.color.setRGB(c[0], c[1], c[2]); }
+        rot(head, hx, hy, 0); rot(body, Math.PI / 2);
+        rot(legs[0], Math.cos(ls * 0.6662) * 1.4 * la); rot(legs[1], Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la);
+        rot(legs[2], Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la); rot(legs[3], Math.cos(ls * 0.6662) * 1.4 * la);
+      },
+    };
+  }
+  const giant = (e) => zombieLike(e, "entity_zombie", 64, false, false, 6); // RenderGiantZombie: ModelZombie scaled 6
+  function layeredMat(names) { // LayeredTexture: horse colour with its markings drawn over
+    const k = names.join("+");
+    if (!matCache[k]) {
+      const t = new THREE.Texture(); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.colorSpace = THREE.SRGBColorSpace;
+      Promise.all(names.map((n) => img(n))).then((ims) => { const c = document.createElement("canvas"); c.width = ims[0].width; c.height = ims[0].height; const x = c.getContext("2d"); for (const i of ims) x.drawImage(i, 0, 0); t.image = c; t.needsUpdate = true; }).catch(() => {});
+      matCache[k] = new THREE.MeshLambertMaterial({ map: t, alphaTest: 0.1, side: THREE.DoubleSide });
+    }
+    return matCache[k];
+  }
+  const HORSE_COL = ["white", "creamy", "chestnut", "brown", "black", "gray", "darkbrown"], HORSE_MARK = [null, "white", "whitefield", "whitedots", "blackdots"];
+  function horse(e) { // ModelHorse (128x128): a horse (type 0) with its colour and markings, saddle when saddled
+    const v = e.meta["20"] || 0, col = HORSE_COL[(v & 255) % 7], mk = HORSE_MARK[((v >> 8) & 255) % 5];
+    const mat = layeredMat(["entity_horse_" + col, ...(mk ? ["entity_horse_markings_" + mk] : [])]), m = new THREE.Group(), T = 128;
+    const box = (p, u, vv, b, inf = 0) => cube(p, mat, T, T, u, vv, b, false, inf);
+    const body = piece(m, [0, 11, 9]); box(body, 0, 34, [-5, -8, -19, 10, 10, 24]);
+    const tail = [[44, 0, [-1, -1, 0, 2, 2, 3], -1.134464], [38, 7, [-1.5, -2, 3, 3, 4, 7], -1.134464], [24, 3, [-1.5, -4.5, 9, 3, 4, 7], -1.40215]].map(([u, vv, b, rx]) => { const p = piece(m, [0, 3, 14]); box(p, u, vv, b); p.userData.rx = rx; return p; });
+    const head = piece(m, [0, 4, -10]);
+    box(head, 0, 0, [-2.5, -10, -1.5, 5, 5, 7]); box(head, 24, 18, [-2, -10, -7, 4, 3, 6]); box(head, 24, 27, [-2, -7, -6.5, 4, 2, 5]);
+    box(head, 0, 0, [0.45, -12, 4, 2, 3, 1]); box(head, 0, 0, [-2.45, -12, 4, 2, 3, 1]); box(head, 0, 12, [-2.05, -9.8, -2, 4, 14, 8]); box(head, 58, 0, [-1, -11.5, 5, 2, 16, 4]);
+    const legs = [[[4, 9, 11], 78, [-2.5, -2, -2.5, 4, 9, 5], [-2, 0, -1.5, 3, 5, 3], [-2.5, 5.1, -2, 4, 3, 4]], [[-4, 9, 11], 96, [-1.5, -2, -2.5, 4, 9, 5], [-1, 0, -1.5, 3, 5, 3], [-1.5, 5.1, -2, 4, 3, 4]],
+      [[4, 9, -8], 44, [-1.9, -1, -2.1, 3, 8, 4], [-1.9, 0, -1.6, 3, 5, 3], [-2.4, 5.1, -2.1, 4, 3, 4]], [[-4, 9, -8], 60, [-1.1, -1, -2.1, 3, 8, 4], [-1.1, 0, -1.6, 3, 5, 3], [-1.6, 5.1, -2.1, 4, 3, 4]]].map(([rp, u, a, b, c], i) => {
+      const leg = piece(m, rp); box(leg, u, 29, a);
+      const shin = piece(leg, [0, 7, 0]); box(shin, u, i < 2 ? 43 : 41, b); box(shin, u, 51, c); return leg;
+    });
+    const saddle = new THREE.Group(); m.add(saddle);
+    for (const [u, vv, rp, b] of [[80, 0, [0, 2, 2], [-5, 0, -3, 10, 1, 8]], [106, 9, [0, 2, 2], [-1.5, -1, -3, 3, 1, 2]], [80, 9, [0, 2, 2], [-4, -1, 3, 8, 1, 2]], [74, 0, [5, 3, 2], [-0.5, 6, -1, 1, 2, 2]], [70, 0, [5, 3, 2], [-0.5, 0, -0.5, 1, 6, 1]], [74, 4, [-5, 3, 2], [-0.5, 6, -1, 1, 2, 2]], [80, 0, [-5, 3, 2], [-0.5, 0, -0.5, 1, 6, 1]]]) { const p = piece(saddle, rp); box(p, u, vv, b); }
+    const hm = new THREE.Group(); head.add(hm); box(hm, 74, 13, [1.5, -8, -4, 1, 2, 2]); box(hm, 74, 13, [-2.5, -8, -4, 1, 2, 2]); box(hm, 80, 12, [-2.5, -10.1, -7, 5, 5, 12], 0.2);
+    return {
+      m, scale: e.child ? 0.5 : 1,
+      set(e, pt) {
+        const ls = lerp(e.pls, e.ls, pt), la = lerp(e.pla, e.la, pt), [hx, hy] = headAngles(e, pt), saddled = !!((e.meta["16"] || 0) & 4);
+        saddle.visible = hm.visible = saddled;
+        rot(head, 0.5235988 + hx, hy * 0.5, 0);
+        for (const p of tail) rot(p, p.userData.rx + Math.cos(ls * 0.6662) * 0.2 * la);
+        const a = Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la * 0.8; // ModelHorse: front and back legs swing in pairs
+        rot(legs[0], -a); rot(legs[1], a); rot(legs[2], a); rot(legs[3], -a);
+      },
+    };
+  }
+  function dragon(e) { // ModelDragon (256x256): neck of 5 segments, body, 12 tail segments, beating wings
+    const mat = emat("entity_dragon"), eyes = new THREE.MeshBasicMaterial({ map: tex("entity_dragon_eyes"), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    const m = new THREE.Group(), T = 256;
+    const both = (p, u, v, b, mir = false) => { cube(p, mat, T, T, u, v, b, mir); cube(p, eyes, T, T, u, v, b, mir); };
+    const seg = (parent) => { const p = piece(parent); both(p, 192, 104, [-5, -5, -5, 10, 10, 10]); both(p, 48, 0, [-1, -9, -3, 2, 4, 6]); return p; };
+    const neck = [], tailS = [];
+    for (let i = 0; i < 5; i++) neck.push(seg(m));
+    const head = piece(m);
+    both(head, 176, 44, [-6, -1, -24, 12, 5, 16]); both(head, 112, 30, [-8, -8, -10, 16, 16, 16]);
+    both(head, 0, 0, [-5, -12, -4, 2, 4, 6], true); both(head, 112, 0, [-5, -3, -22, 2, 2, 4], true); both(head, 0, 0, [3, -12, -4, 2, 4, 6]); both(head, 112, 0, [3, -3, -22, 2, 2, 4]);
+    const jaw = piece(head, [0, 4, -8]); both(jaw, 176, 65, [-6, 0, -16, 12, 4, 16]);
+    const body = piece(m, [0, 4, 8]); both(body, 0, 0, [-12, 0, -16, 24, 24, 64]); for (const z of [-10, 10, 30]) both(body, 220, 53, [-1, -6, z, 2, 6, 12]);
+    for (let i = 0; i < 12; i++) tailS.push(seg(m));
+    const wings = [], legs = [];
+    for (const s of [1, -1]) {
+      const side = new THREE.Group(); side.scale.x = s; body.add(side); side.position.set(0, -4 / 16 * -1 * 0, 0);
+      const wing = piece(side, [-12, 5 - 4, 2 - 8]); both(wing, 112, 88, [-56, -4, -4, 56, 8, 8]); both(wing, -56, 88, [-56, 0, 2, 56, 0, 56]);
+      const tip = piece(wing, [-56, 0, 0]); both(tip, 112, 136, [-56, -2, -2, 56, 4, 4]); both(tip, -56, 144, [-56, 0, 2, 56, 0, 56]);
+      const fl = piece(side, [-12, 20 - 4, 2 - 8]); both(fl, 112, 104, [-4, -4, -4, 8, 24, 8]);
+      const flt = piece(fl, [0, 20, -1]); both(flt, 226, 138, [-3, -1, -3, 6, 24, 6]);
+      const ff = piece(flt, [0, 23, 0]); both(ff, 144, 104, [-4, 0, -12, 8, 4, 16]);
+      const rl = piece(side, [-16, 16 - 4, 42 - 8]); both(rl, 0, 0, [-8, -4, -8, 16, 32, 16]);
+      const rlt = piece(rl, [0, 32, -4]); both(rlt, 196, 0, [-6, -2, 0, 12, 32, 12]);
+      const rf = piece(rlt, [0, 31, 4]); both(rf, 112, 0, [-9, 0, -20, 18, 6, 24]);
+      wings.push([wing, tip]); legs.push([fl, flt, ff, rl, rlt, rf]);
+    }
+    m.position.set(0, 4.25, 1.5); // the body's middle over the entity, its back about 5.5 blocks up where the rider sits
+    return {
+      m, scale: 1, dragon: true, yawOff: 180, // RenderDragon turns by -yaw, not 180 - yaw
+      set(e, pt) {
+        const t = (e.age + pt) * 0.08, f = t * Math.PI * 2, f1 = Math.sin(f - 1) + 1; // EntityDragon.animTime advances about 0.08 a tick in flight
+        // neck: out in front, rising toward the head; tail: back and drooping, swaying a little
+        let x = 0, y = 4, z = -8;
+        for (let i = 0; i < 5; i++) { setRP(neck[i], [x, y, z]); rot(neck[i], -0.1 + Math.cos(i * 0.45 + f) * 0.05, 0, 0); y -= 1.5 * Math.cos(f) * 0.2; z -= 10; }
+        setRP(head, [x, y, z]); rot(head, 0, 0, 0); rot(jaw, Math.sin(f) * 0.2 + 0.2);
+        x = 0; y = 10; z = 60;
+        for (let i = 0; i < 12; i++) { setRP(tailS[i], [x + Math.sin(i * 0.45 + f * 0.5) * 2, y, z]); rot(tailS[i], 0, Math.sin(i * 0.45 + f * 0.5) * 0.15, 0); y += 0.6; z += 10; }
+        for (const [w, tip] of wings) { rot(w, 0.125 - Math.cos(f) * 0.2, 0.25, (Math.sin(f) + 0.125) * 0.8); rot(tip, 0, 0, -(Math.sin(f + 2) + 0.5) * 0.75); }
+        for (const [fl, flt, ff, rl, rlt, rf] of legs) {
+          rot(fl, 1.3 + f1 * 0.1); rot(flt, -0.5 - f1 * 0.1); rot(ff, 0.75 + f1 * 0.1);
+          rot(rl, 1 + f1 * 0.1); rot(rlt, 0.5 + f1 * 0.1); rot(rf, 0.75 + f1 * 0.1);
+        }
+      },
+    };
+  }
+  const CHILD_TYPES = new Set([93, 101, 95, 92, 90, 91, 100]); // EntityAgeable: data 12 below 0 is a baby
   const MOB_MODEL = { 30: armorStand, 78: armorStand, 93: chicken, 101: rabbit, 95: wolf, 65: bat, 94: squid, 92: cow, 99: ironGolem, 66: witch, 68: guardian,
-    90: pig, 67: endermite, 51: skeleton, 54: zombie, 57: pigman, 50: creeper, 61: blaze, 97: snowman, 58: enderman, 120: villager, 64: wither };
+    90: pig, 67: endermite, 51: skeleton, 54: zombie, 57: pigman, 50: creeper, 61: blaze, 97: snowman, 58: enderman, 120: villager, 64: wither,
+    91: sheep, 53: giant, 100: horse, 63: dragon };
   const HEIGHT = { 90: 0.9, 67: 0.3, 30: 1.975, 78: 1.975, 93: 0.7, 101: 0.7, 95: 0.85, 65: 0.9, 94: 0.95, 92: 1.3, 99: 2.9, 66: 1.95, 68: 0.85, player: 1.8,
-    51: 1.95, 54: 1.95, 57: 1.95, 50: 1.7, 61: 1.8, 97: 1.9, 58: 2.9, 120: 1.95, 64: 3.5 };
+    51: 1.95, 54: 1.95, 57: 1.95, 50: 1.7, 61: 1.8, 97: 1.9, 58: 2.9, 120: 1.95, 64: 3.5, 91: 1.3, 53: 11.7, 100: 1.6, 63: 8 };
   const WIDTH = { 61: 0.6, 58: 0.6 };
 
   /* ---------------------------------------------------------- the world */
@@ -1652,6 +1767,18 @@ export function createRecFx(kit0) {
       else if (e.type === 50) { e.blockG = new THREE.Group(); e.g.add(e.blockG); modelsReady.then(() => { const b = blockMesh("tnt"); b.position.set(-0.5, -0.5, -0.5); e.blockG.add(b); e.tntMats = []; b.traverse((o) => { if (o.material) { o.material = o.material.clone(); e.tntMats.push(o.material); } }); }); e.fuse = 80; }
       else if (e.type === 70) { const id = data & 4095; e.blockG = new THREE.Group(); e.g.add(e.blockG); modelsReady.then(() => { const b = blockMesh(blockKey(id, (data >> 12) & 15) || "gold_block"); b.position.set(-0.5, 0, -0.5); e.blockG.add(b); }); }
       else if (e.type === 76 || e.type === 62 || e.type === 61) { e.sprite = new THREE.Group(); e.g.add(e.sprite); const it = { id: e.type === 76 ? 401 : e.type === 61 ? 332 : 344 }; const n = new THREE.Group(); n.scale.setScalar(0.5); const r = renderItemNode(it); r.scale.multiplyScalar(2); n.add(r); e.sprite.add(n); }
+      else if (e.type === 63 || e.type === 64) { // RenderFireball: the fire charge sprite, 2 blocks for a big fireball, half for a small one
+        e.sprite = new THREE.Group(); e.g.add(e.sprite); const n = new THREE.Group(); n.scale.setScalar(e.type === 63 ? 2 : 0.5); const r = renderItemNode({ id: 385 }); r.scale.multiplyScalar(2); n.add(r); e.sprite.add(n);
+      } else if (e.type === 66) { // RenderWitherSkull: ModelSkeletonHead (uv 0,35 of the wither texture), scale(-1,-1,1)
+        e.skullG = new THREE.Group(); e.g.add(e.skullG); const inner = new THREE.Group(); inner.rotation.y = Math.PI; e.skullG.add(inner);
+        cube(inner, emat("entity_wither"), 64, 64, 0, 35, [-4, -8, -4, 8, 8, 8]);
+      } else if (e.type === 10) { // RenderMinecart: ModelMinecart 0.375 up, turned 180 - yaw
+        e.cartG = new THREE.Group(); e.g.add(e.cartG); const inner = new THREE.Group(); inner.position.y = 0.375; e.cartG.add(inner); const flip = new THREE.Group(); flip.rotation.y = Math.PI; inner.add(flip);
+        const mat = emat("entity_minecart");
+        const p0 = piece(flip, [0, 4, 0]); cube(p0, mat, 64, 32, 0, 10, [-10, -8, -1, 20, 16, 2]); rot(p0, Math.PI / 2);
+        const p5 = piece(flip, [0, 4, 0]); cube(p5, mat, 64, 32, 44, 10, [-9, -7, -1, 18, 14, 1]); rot(p5, -Math.PI / 2);
+        for (const [rp, ry] of [[[-9, 4, 0], Math.PI * 3 / 2], [[9, 4, 0], Math.PI / 2], [[0, 4, -7], Math.PI], [[0, 4, 7], 0]]) { const p = piece(flip, rp); cube(p, mat, 64, 32, 0, 0, [-8, -9, -1, 16, 8, 2]); rot(p, 0, ry, 0); }
+      }
       else if (e.type === 78) { e.living = true; setupLiving(e); }
       else if (e.type === 71) { // RenderItemFrame: about the hanging block's centre, turned 180 - yaw (south 0, west 90, north 180, east 270)
         e.frameG = new THREE.Group(); e.frameG.rotation.y = (180 - ((data & 3) * 90)) * D2R; e.g.add(e.frameG);
@@ -1702,6 +1829,7 @@ export function createRecFx(kit0) {
     }
     function setPos2(e, x, y, z, yaw, pitch) { // setPositionAndRotation2
       if (e.living) { e.nx = x; e.ny = y; e.nz = z; e.nyaw = yaw; e.npitch = pitch; e.inc = 3; }
+      else if (e.kind === "obj" && e.type === 10) { e.nx = x; e.ny = y; e.nz = z; if (yaw != null) { e.nyaw = yaw; e.npitch = pitch; } e.inc = 5; } // EntityMinecart: glides there over 3 + 2 ticks
       else { e.x = x; e.y = y; e.z = z; if (yaw != null) { e.yaw = yaw; e.pitch = pitch; } }
     }
 
@@ -1888,6 +2016,10 @@ export function createRecFx(kit0) {
     }
     function tickObject(e) {
       e.px = e.x; e.py = e.y; e.pz = e.z; e.pyaw = e.yaw; e.ppitch = e.pitch;
+      if (e.inc > 0 && e.kind === "obj" && e.type === 10) {
+        e.x += (e.nx - e.x) / e.inc; e.y += (e.ny - e.y) / e.inc; e.z += (e.nz - e.z) / e.inc;
+        if (e.nyaw != null) { e.yaw += wrap(e.nyaw - e.yaw) / e.inc; e.pitch += (e.npitch - e.pitch) / e.inc; } e.inc--;
+      }
       if (e.type === 2 || e.kind === "orb" || e.type === 50 || e.type === 70) {
         const grav = e.kind === "orb" ? 0.03 : 0.04;
         e.my -= grav;
@@ -1937,7 +2069,12 @@ export function createRecFx(kit0) {
     }
     function ridePos(v, r) {
       if (v.type === 93) { r.x = v.x + 0.1 * Math.sin(v.body * D2R); r.y = v.y + (v.child ? 0.35 : 0.7) * 0.5; r.z = v.z - 0.1 * Math.cos(v.body * D2R); r.body = v.body; }
-      else { r.x = v.x; r.y = v.y + (v.height || 0.9) * 0.75; r.z = v.z; }
+      else { // updateRiderPosition: the vehicle's mounted offset (height * 0.75; minecarts 0) plus the rider's own (players -0.35)
+        r.x = v.x; r.y = v.y + (v.kind === "obj" && v.type === 10 ? 0 : (v.height || 0.9) * 0.75) + (r.kind === "player" ? -0.35 : 0); r.z = v.z;
+      }
+      if (r.kind === "player" && v.living) { // RendererLivingEntity: a rider of a living vehicle turns its body with the vehicle, within 85 degrees of its head
+        let d = clamp(wrap(r.head - v.body), -85, 85); r.body = r.head - d + (d * d > 2500 ? d * 0.2 : 0);
+      }
       if (r.vehicle && r.kind !== "player") { r.nx = r.x; r.ny = r.y; r.nz = r.z; r.inc = 0; }
     }
 
@@ -2008,7 +2145,7 @@ export function createRecFx(kit0) {
         if (e.living && e.model) {
           drawShadow(e, x, y, z);
           const body = lerpAng(e.pbody, e.body, pt);
-          e.g.rotation.y = -body * D2R;
+          e.g.rotation.y = -(body + (e.model.yawOff || 0)) * D2R;
           let zr = 0;
           if (e.death > 0) { let f = (e.death + pt - 1) / 20 * 1.6; f = Math.sqrt(f); if (f > 1) f = 1; zr = f * 90; }
           e.corpse.rotation.set(0, 0, -zr * D2R);
@@ -2035,6 +2172,9 @@ export function createRecFx(kit0) {
           e.blockG.position.y = 0.5; e.blockG.scale.setScalar(s);
           const white = Math.floor(e.fuse / 5) % 2 === 0, a = (1 - f0 / 100) * 0.8;
           for (const m of e.tntMats || []) { m.emissive.setScalar(white ? a : 0); }
+        } else if (e.cartG || e.skullG) {
+          const yaw = lerpAng(e.pyaw ?? e.yaw, e.yaw, pt);
+          if (e.cartG) e.cartG.rotation.y = (180 - yaw) * D2R; else { e.skullG.rotation.y = -yaw * D2R; }
         } else if (e.sprite) { // RenderSnowball: faces the camera
           e.sprite.quaternion.copy(S.camera.quaternion);
         } else if (e.kind === "orb") {
@@ -2075,6 +2215,7 @@ export function createRecFx(kit0) {
       draw(pt);
     };
     run.focus = focus;
+    run.me = () => { const e = ents.get(1); return e ? { x: e.x, y: e.y, z: e.z } : null; }; // the winner (victory dances that fly off with him)
     return run;
   }
 

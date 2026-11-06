@@ -1791,6 +1791,12 @@ export function createRecFx(kit0) {
           else if (id === 1015) sound("mob.bat.takeoff", x + 0.5, y + 0.5, z + 0.5, 0.05, (rand() - rand()) * 0.2 + 1);
           break;
         }
+        case "tb": { // a world block by its baked model name (terrain around a victory dance); null clears it
+          const [, , x, y, z, name] = ev, key = x + "," + y + "," + z;
+          if (blocks[key]) { root.remove(blocks[key]); delete blocks[key]; }
+          if (name) { const g = new THREE.Group(); g.position.set(x, y, z); root.add(g); blocks[key] = g; modelsReady.then(() => g.add(blockMesh(name))); }
+          break;
+        }
         case "block": {
           const [, , x, y, z, st] = ev; const key = x + "," + y + "," + z;
           if (blocks[key]) { root.remove(blocks[key]); delete blocks[key]; }

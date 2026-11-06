@@ -1363,12 +1363,26 @@ export function createRecFx(kit0) {
     const legR = piece(m, [-2, -5, 0]); cube(legR, mat, 64, 32, 56, 0, [-1, 0, -1, 2, 30, 2]);
     const legL = piece(m, [2, -5, 0]); cube(legL, mat, 64, 32, 56, 0, [-1, 0, -1, 2, 30, 2], true);
     const cl = (v) => clamp(v, -0.4, 0.4);
+    // LayerHeldBlock: data 16 is the carried block id, 17 its metadata
+    let heldKey = null, heldG = null;
+    const held = (e) => {
+      const id = e.meta["16"] || 0, d = e.meta["17"] || 0, k = id ? id + ":" + d : null;
+      if (k === heldKey) return; heldKey = k;
+      if (heldG) { m.remove(heldG); heldG = null; }
+      if (!id) return;
+      const g0 = heldG = new THREE.Group(); heldG.scale.set(1, -1, -1); m.add(heldG); // GL space of the model
+      const a = new THREE.Group(); a.position.set(0, 0.6875, -0.75); a.rotation.x = 20 * D2R; heldG.add(a);
+      const b = new THREE.Group(); b.rotation.y = 45 * D2R; a.add(b);
+      const c = new THREE.Group(); c.position.set(0.25, 0.1875, 0.25); c.scale.set(-0.5, -0.5, 0.5); b.add(c);
+      modelsReady.then(() => { const name = blockKey(id, d); if (name && heldG === g0) { const r = new THREE.Group(); r.rotation.y = Math.PI / 2; r.add(blockMesh(name)); c.add(r); } }); // renderModelBrightness turns 90 degrees first
+    };
     return {
       m, scale: 1,
       set(e, pt) { // biped angles, arms and legs halved and kept within 0.4
         const ls = lerp(e.pls, e.ls, pt), la = lerp(e.pla, e.la, pt), [hx, hy] = headAngles(e, pt), [dx, dz] = idleArms(e.age + pt);
-        rot(head, hx, hy, 0);
-        rot(armR, cl((Math.cos(ls * 0.6662 + Math.PI) * 2 * la * 0.5 + dx) * 0.5), 0, dz); rot(armL, cl((Math.cos(ls * 0.6662) * 2 * la * 0.5 - dx) * 0.5), 0, -dz);
+        rot(head, hx, hy, 0); held(e);
+        if (heldKey) { rot(armR, -0.5, 0, 0.05); rot(armL, -0.5, 0, -0.05); } else // carrying: both arms forward
+        rot(armR, cl((Math.cos(ls * 0.6662 + Math.PI) * 2 * la * 0.5 + dx) * 0.5), 0, dz), rot(armL, cl((Math.cos(ls * 0.6662) * 2 * la * 0.5 - dx) * 0.5), 0, -dz);
         rot(legR, cl(Math.cos(ls * 0.6662) * 1.4 * la * 0.5)); rot(legL, cl(Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la * 0.5));
       },
     };
@@ -1412,6 +1426,7 @@ export function createRecFx(kit0) {
       },
     };
   }
+  const CHILD_TYPES = new Set([93, 101, 95, 92, 90]); // EntityAgeable: data 12 below 0 is a baby
   const MOB_MODEL = { 30: armorStand, 78: armorStand, 93: chicken, 101: rabbit, 95: wolf, 65: bat, 94: squid, 92: cow, 99: ironGolem, 66: witch, 68: guardian,
     90: pig, 67: endermite, 51: skeleton, 54: zombie, 57: pigman, 50: creeper, 61: blaze, 97: snowman, 58: enderman, 120: villager, 64: wither };
   const HEIGHT = { 90: 0.9, 67: 0.3, 30: 1.975, 78: 1.975, 93: 0.7, 101: 0.7, 95: 0.85, 65: 0.9, 94: 0.95, 92: 1.3, 99: 2.9, 66: 1.95, 68: 0.85, player: 1.8,
@@ -1672,6 +1687,10 @@ export function createRecFx(kit0) {
     }
     function applyMeta(e, m) {
       Object.assign(e.meta, m);
+      if (e.kind === "mob" && "12" in m && CHILD_TYPES.has(e.type)) { // a mob turned into a baby (or grew up): rebuild its model
+        const c = (e.meta["12"] ?? 0) < 0;
+        if (c !== e.child) { e.child = c; if (e.corpse) { e.g.remove(e.corpse); setupLiving(e); } }
+      }
       if (e.type === 30 || e.type === 78) { e.small = !!(e.meta["10"] & 1); if (e.model) e.height = e.meta["10"] & 16 ? 0 : e.small ? 0.9875 : 1.975; }
       if ("6" in m && e.living) { const h = m["6"]; if (h <= 0 && e.health > 0) e.health = 0; else if (h > 0) e.health = h; }
       if (e.type === 2) setItemStack(e);
@@ -1699,7 +1718,7 @@ export function createRecFx(kit0) {
           const [, , id, type, x, y, z, yaw, pitch, headYaw, meta] = ev;
           const e = makeEnt(id, "mob", type, x, y, z, yaw * B2D, pitch * B2D); e.living = true; e.sx = x; e.sy = y; e.sz = z;
           e.head = e.phead = e.body = e.pbody = headYaw * B2D;
-          Object.assign(e.meta, meta); e.small = type === 30 && !!(meta["10"] & 1); e.child = (type === 93 || type === 101 || type === 95 || type === 92 || type === 90) && (meta["12"] ?? 0) < 0;
+          Object.assign(e.meta, meta); e.small = type === 30 && !!(meta["10"] & 1); e.child = CHILD_TYPES.has(type) && (meta["12"] ?? 0) < 0;
           if (type === 94) { e.rv = 1 / (rand() + 1) * 0.2; e.srot = 0; e.spitch = e.pspitch = 0; e.tent = e.ptent = 0; }
           if (type === 93) { e.wing = e.pwing = 0; e.dest = e.pdest = 0; e.wingD = 1; }
           if (type === 101) { e.jumpTicks = 0; e.jumpDur = 0; }

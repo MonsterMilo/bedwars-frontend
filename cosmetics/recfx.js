@@ -50,7 +50,7 @@ function img(name) {
 const ALL_TEX = ["particles", "entity_sign", "explosion", "ascii", "entity_chicken", "entity_wolf", "entity_bat", "entity_squid", "entity_skeleton", "entity_steve", "entity_experience_orb", "armor_leather_layer_1", "armor_leather_layer_1_overlay", "armor_leather_layer_2", "armor_leather_layer_2_overlay", "entity_armorstand", "entity_cow", "entity_iron_golem", "entity_witch", "entity_guardian", "entity_guardian_beam", "block_fire_layer_0_strip",
   "rabbit_brown", "rabbit_white", "rabbit_black", "rabbit_white_splotched", "rabbit_gold", "rabbit_salt", "cosmetics/skins/killer.png", "cosmetics/skins/dummy.png",
   "item_iron_sword", "item_stick", "item_bone", "item_cookie", "item_gold_ingot", "item_beef_raw", "item_beef_cooked", "item_leather", "item_egg", "item_fireworks", "item_leather_chestplate",
-  "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel", "entity_zombie", "entity_creeper", "entity_banner_base", "misc_enchanted_item_glint", "entity_wither_skeleton", "entity_zombie_pigman", "entity_zombie_villager", "entity_blaze", "entity_creeper_armor", "entity_snowman", "entity_enderman", "entity_enderman_eyes", "entity_villager_smith", "entity_wither", "entity_wither_invulnerable",
+  "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel", "entity_zombie", "entity_creeper", "entity_banner_base", "misc_enchanted_item_glint", "entity_wither_skeleton", "entity_zombie_pigman", "entity_zombie_villager", "entity_blaze", "entity_creeper_armor", "entity_snowman", "entity_enderman", "entity_enderman_eyes", "entity_villager_smith", "entity_wither", "entity_wither_invulnerable", "entity_pig", "entity_endermite", "block_planks_oak", "block_lava_still",
   ...["iron", "gold", "diamond", "chainmail"].flatMap((m) => ["armor_" + m + "_layer_1", "armor_" + m + "_layer_2"])];
 const matCache = {};
 // Skin base layers are drawn solid, as the game makes them when it loads a skin
@@ -777,14 +777,14 @@ export function createRecFx(kit0) {
   const { cube, piece, setRP, rot } = kit;
 
   // Tile sheet for block/item crumbs (16px tiles, built once from single pictures).
-  const TILES = ["block_redstone_block", "block_pumpkin_side", "block_dirt", "block_gravel", "item_egg", "block_gold_block", "block_anvil_base", "item_snowball", "block_ice", "block_glass_white", "block_wool_colored_red", "block_ice_packed"];
+  const TILES = ["block_redstone_block", "block_pumpkin_side", "block_dirt", "block_gravel", "item_egg", "block_gold_block", "block_anvil_base", "item_snowball", "block_ice", "block_glass_white", "block_wool_colored_red", "block_ice_packed", "block_planks_oak", "block_lava_still"];
   const tileCanvas = document.createElement("canvas"); tileCanvas.width = 256; tileCanvas.height = 256;
   const tileTex = new THREE.CanvasTexture(tileCanvas); tileTex.magFilter = tileTex.minFilter = THREE.NearestFilter; tileTex.colorSpace = THREE.SRGBColorSpace; tileTex.generateMipmaps = false;
   Promise.all(TILES.map((n) => img(n))).then((ims) => { const g = tileCanvas.getContext("2d"); ims.forEach((im, i) => g.drawImage(im, 0, 0, 16, 16, (i % 16) * 16, Math.floor(i / 16) * 16, 16, 16)); tileTex.needsUpdate = true; });
   const tileOf = (name) => TILES.indexOf(name);
-  const BLOCK_TILE = { 152: "block_redstone_block", 86: "block_pumpkin_side", 41: "block_gold_block", 2: "block_dirt", 3: "block_dirt", 13: "block_gravel", 145: "block_anvil_base", 79: "block_ice", 174: "block_ice_packed", "95:0": "block_glass_white", "35:14": "block_wool_colored_red" };
+  const BLOCK_TILE = { 26: "block_planks_oak", 10: "block_lava_still", 11: "block_lava_still", 152: "block_redstone_block", 86: "block_pumpkin_side", 41: "block_gold_block", 2: "block_dirt", 3: "block_dirt", 13: "block_gravel", 145: "block_anvil_base", 79: "block_ice", 174: "block_ice_packed", "95:0": "block_glass_white", "35:14": "block_wool_colored_red" };
   const ITEM_TILE = { 344: "item_egg", 332: "item_snowball", 79: "block_ice", 174: "block_ice_packed", 95: "block_glass_white" };
-  const BREAK_SOUND = { 152: ["dig.stone", 1, 1], 86: ["dig.wood", 1, 1], 41: ["dig.stone", 1, 1], 95: ["dig.glass", 1, 1], 79: ["dig.glass", 1, 1], 174: ["dig.stone", 1, 1], 35: ["dig.cloth", 1, 1] };
+  const BREAK_SOUND = { 26: ["dig.wood", 1, 1], 10: ["dig.stone", 1, 1], 11: ["dig.stone", 1, 1], 152: ["dig.stone", 1, 1], 86: ["dig.wood", 1, 1], 41: ["dig.stone", 1, 1], 95: ["dig.glass", 1, 1], 79: ["dig.glass", 1, 1], 174: ["dig.stone", 1, 1], 35: ["dig.cloth", 1, 1] };
 
   // ---- held / worn items -------------------------------------------------
   // Banners (TileEntityBannerRenderer as an item: standing, at the block's centre, 2/3 size).
@@ -1138,6 +1138,38 @@ export function createRecFx(kit0) {
       },
     };
   }
+  function pig(e) { // ModelPig (ModelQuadruped 6, 64x32; a child's head 4px lower and 4px back)
+    const mat = emat("entity_pig"), m = new THREE.Group(), g = new THREE.Group(), hg = new THREE.Group(); m.add(g, hg);
+    if (e.child) { hg.position.set(0, -4 / 16, -4 / 16); g.scale.setScalar(0.5); g.position.y = -24 / 16 * 0.5; }
+    const head = piece(hg, [0, 12, -6]); cube(head, mat, 64, 32, 0, 0, [-4, -4, -8, 8, 8, 8]); cube(head, mat, 64, 32, 16, 16, [-2, 0, -9, 4, 3, 1]);
+    const body = piece(g, [0, 11, 2]); cube(body, mat, 64, 32, 28, 8, [-5, -10, -7, 10, 16, 8]);
+    const legs = [[-3, 18, 7], [3, 18, 7], [-3, 18, -5], [3, 18, -5]].map((rp) => { const p = piece(g, rp); cube(p, mat, 64, 32, 0, 16, [-2, 0, -2, 4, 6, 4]); return p; });
+    return {
+      m, scale: 1,
+      set(e, pt) {
+        const ls = lerp(e.pls, e.ls, pt), la = lerp(e.pla, e.la, pt), [hx, hy] = headAngles(e, pt);
+        rot(head, hx, hy, 0); rot(body, Math.PI / 2);
+        rot(legs[0], Math.cos(ls * 0.6662) * 1.4 * la); rot(legs[1], Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la);
+        rot(legs[2], Math.cos(ls * 0.6662 + Math.PI) * 1.4 * la); rot(legs[3], Math.cos(ls * 0.6662) * 1.4 * la);
+      },
+    };
+  }
+  function endermite(e) { // ModelEnderMite (64x32): four segments that sway
+    const mat = emat("entity_endermite"), m = new THREE.Group();
+    const SZ = [[4, 3, 2], [6, 4, 5], [3, 3, 1], [1, 2, 1]], UV = [[0, 0], [0, 5], [0, 14], [0, 18]], parts = [];
+    let f = -3.5;
+    for (let i = 0; i < 4; i++) {
+      const p = piece(m, [0, 24 - SZ[i][1], f]); cube(p, mat, 64, 32, UV[i][0], UV[i][1], [SZ[i][0] * -0.5, 0, SZ[i][2] * -0.5, ...SZ[i]]); parts.push(p);
+      if (i < 3) f += (SZ[i][2] + SZ[i + 1][2]) * 0.5;
+    }
+    return {
+      m, scale: 1,
+      set(e, pt) {
+        const age = e.age + pt;
+        parts.forEach((p, i) => { const a = age * 0.9 + i * 0.15 * Math.PI; rot(p, 0, Math.cos(a) * Math.PI * 0.01 * (1 + Math.abs(i - 2)), 0); p.position.x = Math.sin(a) * Math.PI * 0.1 * Math.abs(i - 2) / 16; });
+      },
+    };
+  }
   const tri = (f, f1) => (Math.abs((((f % f1) + f1) % f1) - f1 * 0.5) - f1 * 0.25) / (f1 * 0.25);
   function ironGolem(e) { // ModelIronGolem (128x128); RenderIronGolem rocks it while it walks
     const mat = emat("entity_iron_golem"), m = new THREE.Group();
@@ -1381,8 +1413,8 @@ export function createRecFx(kit0) {
     };
   }
   const MOB_MODEL = { 30: armorStand, 78: armorStand, 93: chicken, 101: rabbit, 95: wolf, 65: bat, 94: squid, 92: cow, 99: ironGolem, 66: witch, 68: guardian,
-    51: skeleton, 54: zombie, 57: pigman, 50: creeper, 61: blaze, 97: snowman, 58: enderman, 120: villager, 64: wither };
-  const HEIGHT = { 30: 1.975, 78: 1.975, 93: 0.7, 101: 0.7, 95: 0.85, 65: 0.9, 94: 0.95, 92: 1.3, 99: 2.9, 66: 1.95, 68: 0.85, player: 1.8,
+    90: pig, 67: endermite, 51: skeleton, 54: zombie, 57: pigman, 50: creeper, 61: blaze, 97: snowman, 58: enderman, 120: villager, 64: wither };
+  const HEIGHT = { 90: 0.9, 67: 0.3, 30: 1.975, 78: 1.975, 93: 0.7, 101: 0.7, 95: 0.85, 65: 0.9, 94: 0.95, 92: 1.3, 99: 2.9, 66: 1.95, 68: 0.85, player: 1.8,
     51: 1.95, 54: 1.95, 57: 1.95, 50: 1.7, 61: 1.8, 97: 1.9, 58: 2.9, 120: 1.95, 64: 3.5 };
   const WIDTH = { 61: 0.6, 58: 0.6 };
 
@@ -1667,7 +1699,7 @@ export function createRecFx(kit0) {
           const [, , id, type, x, y, z, yaw, pitch, headYaw, meta] = ev;
           const e = makeEnt(id, "mob", type, x, y, z, yaw * B2D, pitch * B2D); e.living = true; e.sx = x; e.sy = y; e.sz = z;
           e.head = e.phead = e.body = e.pbody = headYaw * B2D;
-          Object.assign(e.meta, meta); e.small = type === 30 && !!(meta["10"] & 1); e.child = (type === 93 || type === 101 || type === 95 || type === 92) && (meta["12"] ?? 0) < 0;
+          Object.assign(e.meta, meta); e.small = type === 30 && !!(meta["10"] & 1); e.child = (type === 93 || type === 101 || type === 95 || type === 92 || type === 90) && (meta["12"] ?? 0) < 0;
           if (type === 94) { e.rv = 1 / (rand() + 1) * 0.2; e.srot = 0; e.spitch = e.pspitch = 0; e.tent = e.ptent = 0; }
           if (type === 93) { e.wing = e.pwing = 0; e.dest = e.pdest = 0; e.wingD = 1; }
           if (type === 101) { e.jumpTicks = 0; e.jumpDur = 0; }
@@ -1747,6 +1779,10 @@ export function createRecFx(kit0) {
           if (id === 50) { // torch: meta 1-4 wall torch facing east/west/south/north (blockstate y 0/180/90/270)
             const g = new THREE.Group(); g.position.set(x, y, z);
             modelsReady.then(() => { const b = blockMesh("torch_wall"); b.position.set(-0.5, 0, -0.5); const w = new THREE.Group(); w.position.set(0.5, 0, 0.5); w.rotation.y = -([0, 0, 180, 90, 270][meta] || 0) * D2R; w.add(b); g.add(w); });
+            root.add(g); blocks[key] = g;
+          } else if (id === 26) { // a bed (bed destroy previews): bed_head / bed_foot turned by its facing
+            const g = new THREE.Group(); g.position.set(x, y, z);
+            modelsReady.then(() => { const k = blockKey(id, meta); if (k) g.add(blockMesh(k)); });
             root.add(g); blocks[key] = g;
           } else if ((id === 80 || id === 78) && (y === -1 || y === 0) && Math.abs(x) <= 8 && Math.abs(z) <= 8) {
             // Snow laid over the preview floor (Snowplosion). Anything else the effect sets

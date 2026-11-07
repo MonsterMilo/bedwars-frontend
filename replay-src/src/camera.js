@@ -30,6 +30,7 @@ class ReplayCamera {
     this.flyTo = null
     this.keys = new Set()
     this.binds = null // Keybinds
+    this.smoothView = true // ease other players' aim in Eyes mode
     this.fov = 70
     this.onChange = () => {}
     this.onClick = () => {}
@@ -155,9 +156,11 @@ class ReplayCamera {
         const sneak = this.model.pose.position.y < 0
         cam.position.set(p.x, p.y + (sneak ? 1.54 : 1.62), p.z)
         // Where their head points (not their body, which lags behind).
+        // Smoothed between the server's look updates (Track.viewAt), unless turned off.
+        const view = st && this.smoothView && this.model.track.viewAt ? this.model.track.viewAt(this.model.now) : null
         if (st) {
-          this.tYaw = this.yaw = -st.head * Math.PI / 180 + Math.PI
-          this.tPitch = this.pitch = -st.pitch * Math.PI / 180
+          this.tYaw = this.yaw = -(view ? view.head : st.head) * Math.PI / 180 + Math.PI
+          this.tPitch = this.pitch = -(view ? view.pitch : st.pitch) * Math.PI / 180
         }
         // EntityRenderer.hurtCameraEffect: a quick tilt when they get hit.
         const ago = this.model.hurtAgo

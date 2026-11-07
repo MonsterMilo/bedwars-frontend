@@ -392,8 +392,57 @@ class Track {
     return { x: lerp(this.tx), y: lerp(this.ty), z: lerp(this.tz), yaw: angle(this.tbody), head: angle(this.thead), pitch: lerp(this.tpitch), limb: lerp(this.tlimb), amount: lerp(this.tamt), dying }
   }
 
+  /**
+   * Where a player looks at t, smoothed for seeing through their eyes. The
+   * server sends a look only now and then, each a jump of up to a few
+   * degrees (angles are in 256ths of a turn), so the raw view steps. Here
+   * each change is eased in over the time before it arrives (at most
+   * 150 ms), then softened a little more (about 40 ms), which keeps real
+   * flicks quick but makes steady aiming glide.
+   */
+  viewAt (t) {
+    if (!this.views) this.buildViews()
+    const v = this.views
+    if (!v.ht.length) return null
+    // Blur over -80..80 ms (weights of a small Gaussian), around the centre sample.
+    let hs = 0; let ps = 0; let ws = 0
+    const h0 = rampAt(v.ht, v.hv, t, true)
+    for (let k = -4; k <= 4; k++) {
+      const w = Math.exp(-(k * k) / 8)
+      const h = rampAt(v.ht, v.hv, t + k * 20, true)
+      hs += (h0 + ((h - h0) % 360 + 540) % 360 - 180) * w
+      ps += rampAt(v.pt, v.pv, t + k * 20, false) * w
+      ws += w
+    }
+    return { head: hs / ws, pitch: ps / ws }
+  }
+
+  /** The moments head yaw and pitch changed (each on its own: they come in different packets). */
+  buildViews () {
+    const ht = []; const hv = []; const pt = []; const pv = []
+    for (let i = 0; i < this.t.length; i++) {
+      if (!hv.length || this.head[i] !== hv[hv.length - 1]) { ht.push(this.t[i]); hv.push(this.head[i]) }
+      if (!pv.length || this.pitch[i] !== pv[pv.length - 1]) { pt.push(this.t[i]); pv.push(this.pitch[i]) }
+    }
+    this.views = { ht, hv, pt, pv }
+  }
+
   recent (list, t, ms) { const i = lastAt(list, t); return i >= 0 && t - list[i] < ms }
   lastBefore (list, t) { const i = lastAt(list, t); return i >= 0 ? list[i] : -Infinity }
+}
+
+const VIEW_EASE_MS = 150
+/** The value of a change list at t, each change eased in over the time before it (at most VIEW_EASE_MS). */
+function rampAt (ts, vs, t, isAngle) {
+  const i = lastAt(ts, t)
+  if (i < 0) return vs[0]
+  if (i >= ts.length - 1) return vs[vs.length - 1]
+  const a = vs[i]; const b = vs[i + 1]
+  const span = Math.min(VIEW_EASE_MS, ts[i + 1] - ts[i])
+  const f = Math.max(0, Math.min(1, (t - (ts[i + 1] - span)) / span))
+  if (!f) return a
+  const d = isAngle ? ((b - a) % 360 + 540) % 360 - 180 : b - a
+  return a + d * f
 }
 
 const SECTION = 4096

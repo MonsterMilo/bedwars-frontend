@@ -349,6 +349,7 @@ class PlayerModel {
 
   /** Pose at replay time t. Returns the state, or null when not there. */
   update (t) {
+    this.now = t
     const tr = this.track
     const s = tr.stateAt(t)
     this.present = !!s

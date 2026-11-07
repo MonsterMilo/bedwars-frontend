@@ -222,7 +222,7 @@ async function runViewer (tl, details) {
 
   // --- Settings (remembered in this browser) ---
   const SETTINGS_KEY = 'replaySettings'
-  const settings = { chat: true, feed: true, names: true, invis: true, particles: true, hearing: 2, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860, smoothAim: true, timers: true, hitboxes: false, hand: true, fov: 70, res: 1, fps: 0, view: 320, map: 'mini', moments: { kill: true, final: true, bed: true, elim: true } }
+  const settings = { chat: true, feed: true, names: true, invis: true, particles: true, hearing: 2, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860, smoothAim: true, timers: true, hitboxes: false, hand: true, fov: 70, eyesFov: 85, res: 1, fps: 0, view: 320, map: 'mini', moments: { kill: true, final: true, bed: true, elim: true } }
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) } catch { /* private window */ }
   const saveSettings = () => { if (EMBED) return; try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ } }
   // A clip in the popup: no side panel or chat. It plays with sound (it only
@@ -257,7 +257,7 @@ async function runViewer (tl, details) {
     sounds.setOn(settings.volume > 0)
     hud.timers = settings.timers
     hud.hitboxes = settings.hitboxes
-    camera.fov = settings.fov; camera.far = settings.view + 60; camera.updateProjectionMatrix()
+    camera.fov = cam.mode === 'eyes' ? settings.eyesFov : settings.fov; camera.far = settings.view + 60; camera.updateProjectionMatrix()
     blocks.uniforms.fogFar.value = settings.view; blocks.uniforms.fogNear.value = settings.view * 0.5
     if (resScale !== settings.res) { resScale = settings.res; resize() }
     $('rpHitBtn').setAttribute('aria-pressed', String(!!settings.hitboxes))
@@ -269,7 +269,7 @@ async function runViewer (tl, details) {
       const k = el.dataset.set
       if (el.type === 'checkbox') el.checked = !!settings[k]; else el.value = String(settings[k])
       const out = el.parentElement.querySelector('output')
-      if (out) out.textContent = k === 'fov' ? settings.fov + '°' : k === 'view' ? settings.view + ' blocks' : ''
+      if (out) out.textContent = k === 'fov' || k === 'eyesFov' ? settings[k] + '°' : k === 'view' ? settings.view + ' blocks' : ''
     }
     setTimeout(resize, 320) // after the side panel slides
   }
@@ -1184,11 +1184,15 @@ async function runViewer (tl, details) {
     }
     for (const m of models) m.update(now)
     for (const v of views) v.update(now, camera)
+    // Their eyes have a field of view of their own (wider, like most players use).
+    const wantFov = cam.mode === 'eyes' ? settings.eyesFov : settings.fov
+    if (camera.fov !== wantFov) { camera.fov = wantFov; camera.updateProjectionMatrix() }
     cam.update(dt)
     cracks.update(now)
     particles.update(now, camera, renderer.getDrawingBufferSize(drawSize).y)
     // Following someone: hear from where they are, not from the camera behind them.
-    const ear = (cam.mode === 'follow' || cam.mode === 'eyes') && cam.focus ? cam.focus : camera.position
+    // (In their eyes the camera is at their head; cam.focus is only kept up to date in follow mode.)
+    const ear = cam.mode === 'follow' && cam.focus ? cam.focus : camera.position
     // Sounds Hypixel played only to the recorder are heard only from their view.
     sounds.selfView = (cam.mode === 'follow' || cam.mode === 'eyes') && !!(cam.model && cam.model.track && cam.model.track.self)
     sounds.update(prevNow, now, playing, speed, ear)

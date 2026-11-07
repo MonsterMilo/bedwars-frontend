@@ -157,12 +157,12 @@
 (function () {
   /* ---------- The pages. Add one entry here to add a card and a beam. ----------
      color: the beam colour (r, g, b). preview: 'players' (live top players), 'cosmetic'
-     (spinning sword), 'atlas' (map from above), or leave it out for a card with no picture. */
+     (spinning sword), 'atlas' (map from above), 'recordings' (a replay playing), or leave it out for a card with no picture. */
   var PAGES = [
     { name: 'Prism Tracker', href: 'tracker.html', color: [0, 217, 255], text: 'The players worth knowing: stars, FKDR, notes and nicks.', go: 'Open tracker', preview: 'players' },
     { name: 'Cosmetics Library', href: 'cosmetics.html', color: [168, 85, 247], text: 'Every kill effect, death cry and skin, with rarity and price.', go: 'Browse cosmetics', preview: 'cosmetic' },
     { name: 'Prism Atlas', href: 'atlas.html', color: [255, 184, 77], text: 'Every Bed Wars map in 3D, from the top down or on foot.', go: 'Explore maps', preview: 'atlas' },
-    { name: 'Prism Games', href: 'games.html', color: [75, 227, 168], text: 'Every recorded game: who won, the kill log, clips and the replay.', go: 'See games' }
+    { name: 'Prism Recordings', href: 'recordings.html', color: [75, 227, 168], text: 'Every game you recorded: who won, the kill log, clips and the 3D replay.', go: 'Watch recordings', preview: 'recordings' }
   ];
 
   var API = 'https://bedwars-backend.onrender.com';
@@ -349,6 +349,56 @@
     sparks(true);
   }
 
+
+  /* ---------- a replay playing: a little screen with a waveform, kill and bed markers on the
+     timeline and the playhead sweeping across, REC light blinking ---------- */
+  function drawRecordings(ctx, w, h, t) {
+    ctx.clearRect(0, 0, w, h);
+    var m = Math.min(w, h), G = '75,227,168';
+    var gr = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, m * 0.6); gr.addColorStop(0, 'rgba(' + G + ',0.16)'); gr.addColorStop(1, 'rgba(' + G + ',0)');
+    ctx.fillStyle = gr; ctx.fillRect(0, 0, w, h);
+    var sw = Math.min(w * 0.86, h * 0.86 * 1.45), sh = sw / 1.45, x0 = (w - sw) / 2, y0 = (h - sh) / 2 + Math.sin(t * 1.4) * m * 0.012, r = sw * 0.07;
+    function rr(x, y, ww, hh, rad) { ctx.beginPath(); ctx.moveTo(x + rad, y); ctx.arcTo(x + ww, y, x + ww, y + hh, rad); ctx.arcTo(x + ww, y + hh, x, y + hh, rad); ctx.arcTo(x, y + hh, x, y, rad); ctx.arcTo(x, y, x + ww, y, rad); ctx.closePath(); }
+    // the screen
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = m * 0.06; ctx.shadowOffsetY = m * 0.02;
+    rr(x0, y0, sw, sh, r); var bg = ctx.createLinearGradient(0, y0, 0, y0 + sh); bg.addColorStop(0, '#121a26'); bg.addColorStop(1, '#070a10'); ctx.fillStyle = bg; ctx.fill(); ctx.restore();
+    rr(x0 + 0.5, y0 + 0.5, sw - 1, sh - 1, r); ctx.strokeStyle = 'rgba(' + G + ',0.35)'; ctx.lineWidth = Math.max(1, m * 0.008); ctx.stroke();
+    ctx.save(); rr(x0, y0, sw, sh, r); ctx.clip();
+    var dur = 9, p = (t % dur) / dur;                      // one sweep every 9 s
+    var trackY = y0 + sh * 0.82, tx0 = x0 + sw * 0.08, tx1 = x0 + sw * 0.92, px = tx0 + (tx1 - tx0) * p;
+    // waveform scrolling under the playhead
+    var n = 30, bw = (tx1 - tx0) / n;
+    for (var i = 0; i < n; i++) {
+      var k = i + Math.floor(t * 3), v = 0.25 + 0.75 * Math.abs(Math.sin(k * 0.9) * Math.cos(k * 0.37 + 1.2));
+      var bx = tx0 + i * bw, near = Math.max(0, 1 - Math.abs(bx + bw / 2 - px) / (sw * 0.12));
+      var bh = v * sh * 0.34 * (1 + near * 0.35);
+      ctx.fillStyle = 'rgba(' + G + ',' + (0.16 + near * 0.5).toFixed(3) + ')';
+      ctx.fillRect(bx + bw * 0.2, trackY - sh * 0.06 - bh, bw * 0.6, bh);
+    }
+    // play button, pulsing gently
+    var pr = sh * (0.16 + 0.01 * Math.sin(t * 3)), cx = x0 + sw / 2, cy = y0 + sh * 0.36;
+    ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.beginPath(); ctx.arc(cx, cy, pr * 1.25, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(234,255,246,0.92)'; ctx.beginPath(); ctx.moveTo(cx - pr * 0.38, cy - pr * 0.55); ctx.lineTo(cx + pr * 0.6, cy); ctx.lineTo(cx - pr * 0.38, cy + pr * 0.55); ctx.closePath(); ctx.fill();
+    // REC light
+    var on = Math.floor(t * 1.6) % 2 === 0, rs = sh * 0.05;
+    ctx.fillStyle = on ? '#ff5c72' : 'rgba(255,92,114,0.3)'; ctx.beginPath(); ctx.arc(x0 + sw * 0.08 + rs, y0 + sh * 0.12 + rs, rs, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.font = '700 ' + Math.round(sh * 0.1) + 'px "JetBrains Mono", monospace'; ctx.textBaseline = 'middle';
+    ctx.fillText('REC', x0 + sw * 0.08 + rs * 2.8, y0 + sh * 0.12 + rs);
+    // the timeline: played part, markers, playhead
+    var th = Math.max(2, sh * 0.03);
+    ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(tx0, trackY - th / 2, tx1 - tx0, th);
+    ctx.fillStyle = 'rgb(' + G + ')'; ctx.fillRect(tx0, trackY - th / 2, px - tx0, th);
+    [[0.22, 'final'], [0.41, 'bed'], [0.58, 'final'], [0.77, 'bed'], [0.88, 'final']].forEach(function (mk) {
+      var mx = tx0 + (tx1 - tx0) * mk[0], s = sh * 0.035, lit = p >= mk[0];
+      ctx.globalAlpha = lit ? 1 : 0.55;
+      if (mk[1] === 'bed') { ctx.fillStyle = '#ffb347'; ctx.save(); ctx.translate(mx, trackY - sh * 0.075); ctx.rotate(Math.PI / 4); ctx.fillRect(-s * 0.8, -s * 0.8, s * 1.6, s * 1.6); ctx.restore(); }
+      else { ctx.fillStyle = '#ff5c72'; ctx.beginPath(); ctx.arc(mx, trackY - sh * 0.075, s, 0, Math.PI * 2); ctx.fill(); }
+      ctx.globalAlpha = 1;
+    });
+    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(px, trackY, sh * 0.045, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
   /* ---------- a real Bed Wars map (Whiskers, from the Atlas) seen from above, slowly turning ---------- */
   var mapImg = loadImg('home/map-whiskers.png');
   function drawAtlas(ctx, w, h, t) {
@@ -366,7 +416,7 @@
 
   /* ---------- card preview canvases + the flat fallback beams ---------- */
   var previews = [];
-  document.querySelectorAll('canvas[data-draw]').forEach(function (c) { previews.push({ c: c, ctx: c.getContext('2d'), fn: c.dataset.draw === 'atlas' ? drawAtlas : drawCosmetic }); });
+  document.querySelectorAll('canvas[data-draw]').forEach(function (c) { previews.push({ c: c, ctx: c.getContext('2d'), fn: { atlas: drawAtlas, recordings: drawRecordings }[c.dataset.draw] || drawCosmetic }); });
   function sizeCanvas(c, w, h) { var W = Math.round(w * DPR), H = Math.round(h * DPR); if (c.width !== W || c.height !== H) { c.width = W; c.height = H; } }
 
   var flat = document.getElementById('flat'), fctx = flat.getContext('2d');

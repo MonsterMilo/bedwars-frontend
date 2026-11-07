@@ -222,8 +222,15 @@
   .rp-bar { height: 6px; border-radius: 3px; background: var(--panel-2); margin-top: 14px; overflow: hidden; }
   .rp-bar::after { content: ""; display: block; height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .2s; }
   .rp-pick { margin-top: 18px; color: var(--dim); font-size: 0.92em; }
-  .rp-pick label { display: inline-block; margin-top: 10px; }
-  .rp-pick input { max-width: 100%; }
+  .rp-pick-acts { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+  .rp-pick label, .rp-pick-acts a { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: var(--r-s); font-weight: 700; font-size: 0.95em; cursor: pointer; text-decoration: none; transition: box-shadow .2s, border-color .2s, background .2s; }
+  .rp-pick label { background: var(--accent); color: var(--accent-ink); }
+  .rp-pick label:hover, .rp-pick label:focus-within { box-shadow: var(--glow); }
+  .rp-pick-acts a { border: 1px solid var(--border, var(--glass-line)); background: var(--panel); color: var(--text); }
+  .rp-pick-acts a:hover { border-color: var(--border-strong, var(--accent)); }
+  .rp-pick svg { width: 16px; height: 16px; }
+  .rp-pick input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .rp-pick code { font-size: 0.92em; padding: 1px 5px; border-radius: 5px; background: var(--panel-2); color: var(--text); }
 
 
   /* Tactical map */
@@ -532,7 +539,10 @@
         <div class="rp-bar" id="rpLoadingBar" hidden></div>
         <div class="rp-pick" id="rpPick" hidden>
           <div>Open a replay file from your computer (<code>.mcpr</code>, from the proxy's <code>plugins/replays</code> folder):</div>
-          <label><input type="file" id="rpFile" accept=".mcpr,application/zip"></label>
+          <div class="rp-pick-acts">
+            <label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Choose a replay file<input type="file" id="rpFile" accept=".mcpr,application/zip"></label>
+            <a href="recordings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M3 15h18M7 5v4M12 5v4M17 5v4M7 15v4M12 15v4M17 15v4"/></svg>Your recordings</a>
+          </div>
         </div>
       </div>
     </div>

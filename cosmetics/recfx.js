@@ -29,6 +29,7 @@ const lerp = (a, b, k) => a + (b - a) * k;
 const lerpAng = (a, b, k) => a + wrap(b - a) * k;
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const B2D = 360 / 256; // packet angle bytes to degrees
+const X_AXIS = new THREE.Vector3(1, 0, 0);
 
 const TL = new THREE.TextureLoader();
 const texCache = {};
@@ -50,7 +51,7 @@ function img(name) {
 const ALL_TEX = ["entity_horse_white", "entity_horse_creamy", "entity_horse_chestnut", "entity_horse_brown", "entity_horse_black", "entity_horse_gray", "entity_horse_darkbrown", "entity_horse_markings_white", "entity_horse_markings_whitefield", "entity_horse_markings_whitedots", "entity_horse_markings_blackdots", "particles", "entity_sign", "explosion", "ascii", "entity_chicken", "entity_wolf", "entity_bat", "entity_squid", "entity_skeleton", "entity_steve", "entity_experience_orb", "armor_leather_layer_1", "armor_leather_layer_1_overlay", "armor_leather_layer_2", "armor_leather_layer_2_overlay", "entity_armorstand", "entity_cow", "entity_iron_golem", "entity_witch", "entity_guardian", "entity_guardian_beam", "block_fire_layer_0_strip",
   "rabbit_brown", "rabbit_white", "rabbit_black", "rabbit_white_splotched", "rabbit_gold", "rabbit_salt", "cosmetics/skins/player-16241cca.png", "cosmetics/skins/dummy.png",
   "item_iron_sword", "item_stick", "item_bone", "item_cookie", "item_gold_ingot", "item_beef_raw", "item_beef_cooked", "item_leather", "item_egg", "item_fireworks", "item_leather_chestplate",
-  "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel", "entity_zombie", "entity_creeper", "entity_banner_base", "misc_enchanted_item_glint", "entity_wither_skeleton", "entity_zombie_pigman", "entity_zombie_villager", "entity_blaze", "entity_creeper_armor", "entity_snowman", "entity_enderman", "entity_enderman_eyes", "entity_villager_smith", "entity_villager_farmer", "entity_villager_librarian", "entity_villager_priest", "entity_villager_butcher", "entity_wither", "entity_wither_invulnerable", "entity_pig", "entity_endermite", "block_planks_oak", "block_lava_still", "entity_sheep", "entity_sheep_fur", "entity_dragon", "entity_dragon_eyes", "entity_minecart", "item_fireball",
+  "block_gold_block", "block_pumpkin_side", "block_pumpkin_top", "block_pumpkin_face_off", "block_pumpkin_face_on", "block_torch_on", "block_anvil_base", "block_anvil_top_damaged_0", "block_redstone_block", "block_tnt_side", "block_tnt_top", "block_tnt_bottom", "block_dirt", "block_gravel", "entity_zombie", "entity_creeper", "entity_banner_base", "misc_enchanted_item_glint", "entity_wither_skeleton", "entity_zombie_pigman", "entity_zombie_villager", "entity_blaze", "entity_creeper_armor", "entity_snowman", "entity_enderman", "entity_enderman_eyes", "entity_villager_smith", "entity_villager_farmer", "entity_villager_librarian", "entity_villager_priest", "entity_villager_butcher", "entity_wither", "entity_wither_invulnerable", "entity_pig", "entity_endermite", "block_planks_oak", "block_lava_still", "entity_sheep", "entity_sheep_fur", "entity_dragon", "entity_dragon_eyes", "entity_minecart", "item_fireball", "entity_arrow",
   ...["iron", "gold", "diamond", "chainmail"].flatMap((m) => ["armor_" + m + "_layer_1", "armor_" + m + "_layer_2"])];
 const matCache = {};
 // Skin base layers are drawn solid, as the game makes them when it loads a skin
@@ -1784,6 +1785,14 @@ export function createRecFx(kit0) {
       else if (e.type === 50) { e.blockG = new THREE.Group(); e.g.add(e.blockG); modelsReady.then(() => { const b = blockMesh("tnt"); b.position.set(-0.5, -0.5, -0.5); e.blockG.add(b); e.tntMats = []; b.traverse((o) => { if (o.material) { o.material = o.material.clone(); e.tntMats.push(o.material); } }); }); e.fuse = 80; }
       else if (e.type === 70) { const id = data & 4095; e.blockG = new THREE.Group(); e.g.add(e.blockG); modelsReady.then(() => { const nm = blockKey(id, (data >> 12) & 15) || "gold_block", b = S.terrain?.(nm) || tone(blockMesh(nm)); b.position.x -= 0.5; b.position.z -= 0.5; e.blockG.add(b); }); }
       else if (e.type === 76 || e.type === 62 || e.type === 61) { e.sprite = new THREE.Group(); e.g.add(e.sprite); const it = { id: e.type === 76 ? 401 : e.type === 61 ? 332 : 344 }; const n = new THREE.Group(); n.scale.setScalar(0.5); const r = renderItemNode(it); r.scale.multiplyScalar(2); n.add(r); e.sprite.add(n); }
+      else if (e.type === 60) { // RenderArrow: two crossed planes for the shaft and a square for the fletching end, scale 0.05625, turned 45 degrees about its length
+        e.arrowG = new THREE.Group(); e.g.add(e.arrowG); const inner = new THREE.Group(); inner.scale.setScalar(0.05625); inner.rotation.x = Math.PI / 4; e.arrowG.add(inner);
+        const quad = (pts, u0, u1, v0, v1) => { const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pts.flat(), 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute([u0, 1 - v1, u1, 1 - v1, u1, 1 - v0, u0, 1 - v0], 2)); g.setIndex([0, 1, 2, 0, 2, 3]); g.computeVertexNormals(); inner.add(new THREE.Mesh(g, emat("entity_arrow"))); };
+        quad([[-11, -2, -2], [-11, -2, 2], [-11, 2, 2], [-11, 2, -2]], 0, 0.15625, 0.3125, 0.15625); // the back
+        quad([[-12, -2, 0], [4, -2, 0], [4, 2, 0], [-12, 2, 0]], 0, 0.5, 0.15625, 0); // the shaft, one way
+        quad([[-12, 0, -2], [4, 0, -2], [4, 0, 2], [-12, 0, 2]], 0, 0.5, 0.15625, 0); // ...and across
+        e.dir = new THREE.Vector3(1, 0, 0);
+      }
       else if (e.type === 63 || e.type === 64) { // RenderFireball: the fire charge sprite, 2 blocks for a big fireball, half for a small one
         e.sprite = new THREE.Group(); e.g.add(e.sprite); const n = new THREE.Group(); n.scale.setScalar(e.type === 63 ? 2 : 0.5); const r = renderItemNode({ id: 385 }); r.scale.multiplyScalar(2); n.add(r); e.sprite.add(n);
       } else if (e.type === 66) { // RenderWitherSkull: ModelSkeletonHead (uv 0,35 of the wither texture), scale(-1,-1,1)
@@ -2041,6 +2050,10 @@ export function createRecFx(kit0) {
         e.x += (e.nx - e.x) / e.inc; e.y += (e.ny - e.y) / e.inc; e.z += (e.nz - e.z) / e.inc;
         if (e.nyaw != null) { e.yaw += wrap(e.nyaw - e.yaw) / e.inc; e.pitch += (e.npitch - e.pitch) / e.inc; } e.inc--;
       }
+      if (e.kind === "obj" && e.type === 60) { // EntityArrow: a critical (fully drawn) arrow sheds 4 crit sparks a tick, then moves by its motion, drag 0.99, gravity 0.05
+        if ((e.meta?.["16"] ?? 0) & 1) for (let k = 0; k < 4; k++) W.spawn(new Crit(e.x + e.mx * k / 4, e.y + e.my * k / 4, e.z + e.mz * k / 4, -e.mx, -e.my + 0.2, -e.mz));
+        e.x += e.mx; e.y += e.my; e.z += e.mz; e.mx *= 0.99; e.my *= 0.99; e.mz *= 0.99; e.my -= 0.05;
+      }
       if (e.kind === "obj" && (e.type === 63 || e.type === 64 || e.type === 66)) { // EntityFireball: moves by its motion, which slows by 0.95 a tick (the server's velocity packets keep it going)
         e.x += e.mx; e.y += e.my; e.z += e.mz; const f = e.type === 66 && e.meta?.["10"] ? 0.73 : 0.95; e.mx *= f; e.my *= f; e.mz *= f;
         W.spawn(new Smoke(e.x, e.y + 0.5, e.z, 0, 0, 0)); // and leaves a puff of smoke every tick, like the game draws behind every fireball
@@ -2200,6 +2213,9 @@ export function createRecFx(kit0) {
         } else if (e.cartG || e.skullG) {
           const yaw = lerpAng(e.pyaw ?? e.yaw, e.yaw, pt);
           if (e.cartG) e.cartG.rotation.y = (180 - yaw) * D2R; else { e.skullG.rotation.y = -yaw * D2R; }
+        } else if (e.arrowG) { // points the way it flies
+          const m = Math.hypot(e.mx, e.my, e.mz); if (m > 1e-4) e.dir.set(e.mx / m, e.my / m, e.mz / m);
+          e.arrowG.quaternion.setFromUnitVectors(X_AXIS, e.dir);
         } else if (e.sprite) { // RenderSnowball: faces the camera
           e.sprite.quaternion.copy(S.camera.quaternion);
         } else if (e.kind === "orb") {

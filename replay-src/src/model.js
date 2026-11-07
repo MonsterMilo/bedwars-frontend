@@ -20,7 +20,7 @@ const P = {
   JOIN: 0x01, CHAT: 0x02, TIME: 0x03, EQUIP: 0x04, RESPAWN: 0x07, POSITION: 0x08,
   ANIMATION: 0x0b, SPAWN_PLAYER: 0x0c, COLLECT: 0x0d, SPAWN_OBJECT: 0x0e, SPAWN_MOB: 0x0f,
   VELOCITY: 0x12, DESTROY: 0x13, REL_MOVE: 0x15, LOOK: 0x16, LOOK_MOVE: 0x17, TELEPORT: 0x18,
-  HEAD_LOOK: 0x19, STATUS: 0x1a, METADATA: 0x1c, CHUNK: 0x21, MULTI_BLOCK: 0x22, BLOCK: 0x23,
+  HEAD_LOOK: 0x19, STATUS: 0x1a, METADATA: 0x1c, POTION_ADD: 0x1d, POTION_REMOVE: 0x1e, CHUNK: 0x21, MULTI_BLOCK: 0x22, BLOCK: 0x23,
   BLOCK_BREAK_ANIM: 0x25, CHUNK_BULK: 0x26, EXPLOSION: 0x27, EFFECT: 0x28, SOUND: 0x29, PARTICLE: 0x2a,
   PLAYER_LIST: 0x38, TEAMS: 0x3e
 }
@@ -248,6 +248,7 @@ class Track {
     this.id = id; this.kind = kind; this.uuid = null
     this.t = []; this.x = []; this.y = []; this.z = []; this.yaw = []; this.head = []; this.pitch = []; this.alive = []
     this.swings = []; this.hurts = []; this.deaths = []; this.crits = []
+    this.effectsIn = [] // potion effects from the server: { t, id, amp, ms } or { t, id, remove }
     this.flags = new Timeline(0) // 0x02 crouch, 0x08 sprint, 0x10 using item (blocking, eating, bow)
     this.health = new Timeline(null)
     this.skinParts = new Timeline(0x7f)
@@ -653,6 +654,14 @@ function buildTimeline (mcpr, onProgress = () => {}) {
         case P.METADATA: {
           const e = live.get(r.varint()); if (!e) break
           applyMeta(e, t, r.metadata())
+          break
+        }
+        case P.POTION_ADD: case P.POTION_REMOVE: {
+          // Potion effects the server sent for a player (effects.js).
+          const e = live.get(r.varint())
+          if (!e || e.kind !== 'player') break
+          const effect = r.i8()
+          if (id === P.POTION_ADD) { const amp = r.i8(); const ticks = r.varint(); e.effectsIn.push({ t, id: effect, amp, ms: ticks * 50 }) } else e.effectsIn.push({ t, id: effect, remove: true })
           break
         }
         case P.EQUIP: {

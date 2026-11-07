@@ -17,10 +17,11 @@ class Sounds {
     this.playing = new Set()
     this.cursor = 0
     this.selfView = false
+    this.out = null // recording: { ctx, dest, buffers, speakers }
     fetch('replay/sounds.json').then(r => r.ok ? r.json() : null).then(m => { this.map = m }).catch(() => {})
   }
 
-  setOn (on) { this.on = on; if (!on) for (const a of this.playing) a.pause() }
+  setOn (on) { this.on = on; if (!on) for (const a of this.playing) if (a.pause) a.pause() }
 
   /** Play everything between the last frame's time and now. */
   update (prev, now, playing, speed, cam) {
@@ -33,7 +34,7 @@ class Sounds {
     }
     while (this.cursor < this.list.length && this.list[this.cursor].t <= now) {
       const s = this.list[this.cursor++]
-      if (this.on && this.map && speed <= 2) this.play(s, cam, speed)
+      if ((this.on || this.out) && this.map && speed <= 2) this.play(s, cam, speed)
     }
   }
 
@@ -53,10 +54,27 @@ class Sounds {
     const v = s.everywhere ? Math.min(1, s.volume) : s.volume > 1 ? Math.max(0, 1 - dist / (R * s.volume)) : s.volume * Math.max(0, 1 - dist / R)
     if (v <= 0.01) return
     const h = files[Math.floor(Math.random() * files.length)]
+    const level = Math.min(1, v * this.volume * (s.self ? SELF_LEVEL : 1))
+    const rate = Math.max(0.5, Math.min(4, (s.pitch || 1) * speed))
+    // Recording a video: through WebAudio, into the recording.
+    if (this.out) {
+      const buf = this.out.buffers.get(h)
+      if (!buf) return
+      const { ctx, dest } = this.out
+      const src = ctx.createBufferSource(); src.buffer = buf; src.playbackRate.value = rate
+      const gain = ctx.createGain(); gain.gain.value = level
+      src.connect(gain); gain.connect(dest)
+      if (this.out.speakers) gain.connect(ctx.destination)
+      const token = {}
+      this.playing.add(token)
+      src.onended = () => this.playing.delete(token)
+      src.start()
+      return
+    }
     const a = new Audio(BASE + h.slice(0, 2) + '/' + h)
-    a.volume = Math.min(1, v * this.volume * (s.self ? SELF_LEVEL : 1))
+    a.volume = level
     a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false
-    a.playbackRate = Math.max(0.5, Math.min(4, (s.pitch || 1) * speed))
+    a.playbackRate = rate
     const done = () => this.playing.delete(a)
     a.addEventListener('ended', done); a.addEventListener('error', done)
     this.playing.add(a)

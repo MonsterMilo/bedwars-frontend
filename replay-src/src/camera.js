@@ -29,6 +29,8 @@ class ReplayCamera {
     this.center = new THREE.Vector3() // overview centre
     this.flyTo = null
     this.keys = new Set()
+    this.binds = null // Keybinds
+    this.fov = 70
     this.onChange = () => {}
     this.onClick = () => {}
     this.onDoubleClick = () => {}
@@ -80,18 +82,20 @@ class ReplayCamera {
         this.onSpeed(this.speed)
       }
     }, { passive: false })
+    // Movement keys go through the viewer's key bindings (keybinds.js).
+    const MOVE = ['forward', 'backward', 'left', 'right', 'up', 'down']
     window.addEventListener('keydown', (e) => {
       if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return
       if (e.ctrlKey || e.metaKey || e.altKey) return
-      const k = e.key.toLowerCase()
-      if (['w', 'a', 's', 'd', 'shift', 'q', 'e'].includes(k)) {
-        this.keys.add(k)
+      const a = this.binds ? this.binds.action(e.code) : null
+      if (a === 'fast' || MOVE.includes(a)) {
+        this.keys.add(a)
         this.flyTo = null
         // Moving yourself takes you out of following.
-        if ((this.mode === 'follow' || this.mode === 'eyes') && ['w', 'a', 's', 'd', 'q', 'e'].includes(k)) this.setMode('free')
+        if ((this.mode === 'follow' || this.mode === 'eyes') && MOVE.includes(a)) this.setMode('free')
       }
     })
-    window.addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()))
+    window.addEventListener('keyup', (e) => { const a = this.binds && this.binds.action(e.code); if (a) this.keys.delete(a) })
     window.addEventListener('blur', () => this.keys.clear())
   }
 
@@ -159,6 +163,7 @@ class ReplayCamera {
         const ago = this.model.hurtAgo
         let roll = 0
         if (ago >= 0 && ago < 500) { const f = 1 - ago / 500; roll = -Math.sin(f * f * f * f * Math.PI) * 14 * Math.PI / 180 }
+        this.roll = roll
         cam.rotation.set(this.pitch, this.yaw, roll)
         g.visible = false // their own model would block the view
         return
@@ -185,9 +190,9 @@ class ReplayCamera {
     }
 
     if (this.mode === 'overview') {
-      const fwd = (k.has('w') ? 1 : 0) - (k.has('s') ? 1 : 0)
-      const side = (k.has('d') ? 1 : 0) - (k.has('a') ? 1 : 0)
-      const v = this.dist * 0.8 * dt * (k.has('shift') ? 3 : 1)
+      const fwd = (k.has('forward') ? 1 : 0) - (k.has('backward') ? 1 : 0)
+      const side = (k.has('right') ? 1 : 0) - (k.has('left') ? 1 : 0)
+      const v = this.dist * 0.8 * dt * (k.has('fast') ? 3 : 1)
       const sin = Math.sin(this.yaw); const cos = Math.cos(this.yaw)
       this.center.x += (-sin * fwd + cos * side) * v
       this.center.z += (-cos * fwd - sin * side) * v
@@ -199,10 +204,10 @@ class ReplayCamera {
     }
 
     // Free flight, with a little acceleration and glide.
-    const fwd = (k.has('w') ? 1 : 0) - (k.has('s') ? 1 : 0)
-    const side = (k.has('d') ? 1 : 0) - (k.has('a') ? 1 : 0)
-    const up = (k.has('e') ? 1 : 0) - (k.has('q') ? 1 : 0)
-    const sp = this.speed * (k.has('shift') ? 3 : 1)
+    const fwd = (k.has('forward') ? 1 : 0) - (k.has('backward') ? 1 : 0)
+    const side = (k.has('right') ? 1 : 0) - (k.has('left') ? 1 : 0)
+    const up = (k.has('up') ? 1 : 0) - (k.has('down') ? 1 : 0)
+    const sp = this.speed * (k.has('fast') ? 3 : 1)
     const sin = Math.sin(this.yaw); const cos = Math.cos(this.yaw)
     const want = new THREE.Vector3((-sin * fwd + cos * side) * sp, up * sp, (-cos * fwd - sin * side) * sp)
     this.vel.lerp(want, this.smooth ? ease(7, dt) : 1)

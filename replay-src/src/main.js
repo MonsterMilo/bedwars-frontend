@@ -222,7 +222,7 @@ async function runViewer (tl, details) {
 
   // --- Settings (remembered in this browser) ---
   const SETTINGS_KEY = 'replaySettings'
-  const settings = { chat: true, feed: true, names: true, invis: true, particles: true, hearing: 2, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860, timers: true, hitboxes: false, hand: true, fov: 70, res: 1, fps: 0, view: 320, map: 'mini', moments: { kill: true, final: true, bed: true, elim: true } }
+  const settings = { chat: true, feed: true, names: true, invis: true, particles: true, hearing: 2, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860, smoothAim: true, timers: true, hitboxes: false, hand: true, fov: 70, res: 1, fps: 0, view: 320, map: 'mini', moments: { kill: true, final: true, bed: true, elim: true } }
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) } catch { /* private window */ }
   const saveSettings = () => { if (EMBED) return; try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ } }
   // A clip in the popup: no side panel or chat. It plays with sound (it only
@@ -250,6 +250,7 @@ async function runViewer (tl, details) {
     for (const m of models) { m.tag.visible = settings.names; m.ghostAllowed = settings.invis }
     particles.points.visible = settings.particles
     cam.smooth = settings.smooth
+    cam.smoothView = settings.smoothAim !== false
     cam.sensitivity = settings.sensitivity
     sounds.volume = settings.volume
     sounds.range = settings.hearing

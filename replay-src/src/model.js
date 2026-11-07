@@ -180,6 +180,18 @@ function bedwarsTeam (name) {
   const m = String(name || '').match(/^(Red|Blue|Green|Yellow|Aqua|White|Pink|Gr[ae]y)\d*$/i)
   return m ? { label: m[1][0].toUpperCase() + m[1].slice(1).toLowerCase(), color: TEAM_COLORS[m[1].toLowerCase()] } : null
 }
+// The team a Bed Wars scoreboard team really is, from its prefix colour
+// ("§e§lY " is Yellow). Hypixel's team names don't always match: in some
+// games the Yellow players are in teams named "Blue1" and "Blue2".
+const PREFIX_TEAM = { c: 'Red', 9: 'Blue', a: 'Green', e: 'Yellow', b: 'Aqua', f: 'White', d: 'Pink', 8: 'Gray', 7: 'Gray' }
+function teamOfScoreboard (team) {
+  if (!team) return null
+  const named = bedwarsTeam(team.name)
+  if (!named) return null
+  const m = String(team.firstPrefix || team.prefix || '').match(/§([0-9a-f])/i)
+  const label = m && PREFIX_TEAM[m[1].toLowerCase()]
+  return label ? { label, color: TEAM_COLORS[label.toLowerCase()] } : named
+}
 /** The last colour code in a scoreboard team prefix, as a CSS colour. */
 function prefixColor (prefix) {
   const m = String(prefix || '').match(/§([0-9a-f])/gi)
@@ -684,7 +696,8 @@ function buildTimeline (mcpr, onProgress = () => {}) {
           const name = r.str(); const mode = r.i8()
           if (mode === 0 || mode === 2) {
             r.str(); const prefix = r.str(); r.str(); r.i8(); r.str(); r.i8()
-            teams.set(name, { name, prefix, color: prefixColor(prefix) })
+            const had = teams.get(name)
+            teams.set(name, { name, prefix, firstPrefix: (had && had.firstPrefix) || prefix, color: prefixColor(prefix) })
           }
           if (mode === 0 || mode === 3) {
             // A player keeps the first Bed Wars team they're put in (Hypixel
@@ -733,7 +746,8 @@ function buildTimeline (mcpr, onProgress = () => {}) {
     if (!tr.uuid || !tr.t.length || tr.uuid[12] === '2') { tracks.delete(eid); continue }
     tr.name = names.get(tr.uuid) || null
     tr.nicked = tr.uuid[12] === '1'
-    tr.team = bedwarsTeam(teamOf.get(tr.name))
+    const sb = teamOf.get(tr.name)
+    tr.team = teamOfScoreboard(teams.get(sb) || { name: sb })
     tr.self = eid === self.id
     tr.finish()
   }
@@ -882,4 +896,4 @@ function addCracks (out, who, x, y, z, start, T) {
 
 function popcount (m) { let c = 0; while (m) { c += m & 1; m >>>= 1 } return c }
 
-module.exports = { Timeline, readMcpr, buildTimeline, chatText, chatSegments, prefixColor, bedwarsTeam, Reader, Track, colKey, lastAt }
+module.exports = { Timeline, readMcpr, buildTimeline, chatText, chatSegments, prefixColor, bedwarsTeam, teamOfScoreboard, Reader, Track, colKey, lastAt }

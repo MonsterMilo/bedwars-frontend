@@ -7103,6 +7103,8 @@ html[data-theme="deepcurrent"] .card-stat-value { font-family: 'JetBrains Mono',
 .clip-kind { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 0.9em; }
 .clip-kind svg { width: 16px; height: 16px; flex: 0 0 auto; color: var(--team, var(--accent)); }
 .clip-by { font-size: 0.82em; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clip-by-line { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clip-by-line + .clip-by-line { color: var(--text-faint); }
 .clip-meta { font-size: 0.76em; color: var(--text-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .clip-play { position: absolute; right: 10px; top: 9px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
 .clip-play svg { width: 10px; height: 10px; margin-left: 1px; }
@@ -24802,12 +24804,30 @@ function buildClipCard(c, uuid, other) {
   kind.append(what);
   const by = document.createElement("span");
   by.className = "clip-by";
-  // Someone else's: whose it is. Theirs: a nick they used that game.
-  const whose = other ? (c.kind === "manual" ? (c.people || []).map(p => p.name).slice(0, 3).join(", ") : c.victim || c.username) : "";
-  const shownAs = other ? "" : c.kind === "manual" ? me && me.name : c.victim;
-  const asNick = shownAs && openPlayerName && shownAs.toLowerCase() !== String(openPlayerName).toLowerCase() ? ` (as ${shownAs})` : "";
-  const byText = c.by ? `${c.kind === "manual" ? "clipped by" : "by"} ${c.by}` : "";
-  by.textContent = other ? [whose, byText].filter(Boolean).join(" · ") : byText + asNick;
+  // Who it happened to first (with the nick they played under), then who did
+  // it - "(as X)" never sits next to the killer's name (Milo 2026-11-07:
+  // "by ToenailTim222ng (as itz_ava676)" read as if Milo was the nick).
+  const nickOf = (real, shown) => (shown && real && shown.toLowerCase() !== String(real).toLowerCase() ? shown : "");
+  const verb = c.kind === "bed" ? "bed broken by" : c.kind === "manual" ? "clipped by" : "killed by";
+  const byText = c.by ? `${verb} ${c.by}` : "";
+  let whose;
+  if (c.kind === "manual") {
+    whose = other ? (c.people || []).map(p => p.name).slice(0, 3).join(", ") : (nickOf(openPlayerName, me && me.name) ? `As ${me.name}` : "");
+  } else if (other) {
+    const real = c.username || c.victim || "";
+    const nick = nickOf(real, c.victim);
+    whose = nick ? `${real} (as ${nick})` : real;
+  } else {
+    const nick = nickOf(openPlayerName, c.victim);
+    whose = nick ? `As ${nick}` : "";
+  }
+  // Two lines, so neither half gets cut off.
+  for (const text of [whose, byText].filter(Boolean)) {
+    const line = document.createElement("span");
+    line.className = "clip-by-line";
+    line.textContent = text;
+    by.append(line);
+  }
   const meta = document.createElement("span");
   meta.className = "clip-meta";
   meta.textContent = [other ? "Same game" : c.map, date, `${Math.round((c.durationMs || 0) / 1000)}s`].filter(Boolean).join(" · ");
@@ -24815,7 +24835,7 @@ function buildClipCard(c, uuid, other) {
   playIcon.className = "clip-play";
   playIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 001.5.86l12-7.5a1 1 0 000-1.72l-12-7.5A1 1 0 007 4.5z"/></svg>';
   card.append(kind, by, meta, playIcon);
-  card.setAttribute("aria-label", `Play ${what.toLowerCase()}${whose ? " of " + whose : ""}${c.by ? " by " + c.by : ""}${other ? ", same game" : ""}${date ? ", " + date : ""}`);
+  card.setAttribute("aria-label", `Play ${what.toLowerCase()}${whose ? ", " + whose : ""}${c.by ? ", " + verb + " " + c.by : ""}${other ? ", same game" : ""}${date ? ", " + date : ""}`);
   card.addEventListener("click", () => playModalClip(c, card));
   li.appendChild(card);
   return li;

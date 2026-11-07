@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Prism Atlas</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600&display=swap">
 <link rel="icon" href="icons/icon-192.png">
 <script>
   // Same theme as the tracker site (Prism, Neon, Case Files, Ledger, Deep Current,
@@ -221,9 +222,20 @@
     .at-mapsub { white-space: normal; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+  /* Interactive page background (bg/backgrounds.js): behind everything, never in the way. */
+  .page-bg { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; display: block; }
+  .page { position: relative; z-index: 1; }
+  .kicker { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 12px; font: 600 11.5px/1 'JetBrains Mono', ui-monospace, Consolas, monospace; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); }
+  .kicker i { width: 26px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent)); }
+  .hero h1 { animation: heroIn .8s var(--ease) both; }
+  .hero .kicker, .hero .tally { animation: heroIn .8s var(--ease) .08s both; }
+  @keyframes heroIn { from { opacity: 0; transform: translateY(10px); } }
+  body[data-view="map"] .page-bg { display: none; }
 </style>
 </head>
 <body>
+<canvas class="page-bg" data-bg="contours" aria-hidden="true"></canvas>
 <div class="page at-list">
   <header class="top">
     <a class="back" href="./"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Prism</a>
@@ -232,6 +244,7 @@
 
   <section class="hero">
     <div>
+      <p class="kicker"><i></i>Every map, mapped</p>
       <h1>Prism <span>Atlas</span></h1>
       <p class="tally" id="tally"></p>
     </div>
@@ -310,5 +323,6 @@
   </div>
 </div>
 <script src="replay/atlas.js?v=2026-11-07"></script><!-- bump v with every atlas.js build, so a cached page never runs a newer script -->
+<script src="bg/backgrounds.js?v=1" defer></script>
 </body>
 </html>

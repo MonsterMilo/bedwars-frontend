@@ -36,7 +36,7 @@ class ReplayWorld {
       const k = --this.applied
       this.set(ch.x[k], ch.y[k], ch.z[k], ch.from[k]); out.push(ch.x[k], ch.y[k], ch.z[k], ch.from[k])
     }
-    if (out.length) this.r.setBlocks(new Int32Array(out))
+    if (out.length) { this.r.setBlocks(new Int32Array(out)); if (this.onChange) this.onChange(out) }
   }
 
   /** The block at (x, y, z) right now. */

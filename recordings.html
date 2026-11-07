@@ -127,8 +127,8 @@
   .game { --rc: var(--faint); position: relative; display: grid; grid-template-columns: 172px minmax(0, 1fr) auto; text-decoration: none; color: inherit; border: 1px solid var(--border); border-radius: var(--r-m); background: var(--panel); overflow: hidden; transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .2s; animation: rise .5s var(--ease) both; }
   .game::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--rc), transparent); opacity: .85; }
   .game:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--rc) 55%, var(--border)); box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--rc) 30%, transparent); }
-  .game.is-win { --rc: var(--good); }
-  .game.is-loss { --rc: var(--bad); }
+  .game.has-target { --rc: var(--bad); }
+  .game.target-down { --rc: var(--good); }
   @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
   .thumb { position: relative; min-height: 124px; background: radial-gradient(120% 90% at 50% 30%, var(--studio-a), var(--studio-b)); display: grid; place-items: center; overflow: hidden; }
   .thumb::after { content: ""; position: absolute; inset: auto 0 0 0; height: 45%; background: radial-gradient(60% 100% at 50% 100%, color-mix(in srgb, var(--rc) 24%, transparent), transparent 70%); pointer-events: none; }
@@ -149,7 +149,13 @@
   .tm { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); min-width: 0; }
   .tm i { width: 9px; height: 9px; border-radius: 3px; background: var(--tc); flex: none; }
   .tm.is-out { opacity: .5; }
-  .tm.is-win { color: var(--text); }
+  .tm .tg { color: var(--bad); font-weight: 700; }
+  .targets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tgt { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; padding: 3px 9px 3px 7px; border-radius: 999px; background: color-mix(in srgb, var(--bad) 12%, transparent); color: var(--text); border: 1px solid color-mix(in srgb, var(--bad) 35%, transparent); text-decoration: none; }
+  .tgt svg { width: 13px; height: 13px; color: var(--bad); flex: none; }
+  .tgt small { font-size: 10.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+  .tgt.is-down { background: color-mix(in srgb, var(--good) 12%, transparent); border-color: color-mix(in srgb, var(--good) 35%, transparent); }
+  .tgt.is-down small { color: var(--good); } .tgt small { color: var(--bad); } .tgt.is-unknown small { color: var(--faint); }
   .tm .me { color: var(--text); font-weight: 700; }
   .side { padding: 14px 18px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 8px; border-left: 1px solid var(--border); min-width: 190px; }
   .nums { display: flex; gap: 16px; font-variant-numeric: tabular-nums; }
@@ -176,7 +182,8 @@
   /* One game */
   .g-head { --rc: var(--faint); position: relative; margin: 22px 0 20px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 22px; align-items: center; padding: 18px 22px 18px 18px; border: 1px solid var(--border); border-radius: var(--r-l); background: var(--panel); overflow: hidden; animation: rise .5s var(--ease) both; }
   .g-head::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--rc), transparent); }
-  .g-head.is-win { --rc: var(--good); } .g-head.is-loss { --rc: var(--bad); }
+  .g-head.has-target { --rc: var(--bad); } .g-head.target-down { --rc: var(--good); }
+  .g-head .targets { margin-top: 12px; }
   .g-head .thumb { width: 150px; min-height: 0; aspect-ratio: 1; border-radius: var(--r-m); }
   .g-head .thumb svg { width: 112px; height: 112px; }
   .g-head h1 { margin: 6px 0 0; font-family: var(--font-title); font-size: clamp(28px, 4vw, 44px); line-height: 1.05; letter-spacing: -.01em; }
@@ -206,6 +213,7 @@
   th:first-child, td:first-child { text-align: left; padding-left: 14px; }
   td { padding: 6px 8px; text-align: right; border-top: 1px solid var(--border); }
   td .nm { font-weight: 700; }
+  .tgt-ic svg { width: 13px; height: 13px; color: var(--bad); vertical-align: -2px; margin-right: 5px; }
   td .nm.is-out { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--bad) 70%, transparent); color: var(--dim); }
   td .you { font-size: 10.5px; font-weight: 800; color: var(--accent); margin-left: 6px; letter-spacing: .06em; }
   td .pov { font-size: 12px; color: var(--dim); text-decoration: none; margin-left: 8px; opacity: 0; transition: opacity .15s; }
@@ -286,8 +294,7 @@
       <nav class="rail" id="rail" aria-label="Show">
         <p class="rail-label">Show</p>
         <button type="button" class="cat" data-r="all" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M3 15h18M7 5v4M12 5v4M17 5v4M7 15v4M12 15v4M17 15v4"/></svg>All recordings<span class="n" id="nAll"></span></button>
-        <button type="button" class="cat" data-r="win" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM17 6h3v1a3 3 0 01-3 3M7 6H4v1a3 3 0 003 3"/></svg>Wins<span class="n" id="nWin"></span></button>
-        <button type="button" class="cat" data-r="loss" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M5 18v-5a2 2 0 012-2h10a2 2 0 012 2v5M7 11V8M17 11V8M9.5 14.5l5 0"/></svg>Losses<span class="n" id="nLoss"></span></button>
+        <button type="button" class="cat" data-r="snipe" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Snipes<span class="n" id="nSnipe"></span></button>
         <button type="button" class="cat" data-r="new" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Not watched yet<span class="n" id="nNew"></span></button>
       </nav>
       <main>
@@ -365,9 +372,33 @@
     if (e.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName) && !$('listView').hidden) { e.preventDefault(); $('q').focus(); }
   });
 
-  // The game as a little map seen from above: each team's island round the middle, the winner
-  // lit up, eliminated teams faded, ours ringed. Diamonds in the middle.
-  function ring(s, big) {
+  // Targets: the tracked players in a game (usually the cheaters we went after), found in the
+  // game's teams by name. Their team being eliminated means we got them. Who won doesn't matter.
+  var CROSS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7.5"/><path d="M12 1.5v5M12 17.5v5M1.5 12h5M17.5 12h5"/></svg>';
+  function targetsOf(g) {
+    var s = g.summary, names = (g.tracked || []).map(function (p) { return p.username; }).filter(Boolean);
+    var selfName = s && s.self ? String(s.self.name).toLowerCase() : '';
+    return names.filter(function (n) { return n.toLowerCase() !== selfName; }).map(function (n) {
+      var low = n.toLowerCase(), team = null, player = null;
+      if (s && s.teams) s.teams.forEach(function (t) { t.players.forEach(function (p) { var pn = p && p.name ? p.name : p; if (String(pn).toLowerCase() === low) { team = t; player = p; } }); });
+      var down = team ? (player && player.finalDeath) || team.eliminatedAt != null : null;
+      return { name: n, team: team ? team.team : null, down: down, at: team && team.eliminatedAt != null ? team.eliminatedAt : null };
+    });
+  }
+  function targetState(list) { if (!list.length) return ''; return list.every(function (t) { return t.down; }) ? 'target-down' : 'has-target'; }
+  function targetChips(list, start) {
+    if (!list.length) return '';
+    return '<div class="targets">' + list.map(function (t) {
+      var cls = t.down ? ' is-down' : t.down === null ? ' is-unknown' : '';
+      var st = t.down ? 'Out' + (t.at != null && start != null ? ' ' + clock(t.at - start) : '') : t.down === null ? 'Not found' : 'Survived';
+      return '<span class="tgt' + cls + '" title="' + esc(t.name) + (t.team ? ' (' + esc(t.team) + ')' : '') + '">' + CROSS + esc(t.name) + ' <small>' + st + '</small></span>';
+    }).join('') + '</div>';
+  }
+
+  // The game as a little map seen from above: each team's island round the middle:
+  // eliminated teams faded, ours ringed in white, the targets' teams in red crosshairs. Diamonds in the middle.
+  function ring(s, big, tgts) {
+    var tTeams = {}; (tgts || []).forEach(function (t) { if (t.team) tTeams[t.team] = 1; });
     var teams = s && s.teams && s.teams.length ? s.teams.slice().sort(function (a, b) { return ORDER.indexOf(a.team) - ORDER.indexOf(b.team); }) : null;
     var n = teams ? teams.length : 4, R = n > 4 ? 33 : 30, sz = n > 4 ? 13 : 17;
     var selfTeam = '';
@@ -384,10 +415,10 @@
       var t = teams ? teams[j] : null;
       var a2 = -Math.PI / 2 + j * Math.PI * 2 / n + (n === 4 ? Math.PI / 4 : 0);
       var cx = 50 + Math.cos(a2) * R, cy = 50 + Math.sin(a2) * R;
-      var won = t && s.winner === t.team, gone = t && !won && t.eliminatedAt != null;
+      var won = false, gone = t && t.eliminatedAt != null, hit = t && tTeams[t.team];
       var col = t ? tc(t.team) : 'var(--faint)';
       var k = won ? 1.25 : 1, w = sz * k;
-      if (won) out += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + (w * 0.95).toFixed(1) + '" style="fill:' + col + '" opacity=".22"/>';
+      if (hit) out += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + (w * 0.9).toFixed(1) + '" fill="none" style="stroke:var(--bad)" stroke-width="1.6"/><path d="M' + cx.toFixed(1) + ' ' + (cy - w * 1.25).toFixed(1) + 'v' + (w * 0.4).toFixed(1) + 'M' + cx.toFixed(1) + ' ' + (cy + w * 0.85).toFixed(1) + 'v' + (w * 0.4).toFixed(1) + 'M' + (cx - w * 1.25).toFixed(1) + ' ' + cy.toFixed(1) + 'h' + (w * 0.4).toFixed(1) + 'M' + (cx + w * 0.85).toFixed(1) + ' ' + cy.toFixed(1) + 'h' + (w * 0.4).toFixed(1) + '" style="stroke:var(--bad)" stroke-width="1.6" stroke-linecap="round"/>';
       out += '<rect x="' + (cx - w / 2).toFixed(1) + '" y="' + (cy - w / 2).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + w.toFixed(1) + '" rx="' + (w * 0.22).toFixed(1) + '" style="fill:' + col + '" opacity="' + (t ? (gone ? 0.28 : 1) : 0.25) + '"' + (t && t.team === selfTeam ? ' stroke="#fff" stroke-width="1.6"' : '') + '/>';
       if (t && t.bedBrokenAt != null && !won) out += '<path d="M' + (cx - w * 0.22).toFixed(1) + ' ' + (cy - w * 0.22).toFixed(1) + 'l' + (w * 0.44).toFixed(1) + ' ' + (w * 0.44).toFixed(1) + 'M' + (cx + w * 0.22).toFixed(1) + ' ' + (cy - w * 0.22).toFixed(1) + 'l-' + (w * 0.44).toFixed(1) + ' ' + (w * 0.44).toFixed(1) + '" stroke="rgba(0,0,0,.55)" stroke-width="2" stroke-linecap="round"/>';
     }
@@ -422,12 +453,13 @@
     });
   }
   function teamsLine(g) {
-    var s = g.summary;
+    var s = g.summary, tset = {};
+    (g.tracked || []).forEach(function (p) { if (p.username) tset[p.username.toLowerCase()] = 1; });
     if (!s || !s.teams) return '';
     return '<div class="teams">' + s.teams.slice().sort(function (a, b) { return ORDER.indexOf(a.team) - ORDER.indexOf(b.team); }).map(function (t) {
-      var out = t.eliminatedAt != null && s.winner !== t.team;
-      var names = '<span>' + t.players.map(function (n) { return s.self && n === s.self.name ? '<span class="me">' + esc(n) + '</span>' : esc(n); }).join(', ') + '</span>';
-      return '<span class="tm' + (out ? ' is-out' : '') + (s.winner === t.team ? ' is-win' : '') + '" style="--tc:' + tc(t.team) + '" title="' + esc(t.team) + (s.winner === t.team ? ' won' : out ? ' was eliminated' : '') + '"><i></i>' + names + '</span>';
+      var out = t.eliminatedAt != null;
+      var names = '<span>' + t.players.map(function (n) { return s.self && n === s.self.name ? '<span class="me">' + esc(n) + '</span>' : tset[String(n).toLowerCase()] ? '<span class="tg">' + esc(n) + '</span>' : esc(n); }).join(', ') + '</span>';
+      return '<span class="tm' + (out ? ' is-out' : '') + '" style="--tc:' + tc(t.team) + '" title="' + esc(t.team) + (out ? ' was eliminated' : '') + '"><i></i>' + names + '</span>';
     }).join('') + '</div>';
   }
   var ICON = {
@@ -438,7 +470,7 @@
   function shown() {
     return last.games.filter(function (g) {
       if (state.res === 'new' && isWatched(g)) return false;
-      if ((state.res === 'win' || state.res === 'loss') && g.result !== state.res) return false;
+      if (state.res === 'snipe' && !targetsOf(g).length) return false;
       if (state.mode !== 'all' && modeKey(g.mode) !== state.mode) return false;
       return true;
     });
@@ -449,24 +481,23 @@
     // counts are for what's loaded; with one page that's everything
     var one = state.pages <= 1;
     $('nAll').textContent = last.total;
-    $('nWin').textContent = one ? g0.filter(function (g) { return g.result === 'win'; }).length : '';
-    $('nLoss').textContent = one ? g0.filter(function (g) { return g.result === 'loss'; }).length : '';
+    $('nSnipe').textContent = one ? g0.filter(function (g) { return targetsOf(g).length; }).length : '';
     $('nNew').textContent = one ? g0.filter(function (g) { return !isWatched(g); }).length : '';
-    $('heading').textContent = { all: 'All recordings', win: 'Wins', loss: 'Losses', new: 'Not watched yet' }[state.res];
+    $('heading').textContent = { all: 'All recordings', snipe: 'Snipes', new: 'Not watched yet' }[state.res];
     var list = shown();
     var box = $('games');
     if (!list.length) box.innerHTML = '<div class="empty">' + (g0.length ? '<b>Nothing matches that</b>Try another filter' + (state.pages > 1 ? ' or another page' : '') + '.' : '<b>No recordings yet</b>Recorded games show up here once they’re uploaded.') + '</div>';
     else box.innerHTML = list.map(function (g, i) {
       var s = g.summary || {};
       var tot = s.totals || {};
-      var res = g.result === 'win' ? 'is-win' : g.result === 'loss' ? 'is-loss' : '';
+      var tg = targetsOf(g), res = targetState(tg);
       var tracked = g.tracked && g.tracked.length ? g.tracked.map(function (p) { return p.username; }) : [];
       return '<a class="game ' + res + '" href="#g=' + esc(g.id) + '" style="animation-delay:' + Math.min(i * 35, 500) + 'ms">' +
-        '<div class="thumb">' + (g.result ? '<span class="tag">' + (g.result === 'win' ? 'Win' : 'Loss') + '</span>' : '') + ring(g.summary) + '<span class="dur">' + esc(clock(g.durationMs)) + '</span></div>' +
+        '<div class="thumb">' + (tg.length ? '<span class="tag">' + (res === 'target-down' ? 'Got them' : 'Snipe') + '</span>' : '') + ring(g.summary, false, tg) + '<span class="dur">' + esc(clock(g.durationMs)) + '</span></div>' +
         '<div class="mid"><div class="title"><b>' + esc(g.map || 'Unknown map') + '</b>' + (isWatched(g) ? '<span class="watched">Watched</span>' : '') + '</div>' +
-        '<div class="chipline"><span>' + esc(modeName(g.mode)) + '</span><span class="dot"></span><span>' + esc(when(g.playedAt)) + '</span><span class="dot"></span><span>' + esc(time(g.playedAt)) + '</span></div>' + teamsLine(g) + '</div>' +
+        '<div class="chipline"><span>' + esc(modeName(g.mode)) + '</span><span class="dot"></span><span>' + esc(when(g.playedAt)) + '</span><span class="dot"></span><span>' + esc(time(g.playedAt)) + '</span></div>' + targetChips(tg, null) + teamsLine(g) + '</div>' +
         '<div class="side">' + (g.summary ? '<div class="nums"><div><b>' + (tot.kills || 0) + '</b><small>Kills</small></div><div><b>' + (tot.finals || 0) + '</b><small>Finals</small></div><div><b>' + (tot.beds || 0) + '</b><small>Beds</small></div></div>' : '<span class="mini">Summary not ready yet</span>') +
-        '<div class="mini">' + (g.clips ? '<span>' + ICON.clip + g.clips + ' clip' + (g.clips === 1 ? '' : 's') + '</span>' : '') + (g.matchStats ? '<span>' + ICON.stats + 'Match stats</span>' : '') + (tracked.length ? '<span title="Tracked players in this game">' + ICON.eye + esc(tracked.slice(0, 2).join(', ') + (tracked.length > 2 ? ' +' + (tracked.length - 2) : '')) + '</span>' : '') + '</div></div>' +
+        '<div class="mini">' + (g.clips ? '<span>' + ICON.clip + g.clips + ' clip' + (g.clips === 1 ? '' : 's') + '</span>' : '') + (g.matchStats ? '<span>' + ICON.stats + 'Match stats</span>' : '') + '' + '</div></div>' +
         '</a>';
     }).join('');
     $('pager').hidden = state.pages <= 1;
@@ -504,12 +535,12 @@
     var s = g.summary;
     var id = g.id;
     var start = s && s.startT != null ? s.startT : 0;
-    var res = g.result === 'win' ? 'is-win' : g.result === 'loss' ? 'is-loss' : '';
-    var badge = g.result ? (g.result === 'win' ? 'Win' : 'Loss') + (s && s.winner ? ' · ' + esc(s.winner) + ' won' : '') : (s && s.winner ? esc(s.winner) + ' won' : '');
-    var html = '<div class="g-head ' + res + '"><div class="thumb">' + ring(s, true) + '</div><div>' +
+    var tg = targetsOf(g), res = targetState(tg);
+    var badge = tg.length ? (res === 'target-down' ? 'Snipe · got them' : 'Snipe') : '';
+    var html = '<div class="g-head ' + res + '"><div class="thumb">' + ring(s, true, tg) + '</div><div>' +
       (badge ? '<span class="result">' + badge + '</span>' : '') +
       '<h1>' + esc(g.map || 'Unknown map') + '</h1>' +
-      '<p>' + esc(modeName(g.mode)) + ' · ' + esc(new Date(g.playedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })) + ' · ' + esc(mins(g.durationMs)) + (s && s.self ? ' · recorded by ' + esc(s.self.name) : '') + '</p></div>' +
+      '<p>' + esc(modeName(g.mode)) + ' · ' + esc(new Date(g.playedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })) + ' · ' + esc(mins(g.durationMs)) + (s && s.self ? ' · recorded by ' + esc(s.self.name) : '') + '</p>' + targetChips(tg, start) + '</div>' +
       '<div class="acts"><a class="btn primary" data-watch="' + esc(id) + '" href="' + watchUrl(id, start || null) + '"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 001.5.86l12-7.5a1 1 0 000-1.72l-12-7.5A1 1 0 007 4.5z"/></svg>Watch the game</a>' +
       '<button type="button" class="btn danger" id="delGame"' + (isAdmin ? '' : ' hidden') + ' title="Remove this recording from the site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Delete</button></div></div>';
     html += '<div class="g-grid"><div>';
@@ -517,13 +548,14 @@
     if (s) {
       html += '<div class="panel"><h2>Teams <small>' + s.totals.kills + ' kills · ' + s.totals.finals + ' finals · ' + s.totals.beds + ' beds</small></h2>';
       s.teams.forEach(function (t) {
-        var won = s.winner === t.team;
+        var won = false;
         html += '<div class="team" style="--tc:' + tc(t.team) + '"><div class="team-head"><b>' + esc(t.team) + '</b>' + (won ? '<span class="crown">Won</span>' : '') +
           '<span class="bed' + (t.bedBrokenAt != null ? ' gone' : '') + '">' + (t.bedBrokenAt != null ? 'Bed broken ' + clock(t.bedBrokenAt - start) : 'Bed kept') + (t.eliminatedAt != null && !won ? ' · out ' + clock(t.eliminatedAt - start) : '') + '</span></div>' +
           '<table><thead><tr><th>Player</th><th title="Kills">K</th><th title="Final kills">F</th><th title="Deaths">D</th><th title="Beds broken">Beds</th></tr></thead><tbody>' +
           t.players.map(function (p) {
             var z = function (n) { return '<td' + (n ? '' : ' class="z"') + '>' + (n || 0) + '</td>'; };
-            return '<tr><td><span class="nm' + (p.finalDeath ? ' is-out' : '') + '">' + esc(p.name) + '</span>' + (s.self && p.name === s.self.name ? '<span class="you">REC</span>' : '') + '<a class="pov" data-watch="' + esc(id) + '" href="' + watchUrl(id, start || null, p.name) + '" title="Watch the game following ' + esc(p.name) + '">Watch →</a></td>' + z(p.kills) + z(p.finals) + z(p.deaths) + z(p.beds) + '</tr>';
+            var isT = tg.some(function (x) { return x.name.toLowerCase() === String(p.name).toLowerCase(); });
+            return '<tr><td>' + (isT ? '<span class="tgt-ic" title="Target">' + CROSS + '</span>' : '') + '<span class="nm' + (p.finalDeath ? ' is-out' : '') + '">' + esc(p.name) + '</span>' + (s.self && p.name === s.self.name ? '<span class="you">REC</span>' : '') + '<a class="pov" data-watch="' + esc(id) + '" href="' + watchUrl(id, start || null, p.name) + '" title="Watch the game following ' + esc(p.name) + '">Watch →</a></td>' + z(p.kills) + z(p.finals) + z(p.deaths) + z(p.beds) + '</tr>';
           }).join('') + '</tbody></table></div>';
       });
       html += '</div>';

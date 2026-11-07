@@ -39,6 +39,7 @@ function setStatus (text, { error = false, progress = null } = {}) {
   box.hidden = !text
   $('rpLoadingText').textContent = text || ''
   box.classList.toggle('is-error', error)
+  box.classList.remove('is-idle')
   const bar = $('rpLoadingBar')
   bar.hidden = progress == null
   if (progress != null) bar.style.setProperty('--p', Math.round(progress * 100) + '%')
@@ -1239,7 +1240,10 @@ async function main () {
       if (!res.ok) throw new Error('Couldn\'t load ' + src)
       await start(await readWithProgress(res, (p) => setStatus('Downloading the replay…', { progress: p })))
     } else {
-      setStatus('')
+      // No replay in the link: show the box with the file picker (an empty
+      // status would hide the box, and the picker inside it).
+      setStatus('No replay open')
+      $('rpLoading').classList.add('is-idle')
       $('rpPick').hidden = false
     }
   } catch (err) { fail(err) }

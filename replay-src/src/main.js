@@ -99,6 +99,27 @@ if (EMBED) {
   wake()
 }
 
+// The back arrow goes back to the page the replay was opened from (the
+// Recordings page, the tracker, the Atlas...), not always to the tracker.
+;(function backLink () {
+  const link = document.querySelector('.rp-home')
+  if (!link) return
+  const NAMES = { 'recordings.html': 'Prism Recordings', 'games.html': 'Prism Recordings', 'tracker.html': 'the tracker', 'atlas.html': 'the Atlas', 'cosmetics.html': 'the Cosmetics Library', 'hall-of-fame.html': 'the Hall of Fame', 'index.html': 'Prism', '': 'Prism' }
+  let from = null
+  try {
+    const r = new URL(document.referrer)
+    if (r.origin === location.origin && !/replay\.html$/.test(r.pathname)) from = r.href
+  } catch { /* no referrer */ }
+  // Kept for this tab, so it still works after a reload or a jump inside the replay.
+  try { if (from) sessionStorage.setItem('replayFrom', from); else from = sessionStorage.getItem('replayFrom') } catch { /* private window */ }
+  if (!from) return
+  const page = new URL(from).pathname.split('/').pop()
+  const name = NAMES[page] || 'the last page'
+  link.href = from
+  link.title = 'Back to ' + name
+  link.setAttribute('aria-label', 'Back to ' + name)
+})()
+
 const tick = () => new Promise(r => setTimeout(r, 0))
 // The replay's id on the backend, when opened from the tracker (for saving clips).
 const REPLAY_ID = new URLSearchParams(location.search).get('id') || null

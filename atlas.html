@@ -218,9 +218,13 @@
 
   @media (max-width: 720px) {
     .at-mode span, .at-hint, .at-hide-narrow { display: none; }
+    .at-spacer { display: none; }
     .at-titlecard { flex: 1; }
-    .at-mapsub { white-space: normal; }
   }
+  .at-map .glass { box-shadow: 0 12px 30px -14px rgba(0,0,0,0.45); }
+  .at-home svg { transition: transform .35s var(--ease); }
+  .at-home:hover svg { transform: translateX(-2px); }
+  .at-mode, .at-icon { transition: background .2s, color .2s; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 
   /* Interactive page background (bg/backgrounds.js): behind everything, never in the way. */
@@ -233,6 +237,7 @@
   @keyframes heroIn { from { opacity: 0; transform: translateY(10px); } }
   body[data-view="map"] .page-bg { display: none; }
 </style>
+<link rel="stylesheet" href="css/pages.css?v=1">
 </head>
 <body>
 <canvas class="page-bg" data-bg="contours" aria-hidden="true"></canvas>

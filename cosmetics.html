@@ -207,7 +207,9 @@
   .card::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--rc), transparent); opacity: .85; }
   .card:hover { border-color: color-mix(in srgb, var(--rc) 55%, var(--border)); box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--rc) 35%, transparent); }
   .thumb::after { content: ""; position: absolute; inset: auto 0 0 0; height: 40%; background: radial-gradient(60% 100% at 50% 100%, color-mix(in srgb, var(--rc) 22%, transparent), transparent 70%); pointer-events: none; }
-  .price { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .meta { grid-template-columns: minmax(0, 1fr); }
+  .meta .sub .cn { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .price { flex: none; white-space: nowrap; margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; font-size: 13px; }
   .price.none { font-weight: 500; color: var(--faint); font-size: 12px; }
   .tok { width: 14px; height: 14px; flex: none; }
   .v .tok { width: 17px; height: 17px; margin-right: 5px; vertical-align: -2px; }
@@ -260,6 +262,7 @@
   .hero .kicker, .hero .tally { animation: heroIn .8s var(--ease) .08s both; }
   @keyframes heroIn { from { opacity: 0; transform: translateY(10px); } }
 </style>
+<link rel="stylesheet" href="css/pages.css?v=1">
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
@@ -1348,7 +1351,7 @@ function render() {
       : `<img alt="" loading="lazy" decoding="async" data-id="${it.id}"${thumbs[it.id] ? ` src="${thumbs[it.id]}" class="on"` : ""}>${thumbs[it.id] ? "" : '<div class="shimmer"></div>'}`;
     const price = it.price != null ? `<span class="price">${TOKEN}${fmtPrice(it.price)}</span>` : `<span class="price none">${GET_SHORT[it.get] || ""}</span>`;
     b.innerHTML = `<div class="thumb">${thumb}<span class="rar">${RAR[it.rar][0]}</span>${it.season ? `<span class="season">${it.season}</span>` : ""}</div>
-      <div class="meta"><span class="nm">${it.name}</span><span class="sub">${catOf(it.cat).name}${price}</span></div>`;
+      <div class="meta"><span class="nm">${it.name}</span><span class="sub"><span class="cn">${catOf(it.cat).name}</span>${price}</span></div>`;
     b.onclick = () => openStudio(it.id);
     grid.appendChild(b);
   });

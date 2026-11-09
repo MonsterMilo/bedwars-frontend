@@ -62,6 +62,9 @@
   html[data-theme="deepcurrent"] { --studio-a: #0f3a4a; --studio-b: #020b12; }
   html[data-theme="skyisles"] { --studio-a: #2d6a9f; --studio-b: #123552; }
   html[data-theme="harvest"] { --studio-a: #4a2b1a; --studio-b: #1c0f08; }
+  /* On the light themes the brightest team colours are deepened so names stay readable; the map rings sit on the dark studio, so they keep the real colours. */
+  html[data-theme="casefiles"], html[data-theme="ledger"], html[data-theme="skyisles"], html[data-theme="harvest"] { --t-white: #9b9b9b; --t-yellow: #c99a00; --t-aqua: #149e9e; --t-green: #2c9a45; --t-gray: #707070; }
+  .thumb { --t-white: #e8e8e8; --t-yellow: #f5d742; --t-aqua: #4fe3e3; --t-green: #4ade6b; --t-gray: #9a9a9a; }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
   body { min-height: 100vh; }
@@ -144,6 +147,8 @@
   html[data-theme="casefiles"] .title b { font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
   .chipline { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--dim); }
   .chipline .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--faint); }
+  .chipline .ph { display: none; white-space: nowrap; }
+  .chipline .ph::before { content: ""; display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: var(--faint); margin-right: 6px; vertical-align: middle; }
   .watched { font-size: 11px; font-weight: 700; color: var(--faint); border: 1px solid var(--border); border-radius: 999px; padding: 1px 7px; }
   .teams { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13.5px; margin-top: 2px; }
   .tm { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); min-width: 0; }
@@ -265,8 +270,28 @@
     .g-grid { grid-template-columns: 1fr; }
     td .pov { opacity: 1; }
   }
+  /* Phones: the map ring sits small beside the title and the rest gets the full width,
+     instead of a tall strip beside a squeezed column. */
+  @media (max-width: 600px) {
+    .game { grid-template-columns: 70px minmax(0, 1fr); }
+    .game > .mid { display: contents; }
+    .game .thumb { grid-column: 1; grid-row: 1 / 3; width: 56px; height: 56px; min-height: 0; margin: 14px 0 0 14px; border-radius: var(--r-s); }
+    .game .thumb svg { width: 50px; height: 50px; filter: none; }
+    .game .thumb::after, .game .thumb .tag, .game .thumb .dur { display: none; }
+    .game .title { grid-column: 2; grid-row: 1; align-self: end; padding: 14px 14px 0 4px; }
+    .game .title b { font-size: 18px; }
+    .game .chipline { grid-column: 2; grid-row: 2; align-self: start; padding: 2px 14px 0 4px; font-size: 12.5px; }
+    .game .targets { grid-column: 1 / -1; padding: 12px 14px 0; }
+    .game .teams { grid-column: 1 / -1; padding: 10px 14px 14px; margin: 0; font-size: 13px; gap: 3px 12px; }
+    .game .side { grid-column: 1 / -1; }
+    .game .chipline .ph { display: inline-block; }
+    .game:hover .thumb svg { transform: none; }
+    td .pov { font-size: 0; margin-left: 6px; }
+    td .pov::after { content: ""; display: inline-block; width: 9px; height: 10px; vertical-align: -1px; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+  }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>
+<link rel="stylesheet" href="css/pages.css?v=1">
 </head>
 <body>
 <canvas class="page-bg" data-bg="timeline" aria-hidden="true"></canvas>
@@ -495,7 +520,7 @@
       return '<a class="game ' + res + '" href="#g=' + esc(g.id) + '" style="animation-delay:' + Math.min(i * 35, 500) + 'ms">' +
         '<div class="thumb">' + (tg.length ? '<span class="tag">' + (res === 'target-down' ? 'Got them' : 'Snipe') + '</span>' : '') + ring(g.summary, false, tg) + '<span class="dur">' + esc(clock(g.durationMs)) + '</span></div>' +
         '<div class="mid"><div class="title"><b>' + esc(g.map || 'Unknown map') + '</b>' + (isWatched(g) ? '<span class="watched">Watched</span>' : '') + '</div>' +
-        '<div class="chipline"><span>' + esc(modeName(g.mode)) + '</span><span class="dot"></span><span>' + esc(when(g.playedAt)) + '</span><span class="dot"></span><span>' + esc(time(g.playedAt)) + '</span></div>' + targetChips(tg, null) + teamsLine(g) + '</div>' +
+        '<div class="chipline"><span>' + esc(modeName(g.mode)) + '</span><span class="dot"></span><span>' + esc(when(g.playedAt)) + '</span><span class="dot"></span><span>' + esc(time(g.playedAt)) + '</span><span class="ph">' + esc(clock(g.durationMs)) + '</span></div>' + targetChips(tg, null) + teamsLine(g) + '</div>' +
         '<div class="side">' + (g.summary ? '<div class="nums"><div><b>' + (tot.kills || 0) + '</b><small>Kills</small></div><div><b>' + (tot.finals || 0) + '</b><small>Finals</small></div><div><b>' + (tot.beds || 0) + '</b><small>Beds</small></div></div>' : '<span class="mini">Summary not ready yet</span>') +
         '<div class="mini">' + (g.clips ? '<span>' + ICON.clip + g.clips + ' clip' + (g.clips === 1 ? '' : 's') + '</span>' : '') + (g.matchStats ? '<span>' + ICON.stats + 'Match stats</span>' : '') + '' + '</div></div>' +
         '</a>';

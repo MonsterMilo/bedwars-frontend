@@ -1,0 +1,74 @@
+/* Finishing layer shared by the Cosmetics Library, the Prism Atlas and Prism Recordings.
+   Loaded after each page's own styles. It only uses the theme tokens (--accent, --panel, ...),
+   so every theme keeps its own look; nothing here adds anything to the pages, it only smooths
+   how they look and move. Bump the ?v= on the three <link> tags when this file changes. */
+
+::selection { background: color-mix(in srgb, var(--accent) 32%, transparent); color: var(--text); }
+html { scrollbar-color: color-mix(in srgb, var(--text) 20%, transparent) transparent; }
+
+/* ---------- top bar ---------- */
+.back { transition: color .2s, background .2s; }
+.back svg { transition: transform .35s var(--ease); }
+.back:hover svg { transform: translateX(-3px); }
+.open-file { border-style: solid; border-color: var(--border); background: color-mix(in srgb, var(--panel) 72%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); padding: 6px 12px; transition: color .2s, background .2s, border-color .2s, transform .35s var(--ease); }
+.open-file:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.open-file svg { transition: transform .35s var(--ease); }
+.open-file:hover svg { transform: translateY(-2px); }
+
+/* ---------- search ---------- */
+.search svg, .search kbd { z-index: 1; }
+.search svg { transition: color .2s; }
+.search:focus-within svg { color: var(--accent); }
+.search input { background: color-mix(in srgb, var(--panel) 90%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.search input:hover:not(:focus) { border-color: color-mix(in srgb, var(--border-strong) 45%, var(--border)); }
+.search kbd { background: var(--panel-2); border-bottom-width: 2px; }
+
+/* ---------- filters ---------- */
+.seg button { transition: background .2s, color .2s, box-shadow .25s; }
+.seg button:hover:not([aria-pressed="true"]) { color: var(--text); }
+/* A soft lift under the picked filter (the flat paper and pixel themes keep their flat look). */
+html:not([data-theme="skyisles"]):not([data-theme="ledger"]):not([data-theme="casefiles"]) .seg button[aria-pressed="true"] { box-shadow: 0 3px 12px -4px color-mix(in srgb, var(--accent) 70%, transparent); }
+.cat { transition: background .2s, color .2s, box-shadow .3s var(--ease); }
+.cat > svg { transition: transform .35s var(--ease), opacity .2s; }
+.cat:hover > svg { transform: scale(1.1); opacity: 1; }
+.cat[aria-pressed="true"] > svg { opacity: 1; }
+.cat[aria-pressed="true"] .n { color: var(--dim); }
+/* Dropdowns: the same chevron in every browser instead of each system's own arrow. */
+select.sort { -webkit-appearance: none; appearance: none; padding-right: 30px; cursor: pointer; transition: border-color .2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%23878d9b' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; background-size: 12px; }
+select.sort:hover { border-color: var(--border-strong); }
+
+/* ---------- cards ---------- */
+a.card:focus-visible, button.card:focus-visible, .game:focus-visible { outline: none; transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow), var(--glow); }
+a.card:active, button.card:active, .game:active { transform: translateY(-1px) scale(.99); transition-duration: .12s; }
+/* Cards further down rise in as they scroll into view (where the browser can tie it to scrolling). */
+@supports (animation-timeline: view()) {
+  .grid > .card:nth-child(n+13), .games > .game:nth-child(n+5) { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; animation-delay: 0s !important; }
+}
+
+/* ---------- small controls (cosmetic popup, game page) ---------- */
+.close { transition: border-color .2s, background .2s; }
+.close svg { transition: transform .35s var(--ease); }
+.close:hover { border-color: var(--border-strong); background: var(--panel-2); }
+.close:hover svg { transform: rotate(90deg); }
+.btn { transition: border-color .2s, box-shadow .2s, background .2s, transform .2s var(--ease); }
+.btn:active:not(:disabled) { transform: scale(.97); }
+.chip { transition: background .2s, color .2s, border-color .2s; }
+button.chip:hover:not([aria-pressed="true"]) { color: var(--text); border-color: var(--border-strong); }
+.log li a, .clips a { transition: background .15s, box-shadow .15s; }
+
+/* ---------- empty and loading states ---------- */
+.empty { background: color-mix(in srgb, var(--panel) 60%, transparent); }
+
+/* ---------- phones ---------- */
+@media (max-width: 900px) {
+  /* The category chips scroll sideways: fade the edge so it reads as more to see. */
+  .rail { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); padding-right: 28px; }
+  /* Small cards: the seasonal badge moves down so it never sits on the rarity or teams badge. */
+  .thumb .season { top: auto; bottom: 8px; right: 8px; }
+  .thumb .rar, .thumb .tag { left: 8px; top: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grid > .card, .games > .game { animation: none !important; }
+}

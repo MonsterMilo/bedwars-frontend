@@ -221,7 +221,9 @@
   .rp-loading.is-error .rp-loading-text { color: var(--bad); font-weight: 600; }
   .rp-bar { height: 6px; border-radius: 3px; background: var(--panel-2); margin-top: 14px; overflow: hidden; }
   .rp-bar::after { content: ""; display: block; height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .2s; }
-  .rp-pick { margin-top: 18px; color: var(--dim); font-size: 0.92em; }
+  .rp-pick { margin-top: 18px; color: var(--dim); font-size: 0.92em; line-height: 1.6; }
+  /* Nothing open yet: the picker gets the whole screen (the empty side panel would only crowd it, and covers it on phones). */
+  .rp:has(#rpPick:not([hidden])) .rp-side { display: none; }
   .rp-pick-acts { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
   .rp-pick label, .rp-pick-acts a { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: var(--r-s); font-weight: 700; font-size: 0.95em; cursor: pointer; text-decoration: none; transition: box-shadow .2s, border-color .2s, background .2s; }
   .rp-pick label { background: var(--accent); color: var(--accent-ink); }

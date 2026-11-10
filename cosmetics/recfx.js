@@ -334,6 +334,62 @@ function aoSolid(key) {
   if (e.from.some((v) => v !== 0) || e.to.some((v) => v !== 16)) return false;
   return !Object.values(e.faces).some((f) => /glass/.test(f.t));
 }
+// How much light a block lets through (Block.lightOpacity in 1.8): whole cubes, slabs and stairs stop it,
+// leaves and cobwebs take 1 level, ice 3; glass, panes, fences, carpets, torches and the like none.
+function lightOpacity(key) {
+  const n = key.split("#")[0];
+  if (/leaves$|^web$/.test(n)) return 1;
+  if (n === "ice") return 3;
+  if (/_slab$|_stairs$/.test(n)) return 15;
+  return aoSolid(key) ? 15 : 0;
+}
+const LIGHT_EMIT = { glowstone: 15, sea_lantern: 15, lit_pumpkin: 15, lit_redstone_lamp: 15, torch: 14 };
+// Daylight lightmap (EntityRenderer.updateLightmap at noon, the default "Moody" brightness): a light level's
+// brightness as a share of full sunlight, so faces and grass under an overhang darken like in game.
+const LIGHT_K = (() => {
+  const tab = (i) => { const f = 1 - i / 15; return (1 - f) / (f * 3 + 1); };
+  const map = (v) => { v = v * 0.96 + 0.03; const g = 0, f = 1 - Math.pow(1 - v, 4); v = v * (1 - g) + f * g; return clamp(v * 0.96 + 0.03, 0, 1); };
+  return (lvl) => { const lo = Math.floor(lvl), hi = Math.min(15, lo + 1), t = lvl - lo; return (map(tab(lo)) * (1 - t) + map(tab(hi)) * t) / map(1); };
+})();
+// Sky light comes straight down through open air at 15 and spreads sideways losing a level per block;
+// block light spreads from glowstone, torches and the like. The island top is one solid floor (y = -1).
+function lightField(data) {
+  const [W, H, D] = data.size, x0 = -2, z0 = -2, X = W + 4, Y = H + 2, Z = D + 4;
+  const idx = (x, y, z) => ((x - x0) * Y + y) * Z + (z - z0);
+  const op = new Uint8Array(X * Y * Z), sky = new Uint8Array(X * Y * Z), blk = new Uint8Array(X * Y * Z);
+  const q = [], nb = new Set();
+  for (const b of data.b) {
+    const [, x, y, z, key] = b; if (y < 0 || y >= Y) continue;
+    if (!key.startsWith("tile#")) op[idx(x, y, z)] = Math.max(op[idx(x, y, z)], lightOpacity(key));
+    if (/_slab#|_stairs#/.test(key) || /_slab$|_stairs$/.test(key)) nb.add(idx(x, y, z));
+    const e = LIGHT_EMIT[key.split("#")[0]]; if (e) { blk[idx(x, y, z)] = e; q.push([x, y, z, blk]); }
+  }
+  for (let x = x0; x < x0 + X; x++) for (let z = z0; z < z0 + Z; z++) {
+    let L = 15;
+    for (let y = Y - 1; y >= 0; y--) { const o = op[idx(x, y, z)]; L = o >= 15 ? 0 : Math.max(0, L - o); sky[idx(x, y, z)] = L; if (L) q.push([x, y, z, sky]); }
+  }
+  const N = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+  for (let i = 0; i < q.length; i++) {
+    const [x, y, z, A] = q[i], L = A[idx(x, y, z)];
+    for (const [dx, dy, dz] of N) {
+      const nx = x + dx, ny = y + dy, nz = z + dz;
+      if (nx < x0 || nz < z0 || ny < 0 || nx >= x0 + X || ny >= Y || nz >= z0 + Z) continue;
+      const k = idx(nx, ny, nz), o = op[k]; if (o >= 15) continue;
+      const v = L - 1 - o; if (v > A[k]) { A[k] = v; q.push([nx, ny, nz, A]); }
+    }
+  }
+  // Outside the box: open sky. Below the floor: dark (the floor is solid).
+  const raw = (x, y, z) => {
+    if (y < 0) return 0;
+    if (x < x0 || z < z0 || y >= Y || x >= x0 + X || z >= z0 + Z) return 15;
+    const k = idx(x, y, z); return op[k] >= 15 ? 0 : Math.max(sky[k], blk[k]);
+  };
+  // Slabs and stairs take the brightest light next to them (Block.useNeighborBrightness), so a stair roof isn't black.
+  return (x, y, z) => {
+    if (y >= 0 && x >= x0 && z >= z0 && y < Y && x < x0 + X && z < z0 + Z && nb.has(idx(x, y, z))) return Math.max(...N.map(([dx, dy, dz]) => raw(x + dx, y + dy, z + dz)));
+    return raw(x, y, z);
+  };
+}
 let topKit = null; // the model kit, set once createRecFx runs (signs and skulls need it)
 export function buildTopper(S, data) {
   const root = new THREE.Group(); S.item.add(root);
@@ -343,6 +399,7 @@ export function buildTopper(S, data) {
   // The ground is left out: it would darken the foot of every wall into a dark strip that reads as
   // a gap (the grass gets no matching corner shadow); the ground shadow already sits the build down.
   const occ = (x, y, z) => solid.has(x + "," + y + "," + z);
+  const light = lightField(data);
   const blocks = [];
   for (const [t, x, y, z, key, cull = 0] of data.b) {
     if (key.startsWith("tile#")) { const g = tileMesh(key.slice(5)); if (g) { g.position.x += x + ox; g.position.y += y; g.position.z += z + oz; root.add(g); } continue; }
@@ -381,7 +438,11 @@ export function buildTopper(S, data) {
         const [ta, tb] = [0, 1, 2].filter((k2) => k2 !== axis);
         const at = (da, db) => { const q = L.slice(); q[ta] += da; q[tb] += db; return occ(q[0], q[1], q[2]) ? 0.2 : 1; };
         const corner = (sa, sb) => { const s1 = at(sa, 0), s2 = at(0, sb), c = s1 < 1 && s2 < 1 ? 0.2 : at(sa, sb); return (s1 + s2 + c + at(0, 0)) / 4; };
-        const c00 = corner(-1, -1), c10 = corner(1, -1), c01 = corner(-1, 1), c11 = corner(1, 1);
+        // Smooth lighting's light at the corner (BlockModelRenderer.getAoBrightness): the four cells around it,
+        // a dark (solid) one counting as the face's own cell.
+        const lt = (da, db) => { const q = L.slice(); q[ta] += da; q[tb] += db; return light(q[0], q[1], q[2]); };
+        const lcorner = (sa, sb) => { const d = lt(0, 0), a = lt(sa, 0) || d, b = lt(0, sb) || d, s1 = at(sa, 0), s2 = at(0, sb); const c = (s1 < 1 && s2 < 1 ? 0 : lt(sa, sb)) || d; return LIGHT_K((a + b + c + d) / 4); };
+        const c00 = corner(-1, -1) * lcorner(-1, -1), c10 = corner(1, -1) * lcorner(1, -1), c01 = corner(-1, 1) * lcorner(-1, 1), c11 = corner(1, 1) * lcorner(1, 1);
         const sh = SHADE[side] * (e.shade === false ? 1 / SHADE[side] : 1);
         const tint = f.tint && def.tint != null ? new THREE.Color(def.tint) : new THREE.Color(1, 1, 1);
         const cols = P.map((p) => {
@@ -434,6 +495,22 @@ export function buildTopper(S, data) {
       const q = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]];
       if (q.every(([a, b]) => A[a * H + b] < 0.005)) continue;
       for (const n of [0, 3, 2, 0, 2, 1]) { const [a, b] = q[n]; gpos.push(x0 + a / N + ox, 0.004, z0 + b / N + oz); gcol.push(0, 0, 0, A[a * H + b] * 0.4); } // smooth lighting darkens the grass at a wall's foot to about 0.6
+    }
+  }
+  // Shade on the grass where the build keeps the sky off it (under a canopy, a blade's guard, a roof):
+  // the grass top's smooth light from the four cells above each corner, darkened like the game's lightmap.
+  {
+    const cornerK = (x, z) => { // corner at (x, z) of the block grid: cells x-1..x, z-1..z
+      const cs = [light(x - 1, 0, z - 1), light(x, 0, z - 1), light(x - 1, 0, z), light(x, 0, z)], lit = cs.filter((v) => v > 0);
+      return lit.length ? LIGHT_K(lit.reduce((s2, v) => s2 + v, 0) / lit.length) : LIGHT_K(0);
+    };
+    const [W, , D] = data.size;
+    for (let x = -2; x < W + 2; x++) for (let z = -2; z < D + 2; z++) {
+      if (light(x, 0, z) === 0) continue; // a block stands on it
+      const k = [cornerK(x, z), cornerK(x + 1, z), cornerK(x + 1, z + 1), cornerK(x, z + 1)];
+      if (k.every((v) => v > 0.995)) continue;
+      const q = [[x, z], [x + 1, z], [x + 1, z + 1], [x, z + 1]];
+      for (const n of [0, 3, 2, 0, 2, 1]) { gpos.push(q[n][0] + ox, 0.003, q[n][1] + oz); gcol.push(0, 0, 0, 1 - k[n]); }
     }
   }
   if (gpos.length) {

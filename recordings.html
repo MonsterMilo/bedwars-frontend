@@ -393,16 +393,17 @@
   });
 
   // Targets: the tracked players in a game (usually the cheaters we went after), found in the
-  // game's teams by name. Their team being eliminated means we got them. Who won doesn't matter.
+  // game's teams by name, or by the nick they played under (the backend links denicks:
+  // the plugin's own, or the resolved nicks list). Who won doesn't matter.
   var CROSS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="7.5"/><path d="M12 1.5v5M12 17.5v5M1.5 12h5M17.5 12h5"/></svg>';
   function targetsOf(g) {
-    var s = g.summary, names = (g.tracked || []).map(function (p) { return p.username; }).filter(Boolean);
+    var s = g.summary, list = (g.tracked || []).filter(function (p) { return p.username; });
     var selfName = s && s.self ? String(s.self.name).toLowerCase() : '';
-    return names.filter(function (n) { return n.toLowerCase() !== selfName; }).map(function (n) {
-      var low = n.toLowerCase(), team = null, player = null;
-      if (s && s.teams) s.teams.forEach(function (t) { t.players.forEach(function (p) { var pn = p && p.name ? p.name : p; if (String(pn).toLowerCase() === low) { team = t; player = p; } }); });
-      var down = team ? (player && player.finalDeath) || team.eliminatedAt != null : null;
-      return { name: n, team: team ? team.team : null, down: down, at: team && team.eliminatedAt != null ? team.eliminatedAt : null };
+    return list.filter(function (p) { return p.username.toLowerCase() !== selfName; }).map(function (tp) {
+      var want = [tp.username, tp.nick].filter(Boolean).map(function (x) { return String(x).toLowerCase(); });
+      var team = null, ingame = null;
+      if (s && s.teams) s.teams.forEach(function (t) { t.players.forEach(function (p) { var pn = String(p && p.name ? p.name : p); if (want.indexOf(pn.toLowerCase()) >= 0) { team = t; ingame = pn; } }); });
+      return { name: tp.username, ingame: ingame || tp.username, nicked: !!ingame && ingame.toLowerCase() !== tp.username.toLowerCase(), team: team ? team.team : null };
     });
   }
   function targetState(list) { return list.length ? 'has-target' : ''; }
@@ -410,7 +411,7 @@
   function targetChips(list) {
     if (!list.length) return '';
     return '<div class="targets">' + list.map(function (t) {
-      return '<span class="tgt" title="' + esc(t.name) + (t.team ? ' (' + esc(t.team) + ')' : '') + '">' + CROSS + esc(t.name) + '</span>';
+      return '<span class="tgt" title="' + esc(t.name) + (t.nicked ? ', nicked as ' + esc(t.ingame) : '') + (t.team ? ' (' + esc(t.team) + ')' : '') + '">' + CROSS + esc(t.name) + '</span>';
     }).join('') + '</div>';
   }
 
@@ -456,7 +457,7 @@
   }
   function teamsLine(g) {
     var s = g.summary, tset = {};
-    (g.tracked || []).forEach(function (p) { if (p.username) tset[p.username.toLowerCase()] = 1; });
+    targetsOf(g).forEach(function (t) { tset[t.ingame.toLowerCase()] = 1; });
     if (!s || !s.teams) return '';
     return '<div class="teams">' + s.teams.slice().sort(function (a, b) { return ORDER.indexOf(a.team) - ORDER.indexOf(b.team); }).map(function (t) {
       var out = t.eliminatedAt != null;
@@ -557,7 +558,7 @@
           '<table><thead><tr><th>Player</th><th title="Kills">K</th><th title="Final kills">F</th><th title="Deaths">D</th><th title="Beds broken">Beds</th></tr></thead><tbody>' +
           t.players.map(function (p) {
             var z = function (n) { return '<td' + (n ? '' : ' class="z"') + '>' + (n || 0) + '</td>'; };
-            var isT = tg.some(function (x) { return x.name.toLowerCase() === String(p.name).toLowerCase(); });
+            var isT = tg.some(function (x) { return x.ingame.toLowerCase() === String(p.name).toLowerCase(); });
             return '<tr><td>' + (isT ? '<span class="tgt-ic" title="Target">' + CROSS + '</span>' : '') + '<span class="nm' + (p.finalDeath ? ' is-out' : '') + '">' + esc(p.name) + '</span>' + (s.self && p.name === s.self.name ? '<span class="you">REC</span>' : '') + '<a class="pov" data-watch="' + esc(id) + '" href="' + watchUrl(id, start || null, p.name) + '" title="Watch the game following ' + esc(p.name) + '">Watch →</a></td>' + z(p.kills) + z(p.finals) + z(p.deaths) + z(p.beds) + '</tr>';
           }).join('') + '</tbody></table></div>';
       });

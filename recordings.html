@@ -131,23 +131,22 @@
   .game::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--rc), transparent); opacity: .85; }
   .game:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--rc) 55%, var(--border)); box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--rc) 30%, transparent); }
   .game.has-target { --rc: var(--bad); }
-  .game.target-down { --rc: var(--good); }
   @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
   .thumb { position: relative; min-height: 124px; background: radial-gradient(120% 90% at 50% 30%, var(--studio-a), var(--studio-b)); display: grid; place-items: center; overflow: hidden; }
   .thumb::after { content: ""; position: absolute; inset: auto 0 0 0; height: 45%; background: radial-gradient(60% 100% at 50% 100%, color-mix(in srgb, var(--rc) 24%, transparent), transparent 70%); pointer-events: none; }
-  .thumb svg { width: 96px; height: 96px; transition: transform .7s var(--ease); filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45)); }
-  .game:hover .thumb svg { transform: rotate(45deg) scale(1.05); }
-  .tag { position: absolute; left: 10px; top: 10px; z-index: 1; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 7px; border-radius: 999px; color: #fff; background: rgba(0,0,0,.42); backdrop-filter: blur(4px); }
-  .tag::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; background: var(--rc); box-shadow: 0 0 8px var(--rc); }
-  .dur { position: absolute; right: 9px; bottom: 8px; z-index: 1; font: 700 11px/1 'JetBrains Mono', ui-monospace, monospace; color: rgba(255,255,255,.8); background: rgba(0,0,0,.45); padding: 3px 6px; border-radius: 6px; }
-  html[data-theme="skyisles"] .tag, html[data-theme="ledger"] .tag, html[data-theme="skyisles"] .dur, html[data-theme="ledger"] .dur { border-radius: 0; }
+  /* The map from above, the same picture as its card in the Prism Atlas */
+  .thumb canvas { width: 84%; height: 84%; max-height: 112px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45)); transition: transform .6s var(--ease); }
+  .thumb canvas:not([width]) { visibility: hidden; }
+  .game:hover .thumb canvas { transform: scale(1.06); }
+  .thumb .blank { display: grid; justify-items: center; gap: 6px; padding: 0 10px; text-align: center; color: rgba(230,235,245,.45); font-size: 11.5px; }
+  .thumb .blank svg { width: 30px; height: 30px; }
   .mid { padding: 14px 18px; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
   .title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
   .title b { font-family: var(--font-title); font-size: 19px; font-weight: 700; }
   html[data-theme="casefiles"] .title b { font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
   .chipline { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--dim); }
   .chipline .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--faint); }
-  .chipline .ph { display: none; white-space: nowrap; }
+  .chipline .ph { white-space: nowrap; }
   .chipline .ph::before { content: ""; display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: var(--faint); margin-right: 6px; vertical-align: middle; }
   .watched { font-size: 11px; font-weight: 700; color: var(--faint); border: 1px solid var(--border); border-radius: 999px; padding: 1px 7px; }
   .teams { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13.5px; margin-top: 2px; }
@@ -158,9 +157,6 @@
   .targets { display: flex; flex-wrap: wrap; gap: 6px; }
   .tgt { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; padding: 3px 9px 3px 7px; border-radius: 999px; background: color-mix(in srgb, var(--bad) 12%, transparent); color: var(--text); border: 1px solid color-mix(in srgb, var(--bad) 35%, transparent); text-decoration: none; }
   .tgt svg { width: 13px; height: 13px; color: var(--bad); flex: none; }
-  .tgt small { font-size: 10.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
-  .tgt.is-down { background: color-mix(in srgb, var(--good) 12%, transparent); border-color: color-mix(in srgb, var(--good) 35%, transparent); }
-  .tgt.is-down small { color: var(--good); } .tgt small { color: var(--bad); } .tgt.is-unknown small { color: var(--faint); }
   .tm .me { color: var(--text); font-weight: 700; }
   .side { padding: 14px 18px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 8px; border-left: 1px solid var(--border); min-width: 190px; }
   .nums { display: flex; gap: 16px; font-variant-numeric: tabular-nums; }
@@ -187,10 +183,10 @@
   /* One game */
   .g-head { --rc: var(--faint); position: relative; margin: 22px 0 20px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 22px; align-items: center; padding: 18px 22px 18px 18px; border: 1px solid var(--border); border-radius: var(--r-l); background: var(--panel); overflow: hidden; animation: rise .5s var(--ease) both; }
   .g-head::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--rc), transparent); }
-  .g-head.has-target { --rc: var(--bad); } .g-head.target-down { --rc: var(--good); }
+  .g-head.has-target { --rc: var(--bad); }
   .g-head .targets { margin-top: 12px; }
   .g-head .thumb { width: 150px; min-height: 0; aspect-ratio: 1; border-radius: var(--r-m); }
-  .g-head .thumb svg { width: 112px; height: 112px; }
+  .g-head .thumb canvas { max-height: none; }
   .g-head h1 { margin: 6px 0 0; font-family: var(--font-title); font-size: clamp(28px, 4vw, 44px); line-height: 1.05; letter-spacing: -.01em; }
   html[data-theme="casefiles"] .g-head h1 { font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
   .g-head p { margin: 8px 0 0; color: var(--dim); }
@@ -261,7 +257,6 @@
     .seg button { white-space: nowrap; }
     .game { grid-template-columns: 110px minmax(0, 1fr); }
     .thumb { min-height: 110px; }
-    .thumb svg { width: 76px; height: 76px; }
     .side { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--border); flex-direction: row; justify-content: space-between; align-items: center; min-width: 0; padding: 10px 14px; }
     .mid { padding: 12px 14px; }
     .g-head { grid-template-columns: 1fr; }
@@ -270,22 +265,21 @@
     .g-grid { grid-template-columns: 1fr; }
     td .pov { opacity: 1; }
   }
-  /* Phones: the map ring sits small beside the title and the rest gets the full width,
+  /* Phones: the map sits small beside the title and the rest gets the full width,
      instead of a tall strip beside a squeezed column. */
   @media (max-width: 600px) {
     .game { grid-template-columns: 70px minmax(0, 1fr); }
     .game > .mid { display: contents; }
     .game .thumb { grid-column: 1; grid-row: 1 / 3; width: 56px; height: 56px; min-height: 0; margin: 14px 0 0 14px; border-radius: var(--r-s); }
-    .game .thumb svg { width: 50px; height: 50px; filter: none; }
-    .game .thumb::after, .game .thumb .tag, .game .thumb .dur { display: none; }
+    .game .thumb canvas { width: 50px; height: 50px; filter: none; }
+    .game .thumb::after, .game .thumb .blank span { display: none; }
     .game .title { grid-column: 2; grid-row: 1; align-self: end; padding: 14px 14px 0 4px; }
     .game .title b { font-size: 18px; }
     .game .chipline { grid-column: 2; grid-row: 2; align-self: start; padding: 2px 14px 0 4px; font-size: 12.5px; }
     .game .targets { grid-column: 1 / -1; padding: 12px 14px 0; }
     .game .teams { grid-column: 1 / -1; padding: 10px 14px 14px; margin: 0; font-size: 13px; gap: 3px 12px; }
     .game .side { grid-column: 1 / -1; }
-    .game .chipline .ph { display: inline-block; }
-    .game:hover .thumb svg { transform: none; }
+    .game:hover .thumb canvas { transform: none; }
     td .pov { font-size: 0; margin-left: 6px; }
     td .pov::after { content: ""; display: inline-block; width: 9px; height: 10px; vertical-align: -1px; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
   }
@@ -346,6 +340,7 @@
   <section id="gameView" hidden></section>
 </div>
 
+<script src="replay/mapthumbs.js?v=2026-11-11a"></script><!-- bump v with every mapthumbs.js build -->
 <script>
 (function () {
   var API = 'https://bedwars-backend.onrender.com';
@@ -410,45 +405,27 @@
       return { name: n, team: team ? team.team : null, down: down, at: team && team.eliminatedAt != null ? team.eliminatedAt : null };
     });
   }
-  function targetState(list) { if (!list.length) return ''; return list.every(function (t) { return t.down; }) ? 'target-down' : 'has-target'; }
-  function targetChips(list, start) {
+  function targetState(list) { return list.length ? 'has-target' : ''; }
+  // Just who the target was: no Out / Survived / Not found (Milo, 2026-11-11).
+  function targetChips(list) {
     if (!list.length) return '';
     return '<div class="targets">' + list.map(function (t) {
-      var cls = t.down ? ' is-down' : t.down === null ? ' is-unknown' : '';
-      var st = t.down ? 'Out' + (t.at != null && start != null ? ' ' + clock(t.at - start) : '') : t.down === null ? 'Not found' : 'Survived';
-      return '<span class="tgt' + cls + '" title="' + esc(t.name) + (t.team ? ' (' + esc(t.team) + ')' : '') + '">' + CROSS + esc(t.name) + ' <small>' + st + '</small></span>';
+      return '<span class="tgt" title="' + esc(t.name) + (t.team ? ' (' + esc(t.team) + ')' : '') + '">' + CROSS + esc(t.name) + '</span>';
     }).join('') + '</div>';
   }
 
-  // The game as a little map seen from above: each team's island round the middle:
-  // eliminated teams faded, ours ringed in white, the targets' teams in red crosshairs. Diamonds in the middle.
-  function ring(s, big, tgts) {
-    var tTeams = {}; (tgts || []).forEach(function (t) { if (t.team) tTeams[t.team] = 1; });
-    var teams = s && s.teams && s.teams.length ? s.teams.slice().sort(function (a, b) { return ORDER.indexOf(a.team) - ORDER.indexOf(b.team); }) : null;
-    var n = teams ? teams.length : 4, R = n > 4 ? 33 : 30, sz = n > 4 ? 13 : 17;
-    var selfTeam = '';
-    if (teams && s.self) teams.forEach(function (t) { if (t.players.some(function (p) { return (p.name || p) === s.self.name; })) selfTeam = t.team; });
-    var out = '<svg viewBox="0 0 100 100" aria-hidden="true">';
-    out += '<circle cx="50" cy="50" r="' + (R + 3) + '" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1" stroke-dasharray="2 3"/>';
-    for (var i = 0; i < n; i++) {
-      var a = -Math.PI / 2 + i * Math.PI * 2 / n + (n === 4 ? Math.PI / 4 : 0);
-      var x = 50 + Math.cos(a) * R, y = 50 + Math.sin(a) * R;
-      // a bridge to the middle
-      out += '<line x1="50" y1="50" x2="' + x.toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke="rgba(255,255,255,.07)" stroke-width="2"/>';
-    }
-    for (var j = 0; j < n; j++) {
-      var t = teams ? teams[j] : null;
-      var a2 = -Math.PI / 2 + j * Math.PI * 2 / n + (n === 4 ? Math.PI / 4 : 0);
-      var cx = 50 + Math.cos(a2) * R, cy = 50 + Math.sin(a2) * R;
-      var won = false, gone = t && t.eliminatedAt != null, hit = t && tTeams[t.team];
-      var col = t ? tc(t.team) : 'var(--faint)';
-      var k = won ? 1.25 : 1, w = sz * k;
-      if (hit) out += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + (w * 0.9).toFixed(1) + '" fill="none" style="stroke:var(--bad)" stroke-width="1.6"/><path d="M' + cx.toFixed(1) + ' ' + (cy - w * 1.25).toFixed(1) + 'v' + (w * 0.4).toFixed(1) + 'M' + cx.toFixed(1) + ' ' + (cy + w * 0.85).toFixed(1) + 'v' + (w * 0.4).toFixed(1) + 'M' + (cx - w * 1.25).toFixed(1) + ' ' + cy.toFixed(1) + 'h' + (w * 0.4).toFixed(1) + 'M' + (cx + w * 0.85).toFixed(1) + ' ' + cy.toFixed(1) + 'h' + (w * 0.4).toFixed(1) + '" style="stroke:var(--bad)" stroke-width="1.6" stroke-linecap="round"/>';
-      out += '<rect x="' + (cx - w / 2).toFixed(1) + '" y="' + (cy - w / 2).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + w.toFixed(1) + '" rx="' + (w * 0.22).toFixed(1) + '" style="fill:' + col + '" opacity="' + (t ? (gone ? 0.28 : 1) : 0.25) + '"' + (t && t.team === selfTeam ? ' stroke="#fff" stroke-width="1.6"' : '') + '/>';
-      if (t && t.bedBrokenAt != null && !won) out += '<path d="M' + (cx - w * 0.22).toFixed(1) + ' ' + (cy - w * 0.22).toFixed(1) + 'l' + (w * 0.44).toFixed(1) + ' ' + (w * 0.44).toFixed(1) + 'M' + (cx + w * 0.22).toFixed(1) + ' ' + (cy - w * 0.22).toFixed(1) + 'l-' + (w * 0.44).toFixed(1) + ' ' + (w * 0.44).toFixed(1) + '" stroke="rgba(0,0,0,.55)" stroke-width="2" stroke-linecap="round"/>';
-    }
-    out += '<path d="M50 42l6 8-6 8-6-8z" fill="#5ef0ff" opacity=".9"/><path d="M50 42l6 8h-12z" fill="#c9fbff" opacity=".7"/>';
-    return out + '</svg>';
+  // The thumbnail is the map itself, drawn from above like its Prism Atlas card
+  // (replay/mapthumbs.js). Maps not in the Atlas yet get a plain map icon.
+  var MAP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg>';
+  function mapThumb(g) { return '<div class="thumb"><canvas data-map="' + esc(g.map || '') + '" aria-hidden="true"></canvas></div>'; }
+  function drawMaps(root) {
+    root.querySelectorAll('canvas[data-map]').forEach(function (cv) {
+      var name = cv.getAttribute('data-map');
+      cv.removeAttribute('data-map');
+      var blank = function () { var b = document.createElement('div'); b.className = 'blank'; b.innerHTML = MAP_ICON + '<span>Not in the Atlas yet</span>'; cv.replaceWith(b); };
+      if (!name || !window.PrismMapThumbs) return blank();
+      window.PrismMapThumbs.draw(cv, name).then(function (ok) { if (!ok) blank(); }).catch(blank);
+    });
   }
 
   if (!KEY) {
@@ -518,13 +495,14 @@
       var tg = targetsOf(g), res = targetState(tg);
       var tracked = g.tracked && g.tracked.length ? g.tracked.map(function (p) { return p.username; }) : [];
       return '<a class="game ' + res + '" href="#g=' + esc(g.id) + '" style="animation-delay:' + Math.min(i * 35, 500) + 'ms">' +
-        '<div class="thumb">' + (tg.length ? '<span class="tag">' + (res === 'target-down' ? 'Got them' : 'Snipe') + '</span>' : '') + ring(g.summary, false, tg) + '<span class="dur">' + esc(clock(g.durationMs)) + '</span></div>' +
+        mapThumb(g) +
         '<div class="mid"><div class="title"><b>' + esc(g.map || 'Unknown map') + '</b>' + (isWatched(g) ? '<span class="watched">Watched</span>' : '') + '</div>' +
-        '<div class="chipline"><span>' + esc(modeName(g.mode)) + '</span><span class="dot"></span><span>' + esc(when(g.playedAt)) + '</span><span class="dot"></span><span>' + esc(time(g.playedAt)) + '</span><span class="ph">' + esc(clock(g.durationMs)) + '</span></div>' + targetChips(tg, null) + teamsLine(g) + '</div>' +
+        '<div class="chipline"><span>' + esc(modeName(g.mode)) + '</span><span class="dot"></span><span>' + esc(when(g.playedAt)) + '</span><span class="dot"></span><span>' + esc(time(g.playedAt)) + '</span><span class="ph">' + esc(clock(g.durationMs)) + '</span></div>' + targetChips(tg) + teamsLine(g) + '</div>' +
         '<div class="side">' + (g.summary ? '<div class="nums"><div><b>' + (tot.kills || 0) + '</b><small>Kills</small></div><div><b>' + (tot.finals || 0) + '</b><small>Finals</small></div><div><b>' + (tot.beds || 0) + '</b><small>Beds</small></div></div>' : '<span class="mini">Summary not ready yet</span>') +
         '<div class="mini">' + (g.clips ? '<span>' + ICON.clip + g.clips + ' clip' + (g.clips === 1 ? '' : 's') + '</span>' : '') + (g.matchStats ? '<span>' + ICON.stats + 'Match stats</span>' : '') + '' + '</div></div>' +
         '</a>';
     }).join('');
+    drawMaps(box);
     $('pager').hidden = state.pages <= 1;
     $('pageInfo').textContent = 'Page ' + state.page + ' of ' + state.pages;
     $('prev').disabled = state.page <= 1;
@@ -561,11 +539,11 @@
     var id = g.id;
     var start = s && s.startT != null ? s.startT : 0;
     var tg = targetsOf(g), res = targetState(tg);
-    var badge = tg.length ? (res === 'target-down' ? 'Snipe · got them' : 'Snipe') : '';
-    var html = '<div class="g-head ' + res + '"><div class="thumb">' + ring(s, true, tg) + '</div><div>' +
+    var badge = tg.length ? 'Snipe' : '';
+    var html = '<div class="g-head ' + res + '">' + mapThumb(g) + '<div>' +
       (badge ? '<span class="result">' + badge + '</span>' : '') +
       '<h1>' + esc(g.map || 'Unknown map') + '</h1>' +
-      '<p>' + esc(modeName(g.mode)) + ' · ' + esc(new Date(g.playedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })) + ' · ' + esc(mins(g.durationMs)) + (s && s.self ? ' · recorded by ' + esc(s.self.name) : '') + '</p>' + targetChips(tg, start) + '</div>' +
+      '<p>' + esc(modeName(g.mode)) + ' · ' + esc(new Date(g.playedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })) + ' · ' + esc(mins(g.durationMs)) + (s && s.self ? ' · recorded by ' + esc(s.self.name) : '') + '</p>' + targetChips(tg) + '</div>' +
       '<div class="acts"><a class="btn primary" data-watch="' + esc(id) + '" href="' + watchUrl(id, start || null) + '"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 001.5.86l12-7.5a1 1 0 000-1.72l-12-7.5A1 1 0 007 4.5z"/></svg>Watch the game</a>' +
       '<button type="button" class="btn danger" id="delGame"' + (isAdmin ? '' : ' hidden') + ' title="Remove this recording from the site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Delete</button></div></div>';
     html += '<div class="g-grid"><div>';
@@ -620,6 +598,7 @@
     } else if (s) html += '<div class="panel"><h2>What happened</h2><p class="mini">No kills or beds were seen in this recording.</p></div>';
     html += '</div></div>';
     v.innerHTML = html;
+    drawMaps(v);
     var lf = $('logFilters');
     if (lf) lf.addEventListener('click', function (e) {
       var b = e.target.closest('button'); if (!b) return;

@@ -194,7 +194,8 @@ const CATS = [
   { id: 'event', name: 'Event maps', icon: '<path d="M10 2.5l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
   { id: 'other', name: 'Other maps', icon: '<path d="M1.5 5v12.5l5.5-3 6 3 5.5-3V2l-5.5 3-6-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 2v12.5M13 5v12.5" stroke="currentColor" stroke-width="1.5"/>' }
 ]
-const HAVES = { all: 'All maps', have: 'In the Atlas', need: 'Still needed', out: 'Out of rotation' }
+// The buttons above the grid (Milo 2026-11-11): All, In rotation, Out of rotation, Still needed.
+const HAVES = { all: 'All maps', rot: 'In rotation', out: 'Out of rotation', need: 'Still needed' }
 const MAP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg>'
 
 function catOfEntry (e) {
@@ -251,11 +252,15 @@ async function showList () {
   $('atNote').textContent = note
 
   const bd = maps.length ? await loadBlockData().catch(() => null) : null
-  const state = { cat: 'all', have: known ? 'all' : 'need', q: '' }
-  // Without the key only the rotation list is known: nothing is "in the Atlas".
-  if (!known) for (const b of document.querySelectorAll('#haveSeg button')) b.hidden = b.dataset.h === 'have'
+  const state = { cat: 'all', have: 'all', q: '' }
+  // Without the key only the rotation list is known: which maps are still needed isn't.
+  if (!known) for (const b of document.querySelectorAll('#haveSeg button')) b.hidden = b.dataset.h === 'need'
 
-  const inHave = (e) => state.have === 'all' ? e.have !== 'out' || !!e.map : e.have === state.have
+  const inRotation = (e) => !!(e.r && e.r.in)
+  const inHave = (e) => state.have === 'all' ? true
+    : state.have === 'rot' ? inRotation(e)
+      : state.have === 'out' ? !inRotation(e)
+        : e.have === 'need'
   const rail = $('rail')
   for (const c of CATS) {
     const b = document.createElement('button')
@@ -325,7 +330,7 @@ async function showList () {
     $('empty').hidden = !!shown.length
     $('emptyText').textContent = state.q ? 'Try another word, or another category.'
       : state.have === 'need' ? 'Every map in rotation here is in the Atlas.'
-        : state.have === 'have' ? 'A map shows up here after a game on it.' : 'Try another category.'
+        : 'Try another category.'
   }
   render()
   setStatus('')

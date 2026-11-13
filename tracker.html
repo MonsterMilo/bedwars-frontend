@@ -4057,7 +4057,7 @@ html[data-theme="deepcurrent"] .modal-standing-bar > span { box-shadow: 0 0 6px 
 }
 
 /* MATCH STATS - how our team did in each game with this player (the
-   Starfish proxy sends them from its game recording; kept after a replay is
+   backend works them out from the game's replay; kept after a replay is
    deleted). One small table per game, newest first. */
 #playerModal .modal-match { display: block; padding: 12px 14px; }
 #playerModal .modal-match .modal-tags-label { margin-bottom: 8px; }
@@ -4069,6 +4069,7 @@ html[data-theme="deepcurrent"] .modal-standing-bar > span { box-shadow: 0 0 6px 
 .match-result { margin-left: auto; font-size: 0.85em; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
 .match-result.win { color: var(--good, #4ade80); }
 .match-result.loss { color: var(--bad, #f87171); }
+.match-result.left { color: var(--text-dim); }
 #playerModal .match-table { width: 100%; min-width: 0; table-layout: auto; margin: 0; background: none; border: 0; box-shadow: none; }
 #playerModal .match-table th, #playerModal .match-table td { background: none; border: 0; position: static; }
 .match-table { width: 100%; border-collapse: collapse; font-size: 0.78em; font-variant-numeric: tabular-nums; }
@@ -24685,7 +24686,8 @@ function matchGameItem(g) {
   if (g.result) {
     const res = document.createElement("span");
     res.className = `match-result ${g.result}`;
-    res.textContent = g.result === "win" ? "Win" : "Loss";
+    // Left: Milo left before the end while still in it (Milo 2026-11-13).
+    res.textContent = g.result === "win" ? "Win" : g.result === "left" ? "Left" : "Loss";
     head.append(res);
   }
   const table = document.createElement("table");

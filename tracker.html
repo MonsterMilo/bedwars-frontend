@@ -8501,13 +8501,14 @@ html[data-theme="skyisles"] {
 html[data-theme="skyisles"] #starfield,
 html[data-theme="skyisles"] #bubblefield { display: none; }
 /* Hard colour bands instead of a smooth gradient, like a 16-colour palette
-   dithered sky, with a square pixel sun parked top-right. */
+   dithered sky. The square pixel sun is not part of this fixed layer: it
+   hangs beside the hero (.hero-pin below) so it scrolls away with it
+   instead of sitting behind every section header. */
 html[data-theme="skyisles"] #nebula {
   display: block;
   opacity: 1;
   overflow: hidden;
   background:
-    var(--px-sun) 7vw 150px / 96px 80px no-repeat,
     linear-gradient(180deg,
       #4f9fe6 0 14%, #5aa9ef 14% 26%, #67b4f5 26% 40%, #76bff9 40% 54%,
       #86c9fc 54% 68%, #97d3fe 68% 82%, #a9dcff 82% 100%);
@@ -8552,13 +8553,21 @@ html[data-theme="skyisles"] #nebulaGlow2 {
     var(--px-bird2) 40px 24px / 21px 12px no-repeat;
   animation: skyBirds 38s steps(190) infinite, skyBirdFlap 0.5s steps(1) infinite;
   z-index: 2;
+  /* Far-off birds in a soft sky blue, so when the flock passes behind
+     text it reads as distant sky and not as ink drawn on the letters. */
+  opacity: 0.38;
+}
+/* Phones: the hero fills the screen, so the flock keeps to the band above
+   the title (behind the top buttons) instead of crossing the subtitle. */
+@media (max-width: 700px) {
+  html[data-theme="skyisles"] #nebulaGlow2 { top: 14vh; }
 }
 @keyframes skyDriftFar { to { transform: translateX(-1600px); } }
 @keyframes skyDriftNear { to { transform: translateX(-1200px); } }
 @keyframes skyBirds {
   0% { transform: translate(0, 0); }
-  60% { transform: translate(calc(100vw + 160px), -12vh); }
-  100% { transform: translate(calc(100vw + 160px), -12vh); }
+  60% { transform: translate(calc(100vw + 160px), -9vh); }
+  100% { transform: translate(calc(100vw + 160px), -9vh); }
 }
 @keyframes skyBirdFlap {
   0% { background-image: var(--px-bird), var(--px-bird2), var(--px-bird); }
@@ -8670,7 +8679,18 @@ html[data-theme="skyisles"] #credits {
 }
 html[data-theme="skyisles"] #credits a,
 html[data-theme="skyisles"] #credits kbd { color: #173247; }
-html[data-theme="skyisles"] .hero-pin { display: none; }
+/* The pixel sun, parked in the empty space left of the wordmark. It lives
+   in the page (not the fixed sky), so it scrolls away with the hero. */
+html[data-theme="skyisles"] .hero-pin {
+  display: block;
+  position: absolute;
+  left: 16px;
+  top: 112px;
+  width: 84px;
+  height: 70px;
+  background: var(--px-sun) 0 0 / 100% 100% no-repeat;
+  pointer-events: none;
+}
 
 /* ---------- Hotbar quick-nav ---------- */
 /* The sticky jump links read as the Minecraft hotbar: a dark strip of
@@ -9126,6 +9146,13 @@ html[data-theme="skyisles"] .search-box-kbd {
   border-color: #8fa3b3;
 }
 html[data-theme="skyisles"] .search-box-clear { border-radius: 0; background: #3a4a55; color: #fff; }
+/* Phones hide the "/" key hint, so the empty field gives its right
+   padding back to the placeholder (the clear button needs it only once
+   something is typed). */
+html[data-theme="skyisles"] .toolbar #searchInput { text-overflow: ellipsis; }
+@media (hover: none), (max-width: 760px) {
+  html[data-theme="skyisles"] .toolbar #searchInput:placeholder-shown { padding-right: 10px; }
+}
 html[data-theme="skyisles"] .search-box-clear:hover { background: var(--bad); color: #fff; }
 /* Filter fields are the dark text field themselves; the input inside is
    just transparent text. */
@@ -9147,9 +9174,52 @@ html[data-theme="skyisles"] .toolbar .filter-field input:focus {
   box-shadow: none;
   color: #fff;
 }
-html[data-theme="skyisles"] .filter-reset { border-radius: 0; font-family: var(--font-pixel); color: var(--text-dim); transition: none; }
+html[data-theme="skyisles"] .filter-reset { border-radius: 0; font-family: var(--font-pixel); color: var(--ink); transition: none; padding: 8px; }
+html[data-theme="skyisles"] .filter-reset:disabled { opacity: 0.6; }
+/* A touch narrower date field, so Reset fits at the end of the chip row
+   on desktop instead of dropping onto a row of its own. */
+html[data-theme="skyisles"] .toolbar .filter-field-date input { width: 118px; }
 html[data-theme="skyisles"] .filter-reset:hover:not(:disabled) { color: #fff; background: var(--accent); }
 html[data-theme="skyisles"] .filter-reset-count:not(:empty) { border-radius: 0; background: var(--bad); color: #fff; }
+/* The active-filter count sits on Reset's corner like an item-stack
+   number, so Reset keeps the same width and stays at the end of the chip
+   row when a filter or search is on (it used to wrap onto a row alone). */
+html[data-theme="skyisles"] .filter-reset { position: relative; }
+html[data-theme="skyisles"] .filter-reset-count:not(:empty) {
+  position: absolute;
+  top: -4px;
+  right: -3px;
+  min-width: 16px;
+  padding: 0 3px;
+  line-height: 16px;
+  font-family: var(--font-pixel);
+  box-shadow: 1px 1px 0 #3f0000;
+}
+/* Phones: the four stat fields and three toggles in even rows - Stars,
+   FKDR and Index side by side, Since across the full width, then the
+   three toggles as equal slots - instead of wrapping ragged. */
+@media (max-width: 760px) {
+  html[data-theme="skyisles"] .filter-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  html[data-theme="skyisles"] .toolbar-actions-left { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+  html[data-theme="skyisles"] .toolbar-actions-left .chip { min-width: 0; }
+  html[data-theme="skyisles"] .toolbar-actions-left .chip span { display: flex; align-items: center; width: 100%; min-height: 100%; }
+}
+@media (max-width: 600px) {
+  html[data-theme="skyisles"] .filter-field:not(.filter-field-date) {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    height: auto;
+    min-height: 52px;
+    padding: 6px 4px 4px 10px;
+  }
+  html[data-theme="skyisles"] .filter-field:not(.filter-field-date) .filter-prefix { font-size: 0.72em; }
+  html[data-theme="skyisles"] .toolbar .filter-field:not(.filter-field-date) input { width: 100%; padding: 0; font-size: 15px; }
+  html[data-theme="skyisles"] .toolbar-actions-left .chip span { min-height: 46px; padding: 6px 6px 5px 30px; line-height: 1.15; }
+  html[data-theme="skyisles"] .toolbar-actions-left .chip span::before { left: 9px; }
+  html[data-theme="skyisles"] .toolbar-actions-left .chip span::after { left: 10px; }
+}
 /* View toggle as a three-slot mini hotbar. */
 html[data-theme="skyisles"] .view-toggle {
   border-radius: 0;
@@ -9368,8 +9438,10 @@ html[data-theme="skyisles"] .sweat-card-stats {
   background: transparent;
   padding: 0;
 }
+/* Same deeper grey as the popup's slots, so the two match and the white
+   labels read clearly. */
 html[data-theme="skyisles"] .card-stat {
-  background: #8b8b8b;
+  background: #6f6f6f;
   box-shadow: var(--slot);
   border: none;
   border-radius: 0;
@@ -9379,10 +9451,10 @@ html[data-theme="skyisles"] .card-stat + .card-stat { border-left: none; }
 html[data-theme="skyisles"] .card-stat-label {
   font-family: var(--font-label); font-size-adjust: none;
   font-weight: 700;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.5px;
-  color: #e7e7e7;
-  text-shadow: 1px 1px 0 #3f3f3f;
+  color: #fff;
+  text-shadow: 1px 1px 0 #2a2a2a;
 }
 html[data-theme="skyisles"] .card-stat-value {
   font-family: var(--font-pixel);
@@ -9430,11 +9502,21 @@ html[data-theme="skyisles"] .sweat-card.tier-t5 .sweat-card-frame::before {
 }
 /* Final Boss: end-stone island in the void, with an animated end-portal
    border of drifting specks and the bed they defend perched on top. */
+/* The bed rides on the end-stone cap itself: the strip reaches 22px higher
+   (transparent there) so the bed sits on the portal's top edge, out of
+   reach of the frame's mask, which would clip anything drawn on it. */
 html[data-theme="skyisles"] .sweat-card.tier-t5::before {
-  background: #dbde9f;
-  background-image: repeating-linear-gradient(90deg, #e8ebb2 0 4px, #cfd28f 4px 8px, #dbde9f 8px 14px);
-  height: 14px;
+  top: -26px;
+  height: 38px;
+  border-top: none;
+  background:
+    var(--px-bed) right 32px top 0 / 32px 18px no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0 22px / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, #e8ebb2 0 4px, #cfd28f 4px 8px, #dbde9f 8px 14px) 0 24px / 100% 14px no-repeat;
+  filter: drop-shadow(0 0 2px rgba(208,120,255,0.55));
+  animation: skyBedGlow 1.6s steps(2) infinite;
 }
+@keyframes skyBedGlow { 50% { filter: drop-shadow(0 0 2px rgba(255,255,255,0.8)); } }
 html[data-theme="skyisles"] .sweat-card.tier-t5::after {
   background: #cfd28f var(--px-stone) 0 0 / 16px 16px repeat;
   background-blend-mode: multiply;
@@ -9461,21 +9543,7 @@ html[data-theme="skyisles"] .sweat-card.tier-t5 .sweat-card-frame {
 @keyframes skyPortal {
   to { background-position: 24px -24px, -30px 30px, 18px 18px, -36px -36px, 0 0; }
 }
-html[data-theme="skyisles"] .sweat-card.tier-t5 .sweat-card-frame::after {
-  content: "";
-  position: absolute;
-  top: -16px;
-  right: 40px;
-  width: 32px;
-  height: 18px;
-  background: var(--px-bed) center / contain no-repeat;
-  filter: drop-shadow(0 0 0 #fff) drop-shadow(0 -2px 0 rgba(208,120,255,0.8)) drop-shadow(0 2px 0 rgba(208,120,255,0.8));
-  animation: skyBedAura 1.6s steps(2) infinite;
-}
 html[data-theme="skyisles"] .sweat-card.tier-t5 .sweat-card-frame::before { display: none; }
-@keyframes skyBedAura {
-  50% { filter: drop-shadow(0 -2px 0 rgba(255,255,255,0.9)) drop-shadow(2px 0 0 rgba(208,120,255,0.9)) drop-shadow(-2px 0 0 rgba(208,120,255,0.9)); }
-}
 html[data-theme="skyisles"] .pill.tier-pill { font-family: var(--font-arcade); font-size-adjust: none; font-weight: 400; font-size: 8px; padding: 5px 7px 4px; letter-spacing: 0.5px; }
 html[data-theme="skyisles"] .pill.tier-pill.t4 { background: #6e1a14; color: #ffb347; text-shadow: 1px 1px 0 #2a0400; }
 html[data-theme="skyisles"] .pill.tier-pill.t5 { background: #1a0f2e; color: #e0b8ff; text-shadow: 1px 1px 0 #000, 0 0 4px #b06ae8; }
@@ -9491,6 +9559,9 @@ html[data-theme="skyisles"] .ss-label { color: #ffff55; font-family: var(--font-
 html[data-theme="skyisles"] .ss-value { color: #ffffff; font-family: var(--font-pixel); font-weight: 700; text-shadow: 3px 3px 0 #3f3f3f; }
 html[data-theme="skyisles"] .ss-who, html[data-theme="skyisles"] .ss-sub, html[data-theme="skyisles"] .ss-flag-legend { color: #cfcfcf; font-family: var(--font-pixel); }
 html[data-theme="skyisles"] .ss-sub b { color: #7cfc4a; }
+/* A lone tile (nothing matches the filters) runs the full width of the
+   strip as one slim bar instead of sitting alone at the left. */
+html[data-theme="skyisles"] .ss-tile:only-child { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: 16px; }
 html[data-theme="skyisles"] .ss-who img { border-radius: 0; box-shadow: 0 0 0 2px #555; }
 html[data-theme="skyisles"] .ss-spark span {
   border-radius: 0;
@@ -9533,6 +9604,7 @@ html[data-theme="skyisles"] .dash-empty {
   box-shadow: inset 0 0 0 2px var(--ink), inset 4px 4px 0 2px rgba(23,50,71,0.12);
 }
 html[data-theme="skyisles"] #statsEmpty.is-scanning { color: var(--accent-2); }
+html[data-theme="skyisles"] #statsEmptyText { max-width: 40ch; text-wrap: balance; }
 html[data-theme="skyisles"] .idle-isle { display: block; }
 .idle-isle i { position: absolute; display: block; background: center / contain no-repeat; }
 .idle-isle .isle-cloud { left: 0; top: 10px; width: 64px; height: 20px; background-image: var(--px-cloud2); opacity: 0.9; animation: isleCloud 9s steps(36) infinite; }
@@ -9846,6 +9918,10 @@ html[data-theme="skyisles"] .confirm-icon {
 html[data-theme="skyisles"] #status,
 html[data-theme="skyisles"] #editStatus,
 html[data-theme="skyisles"] #adminKeyStatus { display: inline-block; font-family: var(--font-pixel); }
+/* An empty status line doesn't hold its row open under the note, so Add
+   Sweat sits right below the form instead of after a dead gap. */
+html[data-theme="skyisles"] .dash-left #status:empty { margin-top: 0; min-height: 0; }
+html[data-theme="skyisles"] .dash-left .add-sweat-row { padding-top: 16px; }
 html[data-theme="skyisles"] #status.typewriter-play,
 html[data-theme="skyisles"] #editStatus.typewriter-play,
 html[data-theme="skyisles"] #adminKeyStatus.typewriter-play { animation: skyType 0.7s steps(14) both; }
@@ -9954,6 +10030,28 @@ html[data-theme="skyisles"] .modal-stat-tile.stat-finals .modal-stat-value { col
 html[data-theme="skyisles"] .modal-stat-tile.stat-wins .modal-stat-value { color: #ffff55; }
 html[data-theme="skyisles"] .modal-stat-tile .modal-standing { color: #7cfc4a; }
 html[data-theme="skyisles"] .modal-stat-tile .modal-standing-text { color: #e7e7e7; text-shadow: 1px 1px 0 #3f3f3f; }
+/* The popup's slots in a deeper grey, so the white labels and the small
+   "Beats N%" text read clearly (the light #8b8b8b slot stays elsewhere). */
+html[data-theme="skyisles"] #playerModal :is(.modal-stat-tile, .modal-tags-section, .modal-record) { background: #6f6f6f; }
+html[data-theme="skyisles"] #playerModal .modal-stat-tile .modal-standing-text { color: #fff; }
+/* Two-column popup: notes move up into the right column under the Urchin
+   tags, beside the tall saved-record panel, so neither column is left with
+   a big empty patch. */
+@media (min-width: 761px) {
+  html[data-theme="skyisles"] #playerModal .modal-content {
+    grid-template-areas:
+      "name name"
+      "live live"
+      "skin stats"
+      "record urchin"
+      "record match"
+      "record notes"
+      "clips clips"
+      "replays replays";
+    grid-template-rows: auto auto auto auto auto 1fr auto auto;
+  }
+  html[data-theme="skyisles"] #playerModal .modal-record[hidden] ~ .modal-notes { grid-column: 1 / -1; }
+}
 html[data-theme="skyisles"] .modal-stat-delta {
   border: none;
   background: #3a3a3a;
@@ -10104,16 +10202,23 @@ html[data-theme="skyisles"] .egg-sub {
   color: #ffff55;
   text-shadow: 2px 2px 0 #3f3f00;
 }
-/* Chat-style toasts as actual Minecraft chat lines. */
+/* Chat-style toasts as Minecraft chat lines, on the same dark panel as
+   the stats strip (grey inner rule, ink outline, hard shadow), so all the
+   dark UI matches and nothing behind bleeds through. */
 html[data-theme="skyisles"] .egg-toast {
   font-family: var(--font-pixel);
   font-size: 15px;
   color: #ffffff;
-  background: rgba(0,0,0,0.55);
+  padding: 10px 15px;
+  background: #212121;
   border: none;
   border-radius: 0;
-  box-shadow: none;
+  box-shadow: inset 0 0 0 2px #555555, inset 0 0 0 4px #1a1a1a, var(--pxb2), 6px 6px 0 0 rgba(23,50,71,0.3);
   text-shadow: 2px 2px 0 #3f3f3f;
+}
+html[data-theme="skyisles"] #eggToasts { gap: 10px; left: 18px; bottom: 18px; max-width: calc(100vw - 40px); }
+@media (max-width: 620px) {
+  html[data-theme="skyisles"] #eggToasts { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* ---------- Empty states, skeletons, pagination ---------- */
@@ -10123,27 +10228,72 @@ html[data-theme="skyisles"] .empty-icon-skyisles {
   background: var(--px-isle-small) center / 90px auto no-repeat;
   animation: isleBob 2.4s steps(2) infinite;
 }
+/* Loading placeholders are blank islands: the same opaque face, grass cap
+   and dirt underside as a sweat card, with the empty slots blinking in
+   two steps instead of the whole card fading in and out. */
 html[data-theme="skyisles"] .skeleton-card {
+  position: relative;
   border: none;
   border-radius: 0;
+  padding: 26px 16px 18px;
   background: var(--panel);
-  box-shadow: var(--pxb2);
-  animation-timing-function: steps(2);
+  box-shadow: inset 0 -4px 0 0 #e1ecd8, var(--pxb2);
+  animation: none;
+  opacity: 1;
+}
+html[data-theme="skyisles"] .skeleton-card::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: -4px;
+  height: 18px;
+  background: var(--px-grasstop) 0 0 / 32px 12px repeat-x;
+  border-top: 2px solid var(--ink);
+  pointer-events: none;
+}
+html[data-theme="skyisles"] .skeleton-card::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: calc(100% + 2px);
+  height: 30px;
+  background: var(--px-dirt) 0 0 / 16px 16px repeat;
+  -webkit-mask: var(--sky-underside) 0 0 / 100% 100% no-repeat;
+  mask: var(--sky-underside) 0 0 / 100% 100% no-repeat;
+  filter: drop-shadow(0 2px 0 var(--ink));
+  pointer-events: none;
 }
 html[data-theme="skyisles"] .skeleton-block,
-html[data-theme="skyisles"] .skeleton-avatar { border-radius: 0; }
+html[data-theme="skyisles"] .skeleton-avatar {
+  border-radius: 0;
+  background: #c6d3dc;
+  box-shadow: inset 2px 2px 0 #a9b8c3;
+  animation: skySkelBlink 1.2s steps(1) infinite;
+}
+html[data-theme="skyisles"] .skeleton-avatar { background: #8b8b8b; box-shadow: var(--slot); animation-name: skySkelSlot; }
+@keyframes skySkelSlot { 50% { background-color: #a2a2a2; } }
+html[data-theme="skyisles"] .skeleton-card:nth-child(3n) .skeleton-block { animation-delay: 0.4s; }
+html[data-theme="skyisles"] .skeleton-card:nth-child(3n+1) .skeleton-block { animation-delay: 0.8s; }
+@keyframes skySkelBlink { 50% { background-color: #dde7ee; } }
+/* The cold-start note, short and in the theme's ink. */
+html[data-theme="skyisles"] .server-waking-note { font-size: 0; font-size-adjust: none; font-weight: 400; color: #1d4a6e; padding-bottom: 6px; }
+html[data-theme="skyisles"] .server-waking-note::before { content: "Waking the server\2026  "; font-size: 15px; }
+html[data-theme="skyisles"] .server-waking-elapsed { font-size: 15px; color: #4b6a82; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="skyisles"] .skeleton-block { animation: none; }
+}
 html[data-theme="skyisles"] .pagination-label { font-family: var(--font-pixel); color: #1d4a6e; }
 html[data-theme="skyisles"] .loading-state { animation-timing-function: steps(2); font-family: var(--font-pixel); }
 
 /* ---------- Phones ---------- */
 @media (max-width: 700px) {
-  html[data-theme="skyisles"] #nebula {
-    background:
-      var(--px-sun) 10px 10px / 48px 40px no-repeat,
-      linear-gradient(180deg,
-        #4f9fe6 0 14%, #5aa9ef 14% 26%, #67b4f5 26% 40%, #76bff9 40% 54%,
-        #86c9fc 54% 68%, #97d3fe 68% 82%, #a9dcff 82% 100%);
-  }
+  html[data-theme="skyisles"] .hero-pin { left: auto; right: 14px; top: 20px; width: 48px; height: 40px; }
+  /* The theme button sits left of centre on phones, so the menu hangs
+     from its left edge instead of running off the left of the screen
+     (the sound panel too, its button is further left still). */
+  html[data-theme="skyisles"] :is(#themeDropdownMenu, #audioPanel) { left: 0; right: auto; max-width: calc(100vw - 32px); transform-origin: top left; }
   html[data-theme="skyisles"] h1 { font-size: 1.7em; }
   html[data-theme="skyisles"] .hero-flourish {
     position: relative;
@@ -10481,6 +10631,28 @@ html[data-theme="skyisles"] .card-note-ghost {
 }
 html[data-theme="skyisles"] .card-note-ghost::after { content: "Add note"; }
 html[data-theme="skyisles"] .sweat-card .card-note-ghost:hover { color: #3b2410; background: #c89a5c; border-style: solid; border-color: #8a6232; }
+/* The empty sign stays faintly drawn, so a card without a note has a
+   place to add one instead of a blank band above its footer. */
+html[data-theme="skyisles"] .sweat-card .card-note-ghost { opacity: 0.6; }
+html[data-theme="skyisles"] .sweat-card:is(:hover, :focus-within, :focus-visible) .card-note-ghost { opacity: 0.9; }
+html[data-theme="skyisles"] .sweat-card .card-note-ghost:is(:hover, :focus-visible) { opacity: 1; }
+/* An empty inventory slot behind the head, so the frame is there while
+   the skin is still loading (the img itself sits at opacity 0 until then). */
+html[data-theme="skyisles"] .sweat-card-top { position: relative; }
+html[data-theme="skyisles"] .sweat-card-top::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 64px;
+  height: 64px;
+  margin-top: -32px;
+  box-sizing: border-box;
+  background: #8b8b8b;
+  border: 2px solid var(--ink);
+  box-shadow: inset 2px 2px 0 0 #6b6b6b, inset -2px -2px 0 0 #a8a8a8, 2px 2px 0 rgba(23,50,71,0.3);
+}
+html[data-theme="skyisles"] .sweat-card-avatar { position: relative; }
 
 /* ---------- Page footer: a themed end-cap with a way back up ---------- */
 .site-footer { margin: 72px 0 30px; }
@@ -11654,6 +11826,33 @@ html[data-theme="skyisles"] .sotd-meta,
 html[data-theme="skyisles"] .sotd-note { font: 400 1.25em var(--font-pixel); }
 html[data-theme="skyisles"] .sotd-note { font-style: normal; }
 html[data-theme="skyisles"] .sotd-clock { font: 400 0.6em var(--font-arcade); line-height: 1.6; }
+/* On wide screens the right of the card would sit empty, so a little
+   Bed Wars island (bed, diamond generator) floats there, behind the text. */
+@media (min-width: 1000px) {
+  html[data-theme="skyisles"] .sotd-deco i.d5 {
+    display: block;
+    position: absolute;
+    right: 8%;
+    top: 50%;
+    width: 140px;
+    height: 111px;
+    margin-top: -36px;
+    background:
+      var(--px-diamond) 93px 0 / 22px 19px no-repeat,
+      var(--px-bed) 15px 20px / 50px 28px no-repeat,
+      var(--px-gen) 90px 26px / 28px 25px no-repeat,
+      var(--px-idleisle) 0 41px / 140px 70px no-repeat;
+    image-rendering: pixelated;
+    filter: drop-shadow(4px 4px 0 rgba(23,50,71,0.18));
+    animation: isleBob 2.4s steps(2) infinite;
+  }
+}
+/* The pixel digits are wide: on phones the four stats go 2 by 2 so the
+   finals and index counts show in full. */
+@media (max-width: 480px) {
+  html[data-theme="skyisles"] .sotd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+  html[data-theme="skyisles"] .sotd-stat-value { font-size: 1.45em; }
+}
 
 @media (max-width: 620px) {
   .sotd { margin-bottom: 20px; }
@@ -12293,7 +12492,7 @@ html[data-theme="skyisles"] .unmask-front .unmask-who { color: transparent; back
 html[data-theme="skyisles"] .unmask-front .unmask-q { display: none; }
 html[data-theme="skyisles"] .unmask-k { font-family: var(--font-label); color: #404040; letter-spacing: 0.06em; text-transform: none; font-size: 0.85em; }
 html[data-theme="skyisles"] .unmask-front .unmask-k::before { content: "Repair & Name"; }
-html[data-theme="skyisles"] .unmask-back .unmask-k::before { content: "Renamed Name Tag"; }
+html[data-theme="skyisles"] .unmask-back .unmask-k::before { content: "Name Tag"; }
 html[data-theme="skyisles"] .unmask-name { font-family: var(--font-pixel); font-weight: 400; font-size: 1.9em; color: #fff; text-shadow: 2px 2px 0 #3f3f3f; }
 html[data-theme="skyisles"] .unmask-front .unmask-name {
   display: inline-block;
@@ -12322,10 +12521,17 @@ html[data-theme="skyisles"] .unmask-fx {
     radial-gradient(3px 3px at 34% 62%, #ffe066 60%, transparent 70%);
 }
 html[data-theme="skyisles"] .unmask.play .unmask-fx { animation: siSparks 0.8s steps(4) 0.05s both; }
-html[data-theme="skyisles"] .unmask-back { background: #100010; box-shadow: inset 0 0 0 3px #2a0960, 0 0 0 3px #000; }
+/* The renamed tag on the dark panel the stats strip and toasts use. */
+html[data-theme="skyisles"] .unmask-back { background: #212121; box-shadow: inset 0 0 0 2px #555555, inset 0 0 0 4px #1a1a1a, 0 0 0 3px var(--ink); }
 html[data-theme="skyisles"] .unmask-back .unmask-name { color: #ffff55; text-shadow: 2px 2px 0 #3f3f00; font-style: italic; }
 html[data-theme="skyisles"] .unmask-back .unmask-k { color: #aaaaaa; }
-html[data-theme="skyisles"] .unmask-back .unmask-meta { color: #5555ff; }
+html[data-theme="skyisles"] .unmask-back .unmask-meta { color: #cfcfcf; }
+/* Phones: the source and age wrap onto a second line instead of being cut
+   off, and the empty prompt steps aside once a tag has been read. */
+@media (max-width: 620px) {
+  html[data-theme="skyisles"] .unmask-meta { white-space: normal; line-height: 1.45; font-size: 0.72em; text-wrap: balance; }
+}
+html[data-theme="skyisles"] #denickUnmask:not([hidden]) ~ #denickEmpty { display: none; }
 /* The old name is cleared a letter-block at a time, then the new one is typed in. */
 @keyframes siNickOut {
   0%, 15% { opacity: 1; clip-path: inset(0 0 0 0); }
@@ -12676,6 +12882,46 @@ html[data-theme="skyisles"] .lb-entry-art {
 html[data-theme="skyisles"] .lb-entry-count { order: 2; font: 400 0.72em/1 var(--font-label); color: var(--ink); }
 html[data-theme="skyisles"] .lb-entry-count span { display: none; }
 html[data-theme="skyisles"] .lb-entry-count b { font: 400 1.5em/1 var(--font-pixel); color: #3f8f2a; }
+/* Phones: slimmer islands so four and a half fit across, the half-cut
+   fifth one (under the fade) showing the row scrolls sideways. */
+@media (max-width: 620px) {
+  html[data-theme="skyisles"] .lb-scene-body { grid-auto-columns: 70px; gap: 4px; height: 270px; padding-bottom: 6px; }
+  html[data-theme="skyisles"] .lb-entry { padding-bottom: calc(var(--share) * 130px); }
+  html[data-theme="skyisles"] .lb-entry-art { width: 60px; height: 34px; }
+  html[data-theme="skyisles"] .lb-entry .leaderboard-name { font-size: 0.72em; }
+}
+/* The column grows to its tallest island instead of a fixed height, so
+   no band of empty sky is left between the islands and the hint. */
+html[data-theme="skyisles"] .lb-scene { margin-bottom: 6px; }
+html[data-theme="skyisles"] .leaderboard-ranking { margin-bottom: 6px; }
+html[data-theme="skyisles"] .lb-scene-body { height: auto; min-height: 150px; }
+html[data-theme="skyisles"] .leaderboard-hint { margin: 0 0 10px; font-family: var(--font-pixel); font-size: 0.86em; color: var(--ink); }
+/* Counts in dark green, big enough to read at a glance. */
+html[data-theme="skyisles"] .lb-entry-count { margin-top: 2px; font-size: 0.86em; }
+html[data-theme="skyisles"] .lb-entry-count b { font-size: 1.45em; color: #1f5c12; text-shadow: 1px 1px 0 rgba(255,255,255,0.55); }
+/* Lift is measured from a quarter share up, so the lowest islands sit on
+   the floor of the scene instead of over a band of empty sky. */
+html[data-theme="skyisles"] .lb-entry { padding-bottom: max(0px, calc((var(--share) - 0.25) * 170px)); }
+@media (max-width: 620px) {
+  html[data-theme="skyisles"] .lb-entry { padding-bottom: max(0px, calc((var(--share) - 0.25) * 150px)); }
+  html[data-theme="skyisles"] .lb-entry .leaderboard-name { font-size: 0.8em; }
+}
+/* Wide screens: bigger islands, heads and names, so the podium fills the
+   panel instead of floating as small specks across the sky. */
+@media (min-width: 900px) {
+  html[data-theme="skyisles"] .lb-scene-body { gap: 10px; }
+  html[data-theme="skyisles"] .lb-entry { gap: 5px; padding-bottom: max(0px, calc((var(--share) - 0.25) * 200px)); }
+  html[data-theme="skyisles"] .lb-entry-art { width: 124px; height: 66px; }
+  html[data-theme="skyisles"] .lb-entry .lb-avatar { width: 62px; height: 62px; font-size: 1.15em; }
+  html[data-theme="skyisles"] .lb-entry .leaderboard-name { font-size: 1.2em; }
+  html[data-theme="skyisles"] .lb-entry-rank::before { font-size: 22px; }
+  html[data-theme="skyisles"] .lb-entry-count { font-size: 1.25em; }
+}
+/* Nothing matches (no one has a medal): the empty island and its line
+   are the only content, not a podium of zeros tied at 1st. The stale
+   grid "no results" line from before the switch is dropped too. */
+html[data-theme="skyisles"] #leaderboardWrap:not(:has(.lb-entry[data-medal])) :is(.lb-scene, #leaderboardHint, #leaderboardPersonTitle) { display: none; }
+html[data-theme="skyisles"] #defeatedBody:has(> #leaderboardWrap:not([hidden])) > #emptyState { display: none; }
 
 @media (max-width: 700px) {
   html:not([data-theme]) .lb-scene { padding: 0 10px 14px; }
@@ -13985,6 +14231,7 @@ html[data-theme="skyisles"] .pdeco i:nth-child(2) { left: 0; right: 0; bottom: 0
   html[data-theme="ledger"] .panel-index { right: 2px; top: -8px; bottom: auto; opacity: 0.75; }
   html[data-theme="deepcurrent"] .panel-index { font-size: 34px; right: 4px; top: -4px; bottom: auto; }
   html[data-theme="skyisles"] .panel-index::before { font-size: 56px; }
+  html[data-theme="skyisles"] .panel-index { right: 48px; top: -2px; bottom: auto; }
   html[data-theme="casefiles"] .panel-index { display: none; }
   html:not([data-theme]) .panel-header::after { left: 0; }
   html .denick-mode-btn { letter-spacing: 0.2px !important; font-size: 0.72em !important; padding-left: 9px !important; padding-right: 9px !important; gap: 5px !important; }
@@ -14472,15 +14719,22 @@ html[data-theme="deepcurrent"] .row-rival .rival-icon::after {
   border: 1px solid currentColor;
   animation: rivalPing 2.4s ease-out infinite;
 }
-/* Sky Isles: an item stack count in the slot's corner, in Nemesis purple */
+/* Sky Isles: a small Nemesis tag after the name (crossed swords and the
+   count), matching the card's tag; never laid over the face. */
 html[data-theme="skyisles"] .row-rival {
-  left: 42px;
-  bottom: -1px;
-  color: #ff7cff;
-  font: 400 19px/1 var(--font-label, 'Silkscreen'), monospace;
-  text-shadow: 2px 2px 0 #3f003f;
+  position: static;
+  flex-shrink: 0;
+  gap: 3px;
+  margin-left: -3px;
+  padding: 2px 4px 2px 3px;
+  color: #ff55ff;
+  font: 400 11px/1 var(--font-label, 'Silkscreen'), monospace;
+  background: #100010;
+  border: 2px solid #2a0960;
+  text-shadow: 1px 1px 0 #3f003f;
+  transform: none;
 }
-html[data-theme="skyisles"] .row-rival .rival-icon { display: none; }
+html[data-theme="skyisles"] .row-rival .rival-icon { width: 10px; height: 10px; }
 @media (prefers-reduced-motion: reduce) {
   .row-rival, .row-rival .rival-icon::after { animation: none !important; }
 }
@@ -14543,7 +14797,7 @@ html[data-theme="deepcurrent"] #modalNotesEmpty {
 html[data-theme="deepcurrent"] #modalNotesEmpty::before { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.04em; color: var(--text-faint); }
 html[data-theme="skyisles"] :is(#denickEmpty, #activityEmpty)::before { background: #1d4a6e; }
 html[data-theme="skyisles"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 7h13v10H8L3 12z' stroke-linecap='square' stroke-linejoin='miter' stroke-width='2'/%3E%3Crect x='6.5' y='11' width='2' height='2' fill='%23000' stroke='none'/%3E%3Cpath d='M12 10.5h6M12 13.5h4' stroke-linecap='square' stroke-width='2'/%3E%3C/svg%3E"); }
-html[data-theme="skyisles"] #denickEmpty p::before { content: "No name tags to read. Search a nick to see who's behind it, or a player for every name they've used."; }
+html[data-theme="skyisles"] #denickEmpty p::before { content: "No name tags yet. Search a nick or a player."; }
 html[data-theme="skyisles"] #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 3h12v18H5z M8 3v18' stroke-linecap='square' stroke-linejoin='miter' stroke-width='2'/%3E%3Cpath d='M17 6h2v15H8' stroke-linecap='square' stroke-linejoin='miter' stroke-width='2'/%3E%3Cpath d='M10.5 9h4M10.5 12h4' stroke-linecap='square' stroke-width='2'/%3E%3C/svg%3E"); }
 html[data-theme="skyisles"] #activityEmpty p::before { content: "Nothing in the chat yet. Every add, edit and delete pops up here as it happens."; }
 html[data-theme="skyisles"] #modalNotesEmpty::before { content: "No notes yet."; }
@@ -24073,6 +24327,32 @@ function pickSkySplash() {
   if (el) el.dataset.splash = SKY_SPLASHES[Math.floor(Math.random() * SKY_SPLASHES.length)];
 }
 
+// Sky Isles: a skin that still fails after its one retry shows a pixel
+// Steve head (what Minecraft shows for an unknown skin) instead of an
+// empty frame. Capture phase, so this runs before the img's own onerror.
+const SKY_STEVE_HEAD = "data:image/svg+xml," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" shape-rendering="crispEdges">' +
+  '<rect width="8" height="8" fill="#b4846a"/><rect width="8" height="2" fill="#2f200d"/>' +
+  '<rect y="2" width="1" height="1" fill="#2f200d"/><rect x="7" y="2" width="1" height="1" fill="#2f200d"/>' +
+  '<rect x="1" y="2" width="6" height="1" fill="#c69a7c"/>' +
+  '<rect x="1" y="4" width="1" height="1" fill="#fff"/><rect x="2" y="4" width="1" height="1" fill="#4b3a8c"/>' +
+  '<rect x="5" y="4" width="1" height="1" fill="#4b3a8c"/><rect x="6" y="4" width="1" height="1" fill="#fff"/>' +
+  '<rect x="3" y="5" width="2" height="1" fill="#8a5a40"/>' +
+  '<rect x="2" y="6" width="4" height="1" fill="#6a3e2c"/><rect x="2" y="7" width="1" height="1" fill="#6a3e2c"/><rect x="5" y="7" width="1" height="1" fill="#6a3e2c"/>' +
+  '</svg>');
+const SKY_AVATAR_SEL = ".sweat-card-avatar, .user-avatar, .ss-who img";
+function skySteveFallback(img) {
+  if (img.matches(SKY_AVATAR_SEL) && /[?&]retry=/.test(img.src)) img.src = SKY_STEVE_HEAD;
+}
+document.addEventListener("error", (e) => {
+  if (e.target instanceof HTMLImageElement && currentThemeId() === "skyisles") skySteveFallback(e.target);
+}, true);
+// Skins that already failed under another theme get the head on switching in.
+document.addEventListener("themechange", (e) => {
+  if (e.detail.theme !== "skyisles") return;
+  document.querySelectorAll(SKY_AVATAR_SEL).forEach(img => { if (img.complete && !img.naturalWidth) skySteveFallback(img); });
+});
+
 function applyTheme(themeId, opts = {}) {
   window.loadThemeFonts(themeId);
   const swap = () => {
@@ -25582,6 +25862,18 @@ const statsDisplay = document.getElementById('statsDisplay');
 const statsEmpty = document.getElementById('statsEmpty');
 const clearPreviewBtn = document.getElementById("clearPreviewBtn");
 const searchInput = document.getElementById('searchInput');
+// Sky Isles' wide pixel font cuts the full search hint off beside the
+// Filters button on phones, so it gets a short one there (and a shorter
+// one on wide screens too).
+const SEARCH_HINT_FULL = searchInput.placeholder;
+const searchHintNarrow = window.matchMedia("(max-width: 600px)");
+function updateSearchHint() {
+  searchInput.placeholder = currentThemeId() !== "skyisles" ? SEARCH_HINT_FULL
+    : searchHintNarrow.matches ? "Search..." : "Search players or notes";
+}
+searchHintNarrow.addEventListener("change", updateSearchHint);
+document.addEventListener("themechange", updateSearchHint);
+updateSearchHint();
 
 const statsAvatar = document.getElementById('statsAvatar');
 const statsUsername = document.getElementById('statsUsername');
@@ -25621,6 +25913,13 @@ function showStatsEmpty() {
 // While a lookup is in flight the empty preview speeds up its idle scene
 // and names who it is looking for.
 const STATS_EMPTY_TEXT = "Preview a player here.";
+const statsEmptyIdleText = () => STATS_EMPTY_TEXT;
+function refreshStatsEmptyText() {
+  const text = document.getElementById("statsEmptyText");
+  if (text && !statsEmpty.classList.contains("is-scanning")) text.textContent = statsEmptyIdleText();
+}
+document.addEventListener("themechange", refreshStatsEmptyText);
+refreshStatsEmptyText();
 // The idle scene doesn't swap to a different animation when a lookup
 // starts; its running animations are eased up to a faster playbackRate
 // (and back down), which keeps every ring, beam and dial in phase.
@@ -25651,7 +25950,7 @@ function setStatsScanning(name) {
   if (scanning !== wasScanning) siteAudio.scan(scanning);
   rampIdleScene(scanning ? (IDLE_SCAN_RATE[document.documentElement.dataset.theme] || 3.5) : 1);
   if (!text) return;
-  const next = scanning ? `Scanning Hypixel for ${name}…` : STATS_EMPTY_TEXT;
+  const next = scanning ? `Scanning Hypixel for ${name}…` : statsEmptyIdleText();
   if (text.textContent === next) return;
   text.textContent = next;
   if (scanning !== wasScanning && text.animate && !statsEmpty.hidden) {
@@ -27731,6 +28030,15 @@ function renderTableRows(filteredSweats, usernameCounts) {
 // one of them beat (Milo + Potat = the ones they both beat). Tapping a
 // picked name again drops it, as long as someone stays picked.
 let leaderboardPeople = [];
+// Sky Isles keeps the hint under the islands to a few words.
+const LB_HINT_SHORT = { skyisles: { many: "Tap a picked name to drop it.", one: "Tap names to compare." } };
+function leaderboardHintText() {
+  const short = LB_HINT_SHORT[currentThemeId()];
+  return leaderboardPeople.length > 1
+    ? (short ? short.many : "Only sweats every picked person beat. Tap a picked name again to drop it.")
+    : (short ? short.one : "Tap more names to see the sweats you beat together.");
+}
+document.addEventListener("themechange", () => { if (leaderboardPeople.length) leaderboardHint.textContent = leaderboardHintText(); });
 const beatenByAllPicked = s => leaderboardPeople.every(k => s[k]);
 function pickedLabel() {
   const names = leaderboardPeople.map(k => BEATEN_BY[k].label);
@@ -27822,8 +28130,13 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   });
 
   const personSweats = filteredSweats.filter(beatenByAllPicked);
+  // Sky Isles' pixel font draws "&" like a euro sign, and the long line
+  // wraps on phones: just the names joined with "+".
+  const skyCompare = currentThemeId() === "skyisles";
   leaderboardPersonTitle.textContent = leaderboardPeople.length > 1
-    ? `Beaten by ${pickedLabel()} together (${personSweats.length})`
+    ? (skyCompare
+      ? `${leaderboardPeople.map(k => BEATEN_BY[k].label).join(" + ")} (${personSweats.length})`
+      : `Beaten by ${pickedLabel()} together (${personSweats.length})`)
     : `${pickedLabel()}'s Sweats (${counts[leaderboardPeople[0]]})`;
   leaderboardHint.textContent = leaderboardHintText();
   // Same fix as the Table view: hide the drill-down table's own header
@@ -31685,7 +31998,10 @@ function harvestTitleStunt(release) {
       eggToast(`&#127810; <b>Harvest season's in.</b> Press <b>${key}</b> for the Harvest theme.`, 6500);
       return;
     }
-    const el = eggToast(`&#127810; <b>Harvest season's in.</b> Tap here for the Harvest theme.`, 8000);
+    // Sky Isles keeps it to one short line on phones.
+    const el = eggToast(currentThemeId() === "skyisles"
+      ? `&#127810; <b>Harvest is here.</b> Tap to try it.`
+      : `&#127810; <b>Harvest season's in.</b> Tap here for the Harvest theme.`, 8000);
     el.classList.add("is-action");
     el.setAttribute("role", "button");
     el.tabIndex = 0;
@@ -32959,7 +33275,9 @@ usernameField.addEventListener("input", () => {
   const isTechno = usernameField.value.trim().toLowerCase() === "technoblade";
   if (isTechno && !technoShown) {
     siteAudio.play("techno");
-    eggToast(`&#128081; <b>Technoblade never dies.</b> Blood for the Blood God.`, 5500);
+    eggToast(currentThemeId() === "skyisles"
+      ? `&#128081; <b>Technoblade never dies.</b>`
+      : `&#128081; <b>Technoblade never dies.</b> Blood for the Blood God.`, 5500);
     const r = usernameField.getBoundingClientRect();
     if (!reducedMotionQuery.matches) themedBurst(r.left + r.width * 0.7, r.top + r.height / 2, true);
   }

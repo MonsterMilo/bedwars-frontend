@@ -19137,6 +19137,147 @@ html[data-theme="northpole"] .egg-sub { font-family: var(--font-hand); font-size
 
 html[data-theme="northpole"] .sotd-stats { gap: 10px 12px; }
 /* @@END-NORTHPOLE@@ */
+
+/* ============================================================
+   CASE FILES - layout polish (visual pass 2026-11)
+   ============================================================ */
+
+/* Sticky folder-tab nav: the tabs sit on a strip of desk paper that
+   runs the full width of the window, so content scrolling under the
+   stuck bar is covered instead of showing between the tabs. The strip
+   fades out just under the rule. */
+html[data-theme="casefiles"] .quick-nav {
+  margin-top: 10px;
+  padding-top: 12px;
+}
+html[data-theme="casefiles"] .quick-nav::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: -12px;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E") 0 0 / 160px 160px,
+    var(--bg);
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 12px), transparent);
+  mask-image: linear-gradient(#000 calc(100% - 12px), transparent);
+}
+
+/* Theme menu on phones: open from the button's left edge so the list
+   stays on screen instead of hanging off the left side. */
+@media (max-width: 620px) {
+  html[data-theme="casefiles"] #themeDropdownMenu { left: 0; right: auto; }
+}
+
+/* Phone bottom nav: a strip of folder tabs resting on the bottom edge
+   of the screen, with nothing showing underneath it. */
+@media (max-width: 620px) {
+  html[data-theme="casefiles"] .bottom-nav {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: calc(68px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    border-width: 1px 0 0;
+    border-radius: 0;
+    box-shadow: 0 -1px 0 #f3e6bd inset, 0 -6px 14px -8px rgba(42,36,28,0.4);
+  }
+  html[data-theme="casefiles"] .bottom-nav.bnav-away,
+  html[data-theme="casefiles"] .bottom-nav.bnav-popup { transform: translateY(calc(100% + 14px)); }
+}
+
+/* Header card on phones: the torn edge sits closer to the subtitle. */
+@media (max-width: 620px) {
+  html[data-theme="casefiles"] .hero { padding-bottom: 58px; }
+}
+
+/* Person of Interest card on phones: stats in a 2x2 grid so the big
+   numbers (finals, index) fit in full. */
+@media (max-width: 480px) {
+  html[data-theme="casefiles"] .sotd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; }
+}
+
+/* WANTED corkboard: the posters wrap in a grid and never scroll, so the
+   scroll-edge fade is never wanted here (it only clipped the rank badges
+   and pins when a tilted poster poked a few px past the edge). */
+html[data-theme="casefiles"] .lb-scene-body.fade-right,
+html[data-theme="casefiles"] .lb-scene-body.fade-left {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/* REPEAT OFFENDER stamp sits in the open space above the footer, clear
+   of the beaten-by chips and the date. Decoration only, so clicks pass
+   through to the card. */
+html[data-theme="casefiles"] .sweat-card .rival-mark {
+  bottom: 92px;
+  pointer-events: none;
+}
+/* Final Boss crime-scene tape wraps the very corners, off the avatar
+   and the edit button. */
+html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::before,
+html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::after { width: 60px; }
+html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::before { left: -24px; top: -3px; }
+html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::after { right: -24px; bottom: -3px; }
+
+/* A skin that fails to load leaves a blank mugshot frame with a "?"
+   head instead of an empty gap. The frame is drawn behind the avatar;
+   a loaded skin covers it (the avatar gets an opaque paper fill). */
+html[data-theme="casefiles"] :is(.sweat-card-top, .user-cell) { position: relative; }
+html[data-theme="casefiles"] :is(.sweat-card-top, .user-cell)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  box-sizing: border-box;
+  border: 1.5px solid var(--border-strong);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='%235c4322' fill-opacity='0.32'%3E%3Crect x='20' y='12' width='24' height='24' rx='2'/%3E%3Cpath d='M10 64v-8c0-9 6-15 15-15h14c9 0 15 6 15 15v8z'/%3E%3C/g%3E%3Ctext x='32' y='31' text-anchor='middle' font-family='Courier New,monospace' font-weight='700' font-size='19' fill='%23fbf6e6'%3E%3F%3C/text%3E%3C/svg%3E") center bottom / 86% no-repeat,
+    #ebe3cc;
+  pointer-events: none;
+}
+html[data-theme="casefiles"] .sweat-card-top::before { width: 64px; height: 64px; margin-top: -32px; border-radius: 14px; }
+html[data-theme="casefiles"] .user-cell::before { width: 36px; height: 36px; margin-top: -18px; border-radius: 10px; }
+html[data-theme="casefiles"] :is(.sweat-card-avatar, .user-avatar) { position: relative; z-index: 1; background: #f7f0dc; }
+
+/* View switch: square file tabs with a red-ink active outline, the same
+   as the denick mode switch, instead of Neon's glossy gradient pill. */
+html[data-theme="casefiles"] .view-toggle { border-radius: 2px; background: var(--panel-2); border-color: var(--border-strong); }
+html[data-theme="casefiles"] .view-btn { border-radius: 2px; font-family: 'Courier Prime', monospace; text-transform: uppercase; letter-spacing: 0.03em; }
+html[data-theme="casefiles"] .view-btn.active { background: var(--panel); color: var(--accent-2); box-shadow: inset 0 0 0 1.5px var(--accent-2); }
+
+/* Filter row: RESET fits at the end of the chip row instead of wrapping
+   onto a line of its own, and reads a little darker while disabled. */
+html[data-theme="casefiles"] .toolbar-row { gap: 8px; }
+html[data-theme="casefiles"] .filter-fields { gap: 6px; }
+html[data-theme="casefiles"] .toolbar-row .chip span { padding: 7px 11px 7px 33px; }
+html[data-theme="casefiles"] .filter-reset { padding: 8px 8px; color: var(--text); }
+html[data-theme="casefiles"] .filter-reset:disabled { opacity: 0.55; }
+
+/* Popup: the star tile's "Beats" meter starts at the left like the
+   other tiles' meters. */
+html[data-theme="casefiles"] .stat-star .modal-standing { margin-left: 0; margin-right: 0; }
+
+/* Stat sublines break between lines, not inside "11,794 F". */
+html[data-theme="casefiles"] .ss-sub { text-wrap: balance; }
+@media (max-width: 620px) {
+  html[data-theme="casefiles"] .stat-hero-sub { white-space: nowrap; letter-spacing: 0; }
+}
+
+/* Denicking: once a result card is up, the "no alias on file" note goes. */
+html[data-theme="casefiles"] #denickUnmask:not([hidden]) ~ #denickEmpty,
+html[data-theme="casefiles"] #denickResults:not(:empty) ~ #denickEmpty { display: none; }
+/* The coffee ring sits tucked in the corner on phones, off the text. */
+@media (max-width: 620px) {
+  html[data-theme="casefiles"] .pdeco i:nth-child(3) { right: 6px; bottom: 6px; width: 76px; height: 72px; }
+}
+
+/* One content width for every section's main panel. */
+html[data-theme="casefiles"] :is(#form-container, #denickContainer, #activityContainer) { max-width: 1200px; }
 </style>
 </head>
 <body>

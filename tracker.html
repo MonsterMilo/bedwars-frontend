@@ -16997,6 +16997,121 @@ html[data-theme="prism"] .status-panel { background: var(--pr-glass); border-col
 html[data-theme="prism"] .status-list { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 html[data-theme="prism"] .status-row { border-top-color: rgba(255,255,255,0.06); }
 
+/* ---------- Stat tiles with no "Beats %" meter ----------
+   KDR (preview) and Wins (popup) aren't saved on sweats, so they can't be
+   ranked. When the tiles beside them carry a meter, they get an empty
+   track with "Beats —" in its place, so every tile in the grid has the
+   same shape. */
+html[data-theme="prism"] #statsColumns:has(.modal-standing) .stat-standing:empty::after,
+html[data-theme="prism"] #modalStats:has(.modal-standing) .modal-stat-tile:not(.stat-star):not(:has(.modal-standing))::after {
+  content: "Beats \2014";
+  display: block;
+  margin-top: 8px;
+  padding-left: 8px;
+  font-size: 0.6em;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text-faint);
+  background: linear-gradient(rgba(255,255,255,0.07), rgba(255,255,255,0.07)) left center / calc(100% - 5.7em) 4px no-repeat;
+}
+html[data-theme="prism"] #modalStats:has(.modal-standing) .modal-stat-tile:not(.stat-star):not(:has(.modal-standing))::after { margin-top: 7px; }
+
+/* ---------- Spotlight card: stats use the card's width ----------
+   The info column runs under the countdown, which keeps the top-right
+   corner, so the stats row can spread out instead of stopping halfway. */
+@media (min-width: 621px) {
+  html[data-theme="prism"] .sotd-info { grid-column: 2 / -1; grid-row: 1; }
+  html[data-theme="prism"] .sotd-stats { max-width: 860px; gap: 10px 24px; }
+}
+@media (min-width: 941px) {
+  html[data-theme="prism"] .sotd-clock { grid-column: 3; grid-row: 1; position: relative; z-index: 1; }
+  html[data-theme="prism"] .sotd-kicker { padding-right: 240px; }
+}
+@media (min-width: 1100px) {
+  html[data-theme="prism"] .sotd-stats { gap: 10px 36px; }
+}
+/* Narrower screens: the countdown drops under the record line, and the
+   stats go 2x2 before the big numbers would be cut off. */
+@media (min-width: 621px) and (max-width: 940px) {
+  html[data-theme="prism"] .sotd-card { row-gap: 10px; }
+  html[data-theme="prism"] .sotd-clock { grid-column: 2 / -1; grid-row: 2; justify-self: start; }
+}
+@media (min-width: 621px) and (max-width: 820px) {
+  html[data-theme="prism"] .sotd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ---------- Grid cards: the add-a-note slot ----------
+   Shown faintly all the time (not only on hover), so the space it fills on
+   a card without a note reads as a slot rather than a gap. */
+html[data-theme="prism"] .sweat-card .card-note-ghost { opacity: 0.45; border-color: rgba(255,255,255,0.09); }
+html[data-theme="prism"] .sweat-card:is(:hover, :focus-within, :focus-visible) .card-note-ghost { opacity: 0.85; }
+html[data-theme="prism"] .sweat-card .card-note-ghost:is(:hover, :focus-visible) { opacity: 1; color: #fff; border-color: rgba(94,231,255,0.5); background: rgba(94,231,255,0.06); }
+
+/* ---------- Table and list rows: rival mark ----------
+   A small chip in the rival colours, just off the avatar's corner, so
+   it reads as a badge instead of a smudge on the head. */
+html[data-theme="prism"] .row-rival {
+  left: 46px;
+  bottom: -6px;
+  padding: 2px 5px 2px 4px;
+  font-family: var(--pr-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #ffd9b3;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: linear-gradient(#140f13, #140f13) padding-box, linear-gradient(90deg, #ffc46b, #ff7ab6) border-box;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+/* ---------- Denicking results ----------
+   Every row keeps the same avatar slot, so names line up whether the head
+   is the big "Current" one or not. */
+html[data-theme="prism"] .denick-row:not(.is-current) .denick-avatar { margin: 0 4px; }
+/* While a search runs, a placeholder in the shape of the answer card and
+   two rows holds the panel's height, so the page doesn't jump. */
+html[data-theme="prism"] #denickContainer:has(#denickSearchBtn.loading) #denickResults:empty::before,
+html[data-theme="prism"] #denickContainer:has(#denickSearchBtn.loading) #denickResults:empty::after {
+  content: "";
+  display: block;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.06);
+  animation: prSkeleton 1.3s ease-in-out infinite alternate;
+}
+html[data-theme="prism"] #denickContainer:has(#denickSearchBtn.loading) #denickResults:empty::before { height: 116px; margin-left: -22px; border-radius: 18px; }
+html[data-theme="prism"] #denickContainer:has(#denickSearchBtn.loading) #denickResults:empty::after {
+  height: 60px;
+  margin-bottom: 68px;
+  border-radius: 14px;
+  box-shadow: 0 68px 0 -1px rgba(255,255,255,0.035);
+}
+@keyframes prSkeleton { from { opacity: 0.55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="prism"] #denickContainer #denickResults:empty::before,
+  html[data-theme="prism"] #denickContainer #denickResults:empty::after { animation: none; }
+}
+
+/* ---------- Leaderboard chart: scroll cue ----------
+   When more beams sit off to the right (the chart adds .fade-right), a
+   small arrow after the label says so. */
+html[data-theme="prism"] .lb-scene:has(.lb-scene-body.fade-right) .lb-scene-sub::after {
+  content: "\2192";
+  display: inline-block;
+  margin-left: 8px;
+  font-family: var(--pr-mono);
+  font-size: 0.8em;
+  color: var(--accent);
+  animation: prNudge 1.6s ease-in-out infinite;
+}
+@keyframes prNudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
+@media (prefers-reduced-motion: reduce) { html[data-theme="prism"] .lb-scene-sub::after { animation: none; } }
+
+/* ---------- Footer status panel: clears the phone nav when it scrolls in ---------- */
+html[data-theme="prism"] .status-panel { scroll-margin-bottom: 24px; }
+
 /* ---------- Phones ---------- */
 @media (max-width: 620px) {
   /* The theme menu centres under its button instead of hanging off its
@@ -17011,6 +17126,30 @@ html[data-theme="prism"] .status-row { border-top-color: rgba(255,255,255,0.06);
   html[data-theme="prism"] .panel-index { right: 0; top: -34px; bottom: auto; font-size: 4.4em; opacity: 0.7; }
   html[data-theme="prism"] .bottom-nav { background: rgba(10,12,18,0.93); }
   html[data-theme="prism"] .lb-scene-sub::before { content: "Per person"; }
+  /* The status panel scrolls in above the bottom nav. */
+  html[data-theme="prism"] .status-panel { scroll-margin-bottom: 96px; }
+}
+
+@media (max-width: 760px) {
+  /* Filters: Stars and FKDR share a row; Index and Since get a row each,
+     instead of Index sitting alone in half a row. */
+  html[data-theme="prism"] .filter-field[for="minIndex"] { grid-column: 1 / -1; }
+}
+
+@media (max-width: 480px) {
+  /* Denick rows: name and source get the full width; the chips run on
+     their own line under them instead of squeezing the name. */
+  html[data-theme="prism"] .denick-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 6px;
+  }
+  html[data-theme="prism"] .denick-row-who { display: contents; }
+  html[data-theme="prism"] .denick-avatar { grid-row: 1 / span 2; align-self: center; }
+  html[data-theme="prism"] .denick-row-info { grid-column: 2; grid-row: 1; }
+  html[data-theme="prism"] .denick-row-side { grid-column: 2; grid-row: 2; flex-direction: row; justify-content: flex-start; align-items: center; gap: 6px; }
 }
 
 @media (max-width: 760px) {
@@ -30387,14 +30526,40 @@ function prismAvatarFallback(img) {
   img.src = "data:image/svg+xml," + encodeURIComponent(svg);
   img.style.opacity = 1;
 }
+// The popup's full-body skin doesn't retry, so it gets the same tile at
+// once, centred in its frame, instead of a broken-image glyph.
+function prismModalSkinFallback(img) {
+  const btn = document.querySelector("#modalUsername .modal-copy-name");
+  const initial = (((btn && btn.textContent) || "").match(/[A-Za-z0-9]/) || ["?"])[0].toUpperCase();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 240">`
+    + `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#232838"/><stop offset="1" stop-color="#11141d"/></linearGradient>`
+    + `<linearGradient id="s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5ee7ff"/><stop offset=".5" stop-color="#a98bff"/><stop offset="1" stop-color="#ffc46b"/></linearGradient></defs>`
+    + `<rect x="44" y="76" width="72" height="72" rx="18" fill="url(#g)" stroke="rgba(255,255,255,0.16)"/>`
+    + `<rect x="62" y="76" width="36" height="1.5" fill="url(#s)" opacity=".85"/>`
+    + `<text x="80" y="124" text-anchor="middle" font-family="Manrope, Segoe UI, system-ui, sans-serif" font-size="32" font-weight="800" fill="#eef1f8">${initial}</text></svg>`;
+  img.src = "data:image/svg+xml," + encodeURIComponent(svg);
+}
 document.addEventListener("error", (e) => {
   const img = e.target;
   if (!(img instanceof HTMLImageElement) || img.src.startsWith("data:")) return;
-  if (document.documentElement.dataset.theme !== "prism" || !img.matches(PRISM_AVATAR_SEL)) return;
+  if (document.documentElement.dataset.theme !== "prism") return;
+  if (img.id === "modalSkin") { if (img.getAttribute("src")) prismModalSkinFallback(img); return; }
+  if (!img.matches(PRISM_AVATAR_SEL)) return;
   const fails = (Number(img.dataset.prFails) || 0) + 1;
   img.dataset.prFails = String(fails);
   if (fails >= 2) prismAvatarFallback(img);
 }, true);
+// The footer's sources panel opens below the pill, often under the fold
+// (or behind the phone nav), so it scrolls into view once it's open. This
+// runs before the pill's own handler, hence the frame's wait.
+document.getElementById("statusPill")?.addEventListener("click", () => {
+  if (document.documentElement.dataset.theme !== "prism") return;
+  requestAnimationFrame(() => {
+    const panel = document.getElementById("statusPanel");
+    if (!panel || panel.hidden) return;
+    panel.scrollIntoView({ block: "nearest", behavior: reducedMotion.matches ? "auto" : "smooth" });
+  });
+});
 // @@END-PRISM-JS@@
 // @@NORTHPOLE-JS@@
 // ---- North Pole: Christmas in a snowy village ----

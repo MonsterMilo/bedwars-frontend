@@ -161,13 +161,14 @@ float fbm(vec2 p, vec2 per){ float s = 0., a = .5; for (int k = 0; k < 6; k++){ 
 float fbm3(vec2 p, vec2 per){ float s = 0., a = .5; for (int k = 0; k < 3; k++){ s += a * pnoise(p, per); p *= 2.; per *= 2.; a *= .5; } return s; }
 vec3 lin(vec3 c){ return pow(max(c, 0.), vec3(2.2)); }
 // marble: domain-warped fbm with ridged veins. Returns base variation in x, vein strength in y, fine veins in z.
+// It tiles only when per, per * .5 and per * 1.5 are whole numbers (so per is a multiple of 2).
 vec3 marble(vec2 p, vec2 per, float seed){
   vec2 o = vec2(seed * 7.13, seed * 3.71);
   vec2 q = vec2(fbm(p + o, per), fbm(p + o + vec2(5.2, 1.3), per));
   vec2 r = vec2(fbm(p + 3.2 * q + vec2(1.7, 9.2), per), fbm(p + 3.2 * q + vec2(8.3, 2.8), per));
   float base = fbm(p + 2.6 * r, per);
   float v1 = 1. - smoothstep(0., .035, abs(fbm(p * .5 + 2.2 * r + o, per * .5)));
-  float v2 = 1. - smoothstep(0., .012, abs(fbm3(p * 1.6 + 1.4 * q + o.yx, per * 1.6)));
+  float v2 = 1. - smoothstep(0., .012, abs(fbm3(p * 1.5 + 1.4 * q + o.yx, per * 1.5)));
   return vec3(base, v1, v2);
 }
 `;
@@ -230,7 +231,7 @@ void main(){
   vec2 P = vUv * 4.; float row = floor(P.y); float off = mod(row, 2.);
   float bx = floor((P.x + off) * .5); vec2 bl = vec2(mod(P.x + off, 2.), P.y - row);
   vec2 bid = vec2(mod(bx, 2.), mod(row, 4.)); float sd = hash1(bid + 1.7);
-  vec3 m = marble(P * 1.25 + vec2(sd * 3., sd * 7.), vec2(5.), sd * 3.);
+  vec3 m = marble(P * 1.5 + vec2(sd * 3., sd * 7.), vec2(6.), sd * 3.);
   float pores = smoothstep(.62, .75, pnoise(P * 38., vec2(152.)) * .5 + .5) * .5;
   vec3 col = uTint * (.78 + m.x * .35 + (sd - .5) * .16); col = mix(col, uTint * .55, m.y * .35); col *= 1. - pores * .35;
   float ex = min(min(bl.x, 2. - bl.x), min(bl.y, 1. - bl.y));
@@ -242,7 +243,7 @@ void main(){
 // Seamless polished marble (light or dark). One texture = 2 m.
 const MARBLE_SH = `uniform int uOut; uniform vec3 uBase; uniform vec3 uVein; uniform vec3 uFine; uniform float uRough;
 void main(){
-  vec2 P = vUv * 3.; vec3 m = marble(P, vec2(3.), 2.);
+  vec2 P = vUv * 4.; vec3 m = marble(P, vec2(4.), 2.);
   vec3 col = uBase * (.82 + m.x * .4); col = mix(col, uVein, m.y * .65); col = mix(col, uFine, m.z * .6);
   float rough = uRough + m.z * .06; float metal = 0.; float height = .5 + m.y * .03;
   ${OUT_TAIL}
@@ -260,6 +261,8 @@ function bakeAll() {
     return { albedo, orm, normal: bakeNormal(s, s, orm, 0.6, 3) }; };
   T.marble = mar([.80, .76, .70], [.52, .48, .43], [.38, .35, .32], .22);
   T.dark = mar([.035, .06, .052], [.30, .38, .34], [.82, .86, .84], .16);
+  // the dais and podiums: the same stone with its veins at about half strength, so the floor round the statues reads as marble, not crazed glass
+  T.darkSoft = mar([.035, .055, .05], [.12, .15, .14], [.26, .28, .27], .2);
 }
 // sRGB colour picks to linear, for the bake shaders
 function linV(r, g, b) { return new THREE.Vector3(r ** 2.2, g ** 2.2, b ** 2.2); }
@@ -285,7 +288,9 @@ function makeMaterials() {
   M.glass = new THREE.MeshBasicMaterial({ map: oculusTexture(), color: new THREE.Color(0xb9cdff).multiplyScalar(2.2), toneMapped: false });
   M.glowStrip = glow(0xffe2b0, 2.2);
   // the dais and podiums: the same black marble, its veins knocked back and its polish softened so it doesn't fight the statues
-  M.darkRot = tex(T.dark, { color: 0x8a8a8a, roughness: 1.7, envMapIntensity: 0.8 });
+  M.darkRot = tex(T.darkSoft, { roughness: 1.6, envMapIntensity: 0.8 });
+  // the rotunda's wall panels: satin rather than mirror polish, so the oculus fill light spreads into a sheen instead of hot spots
+  M.darkPanel = tex(T.dark, { roughness: 2.8, envMapIntensity: 1.2 });
 }
 function bounce(mat, k0, k1, y0, y1) {
   mat.onBeforeCompile = (sh) => {
@@ -346,8 +351,9 @@ function drawPlaque(d) {
     const parts = prestigeParts(d.star); g.font = `700 62px 'Barlow Condensed', sans-serif`;
     const tw = parts.reduce((a, p) => a + g.measureText(p.c).width, 0); let x = w / 2 - tw / 2; g.textAlign = "left";
     parts.forEach(p => { g.fillStyle = H ? "#fff" : p.color; g.fillText(p.c, x, 336); x += g.measureText(p.c).width; });
-    g.textAlign = "center"; g.fillStyle = C(H, "#e2b866"); g.font = `700 68px Cinzel, Georgia, serif`; g.fillText(fmtIdx(d.index), w / 2, 440);
-    g.fillStyle = C(H, "#d2bb86"); g.font = `600 33px 'Barlow Condensed', sans-serif`; g.fillText(`I N D E X   ·   ${tierOf(d.index).toUpperCase().split("").join(" ")}`, w / 2, 494);
+    g.textAlign = "center"; g.fillStyle = C(H, "#e2b866"); g.font = `700 68px Cinzel, Georgia, serif`; g.fillText(fmtIdx(d.index), w / 2, 428);
+    const foot = `I N D E X   ·   ${tierOf(d.index).toUpperCase().split("").join(" ")}`;
+    g.fillStyle = C(H, "#ecd49c"); fitFont(g, foot, "'Barlow Condensed', sans-serif", 600, w - 170, 50); g.fillText(foot, w / 2, 496);
     if (d.cheating) { g.save(); g.translate(w - 128, 100); g.rotate(0.32); g.fillStyle = C(H, "#e0354a"); g.fillRect(-150, -27, 300, 54);
       g.fillStyle = H ? "#000" : "#fff"; g.font = `700 33px 'Barlow Condensed', sans-serif`; g.fillText("CHEATER", 0, 12); g.restore(); }
   };
@@ -356,7 +362,7 @@ function drawEmptyPlaque(rank) {
   return (g, w, h, H) => {
     bronzeBg(g, w, h, H); panelFrame(g, w, h, H);
     g.textAlign = "center"; g.fillStyle = C(H, "#b8955a"); g.font = `700 60px Cinzel, Georgia, serif`; g.fillText(`Nº ${rank}`, w / 2, 220);
-    g.fillStyle = C(H, "#8f7d5c"); g.font = `600 44px 'Barlow Condensed', sans-serif`; g.fillText("A W A I T I N G   A   S W E A T", w / 2, 330);
+    g.fillStyle = C(H, "#b48f52"); fitFont(g, "A W A I T I N G   A   S W E A T", "'Barlow Condensed', sans-serif", 600, w - 170, 52); g.fillText("A W A I T I N G   A   S W E A T", w / 2, 336);
   };
 }
 function drawDedication(g, w, h, H) {
@@ -387,7 +393,7 @@ function drawBanner(d) {
     if (d && d.empty) {
       g.font = `900 290px Cinzel, Georgia, serif`; g.fillText(String(d.rank), w / 2, 400);
       g.fillRect(w / 2 - 92, 458, 184, 4);
-      g.font = `600 34px 'Barlow Condensed', sans-serif`; g.fillStyle = C(H, "#a08a62"); g.fillText("AWAITING A SWEAT", w / 2, 540);
+      g.font = `600 44px 'Barlow Condensed', sans-serif`; g.fillStyle = C(H, "#c9a45e"); g.fillText("AWAITING A SWEAT", w / 2, 548);
     } else if (d) {
       g.font = `900 290px Cinzel, Georgia, serif`; g.fillText(String(d.rank), w / 2, 400);
       g.fillRect(w / 2 - 92, 458, 184, 4);
@@ -444,7 +450,7 @@ function boxUV(g, size) {
   }
   g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
 }
-const UV_SIZE = { wall: 4, vault: 4, marble: 2, dark: 2, darkRot: 2 };
+const UV_SIZE = { wall: 4, vault: 4, marble: 2, dark: 2, darkRot: 2, darkPanel: 2 };
 const _m4 = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(), _s = new THREE.Vector3(1, 1, 1);
 function mtx(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = sx, sz = sx) { return new THREE.Matrix4().compose(_v.set(x, y, z), _q.setFromEuler(_e.set(rx, ry, rz, "YXZ")), _s.set(sx, sy, sz)); }
 function add(key, geo, m, opts = {}) {
@@ -466,7 +472,7 @@ function flipGeo(g) {
   for (let i = 0; i < n.length; i++) n[i] = -n[i];
   return g;
 }
-const CAST = new Set(["marble", "dark", "darkRot", "gold", "goldDull", "iron", "velvet", "wood"]);
+const CAST = new Set(["marble", "dark", "darkRot", "darkPanel", "gold", "goldDull", "iron", "velvet", "wood"]);
 function flushStatic() {
   for (const [key, list] of BATCH) {
     const mesh = new THREE.Mesh(mergeGeometries(list, false), M[key]);
@@ -503,6 +509,8 @@ const SOLIDS = [];
 const solidBox = (x0, x1, z0, z1, top = 99) => SOLIDS.push({ k: 0, x0: Math.min(x0, x1), x1: Math.max(x0, x1), z0: Math.min(z0, z1), z1: Math.max(z0, z1), top });
 const solidCirc = (x, z, r, top = 99) => SOLIDS.push({ k: 1, x, z, r, top });
 const solidSeg = (ax, az, bx, bz, r, top) => SOLIDS.push({ k: 2, ax, az, bx, bz, r, top });
+// tag the solid just added as something you can't see through (walls, column shafts, trees), with an optional sight radius
+const occ = (r) => { const o = SOLIDS[SOLIDS.length - 1]; o.occ = true; if (r) o.occR = r; };
 
 // ---------- Shape helpers ----------
 function archPts(cx, cy, hw, spring, seg = 32) {
@@ -551,7 +559,7 @@ function column(x, z) {
   add("gold", COLUMN.ring, mtx(x, 7.5, z, Math.PI / 2));
   add("marble", COLUMN.cap, mtx(x, 7.47, z), { keepUV: true });
   box("marble", 1.62, 0.35, 1.62, x, 8.125, z);
-  solidCirc(x, z, 0.8);
+  solidCirc(x, z, 0.8); occ(0.48);
 }
 
 // ---------- The nave ----------
@@ -569,8 +577,8 @@ function buildNave() {
     // colliders: wall segments between the niche openings
     const opens = slots.filter(sl => sl.side === s).map(sl => sl.z).sort((a, b) => b - a);
     let zTop = DOOR_Z;
-    opens.forEach(oz => { solidBox(s * WALL_X, s * (WALL_X + 1), oz + NICHE_HW, zTop); zTop = oz - NICHE_HW; });
-    solidBox(s * WALL_X, s * (WALL_X + 1), NAVE_END_Z - 0.5, zTop);
+    opens.forEach(oz => { solidBox(s * WALL_X, s * (WALL_X + 1), oz + NICHE_HW, zTop); occ(); zTop = oz - NICHE_HW; });
+    solidBox(s * WALL_X, s * (WALL_X + 1), NAVE_END_Z - 0.5, zTop); occ();
     // entablature: architrave, frieze and cornice running the length of the hall
     const prof = [[0, ENT_Y0], [1.3, ENT_Y0], [1.3, 8.62], [1.36, 8.62], [1.36, 8.75], [1.2, 8.75], [1.2, 9.05], [1.45, 9.08], [1.6, 9.16], [1.6, ENT_Y1], [0, ENT_Y1]];
     const es = new THREE.Shape(prof.map(([a, b]) => new THREE.Vector2(a, b)));
@@ -579,8 +587,9 @@ function buildNave() {
     add("marble", eg, mtx(s > 0 ? WALL_X : -WALL_X, 0, NAVE_END_Z));
     box("goldLine", 0.02, 0.05, L, s * (WALL_X - 1.215), 8.9, zMid);
     box("gold", 0.08, 0.04, L, s * (WALL_X - 1.31), 8.6, zMid);
-    // dado rail along the visible wall
-    box("gold", 0.06, 0.06, L, s * (WALL_X - 0.03), 1.05, zMid);
+    // dado rail along the visible wall, broken at each niche opening (each run tucks into the archivolt's jamb)
+    let rz = DOOR_Z;
+    [...opens, NAVE_END_Z - NICHE_HW - 0.3].forEach(oz => { const a = rz, b = oz + NICHE_HW + 0.3; if (a - b > 0.05) box("gold", 0.06, 0.06, a - b, s * (WALL_X - 0.03), 1.05, (a + b) / 2); rz = oz - NICHE_HW - 0.3; });
     COL_ZS.forEach(z => column(s * COL_X, z));
   });
   // barrel vault: a recessed shell, a grid of ribs making the coffers, gold rosettes in each coffer
@@ -638,7 +647,7 @@ function buildNave() {
   add("marble", new THREE.ExtrudeGeometry(gframe, { depth: NAVE_END_Z - ROT_FACE + 0.12, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05, bevelSegments: 2, curveSegments: 40 }), mtx(0, 0, ROT_FACE - 0.06));
   add("gold", new THREE.TorusGeometry(GATE_HW + 0.02, 0.04, 6, 64, Math.PI), mtx(0, GATE_SPRING, NAVE_END_Z + 0.12));
   box("gold", 1.0, 1.2, 0.4, 0, GATE_SPRING + GATE_HW + 0.45, NAVE_END_Z + 0.1);
-  [-1, 1].forEach(s => solidBox(s * GATE_HW, s * (WALL_X + 1), ROT_FACE - 0.1, NAVE_END_Z + 0.2));
+  [-1, 1].forEach(s => { solidBox(s * GATE_HW, s * (WALL_X + 1), ROT_FACE - 0.1, NAVE_END_Z + 0.2); occ(); });
 }
 
 // ---------- Niches ----------
@@ -685,8 +694,8 @@ function buildNiche(slot) {
   posts.map(p => p.clone().applyMatrix4(N)).forEach(p => solidCirc(p.x, p.z, 0.17, 1.0));
   // colliders: back wall, side walls, plinth
   const wc = (lx, lz) => new THREE.Vector3(lx, 0, lz).applyMatrix4(N);
-  const c1 = wc(-NICHE_HW - 0.6, -NICHE_D), c2 = wc(NICHE_HW + 0.6, -NICHE_D - 1); solidBox(c1.x, c2.x, c1.z, c2.z);
-  [-1, 1].forEach(e => { const a = wc(e * NICHE_HW, 0.05), b = wc(e * (NICHE_HW + 0.6), -NICHE_D - 0.5); solidBox(a.x, b.x, a.z, b.z); });
+  const c1 = wc(-NICHE_HW - 0.6, -NICHE_D), c2 = wc(NICHE_HW + 0.6, -NICHE_D - 1); solidBox(c1.x, c2.x, c1.z, c2.z); occ();
+  [-1, 1].forEach(e => { const a = wc(e * NICHE_HW, 0.05), b = wc(e * (NICHE_HW + 0.6), -NICHE_D - 0.5); solidBox(a.x, b.x, a.z, b.z); occ(); });
   const p1 = wc(-1.2, pz - 1.2), p2 = wc(1.2, pz + 1.2); solidBox(p1.x, p2.x, p1.z, p2.z);
   return N;
 }
@@ -726,7 +735,7 @@ function buildRotunda() {
   colAngles.forEach((a, i) => { const b = colAngles[(i + 1) % colAngles.length]; let m = (a + b) / 2; if (b < a) return;
     if (Math.abs(m - Math.PI) < 0.05) return;
     const x = Math.sin(m) * 14.93, z = ROT_Z + Math.cos(m) * 14.93;
-    add("dark", new THREE.BoxGeometry(2.7, 5.4, 0.06), mtx(x, 4.3, z, 0, m));
+    add("darkPanel", new THREE.BoxGeometry(2.7, 5.4, 0.06), mtx(x, 4.3, z, 0, m));
     [[0, 7.03, 2.8, 0.08], [0, 1.57, 2.8, 0.08]].forEach(([, y, w, t]) => add("gold", new THREE.BoxGeometry(w, t, 0.08), mtx(x - Math.sin(m) * 0.02, y, z - Math.cos(m) * 0.02, 0, m)));
     [-1.4, 1.4].forEach(o => add("gold", new THREE.BoxGeometry(0.08, 5.5, 0.08), mtx(x - Math.sin(m) * 0.02 + Math.cos(m) * o, 4.3, z - Math.cos(m) * 0.02 - Math.sin(m) * o, 0, m)));
   });
@@ -870,13 +879,15 @@ function northPoleMaterials() {
 function npBulb(i, x, y, z, r = 0.065) { add("npB" + (i % 4), new THREE.SphereGeometry(r, 8, 6), mtx(x, y, z)); }
 // one tier of branches: a cone whose lower rim splays out into drooping branch tips
 function branchTier(r, h, seed) {
-  const g = new THREE.ConeGeometry(r, h, 72, 4), p = g.attributes.position;
+  const g = new THREE.ConeGeometry(r, h, 108, 5), p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), y = p.getY(i), z = p.getZ(i), rad = Math.hypot(x, z); if (rad < 1e-5) continue;
     const t = (h / 2 - y) / h, rel = Math.min(1, rad / (r * Math.max(t, 1e-3))), a = Math.atan2(x, z);
     const wv = 0.5 + 0.5 * Math.cos(a * 9 + seed) * 0.8 + 0.12 * Math.cos(a * 17 + seed * 2.3);
-    const k = 1 + 0.16 * t * t * wv;
-    p.setXYZ(i, x * k, y - 0.22 * t * t * wv * rel, z * k);
+    // small scallops and a little jitter toward the rim, so the tier edge breaks up into tufts instead of a hard line
+    const sc = Math.pow(0.5 + 0.5 * Math.cos(a * 27 + seed * 1.3), 2), jit = Math.sin(a * 41 + t * 13 + seed) * Math.sin(a * 23 - t * 7 + seed * 0.7), t3 = t * t * t;
+    const k = 1 + 0.16 * t * t * wv + (0.09 * sc + 0.035 * jit) * t3;
+    p.setXYZ(i, x * k, y - 0.22 * t * t * wv * rel - (0.1 * sc - 0.03 * jit) * t3 * rel, z * k);
   }
   g.computeVertexNormals();
   return g;
@@ -913,7 +924,7 @@ function npTree(x, z, H, R) {
   const sg = new THREE.ExtrudeGeometry(star, { depth: 0.08, bevelEnabled: false }); sg.translate(0, 0, -0.04);
   [0, Math.PI / 2].forEach(ry => add("npStar", sg, mtx(x, H + 0.3, z, 0, ry)));
   addGlow(x, H + 0.3, z, 1.5, 0.8, 0.62, 0.3); addGlow(x, H * 0.5, z, 5.5, 0.3, 0.22, 0.12);
-  solidCirc(x, z, R * 0.92);
+  solidCirc(x, z, R * 0.92); occ(R * 0.6);
 }
 function npWreath(N) {
   const at = (m) => N.clone().multiply(m);
@@ -1116,9 +1127,9 @@ function buildNicheExhibit(slot, N, skin) {
 // a niche whose rank nobody holds yet: a dim banner and plaque so it doesn't look unfinished
 function buildEmptyNiche(slot) {
   const s = slot.side, g = new THREE.Group(); g.position.set(s * WALL_X, 0, slot.z); g.rotation.y = -s * Math.PI / 2; world.add(g); g.updateMatrixWorld();
-  const plaque = new THREE.Mesh(plaqueGeo, plaqueMaterial(reliefPanel(1024, 560, drawEmptyPlaque(slot.rank)))); plaque.material.emissiveIntensity = 0.14;
+  const plaque = new THREE.Mesh(plaqueGeo, plaqueMaterial(reliefPanel(1024, 560, drawEmptyPlaque(slot.rank)))); plaque.material.emissiveIntensity = 0.24;
   plaque.position.set(0, 0.88, -PLINTH_D + 0.958); g.add(plaque);
-  const ban = banner(reliefPanel(512, 1164, drawBanner({ rank: slot.rank, empty: true }), 2), 2.2, 5.0, slot.z * 0.7 + s); ban.material.emissiveIntensity = 0.03;
+  const ban = banner(reliefPanel(512, 1164, drawBanner({ rank: slot.rank, empty: true }), 2), 2.2, 5.0, slot.z * 0.7 + s); ban.material.emissiveIntensity = 0.05;
   ban.position.set(0, 5.15, -NICHE_D + 0.16); g.add(ban);
   add("gold", new THREE.CylinderGeometry(0.03, 0.03, 2.6, 10), g.matrixWorld.clone().multiply(mtx(0, 7.7, -NICHE_D + 0.16, 0, 0, Math.PI / 2)));
   [-1.3, 1.3].forEach(x => add("gold", new THREE.SphereGeometry(0.07, 12, 8), g.matrixWorld.clone().multiply(mtx(x, 7.7, -NICHE_D + 0.16))));
@@ -1171,7 +1182,7 @@ function buildPodium(skinOf) {
     vertexShader: `varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
     fragmentShader: `uniform float uPower; uniform float uTime; varying vec3 vP; vec3 hue(float h){ return clamp(abs(mod(h * 6. + vec3(0., 4., 2.), 6.) - 3.) - 1., 0., 1.); }
       void main(){ float a = atan(vP.y, vP.x) / 6.2831853 + .5; float r = length(vP.xy); float band = smoothstep(${SR[0].toFixed(2)}, ${SR[1].toFixed(2)}, r) * (1. - smoothstep(${SR[2].toFixed(2)}, ${SR[3].toFixed(2)}, r));
-        gl_FragColor = vec4(max(mix(hue(a + uTime * .03), vec3(1., .82, .5), .35) * band * uPower * 1.3, 0.), 1.); }`,
+        gl_FragColor = vec4(max(mix(hue(a + uTime * .03), vec3(1., .78, .42), .82) * band * uPower * 1.1, 0.), 1.); }`,
   }));
   specRing.rotation.x = -Math.PI / 2; specRing.position.y = DAIS_TOP + 0.012; specRing.userData.noAO = true; R.add(specRing);
   buildCorona();
@@ -1581,9 +1592,35 @@ function aimPoint(ex, out) {
 // a sweat whose aim point sits behind another exhibit's statue doesn't get the card
 const occRay = new THREE.Raycaster(), occV = new THREE.Vector3();
 function occluded(ex, d) {
-  aimPoint(ex, occV); occV.sub(camera.position).normalize(); occRay.set(camera.position, occV); occRay.far = d;
+  aimPoint(ex, occV); if (sightBlocked(occV)) return true;
+  occV.sub(camera.position).normalize(); occRay.set(camera.position, occV); occRay.far = d;
   for (const h of occRay.intersectObjects(hitTargets, false)) { const o = h.object.userData.ex; if (o === ex) return false; if (o && o.fig) return true; }
   return false;
+}
+// is the floor-plan line from the eye to p cut by a wall, a column shaft or a tree? (2D, on the colliders: cheap enough for every frame)
+function sightBlocked(p) {
+  const ax = camera.position.x, az = camera.position.z; let dx = p.x - ax, dz = p.z - az; const L = Math.hypot(dx, dz); if (L < 0.5) return false;
+  const k = (L - 0.3) / L; dx *= k; dz *= k; // stop just short of the target
+  for (const s of SOLIDS) {
+    if (!s.occ) continue;
+    if (s.k === 1) { const r = s.occR || s.r, t = clamp(((s.x - ax) * dx + (s.z - az) * dz) / (dx * dx + dz * dz), 0, 1); if (Math.hypot(ax + dx * t - s.x, az + dz * t - s.z) < r) return true; continue; }
+    // segment vs box (slabs), boxes shrunk a touch so grazing a corner doesn't count
+    let t0 = 0, t1 = 1, ok = true;
+    for (const [o, d, lo, hi] of [[ax, dx, s.x0 + 0.05, s.x1 - 0.05], [az, dz, s.z0 + 0.05, s.z1 - 0.05]]) {
+      if (Math.abs(d) < 1e-9) { if (o < lo || o > hi) { ok = false; break; } continue; }
+      let ta = (lo - o) / d, tb = (hi - o) / d; if (ta > tb) [ta, tb] = [tb, ta];
+      t0 = Math.max(t0, ta); t1 = Math.min(t1, tb); if (t0 > t1) { ok = false; break; }
+    }
+    if (ok) return true;
+  }
+  return false;
+}
+// the exhibit under the crosshair when it's close (standing beside a podium with only its top in view, say)
+const crossRay = new THREE.Raycaster(), crossC = new THREE.Vector2();
+function crossTarget() {
+  crossRay.setFromCamera(crossC, camera); crossRay.far = 6;
+  const h = crossRay.intersectObjects(hitTargets, false)[0]; if (!h) return null;
+  return sightBlocked(h.point) ? null : h.object.userData.ex;
 }
 function stopGlide() { AP.active = false; AP.v = 0; AP.settle = 0; document.body.classList.remove("gliding"); stopTour(); }
 const STOPS = [];
@@ -1616,33 +1653,40 @@ function buildRail() {
   });
 }
 const card = $("#card"); let cardEx = null, cardHideT = 0;
+// the card's content sits in .c-body, which scrolls on phones, so the card itself keeps its gold corner brackets
 function cardHtml(ex) {
   if (!ex.d) {
-    return `<div class="c-top"><span class="c-rank">THE HALL</span></div><div class="c-name">Prism Hall of Fame</div>
+    return `<div class="c-body"><div class="c-top"><span class="c-rank">THE HALL</span></div><div class="c-name">Prism Hall of Fame</div>
       <div class="c-index"><b>${fmtNum(META.total)}</b><span>sweats beaten so far</span></div>
-      <div class="c-meta">Ranked by <b>FKDR² × stars</b>. Cheaters in red. Top 3 under the prism.</div>`;
+      <div class="c-meta">Ranked by <b>FKDR² × stars</b>. Cheaters in red. Top 3 under the prism.</div></div>`;
   }
   const d = ex.d;
   const chips = d.beaten.map(n => `<span class="chip" style="color:var(${ROSTER_VAR[n] || "--ivory"})">${esc(n)}</span>`).join("");
   const notes = (d.notes || []).map(n => `<div class="c-note">“${esc(n.text)}”<small>${esc(n.by || "someone")} · ${esc(fmtDate(n.at))}</small></div>`).join("");
+  // stats the backend doesn't have are left out rather than shown as dashes; a lone "Met" moves to the meta line
   const stat = (k, v, more) => `<div${more ? ' class="x"' : ""}><dt>${k}</dt><dd>${v}</dd></div>`;
-  return `<div class="c-top"><span class="c-rank">Nº ${d.rank} OF ${fmtNum(META.total)}</span>${d.cheating ? `<span class="c-flag">CHEATER</span>` : `<span class="c-tier">${esc(tierOf(d.index))}</span>`}</div>
+  const main = [["FKDR", d.fkdr, fmtRatio], ["WLR", d.wlr, fmtRatio], ["Finals", d.finals, fmtNum], ["BBLR", d.bblr, fmtRatio]].filter(r => r[1] != null);
+  const extra = [["KDR", d.kdr, fmtRatio], ["Beds", d.beds, fmtNum], ["Kills", d.kills, fmtNum]].filter(r => r[1] != null);
+  const metInGrid = extra.length > 0;
+  const grid = main.map(([k, v, f]) => stat(k, f(v))).join("") + extra.map(([k, v, f]) => stat(k, f(v), 1)).join("") + (metInGrid ? stat("Met", d.times + "×", 1) : "");
+  return `<div class="c-body"><div class="c-top"><span class="c-rank">Nº ${d.rank} OF ${fmtNum(META.total)}</span>${d.cheating ? `<span class="c-flag">CHEATER</span>` : `<span class="c-tier">${esc(tierOf(d.index))}</span>`}</div>
     <div class="c-name">${esc(d.name)}</div><div class="c-tag">${prestigeHtml(d.star)}</div>
-    <div class="c-index"><b>${fmtIdx(d.index)}</b><span>index · FKDR² × stars</span></div>
-    <dl class="c-grid">${stat("FKDR", fmtRatio(d.fkdr))}${stat("WLR", fmtRatio(d.wlr))}${stat("Finals", fmtNum(d.finals))}${stat("BBLR", fmtRatio(d.bblr))}${stat("KDR", fmtRatio(d.kdr), 1)}${stat("Beds", fmtNum(d.beds), 1)}${stat("Kills", fmtNum(d.kills), 1)}${stat("Met", d.times + "×", 1)}</dl>
+    <div class="c-index"><b>${fmtIdx(d.index)}</b><span>index<i> · FKDR² × stars</i></span></div>
+    ${grid ? `<dl class="c-grid">${grid}</dl>` : ""}
     <div class="c-more"><div class="c-sec">Beaten by</div><div class="chips">${chips || '<span class="c-meta">nobody tagged</span>'}</div>
-    <div class="c-meta">First logged <b>${esc(fmtDate(d.first))}</b>${d.times > 1 ? `, last <b>${esc(fmtDate(d.last))}</b>` : ""}${d.addedBy ? ` · added by <b>${esc(d.addedBy)}</b>` : ""}${d.boosting ? " · <b>boosting</b>" : ""}</div>
-    ${notes ? `<div class="c-sec">Notes</div>${notes}` : ""}</div><div class="c-tog"></div>`;
+    <div class="c-meta">First logged <b>${esc(fmtDate(d.first))}</b>${d.times > 1 ? `, last <b>${esc(fmtDate(d.last))}</b>` : ""}${metInGrid ? "" : ` · met <b>${d.times}×</b>`}${d.addedBy ? ` · added by <b>${esc(d.addedBy)}</b>` : ""}${d.boosting ? " · <b>boosting</b>" : ""}</div>
+    ${notes ? `<div class="c-sec">Notes</div>${notes}` : ""}</div><div class="c-tog"></div></div>`;
 }
 function showCard(ex, side) {
   if (ex === cardEx && card.classList.contains("show")) { card.classList.toggle("l", side === "l"); card.classList.toggle("r", side === "r"); return; }
   cardEx = ex; card.classList.remove("show"); clearTimeout(cardHideT);
-  cardHideT = setTimeout(() => { card.innerHTML = cardHtml(ex); card.classList.toggle("ded", !ex.d); card.classList.remove("l", "r", "open", "ovf"); card.scrollTop = 0; card.classList.add(side); requestAnimationFrame(() => card.classList.add("show")); }, card.innerHTML ? 240 : 0);
+  cardHideT = setTimeout(() => { card.innerHTML = cardHtml(ex); card.classList.toggle("ded", !ex.d); card.classList.remove("l", "r", "open", "ovf"); card.classList.add(side); requestAnimationFrame(() => card.classList.add("show")); }, card.innerHTML ? 240 : 0);
 }
 // phones show a compact card: a tap opens the rest, with a fade at the bottom while there's more to scroll
-const cardFade = () => card.classList.toggle("ovf", card.classList.contains("open") && card.scrollHeight - card.scrollTop - card.clientHeight > 4);
-card.addEventListener("click", () => { if (innerWidth > 720 || !cardEx || !cardEx.d) return; card.classList.toggle("open"); card.scrollTop = 0; cardFade(); });
-card.addEventListener("scroll", cardFade, { passive: true });
+const cardBody = () => card.querySelector(".c-body");
+const cardFade = () => { const b = cardBody(); card.classList.toggle("ovf", !!b && card.classList.contains("open") && b.scrollHeight - b.scrollTop - b.clientHeight > 4); };
+card.addEventListener("click", () => { if (innerWidth > 720 || !cardEx || !cardEx.d) return; card.classList.toggle("open"); const b = cardBody(); if (b) b.scrollTop = 0; cardFade(); });
+card.addEventListener("scroll", cardFade, { passive: true, capture: true }); // scroll doesn't bubble: catch the body's on the way down
 function hideCard() { if (!cardEx) return; cardEx = null; clearTimeout(cardHideT); card.classList.remove("show"); }
 let toastT = 0;
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 3200); }
@@ -1848,21 +1892,22 @@ function tick(dt, draw) {
   // what are we looking at
   if (S.mode === "free") {
     camera.getWorldDirection(fwd);
-    const cand = [];
+    const cand = [], onX = crossTarget();
     for (const ex of exhibits) {
       aimPoint(ex, tmpV); tmpV.sub(camera.position); const d = tmpV.length(); if (d > (ex.podium ? 26 : 13.5)) continue;
       const a = fwd.angleTo(tmpV.normalize()), a2 = (AP.ex === ex ? a * 0.5 : a) * (1 + d / 20);
-      if (a2 < 0.42 * (1 + d / 20)) cand.push([a2, ex, d]);
+      if (a2 < 0.42 * (1 + d / 20) || ex === onX) cand.push([ex === onX ? -1 : a2, ex, d]);
     }
     cand.sort((p, q) => p[0] - q[0]);
     let best = null;
-    for (const [, ex, d] of cand) { if (!occluded(ex, d)) { best = ex; break; } }
+    for (const [a2, ex, d] of cand) { if (a2 < 0 || !occluded(ex, d)) { best = ex; break; } }
     S.attn = best;
     if (best) { headWorld(best, tmpV).project(camera); showCard(best, tmpV.x < 0 ? "r" : "l"); } else hideCard();
     const ci = best && best.d ? STOPS.indexOf(best) : -1;
     rail.querySelectorAll("button").forEach((b, i) => b.classList.toggle("cur", i === ci));
     S.freeT = (S.freeT || 0) + dt; S.walked = (S.walked || 0) + (AP.active ? 0 : (PL.speed || 0) * dt);
     if (!S.hintOff && (S.freeT > 12 || S.walked > 8)) { S.hintOff = true; document.body.classList.add("hint-off"); }
+    const walking = (PL.speed || 0) > 1.2 && PL.pos.z > ROT_FACE; if (walking !== !!S.walking) { S.walking = walking; document.body.classList.toggle("walking", walking); }
     $("#progress i").style.width = clamp((START_Z - PL.pos.z) / (START_Z - (ROT_Z + 10)) * 100, 0, 100).toFixed(1) + "%";
   } else S.attn = null;
   updateExhibits(dt, time); updateLights(dt); ambientLights(time, U.flame.value);
@@ -1906,6 +1951,8 @@ async function buildHall() {
   setupReflection();
   captureEnvironment();
 }
+if (META.total > 0) $("#gateSub").innerHTML = `${META.total > 20 ? "The <b>20 biggest sweats</b>" : `All <b>${fmtNum(META.total)} ${META.total === 1 ? "sweat" : "sweats"}</b>`} we've beaten, ranked by index. Walk the hall freely and meet them.`;
+if (NP) document.body.classList.add("np");
 $("#brandSub").textContent = `${META.total > 20 ? `Top 20 of ${fmtNum(META.total)}` : `All ${fmtNum(META.total)}`} sweats · ranked by FKDR² × stars`;
 $("#qualityBtn").textContent = QUALITY[quality].label;
 if (TOUCH) document.body.classList.add("touch");

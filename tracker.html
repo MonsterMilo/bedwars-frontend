@@ -17297,6 +17297,8 @@ html[data-theme="northpole"] .card::after {
   border-radius: 12px 12px 0 0;
 }
 html[data-theme="northpole"] :is(#form-container, #denickContainer, #activityContainer) > :not(.success-flourish):not(.pdeco) { position: relative; z-index: 1; }
+/* Every panel runs the same width as the stats strip, toolbar and presents. */
+html[data-theme="northpole"] :is(#form-container, #denickContainer, #activityContainer) { max-width: 1200px; }
 
 /* ---------- Section headers: a snowy sign with a sprig of holly ---------- */
 html[data-theme="northpole"] .panel-header { position: relative; gap: 16px; margin-top: 70px; }
@@ -17383,7 +17385,8 @@ html[data-theme="northpole"] .section-toggle {
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  box-shadow: 0 2px 0 rgba(31,42,61,0.3);
+  /* A navy rim keeps the white pill distinct when it scrolls over the moon. */
+  box-shadow: 0 0 0 2px rgba(12,24,52,0.6), 0 2px 0 2px rgba(12,24,52,0.35), 0 4px 10px rgba(6,12,30,0.4);
 }
 html[data-theme="northpole"] .section-toggle:hover { color: var(--np-red); border-color: var(--np-red); }
 
@@ -17652,8 +17655,6 @@ html[data-theme="northpole"] .card-note-ghost::after { content: "Tie on a tag"; 
 html[data-theme="northpole"] .sweat-card .card-note-ghost:hover { color: var(--np-ink); border-color: #fffaf2; background: rgba(255,250,242,0.85); }
 html[data-theme="northpole"] .sweat-card-footer { border-top: 1.5px dashed rgba(255,250,242,0.35); }
 html[data-theme="northpole"] .sweat-card-date { font-family: var(--font-np); font-weight: 800; letter-spacing: 0.04em; color: rgba(255,250,242,0.92); font-size: 0.8em; text-shadow: 0 1px 1px rgba(0,0,0,0.35); }
-html[data-theme="northpole"] .sweat-card-date::before { content: "Wrapped "; opacity: 0.75; }
-html[data-theme="northpole"] .sweat-card-footer-left:has(.beaten-avatar:nth-child(3)) .sweat-card-date::before { content: none; }
 html[data-theme="northpole"] .icon-btn {
   color: var(--np-ink);
   background: rgba(255,250,242,0.92);
@@ -18365,20 +18366,21 @@ html[data-theme="northpole"] .toolbar-divider { width: 14px; height: 14px; backg
 html[data-theme="northpole"] .filter-reset { font-family: var(--font-np); font-weight: 800; color: #55627a; }
 html[data-theme="northpole"] .filter-reset:not(:disabled):hover { color: var(--np-red); }
 
-/* ---------- Presents: a candy cane, pinecone or holly tucked on some ---------- */
-html[data-theme="northpole"] .sweat-card-footer { position: relative; }
-html[data-theme="northpole"] .sweat-card:nth-child(5n+2) .sweat-card-footer::after,
-html[data-theme="northpole"] .sweat-card:nth-child(7n+4) .sweat-card-footer::after,
-html[data-theme="northpole"] .sweat-card:nth-child(6n+6) .sweat-card-footer::after {
+/* ---------- Presents: a candy cane, pinecone or holly tucked on some ----------
+   Tucked into the gift tag's top corner, under the string. */
+html[data-theme="northpole"] .sweat-card:nth-child(5n+2) .sweat-card-top::after,
+html[data-theme="northpole"] .sweat-card:nth-child(7n+4) .sweat-card-top::after,
+html[data-theme="northpole"] .sweat-card:nth-child(6n+6) .sweat-card-top::after {
   content: "";
   position: absolute;
-  right: 46px;
-  bottom: -14px;
-  width: 30px;
-  height: 26px;
+  right: -12px;
+  top: -18px;
+  width: 46px;
+  height: 46px;
   pointer-events: none;
-  background: var(--np-prop) center bottom / contain no-repeat;
-  filter: drop-shadow(0 2px 1px rgba(10,20,40,0.4));
+  background: var(--np-prop) center / contain no-repeat;
+  filter: drop-shadow(0 2px 1px rgba(10,20,40,0.45));
+  transform: rotate(14deg);
 }
 html[data-theme="northpole"] .sweat-card:nth-child(5n+2) { --np-prop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 50'%3E%3Cpath d='M8 48 V14 C8 4 22 4 22 14' stroke='%23fffaf0' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3Cpath d='M8 48 V14 C8 4 22 4 22 14' stroke='%23d42f35' stroke-width='7' fill='none' stroke-linecap='round' stroke-dasharray='4 5'/%3E%3Cpath d='M6 44 V14' stroke='%23fff' stroke-width='1.4' opacity='.5'/%3E%3C/svg%3E"); }
 html[data-theme="northpole"] .sweat-card:nth-child(7n+4) { --np-prop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 36'%3E%3Cpath d='M16 8 q4 -2 6 2 q-4 4 -6 -2 Z M14 8 q-4 -2 -6 2 q4 4 6 -2 Z' fill='%238a5a32'/%3E%3Cpath d='M17 13 q4 -2 6 2 q-4 4 -6 -2 Z M13 13 q-4 -2 -6 2 q4 4 6 -2 Z' fill='%237a4a28'/%3E%3Cpath d='M18 18 q4 -2 6 2 q-4 4 -6 -2 Z M12 18 q-4 -2 -6 2 q4 4 6 -2 Z' fill='%238a5a32'/%3E%3Cpath d='M18 23 q4 -2 6 2 q-4 4 -6 -2 Z M12 23 q-4 -2 -6 2 q4 4 6 -2 Z' fill='%236e4222'/%3E%3Cpath d='M17 28 q4 -2 6 2 q-4 4 -6 -2 Z M13 28 q-4 -2 -6 2 q4 4 6 -2 Z' fill='%237a4a28'/%3E%3Cpath d='M15 4 V32' stroke='%235a3a1e' stroke-width='3'/%3E%3Cpath d='M12 8 q3 -6 6 0' fill='%236e4222'/%3E%3Cpath d='M11 6 q4 -2 8 0' stroke='%23f4f8ff' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); }
@@ -18616,6 +18618,14 @@ html[data-theme="northpole"] .modal-stat-delta { border-radius: 999px; backgroun
 html[data-theme="northpole"] .modal-standing-bar { height: 8px; border-radius: 999px; background: rgba(31,42,61,0.1); box-shadow: inset 0 1px 2px rgba(31,42,61,0.2); }
 html[data-theme="northpole"] .modal-standing-bar > span { border-radius: 999px; box-shadow: none; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,0.35) 0 4px, transparent 4px 8px); }
 html[data-theme="northpole"] .modal-standing-text { color: #6b7891; }
+/* The preview's standing bars wear the same candy stripes as the popup's,
+   each in its tile's own colour. A tile with no bar (KDR isn't saved, so
+   it has no standing) centres its figure instead of leaving a gap. */
+html[data-theme="northpole"] .stat-hero.fkdr .modal-standing { color: var(--accent-2); }
+html[data-theme="northpole"] .stat-hero.wlr .modal-standing { color: var(--neutral); }
+html[data-theme="northpole"] .stat-hero.kdr .modal-standing { color: var(--gold); }
+html[data-theme="northpole"] .stat-hero.bblr .modal-standing { color: var(--good); }
+html[data-theme="northpole"] .stat-hero:has(> .stat-standing:empty) { display: flex; flex-direction: column; justify-content: center; }
 /* The record box is an envelope: a flap on top and a wax seal. */
 html[data-theme="northpole"] .modal-record {
   position: relative;
@@ -18639,6 +18649,29 @@ html[data-theme="northpole"] .modal-record::before {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 2 C26 2 28 5 32 6 C36 9 35 13 38 17 C39 22 36 25 36 29 C33 34 29 33 25 37 C20 39 17 36 13 36 C8 34 7 30 4 27 C2 22 4 18 3 14 C5 9 9 9 12 5 C15 3 17 2 20 2 Z' fill='%23b8232b'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23a51d24'/%3E%3Ccircle cx='20' cy='20' r='12' fill='none' stroke='%237a1218' stroke-width='1.4'/%3E%3Cpath d='M20 11 L26 19 H23 L27 25 H13 L17 19 H14 Z' fill='%237a1218'/%3E%3Crect x='18.8' y='25' width='2.4' height='3' fill='%237a1218'/%3E%3Cpath d='M10 14 C12 10 16 8 20 8' stroke='%23ff8a8a' stroke-width='1.4' fill='none' opacity='.5'/%3E%3C/svg%3E") center / contain no-repeat;
   filter: drop-shadow(0 1px 1px rgba(60,5,8,0.4));
 }
+/* Two columns on desktop that end level: the snow globe stands beside the
+   stats and Urchin row, the envelope beside the notes. */
+@media (min-width: 761px) {
+  html[data-theme="northpole"] #playerModal .modal-content {
+    grid-template-areas:
+      "name name"
+      "live live"
+      "skin stats"
+      "skin urchin"
+      "record notes"
+      "record match"
+      "clips clips"
+      "replays replays";
+    grid-template-rows: auto auto auto auto auto 1fr auto auto;
+  }
+  html[data-theme="northpole"] #playerModal .modal-record { margin-top: 26px; }
+  html[data-theme="northpole"] #playerModal #modalNotes { margin-top: 26px; }
+  html[data-theme="northpole"] #playerModal .modal-record[hidden] + .modal-tags-urchin,
+  html[data-theme="northpole"] #playerModal .modal-record[hidden] ~ .modal-match { grid-column: auto; }
+  html[data-theme="northpole"] #playerModal .modal-match { margin-top: 16px; }
+}
+/* Wins has no standing bar, so its figure sits in the middle of the tile. */
+html[data-theme="northpole"] .modal-stat-tile.stat-wins:not(.modal-stat-skeleton) { display: flex; flex-direction: column; justify-content: center; }
 html[data-theme="northpole"] .modal-record-label { font-family: var(--font-np); font-weight: 900; letter-spacing: 0.14em; color: #7a6040; }
 html[data-theme="northpole"] .modal-record-value { font-family: var(--font-np); font-weight: 900; color: var(--np-ink); }
 /* Notes are gift tags tied on with red string. */
@@ -18798,7 +18831,7 @@ html[data-theme="northpole"] .lb-entry[data-medal="3"] { --np-medal: url("data:i
 html[data-theme="northpole"] .lb-entry .leaderboard-name { order: 4; max-width: 100%; margin-top: 6px; font: 900 0.98em/1.1 var(--font-np); color: var(--np-ink); }
 html[data-theme="northpole"] .lb-entry-count { order: 5; font: 400 0.95em/1.2 var(--font-hand); color: #4b5870; }
 html[data-theme="northpole"] .lb-entry-count b { color: var(--np-red); }
-html[data-theme="northpole"] .leaderboard-hint { color: #d6e2f3; font-family: var(--font-hand); font-size: 1.05em; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+html[data-theme="northpole"] .leaderboard-hint { color: rgba(255,250,242,0.86); font-family: var(--font-hand); font-size: 1.05em; text-shadow: 0 1px 2px rgba(0,0,0,0.6); text-wrap: balance; }
 html[data-theme="northpole"] .leaderboard-person-title {
   display: inline-block;
   padding: 6px 18px 7px;
@@ -18835,7 +18868,8 @@ html[data-theme="northpole"] .denick-ask-new { border-radius: 999px; }
 html[data-theme="northpole"] :is(#denickEmpty, #activityEmpty)::before { background: var(--np-red); }
 html[data-theme="northpole"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='10' width='17' height='11' rx='1.2'/%3E%3Crect x='2.5' y='7' width='19' height='3.4' rx='1'/%3E%3Cpath d='M12 7v14'/%3E%3Cpath d='M12 7c-2-3.6-6-3.6-5.4-1.2.4 1.4 3.2 1.2 5.4 1.2zM12 7c2-3.6 6-3.6 5.4-1.2-.4 1.4-3.2 1.2-5.4 1.2z'/%3E%3Cpath d='M15.6 13.4c0-1.2 1-1.8 1.8-1.4.9.4.8 1.6-.1 2.1-.5.3-.8.6-.8 1.2' stroke-width='1.4'/%3E%3Ccircle cx='16.5' cy='17.6' r='.6' fill='%23000'/%3E%3C/svg%3E"); }
 html[data-theme="northpole"] #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3.5h11a2 2 0 0 1 2 2V18a2.5 2.5 0 0 1-2.5 2.5H7.5'/%3E%3Cpath d='M6 3.5a2 2 0 0 0-2 2v1.5h4V5.5a2 2 0 0 0-2-2z'/%3E%3Cpath d='M8 7v11a2.5 2.5 0 0 1-5 0v-1h10'/%3E%3Cpath d='M11 8h5M11 11h5M11 14h3'/%3E%3Cpath d='M15.5 14.5l.8.8 1.7-1.8' stroke-width='1.4'/%3E%3C/svg%3E"); }
-html[data-theme="northpole"] #denickEmpty p::before { content: "Nobody unwrapped yet. Search a nick to see who's under it, or a player for every name they've used."; }
+html[data-theme="northpole"] #denickEmpty p::before { content: "Nobody unwrapped yet. Search a nick or a player."; }
+html[data-theme="northpole"] #denickEmpty p { text-wrap: balance; }
 html[data-theme="northpole"] #activityEmpty p::before { content: "The workshop log is empty. Every sweat added, edited or removed shows up here."; }
 html[data-theme="northpole"] .empty-icon-northpole { display: block; color: var(--np-red); }
 html[data-theme="northpole"] .empty-state-text { font-family: var(--font-hand); font-size: 1.08em; color: #55627a; }
@@ -18971,12 +19005,30 @@ html[data-theme="northpole"] .sweat-row.live-edit { animation: npLiveEditRow 1.6
   html[data-theme="northpole"] .sotd-name { font-size: 2.1em; }
   html[data-theme="northpole"] .sotd-deco .d5 { width: 44px; height: 70px; right: 12px; top: -12px; background-size: 42px 42px, 100% 30px; }
   html[data-theme="northpole"] .toolbar .pdeco { left: -10px; right: -10px; }
-  html[data-theme="northpole"] .lb-scene-body { height: 300px; }
+  /* The tree row scrolls sideways here; it fades out at the right edge so
+     the cut reads as more to come. */
+  html[data-theme="northpole"] .lb-scene-body {
+    height: 300px;
+    padding-right: 36px;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent);
+  }
   html[data-theme="northpole"] .sweat-stats::before { left: -4px; right: -4px; }
 }
 @media (max-width: 620px) {
-  /* The theme menu opens centred under its button, clear of the screen edge. */
-  html[data-theme="northpole"] .theme-dropdown-menu { left: 50%; right: auto; translate: -50% 0; max-width: calc(100vw - 32px); }
+  /* The sound panel opens from its button's left edge, clear of the screen edge. */
+  html[data-theme="northpole"] #audioPanel { left: 0; right: auto; max-width: calc(100vw - 48px); }
+  /* The theme menu opens under the whole button row as a two-column grid,
+     short enough to end well above the bottom nav. */
+  html[data-theme="northpole"] .hero-controls { position: relative; }
+  html[data-theme="northpole"] #themeDropdown { position: static; }
+  html[data-theme="northpole"] #themeDropdownMenu { top: calc(100% + 12px); left: 8px; right: 8px; min-width: 0; }
+  html[data-theme="northpole"] #themeDropdownMenu:not([hidden]) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 4px; }
+  html[data-theme="northpole"] #themeDropdownMenu li[data-theme-value] { gap: 9px; padding: 7px 6px; min-width: 0; }
+  html[data-theme="northpole"] #themeDropdownMenu .theme-opt-text { min-width: 0; }
+  html[data-theme="northpole"] #themeDropdownMenu .theme-opt-tag { white-space: normal; text-wrap: balance; }
+  html[data-theme="northpole"] #themeDropdownMenu li.theme-season-head { grid-column: 1 / -1; }
+  html[data-theme="northpole"] #themeDropdownMenu .theme-opt-badge { right: 6px; }
   /* The moon moves up into the empty corner above the title. */
   #northpoleField .np-moon { top: 14px; right: 14px; width: 54px; height: 54px; box-shadow: 0 0 20px 4px rgba(255,248,220,0.3), 0 0 60px 20px rgba(170,200,255,0.14); }
   html[data-theme="northpole"] .table-wrap thead tr::before { color: rgba(255,250,242,0.82); }
@@ -19168,7 +19220,10 @@ html[data-theme="northpole"] .skeleton-card { animation: none; }
 html[data-theme="northpole"] .skeleton-block { background: rgba(255,250,242,0.32); animation: loadingPulse 1.4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { html[data-theme="northpole"] .skeleton-block { animation: none; } }
 html[data-theme="northpole"] .skeleton-avatar { border-radius: 50%; }
-html[data-theme="northpole"] .server-waking-note { color: rgba(243,234,216,0.88); font-family: var(--font-np); font-weight: 700; text-shadow: 0 1px 3px rgba(5,10,25,0.7); }
+html[data-theme="northpole"] .server-waking-note { color: rgba(243,234,216,0.88); font-family: var(--font-np); font-weight: 700; text-shadow: 0 1px 3px rgba(5,10,25,0.7); font-size: 0; }
+/* A short line on screen; screen readers still get the full sentence. */
+html[data-theme="northpole"] .server-waking-note::before { content: "Waking the elves\2026  "; font-size: 15px; }
+html[data-theme="northpole"] .server-waking-note .server-waking-elapsed { font-size: 15px; }
 
 /* ---------- A new present arriving live ---------- */
 html[data-theme="northpole"] .sweat-card.live-new { animation: npGiftDrop 0.6s cubic-bezier(.3,.8,.35,1.05) backwards, npLiveArrive 1.6s ease-out 0.5s 2; }
@@ -30393,6 +30448,35 @@ function npBuildScene() {
 }
 if (npOn()) npBuildScene();
 document.addEventListener("themechange", () => { if (npOn()) npBuildScene(); });
+
+// A player with no skin (the render fails even on its retry) gets a little
+// present in the avatar circle instead of an empty space. Other themes get
+// the empty space back.
+const NP_NOSKIN = "data:image/svg+xml," + encodeURIComponent("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect x=\"17\" y=\"30\" width=\"30\" height=\"22\" rx=\"2\" fill=\"#c4262e\"/><rect x=\"36\" y=\"30\" width=\"11\" height=\"22\" fill=\"#000\" opacity=\".14\"/><rect x=\"15\" y=\"24\" width=\"34\" height=\"8\" rx=\"2\" fill=\"#d9363c\"/><rect x=\"15\" y=\"30\" width=\"34\" height=\"2\" fill=\"#000\" opacity=\".18\"/><rect x=\"29\" y=\"24\" width=\"6\" height=\"28\" fill=\"#f2cf6e\"/><rect x=\"29\" y=\"24\" width=\"1.6\" height=\"28\" fill=\"#fff\" opacity=\".4\"/><path d=\"M32 24 C27 14 18 15 22 21 C24 23.5 29 24 32 24 Z M32 24 C37 14 46 15 42 21 C40 23.5 35 24 32 24 Z\" fill=\"#f2cf6e\" stroke=\"#c98a1c\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><circle cx=\"32\" cy=\"23\" r=\"2.6\" fill=\"#e2a93a\" stroke=\"#c98a1c\" stroke-width=\"1\"/></svg>");
+const NP_AVATARS = ".sweat-card-avatar, .user-avatar, .ss-who img";
+const npNoSkin = (img) => {
+  img.dataset.npSrc = img.src;
+  img.classList.add("np-noskin");
+  img.src = NP_NOSKIN;
+};
+document.addEventListener("error", (e) => {
+  const img = e.target;
+  if (!npOn() || !(img instanceof HTMLImageElement) || !img.matches(NP_AVATARS)) return;
+  if (/[?&]retry=/.test(img.src)) npNoSkin(img);
+}, true);
+document.addEventListener("themechange", () => {
+  if (npOn()) {
+    document.querySelectorAll(NP_AVATARS).forEach(img => {
+      if (img.complete && !img.naturalWidth && /[?&]retry=/.test(img.src)) npNoSkin(img);
+    });
+  } else {
+    document.querySelectorAll("img.np-noskin").forEach(img => {
+      img.classList.remove("np-noskin");
+      img.style.opacity = 0;
+      img.src = img.dataset.npSrc;
+    });
+  }
+});
 
 // On a phone the sweats search box is too narrow for the full hint in this
 // theme's rounder type, so it gets a shorter one; the original comes back

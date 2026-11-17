@@ -2316,6 +2316,29 @@ html[data-theme="deepcurrent"] .filter-reset-count,
 html[data-theme="deepcurrent"] .search-box-kbd { font-family: 'JetBrains Mono', monospace; }
 html[data-theme="deepcurrent"] .filter-prefix { font-family: 'JetBrains Mono', monospace; font-weight: 600; letter-spacing: 0.06em; }
 html[data-theme="deepcurrent"] .toolbar #searchInput { background: rgba(3,12,20,0.5); }
+/* On phones the theme menu opens rightward from its button, so it keeps
+   the page's side gutter instead of running off the left edge. */
+/* Phone filters: the readouts sit in two even rows, and the three chips
+   share a 2x2 grid with Reset so nothing is left alone on a line. */
+@media (max-width: 760px) {
+  html[data-theme="deepcurrent"] .toolbar #searchInput:placeholder-shown { padding-right: 12px; }
+  html[data-theme="deepcurrent"] .toolbar #searchInput { text-overflow: ellipsis; }
+  html[data-theme="deepcurrent"] .toolbar-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  html[data-theme="deepcurrent"] .toolbar-row > .filter-fields { grid-column: 1 / -1; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  html[data-theme="deepcurrent"] .filter-fields > .filter-field { grid-column: span 6; }
+  html[data-theme="deepcurrent"] .filter-fields > #minIndex,
+  html[data-theme="deepcurrent"] .filter-fields > .filter-field:nth-child(3) { grid-column: span 5; }
+  html[data-theme="deepcurrent"] .filter-fields > .filter-field-date { grid-column: span 7; padding-right: 8px; }
+  html[data-theme="deepcurrent"] .toolbar .filter-field-date input { padding-left: 6px; padding-right: 0; }
+  html[data-theme="deepcurrent"] .toolbar-actions-left { display: contents; }
+  html[data-theme="deepcurrent"] .toolbar-row > .chip,
+  html[data-theme="deepcurrent"] .toolbar-actions-left > .chip { display: flex; }
+  html[data-theme="deepcurrent"] .toolbar-actions-left > .chip span { flex: 1; text-align: center; padding-left: 8px; padding-right: 8px; white-space: nowrap; }
+  html[data-theme="deepcurrent"] .toolbar-row > .filter-reset { justify-content: center; border: 1.5px dashed var(--border); }
+}
+@media (max-width: 480px) {
+  html[data-theme="deepcurrent"] #themeDropdownMenu { right: auto; left: 0; max-width: calc(100vw - 32px); }
+}
 
 /* Theme switch - a hand-built dropdown (button + listbox) rather than a
    native <select>, whose option-list styling the browser won't hand over
@@ -3224,16 +3247,16 @@ html[data-theme="ledger"] .pill.prestige-tag {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 2px rgba(138,106,31,0.25);
 }
 html[data-theme="deepcurrent"] .pill.prestige-tag {
-  --mc-0: #4d6d78;
-  --mc-1: #4a6cf0;
-  --mc-2: #1fbf8f;
-  --mc-3: #1aa3a3;
+  --mc-0: #7d97a1;
+  --mc-1: #7b93ff;
+  --mc-2: #3ee0a8;
+  --mc-3: #3fd8d8;
   --mc-4: #e0566b;
   --mc-5: #9b6bff;
   --mc-6: #f2b35a;
   --mc-7: #9fb8c0;
-  --mc-8: #6f8c96;
-  --mc-9: #5b8cff;
+  --mc-8: #8ea8b2;
+  --mc-9: #7ea4ff;
   --mc-a: #5ef2b5;
   --mc-b: #5ff0f0;
   --mc-c: #ff7a8a;
@@ -3242,13 +3265,13 @@ html[data-theme="deepcurrent"] .pill.prestige-tag {
   --mc-f: #e8fbff;
 }
 html[data-theme="deepcurrent"] .pill.prestige-tag {
-  border: 1px solid rgba(255,255,255,0.22);
-  background: radial-gradient(circle at 28% 22%, rgba(120,200,210,0.22), rgba(2,16,24,0.92) 60%);
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.25), 0 0 8px rgba(53,230,196,0.18);
+  border: 1px solid rgba(160,230,235,0.28);
+  background: linear-gradient(180deg, rgba(160,230,235,0.08), transparent 55%), rgba(2,14,22,0.9);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
 }
 html[data-theme="casefiles"] .pill.prestige-tag span,
 html[data-theme="ledger"] .pill.prestige-tag span { text-shadow: none; }
-html[data-theme="deepcurrent"] .pill.prestige-tag span { text-shadow: 0 0 5px; }
+html[data-theme="deepcurrent"] .pill.prestige-tag span { text-shadow: none; }
 
 /* The one denick badge left - "Current", marking whichever row is the most
    recent match (the nick's present owner, or the nick a player is using
@@ -6428,7 +6451,7 @@ html[data-theme="deepcurrent"] .add-sweat-row .btn.success-pulse {
    .hero positioning trick (see the comment on .hero-pin above), just cast
    as a running instrument light instead of a flat gold tack. */
 html[data-theme="deepcurrent"] .hero-pin {
-  display: block;
+  display: none;
   position: absolute;
   top: -9px;
   left: 50%;
@@ -6455,23 +6478,21 @@ html[data-theme="deepcurrent"] .hero-pin::before {
    randomization for what's just a decorative accent. */
 html[data-theme="deepcurrent"] .hero-flourish {
   display: block;
-  width: 90px;
-  height: 20px;
-  margin: 10px auto 6px;
-  background-image: radial-gradient(circle, rgba(255,255,255,0.9) 0 1px, transparent 1.6px),
-                     radial-gradient(circle, var(--accent) 0 1.6px, transparent 2px),
-                     radial-gradient(circle, rgba(255,255,255,0.6) 0 1px, transparent 1.4px);
-  background-size: 14px 14px, 18px 18px, 11px 11px;
-  background-position: 6px 4px, 40px 10px, 70px 2px;
+  width: 60px;
+  height: 18px;
+  margin: 6px auto 0;
+  --dc-ring: transparent 0 calc(100% - 1.8px), rgba(190,255,245,0.8) calc(100% - 1.3px) calc(100% - 0.3px), transparent 100%;
+  background-image: radial-gradient(circle closest-side, var(--dc-ring)),
+                    radial-gradient(circle closest-side, transparent 0 calc(100% - 1.8px), var(--accent) calc(100% - 1.3px) calc(100% - 0.3px), transparent 100%),
+                    radial-gradient(circle closest-side, var(--dc-ring));
+  background-size: 7px 7px, 10px 10px, 6px 6px;
+  background-position: 10px 9px, 25px 3px, 44px 8px;
   background-repeat: no-repeat;
-  opacity: 0.85;
   animation: heroBubbleDrift 3.2s ease-in-out infinite;
-  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
 }
 @keyframes heroBubbleDrift {
-  0%, 100% { background-position: 6px 4px, 40px 10px, 70px 2px; }
-  50% { background-position: 8px -1px, 38px 5px, 72px -2px; }
+  0%, 100% { background-position: 10px 9px, 25px 3px, 44px 8px; }
+  50% { background-position: 11px 6px, 24px 1px, 45px 5px; }
 }
 
 /* Byline restyled as a mono transmission readout, matching the JetBrains
@@ -8068,6 +8089,14 @@ html[data-theme="deepcurrent"] .sweat-row.tier-t5 > td:first-child::before {
   50% { background: #35e6c4; box-shadow: 0 0 14px rgba(53,230,196,0.9); }
 }
 html[data-theme="deepcurrent"] .sweat-row.tier-t5 { background: linear-gradient(90deg, rgba(155,107,255,0.12), transparent 45%); }
+/* The badge is display: table, so it picked up the table's collapsed
+   borders and lost its rounding; rows also keep one height with or
+   without a badge. */
+html[data-theme="deepcurrent"] .row-tier-pill { border-collapse: separate; margin-top: 3px; }
+@media (min-width: 761px) {
+  html[data-theme="deepcurrent"] .table-wrap tbody tr.sweat-row { height: 68px; }
+  html[data-theme="deepcurrent"] .table-wrap tbody tr.tier-row > td.index-cell { padding-top: 6px; padding-bottom: 6px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .sweat-card.tier-t5 .sweat-card-frame, .sweat-row.tier-t5 > td:first-child::before { animation: none !important; }
@@ -10901,13 +10930,14 @@ html[data-theme="skyisles"] .site-footer-end-text {
     margin: -9px 0 0 -9px;
     border-radius: 50%;
     border: 1.5px solid rgba(53,230,196,0.7);
-    animation: bnavPing 2.6s ease-out infinite;
+    animation: dcBnavPing 2.6s ease-out infinite;
   }
   html[data-theme="deepcurrent"] .bnav-link.active::after { animation-delay: 1.3s; }
 }
-@keyframes bnavPing {
-  from { transform: scale(0.6); opacity: 0.9; }
-  to { transform: scale(4.2); opacity: 0; }
+@keyframes dcBnavPing {
+  from { transform: scale(0.9); opacity: 0.85; }
+  70% { opacity: 0; }
+  to { transform: scale(2.1); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   html[data-theme="deepcurrent"] .bnav-link.active::before,
@@ -11536,6 +11566,12 @@ html[data-theme="skyisles"] .sotd-clock { font: 400 0.6em var(--font-arcade); li
   .sotd-stat-value { font-size: 1.05em; }
   .sotd-stat-label { font-size: 0.6em; letter-spacing: 0.8px; }
   .sotd-clock { grid-column: 1 / -1; align-self: auto; margin-top: 10px; text-align: center; }
+}
+/* Deep Current's mono readouts are wide, so on phones the four numbers sit
+   in a 2x2 grid and big values (finals, index) show in full. */
+@media (max-width: 480px) {
+  html[data-theme="deepcurrent"] .sotd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; }
+  html[data-theme="deepcurrent"] .sotd-stat-value { font-size: 1.15em; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sotd-card, .sotd-card *, .sotd-deco i, .sotd-backdrop i { animation: none !important; }
@@ -12353,7 +12389,7 @@ html[data-theme="ledger"] .lb-entry-count b { font: 600 1.1em/1 'Playfair Displa
 html[data-theme="ledger"] .lb-entry-count span { font-style: italic; color: var(--gold); }
 html[data-theme="ledger"] .lb-scene-foot { display: block; height: 6px; margin-top: 10px; border-top: 1px solid var(--gold); border-bottom: 1px solid var(--gold); }
 
-/* ---- Deep Current: a depth chart; the most sweats sinks deepest ---- */
+/* ---- Deep Current: a depth chart; the most sweats sink deepest ---- */
 html[data-theme="deepcurrent"] .lb-scene {
   padding: 0 0 12px 46px;
   border-radius: 14px;
@@ -12383,8 +12419,10 @@ html[data-theme="deepcurrent"] .lb-scene::before {
 }
 html[data-theme="deepcurrent"] .lb-scene-head { display: flex; justify-content: space-between; padding: 10px 14px 0 0; }
 html[data-theme="deepcurrent"] .lb-scene-title::before { content: "Depth chart"; font: 600 0.78em/1 'JetBrains Mono', monospace; letter-spacing: 0.2em; text-transform: uppercase; color: #62e6d6; }
-html[data-theme="deepcurrent"] .lb-scene-sub::before { content: "Most sweats sinks deepest"; font: 400 0.72em/1 'JetBrains Mono', monospace; color: rgba(160,220,230,0.6); }
+html[data-theme="deepcurrent"] .lb-scene-sub::before { content: "Most sweats sink deepest"; font: 400 0.72em/1 'JetBrains Mono', monospace; color: rgba(160,220,230,0.6); }
 html[data-theme="deepcurrent"] .lb-scene-body { align-items: start; height: 330px; padding-right: 10px; }
+html[data-theme="deepcurrent"] .leaderboard-person-title { font: 600 0.82em/1.3 'JetBrains Mono', monospace; letter-spacing: 0.16em; text-transform: uppercase; color: #62e6d6; }
+html[data-theme="deepcurrent"] .leaderboard-person-title::before { content: "// "; opacity: 0.6; }
 html[data-theme="deepcurrent"] .lb-entry {
   flex-direction: column;
   align-items: center;
@@ -13583,6 +13621,9 @@ html[data-theme="deepcurrent"] :is(.dash-left, #editModal) .chip.cheat-chip inpu
 html[data-theme="deepcurrent"] :is(.dash-left, #editModal) .chip.boost-chip input:checked + span::before { background: radial-gradient(circle at 16px 50%, #fff 0 3.5px, transparent 4px), var(--gold); }
 
 /* Add Sweat: a ballast-blow lever plate, bolted at both ends */
+/* The status line sits under Add Sweat, so the button follows the note
+   directly instead of floating below an empty status slot. */
+html[data-theme="deepcurrent"] .dash-left > #status { order: 1; margin-top: 10px; }
 html[data-theme="deepcurrent"] #addSweatBtn {
   border-radius: 8px;
   font-family: 'Chakra Petch', sans-serif;
@@ -13728,7 +13769,7 @@ html[data-theme="skyisles"] .pdeco i:nth-child(2) { left: 0; right: 0; bottom: 0
   .panel-index { right: 52px; bottom: auto; top: -6px; opacity: 0.8; }
   html:not([data-theme]) .panel-index { font-size: 3.6em; bottom: auto; }
   html[data-theme="ledger"] .panel-index::before { font-size: 56px; }
-  html[data-theme="deepcurrent"] .panel-index { font-size: 46px; }
+  html[data-theme="deepcurrent"] .panel-index { font-size: 34px; right: 4px; top: -4px; bottom: auto; }
   html[data-theme="skyisles"] .panel-index::before { font-size: 56px; }
   html[data-theme="casefiles"] .panel-index { display: none; }
   html:not([data-theme]) .panel-header::after { left: 0; }
@@ -13921,13 +13962,23 @@ html[data-theme="ledger"] #playerModal:has(.modal-record-rival) .modal-mark {
 html[data-theme="ledger"] #playerModal .modal-mark::before { content: "\2694"; position: absolute; left: 0; right: 0; top: 50px; text-align: center; color: #f0d28a; font-size: 14px; }
 
 /* ---------------- Deep Current: a contact report on a sonar console ---------------- */
-html[data-theme="deepcurrent"] #playerModal #modalTitle::before { content: "Contact report \00b7  "; font-family: 'JetBrains Mono', monospace; color: #62e6d6; letter-spacing: 0.16em; }
+html[data-theme="deepcurrent"] #playerModal #modalTitle { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.14em; gap: 0; }
+html[data-theme="deepcurrent"] #playerModal #modalTitle::before { content: "Contact report"; margin-right: 12px; color: #62e6d6; }
+html[data-theme="deepcurrent"] #playerModal #modalTitle .modal-live-dot { margin-right: 10px; }
+html[data-theme="deepcurrent"] #playerModal .modal-uuid-row { margin-top: 8px; line-height: 1; }
+html[data-theme="deepcurrent"] #playerModal .modal-close { top: 22px; right: 26px; }
+html[data-theme="deepcurrent"] #playerModal .modal-copy-link { top: 22px; right: 66px; }
+@media (max-width: 760px) {
+  html[data-theme="deepcurrent"] #playerModal .modal-close { top: 14px; right: 22px; }
+  html[data-theme="deepcurrent"] #playerModal .modal-copy-link { top: 14px; right: 60px; }
+  html[data-theme="deepcurrent"] #playerModal #modalUsername { padding-top: 16px; }
+}
 html[data-theme="deepcurrent"] .modal-deco i:nth-child(-n+4) { display: block; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #e9cf8a, #8a6a2c 70%); box-shadow: 0 1px 1px rgba(0,0,0,0.6); }
 html[data-theme="deepcurrent"] .modal-deco i:nth-child(1) { top: 10px; left: 10px; }
 html[data-theme="deepcurrent"] .modal-deco i:nth-child(2) { top: 10px; right: 10px; }
 html[data-theme="deepcurrent"] .modal-deco i:nth-child(3) { bottom: 10px; left: 10px; }
 html[data-theme="deepcurrent"] .modal-deco i:nth-child(4) { bottom: 10px; right: 10px; }
-/* Stats on dial plates: a semicircle gauge filled to the standing */
+/* Stats on riveted dial plates */
 html[data-theme="deepcurrent"] #playerModal .modal-stat-tile {
   position: relative;
   border-radius: 12px;
@@ -13940,28 +13991,20 @@ html[data-theme="deepcurrent"] #playerModal .modal-stat-tile {
     linear-gradient(180deg, rgba(10,40,60,0.9), rgba(4,20,32,0.95));
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.6), inset 0 0 0 3px rgba(4,20,32,0.9), inset 0 0 0 4px rgba(98,230,214,0.12);
 }
-html[data-theme="deepcurrent"] #playerModal .modal-standing { position: static; }
-html[data-theme="deepcurrent"] #playerModal .modal-standing-bar { display: none; }
-html[data-theme="deepcurrent"] #playerModal .modal-standing::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 8px;
-  width: 92px;
-  height: 46px;
-  margin-left: -46px;
-  border-radius: 46px 46px 0 0;
-  background: conic-gradient(from -90deg at 50% 100%, #62e6d6 0deg, #62e6d6 calc(var(--pct) * 1.8deg), rgba(98,230,214,0.12) calc(var(--pct) * 1.8deg) 180deg, transparent 180deg);
-  -webkit-mask: radial-gradient(circle at 50% 100%, transparent 36px, #000 37px);
-  mask: radial-gradient(circle at 50% 100%, transparent 36px, #000 37px);
-  opacity: 0.85;
-  z-index: 0;
-}
-html[data-theme="deepcurrent"] #playerModal .modal-stat-tile:has(.modal-standing) { padding-top: 22px; }
+/* Standing: the same segmented sonar bar as the Lookup preview, centred
+   under the value */
+html[data-theme="deepcurrent"] #playerModal .modal-standing { width: 100%; max-width: 210px; margin: 10px auto 0; gap: 10px; }
+html[data-theme="deepcurrent"] #playerModal .modal-standing-text { font-size: 0.66em; letter-spacing: 0.04em; }
 html[data-theme="deepcurrent"] #playerModal .modal-stat-tile > * { position: relative; z-index: 1; }
 /* The skin in a brass porthole */
 @media (min-width: 761px) {
   html[data-theme="deepcurrent"] #playerModal #modalSkin { align-self: start; width: 220px; height: 220px; min-height: 0; padding: 16px; box-sizing: border-box; }
+}
+@media (max-width: 760px) {
+  html[data-theme="deepcurrent"] #playerModal #modalSkin { width: 168px; height: 168px; padding: 12px; box-sizing: border-box; align-self: center; }
+}
+@media (max-width: 560px) {
+  html[data-theme="deepcurrent"] #playerModal #modalSkin { width: min(200px, 56vw); height: min(200px, 56vw); }
 }
 html[data-theme="deepcurrent"] #playerModal #modalSkin {
   border-radius: 50%;
@@ -14162,7 +14205,10 @@ html[data-theme="ledger"] #activityEmpty p::before { content: "No transactions r
 html[data-theme="ledger"] #modalNotesEmpty::before { content: "No memoranda."; }
 html[data-theme="deepcurrent"] :is(#denickEmpty, #activityEmpty)::before { background: #62e6d6; }
 html[data-theme="deepcurrent"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='11' width='17' height='7' rx='3.5'/%3E%3Cpath d='M9 11V7.5h5V11M12 7.5V4h3M19.5 14.5l2-2v4z'/%3E%3Ccircle cx='8' cy='14.5' r='.8' fill='%23000'/%3E%3Ccircle cx='12' cy='14.5' r='.8' fill='%23000'/%3E%3C/svg%3E"); }
-html[data-theme="deepcurrent"] #denickEmpty p::before { content: "No contact on sonar. Search a nick to see who's running silent under it, or a player for their nick history."; }
+html[data-theme="deepcurrent"] #denickEmpty p::before { content: "No contact yet. Search a nick or a player."; }
+html[data-theme="deepcurrent"] :is(#denickEmpty p, #statsEmptyText) { text-wrap: balance; }
+html[data-theme="deepcurrent"] #statsEmpty:not(.is-scanning) #statsEmptyText { font-size: 0; width: 100%; max-width: 280px; }
+html[data-theme="deepcurrent"] #statsEmpty:not(.is-scanning) #statsEmptyText::before { content: "Preview a player to see their card."; font-size: 13.12px; line-height: 19.68px; }
 html[data-theme="deepcurrent"] #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='2'/%3E%3Cpath d='M12 7v14M8 10.5h8M4.5 13.5c0 4.3 3.4 7.5 7.5 7.5s7.5-3.2 7.5-7.5'/%3E%3C/svg%3E"); }
 html[data-theme="deepcurrent"] #activityEmpty p::before { content: "Ship's log is quiet. Every add, edit and delete is recorded here as it happens."; }
 html[data-theme="deepcurrent"] #modalNotesEmpty::before { content: "No log entries."; }

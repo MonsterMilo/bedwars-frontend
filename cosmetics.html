@@ -56,6 +56,35 @@
   html[data-theme="deepcurrent"] { --bg: #030c14; --panel: #0a2130; --panel-2: #0e2a3c; --border: rgba(255,255,255,0.08); --border-strong: rgba(53,230,196,0.4); --accent: #35e6c4; --accent-2: #9b6bff; --accent-ink: #021614; --text: #e6f6f4; --dim: #82a9ae; --faint: #648086; --good: #3fd68a; --bad: #ff5a5a; --gold: #c99a4a; --glass: rgba(6,24,36,0.74); --glass-2: rgba(14,42,60,0.88); --glass-line: rgba(53,230,196,0.16); --r-s: 10px; --r-m: 16px; --r-l: 20px; --font: 'Sora', 'Segoe UI', sans-serif; --font-title: 'Chakra Petch', 'Sora', sans-serif; --glow: 0 0 0 1px rgba(53,230,196,0.45), 0 0 18px rgba(53,230,196,0.25); }
   html[data-theme="skyisles"] { --bg: #8fd0ff; --panel: #fbfdf5; --panel-2: #eef6fb; --border: #c3d6e3; --border-strong: #2d6a9f; --accent: #3f9a26; --accent-2: #2d6a9f; --accent-ink: #ffffff; --text: #173247; --dim: #4b6a82; --faint: #6c8294; --good: #2e8f2a; --bad: #d23a2e; --gold: #c98a0b; --glass: rgba(251,253,245,0.93); --glass-2: rgba(238,246,251,0.97); --glass-line: #173247; --r-s: 0px; --r-m: 0px; --r-l: 0px; --shadow: 4px 4px 0 rgba(23,50,71,0.28); --font: 'Jersey 10', 'Silkscreen', monospace; --font-title: 'Silkscreen', monospace; --glow: 0 0 0 2px #173247; color-scheme: light; }
   html[data-theme="skyisles"] body { font-size: 17px; }
+  /* Square-cornered themes: the phone category chips follow the theme's corners. */
+  html[data-theme="casefiles"], html[data-theme="ledger"], html[data-theme="skyisles"] { --chip-r: var(--r-s); }
+  /* Case Files: the wide typewriter face needs a wider rail to keep each category on one line. */
+  @media (min-width: 901px) { html[data-theme="casefiles"] .layout { grid-template-columns: 244px 1fr; } }
+  html[data-theme="casefiles"] .cat { font-size: 14px; letter-spacing: -0.01em; white-space: nowrap; }
+  /* Sky Isles: Jersey 10 runs small for its size, so its text is set larger and the rail darker. */
+  html[data-theme="skyisles"] .cat { font-size: 18px; color: color-mix(in srgb, var(--text) 84%, var(--bg)); }
+  html[data-theme="skyisles"] .cat:hover, html[data-theme="skyisles"] .cat[aria-pressed="true"] { color: var(--text); }
+  html[data-theme="skyisles"] .cat .n, html[data-theme="skyisles"] .cat[aria-pressed="true"] .n { font-size: 15px; color: color-mix(in srgb, var(--text) 66%, var(--bg)); }
+  html[data-theme="skyisles"] .rail-label { font-size: 13px; color: color-mix(in srgb, var(--text) 70%, var(--bg)); }
+  html[data-theme="skyisles"] .tally { font-size: 18px; color: color-mix(in srgb, var(--text) 80%, var(--bg)); }
+  html[data-theme="skyisles"] .meta .nm { font-size: 19px; }
+  html[data-theme="skyisles"] .meta .sub { font-size: 15.5px; }
+  html[data-theme="skyisles"] .price { font-size: 16px; }
+  html[data-theme="skyisles"] .price.none { font-size: 15.5px; }
+  html[data-theme="skyisles"] .seg button, html[data-theme="skyisles"] .sort { font-size: 15.5px; }
+  html[data-theme="skyisles"] .eyebrow { font-size: 17px; }
+  html[data-theme="skyisles"] .desc { font-size: 17px; }
+  html[data-theme="skyisles"] .fact .k { font-size: 14px; }
+  html[data-theme="skyisles"] .fact .v { font-size: 21px; }
+  html[data-theme="skyisles"] .fact .v.small { font-size: 17.5px; }
+  html[data-theme="skyisles"] .btn { font-size: 16px; }
+  html[data-theme="skyisles"] .search input { font-size: 19px; }
+  html[data-theme="skyisles"] .back { font-size: 17px; }
+  html[data-theme="skyisles"] .tool { font-size: 15px; }
+  html[data-theme="skyisles"] .hint { font-size: 14.5px; }
+  html[data-theme="skyisles"] .rar, html[data-theme="skyisles"] .season { font-size: 12.5px; }
+  html[data-theme="skyisles"] .empty { font-size: 18px; }
+  html[data-theme="skyisles"] .empty b { font-size: 21px; }
   html[data-theme="harvest"] { --bg: #e7c99a; --panel: #fbf3e2; --panel-2: #f4e8cf; --border: rgba(91,58,34,0.2); --border-strong: rgba(168,50,43,0.45); --accent: #a8322b; --accent-2: #c98a1c; --accent-ink: #fbf3e2; --text: #3b2414; --dim: #6e5038; --faint: #8e7055; --good: #4f7a32; --bad: #b3261e; --gold: #c98a1c; --glass: rgba(251,243,226,0.93); --glass-2: rgba(244,232,207,0.97); --glass-line: rgba(91,58,34,0.25); --r-s: 3px; --r-m: 5px; --r-l: 7px; --shadow: 0 16px 30px -16px rgba(59,36,20,0.55); --font: 'Bitter', Georgia, serif; --font-title: 'Ultra', Georgia, serif; --glow: 0 0 0 2px #a8322b; color-scheme: light; }
   html[data-theme="northpole"] { --bg: #0b1631; --panel: #13234a; --panel-2: #1a2d5a; --border: rgba(220,235,255,0.12); --border-strong: rgba(242,193,78,0.55); --accent: #ff5a60; --accent-2: #f2c14e; --accent-ink: #fffaf2; --text: #f4f7fc; --dim: #a9b7d3; --faint: #8090b2; --good: #4fd08a; --bad: #ff6b6b; --gold: #f2c14e; --glass: rgba(14,27,58,0.78); --glass-2: rgba(26,45,90,0.9); --glass-line: rgba(220,235,255,0.14); --r-s: 10px; --r-m: 14px; --r-l: 20px; --shadow: 0 22px 44px -22px rgba(0,0,0,0.85); --font: 'Nunito', 'Segoe UI', system-ui, sans-serif; --font-title: 'Mountains of Christmas', 'Nunito', serif; --glow: 0 0 0 1px rgba(242,193,78,0.55), 0 0 18px rgba(255,90,96,0.35); }
   html[data-theme="northpole"] body { background: radial-gradient(120% 70% at 50% -10%, #1d3a75, #0b1631 55%, #070e22) fixed; }
@@ -173,11 +202,14 @@
   .tools { position: absolute; left: 14px; bottom: 14px; display: flex; gap: 6px; }
   .tool { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,18,.55); color: #e9edf5; font-size: 12.5px; cursor: pointer; backdrop-filter: blur(6px); }
   html[data-theme="skyisles"] .tool, html[data-theme="ledger"] .tool { border-radius: 0; }
+  html[data-theme="casefiles"] .tool { border-radius: var(--r-s); }
+  /* Square-cornered themes keep their round buttons square too. */
+  html[data-theme="skyisles"] :is(.close, .nav, .hint), html[data-theme="ledger"] :is(.close, .nav, .hint), html[data-theme="casefiles"] :is(.close, .nav, .hint) { border-radius: var(--r-s); }
   .tool:hover { background: rgba(10,12,18,.8); }
   .tool[aria-pressed="true"] { border-color: var(--accent); color: #fff; }
   .tool svg { width: 15px; height: 15px; }
   @media (max-width: 640px) { .tools { gap: 5px; left: 10px; bottom: 10px; } .tool { padding: 0 10px; height: 32px; } .tool span { display: none; } }
-  .hint { position: absolute; right: 16px; bottom: 20px; font-size: 12px; color: rgba(230,235,245,.55); pointer-events: none; }
+  .hint { position: absolute; right: 14px; bottom: 14px; height: 34px; display: inline-flex; align-items: center; padding: 0 12px; border-radius: 999px; font-size: 12px; color: rgba(236,240,248,.86); background: rgba(10,12,18,.45); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(6px); pointer-events: none; }
   .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,18,.45); color: #fff; font-size: 22px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
   .nav.prev { left: 14px; } .nav.next { right: 14px; }
   .nav:hover { background: rgba(10,12,18,.8); }
@@ -199,7 +231,7 @@
   .chip { font-size: 13px; padding: 5px 10px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border); }
   html[data-theme="skyisles"] .chip, html[data-theme="ledger"] .chip { border-radius: 0; }
   .wave { width: 100%; height: 56px; display: block; border-radius: var(--r-s); background: var(--panel-2); }
-  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 14px; border-radius: var(--r-s); border: 1px solid var(--border); background: var(--panel-2); cursor: pointer; font-size: 13.5px; font-weight: 600; }
   .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
   .btn:disabled { opacity: .5; cursor: not-allowed; }
@@ -224,6 +256,9 @@
   .fact.wide { grid-column: 1 / -1; }
   .fact .v.small { font-size: 15px; font-weight: 600; line-height: 1.4; }
   .muted { color: var(--faint); font-weight: 500; font-size: 15px; }
+  /* Rarity name in the popup: the bright rarity colour, darkened toward the text on the light themes so it stays readable. */
+  .rar-name { color: var(--rc); font-weight: 700; }
+  html[data-theme="casefiles"] .rar-name, html[data-theme="ledger"] .rar-name, html[data-theme="skyisles"] .rar-name, html[data-theme="harvest"] .rar-name { color: color-mix(in srgb, var(--rc) 52%, var(--text)); }
   .rar-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; background: var(--rc); box-shadow: 0 0 10px var(--rc); vertical-align: 1px; }
   .sound-btn .eq { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; margin-left: 4px; opacity: 0; transition: opacity .2s; }
   .sound-btn .eq i { width: 3px; height: 4px; background: currentColor; border-radius: 1px; }
@@ -243,11 +278,12 @@
     .layout { grid-template-columns: 1fr; gap: 14px; }
     .rail { position: static; flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; scrollbar-width: none; }
     .rail-label { display: none; }
-    .cat { width: auto; flex: none; border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; white-space: nowrap; }
+    .cat { width: auto; flex: none; border: 1px solid var(--border); border-radius: var(--chip-r, 999px); padding: 7px 12px; white-space: nowrap; }
     .cat[aria-pressed="true"] { box-shadow: none; border-color: var(--accent); }
     .cat .ic { width: 16px; height: 16px; }
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .meta { padding: 9px 10px 10px; } .meta .nm { font-size: 14px; }
+    html[data-theme="skyisles"] .meta .nm { font-size: 17px; }
     .studio { padding: 0; }
     .sheet { height: 100%; width: 100%; border-radius: 0; grid-template-columns: 1fr; grid-template-rows: 48vh 1fr; }
     .info { padding: 18px 16px 24px; }
@@ -256,6 +292,14 @@
     .nav { top: auto; bottom: 14px; transform: none; width: 34px; height: 34px; }
     .nav.prev { left: auto; right: 56px; }
   }
+  /* Phones: narrow cards give the category its own line so the price never cuts it short. */
+  @media (max-width: 599px) {
+    .meta .sub { flex-direction: column; align-items: flex-start; gap: 2px; }
+    .meta .sub .cn { max-width: 100%; }
+    .price { margin-left: 0; }
+  }
+  /* Tablets: three or four cards a row instead of two oversized ones. */
+  @media (min-width: 600px) and (max-width: 900px) { .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; } }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
   /* Interactive page background (bg/backgrounds.js): behind everything, never in the way. */
@@ -291,7 +335,7 @@
     </div>
     <label class="search">
       <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      <input id="q" type="search" placeholder="Search cosmetics, e.g. flame, shopkeeper, sound" autocomplete="off" aria-label="Search cosmetics">
+      <input id="q" type="search" placeholder="Search cosmetics" autocomplete="off" aria-label="Search cosmetics">
       <kbd>/</kbd>
     </label>
   </section>
@@ -1348,9 +1392,18 @@ function chatHtml(it, cls = "") {
   return it.lines.map((l, i) => `<div class="chat-line ${cls}" style="animation-delay:${i * 0.06}s">${l}</div>`).join("");
 }
 
-let visible = [];
+let visible = [], railCat = null;
+// On phones the categories are one sideways row: bring the picked one into view.
+function showActiveChip() {
+  const rail = $("rail"), chip = rail.querySelector(`.cat[data-cat="${state.cat}"]`);
+  if (!chip || rail.scrollWidth <= rail.clientWidth + 1) return;
+  const r = rail.getBoundingClientRect(), c = chip.getBoundingClientRect();
+  const left = rail.scrollLeft + (c.left - r.left) - (r.width - c.width) / 2;
+  rail.scrollTo({ left: Math.max(0, left), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
 function render() {
   for (const b of document.querySelectorAll(".cat")) b.setAttribute("aria-pressed", String(b.dataset.cat === state.cat));
+  if (railCat !== state.cat) { railCat = state.cat; showActiveChip(); }
   for (const b of document.querySelectorAll("#rarSeg button")) b.setAttribute("aria-pressed", String(b.dataset.r === state.rar));
   $("heading").textContent = state.cat === "all" ? "All cosmetics" : catOf(state.cat).name;
   visible = ITEMS.filter((it) => (state.cat === "all" || it.cat === state.cat) && (state.rar === "all" || it.rar === state.rar)
@@ -2442,15 +2495,22 @@ function openStudio(id, push = true) {
   if (chatOnly) chat.innerHTML = `<div class="chat-box">${chatHtml(it)}</div>`;
   // Text panel
   $("sCat").textContent = catOf(it.cat).name;
-  $("sRar").innerHTML = `<span style="color:${RAR[it.rar][1]};font-weight:700">${RAR[it.rar][0]}</span>`;
+  $("sRar").innerHTML = `<span class="rar-name" style="--rc:${RAR[it.rar][1]}">${RAR[it.rar][0]}</span>`;
   $("sName").textContent = it.name;
-  $("sDesc").textContent = it.desc;
+  const desc = shortDesc(it.desc);
+  $("sDesc").textContent = desc; $("sDesc").hidden = !desc;
   $("sRarity").innerHTML = `<span class="rar-dot" style="--rc:${RAR[it.rar][1]}"></span>${RAR[it.rar][0]}`;
   $("sPrice").innerHTML = it.price != null ? `${TOKEN}${fmtPrice(it.price)}` : '<span class="muted">Not sold</span>';
   $("sGet").textContent = getText(it);
   $("soundBox").hidden = !it.sound;
   $("playSound").classList.remove("playing");
   if (push) history.replaceState(null, "", "#" + it.id);
+}
+// The game's "Select the X." lines only repeat the name, and "This change is cosmetic." says nothing: drop them.
+function shortDesc(d = "") {
+  d = d.replace(/\s*This change is cosmetic\.\s*/i, " ").trim();
+  if (/^Selects? the /.test(d) && d.split(/(?<=[.!?])\s+(?=[A-Z])/).length === 1) return "";
+  return d;
 }
 function closeStudio() {
   const el = $("studio"); el.classList.remove("open");

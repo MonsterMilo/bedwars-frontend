@@ -19223,6 +19223,9 @@ html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::before,
 html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::after { width: 60px; }
 html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::before { left: -24px; top: -3px; }
 html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::after { right: -24px; bottom: -3px; }
+/* One strip per Final Boss card: a second strip on the bottom-right corner
+   piled up with the top-left strips of the cards below it. */
+html[data-theme="casefiles"] .sweat-card.tier-t5 .sweat-card-frame::after { content: none; }
 
 /* A skin that fails to load leaves a blank mugshot frame with a "?"
    head instead of an empty gap. The frame is drawn behind the avatar;
@@ -19264,6 +19267,12 @@ html[data-theme="casefiles"] .stat-star .modal-standing { margin-left: 0; margin
 
 /* Stat sublines break between lines, not inside "11,794 F". */
 html[data-theme="casefiles"] .ss-sub { text-wrap: balance; }
+/* "Sweats beaten": the "+14 in the last 30 days" line stays on one line
+   beside a slightly slimmer month chart. */
+html[data-theme="casefiles"] .ss-tile-total .ss-sub { white-space: nowrap; letter-spacing: -0.01em; }
+html[data-theme="casefiles"] .ss-tile-total .ss-total-row { gap: 10px; }
+html[data-theme="casefiles"] .ss-tile-total .ss-spark { gap: 3px; flex-shrink: 1; min-width: 0; }
+html[data-theme="casefiles"] .ss-tile-total .ss-spark span { width: 7px; flex-shrink: 1; }
 @media (max-width: 620px) {
   html[data-theme="casefiles"] .stat-hero-sub { white-space: nowrap; letter-spacing: 0; }
 }
@@ -19278,6 +19287,105 @@ html[data-theme="casefiles"] #denickResults:not(:empty) ~ #denickEmpty { display
 
 /* One content width for every section's main panel. */
 html[data-theme="casefiles"] :is(#form-container, #denickContainer, #activityContainer) { max-width: 1200px; }
+
+/* REPEAT OFFENDER stamp in a one-column grid (phones): the cards are only
+   as tall as their content, so there is no open space to stamp over. The
+   stamp joins the card's flow instead, between the stats and the footer,
+   and never covers a value. */
+@media (max-width: 560px) {
+  html[data-theme="casefiles"] .sweat-card.is-rival .sweat-card-footer { order: 2; }
+  html[data-theme="casefiles"] .sweat-card .rival-mark {
+    order: 1;
+    position: relative;
+    inset: auto;
+    align-self: flex-end;
+    margin: 8px 6px 34px 0;
+  }
+}
+
+/* Sweat Lookup: the coffee ring hangs off the bottom edge of the sheet,
+   below the Urchin Tags row, instead of sitting on its "None". */
+html[data-theme="casefiles"] #form-container > .pdeco i:nth-child(3) { right: 46px; bottom: -66px; }
+@media (max-width: 620px) {
+  html[data-theme="casefiles"] #form-container > .pdeco i:nth-child(3) { right: 14px; bottom: -50px; }
+}
+
+/* A preview stat with no ranking (KDR: the sweats list keeps no KDR to
+   rank against) gets a quiet typed note where the "Beats N%" bar would be,
+   so all four tiles end on the same line. */
+html[data-theme="casefiles"] #statsColumns .stat-standing:empty::before {
+  content: "Not ranked";
+  display: block;
+  margin-top: 8px;
+  font: 700 0.6em/14px 'Courier Prime', monospace;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+
+/* Player popup without match stats: Notes move up into the right column
+   under Urchin Tags, so there is no blank block beside the LOGGED card. */
+@media (min-width: 761px) {
+  html[data-theme="casefiles"] #playerModal .modal-content:has(#modalMatch[hidden]) {
+    grid-template-areas:
+      "name name"
+      "live live"
+      "skin stats"
+      "record urchin"
+      "record notes"
+      "clips clips"
+      "replays replays";
+    grid-template-rows: auto auto auto auto 1fr auto auto;
+  }
+  html[data-theme="casefiles"] #playerModal .modal-content:has(#modalMatch[hidden]) #modalNotes { margin-top: 14px; }
+  html[data-theme="casefiles"] #playerModal .modal-record[hidden] ~ #modalNotes { grid-column: 1 / -1; }
+}
+
+/* Phone toolbar: Filters is an icon button (plus its count), leaving the
+   search line room for its placeholder. */
+@media (max-width: 760px) {
+  html[data-theme="casefiles"] .filters-toggle {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+    gap: 3px;
+    font-size: 0;
+  }
+  html[data-theme="casefiles"] .filters-toggle svg { width: 18px; height: 18px; }
+  html[data-theme="casefiles"] .filters-toggle:has(.filters-toggle-count:not(:empty)) { width: auto; padding: 0 8px; }
+  html[data-theme="casefiles"] .filters-toggle-count:not(:empty) { font-size: 11px; }
+  html[data-theme="casefiles"] .toolbar #searchInput:placeholder-shown { padding-right: 10px; }
+  html[data-theme="casefiles"] .toolbar #searchInput::placeholder { font-size: 13px; letter-spacing: -0.03em; }
+  /* Filters panel: Index gets a full row like Since, and the chips share
+     each row evenly. */
+  html[data-theme="casefiles"] .filter-fields label[for="minIndex"] { grid-column: 1 / -1; }
+  html[data-theme="casefiles"] .toolbar-actions-left { width: 100%; }
+  html[data-theme="casefiles"] .toolbar-actions-left .chip { flex: 1 1 auto; }
+  html[data-theme="casefiles"] .toolbar-actions-left .chip span { flex: 1; }
+}
+
+/* Denicking result: the notebook's red margin runs left of the photo,
+   not behind it. */
+html[data-theme="casefiles"] .unmask-face {
+  background:
+    repeating-linear-gradient(transparent 0 23px, rgba(70,110,170,0.13) 23px 24px),
+    linear-gradient(90deg, transparent 8px, rgba(190,60,50,0.3) 8px 9px, transparent 9px),
+    #fbf5e6;
+}
+
+/* Table: the R.O. stamp is a small tag after the name, off the avatar. */
+html[data-theme="casefiles"] .row-rival {
+  position: static;
+  flex: none;
+  transform: rotate(-8deg);
+  margin-left: -4px;
+}
+
+/* Leaderboard corkboard: fixed-width posters in centred rows, so a short
+   last row sits in the middle of the board. */
+@media (min-width: 701px) {
+  html[data-theme="casefiles"] .lb-scene-body { display: flex; flex-wrap: wrap; justify-content: center; }
+  html[data-theme="casefiles"] .lb-scene-body > .lb-entry { flex: 0 0 180px; }
+}
 </style>
 </head>
 <body>

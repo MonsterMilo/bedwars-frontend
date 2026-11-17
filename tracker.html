@@ -19232,6 +19232,155 @@ html[data-theme="northpole"] .egg-sub { font-family: var(--font-hand); font-size
 
 html[data-theme="northpole"] .sotd-stats { gap: 10px 12px; }
 /* @@END-NORTHPOLE@@ */
+
+/* ===== Private Bank: visual pass r2 ===== */
+/* A skin that can't load gets a cream ledger card with the player's
+   initial (swapped in by the script near withRetryingAvatar), framed in
+   gold like the rest of the page instead of an empty box. */
+html[data-theme="ledger"] img[data-ledger-fallback]:is(.sweat-card-avatar, .user-avatar) { object-fit: cover; object-position: 50% 50%; image-rendering: auto; }
+html[data-theme="ledger"] .ss-who img[data-ledger-fallback] { image-rendering: auto; }
+html[data-theme="ledger"] img[data-ledger-fallback]:is(#modalSkin, .sotd-skin) { image-rendering: auto; }
+
+/* Card index: a cream figure box with a gold rule, like the star badge. */
+html[data-theme="ledger"] .sweat-card-index {
+  color: var(--accent-2);
+  background: linear-gradient(180deg, #fdfaf1, #f4ecd8);
+  border: 1px solid rgba(169,130,46,0.7);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+html[data-theme="ledger"] .sweat-card-index::before {
+  content: "Idx";
+  margin-right: 5px;
+  font: italic 400 1.05em 'EB Garamond', Georgia, serif;
+  letter-spacing: 0.02em;
+  color: var(--gold);
+}
+
+/* Lookup preview: a stat with no ranking (KDR isn't saved on sweats)
+   still gets the ruled gauge, empty, so all four tiles match. */
+html[data-theme="ledger"] #statsColumns .stat-standing:empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  min-height: 0;
+}
+html[data-theme="ledger"] #statsColumns .stat-standing:empty::before {
+  content: "";
+  flex: 1;
+  max-width: 100%;
+  height: 7px;
+  background: repeating-linear-gradient(90deg, rgba(169,130,46,0.45) 0 1px, transparent 1px 10%), linear-gradient(transparent 6px, rgba(169,130,46,0.5) 6px);
+}
+html[data-theme="ledger"] #statsColumns .stat-standing:empty::after {
+  content: "Not ranked";
+  font: italic 400 0.72em 'EB Garamond', serif;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+/* Unmask result: the searched nick stays on the card ("Krampus99 ->
+   account holder"), the card is capped so it doesn't stretch across the
+   panel, and the replay hint sits in its own corner instead of over the
+   source line. Touch screens drop the hint (the card still replays). */
+html[data-theme="ledger"] #denickUnmask { max-width: 560px; margin-left: auto; margin-right: auto; }
+html[data-theme="ledger"] .unmask-back .unmask-k[data-nick]::before {
+  content: attr(data-nick) "  \2192  ";
+  white-space: pre;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-variant: normal;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: var(--accent-2);
+}
+html[data-theme="ledger"] .unmask-back .unmask-k[data-nick]::after { content: "account holder"; }
+html[data-theme="ledger"] .unmask-back .unmask-txt { flex: 1; }
+html[data-theme="ledger"] .unmask-hint {
+  position: static;
+  align-self: flex-end;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+  font: italic 400 0.82em 'EB Garamond', serif;
+  letter-spacing: 0.02em;
+  color: var(--text-faint);
+}
+@media (hover: none) {
+  html[data-theme="ledger"] .unmask-hint { display: none; }
+}
+@media (max-width: 700px) {
+  html[data-theme="ledger"] .unmask-back .unmask-k[data-nick]::after { content: none; }
+}
+
+/* Statement summary: the cells are ruled columns of one statement, so
+   they don't lift on hover (a lifted cell broke its rule into steps on
+   touch, where hover sticks after a tap); they tint instead. */
+html[data-theme="ledger"] .ss-tile[data-username] { transition: background-color 0.2s var(--ease); }
+html[data-theme="ledger"] .ss-tile[data-username]:hover { transform: none; background: rgba(169,130,46,0.06); }
+@media (max-width: 900px) {
+  html[data-theme="ledger"] .sweat-stats { align-items: start; }
+}
+/* Every figure gets the star badge's height, so the names under them line
+   up across the columns. */
+html[data-theme="ledger"] .ss-tile .ss-value { display: flex; align-items: center; min-height: 1.2em; }
+
+/* Client of the day: the details run to the card's right edge and the
+   countdown sits in the top-right corner over them. */
+@media (min-width: 901px) {
+  html[data-theme="ledger"] .sotd-info { grid-column: 2 / -1; grid-row: 1; }
+  html[data-theme="ledger"] .sotd-clock { grid-column: 3; grid-row: 1; justify-self: end; position: relative; z-index: 1; margin-top: 0; }
+}
+
+/* Repeat clients: the claret bookmark hangs clear of the portrait, and in
+   the table it follows the name as a small tag instead of covering the head. */
+html[data-theme="ledger"] .sweat-card.is-rival .sweat-card-top { padding-left: 24px; }
+html[data-theme="ledger"] .row-rival {
+  position: static;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-left: -4px;
+  height: auto;
+  padding: 3px 5px 8px;
+  transform: none;
+}
+
+/* Popup: scrolling over it doesn't move the page behind. */
+html[data-theme="ledger"] .modal { overscroll-behavior: contain; }
+html[data-theme="ledger"]:has(#playerModal[style*="flex"]) body { overflow: hidden; }
+html[data-theme="ledger"] { scrollbar-gutter: stable; }
+
+/* Cards with no memo show the faint memo line all the time, so the space
+   reads as a blank memo rather than a gap. */
+html[data-theme="ledger"] .sweat-card .card-note-ghost { opacity: 0.6; }
+html[data-theme="ledger"] .sweat-card:hover .card-note-ghost,
+html[data-theme="ledger"] .sweat-card:focus-within .card-note-ghost { opacity: 0.9; }
+html[data-theme="ledger"] .sweat-card .card-note-ghost:hover { opacity: 1; }
+
+/* Popup title: no separator dot crowding the live-status dot. */
+html[data-theme="ledger"] #playerModal #modalTitle::before { content: "Statement of account"; margin-right: 10px; }
+
+/* Phone: the beaten-by coins go five to a row, and the filter fields
+   three across with the date below, the toggles sharing one row. */
+@media (max-width: 480px) {
+  html[data-theme="ledger"] #beatenByGroup { gap: 8px 6px; }
+  html[data-theme="ledger"] #beatenByGroup .roster-chip .roster-avatar { width: 42px; height: 42px; font-size: 0.82em; }
+  html[data-theme="ledger"] #beatenByGroup .roster-chip .roster-avatar::after {
+    mask-image: radial-gradient(circle, transparent 18px, #000 18.5px);
+    -webkit-mask-image: radial-gradient(circle, transparent 18px, #000 18.5px);
+  }
+}
+@media (max-width: 480px) {
+  html[data-theme="ledger"] .toolbar.filters-open .toolbar-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 10px; }
+  html[data-theme="ledger"] .toolbar .toolbar-row .filter-fields { grid-column: 1 / -1; }
+  html[data-theme="ledger"] .toolbar .filter-fields .filter-field:nth-child(3) { grid-column: 1 / -1; }
+  html[data-theme="ledger"] .toolbar .toolbar-row .toolbar-actions-left { display: contents; }
+  html[data-theme="ledger"] .toolbar .toolbar-actions-left .chip { display: flex; }
+  html[data-theme="ledger"] .toolbar .toolbar-actions-left .chip span { display: flex; justify-content: center; flex: 1; }
+  html[data-theme="ledger"] .toolbar .toolbar-row .filter-reset { justify-content: center; margin: 0; }
+}
 </style>
 </head>
 <body>
@@ -23750,6 +23899,8 @@ function showUnmask(nick, entry) {
   denickUnmask.querySelector(".unmask-real").textContent = entry.username;
   denickUnmask.querySelector(".unmask-reveal").textContent = entry.username;
   denickUnmask.querySelector(".unmask-back .unmask-name").textContent = entry.username;
+  // Private Bank keeps the searched nick on the opened card (CSS reads it).
+  denickUnmask.querySelector(".unmask-back .unmask-k").dataset.nick = nick;
   denickUnmask.querySelector(".unmask-back .unmask-meta").textContent =
     `${entry.source}${entry.updated ? ` \u00b7 ${denickTimeAgo(entry.updated)}` : ""}`;
   const img = denickUnmask.querySelector(".unmask-back img");
@@ -25940,6 +26091,62 @@ function withRetryingAvatar(imgEl, uuid, username, url = avatarUrlFor(uuid)) {
   imgEl.src = url;
   imgEl.alt = `Avatar of ${username}`;
 }
+
+// Private Bank only: a skin that still fails after its retry is swapped for
+// a cream ledger card with the player's initial (a portrait silhouette for
+// the full-body renders), instead of an empty box or a broken-image outline.
+// Listens in the capture phase, so it sees each image's error before that
+// image's own retry handler; the original URL is kept so switching to
+// another theme puts it back.
+(() => {
+  const HEADS = ".sweat-card-avatar, .user-avatar, .ss-who img";
+  const BODIES = "#modalSkin, .sotd-skin, #statsAvatar";
+  const svgUrl = svg => "data:image/svg+xml," + encodeURIComponent(svg);
+  const initialOf = name => (String(name || "").replace(/[^A-Za-z0-9]/g, "").charAt(0) || "?").toUpperCase();
+  const nameFor = img => {
+    if (img.id === "modalSkin") return (document.getElementById("modalUsername")?.textContent || "").replace(/\[[^\]]*\]/g, "").trim();
+    if (img.id === "statsAvatar") return document.getElementById("statsUsername")?.textContent || "";
+    return img.closest("[data-username]")?.dataset.username || img.alt.replace(/^Avatar of /, "");
+  };
+  const headSvg = ch => svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#f8f1df"/><rect x="5.5" y="5.5" width="53" height="53" fill="none" stroke="#a9822e" stroke-opacity=".55"/><text x="32" y="43.5" text-anchor="middle" font-family="EB Garamond, Georgia, 'Times New Roman', serif" font-size="30" fill="#16233a">${ch}</text></svg>`);
+  const bodySvg = ch => svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 240"><g fill="#a9822e" fill-opacity=".16"><rect x="40" y="34" width="40" height="40"/><rect x="36" y="78" width="48" height="70"/><rect x="18" y="78" width="16" height="66"/><rect x="86" y="78" width="16" height="66"/><rect x="38" y="150" width="21" height="70"/><rect x="61" y="150" width="21" height="70"/></g><text x="60" y="64" text-anchor="middle" font-family="EB Garamond, Georgia, 'Times New Roman', serif" font-size="28" fill="#16233a" fill-opacity=".8">${ch}</text></svg>`);
+  const isFinalFailure = img =>
+    img.matches(HEADS) ? /[?&]retry=/.test(img.src)
+    : img.classList.contains("sotd-skin") ? !!img.dataset.retried
+    : true;
+  const applyFallback = img => {
+    if (img.src.startsWith("data:")) return;
+    img.dataset.ledgerFallback = img.src;
+    img.src = (img.matches(HEADS) ? headSvg : bodySvg)(initialOf(nameFor(img)));
+  };
+  document.addEventListener("error", (e) => {
+    const img = e.target;
+    if (!(img instanceof HTMLImageElement) || currentThemeId() !== "ledger") return;
+    if (!img.matches(`${HEADS}, ${BODIES}`) || !img.getAttribute("src") || img.src.startsWith("data:")) return;
+    if (isFinalFailure(img)) applyFallback(img);
+  }, true);
+  // A real skin set later (the popup reuses one <img>) clears the mark.
+  document.addEventListener("load", (e) => {
+    const img = e.target;
+    if (img instanceof HTMLImageElement && img.dataset.ledgerFallback && !img.src.startsWith("data:")) delete img.dataset.ledgerFallback;
+  }, true);
+  document.addEventListener("themechange", () => {
+    const ledger = currentThemeId() === "ledger";
+    document.querySelectorAll(`${HEADS}, ${BODIES}`).forEach(img => {
+      if (!ledger && img.dataset.ledgerFallback) {
+        const original = img.dataset.ledgerFallback;
+        delete img.dataset.ledgerFallback;
+        // Back to how that image looked before the swap: faded-in heads
+        // start hidden again and the hero skin loses its loaded state.
+        if (img.style.opacity) img.style.opacity = 0;
+        img.classList.remove("loaded");
+        img.src = original;
+      } else if (ledger && img.complete && img.naturalWidth === 0 && img.getAttribute("src") && !img.src.startsWith("data:") && isFinalFailure(img)) {
+        applyFallback(img);
+      }
+    });
+  });
+})();
 
 // The three logged stats that don't get a pill (WLR, BBLR, finals), as a
 // compact readout row on each grid card. Values are coerced to numbers, so

@@ -56,6 +56,35 @@
   html[data-theme="deepcurrent"] { --bg: #030c14; --panel: #0a2130; --panel-2: #0e2a3c; --border: rgba(255,255,255,0.08); --border-strong: rgba(53,230,196,0.4); --accent: #35e6c4; --accent-2: #9b6bff; --accent-ink: #021614; --text: #e6f6f4; --dim: #82a9ae; --faint: #648086; --good: #3fd68a; --bad: #ff5a5a; --gold: #c99a4a; --glass: rgba(6,24,36,0.74); --glass-2: rgba(14,42,60,0.88); --glass-line: rgba(53,230,196,0.16); --r-s: 10px; --r-m: 16px; --r-l: 20px; --font: 'Sora', 'Segoe UI', sans-serif; --font-title: 'Chakra Petch', 'Sora', sans-serif; --glow: 0 0 0 1px rgba(53,230,196,0.45), 0 0 18px rgba(53,230,196,0.25); }
   html[data-theme="skyisles"] { --bg: #8fd0ff; --panel: #fbfdf5; --panel-2: #eef6fb; --border: #c3d6e3; --border-strong: #2d6a9f; --accent: #3f9a26; --accent-2: #2d6a9f; --accent-ink: #ffffff; --text: #173247; --dim: #4b6a82; --faint: #6c8294; --good: #2e8f2a; --bad: #d23a2e; --gold: #c98a0b; --glass: rgba(251,253,245,0.93); --glass-2: rgba(238,246,251,0.97); --glass-line: #173247; --r-s: 0px; --r-m: 0px; --r-l: 0px; --shadow: 4px 4px 0 rgba(23,50,71,0.28); --font: 'Jersey 10', 'Silkscreen', monospace; --font-title: 'Silkscreen', monospace; --glow: 0 0 0 2px #173247; color-scheme: light; }
   html[data-theme="skyisles"] body { font-size: 17px; }
+  /* Square-cornered themes: the phone category chips follow the theme's corners. */
+  html[data-theme="casefiles"], html[data-theme="ledger"], html[data-theme="skyisles"] { --chip-r: var(--r-s); }
+  /* Case Files: the wide typewriter face needs a wider rail to keep each category on one line. */
+  @media (min-width: 901px) { html[data-theme="casefiles"] .layout { grid-template-columns: 244px 1fr; } }
+  html[data-theme="casefiles"] .cat { font-size: 14px; letter-spacing: -0.01em; white-space: nowrap; }
+  /* Sky Isles: Jersey 10 runs small for its size, so its text is set larger and the rail darker. */
+  html[data-theme="skyisles"] .cat { font-size: 18px; color: color-mix(in srgb, var(--text) 84%, var(--bg)); }
+  html[data-theme="skyisles"] .cat:hover, html[data-theme="skyisles"] .cat[aria-pressed="true"] { color: var(--text); }
+  html[data-theme="skyisles"] .cat .n, html[data-theme="skyisles"] .cat[aria-pressed="true"] .n { font-size: 15px; color: color-mix(in srgb, var(--text) 66%, var(--bg)); }
+  html[data-theme="skyisles"] .rail-label { font-size: 13px; color: color-mix(in srgb, var(--text) 70%, var(--bg)); }
+  html[data-theme="skyisles"] .tally { font-size: 18px; color: color-mix(in srgb, var(--text) 80%, var(--bg)); }
+  html[data-theme="skyisles"] .meta .nm { font-size: 19px; }
+  html[data-theme="skyisles"] .meta .sub { font-size: 15.5px; }
+  html[data-theme="skyisles"] .price { font-size: 16px; }
+  html[data-theme="skyisles"] .price.none { font-size: 15.5px; }
+  html[data-theme="skyisles"] .seg button, html[data-theme="skyisles"] .sort { font-size: 15.5px; }
+  html[data-theme="skyisles"] .eyebrow { font-size: 17px; }
+  html[data-theme="skyisles"] .desc { font-size: 17px; }
+  html[data-theme="skyisles"] .fact .k { font-size: 14px; }
+  html[data-theme="skyisles"] .fact .v { font-size: 21px; }
+  html[data-theme="skyisles"] .fact .v.small { font-size: 17.5px; }
+  html[data-theme="skyisles"] .btn { font-size: 16px; }
+  html[data-theme="skyisles"] .search input { font-size: 19px; }
+  html[data-theme="skyisles"] .back { font-size: 17px; }
+  html[data-theme="skyisles"] .tool { font-size: 15px; }
+  html[data-theme="skyisles"] .hint { font-size: 14.5px; }
+  html[data-theme="skyisles"] .rar, html[data-theme="skyisles"] .season { font-size: 12.5px; }
+  html[data-theme="skyisles"] .empty { font-size: 18px; }
+  html[data-theme="skyisles"] .empty b { font-size: 21px; }
   html[data-theme="harvest"] { --bg: #e7c99a; --panel: #fbf3e2; --panel-2: #f4e8cf; --border: rgba(91,58,34,0.2); --border-strong: rgba(168,50,43,0.45); --accent: #a8322b; --accent-2: #c98a1c; --accent-ink: #fbf3e2; --text: #3b2414; --dim: #6e5038; --faint: #8e7055; --good: #4f7a32; --bad: #b3261e; --gold: #c98a1c; --glass: rgba(251,243,226,0.93); --glass-2: rgba(244,232,207,0.97); --glass-line: rgba(91,58,34,0.25); --r-s: 3px; --r-m: 5px; --r-l: 7px; --shadow: 0 16px 30px -16px rgba(59,36,20,0.55); --font: 'Bitter', Georgia, serif; --font-title: 'Ultra', Georgia, serif; --glow: 0 0 0 2px #a8322b; color-scheme: light; }
   html[data-theme="northpole"] { --bg: #0b1631; --panel: #13234a; --panel-2: #1a2d5a; --border: rgba(220,235,255,0.12); --border-strong: rgba(242,193,78,0.55); --accent: #ff5a60; --accent-2: #f2c14e; --accent-ink: #fffaf2; --text: #f4f7fc; --dim: #a9b7d3; --faint: #8090b2; --good: #4fd08a; --bad: #ff6b6b; --gold: #f2c14e; --glass: rgba(14,27,58,0.78); --glass-2: rgba(26,45,90,0.9); --glass-line: rgba(220,235,255,0.14); --r-s: 10px; --r-m: 14px; --r-l: 20px; --shadow: 0 22px 44px -22px rgba(0,0,0,0.85); --font: 'Nunito', 'Segoe UI', system-ui, sans-serif; --font-title: 'Mountains of Christmas', 'Nunito', serif; --glow: 0 0 0 1px rgba(242,193,78,0.55), 0 0 18px rgba(255,90,96,0.35); }
   html[data-theme="northpole"] body { background: radial-gradient(120% 70% at 50% -10%, #1d3a75, #0b1631 55%, #070e22) fixed; }
@@ -109,6 +138,13 @@
   .search input:focus { outline: none; border-color: var(--border-strong); box-shadow: var(--glow); }
   .search kbd { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font: 12px/1 var(--font); color: var(--faint); border: 1px solid var(--border); border-radius: 5px; padding: 4px 7px; }
   .search input:not(:placeholder-shown) ~ kbd { display: none; }
+  /* The clear button in the theme's own colour, not the browser's blue. */
+  .search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; margin-right: -4px; cursor: pointer; background: var(--dim);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m4 4 8 8M12 4l-8 8' stroke='%23000' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m4 4 8 8M12 4l-8 8' stroke='%23000' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .search input::-webkit-search-cancel-button:hover { background: var(--text); }
+  /* No keyboard on touch screens, so no "/" shortcut hint. */
+  @media (hover: none) { .search kbd { display: none; } .search input { padding-right: 16px; } }
 
   /* Body: category rail + results */
   .layout { display: grid; grid-template-columns: 220px 1fr; gap: 28px; align-items: start; }
@@ -121,6 +157,8 @@
   .cat .n { margin-left: auto; font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
 
   .bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  /* The filters wrap as one group: when they don't fit beside the heading they all move under it together. */
+  .ctrls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .bar h2 { margin: 0 auto 0 0; font-family: var(--font-title); font-size: 22px; font-weight: 700; }
   html[data-theme="casefiles"] .bar h2 { font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
   .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
@@ -154,6 +192,11 @@
 
   .empty { padding: 60px 20px; text-align: center; color: var(--dim); border: 1px dashed var(--border); border-radius: var(--r-l); }
   .empty b { display: block; color: var(--text); font-size: 17px; margin-bottom: 4px; }
+  .empty span { display: block; }
+  .empty .btn { margin-top: 16px; color: var(--text); }
+  /* "9 results" beside the heading while searching */
+  .bar h2 .count { margin-left: 10px; font: 500 14px var(--font); letter-spacing: 0; text-transform: none; color: var(--dim); white-space: nowrap; }
+  html[data-theme="skyisles"] .bar h2 .count { font-size: 17px; }
 
   /* Studio (preview) */
   .studio { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 3vh 3vw; background: rgba(0,0,0,.55); backdrop-filter: blur(8px); opacity: 0; transition: opacity .3s; }
@@ -163,6 +206,12 @@
   .stage { position: relative; background: radial-gradient(90% 80% at 50% 38%, var(--studio-a), var(--studio-b)); overflow: hidden; }
   .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
   .stage canvas:active { cursor: grabbing; }
+  /* While a recording loads: a small spinner (only if it takes a moment). */
+  .stage.loading::after { content: ""; position: absolute; left: 50%; top: 50%; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--accent) 25%, transparent); border-top-color: var(--accent); opacity: 0; animation: spin .8s linear infinite, show .2s .3s forwards; pointer-events: none; }
+  /* ...over the card's picture, dimmed and soft, so the stage is never a blank box. */
+  .stage.loading::before { content: ""; position: absolute; inset: -12px; background: var(--ph, none) center / cover no-repeat; filter: blur(6px) brightness(.7); opacity: 0; animation: show .25s forwards; pointer-events: none; }
+  @keyframes spin { to { transform: rotate(1turn); } }
+  @keyframes show { to { opacity: 1; } }
   .stage .chat-stage { position: absolute; left: 6%; right: 6%; bottom: 16%; display: grid; gap: 8px; }
   .chat-line { font: 600 15px/1.35 'Courier New', monospace; color: #fff; background: rgba(0,0,0,.45); padding: 4px 8px; width: fit-content; max-width: 100%; text-shadow: 2px 2px 0 rgba(0,0,0,.6); animation: chatin .45s var(--ease) both; }
   .thumb .chat-line { font-size: 10.5px; padding: 3px 6px; }
@@ -173,11 +222,14 @@
   .tools { position: absolute; left: 14px; bottom: 14px; display: flex; gap: 6px; }
   .tool { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,18,.55); color: #e9edf5; font-size: 12.5px; cursor: pointer; backdrop-filter: blur(6px); }
   html[data-theme="skyisles"] .tool, html[data-theme="ledger"] .tool { border-radius: 0; }
+  html[data-theme="casefiles"] .tool { border-radius: var(--r-s); }
+  /* Square-cornered themes keep their round buttons square too. */
+  html[data-theme="skyisles"] :is(.close, .nav, .hint), html[data-theme="ledger"] :is(.close, .nav, .hint), html[data-theme="casefiles"] :is(.close, .nav, .hint) { border-radius: var(--r-s); }
   .tool:hover { background: rgba(10,12,18,.8); }
   .tool[aria-pressed="true"] { border-color: var(--accent); color: #fff; }
   .tool svg { width: 15px; height: 15px; }
   @media (max-width: 640px) { .tools { gap: 5px; left: 10px; bottom: 10px; } .tool { padding: 0 10px; height: 32px; } .tool span { display: none; } }
-  .hint { position: absolute; right: 16px; bottom: 20px; font-size: 12px; color: rgba(230,235,245,.55); pointer-events: none; }
+  .hint { position: absolute; right: 14px; bottom: 14px; height: 34px; display: inline-flex; align-items: center; padding: 0 12px; border-radius: 999px; font-size: 12px; color: rgba(236,240,248,.86); background: rgba(10,12,18,.45); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(6px); pointer-events: none; }
   .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,18,.45); color: #fff; font-size: 22px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
   .nav.prev { left: 14px; } .nav.next { right: 14px; }
   .nav:hover { background: rgba(10,12,18,.8); }
@@ -199,7 +251,7 @@
   .chip { font-size: 13px; padding: 5px 10px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border); }
   html[data-theme="skyisles"] .chip, html[data-theme="ledger"] .chip { border-radius: 0; }
   .wave { width: 100%; height: 56px; display: block; border-radius: var(--r-s); background: var(--panel-2); }
-  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 14px; border-radius: var(--r-s); border: 1px solid var(--border); background: var(--panel-2); cursor: pointer; font-size: 13.5px; font-weight: 600; }
   .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
   .btn:disabled { opacity: .5; cursor: not-allowed; }
@@ -224,6 +276,9 @@
   .fact.wide { grid-column: 1 / -1; }
   .fact .v.small { font-size: 15px; font-weight: 600; line-height: 1.4; }
   .muted { color: var(--faint); font-weight: 500; font-size: 15px; }
+  /* Rarity name in the popup: the bright rarity colour, darkened toward the text on the light themes so it stays readable. */
+  .rar-name { color: var(--rc); font-weight: 700; }
+  html[data-theme="casefiles"] .rar-name, html[data-theme="ledger"] .rar-name, html[data-theme="skyisles"] .rar-name, html[data-theme="harvest"] .rar-name { color: color-mix(in srgb, var(--rc) 52%, var(--text)); }
   .rar-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; background: var(--rc); box-shadow: 0 0 10px var(--rc); vertical-align: 1px; }
   .sound-btn .eq { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; margin-left: 4px; opacity: 0; transition: opacity .2s; }
   .sound-btn .eq i { width: 3px; height: 4px; background: currentColor; border-radius: 1px; }
@@ -241,13 +296,16 @@
     .page { padding: 14px 16px 50px; }
     .hero { grid-template-columns: 1fr; margin: 16px 0 14px; }
     .layout { grid-template-columns: 1fr; gap: 14px; }
-    .rail { position: static; flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; scrollbar-width: none; }
+    /* One sideways row that runs to the screen edges and fades out there, so it reads as a scroller. */
+    .rail { position: static; flex-direction: row; overflow-x: auto; gap: 6px; margin: 0 -16px; padding: 0 16px 4px; scroll-padding-inline: 16px; scrollbar-width: none;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 28px), transparent); }
     .rail-label { display: none; }
-    .cat { width: auto; flex: none; border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; white-space: nowrap; }
+    .cat { width: auto; flex: none; border: 1px solid var(--border); border-radius: var(--chip-r, 999px); padding: 7px 12px; white-space: nowrap; }
     .cat[aria-pressed="true"] { box-shadow: none; border-color: var(--accent); }
     .cat .ic { width: 16px; height: 16px; }
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .meta { padding: 9px 10px 10px; } .meta .nm { font-size: 14px; }
+    html[data-theme="skyisles"] .meta .nm { font-size: 17px; }
     .studio { padding: 0; }
     .sheet { height: 100%; width: 100%; border-radius: 0; grid-template-columns: 1fr; grid-template-rows: 48vh 1fr; }
     .info { padding: 18px 16px 24px; }
@@ -256,6 +314,14 @@
     .nav { top: auto; bottom: 14px; transform: none; width: 34px; height: 34px; }
     .nav.prev { left: auto; right: 56px; }
   }
+  /* Phones: narrow cards give the category its own line so the price never cuts it short. */
+  @media (max-width: 599px) {
+    .meta .sub { flex-direction: column; align-items: flex-start; gap: 2px; }
+    .meta .sub .cn { max-width: 100%; }
+    .price { margin-left: 0; }
+  }
+  /* Tablets: three or four cards a row instead of two oversized ones. */
+  @media (min-width: 600px) and (max-width: 900px) { .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; } }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
   /* Interactive page background (bg/backgrounds.js): behind everything, never in the way. */
@@ -291,7 +357,7 @@
     </div>
     <label class="search">
       <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      <input id="q" type="search" placeholder="Search cosmetics, e.g. flame, shopkeeper, sound" autocomplete="off" aria-label="Search cosmetics">
+      <input id="q" type="search" placeholder="Search cosmetics" autocomplete="off" aria-label="Search cosmetics">
       <kbd>/</kbd>
     </label>
   </section>
@@ -301,6 +367,7 @@
     <main>
       <div class="bar">
         <h2 id="heading">All cosmetics</h2>
+        <div class="ctrls">
         <div class="seg" id="rarSeg" role="group" aria-label="Filter by rarity">
           <button type="button" data-r="all" aria-pressed="true">All</button>
           <button type="button" data-r="common" aria-pressed="false">Common</button>
@@ -320,9 +387,10 @@
           <option value="price-lo">Price, low to high</option>
           <option value="name">A to Z</option>
         </select>
+        </div>
       </div>
       <div class="grid" id="grid"></div>
-      <div class="empty" id="empty" hidden><b>Nothing matches that</b>Try another word, or clear the category.</div>
+      <div class="empty" id="empty" hidden><b>Nothing matches that</b><span id="emptyHint"></span><button class="btn" id="emptyClear" type="button">Clear search</button></div>
     </main>
   </div>
 </div>
@@ -350,7 +418,6 @@
       </div>
       <p class="desc" id="sDesc"></p>
       <div id="soundBox" hidden>
-        <p class="block-h">Sound</p>
         <button class="btn sound-btn" id="playSound" type="button"><svg viewBox="0 0 16 16"><path d="M4 3v10l9-5z" fill="currentColor"/></svg>Play sound<span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
       </div>
       <div class="facts">
@@ -418,7 +485,7 @@ const ITEMS = [
   { id: "lightning-strike", cat: "final", name: "Lightning Strike", rar: "common", price: 5000, get: "shop", desc: "Killing an enemy will wake up Thor.", tags: "thunder bolt storm", rec: "lightning-strike", hero: 1.1 },
   { id: "tnt", cat: "final", name: "TNT", rar: "common", price: 5000, get: "shop", desc: "Killing an enemy will make them disappear into TNT.", tags: "explosion boom", rec: "tnt", hero: 2.2 },
   { id: "heart-aura", cat: "final", name: "Heart Aura", rar: "rare", price: 10000, get: "shop", desc: "Killing an enemy will spawn lots of love.", tags: "hearts love", rec: "heart-aura", hero: 2.2 },
-  { id: "burning-shoes", cat: "final", name: "Burning Shoes", rar: "rare", price: 10000, get: "shop", desc: "Killing an enemy will set your feet on fire.", tags: "fire flame feet", rec: "burning-shoes", hero: 1.5 },
+  { id: "burning-shoes", cat: "final", name: "Burning Shoes", rar: "rare", price: 10000, get: "shop", desc: "Killing an enemy will set your feet on fire.", tags: "fire flame feet", rec: "burning-shoes", hero: 2.5, cam: [[-10.4, 2.2, -2.6], [0, 1.45, -1.3], 5, 40, [-1.4, 0.9, 1.5], [0.15, 0.62, -1.0]] },
   { id: "cookie-fountain", cat: "final", name: "Cookie Fountain", rar: "rare", price: 10000, get: "shop", desc: "Killing an enemy will let cookies sprinkle out of you.", tags: "cookies food", rec: "cookie-fountain", hero: 2.2 },
   { id: "campfire", cat: "final", name: "Campfire", rar: "rare", price: 10000, get: "shop", desc: "Killing an enemy will place down a campfire.", tags: "fire sticks smoke", rec: "campfire", hero: 2.2 },
   { id: "wing-gusts", cat: "final", name: "Wing Gusts", rar: "rare", price: 10000, get: "shop", desc: "Scatter your enemies to the wind!", tags: "wind dragon wings", rec: "wing-gusts", hero: 2.2 },
@@ -433,7 +500,7 @@ const ITEMS = [
   { id: "rekt", cat: "final", name: "Rekt", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will drop a hologram remembering your victory.", tags: "hologram text", rec: "rekt", hero: 2.2 },
   { id: "pinata", cat: "final", name: "Piñata", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will make them explode like a Piñata.", tags: "pinata dye candy", rec: "pi-ata", hero: 1.6 },
   { id: "experience-orb", cat: "final", name: "Experience Orb", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will make it rain experience on top of their corpse.", tags: "xp exp orbs", rec: "experience-orb", hero: 1.8 },
-  { id: "smiley", cat: "final", name: "Smiley", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will show your smiley in the air.", tags: "smiley face flames", rec: "smiley", hero: 2.3 },
+  { id: "smiley", cat: "final", name: "Smiley", rar: "epic", price: 25000, get: "shop", desc: "Killing an enemy will show your smiley in the air.", tags: "smiley face flames", rec: "smiley", hero: 2.6, cam: [[-10.4, 2.2, -2.6], [0, 1.45, -1.3], 5, 40, [0, 5.7, -1.3], [0, 3, 0.05]] },
   { id: "raining-easter-eggs", cat: "final", name: "Raining Easter Eggs", rar: "epic", price: null, get: "event", season: "Easter", desc: "It's raining Easter Eggs!", tags: "eggs easter", rec: "raining-easter-eggs", hero: 3.0 },
   { id: "hatching-eggs", cat: "final", name: "Hatching Eggs", rar: "epic", price: null, get: "event", season: "Easter", desc: "Hatching eggs are falling from the sky!", tags: "eggs chickens", rec: "hatching-eggs", hero: 5.5 },
   { id: "lantern-spiral", cat: "final", name: "Lantern Spiral", rar: "epic", price: 25000, get: "shop", desc: "Create a fabulous display of lanterns spiraling into the sky.", tags: "lanterns heads spiral", rec: "lantern-spiral", hero: 2.2, rise: 5.5 },
@@ -456,16 +523,16 @@ const ITEMS = [
   { id: "present-rain", cat: "final", name: "Present Rain", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Spawn a present and get some gifts with every kill!", tags: "presents gifts christmas", rec: "present-rain", hero: 3.5 },
   { id: "balloons", cat: "final", name: "Balloons", rar: "epic", price: null, get: "ticket", desc: "Unleash a parade of colorful balloons!", tags: "balloons party heads", rec: "balloons", hero: 1.5, rise: 9 },
   { id: "tornado", cat: "final", name: "Tornado", rar: "legendary", price: 100000, get: "shop", desc: "Killing an enemy will summon a vortex!", tags: "wind vortex sparks", rec: "tornado", hero: 3.0 },
-  { id: "rising-dragon", cat: "final", name: "Rising Dragon", rar: "legendary", price: 100000, get: "shop", desc: "A fiery dragon rises from the ashes of your battles.", tags: "dragon fire flames", rec: "rising-dragon", hero: 1.5, rise: 15 },
+  { id: "rising-dragon", cat: "final", name: "Rising Dragon", rar: "legendary", price: 100000, get: "shop", desc: "A fiery dragon rises from the ashes of your battles.", tags: "dragon fire flames", rec: "rising-dragon", hero: 2.6, rise: 15, cam: [[-10.4, 2.2, -2.6], [0, 1.45, -1.3], 5, 40, [-10, 4.5, -3.0], [0, 5.6, -0.3]] },
   { id: "ring-of-fire", cat: "final", name: "Ring of Fire", rar: "legendary", price: null, get: "event", season: "Summer", desc: "Find the fire within and send it forth.", tags: "fire flames circle", rec: "ring-of-fire", hero: 1.4 },
   { id: "draculas-flight", cat: "final", name: "Dracula's Flight", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Have a swarm of bats lift your enemy's corpse up into the sky.", tags: "bats vampire spooky", rec: "dracula-s-flight", hero: 1.8, rise: 6 },
   { id: "bee-abduction", cat: "final", name: "Bee Abduction", rar: "legendary", price: null, get: "event", season: "Easter", desc: "Where are they taking them??", tags: "bees honey heads", rec: "bee-abduction", hero: 1.6, rise: 10 },
   { id: "witch-ritual", cat: "final", name: "Witch Ritual", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Raise your victim as three witches circle and chant around them.", tags: "witches spell magic", rec: "witch-ritual", hero: 1.5, rise: 7 },
-  { id: "lit", cat: "final", name: "Lit", rar: "legendary", price: 100000, get: "shop", desc: "Killing an enemy will set their body on fire.", tags: "fire flames burning", rec: "lit", hero: 2.5 },
+  { id: "lit", cat: "final", name: "Lit", rar: "legendary", price: 100000, get: "shop", desc: "Killing an enemy will set their body on fire.", tags: "fire flames burning", rec: "lit", hero: 3.0, cam: [[-10.4, 2.2, -2.6], [0, 1.45, -1.3], 5, 40, [-4.6, 1.5, -1.8], [-1.6, 0.3, 0]] },
   { id: "final-smash", cat: "final", name: "Final Smash", rar: "legendary", price: 100000, get: "shop", desc: "Killing an enemy will smash them out of the world.", tags: "armor stand launch", rec: "final-smash", hero: 1.2, rise: 5 },
   { id: "rainbow", cat: "final", name: "Rainbow", rar: "legendary", price: null, get: "event", season: "Easter", desc: "Whoa, that's a full rainbow all the way!", tags: "rainbow colors", rec: "rainbow", hero: 2.0 },
   { id: "petal-gust", cat: "final", name: "Petal Gust", rar: "legendary", price: null, get: "event", season: "Easter", desc: "Create a gust of petals around your foe!", tags: "flowers petals tulips", rec: "petal-gust", hero: 2.5 },
-  { id: "batcrux", cat: "final", name: "Batcrux", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Killing an enemy splits their soul into 7 Batcruxes.", tags: "bats smoke spooky", rec: "batcrux", hero: 2.5, rise: 4 },
+  { id: "batcrux", cat: "final", name: "Batcrux", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Killing an enemy splits their soul into 7 Batcruxes.", tags: "bats smoke spooky", rec: "batcrux", hero: 2.5, rise: 4, thumbNoTags: 1 },
   { id: "soul-ripper", cat: "final", name: "Soul Ripper", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Killing an enemy rips their soul of their body, leaving them lingering a few more seconds in the common world.", tags: "soul ghost spooky", rec: "soul-ripper", hero: 1.6 },
   { id: "shattered", cat: "final", name: "Shattered", rar: "legendary", price: null, get: "bundle", season: "Halloween", desc: "Shatter your enemies to dust!", tags: "glass shards", rec: "shattered", hero: 1.3 },
   { id: "pumpkin-popper", cat: "final", name: "Pumpkin Popper", rar: "legendary", price: null, get: "bundle", season: "Halloween", desc: "Killing a player will cause Pumpkins to explode from their body.", tags: "pumpkins pie", rec: "pumpkin-popper", hero: 1.5 },
@@ -1194,40 +1261,40 @@ const ITEMS = [
   { id: "bed-shattering-ice", cat: "bed", name: "Shattering Ice", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Plays the Shattering Ice Bed Destroy when you break a bed.", tags: "bed break", rec: "bed-shattering-ice", hero: 2.38, cam: [[-10.52, 2.84, -4.18], [0, 0.8, 0], 5.7, 33.9, [-9.05, 2.61, -3.6], [0, 0.8, 0]] },
   { id: "bed-burned-up", cat: "bed", name: "Burned Up", rar: "legendary", price: null, get: "event", season: "Summer", desc: "Plays the Burned Up Bed Destroy when you break a bed.", tags: "bed break", rec: "bed-burned-up", hero: 1.15, cam: [[-9.87, 4.16, -3.93], [0, 2.25, 0], 5.3, 31.8, [-8.49, 3.95, -3.38], [0, 2.25, 0]] },
   // Projectile trails (begin): every card flies one standard shot (sgen.py) with what that trail spawns each tick, measured from recorded shots (tgen.py)
-  { id: "trail-black-smoke", cat: "trail", name: "Black Smoke", rar: "common", price: 5000, get: "shop", desc: "Selects the Black Smoke Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-black-smoke", songs: ["trail-black-smoke", "trail-black-smoke-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-ender", cat: "trail", name: "Ender", rar: "common", price: 5000, get: "shop", desc: "Selects the Ender Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-ender", songs: ["trail-ender", "trail-ender-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-lava", cat: "trail", name: "Lava", rar: "common", price: 5000, get: "shop", desc: "Selects the Lava Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-lava", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-potion", cat: "trail", name: "Potion", rar: "common", price: 5000, get: "shop", desc: "Selects the Potion Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-potion", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-slime", cat: "trail", name: "Slime", rar: "common", price: 5000, get: "shop", desc: "Selects the Slime Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-slime", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-water", cat: "trail", name: "Water", rar: "common", price: 5000, get: "shop", desc: "Selects the Water Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-water", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-blue-dust", cat: "trail", name: "Blue Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Blue Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-blue-dust", songs: ["trail-blue-dust", "trail-blue-dust-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-cursed-flames", cat: "trail", name: "Cursed Flames", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Selects the Cursed Flames Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-cursed-flames", songs: ["trail-cursed-flames", "trail-cursed-flames-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-lunar-dust", cat: "trail", name: "Lunar Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Lunar Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-lunar-dust", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-notes", cat: "trail", name: "Notes", rar: "rare", price: 10000, get: "shop", desc: "Selects the Notes Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-notes", songs: ["trail-notes", "trail-notes-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-purple-dust", cat: "trail", name: "Purple Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Purple Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-purple-dust", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-red-dust", cat: "trail", name: "Red Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Red Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-red-dust", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-angry-villager", cat: "trail", name: "Angry Villager", rar: "epic", price: 25000, get: "shop", desc: "Selects the Angry Villager Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-angry-villager", songs: ["trail-angry-villager", "trail-angry-villager-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-bone", cat: "trail", name: "Bone", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Bone Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-bone", songs: ["trail-bone", "trail-bone-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-candy-basket", cat: "trail", name: "Candy Basket", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Candy Basket Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-candy-basket", songs: ["trail-candy-basket", "trail-candy-basket-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-fire", cat: "trail", name: "Fire", rar: "epic", price: 25000, get: "shop", desc: "Selects the Fire Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-fire", songs: ["trail-fire", "trail-fire-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-firework", cat: "trail", name: "Firework", rar: "epic", price: 25000, get: "shop", desc: "Selects the Firework Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-firework", songs: ["trail-firework", "trail-firework-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-green-star", cat: "trail", name: "Green Star", rar: "epic", price: 25000, get: "shop", desc: "Selects the Green Star Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-green-star", songs: ["trail-green-star", "trail-green-star-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-hoops", cat: "trail", name: "Hoops", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Hoops Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-hoops", songs: ["trail-hoops", "trail-hoops-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-howling-wind", cat: "trail", name: "Howling Wind", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Howling Wind Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-howling-wind", songs: ["trail-howling-wind", "trail-howling-wind-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-magic", cat: "trail", name: "Magic", rar: "epic", price: 25000, get: "shop", desc: "Selects the Magic Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-magic", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-meteor-blaze", cat: "trail", name: "Meteor Blaze", rar: "epic", price: null, get: "slumber", desc: "Selects the Meteor Blaze Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-meteor-blaze", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-rocket", cat: "trail", name: "Rocket", rar: "epic", price: 25000, get: "shop", desc: "Selects the Rocket Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-rocket", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-bite", cat: "trail", name: "Bite", rar: "legendary", price: null, get: "challenges", desc: "Selects the Bite Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-bite", songs: ["trail-bite", "trail-bite-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-bloody", cat: "trail", name: "Bloody", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the Bloody Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-bloody", songs: ["trail-bloody", "trail-bloody-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-cheese", cat: "trail", name: "Cheese", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Cheese Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-cheese", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-dna", cat: "trail", name: "DNA", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the DNA Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-dna", songs: ["trail-dna", "trail-dna-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-hearts", cat: "trail", name: "Hearts", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Hearts Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-hearts", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-jack-o-lantern", cat: "trail", name: "Jack O' Lantern", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the Jack O' Lantern Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-jack-o-lantern", songs: ["trail-jack-o-lantern", "trail-jack-o-lantern-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-merry", cat: "trail", name: "Merry", rar: "legendary", price: null, get: "event", season: "Holidays", desc: "Selects the Merry Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-merry", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-rainbow", cat: "trail", name: "Rainbow", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Rainbow Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-rainbow", songs: ["trail-rainbow", "trail-rainbow-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-stormy", cat: "trail", name: "Stormy", rar: "legendary", price: null, get: "event", season: "Summer", desc: "Selects the Stormy Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-stormy", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-trick-or-treat", cat: "trail", name: "Trick or Treat", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the Trick or Treat Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-trick-or-treat", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-twin-dragon", cat: "trail", name: "Twin Dragon", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Twin Dragon Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-twin-dragon", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
+  { id: "trail-black-smoke", cat: "trail", name: "Black Smoke", rar: "common", price: 5000, get: "shop", desc: "Selects the Black Smoke Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-black-smoke", songs: ["trail-black-smoke", "trail-black-smoke-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-ender", cat: "trail", name: "Ender", rar: "common", price: 5000, get: "shop", desc: "Selects the Ender Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-ender", songs: ["trail-ender", "trail-ender-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-lava", cat: "trail", name: "Lava", rar: "common", price: 5000, get: "shop", desc: "Selects the Lava Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-lava", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-potion", cat: "trail", name: "Potion", rar: "common", price: 5000, get: "shop", desc: "Selects the Potion Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-potion", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-slime", cat: "trail", name: "Slime", rar: "common", price: 5000, get: "shop", desc: "Selects the Slime Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-slime", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-water", cat: "trail", name: "Water", rar: "common", price: 5000, get: "shop", desc: "Selects the Water Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-water", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-blue-dust", cat: "trail", name: "Blue Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Blue Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-blue-dust", songs: ["trail-blue-dust", "trail-blue-dust-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-cursed-flames", cat: "trail", name: "Cursed Flames", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Selects the Cursed Flames Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-cursed-flames", songs: ["trail-cursed-flames", "trail-cursed-flames-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-lunar-dust", cat: "trail", name: "Lunar Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Lunar Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-lunar-dust", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-notes", cat: "trail", name: "Notes", rar: "rare", price: 10000, get: "shop", desc: "Selects the Notes Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-notes", songs: ["trail-notes", "trail-notes-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-purple-dust", cat: "trail", name: "Purple Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Purple Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-purple-dust", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-red-dust", cat: "trail", name: "Red Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Red Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-red-dust", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-angry-villager", cat: "trail", name: "Angry Villager", rar: "epic", price: 25000, get: "shop", desc: "Selects the Angry Villager Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-angry-villager", songs: ["trail-angry-villager", "trail-angry-villager-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-bone", cat: "trail", name: "Bone", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Bone Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-bone", songs: ["trail-bone", "trail-bone-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-candy-basket", cat: "trail", name: "Candy Basket", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Candy Basket Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-candy-basket", songs: ["trail-candy-basket", "trail-candy-basket-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-fire", cat: "trail", name: "Fire", rar: "epic", price: 25000, get: "shop", desc: "Selects the Fire Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-fire", songs: ["trail-fire", "trail-fire-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-firework", cat: "trail", name: "Firework", rar: "epic", price: 25000, get: "shop", desc: "Selects the Firework Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-firework", songs: ["trail-firework", "trail-firework-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-green-star", cat: "trail", name: "Green Star", rar: "epic", price: 25000, get: "shop", desc: "Selects the Green Star Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-green-star", songs: ["trail-green-star", "trail-green-star-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-hoops", cat: "trail", name: "Hoops", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Hoops Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-hoops", songs: ["trail-hoops", "trail-hoops-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-howling-wind", cat: "trail", name: "Howling Wind", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Howling Wind Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-howling-wind", songs: ["trail-howling-wind", "trail-howling-wind-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-magic", cat: "trail", name: "Magic", rar: "epic", price: 25000, get: "shop", desc: "Selects the Magic Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-magic", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-meteor-blaze", cat: "trail", name: "Meteor Blaze", rar: "epic", price: null, get: "slumber", desc: "Selects the Meteor Blaze Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-meteor-blaze", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-rocket", cat: "trail", name: "Rocket", rar: "epic", price: 25000, get: "shop", desc: "Selects the Rocket Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-rocket", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-bite", cat: "trail", name: "Bite", rar: "legendary", price: null, get: "challenges", desc: "Selects the Bite Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-bite", songs: ["trail-bite", "trail-bite-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-bloody", cat: "trail", name: "Bloody", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the Bloody Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-bloody", songs: ["trail-bloody", "trail-bloody-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-cheese", cat: "trail", name: "Cheese", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Cheese Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-cheese", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-dna", cat: "trail", name: "DNA", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the DNA Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-dna", songs: ["trail-dna", "trail-dna-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-hearts", cat: "trail", name: "Hearts", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Hearts Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-hearts", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-jack-o-lantern", cat: "trail", name: "Jack O' Lantern", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the Jack O' Lantern Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-jack-o-lantern", songs: ["trail-jack-o-lantern", "trail-jack-o-lantern-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-merry", cat: "trail", name: "Merry", rar: "legendary", price: null, get: "event", season: "Holidays", desc: "Selects the Merry Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-merry", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-rainbow", cat: "trail", name: "Rainbow", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Rainbow Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-rainbow", songs: ["trail-rainbow", "trail-rainbow-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-stormy", cat: "trail", name: "Stormy", rar: "legendary", price: null, get: "event", season: "Summer", desc: "Selects the Stormy Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-stormy", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-trick-or-treat", cat: "trail", name: "Trick or Treat", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the Trick or Treat Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-trick-or-treat", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
+  { id: "trail-twin-dragon", cat: "trail", name: "Twin Dragon", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Twin Dragon Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-twin-dragon", stage: "void", bright: 1.9, hero: 1.1, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [-11, 2.5, -2.6], [-3.5, 1.5, 0]] },
   // Projectile trails (end)
   // Kill messages: Hypixel's exact wording
   { id: "km-fire", cat: "msg", name: "Fire", rar: "common", price: 5000, get: "shop", desc: "Select the Fire Kill Messages!", tags: "chat",
@@ -1348,11 +1415,21 @@ function chatHtml(it, cls = "") {
   return it.lines.map((l, i) => `<div class="chat-line ${cls}" style="animation-delay:${i * 0.06}s">${l}</div>`).join("");
 }
 
-let visible = [];
+let visible = [], railCat = null;
+// On phones the categories are one sideways row: bring the picked one into view.
+function showActiveChip() {
+  const rail = $("rail"), chip = rail.querySelector(`.cat[data-cat="${state.cat}"]`);
+  if (!chip || rail.scrollWidth <= rail.clientWidth + 1) return;
+  const r = rail.getBoundingClientRect(), c = chip.getBoundingClientRect();
+  const left = rail.scrollLeft + (c.left - r.left) - (r.width - c.width) / 2;
+  rail.scrollTo({ left: Math.max(0, left), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
 function render() {
   for (const b of document.querySelectorAll(".cat")) b.setAttribute("aria-pressed", String(b.dataset.cat === state.cat));
+  if (railCat !== state.cat) { railCat = state.cat; showActiveChip(); }
   for (const b of document.querySelectorAll("#rarSeg button")) b.setAttribute("aria-pressed", String(b.dataset.r === state.rar));
-  $("heading").textContent = state.cat === "all" ? "All cosmetics" : catOf(state.cat).name;
+  const heading = $("heading");
+  heading.textContent = state.cat === "all" ? "All cosmetics" : catOf(state.cat).name;
   visible = ITEMS.filter((it) => (state.cat === "all" || it.cat === state.cat) && (state.rar === "all" || it.rar === state.rar)
     && (state.avail === "all" || availOf(it) === state.avail) && matches(it, state.q));
   const p = (x) => x.price ?? -1;
@@ -1377,10 +1454,28 @@ function render() {
     b.innerHTML = `<div class="thumb">${thumb}<span class="rar">${RAR[it.rar][0]}</span>${it.season ? `<span class="season">${it.season}</span>` : ""}</div>
       <div class="meta"><span class="nm">${it.name}</span><span class="sub"><span class="cn">${catOf(it.cat).name}</span>${price}</span></div>`;
     b.onclick = () => openStudio(it.id);
+    // Start fetching the recording when a card is pointed at (a short hover, or a press), so the popup opens on it sooner.
+    if (it.rec) {
+      let hov = 0; const pre = () => loadRec(it.songs?.[0] || it.rec).catch(() => {});
+      b.onpointerenter = () => { hov = setTimeout(pre, 150); }; b.onpointerleave = () => clearTimeout(hov); b.onpointerdown = pre;
+    }
     grid.appendChild(b);
   });
   $("empty").hidden = visible.length > 0;
+  // While searching, say how many cards are shown.
+  if (state.q) { const c = document.createElement("span"); c.className = "count"; c.textContent = `${visible.length} result${visible.length === 1 ? "" : "s"}`; heading.appendChild(c); }
+  if (!visible.length) {
+    // Only mention the category or filters when some are set; the button undoes the search, or the filters when there is no search.
+    const filtered = state.rar !== "all" || state.avail !== "all";
+    $("emptyHint").textContent = state.q ? `Try another word${state.cat !== "all" ? ", or look in Everything" : filtered ? ", or clear the filters" : ""}.` : "Try clearing the filters.";
+    $("emptyClear").textContent = state.q ? "Clear search" : "Clear filters";
+  }
 }
+$("emptyClear").onclick = () => {
+  if (state.q) { state.q = ""; $("q").value = ""; }
+  else { state.rar = "all"; state.avail = "all"; $("avail").value = "all"; }
+  render();
+};
 
 function tally() {
   const cats = new Set(ITEMS.map((i) => i.cat)).size;
@@ -1972,17 +2067,46 @@ const loadRec = (id) => recLoading[id] || (recLoading[id] = fetchJson(`cosmetics
 const REC_CAM = [[-10.4, 2.2, -2.6], [0, 1.45, -1.3], 5, 40, [-8.4, 2.6, -2.6], [0, 1.8, -1.0]];
 for (const it of ITEMS) if (it.rec) {
   it.preview = "rec:" + it.id;
-  PREVIEWS[it.preview] = { stage: it.stage || "arena", bright: it.bright, cam: it.cam || REC_CAM, rec: it.rec, loop: null, hero: it.hero || 2.1, build(S) {
+  // Trails start with the projectile already part way along (start), play at 0.4x speed (rate) so it stays
+  // on screen a while, and start again just after it has flown out of view.
+  PREVIEWS[it.preview] = { stage: it.stage || "arena", bright: it.bright, cam: it.cam || REC_CAM, rec: it.rec, loop: null, hero: it.hero || 2.1, start: it.cat === "trail" ? 0.55 : 0, rate: it.cat === "trail" ? 0.4 : 1, build(S) {
     const def = this; let run = null;
     // Snow Globe plays one of several jingles; the viewer picks which (def.take).
     const rec = it.songs?.[def.take || 0] || it.rec;
-    const go = (d) => { def.loop = (Math.max(d.end, d.cam) - d.ev[0][0]) / 1000 + 1.4; run = REC.build(S, d); };
+    const go = (d) => {
+      if (it.cat === "trail") { const w = trailWindow(d, def.cam, S.camera.aspect); def.start = w.start; def.loop = w.end; }
+      else def.loop = recLoop(it, d);
+      run = REC.build(S, d);
+    };
     if (recData[rec]) go(recData[rec]);
-    else loadRec(rec).then((d) => { if (S.def === def && S.it === it && (it.songs?.[def.take || 0] || it.rec) === rec) { S.t = 0; go(d); } });
+    else loadRec(rec).then((d) => { if (S.def === def && S.it === it && (it.songs?.[def.take || 0] || it.rec) === rec) { S.t = 0; go(d); S.preroll(def.start); } });
     const f = (t) => run?.(t);
-    f.focus = () => run?.focus?.(); f.me = () => run?.me?.();
+    f.focus = () => run?.focus?.(); f.me = () => run?.me?.(); f.ready = () => !!run;
     return f;
   } };
+}
+// A trail's shot as the popup camera sees it: when the projectile is about 30% of the way across
+// the view (where playback starts) and a moment after it has left the view (where it starts again).
+// Times are preview seconds (the recording's ticks start at T0, as in REC.build).
+function trailWindow(d, cam, aspect) {
+  const ev = d.ev, T0 = Math.floor((ev[0][0] - 60) / 50) * 50, toT = (ms) => (ms - T0) / 1000;
+  const shot = ev.find((e) => e[1] === "obj"); if (!shot) return { start: 0.55, end: recLoop({ cat: "trail" }, d) };
+  const id = shot[2], pts = [[shot[0], shot[4], shot[5], shot[6]]];
+  for (const e of ev) if (e[1] === "tp" && e[2] === id) pts.push([e[0], e[3], e[4], e[5]]);
+  const c = new THREE.PerspectiveCamera(32, aspect || 4 / 3, 0.1, 600), v = new THREE.Vector3();
+  c.position.set(...cam[0]); c.lookAt(...cam[1]); c.updateMatrixWorld(); c.updateProjectionMatrix();
+  let out = pts[pts.length - 1][0];
+  for (const [t, x, y, z] of pts) { v.set(x, y, z).project(c); if (t > shot[0] && (Math.abs(v.x) > 1.1 || Math.abs(v.y) > 1.1 || v.z > 1)) { out = t; break; } }
+  return { start: toT(shot[0] + (out - shot[0]) * 0.3), end: toT(out) + 0.4 };
+}
+// How long one play of a recording lasts before it starts again.
+function recLoop(it, d) {
+  const t0 = d.ev[0][0];
+  // Glyphs start again right after the last burst, while the picture is still showing, so the stage never sits empty.
+  if (it.cat === "glyph") return (d.end - t0) / 1000 + 0.2;
+  // Trails: once what they leave behind has gone (Cheese and Trick or Treat drop items that stay a while).
+  if (it.cat === "trail") { let last = 0; for (const e of d.ev) if (e[1] === "p" || e[1] === "kill" || e[1] === "obj") last = Math.max(last, e[0]); return Math.max(2.4, (last - t0) / 1000 + 0.5); }
+  return (Math.max(d.end, d.cam) - t0) / 1000 + 1.4;
 }
 // Island toppers: built block by block on the arena as the in-game preview does,
 // held, then built again. The camera is set back far enough to see the whole build.
@@ -2201,7 +2325,10 @@ function makeStudio(canvas, w, h) {
     S.bright = def.bright || 1; S.skyK = 1; scene.background = null; mcAmb.intensity = 0.4 * Math.PI * S.bright; mcL0.intensity = mcL1.intensity = 0.6 * Math.PI * Math.min(S.bright, 1.25);
     S.flash(0); S.setStage(def.stage); arena?.userData.reset();
     S.def = def; S.it = it; S.t = 0; S.tick = def.build(S, it);
+    if (S.tick?.ready?.()) S.preroll(def.start);
   };
+  // Plays ahead to `t` at once (sounds in that stretch play straight away).
+  S.preroll = (t) => { for (let n = 0; t && S.t < t && n < 600; n++) S.step(1 / 60); };
   // Runs fn once, the first tick at or after `time` (calls are told apart by order).
   S.at = (time, fn) => { const k = S.ci++; if (S.t >= time && !S.fired.has(k)) { S.fired.add(k); fn(); } };
   S.audible = false;
@@ -2268,7 +2395,7 @@ const thumbs = {};
 const THUMB_DIR = "cosmetics/thumbs/";
 function thumbKey(it) {
   const def = PREVIEWS[it.preview] || {};
-  const s = JSON.stringify(it) + "|" + JSON.stringify([def.hero, def.cam, def.stage, def.thumbY, def.rec]);
+  const s = JSON.stringify(it) + "|" + JSON.stringify([def.hero, def.cam, def.stage, def.thumbY, def.rec]) + (it.cat === "trail" ? "|" + TRAIL_THUMB_PARTICLES : "");
   let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
   return (h >>> 0).toString(36);
 }
@@ -2278,6 +2405,7 @@ function setThumb(id, src) {
   if (img) { img.src = src; img.classList.add("on"); img.nextElementSibling?.classList.contains("shimmer") && img.nextElementSibling.remove(); }
 }
 const THUMB_ALL = new URLSearchParams(location.search).has("thumbs"); // tools/thumbs.js: render every card
+const TRAIL_THUMB_PARTICLES = 2; // how much larger a trail card draws its particles
 async function makeThumbs() {
   let saved = {};
   if (!THUMB_ALL) try { saved = await (await fetch(THUMB_DIR + "index.json", { cache: "no-cache" })).json(); } catch { saved = {}; }
@@ -2303,10 +2431,14 @@ async function makeThumbs() {
     T.camera.position.set(C[4][0], C[4][1] + (def.thumbY ? .4 : 0), C[4][2]); T.camera.lookAt(C[5][0], def.thumbY || C[5][1], C[5][2]);
     Math.random = seeded(it.id.length * 97 + 13);
     T.load(def, it);
-    const steps = Math.round(def.hero * 60);
+    const steps = Math.round((def.hero - T.t) * 60); // T.t is past 0 when the preview starts later (trails)
     for (let i = 0; i < steps; i++) T.step(1 / 60);
     Math.random = realRandom;
     if (def.rec || def.top) await new Promise((r) => setTimeout(r, 0)); // let item and block meshes attach (they are added once their models load)
+    // Batcrux's bats carry long name tags that run off the card: the picture leaves them out (the popup still shows them).
+    if (it.thumbNoTags) T.item.traverse((o) => { if (o.isSprite && o.renderOrder >= 10) o.visible = false; }); // name tags are the only sprites drawn at order 10+
+    // A trail's particles are tiny next to the card: its picture draws them larger (the popup keeps the game's size).
+    if (it.cat === "trail") T.scene.traverse((o) => { const a = o.geometry?.attributes?.isize; if (!a) return; for (let i = 0; i < o.geometry.instanceCount; i++) a.array[i] *= TRAIL_THUMB_PARTICLES; a.needsUpdate = true; });
     const me = it.follow && T.tick?.me?.(); // dances that ride off: the picture keeps the same view of the winner
     if (me) { T.camera.position.set(me.x + C[4][0] - C[5][0], me.y + 1 + C[4][1] - C[5][1], me.z + C[4][2] - C[5][2]); T.camera.lookAt(me.x, me.y + 1, me.z); }
     T.renderer.render(T.scene, T.camera);
@@ -2359,7 +2491,7 @@ function resize() {
 }
 // ?at=1.2 holds every preview still at that second (for checking a single moment).
 let HOLD = parseFloat(new URLSearchParams(location.search).get("at"));
-window.__focus = () => { const f = studio.tick?.focus?.(); return f && { x: f.x, y: f.y, z: f.z, w: f.w, base: PREVIEWS[current?.preview]?.cam?.[1], end: studio.def?.end }; };
+window.__dbg = () => studio; window.__focus = () => { const f = studio.tick?.focus?.(); return f && { x: f.x, y: f.y, z: f.z, w: f.w, base: PREVIEWS[current?.preview]?.cam?.[1], end: studio.def?.end }; };
 window.__seek = (t) => { if (t < studio.t) studio.load(PREVIEWS[current.preview], current); HOLD = t; };
 // ?cam=x,y,z,tx,ty,tz places the camera (and stops the spin) for checking a view.
 const CAMQ = new URLSearchParams(location.search).get("cam")?.split(",").map(Number);
@@ -2393,16 +2525,36 @@ function followRec(dt) {
   controls.target.x += dx; controls.target.y += dy; controls.target.z += dz;
   studio.camera.position.x += dx; studio.camera.position.y += dy * (rise ? 0.8 : 0.3); studio.camera.position.z += dz;
 }
+// Final kills open with the killer walking in from five blocks to the side: the view starts wider and
+// shifted toward him, so both players are in the stage, then eases to its usual framing once he arrives
+// (again at each replay). Applied as a change from the last frame, so dragging and zooming still work.
+let introE = 0;
+function introCam() {
+  const on = current?.cat === "final" && String(PREVIEWS[current.preview]?.cam?.[0]) === String(REC_CAM[0]);
+  const t = studio.t, x = clamp((t - 0.7) / 1.3, 0, 1), e = on ? 1 - x * x * (3 - 2 * x) : 0;
+  if (e === introE) return;
+  const off = studio.camera.position.clone().sub(controls.target);
+  studio.camera.position.copy(controls.target).addScaledVector(off, (1 + 0.28 * e) / (1 + 0.28 * introE));
+  const dz = -1.2 * (e - introE); controls.target.z += dz; studio.camera.position.z += dz;
+  introE = e;
+}
+const stageEl = $("stage");
 function frame(now) {
   if (CAMQ?.length === 6) { controls.autoRotate = false; studio.camera.position.set(CAMQ[0], CAMQ[1], CAMQ[2]); controls.target.set(CAMQ[3], CAMQ[4], CAMQ[5]); }
   raf = requestAnimationFrame(frame);
   const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
   if (HOLD >= 0) { if (studio.t < HOLD) { studio.audible = false; for (let n = 0; studio.t < HOLD && n < 3000; n++) studio.step(1 / 60); } }
-  else studio.step(dt * speed);
-  if (!(CAMQ?.length === 6)) followRec(HOLD >= 0 ? 1 : dt);
-  // Victory dances fade out over their last moments and back in as they start again, instead of jumping back.
+  else studio.step(dt * speed * (studio.def?.rate || 1));
+  if (!(CAMQ?.length === 6)) { followRec(HOLD >= 0 ? 1 : dt); introCam(); }
+  // Victory dances fade out over their last moments and back in as they start again, instead of jumping back
+  // (trails cut straight to the next shot, so the stage never sits empty).
   const L = studio.def?.loop, cv = studio.renderer.domElement;
-  const op = (current?.cat === "dance" || current?.cat === "trail") && L && !(HOLD >= 0) ? clamp((L - studio.t) / 0.7, 0, 1) * clamp(studio.t / 0.45, 0, 1) : 1;
+  // A recording still loading shows nothing rather than an empty stage.
+  const s0 = studio.def?.start || 0;
+  const loading = !!studio.tick?.ready && !studio.tick.ready();
+  if (stageEl.classList.contains("loading") !== loading) stageEl.classList.toggle("loading", loading);
+  const op = loading ? 0
+    : current?.cat === "dance" && L && !(HOLD >= 0) ? clamp((L - studio.t) / 0.7, 0, 1) * clamp((studio.t - s0) / (s0 ? 0.25 : 0.45), 0, 1) : 1;
   if (cv.style.opacity !== String(op)) cv.style.opacity = op === 1 ? "" : op.toFixed(3);
   if (zoomGoal != null) {
     const off = studio.camera.position.clone().sub(controls.target), d = off.length();
@@ -2421,10 +2573,12 @@ function openStudio(id, push = true) {
   ensureStudio(); resize();
   const chatOnly = !!it.lines;
   $("stage").classList.toggle("chat-mode", chatOnly);
+  stageEl.classList.remove("loading");
+  if (thumbs[it.id]) stageEl.style.setProperty("--ph", `url("${thumbs[it.id]}")`); else stageEl.style.removeProperty("--ph");
   cancelAnimationFrame(raf); stopSounds();
   if (!chatOnly) {
     const C = PREVIEWS[it.preview].cam || STAGE_CAM[PREVIEWS[it.preview].stage || "island"];
-    studio.camera.position.set(...C[0]); controls.target.set(...C[1]); camOff.set(0, 0, 0); camGoal.set(0, 0, 0); zoomGoal = null; controls.autoRotate = autoSpin(); controls.minDistance = C[2]; controls.maxDistance = C[3];
+    studio.camera.position.set(...C[0]); controls.target.set(...C[1]); camOff.set(0, 0, 0); camGoal.set(0, 0, 0); zoomGoal = null; introE = 0; controls.autoRotate = autoSpin(); controls.minDistance = C[2]; controls.maxDistance = C[3];
     studio.audible = true; studio.load(PREVIEWS[it.preview], it);
     last = performance.now(); raf = requestAnimationFrame(frame);
   }
@@ -2442,15 +2596,26 @@ function openStudio(id, push = true) {
   if (chatOnly) chat.innerHTML = `<div class="chat-box">${chatHtml(it)}</div>`;
   // Text panel
   $("sCat").textContent = catOf(it.cat).name;
-  $("sRar").innerHTML = `<span style="color:${RAR[it.rar][1]};font-weight:700">${RAR[it.rar][0]}</span>`;
+  $("sRar").innerHTML = `<span class="rar-name" style="--rc:${RAR[it.rar][1]}">${RAR[it.rar][0]}</span>`;
   $("sName").textContent = it.name;
-  $("sDesc").textContent = it.desc;
+  const desc = shortDesc(it);
+  $("sDesc").textContent = desc; $("sDesc").hidden = !desc;
   $("sRarity").innerHTML = `<span class="rar-dot" style="--rc:${RAR[it.rar][1]}"></span>${RAR[it.rar][0]}`;
   $("sPrice").innerHTML = it.price != null ? `${TOKEN}${fmtPrice(it.price)}` : '<span class="muted">Not sold</span>';
   $("sGet").textContent = getText(it);
   $("soundBox").hidden = !it.sound;
   $("playSound").classList.remove("playing");
   if (push) history.replaceState(null, "", "#" + it.id);
+}
+// The game's templated lines ("Select the X Glyph.", "Plays the X Death Cry when you die.",
+// "Select X as your Shopkeeper!") only repeat the name, and "This change is cosmetic." says nothing:
+// drop those sentences and keep any real wording (Batcrux, the shouting kill messages...).
+function shortDesc(it) {
+  // The name is swapped for a marker first, so a name with a full stop ("Mr. Giftman") stays one sentence.
+  const d = (it.desc || "").split(it.name).join("\u0001");
+  return d.split(/(?<=[.!?])\s+(?=[A-Z])/)
+    .filter((x) => !/^This change is cosmetic\.?$/i.test(x.trim()) && !(/^(Selects?|Plays)\b/.test(x) && x.includes("\u0001")))
+    .join(" ").split("\u0001").join(it.name).trim();
 }
 function closeStudio() {
   const el = $("studio"); el.classList.remove("open");
@@ -2521,6 +2686,10 @@ const deep = location.hash.slice(1);
 if (deep && ITEMS.some((i) => i.id === deep)) openStudio(deep, false);
 addEventListener("hashchange", () => { const h = location.hash.slice(1); if (h && h !== current?.id && ITEMS.some((i) => i.id === h)) openStudio(h, false); });
 if (!(HOLD >= 0)) makeThumbs(); // checking a moment skips the thumbnails
+// Once the page has settled, load what every recording shares (block, item and mob textures, models)
+// and set up the 3D stage, so the first popup opens on its preview instead of a spinner.
+const whenIdle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 1500));
+addEventListener("load", () => setTimeout(() => whenIdle(() => { REC.preload().catch(() => {}); whenIdle(() => { try { ensureStudio(); } catch (e) {} }); }), 1200), { once: true });
 </script>
 <script src="bg/backgrounds.js?v=1" defer></script>
 <script src="seasonal/northpole.js?v=1"></script>

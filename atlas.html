@@ -95,7 +95,7 @@
   .back svg { width: 16px; height: 16px; }
   .open-file { position: relative; margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--dim); border: 1px dashed var(--border-strong); padding: 5px 11px; border-radius: 999px; cursor: pointer; transition: color .15s, background .15s; }
   .open-file:hover { color: var(--text); background: var(--panel); }
-  html[data-theme="skyisles"] .open-file, html[data-theme="ledger"] .open-file { border-radius: var(--r-s); }
+  html[data-theme="skyisles"] .open-file, html[data-theme="ledger"] .open-file, html[data-theme="casefiles"] .open-file { border-radius: var(--r-s); }
   .open-file svg { width: 14px; height: 14px; }
   .open-file input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
@@ -168,6 +168,10 @@
   html.no-key .thumb { aspect-ratio: 16 / 9; }
   html.no-key .thumb .blank > * { display: none; }
   html.no-key .thumb .blank::before { content: ""; width: 22px; height: 22px; background: currentColor; opacity: .5; -webkit-mask: var(--lock) center / contain no-repeat; mask: var(--lock) center / contain no-repeat; }
+  /* A large, faint first letter behind the lock, so locked tiles aren't all alike (data-l is set below). */
+  html.no-key .thumb .blank[data-l]::after { content: attr(data-l); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -54%); font: 400 clamp(64px, 7vw, 92px)/1 var(--font-title); letter-spacing: 0; text-transform: uppercase; color: currentColor; opacity: .09; pointer-events: none; }
+  html[data-theme="ledger"].no-key .thumb .blank[data-l]::after { opacity: .12; }
+  html.no-key .thumb .blank::before { position: relative; z-index: 1; }
   :root { --lock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='11' width='16' height='10' rx='2'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 8 0v4'/%3E%3C/svg%3E"); }
   .tag { position: absolute; left: 10px; top: 10px; z-index: 1; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 7px; border-radius: 999px; color: #fff; background: rgba(0,0,0,.42); backdrop-filter: blur(4px); }
   html[data-theme="skyisles"] .tag, html[data-theme="ledger"] .tag { border-radius: 0; }
@@ -215,6 +219,17 @@
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .meta { padding: 9px 10px 10px; } .meta .nm { font-size: 14px; }
     .meta .sub { flex-wrap: wrap; gap: 2px 8px; } .st { margin-left: 0; }
+    /* Status always on its own line, so every card's meta has the same height. */
+    .meta .sub .st { flex-basis: 100%; }
+    /* The square themes keep square chips (same as their filter control). */
+    html[data-theme="skyisles"] .cat, html[data-theme="ledger"] .cat, html[data-theme="casefiles"] .cat { border-radius: var(--r-s); }
+  }
+  @media (max-width: 520px) {
+    /* Heading on its own line, the filter full width under it, in every theme. */
+    .bar { gap: 10px; margin-bottom: 14px; }
+    .bar h2 { flex-basis: 100%; }
+    .seg { width: 100%; }
+    .seg button { flex: 1 0 auto; }
   }
 
   /* Shared with the one-map view */
@@ -228,6 +243,8 @@
   .at-stage canvas:active { cursor: grabbing; }
   .at-top { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; align-items: center; gap: 10px; pointer-events: none; z-index: 3; flex-wrap: wrap; }
   .at-top > * { pointer-events: auto; }
+  /* North Pole: clear the Christmas-lights garland (26px, seasonal/northpole.js). */
+  html[data-theme="northpole"] .at-top { top: 30px; }
   .at-titlecard { display: flex; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; border-radius: var(--r-m); min-width: 0; }
   .at-home { display: grid; place-items: center; width: 34px; height: 34px; border-radius: var(--r-s); color: var(--dim); text-decoration: none; flex: none; }
   .at-home:hover { background: var(--panel-2); color: var(--text); }
@@ -286,6 +303,13 @@
   .at-loading-acts { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
   .at-loading-acts .at-loading-back { margin-top: 0; }
   .at-loading:not(.is-error) .at-loading-acts { display: none; }
+  @media (min-width: 721px) {
+    html.no-key-map .at-loading.is-error .at-logo { width: 64px; height: 64px; margin-bottom: 18px; }
+    html.no-key-map .at-loading.is-error .at-logo svg { width: 32px; height: 32px; }
+    html.no-key-map .at-loading.is-error .at-lockmsg { font-size: 1.2em; }
+    html.no-key-map .at-loading.is-error .at-loading-acts { margin-top: 20px; gap: 10px; }
+    html.no-key-map .at-loading.is-error .at-loading-acts .at-btn { padding: 10px 18px; font-size: 1em; }
+  }
   .at-bar { height: 6px; border-radius: 3px; background: var(--panel-2); margin-top: 14px; overflow: hidden; }
   .at-bar::after { content: ""; display: block; height: 100%; width: var(--p, 0%); background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .2s; }
 
@@ -417,6 +441,29 @@
     </div>
   </div>
 </div>
+<script>
+  // Page-local touches on what replay/atlas.js renders.
+  (function () {
+    // Keep "8 teams" together (and the dot with the word before it) when the map subtitle wraps.
+    var sub = document.getElementById('atMapSub')
+    function tidySub () {
+      var t = sub.textContent, n = t.replace(/(\d+) (teams)/g, '$1\u00a0$2').replace(/ \u00b7 /g, '\u00a0\u00b7 ')
+      if (n !== t) sub.textContent = n
+    }
+    new MutationObserver(tidySub).observe(sub, { childList: true, characterData: true, subtree: true })
+    // Locked cards: give each thumb its map's first letter (drawn faintly behind the lock).
+    var grid = document.getElementById('grid')
+    function letters () {
+      var cards = grid.querySelectorAll('.card .blank:not([data-l])')
+      for (var i = 0; i < cards.length; i++) {
+        var nm = cards[i].closest('.card').querySelector('.nm')
+        var l = nm && nm.textContent.trim().charAt(0)
+        if (l) cards[i].setAttribute('data-l', l)
+      }
+    }
+    new MutationObserver(letters).observe(grid, { childList: true })
+  })()
+</script>
 <script src="replay/atlas.js?v=2026-11-11b"></script><!-- bump v with every atlas.js build, so a cached page never runs a newer script -->
 <script src="bg/backgrounds.js?v=1" defer></script>
 <script src="seasonal/northpole.js?v=1"></script>

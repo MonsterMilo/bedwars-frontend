@@ -189,7 +189,7 @@
   /* Solid, so the background timeline's ruler and timecode don't show through the text (beats pages.css's see-through fill). */
   .page .empty { background: var(--panel); }
   .empty b { display: block; color: var(--text); font-size: 17px; margin-bottom: 4px; }
-  .skel { height: 126px; border-radius: var(--r-m); background: linear-gradient(90deg, var(--panel), var(--panel-2), var(--panel)); background-size: 200% 100%; animation: shimmer 1.2s infinite linear; }
+  .skel { position: relative; overflow: hidden; height: 126px; border: 1px solid var(--border); border-radius: var(--r-m); background: linear-gradient(90deg, var(--panel), var(--panel-2), var(--panel)); background-size: 200% 100%; animation: shimmer 1.2s infinite linear; }
   @keyframes shimmer { to { background-position: -200% 0; } }
 
   /* One game */
@@ -202,6 +202,9 @@
   .g-head h1 { margin: 6px 0 0; font-family: var(--font-title); font-size: clamp(28px, 4vw, 44px); line-height: 1.05; letter-spacing: -.01em; }
   html[data-theme="casefiles"] .g-head h1 { font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
   .g-head p { margin: 8px 0 0; color: var(--dim); }
+  .g-head p.chipline { font-size: inherit; }
+  .g-head p.chipline .cl { margin-left: -17px; }
+  .g-head p.chipline .cl > span::before { margin: 0 7px; }
   .result { display: inline-block; font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; padding: 3px 9px; border-radius: var(--r-pill); color: var(--rc); background: color-mix(in srgb, var(--rc) 14%, transparent); }
   .g-head .acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
   .g-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
@@ -233,13 +236,19 @@
   tr:hover td .pov { opacity: 1; }
   td .pov:hover { color: var(--accent); }
   td.z { color: var(--faint); }
-  .ms { overflow-x: auto; }
-  .ms table td, .ms table th { padding-left: 6px; padding-right: 6px; }
-  .log { list-style: none; margin: 0; padding: 0; max-height: 600px; overflow-y: auto; scrollbar-width: thin; }
+  /* Wide table: it scrolls sideways inside the panel, and fades at the edge while there's more to see. */
+  .ms-wrap { overflow-x: auto; scrollbar-width: thin; }
+  .ms-wrap.more { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); }
+  .ms table td, .ms table th { padding-left: 6px; padding-right: 6px; white-space: nowrap; }
+  /* On wide screens the log column stays in view while the left column scrolls, and the log
+     scrolls inside it, fading at the bottom while there's more. */
+  .g-grid > div:last-child { position: sticky; top: 16px; }
+  .log { list-style: none; margin: 0; padding: 0; max-height: max(320px, calc(100vh - 150px)); overflow-y: auto; scrollbar-width: thin; }
+  .log.more { -webkit-mask-image: linear-gradient(#000 calc(100% - 40px), transparent); mask-image: linear-gradient(#000 calc(100% - 40px), transparent); }
   .log li a { display: grid; grid-template-columns: 52px 14px 1fr; gap: 8px; align-items: baseline; padding: 6px 8px; border-radius: var(--r-s); text-decoration: none; font-size: 14px; }
   .log li a:hover { background: var(--panel-2); }
   .log time { color: var(--faint); font: 600 12.5px 'JetBrains Mono', ui-monospace, monospace; }
-  .log i { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); align-self: center; }
+  .log i { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); align-self: start; margin-top: calc(.75em - 4px); }
   .log .k-final i { background: var(--bad); }
   .log .k-bed i { background: var(--bed); border-radius: 2px; transform: rotate(45deg); }
   .log .k-eliminated i { background: var(--accent-2); }
@@ -257,14 +266,20 @@
   .clips span:last-child { margin-left: auto; color: var(--faint); font-size: 12.5px; white-space: nowrap; }
   /* Jersey 10 runs small: the fixed small sizes get the same bump as the theme's body text. */
   html[data-theme="skyisles"] .chipline, html[data-theme="skyisles"] .teams, html[data-theme="skyisles"] .mini, html[data-theme="skyisles"] .log li a, html[data-theme="skyisles"] table, html[data-theme="skyisles"] .clips a, html[data-theme="skyisles"] .tgt, html[data-theme="skyisles"] .chip { font-size: 15px; }
+  html[data-theme="skyisles"] :is(.cat, .seg button, .btn, .open-file) { font-size: 16px; }
+  html[data-theme="skyisles"] .g-head p.chipline { font-size: 17px; }
+  html[data-theme="skyisles"] :is(.nums small, .clips .k, .result, .watched, th, .cat .n) { font-size: 13px; }
   /* North Pole: the game header gets the same snow cap as the cards, and the snow falls
      behind the page so it doesn't dot names and numbers. */
-  html[data-theme="northpole"] .g-head::before {
+  html[data-theme="northpole"] .g-head::before, html[data-theme="northpole"] .skel::before {
     content: ""; position: absolute; left: 0; right: 0; top: 0; height: 11px; z-index: 2; pointer-events: none;
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 11' preserveAspectRatio='none'%3E%3Cpath d='M0 0H80V5C76 5 74 9 69 9S63 4 58 5 52 10 46 9 40 4 34 5 28 8 22 8 16 4 11 5 4 9 0 7Z' fill='%23f7fbff'/%3E%3Cpath d='M0 5C4 7 8 6 11 5' stroke='%23c9dcf0' fill='none'/%3E%3C/svg%3E") 0 0 / 80px 11px repeat-x;
     filter: drop-shadow(0 2px 1px rgba(4,12,30,0.35));
   }
   html[data-theme="northpole"] .np-snowfall { z-index: 0; }
+  /* The string of lights hangs over the header and scrolls away with it, instead of
+     staying fixed over the cards and tables. */
+  html[data-theme="northpole"] .np-garland { position: absolute; }
 
   @media (max-width: 900px) {
     .page { padding: 14px 16px 50px; }
@@ -286,6 +301,8 @@
     .g-head .acts { justify-content: flex-start; }
     .g-grid { grid-template-columns: minmax(0, 1fr); }
     .g-grid > * { min-width: 0; }
+    .g-grid > div:last-child { position: static; }
+    .log { max-height: none; overflow: visible; }
     td .pov { opacity: 1; }
   }
   /* Phones: the map sits small beside the title and the rest gets the full width,
@@ -296,9 +313,9 @@
     .game .thumb { grid-column: 1; grid-row: 1 / 3; width: 56px; height: 56px; min-height: 0; margin: 14px 0 0 14px; border-radius: var(--r-s); }
     .game .thumb canvas { width: 50px; height: 50px; filter: none; }
     .game .thumb::after, .game .thumb .blank span { display: none; }
-    .game .title { grid-column: 2; grid-row: 1; align-self: end; padding: 14px 14px 0 4px; }
+    .game .title { grid-column: 2; grid-row: 1; align-self: end; padding: 14px 14px 0 12px; }
     .game .title b { font-size: 18px; }
-    .game .chipline { grid-column: 2; grid-row: 2; align-self: start; padding: 2px 14px 0 4px; font-size: 12.5px; }
+    .game .chipline { grid-column: 2; grid-row: 2; align-self: start; margin-left: 12px; padding: 2px 14px 0 0; font-size: 12.5px; }
     .game .targets { grid-column: 1 / -1; padding: 12px 14px 0; }
     .game .teams { grid-column: 1 / -1; padding: 10px 14px 14px; margin: 0; font-size: 13px; gap: 3px 12px; }
     .game .side { grid-column: 1 / -1; }
@@ -310,6 +327,14 @@
     .team td:not(:first-child) { padding-left: 4px; padding-right: 8px; }
     .team td:last-child { padding-right: 12px; }
     .team-head { flex-wrap: wrap; row-gap: 2px; }
+    .panel { padding: 14px; }
+    .ms table { font-size: 13px; }
+    .ms table td, .ms table th { padding-left: 4px; padding-right: 4px; }
+    .ms table td:first-child, .ms table th:first-child { padding-left: 8px; }
+    .ms table td:last-child, .ms table th:last-child { padding-right: 8px; }
+    .filters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 5px; }
+    .chip { flex: none; padding: 3px 9px; }
+    .g-head p.chipline { font-size: 15px; }
     td .pov::after { content: ""; display: inline-block; width: 9px; height: 10px; vertical-align: -1px; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
@@ -382,7 +407,7 @@
   function clock(ms) { ms = Math.max(0, ms || 0); var s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   function mins(ms) { var m = Math.round((ms || 0) / 60000); return m + ' min'; }
   function when(d) { var t = new Date(d); return isNaN(t) ? '' : t.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }); }
-  function time(d) { var t = new Date(d); return isNaN(t) ? '' : t.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }); }
+  function time(d) { var t = new Date(d); return isNaN(t) ? '' : t.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); }
   // Hypixel mode ids or plain names, both work
   function modeKey(m) {
     var s = String(m || '').toLowerCase();
@@ -528,7 +553,7 @@
       return '<a class="game ' + res + '" href="#g=' + esc(g.id) + '" style="animation-delay:' + Math.min(i * 35, 500) + 'ms">' +
         mapThumb(g) +
         '<div class="mid"><div class="title"><b>' + esc(g.map || 'Unknown map') + '</b>' + (isWatched(g) ? '<span class="watched">Watched</span>' : '') + '</div>' +
-        '<div class="chipline"><span class="cl"><span>' + esc(modeName(g.mode)) + '</span><span>' + esc(when(g.playedAt)) + '</span><span>' + esc(time(g.playedAt)) + '<span class="ph">' + esc(clock(g.durationMs)) + '</span></span></span></div>' + targetChips(tg) + teamsLine(g) + '</div>' +
+        '<div class="chipline"><span class="cl"><span>' + esc(modeName(g.mode)) + '</span><span>' + esc(when(g.playedAt)) + '</span><span>' + esc(time(g.playedAt)) + '<span class="ph">' + esc(mins(g.durationMs)) + '</span></span></span></div>' + targetChips(tg) + teamsLine(g) + '</div>' +
         '<div class="side">' + (g.summary ? '<div class="nums"><div><b>' + (tot.kills || 0) + '</b><small>Kills</small></div><div><b>' + (tot.finals || 0) + '</b><small>Finals</small></div><div><b>' + (tot.beds || 0) + '</b><small>Beds</small></div></div>' : '<span class="mini">Summary not ready yet</span>') +
         '<div class="mini">' + (g.clips ? '<span>' + ICON.clip + g.clips + ' clip' + (g.clips === 1 ? '' : 's') + '</span>' : '') + (g.matchStats ? '<span>' + ICON.stats + 'Match stats</span>' : '') + '' + '</div></div>' +
         '</a>';
@@ -564,6 +589,10 @@
       v.innerHTML = '<div class="empty" style="margin-top:22px"><b>Couldn’t load this game</b>' + esc(err.message) + '</div>';
     });
   }
+  function edgeFade(el) {
+    el.classList.toggle('more', el.scrollLeft + el.clientWidth < el.scrollWidth - 2 || el.scrollTop + el.clientHeight < el.scrollHeight - 2);
+  }
+  addEventListener('resize', function () { ['msWrap', 'log'].forEach(function (id) { var el = $(id); if (el) edgeFade(el); }); });
   function renderGame(g) {
     var v = $('gameView');
     var s = g.summary;
@@ -574,7 +603,7 @@
     var html = '<div class="g-head ' + res + '">' + mapThumb(g) + '<div>' +
       (badge ? '<span class="result">' + badge + '</span>' : '') +
       '<h1>' + esc(g.map || 'Unknown map') + '</h1>' +
-      '<p>' + esc(modeName(g.mode)) + ' · ' + esc(new Date(g.playedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })) + ' · ' + esc(mins(g.durationMs)) + (s && s.self ? ' · recorded by ' + esc(s.self.name) : '') + '</p>' + targetChips(tg) + '</div>' +
+      '<p class="chipline"><span class="cl"><span>' + esc(modeName(g.mode)) + '</span><span>' + esc(new Date(g.playedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })) + '</span><span>' + esc(mins(g.durationMs)) + '</span></span></p>' + targetChips(tg) + '</div>' +
       '<div class="acts"><a class="btn primary" data-watch="' + esc(id) + '" href="' + watchUrl(id, start || null) + '"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 001.5.86l12-7.5a1 1 0 000-1.72l-12-7.5A1 1 0 007 4.5z"/></svg>Watch the game</a>' +
       '<button type="button" class="btn danger" id="delGame"' + (isAdmin ? '' : ' hidden') + ' title="Remove this recording from the site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Delete</button></div></div>';
     html += '<div class="g-grid"><div>';
@@ -597,10 +626,10 @@
     // Match stats.
     if (g.matchStats && g.matchStats.players && g.matchStats.players.length) {
       var ms = g.matchStats;
-      html += '<div class="panel ms"><h2>Our match stats' + (ms.team ? ' <small>' + esc(ms.team) + '</small>' : '') + '</h2><table><thead><tr><th>Player</th><th>K</th><th>D</th><th>F</th><th>Beds</th><th>Iron</th><th>Gold</th><th>Dia</th><th>Em</th><th title="Time on an enemy island while their bed was up">Pressure</th></tr></thead><tbody>' +
+      html += '<div class="panel ms"><h2>Our match stats' + (ms.team ? ' <small>' + esc(ms.team) + '</small>' : '') + '</h2><div class="ms-wrap" id="msWrap"><table><thead><tr><th>Player</th><th>K</th><th>D</th><th>F</th><th>Beds</th><th>Iron</th><th>Gold</th><th>Dia</th><th>Em</th><th title="Time on an enemy island while their bed was up">Pressure</th></tr></thead><tbody>' +
         ms.players.map(function (p) {
           return '<tr><td><span class="nm' + (p.finalDeath ? ' is-out' : '') + '">' + esc(p.name) + '</span>' + (p.me ? '<span class="you">YOU</span>' : '') + '</td><td>' + p.kills + '</td><td>' + p.deaths + '</td><td>' + p.finals + '</td><td>' + p.beds + '</td><td>' + p.iron + '</td><td>' + p.gold + '</td><td>' + p.dia + '</td><td>' + p.em + '</td><td>' + clock(p.pressureMs) + '</td></tr>';
-        }).join('') + '</tbody></table></div>';
+        }).join('') + '</tbody></table></div></div>';
     }
     // Clips.
     html += '<div class="panel"><h2>Clips <small>' + g.clips.length + '</small></h2>';
@@ -630,12 +659,15 @@
     html += '</div></div>';
     v.innerHTML = html;
     drawMaps(v);
+    // Edge fades on the scrolling match stats table and log, only while there's more to scroll to.
+    ['msWrap', 'log'].forEach(function (id) { var el = $(id); if (el) { el.addEventListener('scroll', function () { edgeFade(el); }, { passive: true }); edgeFade(el); } });
     var lf = $('logFilters');
     if (lf) lf.addEventListener('click', function (e) {
       var b = e.target.closest('button'); if (!b) return;
       var f = b.getAttribute('data-f');
       lf.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
       $('log').querySelectorAll('li').forEach(function (li) { li.hidden = f !== 'all' && li.getAttribute('data-k') !== f; });
+      edgeFade($('log'));
     });
     $('delGame').addEventListener('click', function () {
       var ids = g.replayIds && g.replayIds.length ? g.replayIds : [id];

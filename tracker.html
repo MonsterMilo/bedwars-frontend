@@ -389,8 +389,9 @@ html[data-theme="harvest"] {
   --good-soft: rgba(79,122,50,0.12);
   --bad: #b3261e;
   --bad-soft: rgba(179,38,30,0.1);
-  --neutral: #34557a;
-  --neutral-soft: rgba(52,85,122,0.1);
+  /* Plum, not navy: WLR and the "Tryhard" step stay in the warm palette. */
+  --neutral: #6e3d63;
+  --neutral-soft: rgba(110,61,99,0.1);
   --gold: #c98a1c;
   --radius-s: 3px;
   --radius-m: 5px;
@@ -15385,13 +15386,24 @@ html[data-theme="harvest"] .theme-dropdown-menu {
   box-shadow: 0 0 0 4px #8f4a2c, 0 16px 30px -10px rgba(59,36,20,0.6);
 }
 html[data-theme="harvest"] .theme-dropdown-menu li { color: var(--hv-ink); border-radius: 3px; }
+/* Phone: the controls row is centred and the menu is wider than the space
+   left of the theme button, so anchor it to the row and centre it there. */
+@media (max-width: 620px) {
+  /* relative (not the base static) so the menu can anchor to the row; clear
+     the desktop top/right offsets or the row slides 18px onto the card, and
+     lift it over the card's frame, with room for that frame (it sits 9px outside the card). */
+  html[data-theme="harvest"] .hero-controls { position: relative; top: auto; right: auto; z-index: 20; margin-bottom: 20px; }
+  html[data-theme="harvest"] .theme-dropdown { position: static; }
+  html[data-theme="harvest"] .theme-dropdown-menu { left: 50%; right: auto; transform: translateX(-50%); max-width: calc(100vw - 32px); }
+}
 html[data-theme="harvest"] .theme-dropdown-menu li:hover,
 html[data-theme="harvest"] .theme-dropdown-menu li:focus-visible { background: rgba(201,138,28,0.14); }
 html[data-theme="harvest"] .theme-dropdown-menu li[aria-selected="true"] { background: rgba(168,50,43,0.1); box-shadow: inset 3px 0 0 var(--hv-red); }
 html[data-theme="harvest"] #setAdminKeyBtn { font-family: 'Bitter', serif; }
 
 /* ---------- Crates ---------- */
-html[data-theme="harvest"] .card-grid { gap: 26px 20px; padding-top: 10px; }
+/* Rows get room for the Sly Fox that peeks over a duplicate crate's top edge. */
+html[data-theme="harvest"] .card-grid { gap: 42px 20px; padding-top: 22px; }
 html[data-theme="harvest"] .sweat-card {
   --plank: #dcb682;
   border: 0;
@@ -15485,6 +15497,42 @@ html[data-theme="harvest"] .sweat-card-avatar {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-50 -50 100 100'%3E%3Ccircle r='50' fill='%23f4d48a'/%3E%3Cpath d='M0 0 L60.0 0.0 L59.4 8.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L57.6 16.9 L54.6 24.9 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L50.5 32.4 L45.3 39.3 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L39.3 45.3 L32.4 50.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L24.9 54.6 L16.9 57.6 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L8.5 59.4 L0.0 60.0 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-8.5 59.4 L-16.9 57.6 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-24.9 54.6 L-32.4 50.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-39.3 45.3 L-45.3 39.3 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-50.5 32.4 L-54.6 24.9 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-57.6 16.9 L-59.4 8.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-60.0 0.0 L-59.4 -8.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-57.6 -16.9 L-54.6 -24.9 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-50.5 -32.4 L-45.3 -39.3 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-39.3 -45.3 L-32.4 -50.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-24.9 -54.6 L-16.9 -57.6 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-8.5 -59.4 L-0.0 -60.0 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L8.5 -59.4 L16.9 -57.6 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L24.9 -54.6 L32.4 -50.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L39.3 -45.3 L45.3 -39.3 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L50.5 -32.4 L54.6 -24.9 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L57.6 -16.9 L59.4 -8.5 Z' fill='%23e8b54a'/%3E%3C/svg%3E") center / 120% no-repeat;
   box-shadow: 0 0 0 2px #fbf1dc, 0 0 0 3px rgba(168,50,43,0.5);
 }
+/* An empty frame sits behind the head, so a card whose head image fails
+   (or is still loading) keeps the same layout as its neighbours. */
+html[data-theme="harvest"] .sweat-card-avatar { position: relative; z-index: 1; }
+html[data-theme="harvest"] .sweat-card-top::before {
+  content: "";
+  position: absolute;
+  left: var(--hv-av-left, 10px);
+  top: 50%;
+  width: 56px;
+  height: 64px;
+  margin-top: -32px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid var(--hv-red);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-50 -50 100 100'%3E%3Ccircle r='50' fill='%23f4d48a'/%3E%3Cpath d='M0 0 L60.0 0.0 L59.4 8.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L57.6 16.9 L54.6 24.9 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L50.5 32.4 L45.3 39.3 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L39.3 45.3 L32.4 50.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L24.9 54.6 L16.9 57.6 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L8.5 59.4 L0.0 60.0 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-8.5 59.4 L-16.9 57.6 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-24.9 54.6 L-32.4 50.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-39.3 45.3 L-45.3 39.3 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-50.5 32.4 L-54.6 24.9 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-57.6 16.9 L-59.4 8.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-60.0 0.0 L-59.4 -8.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-57.6 -16.9 L-54.6 -24.9 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-50.5 -32.4 L-45.3 -39.3 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-39.3 -45.3 L-32.4 -50.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-24.9 -54.6 L-16.9 -57.6 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L-8.5 -59.4 L-0.0 -60.0 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L8.5 -59.4 L16.9 -57.6 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L24.9 -54.6 L32.4 -50.5 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L39.3 -45.3 L45.3 -39.3 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L50.5 -32.4 L54.6 -24.9 Z' fill='%23e8b54a'/%3E%3Cpath d='M0 0 L57.6 -16.9 L59.4 -8.5 Z' fill='%23e8b54a'/%3E%3C/svg%3E") center / 120% no-repeat, #f2e1bd;
+  box-shadow: 0 0 0 2px #fbf1dc, 0 0 0 3px rgba(168,50,43,0.5);
+  opacity: 0.85;
+}
+html[data-theme="harvest"] .sweat-card.tier-t5 .sweat-card-top { --hv-av-left: 34px; }
+html[data-theme="harvest"] .sweat-card.tier-t4 .sweat-card-top { --hv-av-left: 28px; }
+html[data-theme="harvest"] .user-cell { position: relative; }
+html[data-theme="harvest"] .user-cell .user-avatar { position: relative; z-index: 1; }
+html[data-theme="harvest"] .user-cell::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  margin-top: -18px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 1.5px solid var(--hv-red);
+  background: radial-gradient(circle at 50% 40%, #fbf1dc, #ead7ae);
+  box-shadow: 0 0 0 1.5px #fbf1dc;
+}
 html[data-theme="harvest"] .sweat-card-name { font-size: 1.22em; color: var(--hv-ink); line-height: 1.15; }
 html[data-theme="harvest"] .sweat-card-name::before {
   content: "Fancy \00b7  Grade A";
@@ -15552,7 +15600,13 @@ html[data-theme="harvest"] .card-note-ghost {
   font-size: 1.02em;
 }
 html[data-theme="harvest"] .card-note-ghost::after { content: "Tie on a tag"; }
-html[data-theme="harvest"] .sweat-card .card-note-ghost:hover { color: var(--hv-red); border-color: var(--hv-red); background: rgba(255,240,210,0.4); }
+/* Crates without a note show the empty tag spot faintly at rest, so the
+   board between the stats and the footer doesn't read as a blank gap. */
+html[data-theme="harvest"] .sweat-card .card-note-ghost { opacity: 0.42; }
+html[data-theme="harvest"] .sweat-card:hover .card-note-ghost,
+html[data-theme="harvest"] .sweat-card:focus-within .card-note-ghost,
+html[data-theme="harvest"] .sweat-card:focus-visible .card-note-ghost { opacity: 0.85; }
+html[data-theme="harvest"] .sweat-card .card-note-ghost:hover { opacity: 1; color: var(--hv-red); border-color: var(--hv-red); background: rgba(255,240,210,0.4); }
 html[data-theme="harvest"] .sweat-card-footer { border-top: 2px solid rgba(59,36,20,0.3); }
 html[data-theme="harvest"] .sweat-card-date { font-family: var(--font-stencil); font-weight: 700; letter-spacing: 0.08em; color: rgba(59,36,20,0.8); font-size: 0.8em; }
 html[data-theme="harvest"] .sweat-card-date::before { content: "Packed "; opacity: 0.7; }
@@ -15663,6 +15717,8 @@ html[data-theme="harvest"] .sweat-row.tier-t4 { background: linear-gradient(90de
   will-change: transform;
 }
 @media (max-width: 620px) { .hv-turkey { bottom: calc(env(safe-area-inset-bottom, 0px) + 74px); } }
+.hv-turkey { transition: opacity 0.35s ease; }
+.hv-turkey.hv-faint { opacity: 0.22; pointer-events: none; }
 .hv-turkey-body { width: 100%; height: 100%; transform: scaleX(var(--dir, 1)); }
 .hv-turkey svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .hv-turkey svg > * { transform-box: view-box; }
@@ -16223,7 +16279,13 @@ html[data-theme="harvest"] .toolbar .filter-field input { font-family: var(--fon
 html[data-theme="harvest"] .toolbar .filter-field input::placeholder { color: rgba(46,28,16,0.45); font-style: normal; }
 html[data-theme="harvest"] .filter-field.is-set .filter-prefix,
 html[data-theme="harvest"] .filter-field.is-set input { color: #fbf1dc; }
-html[data-theme="harvest"] .toolbar-divider { width: 12px; height: 18px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Cpath d='M5 16 V5' stroke='%23a8322b' stroke-width='1.2'/%3E%3Cpath d='M5 6 C3 5.5 2.4 4 2.7 2.5 C4.2 3 5 4.2 5 6 Z M5 6 C7 5.5 7.6 4 7.3 2.5 C5.8 3 5 4.2 5 6 Z M5 10 C3 9.5 2.4 8 2.7 6.5 C4.2 7 5 8.2 5 10 Z M5 10 C7 9.5 7.6 8 7.3 6.5 C5.8 7 5 8.2 5 10 Z' fill='%23c98a1c'/%3E%3C/svg%3E") center / contain no-repeat; border: 0; }
+/* The tags and the toggles don't fit one row at desktop width, so the
+   divider becomes a stitched rule that starts a second row: toggles on the
+   left, Reset on the right, with no half-empty row left over. (It stays
+   hidden on narrow screens, like the base rule.) */
+html[data-theme="harvest"] .toolbar-divider { flex: 0 0 100%; width: auto; height: 0; margin: 2px 0; background: none; border: 0; border-top: 1.5px dashed rgba(91,58,34,0.28); }
+/* An empty date reads like the other tags' placeholders, not a typed value. */
+html[data-theme="harvest"] .toolbar .filter-field-date:not(.is-set):not(:focus-within) input { color: rgba(46,28,16,0.45); }
 html[data-theme="harvest"] .filter-reset { font-family: 'Bitter', serif; font-weight: 700; color: #6e5038; }
 html[data-theme="harvest"] .filter-reset:not(:disabled):hover { color: var(--hv-red); }
 
@@ -16242,7 +16304,8 @@ html[data-theme="harvest"] .sweat-card:nth-child(6n+6) .sweat-card-footer::after
   background: var(--hv-prop) center bottom / contain no-repeat;
   filter: drop-shadow(0 2px 1px rgba(59,36,20,0.4));
 }
-html[data-theme="harvest"] .sweat-card:nth-child(5n+2) { --hv-prop: radial-gradient(circle at 38% 42%, #e86a5a 0 18%, transparent 19%), radial-gradient(circle at 30% 60%, #b8362b 0 40%, transparent 42%), radial-gradient(circle at 66% 62%, #c9443a 0 38%, transparent 40%); }
+/* A real apple (stem and leaf), so it doesn't read as a red smudge. */
+html[data-theme="harvest"] .sweat-card:nth-child(5n+2) { --hv-prop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 26'%3E%3Cpath d='M12 7 C8 4 2 5 2 12 C2 19 7 25 10 24 C11 23.6 13 23.6 14 24 C17 25 22 19 22 12 C22 5 16 4 12 7 Z' fill='%23b8302a'/%3E%3Cpath d='M12 7 C16 4 22 5 22 12 C22 19 17 25 14 24 C16 19 17 12 12 7 Z' fill='%238e2420'/%3E%3Cellipse cx='7' cy='11' rx='2' ry='3.4' fill='%23e4685a' opacity='.7' transform='rotate(20 7 11)'/%3E%3Cpath d='M12 7 C12 4 13 2 14.5 1' stroke='%234a2e18' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3Cpath d='M13.4 3.4 C16 1 19.6 1.6 20.6 3 C18.6 4.8 15.8 5 13.4 3.4 Z' fill='%236e8a2e'/%3E%3C/svg%3E"); }
 html[data-theme="harvest"] .sweat-card:nth-child(7n+4) { --hv-prop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-20 -22 40 44'%3E%3Cg transform='translate(0 0) rotate(0) scale(1)'%3E%3Cpath d='M0 -20 L3 -11 L9 -14 L7 -6 L15 -8 L11 -2 L17 1 L9 4 L11 9 L3 7 L1 13 L0 20 L-1 13 L-3 7 L-11 9 L-9 4 L-17 1 L-11 -2 L-15 -8 L-7 -6 L-9 -14 L-3 -11 Z' fill='%23c4471f'/%3E%3Cpath d='M0 -14 V18' stroke='rgba(70,30,10,.45)' stroke-width='1.2'/%3E%3Cpath d='M0 2 L10 -6 M0 2 L-10 -6 M0 6 L8 6 M0 6 L-8 6' stroke='rgba(70,30,10,.45)' stroke-width='.9'/%3E%3C/g%3E%3C/svg%3E"); }
 html[data-theme="harvest"] .sweat-card:nth-child(6n+6) { --hv-prop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-20 -22 40 44'%3E%3Cg transform='translate(0 0) rotate(0) scale(1)'%3E%3Cpath d='M0 -19 C4 -19 5 -15 3 -13 C8 -14 9 -9 5 -7 C10 -7 10 -1 5 0 C10 1 9 7 4 6 C7 10 4 14 1 12 L0 20 L-1 12 C-4 14 -7 10 -4 6 C-9 7 -10 1 -5 0 C-10 -1 -10 -7 -5 -7 C-9 -9 -8 -14 -3 -13 C-5 -15 -4 -19 0 -19 Z' fill='%23b8691f'/%3E%3Cpath d='M0 -14 V18' stroke='rgba(70,30,10,.45)' stroke-width='1.2'/%3E%3C/g%3E%3C/svg%3E"); }
 
@@ -16440,6 +16503,14 @@ html[data-theme="harvest"] #status.typewriter-dismiss,
 html[data-theme="harvest"] #editStatus.typewriter-dismiss,
 html[data-theme="harvest"] #adminKeyStatus.typewriter-dismiss { animation: hvChalkOut 0.5s ease-in both; }
 @keyframes hvChalkIn { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+/* While the preview board says "Scanning Hypixel for ...", the same line
+   under the form keeps its space and is still announced, but isn't drawn
+   twice. */
+html[data-theme="harvest"] #sweatForm:has(#statsEmpty.is-scanning) #status { color: transparent; text-shadow: none; }
+/* A bigger, warmer spinner in the Preview / Search buttons. */
+html[data-theme="harvest"] .fetch-btn-spinner { width: 17px; height: 17px; border: 2.5px solid rgba(91,58,34,0.22); border-top-color: var(--hv-red); }
+/* A button that is busy (not just unavailable) stays readable. */
+html[data-theme="harvest"] .btn.loading:disabled { opacity: 0.9; }
 @keyframes hvChalkOut { to { opacity: 0; filter: blur(3px); transform: translateX(10px); } }
 html[data-theme="harvest"] .add-sweat-row .btn.success-pulse { animation: hvBtnPulse 0.7s ease-out; }
 @keyframes hvBtnPulse {
@@ -16505,6 +16576,15 @@ html[data-theme="harvest"] .note-item:nth-child(even) { transform: rotate(0.5deg
 html[data-theme="harvest"] .note-item-author { font-family: 'Bitter', serif; font-weight: 800; }
 html[data-theme="harvest"] .modal-notes-count { border-radius: 2px; background: var(--hv-red); color: #fbf1dc; }
 html[data-theme="harvest"] #modalNotesEmpty::before { content: "No tags tied on yet."; font-family: var(--font-hand); }
+/* Wide popup: the notes pin up in the right column under the tags, beside
+   the tall record stub, instead of leaving that column empty. */
+@media (min-width: 761px) {
+  html[data-theme="harvest"] #playerModal .modal-content {
+    grid-template-areas: "name name" "live live" "skin stats" "record urchin" "record match" "record notes" "clips clips" "replays replays";
+    grid-template-rows: auto auto auto auto auto 1fr auto auto;
+  }
+  html[data-theme="harvest"] #playerModal .modal-record[hidden] ~ .modal-notes { grid-column: 1 / -1; }
+}
 html[data-theme="harvest"] .flip-sheen { --sheen: rgba(255,236,190,0.6); }
 html[data-theme="harvest"] .confirm-icon { filter: drop-shadow(0 2px 3px rgba(59,36,20,0.4)); }
 html[data-theme="harvest"] #editModal .edit-modal-actions { background: linear-gradient(180deg, rgba(251,243,226,0), #f2e2c2 30%); }
@@ -16545,13 +16625,18 @@ html[data-theme="harvest"] .lb-scene-body {
   padding: 0 6px;
 }
 html[data-theme="harvest"] .lb-entry { flex-direction: column; align-items: center; justify-content: flex-end; gap: 0; text-align: center; padding-bottom: 4px; }
-html[data-theme="harvest"] .lb-entry:hover { transform: translateY(-3px); }
+html[data-theme="harvest"] .lb-entry:hover { transform: none; }
+/* Lift on a real hover only, so a tapped silo on a phone doesn't stay raised
+   above its neighbours. */
+@media (hover: hover) { html[data-theme="harvest"] .lb-entry:hover { transform: translateY(-3px); } }
 html[data-theme="harvest"] .lb-entry-art {
   display: block;
   order: 2;
   position: relative;
   width: 54px;
-  height: calc(56px + var(--share) * 160px);
+  /* The base is tall enough for the roof, the grower coin and the rank
+     numeral under it, so the numeral never hides behind the coin. */
+  height: calc(82px + var(--share) * 134px);
   border-radius: 50% 50% 0 0 / 24px 24px 0 0;
   background:
     repeating-linear-gradient(180deg, rgba(40,46,50,0.16) 0 2px, rgba(255,255,255,0.12) 2px 3px, transparent 3px 11px),
@@ -16572,7 +16657,7 @@ html[data-theme="harvest"] .lb-entry.active .lb-entry-art i:first-child { backgr
 html[data-theme="harvest"] .lb-entry::after { content: ""; order: 3; width: 70px; height: 10px; border-radius: 2px; background: linear-gradient(180deg, #cfc6b4, #a59a85); box-shadow: 0 3px 4px rgba(59,36,20,0.4); }
 html[data-theme="harvest"] .lb-entry .lb-avatar {
   position: absolute;
-  bottom: calc(10px + 4px + 28px + var(--share) * 110px);
+  bottom: calc(80px + var(--share) * 120px);
   left: 50%;
   margin-left: -17px;
   z-index: 1;
@@ -16593,13 +16678,18 @@ html[data-theme="harvest"] .lb-entry[data-medal="3"] { --hv-ribbon: url("data:im
 html[data-theme="harvest"] .lb-entry .leaderboard-name { order: 4; max-width: 100%; margin-top: 8px; font: 800 1em/1.1 'Bitter', serif; color: #fbf1dc; text-shadow: 0 1px 2px rgba(30,40,10,0.7); }
 html[data-theme="harvest"] .lb-entry-count { order: 5; font: 400 0.95em/1.2 var(--font-hand); color: #f4ead0; text-shadow: 0 1px 2px rgba(30,40,10,0.6); }
 html[data-theme="harvest"] .lb-entry-count b { color: #fff; }
-html[data-theme="harvest"] .leaderboard-hint { color: #6e5038; font-style: italic; }
+/* The hint sits under the tally board, over the fields: give it a linen tag. */
+html[data-theme="harvest"] .leaderboard-hint { width: fit-content; max-width: calc(100% - 24px); margin: -10px auto 10px; padding: 4px 14px; border-radius: 3px; background: rgba(251,243,226,0.92); box-shadow: 0 0 0 1px rgba(91,58,34,0.25), 0 3px 8px -3px rgba(59,36,20,0.45); color: #5a3a22; font-style: italic; }
+html[data-theme="harvest"] .leaderboard-hint:empty { display: none; }
 
 html[data-theme="harvest"] .leaderboard-person-title { color: var(--hv-red); text-shadow: 2px 2px 0 rgba(217,154,43,0.35); }
 @media (prefers-reduced-motion: reduce) { html[data-theme="harvest"] .lb-entry-art { animation: none; } }
 
 /* ---------- Table: a plank header and ledger rows ---------- */
-html[data-theme="harvest"] .table-wrap { overflow: hidden; }
+/* The wrap clips its rows, so the paint-chip frame (inset:-8px) can't show here;
+   keep it contained and let the box-shadow draw the red frame. */
+html[data-theme="harvest"] .table-wrap { position: relative; overflow: hidden; }
+html[data-theme="harvest"] .table-wrap.card::before { display: none; }
 html[data-theme="harvest"] thead tr { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='120'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.005 .225' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .2 0 0 0 0 .08 0 0 0 1.4 -.55'/%3E%3C/filter%3E%3Crect width='1200' height='120' filter='url(%23w)'/%3E%3C/svg%3E"), linear-gradient(180deg, #a3492b, #8a3a22); background-size: 1200px 60px, auto; box-shadow: inset 0 -2px 0 #5a2c1a; }
 html[data-theme="harvest"] th { font-family: var(--font-stencil); font-weight: 700; letter-spacing: 0.16em; color: #fbf1dc; text-shadow: 0 1px 0 rgba(40,10,5,0.5); }
 html[data-theme="harvest"] th.sortable:hover { color: #ffe3a8; }
@@ -16627,24 +16717,42 @@ html[data-theme="harvest"] #activityEmpty p::before { content: "The farm log is 
 html[data-theme="harvest"] .empty-icon-harvest { display: block; color: #8a5a2a; }
 html[data-theme="harvest"] .empty-state-text { font-style: italic; color: #6e5038; }
 
-/* ---------- Footer: the fence at the end of the field ---------- */
-html[data-theme="harvest"] .site-footer::before {
-  content: "";
-  display: block;
-  height: 40px;
-  margin-bottom: 14px;
+/* ---------- Footer: a painted sign at the end of the field ---------- */
+/* The scene behind is busy (trees, scarecrow, barn), so the footer gets
+   its own board, like the section signs, instead of sitting on the art. */
+html[data-theme="harvest"] .site-footer {
+  position: relative;
+  /* Narrow enough that its right end stops short of the barn in the scene. */
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 16px 26px 18px;
   background:
-    linear-gradient(180deg, transparent 9px, #8a6a4a 9px 14px, transparent 14px 25px, #8a6a4a 25px 30px, transparent 30px),
-    repeating-linear-gradient(90deg, transparent 0 70px, #6b4a2c 70px 78px, transparent 78px 150px);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  opacity: 0.75;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='120'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.005 .225' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .2 0 0 0 0 .08 0 0 0 1.4 -.55'/%3E%3C/filter%3E%3Crect width='1200' height='120' filter='url(%23w)'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #f4e4c4, #e6cfa3);
+  background-size: 1200px 50px, auto;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(91,58,34,0.25), inset 0 -3px 0 rgba(91,58,34,0.15), 0 3px 0 #9a7650, 0 12px 22px -8px rgba(59,36,20,0.6);
 }
+html[data-theme="harvest"] .site-footer::before,
+html[data-theme="harvest"] .site-footer::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  width: 8px;
+  height: 8px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.2' fill='%235b4a3c'/%3E%3Ccircle cx='4.2' cy='4.2' r='1.4' fill='%23a8988a'/%3E%3Ccircle cx='5' cy='5' r='3.2' fill='none' stroke='%232f241c' stroke-width='.8'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+html[data-theme="harvest"] .site-footer::before { left: 7px; }
+html[data-theme="harvest"] .site-footer::after { right: 7px; }
+html[data-theme="harvest"] .site-footer-row { margin-top: 12px; }
+@media (max-width: 560px) { html[data-theme="harvest"] .site-footer { padding: 16px 16px 18px; } }
 html[data-theme="harvest"] .site-footer-end::before { background: linear-gradient(90deg, transparent, rgba(168,50,43,0.5)); }
 html[data-theme="harvest"] .site-footer-end::after { background: linear-gradient(90deg, rgba(168,50,43,0.5), transparent); }
 html[data-theme="harvest"] .site-footer-end-text { font-size: 0; }
 html[data-theme="harvest"] .site-footer-end-text::before { content: "That's the last of the harvest"; font: 400 15px var(--font-wood); letter-spacing: 0.02em; text-transform: none; color: var(--hv-red); }
-html[data-theme="harvest"] .site-footer-meta { font-style: italic; color: #4a2e1a; }
+html[data-theme="harvest"] .site-footer-meta { font-style: italic; color: #5a3a22; }
+html[data-theme="harvest"] .site-footer-name { color: #3b2414; }
 html[data-theme="harvest"] .site-footer .btn-ghost, html[data-theme="harvest"] #statusPill { font-family: 'Bitter', serif; }
 html[data-theme="harvest"] .saved-list-note { border-radius: 2px; background: #fff3d6; border-color: rgba(201,138,28,0.5); color: var(--hv-ink); }
 
@@ -16738,6 +16846,13 @@ html[data-theme="harvest"] .sweat-row.live-edit { animation: hvLiveEditRow 1.6s 
   html[data-theme="harvest"] .sotd-deco .d5 { width: 36px; height: 56px; right: 8px; top: -8px; }
   html[data-theme="harvest"] .sotd-stats { gap: 8px; }
   html[data-theme="harvest"] .sotd-stat-value { font-size: 1.05em; }
+  /* Full numbers (1,353,750) don't fit four across: two rows of two. */
+  html[data-theme="harvest"] .sotd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html[data-theme="harvest"] .sotd-stat-value { font-size: 1.2em; }
+  /* Keep the sunburst inside the skin column so the name stays crisp. */
+  html[data-theme="harvest"] .sotd-backdrop i:nth-child(1) { width: 140px; height: 140px; margin: -70px 0 0 -70px; }
+  /* The label takes two even lines (PRIZE TURKEY / OF THE DAY). */
+  html[data-theme="harvest"] .sotd-kicker-text { display: block; text-wrap: balance; line-height: 1.5; }
   html[data-theme="harvest"] .hero-eyebrow { letter-spacing: 0.18em; }
 }
 
@@ -16852,7 +16967,11 @@ html[data-theme="harvest"] .unmask-k { font-family: var(--font-stencil); color: 
 html[data-theme="harvest"] .unmask-front .unmask-k::before { content: "Grown under the name"; }
 html[data-theme="harvest"] .unmask-back .unmask-k::before { content: "The real grower"; }
 html[data-theme="harvest"] .unmask-name { font-family: var(--font-wood); font-weight: 400; font-size: 1.6em; letter-spacing: 0.01em; color: var(--hv-ink); }
+/* The wood face is wide: on a phone step it down so most names fit whole. */
+@media (max-width: 700px) { html[data-theme="harvest"] .unmask-name { font-size: 1.22em; letter-spacing: 0; } }
 html[data-theme="harvest"] .unmask-meta { font-family: var(--font-hand); color: var(--text-dim); font-size: 1em; }
+/* A result is showing, so the "nobody yet" note below it goes away. */
+html[data-theme="harvest"] #denickContainer:has(#denickUnmask:not([hidden]), #denickResults > *) #denickEmpty { display: none; }
 html[data-theme="harvest"] .unmask-front .unmask-meta::before { content: "Who's under the burlap?"; }
 html[data-theme="harvest"] .unmask-hint { font-family: var(--font-hand); color: var(--text-dim); }
 /* The sack over the portrait, cinched with twine at the neck. */
@@ -16874,8 +16993,17 @@ html[data-theme="harvest"] .unmask.play .unmask-fx { animation: hvSackOff 0.9s c
   45% { transform: translateY(-8px) rotate(4deg) scaleY(1.04); opacity: 1; }
   100% { transform: translate(40px, -140%) rotate(28deg) scaleY(0.8); opacity: 0; }
 }
-html[data-theme="harvest"] .unmask-back { box-shadow: inset 0 0 0 1px rgba(91,58,34,0.3), inset 0 0 0 5px #fbf3e2, inset 0 0 0 6px var(--hv-blue), 0 10px 20px -12px rgba(59,36,20,0.6); }
-html[data-theme="harvest"] .unmask-back .unmask-k { color: var(--hv-blue); }
+/* The answer side: a full barn-red frame (the sack side's is faded) and a
+   dark red kicker, in the same family as the field signs. */
+html[data-theme="harvest"] .unmask-back { box-shadow: inset 0 0 0 1px rgba(91,58,34,0.3), inset 0 0 0 5px #fbf3e2, inset 0 0 0 7px var(--hv-red), 0 10px 20px -12px rgba(59,36,20,0.6); }
+html[data-theme="harvest"] .unmask-back .unmask-k { color: var(--hv-red-dk); }
+/* Touch: the hint shows after a tap, so it says tap, and gets its own line
+   under the meta instead of crowding it in the corner. */
+@media (hover: none) {
+  html[data-theme="harvest"] .unmask-back .unmask-txt { padding-bottom: 16px; }
+  html[data-theme="harvest"] .unmask-hint { left: 100px; right: auto; bottom: 9px; font-size: 0; letter-spacing: 0; }
+  html[data-theme="harvest"] .unmask-hint::before { content: "Tap to replay"; font-size: 13px; }
+}
 
 /* ---------- Results empty states ---------- */
 html[data-theme="harvest"] #emptyState .empty-state-text,
@@ -16884,6 +17012,18 @@ html[data-theme="harvest"] #emptyState .empty-state-text::before,
 html[data-theme="harvest"] #leaderboardEmptyState .empty-state-text::before { font: 400 19px/1.3 var(--font-hand); color: var(--text-dim); }
 html[data-theme="harvest"] #emptyState .empty-state-text::before { content: "Nothing in the field matches that. Try another row."; }
 html[data-theme="harvest"] #leaderboardEmptyState .empty-state-text::before { content: "No crop's come in under these filters."; }
+/* These sit straight on the farm scene, so give them a small paper tag to
+   stay readable over the fence and the scarecrow. */
+html[data-theme="harvest"] :is(#emptyState, #leaderboardEmptyState) {
+  width: fit-content;
+  max-width: min(440px, calc(100% - 24px));
+  padding: 22px 26px 20px;
+  border-radius: 4px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath d='M0 .5h6M0 3.5h6' stroke='rgba(120,80,40,.07)' stroke-width='1'/%3E%3Cpath d='M.5 0v6M3.5 0v6' stroke='rgba(120,80,40,.05)' stroke-width='1'/%3E%3C/svg%3E"), linear-gradient(180deg, #fbf3e2, #f4e7cc);
+  box-shadow: 0 0 0 1px rgba(91,58,34,0.3), 0 0 0 5px #fbf3e2, 0 0 0 6px rgba(143,74,44,0.5), 0 12px 22px -10px rgba(59,36,20,0.55);
+}
+html[data-theme="harvest"] :is(#emptyState, #leaderboardEmptyState) .empty-icon { margin-bottom: 10px; }
+html[data-theme="harvest"] :is(#emptyState, #leaderboardEmptyState) .empty-state-text::before { color: #5a3a22; }
 
 /* ---------- A new crate arriving live ---------- */
 html[data-theme="harvest"] .sweat-card.live-new { animation: hvCrateDrop 0.6s cubic-bezier(.3,.8,.35,1.05) backwards, hvLiveArrive 1.6s ease-out 0.5s 2; }
@@ -16892,14 +17032,10 @@ html[data-theme="harvest"] .sweat-card.live-new { animation: hvCrateDrop 0.6s cu
   30% { box-shadow: 0 0 0 4px rgba(217,154,43,0.75), 0 0 30px 6px rgba(217,154,43,0.45), var(--shadow-card); }
 }
 
-/* ---------- Section numbers: stencilled on the boards ---------- */
-html[data-theme="harvest"] .panel-index { font-size: 0; right: 24px; bottom: -4px; }
-html[data-theme="harvest"] .panel-index::before {
-  content: "No. " attr(data-roman);
-  font: 700 46px/1 var(--font-stencil);
-  letter-spacing: 0.06em;
-  color: rgba(91,58,34,0.18);
-}
+/* ---------- Section numbers ---------- */
+/* The signs already carry "FIELD NO. 1/2/3", and a big numeral behind the
+   header sat under the Hide button on the sky, so harvest leaves it out. */
+html[data-theme="harvest"] .panel-index { display: none; }
 
 /* ---------- BED DESTROYED: the dinner bell ---------- */
 html[data-theme="harvest"] .egg-scene-bg { background: radial-gradient(ellipse at 50% 70%, rgba(201,120,40,0.75), rgba(43,22,8,0.94) 75%); }
@@ -16914,6 +17050,45 @@ html[data-theme="harvest"] .egg-title {
 html[data-theme="harvest"] .egg-sub { font-family: var(--font-hand); font-size: 1.15em; color: #ffdf9e; letter-spacing: 0.5px; text-shadow: 0 2px 0 rgba(43,22,8,0.6); }
 
 html[data-theme="harvest"] .sotd-stats { gap: 10px 12px; }
+@media (max-width: 480px) { html[data-theme="harvest"] .sotd-stats { gap: 12px 16px; } }
+
+/* ---------- Empty results ----------
+   When the filters match nobody, every silo stands empty: no rank numbers
+   (nine growers "tied for 1st"), no tap-more hint, and the tally shrinks to
+   the silos instead of a tall empty sky. No grower has a ribbon only when
+   every count is 0. */
+html[data-theme="harvest"] #leaderboardWrap:not(:has(.lb-entry[data-medal])) .lb-scene-body { height: auto; padding-top: 14px; }
+html[data-theme="harvest"] #leaderboardWrap:not(:has(.lb-entry[data-medal])) .lb-entry-rank { display: none; }
+html[data-theme="harvest"] #leaderboardWrap:not(:has(.lb-entry[data-medal])) .lb-scene-sub::before { content: "No sweats in under these filters"; }
+html[data-theme="harvest"] #leaderboardWrap:not(:has(.lb-entry[data-medal])) .leaderboard-hint { display: none; }
+/* A lone "Beaten by ... 0" tag hangs in the middle, not off to one side. */
+html[data-theme="harvest"] .sweat-stats:has(> .ss-tile:only-child) { grid-template-columns: minmax(0, 340px); justify-content: center; }
+html[data-theme="harvest"] .sweat-stats > .ss-tile:only-child { grid-column: 1 / -1; }
+
+/* ---------- Popup fit ----------
+   The skin sizes to the stats beside it (not its own image), so no blank
+   band opens under the tiles, and the UUID line sits snug under the name. */
+@media (min-width: 761px) {
+  html[data-theme="harvest"] #playerModal #modalSkin { contain: size; }
+}
+html[data-theme="harvest"] #playerModal #modalUsername .modal-uuid-row { display: flex; justify-content: center; margin-top: 6px; }
+
+/* ---------- Phone: fox, sort label, toasts ---------- */
+@media (max-width: 900px) {
+  html[data-theme="harvest"] .table-wrap thead tr::before { font-family: var(--font-stencil); letter-spacing: 0.16em; color: rgba(251,241,220,0.8); text-shadow: 0 1px 0 rgba(40,10,5,0.55); }
+}
+/* Desktop: the tag hangs bottom-right, clear of the Lookup box. */
+@media (min-width: 621px) {
+  html[data-theme="harvest"] #eggToasts { left: auto; right: 16px; align-items: flex-end; }
+  html[data-theme="harvest"] .egg-toast { clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%); padding-left: 14px; padding-right: 24px; }
+}
+@media (max-width: 620px) {
+  /* The fox climbs up left of the hand hole, clear of the LOT number. */
+  html[data-theme="harvest"] .rival-mark,
+  html[data-theme="harvest"] .sweat-card.is-rival::after { right: auto; left: calc(50% - 100px); }
+  /* Toasts drop in at the top, off the buttons above the bottom nav. */
+  html[data-theme="harvest"] #eggToasts { bottom: auto; top: calc(12px + env(safe-area-inset-top, 0px)); }
+}
 /* @@END-HARVEST@@ */
 /* @@PRISM@@ */
 /* ============================================================
@@ -31292,15 +31467,20 @@ const HV_SVG = {
 const hvWind = { base: 0.35, gust: 0, mouse: 0, get x() { return this.base + this.gust + this.mouse; } };
 
 // A popup covers the scene: the leaves and turkey in front step out of
-// the way so they never sit on top of a player card.
+// the way so they never sit on top of a player card. The open theme menu
+// counts too (the front layer sits above the page, so the turkey would
+// walk over the menu on a phone).
 (function harvestPopupWatch() {
+  const menu = document.getElementById("themeDropdownMenu");
   const watch = () => {
     const open = [...document.querySelectorAll(".modal")].some(m => m.style.display === "flex")
-      || (typeof shortcutsBackdrop !== "undefined" && !shortcutsBackdrop.hidden);
+      || (typeof shortcutsBackdrop !== "undefined" && !shortcutsBackdrop.hidden)
+      || (menu && !menu.hidden);
     document.body.classList.toggle("hv-popup", open);
   };
   const mo = new MutationObserver(watch);
   document.querySelectorAll(".modal").forEach(m => mo.observe(m, { attributes: true, attributeFilter: ["style"] }));
+  if (menu) mo.observe(menu, { attributes: true, attributeFilter: ["hidden"] });
   setTimeout(() => {
     if (typeof shortcutsBackdrop !== "undefined") mo.observe(shortcutsBackdrop, { attributes: true, attributeFilter: ["hidden"] });
   }, 0);
@@ -31345,8 +31525,23 @@ const hvWind = { base: 0.35, gust: 0, mouse: 0, get x() { return this.base + thi
     [back, front].forEach(c => { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); });
     bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    measureColumn();
   }
   const air = [], frontAir = [], pile = [];
+  // The big leaves in front of the page stay bold in the side margins but
+  // go faint while they cross the content column, so they never hide text.
+  let colL = 0, colR = 0;
+  function measureColumn() {
+    const pg = document.querySelector(".page");
+    const r = pg ? pg.getBoundingClientRect() : null;
+    colL = r ? r.left : 0; colR = r ? r.right : W;
+  }
+  function frontAlpha(x) {
+    const d = Math.min(x - colL, colR - x); // > 0 inside the column
+    if (d <= -30) return 0.92;
+    if (d >= 30) return 0.28;
+    return 0.92 - (0.64 * (d + 30)) / 60;
+  }
   const phone = () => W < 620;
   function spawn(list, scale, top) {
     const s = sprites[Math.floor(Math.random() * sprites.length)];
@@ -31473,7 +31668,7 @@ const hvWind = { base: 0.35, gust: 0, mouse: 0, get x() { return this.base + thi
       const l = frontAir[i];
       step(l, dt, t, true);
       if (l.y > H + 40) { frontAir.splice(i, 1); continue; }
-      draw(fctx, l, 0.92);
+      draw(fctx, l, frontAlpha(l.x));
     }
     raf = requestAnimationFrame(frame);
   }
@@ -31630,6 +31825,37 @@ const hvWind = { base: 0.35, gust: 0, mouse: 0, get x() { return this.base + thi
   const PARDON_KEY = "hvPardons";
   function pardons() { try { const o = JSON.parse(localStorage.getItem(PARDON_KEY) || "{}"); return o.y === new Date().getFullYear() ? o.n : 0; } catch (e) { return 0; } }
   function addPardon() { const n = pardons() + 1; try { localStorage.setItem(PARDON_KEY, JSON.stringify({ y: new Date().getFullYear(), n })); } catch (e) {} return n; }
+  // The turkey's lane is fixed to the bottom of the screen, so it walks
+  // across whatever panel is scrolled there. Over a panel it goes faint and
+  // lets clicks through (like the big front leaves); in the margins and the
+  // open field between panels it stays bold and can be pardoned.
+  function solid(el) {
+    const cs = getComputedStyle(el);
+    if (cs.backgroundImage !== "none") return true;
+    const m = /rgba?\(([^)]+)\)/.exec(cs.backgroundColor);
+    const a = m ? m[1].split(",").map(Number) : [];
+    return a.length > 3 ? a[3] > 0.3 : a.length === 3;
+  }
+  function overContent(b) {
+    const r = b.el.getBoundingClientRect();
+    const pg = document.querySelector(".page");
+    const col = pg ? pg.getBoundingClientRect() : null;
+    if (!col || r.right < col.left || r.left > col.right) return false;
+    const y = r.top + r.height * 0.55;
+    for (const f of [0.3, 0.5, 0.7]) {
+      const x = r.left + r.width * f;
+      if (x < col.left || x > col.right) continue;
+      for (const el of document.elementsFromPoint(x, y)) {
+        if (host.contains(el)) continue;
+        if (!pg.contains(el) || el === pg) break;
+        let n = el, hit = false;
+        while (n && n !== pg) { if (solid(n)) { hit = true; break; } n = n.parentElement; }
+        if (hit) return true;
+        break;
+      }
+    }
+    return false;
+  }
   function leave() { if (bird) { bird.el.remove(); bird = null; } cancelAnimationFrame(raf); raf = 0; }
   function spawn() {
     if (bird || !hvOn() || hvCalm() || document.hidden) return;
@@ -31642,7 +31868,7 @@ const hvWind = { base: 0.35, gust: 0, mouse: 0, get x() { return this.base + thi
     el.setAttribute("aria-label", "Pardon the turkey");
     host.appendChild(el);
     const size = W < 620 ? 70 : 104;
-    bird = { el, x: rtl ? W + 20 : -size - 20, dir: rtl ? -1 : 1, state: "walk", until: hvRnd(1.6, 3), size, fleeing: false, gobbled: 0 };
+    bird = { el, x: rtl ? W + 20 : -size - 20, dir: rtl ? -1 : 1, state: "walk", until: hvRnd(1.6, 3), size, fleeing: false, gobbled: 0, checked: 0 };
     el.style.width = `${size}px`;
     el.style.setProperty("--dir", bird.dir);
     el.addEventListener("click", pardon);
@@ -31662,11 +31888,12 @@ const hvWind = { base: 0.35, gust: 0, mouse: 0, get x() { return this.base + thi
           const r = Math.random();
           b.state = b.state !== "walk" ? "walk" : r < 0.55 ? "peck" : r < 0.8 ? "strut" : "look";
           b.until = b.state === "walk" ? hvRnd(1.4, 3.4) : b.state === "peck" ? hvRnd(1.2, 2.2) : hvRnd(1.6, 2.6);
-          b.el.className = `hv-turkey ${b.state === "walk" ? "walking" : b.state}`;
+          b.el.className = `hv-turkey ${b.state === "walk" ? "walking" : b.state}${b.faint ? " hv-faint" : ""}`;
           if (b.state === "strut" && b.gobbled < 2 && Math.random() < 0.7) { b.gobbled++; siteAudio.play("gobble", { x: b.x + b.size / 2, soft: true }); }
         }
       }
       b.el.style.transform = `translateX(${b.x.toFixed(1)}px)`;
+      if (now - b.checked > 200) { b.checked = now; b.faint = !b.fleeing && overContent(b); b.el.classList.toggle("hv-faint", b.faint); }
       if (b.x < -b.size - 60 || b.x > window.innerWidth + 60) { leave(); plan(false); return; }
       raf = requestAnimationFrame(tick);
     };

@@ -72,7 +72,8 @@ const ROSTER_VAR = { Milo: "--r-milo", Potat: "--r-potat", ABoi: "--r-aboi", Zoi
 const cssVar = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 // North Pole (the December theme picked on the tracker): snow in the hall, lit trees, garlands and wreaths.
-const NP = QS.get("theme") ? QS.get("theme") === "northpole" : store.get("siteTheme") === "northpole";
+// Hidden until December 1, except through ?theme=northpole.
+const NP = QS.get("theme") ? QS.get("theme") === "northpole" : store.get("siteTheme") === "northpole" && Date.now() >= new Date(2026, 11, 1).getTime();
 const clamp = THREE.MathUtils.clamp, lerp = THREE.MathUtils.lerp;
 const ease = (t) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }

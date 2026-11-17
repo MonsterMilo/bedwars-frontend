@@ -32400,10 +32400,7 @@ function harvestTitleStunt(release) {
       eggToast(`&#127810; <b>Harvest season's in.</b> Press <b>${key}</b> for the Harvest theme.`, 6500);
       return;
     }
-    // Sky Isles keeps it to one short line on phones.
-    const el = eggToast(currentThemeId() === "skyisles"
-      ? `&#127810; <b>Harvest is here.</b> Tap to try it.`
-      : `&#127810; <b>Harvest season's in.</b> Tap here for the Harvest theme.`, 8000);
+    const el = eggToast(`&#127810; <b>Harvest is here.</b> Tap to try it.`, 8000);
     el.classList.add("is-action");
     el.setAttribute("role", "button");
     el.tabIndex = 0;

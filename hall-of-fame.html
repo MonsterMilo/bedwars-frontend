@@ -114,6 +114,7 @@ body.free .hud > * { pointer-events: auto; }
 #rail button .rk { width: 22px; text-align: right; font-variant-numeric: tabular-nums; }
 #rail button.cur { color: var(--gold); }
 #rail button.cur .tick { width: 26px; box-shadow: 0 0 8px var(--gold); }
+body:has(#card.r.show) #rail button.cur:not(:hover):not(:focus-visible) .nm { opacity: 0; } /* the card already names them */
 #rail button.flag .rk { color: var(--flag); }
 #rail button:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
 body.free #rail:not(:hover):not(:focus-within):not(:has(.cur)) { opacity: .6; } /* steps back when you're not looking at anyone */

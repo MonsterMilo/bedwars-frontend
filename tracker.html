@@ -8117,6 +8117,7 @@ html[data-theme="deepcurrent"] .sweat-card.tier-t5 { box-shadow: 0 0 30px -4px r
    and the row gets a stripe down its left edge in each theme's tier color. */
 .row-tier-pill {
   display: table;
+  border-collapse: separate;
   margin-top: 4px;
   padding: 1px 7px;
   border-radius: 999px;
@@ -19168,6 +19169,8 @@ html[data-theme="northpole"] .sotd-backdrop i:nth-child(1) {
   animation: npRaysTurn 80s linear infinite;
 }
 @keyframes npRaysTurn { to { transform: rotate(360deg); } }
+/* Smaller on phones so they stay inside the card frame. */
+@media (max-width: 620px) { html[data-theme="northpole"] .sotd-backdrop i:nth-child(1) { width: 170px; height: 170px; margin: -85px 0 0 -85px; } }
 /* The snow pile they stand on, with two presents tucked in. */
 html[data-theme="northpole"] .sotd-backdrop i:nth-child(2) {
   left: 10px;
@@ -25679,6 +25682,7 @@ function showUnmask(nick, entry) {
   const img = denickUnmask.querySelector(".unmask-back img");
   img.src = `https://mc-heads.net/body/${encodeURIComponent(entry.username)}/120`;
   img.addEventListener("error", () => { img.style.visibility = "hidden"; }, { once: true });
+  denickEmpty.hidden = true;
   denickUnmask.hidden = false;
   playUnmask();
 }
@@ -26734,7 +26738,7 @@ fetchBtn.addEventListener('click', async () => {
     // Cleared (or superseded by a newer lookup) while in flight - the
     // failure is for a lookup nobody is waiting on any more.
     if (statsFetchToken > tokenBefore + 1) return;
-    status.textContent = err.message;
+    status.textContent = (err && err.name === "Error" && err.message) || "Couldn't load that player. Try again.";
     setStatsScanning(null);
     siteAudio.play("error");
   } finally {
@@ -26906,7 +26910,7 @@ form.addEventListener('submit', async e => {
     status.textContent = SUCCESS_MESSAGES[document.documentElement.getAttribute("data-theme")] || SUCCESS_MESSAGES.neon;
     playSuccessFlourish();
   } catch (err) {
-    status.textContent = err.message;
+    status.textContent = (err && err.name === "Error" && err.message) || "Couldn't load that player. Try again.";
     siteAudio.play("error");
   } finally {
     addSweatBtn.disabled = false;
@@ -27057,6 +27061,7 @@ async function fetchAndDisplayStats() {
   if (!resMojang.ok) throw new Error("Username not found");
   const mojangData = await resMojang.json();
   if (isStale()) return;
+  if (!mojangData || !mojangData.id || !mojangData.name) throw new Error("Username not found");
   currentUUID = mojangData.id;
   usernameInput.value = mojangData.name;
 
@@ -27105,6 +27110,7 @@ async function getPlayerStats(uuid) {
   const res = await fetch(`${backendBaseURL}/player/${uuid}`, { headers: adminHeaders() });
   if (!res.ok) throw new Error("Player stats not found");
   const json = await res.json();
+  if (!json || !json.player) throw new Error("No Hypixel data");
   const data = json.player.stats?.Bedwars || {};
 
   const star = json.player.achievements?.bedwars_level || 0;

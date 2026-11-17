@@ -36,9 +36,10 @@ async function loadLive() {
     rs.sort((a, b) => (day(a) + (a.createdAt || "")).localeCompare(day(b) + (b.createdAt || "")));
     const l = rs[rs.length - 1]; const f = Number(l.fkdr) || 0, st = Number(l.star) || 0;
     const notes = []; rs.forEach(r => (r.notes || []).forEach(n => notes.push({ text: n.text, by: ROSTER_LABEL[n.author] || n.author || "", at: String(n.createdAt || "").slice(0, 10) })));
-    const r2 = (x) => Math.round((Number(x) || 0) * 100) / 100;
+    const r2 = (x) => x == null || x === "" ? null : Math.round((Number(x) || 0) * 100) / 100;
+    const n0 = (x) => x == null || x === "" ? null : Number(x) || 0;
     rows.push({ name: l.username, uuid: l.uuid, index: Math.round(f * f * st), star: st, fkdr: r2(f), wlr: r2(l.wlr), bblr: r2(l.bblr), kdr: r2(l.kdr),
-      finals: l.finals || 0, beds: l.beds || 0, kills: l.kills || 0, first: day(rs[0]), last: day(l), times: rs.length,
+      finals: n0(l.finals), beds: n0(l.beds), kills: n0(l.kills), first: day(rs[0]), last: day(l), times: rs.length,
       beaten: Object.keys(ROSTER_LABEL).filter(k => rs.some(r => r[k])).map(k => ROSTER_LABEL[k]),
       addedBy: ROSTER_LABEL[l.addedBy] || l.addedBy || "", boosting: rs.some(r => r.boosting), cheating: rs.some(r => r.cheating), notes: notes.slice(-3),
       skin: `https://mc-heads.net/skin/${encodeURIComponent(l.uuid || l.username)}` });
@@ -64,8 +65,8 @@ const SHOT = QS.has("shot");
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtIdx = (n) => n >= 1e6 ? (n / 1e6).toFixed(2) + "M" : n >= 1e3 ? (n / 1e3).toFixed(1) + "K" : String(Math.round(n));
-const fmtNum = (n) => Number(n || 0).toLocaleString("en-US");
-const fmtRatio = (n) => { n = Number(n) || 0; return n >= 100 ? n.toFixed(0) : n.toFixed(2); };
+const fmtNum = (n) => n == null ? "—" : Number(n || 0).toLocaleString("en-US");
+const fmtRatio = (n) => { if (n == null) return "—"; n = Number(n) || 0; return n >= 100 ? n.toFixed(0) : n.toFixed(2); };
 const fmtDate = (d) => { const t = Date.parse(d + "T12:00:00Z"); return isNaN(t) ? "unknown" : new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }); };
 const ROSTER_VAR = { Milo: "--r-milo", Potat: "--r-potat", ABoi: "--r-aboi", Zoiv: "--r-zoiv", Max: "--r-max", Sqoz: "--r-sqoz", Kermit: "--r-kermit", Ssent: "--r-ssent", Key: "--r-key" };
 const cssVar = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -282,6 +283,9 @@ function makeMaterials() {
   M.crystal = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.04, metalness: 0.9, envMapIntensity: 3, emissive: 0xfff2dd, emissiveIntensity: 0.08 });
   M.wood = new THREE.MeshStandardMaterial({ map: woodTexture(), roughness: 0.62, metalness: 0, color: 0xb9a48d });
   M.glass = new THREE.MeshBasicMaterial({ map: oculusTexture(), color: new THREE.Color(0xb9cdff).multiplyScalar(2.2), toneMapped: false });
+  M.glowStrip = glow(0xffe2b0, 2.2);
+  // the dais and podiums: the same black marble, its veins knocked back and its polish softened so it doesn't fight the statues
+  M.darkRot = tex(T.dark, { color: 0x8a8a8a, roughness: 1.7, envMapIntensity: 0.8 });
 }
 function bounce(mat, k0, k1, y0, y1) {
   mat.onBeforeCompile = (sh) => {
@@ -343,9 +347,16 @@ function drawPlaque(d) {
     const tw = parts.reduce((a, p) => a + g.measureText(p.c).width, 0); let x = w / 2 - tw / 2; g.textAlign = "left";
     parts.forEach(p => { g.fillStyle = H ? "#fff" : p.color; g.fillText(p.c, x, 336); x += g.measureText(p.c).width; });
     g.textAlign = "center"; g.fillStyle = C(H, "#e2b866"); g.font = `700 68px Cinzel, Georgia, serif`; g.fillText(fmtIdx(d.index), w / 2, 440);
-    g.fillStyle = C(H, "#9a8761"); g.font = `600 25px 'Barlow Condensed', sans-serif`; g.fillText(`I N D E X   ·   ${tierOf(d.index).toUpperCase().split("").join(" ")}`, w / 2, 488);
+    g.fillStyle = C(H, "#d2bb86"); g.font = `600 33px 'Barlow Condensed', sans-serif`; g.fillText(`I N D E X   ·   ${tierOf(d.index).toUpperCase().split("").join(" ")}`, w / 2, 494);
     if (d.cheating) { g.save(); g.translate(w - 128, 100); g.rotate(0.32); g.fillStyle = C(H, "#e0354a"); g.fillRect(-150, -27, 300, 54);
       g.fillStyle = H ? "#000" : "#fff"; g.font = `700 33px 'Barlow Condensed', sans-serif`; g.fillText("CHEATER", 0, 12); g.restore(); }
+  };
+}
+function drawEmptyPlaque(rank) {
+  return (g, w, h, H) => {
+    bronzeBg(g, w, h, H); panelFrame(g, w, h, H);
+    g.textAlign = "center"; g.fillStyle = C(H, "#b8955a"); g.font = `700 60px Cinzel, Georgia, serif`; g.fillText(`Nº ${rank}`, w / 2, 220);
+    g.fillStyle = C(H, "#8f7d5c"); g.font = `600 44px 'Barlow Condensed', sans-serif`; g.fillText("A W A I T I N G   A   S W E A T", w / 2, 330);
   };
 }
 function drawDedication(g, w, h, H) {
@@ -373,7 +384,11 @@ function drawBanner(d) {
     // embroidered laurel ticks down the sides
     for (let y = 70; y < h - 200; y += 34) { [44, w - 44].forEach((x, s) => { g.beginPath(); g.moveTo(x, y); g.lineTo(x + (s ? -12 : 12), y - 14); g.stroke(); }); }
     g.textAlign = "center"; g.fillStyle = C(H, flag ? "#ff9aa5" : "#f0cf86");
-    if (d) {
+    if (d && d.empty) {
+      g.font = `900 290px Cinzel, Georgia, serif`; g.fillText(String(d.rank), w / 2, 400);
+      g.fillRect(w / 2 - 92, 458, 184, 4);
+      g.font = `600 34px 'Barlow Condensed', sans-serif`; g.fillStyle = C(H, "#a08a62"); g.fillText("AWAITING A SWEAT", w / 2, 540);
+    } else if (d) {
       g.font = `900 290px Cinzel, Georgia, serif`; g.fillText(String(d.rank), w / 2, 400);
       g.fillRect(w / 2 - 92, 458, 184, 4);
       g.fillStyle = C(H, "#e6d7b5"); fitFont(g, d.name, "'Barlow Condensed', sans-serif", 600, w - 100, 62); g.fillText(d.name, w / 2, 546);
@@ -401,15 +416,17 @@ function drawRoll(g, w, h, H) {
   if (!H) { const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, "#14120e"); bg.addColorStop(1, "#090807"); g.fillStyle = bg; g.fillRect(0, 0, w, h);
     const r = rng(5); for (let i = 0; i < 1400; i++) { g.fillStyle = `rgba(255,255,255,${r() * 0.03})`; g.fillRect(r() * w, r() * h, 2, 2); } }
   panelFrame(g, w, h, H, 16);
-  g.textAlign = "center"; g.fillStyle = C(H, "#e2b866"); g.font = `700 76px Cinzel, Georgia, serif`; g.fillText("ROLL OF HONOUR", w / 2, 150);
-  g.fillStyle = C(H, "#a08a62"); g.font = `600 30px 'Barlow Condensed', sans-serif`; g.fillText("THE GREATEST SWEATS WE'VE BEATEN", w / 2, 200);
-  g.fillRect(w / 2 - 160, 226, 320, 3);
-  const top = 300, step = (h - top - 90) / Math.max(20, DATA.length);
+  g.textAlign = "center"; g.fillStyle = C(H, "#e8c070"); g.font = `700 ${fitFont(g, "ROLL OF HONOUR", "Cinzel, Georgia, serif", 700, w - 150, 96)}px Cinzel, Georgia, serif`; g.fillText("ROLL OF HONOUR", w / 2, 168);
+  g.fillStyle = C(H, "#c9ad74"); g.font = `600 36px 'Barlow Condensed', sans-serif`; g.fillText("THE GREATEST SWEATS WE'VE BEATEN", w / 2, 224);
+  g.fillRect(w / 2 - 180, 250, 360, 3);
+  // rows spread down the whole board (a short list gets bigger type), with a faint gold rule between them
+  const n = Math.max(12, DATA.length), top = 340, step = (h - top - 96) / (n - 1), fs = Math.min(step * 0.66, 60);
   DATA.forEach((d, i) => {
     const y = top + i * step;
-    g.textAlign = "right"; g.fillStyle = C(H, d.rank <= 3 ? "#f0cf86" : "#b99a5e"); g.font = `700 ${Math.round(step * 0.62)}px Cinzel, Georgia, serif`; g.fillText(String(d.rank), 190, y);
-    g.textAlign = "left"; g.fillStyle = C(H, d.cheating ? "#ff8a96" : "#efe4cc"); fitFont(g, d.name, "'Barlow Condensed', sans-serif", 600, w - 560, Math.round(step * 0.72)); g.fillText(d.name, 230, y);
-    g.textAlign = "right"; g.fillStyle = C(H, "#e2b866"); g.font = `700 ${Math.round(step * 0.6)}px 'Barlow Condensed', sans-serif`; g.fillText(fmtIdx(d.index), w - 110, y);
+    if (i && !H) { g.fillStyle = "rgba(226,184,102,.16)"; g.fillRect(150, y - step * 0.62, w - 300, 2); }
+    g.textAlign = "right"; g.fillStyle = C(H, d.rank <= 3 ? "#f4d48c" : "#d2ae6a"); g.font = `700 ${Math.round(fs * 0.9)}px Cinzel, Georgia, serif`; g.fillText(String(d.rank), 196, y);
+    g.textAlign = "left"; g.fillStyle = C(H, d.cheating ? "#ff8a96" : "#f6eedb"); fitFont(g, d.name, "'Barlow Condensed', sans-serif", 600, w - 560, Math.round(fs)); g.fillText(d.name, 236, y);
+    g.textAlign = "right"; g.fillStyle = C(H, "#ecc372"); g.font = `700 ${Math.round(fs * 0.88)}px 'Barlow Condensed', sans-serif`; g.fillText(fmtIdx(d.index), w - 110, y);
   });
 }
 
@@ -427,7 +444,7 @@ function boxUV(g, size) {
   }
   g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
 }
-const UV_SIZE = { wall: 4, vault: 4, marble: 2, dark: 2 };
+const UV_SIZE = { wall: 4, vault: 4, marble: 2, dark: 2, darkRot: 2 };
 const _m4 = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(), _s = new THREE.Vector3(1, 1, 1);
 function mtx(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = sx, sz = sx) { return new THREE.Matrix4().compose(_v.set(x, y, z), _q.setFromEuler(_e.set(rx, ry, rz, "YXZ")), _s.set(sx, sy, sz)); }
 function add(key, geo, m, opts = {}) {
@@ -449,7 +466,7 @@ function flipGeo(g) {
   for (let i = 0; i < n.length; i++) n[i] = -n[i];
   return g;
 }
-const CAST = new Set(["marble", "dark", "gold", "goldDull", "iron", "velvet", "wood"]);
+const CAST = new Set(["marble", "dark", "darkRot", "gold", "goldDull", "iron", "velvet", "wood"]);
 function flushStatic() {
   for (const [key, list] of BATCH) {
     const mesh = new THREE.Mesh(mergeGeometries(list, false), M[key]);
@@ -655,18 +672,17 @@ function buildNiche(slot) {
   [-0.79, 0.79].forEach(x => add("gold", new THREE.BoxGeometry(0.05, 0.95, 0.03), at(null, mtx(x, 0.88, fz))));
   // lamp housing in the niche vault
   add("gold", new THREE.CylinderGeometry(0.16, 0.24, 0.22, 20), at(null, mtx(0, 7.72, -0.95)));
-  // velvet rope on three gold posts
-  const posts = [-62, 0, 62].map(a => { const r = a * Math.PI / 180; return new THREE.Vector3(Math.sin(r) * 1.75, 0, pz + Math.cos(r) * 1.75); });
+  // velvet rope on two gold posts at the front corners; it hangs along the arc and dips under the plaque's text
+  const arcAt = (deg) => { const r = deg * Math.PI / 180; return new THREE.Vector3(Math.sin(r) * 1.75, 0, pz + Math.cos(r) * 1.75); };
+  const posts = [-62, 62].map(arcAt);
   const post = lathe([[0.17, 0], [0.17, 0.03], [0.1, 0.06], [0.035, 0.09], [0.03, 0.88], [0.05, 0.9], [0.05, 0.93], [0.0001, 1.02]], 16);
   posts.forEach(p => { add("gold", post, at(null, mtx(p.x, 0, p.z))); add("gold", new THREE.SphereGeometry(0.055, 12, 8), at(null, mtx(p.x, 0.99, p.z))); });
-  const wp = posts.map(p => p.clone().applyMatrix4(N));
-  for (let i = 0; i < 2; i++) {
-    const a = posts[i], b = posts[i + 1], pts = [];
-    for (let k = 0; k <= 10; k++) { const t = k / 10; pts.push(new THREE.Vector3(lerp(a.x, b.x, t), 0.9 - Math.sin(t * Math.PI) * 0.2, lerp(a.z, b.z, t))); }
-    add("velvet", new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 16, 0.028, 6), at());
-    solidSeg(wp[i].x, wp[i].z, wp[i + 1].x, wp[i + 1].z, 0.06, 0.95);
-  }
-  wp.forEach(p => solidCirc(p.x, p.z, 0.17, 1.0));
+  const rope = [];
+  for (let k = 0; k <= 16; k++) { const t = k / 16, q = arcAt(lerp(-62, 62, t)); q.y = 0.9 - Math.sin(t * Math.PI) * 0.44; rope.push(q); }
+  add("velvet", new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rope), 40, 0.028, 6), at());
+  const wr = rope.filter((_, k) => k % 4 === 0).map(q => q.clone().applyMatrix4(N));
+  for (let i = 0; i < wr.length - 1; i++) solidSeg(wr[i].x, wr[i].z, wr[i + 1].x, wr[i + 1].z, 0.06, 0.95);
+  posts.map(p => p.clone().applyMatrix4(N)).forEach(p => solidCirc(p.x, p.z, 0.17, 1.0));
   // colliders: back wall, side walls, plinth
   const wc = (lx, lz) => new THREE.Vector3(lx, 0, lz).applyMatrix4(N);
   const c1 = wc(-NICHE_HW - 0.6, -NICHE_D), c2 = wc(NICHE_HW + 0.6, -NICHE_D - 1); solidBox(c1.x, c2.x, c1.z, c2.z);
@@ -716,7 +732,7 @@ function buildRotunda() {
   });
   // stepped dais
   let y = 0;
-  DAIS.forEach(([r, h], i) => { add(i === 2 ? "dark" : "marble", new THREE.CylinderGeometry(r, r + 0.06, h, 128), mtx(0, y + h / 2, ROT_Z));
+  DAIS.forEach(([r, h], i) => { add(i === 2 ? "darkRot" : "marble", new THREE.CylinderGeometry(r, r + 0.06, h, 128), mtx(0, y + h / 2, ROT_Z));
     add("goldLine", new THREE.TorusGeometry(r + 0.01, 0.02, 4, 160), mtx(0, y + h, ROT_Z, Math.PI / 2)); solidCirc(0, ROT_Z, r, y + h); y += h; });
 }
 
@@ -801,7 +817,7 @@ function buildEmbers(spots) {
 // Dust motes drifting through the hall
 let dust;
 function buildDust() {
-  const N = LOAD_Q.tex >= 2048 ? 3200 : 1600, pos = new Float32Array(N * 3), r = rng(99);
+  const N = Math.round((LOAD_Q.tex >= 2048 ? 3200 : 1600) * (NP ? 1.6 : 1)), pos = new Float32Array(N * 3), r = rng(99);
   for (let i = 0; i < N; i++) {
     if (i < N * 0.8) pos.set([(r() - 0.5) * 16, r() * 14, DOOR_Z - r() * (DOOR_Z - NAVE_END_Z)], i * 3);
     else { const a = r() * Math.PI * 2, rr = Math.sqrt(r()) * 13; pos.set([Math.sin(a) * rr, r() * 18, ROT_Z + Math.cos(a) * rr], i * 3); }
@@ -810,47 +826,93 @@ function buildDust() {
   dust = new THREE.Points(g, new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uTime: U.time, uScale: { value: innerHeight * DPR }, uFog: { value: scene.fog.density }, uSnow: { value: NP ? 1 : 0 } },
     vertexShader: `uniform float uTime, uScale, uFog, uSnow; varying float vA;
       void main(){ vec3 p = position; float s = fract(sin(dot(p.xz, vec2(12.9, 78.2))) * 437.5);
-        p.y = mod(p.y + uTime * mix(.05 + s * .08, -(.45 + s * .5), uSnow), 16.); p.x += sin(uTime * .21 + s * 40.) * .6; p.z += cos(uTime * .17 + s * 30.) * .6;
-        vec4 mv = modelViewMatrix * vec4(p, 1.); float d = -mv.z; vA = (.35 + .65 * pow(.5 + .5 * sin(uTime * (1. + s * 2.) + s * 60.), 3.)) * exp(-d * uFog * 1.5) * smoothstep(.4, 2.5, d) * mix(1., .12, smoothstep(5., 11., p.y) * (1. - uSnow));
-        gl_PointSize = uScale * .0045 * (.6 + s) * (1. + uSnow * .9) / max(d, .1); gl_Position = projectionMatrix * mv; }`,
-    fragmentShader: `uniform float uSnow; varying float vA; void main(){ float r = length(gl_PointCoord - .5) * 2.; gl_FragColor = vec4(mix(vec3(1., .88, .7), vec3(.95, .97, 1.), uSnow) * max(1. - r * r, 0.) * vA * mix(.7, 1., uSnow), 1.); }`,
+        p.y = mod(p.y + uTime * mix(.05 + s * .08, -(.45 + s * .5), uSnow), 16.); p.x += sin(uTime * .21 + s * 40.) * .6 + sin(uTime * 1.3 + s * 17.) * .18 * uSnow; p.z += cos(uTime * .17 + s * 30.) * .6;
+        vec4 mv = modelViewMatrix * vec4(p, 1.); float d = -mv.z; vA = mix(.35 + .65 * pow(.5 + .5 * sin(uTime * (1. + s * 2.) + s * 60.), 3.), .8 + .2 * s, uSnow) * exp(-d * uFog * 1.5) * smoothstep(.4, 2.5, d) * mix(1., .12, smoothstep(5., 11., p.y) * (1. - uSnow));
+        gl_PointSize = uScale * .0045 * (.6 + s) * (1. + uSnow * 1.9) / max(d, .1); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `uniform float uSnow; varying float vA; void main(){ float r = length(gl_PointCoord - .5) * 2.; gl_FragColor = vec4(mix(vec3(1., .88, .7), vec3(.95, .97, 1.), uSnow) * max(1. - r * r, 0.) * vA * mix(.7, 1.5, uSnow), 1.); }`,
   }));
   dust.frustumCulled = false; dust.userData.noAO = true; scene.add(dust);
 }
 
-// ---------- North Pole: two lit trees by the Roll of Honour, garlands of lights between the columns, wreaths on the niches ----------
+// ---------- North Pole: two lit trees in the rotunda, garlands of lights between the columns, wreaths on the niches ----------
 const NP_BULBS = [0xff3b46, 0x3ddc76, 0xffc94a, 0x58a8ff];
+// pine needles: short strokes in a tileable colour map plus a height map that becomes a normal map
+function needleMaps() {
+  const S2 = 512, r = rng(17), strokes = [];
+  for (let i = 0; i < 2600; i++) {
+    const x = r() * S2, y = r() * S2, side = r() < 0.5 ? -1 : 1, a = Math.PI / 2 + side * (0.45 + r() * 0.5), len = 9 + r() * 16;
+    strokes.push([x, y, Math.cos(a) * len, Math.sin(a) * len, r(), 1.4 + r() * 1.6]);
+  }
+  const draw = (H) => (g, w, h) => {
+    if (!H) { g.fillStyle = "#17482a"; g.fillRect(0, 0, w, h); }
+    strokes.forEach(([x, y, dx, dy, k, lw]) => {
+      g.strokeStyle = H ? `rgba(255,255,255,${0.35 + k * 0.65})` : (k < 0.35 ? `rgba(8,30,16,.75)` : k < 0.8 ? `rgba(46,112,64,.8)` : `rgba(96,160,104,.7)`);
+      g.lineWidth = lw; g.lineCap = "round";
+      for (const ox of [-w, 0, w]) for (const oy of [-h, 0, h]) { g.beginPath(); g.moveTo(x + ox, y + oy); g.lineTo(x + ox + dx, y + oy + dy); g.stroke(); }
+    });
+  };
+  const map = canvasTex(S2, S2, draw(false)), ht = canvasTex(S2, S2, (g, w, h) => { g.fillStyle = "#000"; g.fillRect(0, 0, w, h); draw(true)(g, w, h); }, false);
+  ht.wrapS = ht.wrapT = THREE.RepeatWrapping;
+  const normal = bakeNormal(S2, S2, ht, 1.6, 0); ht.dispose();
+  [map, normal].forEach(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(10, 2); });
+  return { map, normal };
+}
 function northPoleMaterials() {
-  M.npPine = new THREE.MeshStandardMaterial({ color: 0x1d5a34, roughness: 0.82, metalness: 0, emissive: 0x0c2a17, emissiveIntensity: 0.35 });
+  const nm = needleMaps();
+  M.npPine = new THREE.MeshStandardMaterial({ map: nm.map, normalMap: nm.normal, normalScale: new THREE.Vector2(1.2, 1.2), roughness: 0.78, metalness: 0, emissive: 0xffffff, emissiveMap: nm.map, emissiveIntensity: 0.16 });
   M.npRed = new THREE.MeshStandardMaterial({ color: 0xc8202c, roughness: 0.22, metalness: 0.55, envMapIntensity: 1.6 });
+  M.npGreen = new THREE.MeshStandardMaterial({ color: 0x1f6b3c, roughness: 0.3, metalness: 0.35, envMapIntensity: 1.3 });
+  M.npIvory = new THREE.MeshStandardMaterial({ color: 0xe9e0cc, roughness: 0.45, metalness: 0.1 });
   M.npSnow = new THREE.MeshStandardMaterial({ color: 0xf4f8ff, roughness: 0.9, metalness: 0, emissive: 0xcfe0ff, emissiveIntensity: 0.12 });
-  M.npStar = glow(0xffd36b, 4);
+  M.npStar = glow(0xffd36b, 2.4);
   NP_BULBS.forEach((c, i) => { M["npB" + i] = glow(c, 3.2); M["npB" + i].userData.base = new THREE.Color(c); });
 }
 function npBulb(i, x, y, z, r = 0.065) { add("npB" + (i % 4), new THREE.SphereGeometry(r, 8, 6), mtx(x, y, z)); }
+// one tier of branches: a cone whose lower rim splays out into drooping branch tips
+function branchTier(r, h, seed) {
+  const g = new THREE.ConeGeometry(r, h, 72, 4), p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i), rad = Math.hypot(x, z); if (rad < 1e-5) continue;
+    const t = (h / 2 - y) / h, rel = Math.min(1, rad / (r * Math.max(t, 1e-3))), a = Math.atan2(x, z);
+    const wv = 0.5 + 0.5 * Math.cos(a * 9 + seed) * 0.8 + 0.12 * Math.cos(a * 17 + seed * 2.3);
+    const k = 1 + 0.16 * t * t * wv;
+    p.setXYZ(i, x * k, y - 0.22 * t * t * wv * rel, z * k);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+function npPresent(x, z, w, h, d, ry, mat) {
+  add(mat, new THREE.BoxGeometry(w, h, d), mtx(x, h / 2, z, 0, ry));
+  add("gold", new THREE.BoxGeometry(w + 0.01, h + 0.01, 0.07), mtx(x, h / 2, z, 0, ry));
+  add("gold", new THREE.BoxGeometry(0.07, h + 0.01, d + 0.01), mtx(x, h / 2, z, 0, ry));
+  [-1, 1].forEach(e => add("gold", new THREE.TorusGeometry(0.07, 0.02, 6, 14), mtx(x, h + 0.05, z, 0, ry + e * 0.6, e * 0.5)));
+}
 function npTree(x, z, H, R) {
-  add("wood", new THREE.CylinderGeometry(0.22, 0.3, 1.0, 12), mtx(x, 0.5, z));
-  add("velvet", new THREE.CylinderGeometry(R * 0.85, R * 0.9, 0.05, 40), mtx(x, 0.025, z));
+  add("wood", new THREE.CylinderGeometry(0.2, 0.28, 1.0, 16), mtx(x, 0.5, z));
+  add("gold", lathe([[0.0001, 0.34], [0.5, 0.34], [0.56, 0.28], [0.52, 0.08], [0.6, 0], [0.0001, 0]], 32), mtx(x, 0, z));
   const env = (y) => R * Math.max(0.04, 1 - (y - 0.8) / (H - 0.6));
   for (let i = 0; i < 7; i++) {
     const y0 = 0.8 + i * (H - 1.4) / 7, r = env(y0) * 1.04, h = Math.min(H * 0.32, r * 1.5 + 0.6);
-    add("npPine", new THREE.ConeGeometry(r, h, 20), mtx(x, y0 + h / 2, z, 0, i * 0.7));
-    add("npSnow", new THREE.ConeGeometry(r * 0.42, h * 0.3, 20), mtx(x, y0 + h - h * 0.15, z, 0, i * 0.7));
+    add("npPine", branchTier(r, h, i * 1.7 + x), mtx(x, y0 + h / 2, z, 0, i * 0.7), { keepUV: true });
+    add("npSnow", branchTier(r * 0.34, h * 0.24, i * 1.7 + x), mtx(x, y0 + h - h * 0.12, z, 0, i * 0.7));
   }
   const N = 120, turns = 6.5;
   for (let k = 0; k < N; k++) {
-    const u = k / N, y = 1.0 + u * (H - 1.7), a = u * turns * Math.PI * 2, r = env(y) * 0.9 + 0.06;
+    const u = k / N, y = 1.0 + u * (H - 1.7), a = u * turns * Math.PI * 2, r = env(y) * 0.92 + 0.08;
     npBulb(k, x + Math.sin(a) * r, y, z + Math.cos(a) * r);
   }
-  const rr = rng(Math.round(x * 100 + z));
-  for (let k = 0; k < 26; k++) {
-    const y = 1.2 + rr() * (H - 2.4), a = rr() * Math.PI * 2, r = env(y) * 0.86 + 0.1;
-    add(k % 3 ? "npRed" : "gold", new THREE.SphereGeometry(0.15 + rr() * 0.06, 14, 10), mtx(x + Math.sin(a) * r, y, z + Math.cos(a) * r));
+  const rr = rng(Math.round(Math.abs(x) * 100 + z));
+  for (let k = 0; k < 46; k++) {
+    const y = 1.2 + rr() * (H - 2.4), a = rr() * Math.PI * 2, r = env(y) * 0.9 + 0.1, br = 0.085 + rr() * 0.045;
+    add(k % 3 ? "npRed" : "gold", new THREE.SphereGeometry(br, 16, 12), mtx(x + Math.sin(a) * r, y - br * 0.6, z + Math.cos(a) * r));
   }
-  const star = new THREE.Shape(); for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2, r = k % 2 ? 0.2 : 0.48; star[k ? "lineTo" : "moveTo"](Math.sin(a) * r, Math.cos(a) * r); }
-  const sg = new THREE.ExtrudeGeometry(star, { depth: 0.1, bevelEnabled: false }); sg.translate(0, 0, -0.05);
-  [0, Math.PI / 2].forEach(ry => add("npStar", sg, mtx(x, H + 0.35, z, 0, ry)));
-  addGlow(x, H + 0.35, z, 3.2, 1, 0.8, 0.4); addGlow(x, H * 0.5, z, 7, 0.45, 0.32, 0.18);
+  // presents under the branches
+  [[0.9, 0.2, 0.62, 0.42, 0.62, "npRed"], [1.25, 1.5, 0.5, 0.34, 0.7, "npIvory"], [1.0, 2.7, 0.7, 0.5, 0.52, "npGreen"], [1.4, 3.9, 0.46, 0.3, 0.46, "npRed"], [1.1, 5.1, 0.56, 0.4, 0.56, "npGreen"]]
+    .forEach(([d, a, w, h, dd, m]) => npPresent(x + Math.sin(a) * d, z + Math.cos(a) * d, w, h, dd, a * 1.3, m));
+  const star = new THREE.Shape(); for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2, r = k % 2 ? 0.17 : 0.4; star[k ? "lineTo" : "moveTo"](Math.sin(a) * r, Math.cos(a) * r); }
+  const sg = new THREE.ExtrudeGeometry(star, { depth: 0.08, bevelEnabled: false }); sg.translate(0, 0, -0.04);
+  [0, Math.PI / 2].forEach(ry => add("npStar", sg, mtx(x, H + 0.3, z, 0, ry)));
+  addGlow(x, H + 0.3, z, 1.5, 0.8, 0.62, 0.3); addGlow(x, H * 0.5, z, 5.5, 0.3, 0.22, 0.12);
   solidCirc(x, z, R * 0.92);
 }
 function npWreath(N) {
@@ -872,13 +934,13 @@ function npGarland(s, za, zb) {
 }
 function buildNorthPole(niches) {
   northPoleMaterials();
-  [-1, 1].forEach(s => { const a = Math.PI - 0.56; npTree(s * Math.sin(a) * 11.3, ROT_Z + Math.cos(a) * 11.3, 7.6, 2.3); });
+  [-1, 1].forEach(s => { const a = Math.PI - 1.178; npTree(s * Math.sin(a) * 10.9, ROT_Z + Math.cos(a) * 10.9, 7.6, 2.3); });
   [-1, 1].forEach(s => { for (let k = 0; k < BAYS; k++) npGarland(s, COL_ZS[k], COL_ZS[k + 1]); });
   niches.forEach((N, sl) => npWreath(N));
 }
 function npTwinkle(time) {
   for (let i = 0; i < 4; i++) { const m = M["npB" + i]; if (!m) return; const f = 0.55 + 0.45 * Math.sin(time * (1.3 + i * 0.37) + i * 1.9); m.color.copy(m.userData.base).multiplyScalar(3.2 * (0.35 + 0.65 * f)); }
-  if (M.npStar) M.npStar.color.setRGB(1, 0.83, 0.42).multiplyScalar(3.4 + Math.sin(time * 2.1) * 0.6);
+  if (M.npStar) M.npStar.color.setRGB(1, 0.83, 0.42).multiplyScalar(2.2 + Math.sin(time * 2.1) * 0.35);
 }
 
 // ---------- Chandeliers, braziers, moonbeams ----------
@@ -1051,8 +1113,19 @@ function buildNicheExhibit(slot, N, skin) {
   exhibits.push(ex);
 }
 
+// a niche whose rank nobody holds yet: a dim banner and plaque so it doesn't look unfinished
+function buildEmptyNiche(slot) {
+  const s = slot.side, g = new THREE.Group(); g.position.set(s * WALL_X, 0, slot.z); g.rotation.y = -s * Math.PI / 2; world.add(g); g.updateMatrixWorld();
+  const plaque = new THREE.Mesh(plaqueGeo, plaqueMaterial(reliefPanel(1024, 560, drawEmptyPlaque(slot.rank)))); plaque.material.emissiveIntensity = 0.14;
+  plaque.position.set(0, 0.88, -PLINTH_D + 0.958); g.add(plaque);
+  const ban = banner(reliefPanel(512, 1164, drawBanner({ rank: slot.rank, empty: true }), 2), 2.2, 5.0, slot.z * 0.7 + s); ban.material.emissiveIntensity = 0.03;
+  ban.position.set(0, 5.15, -NICHE_D + 0.16); g.add(ban);
+  add("gold", new THREE.CylinderGeometry(0.03, 0.03, 2.6, 10), g.matrixWorld.clone().multiply(mtx(0, 7.7, -NICHE_D + 0.16, 0, 0, Math.PI / 2)));
+  [-1.3, 1.3].forEach(x => add("gold", new THREE.SphereGeometry(0.07, 12, 8), g.matrixWorld.clone().multiply(mtx(x, 7.7, -NICHE_D + 0.16))));
+}
+
 // ---------- The podium, the prism and the Roll of Honour ----------
-let prism, prismBeams = [], beamIn, specRing, rollPlane;
+let prism, prismBeams = [], beamIn, specRing, rollPlane, rollWash;
 // a gilded lamp ring hung from the oculus on six rods; each podium's spotlight hangs from it (rotunda-local coordinates)
 const CORONA = { y: 14.2, r: 5.0, z: 0.6, rodTop: 27.55, rodR: 2.2 };
 function buildCorona() {
@@ -1098,7 +1171,7 @@ function buildPodium(skinOf) {
     vertexShader: `varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
     fragmentShader: `uniform float uPower; uniform float uTime; varying vec3 vP; vec3 hue(float h){ return clamp(abs(mod(h * 6. + vec3(0., 4., 2.), 6.) - 3.) - 1., 0., 1.); }
       void main(){ float a = atan(vP.y, vP.x) / 6.2831853 + .5; float r = length(vP.xy); float band = smoothstep(${SR[0].toFixed(2)}, ${SR[1].toFixed(2)}, r) * (1. - smoothstep(${SR[2].toFixed(2)}, ${SR[3].toFixed(2)}, r));
-        gl_FragColor = vec4(max(hue(a + uTime * .03) * band * uPower * 1.3, 0.), 1.); }`,
+        gl_FragColor = vec4(max(mix(hue(a + uTime * .03), vec3(1., .82, .5), .35) * band * uPower * 1.3, 0.), 1.); }`,
   }));
   specRing.rotation.x = -Math.PI / 2; specRing.position.y = DAIS_TOP + 0.012; specRing.userData.noAO = true; R.add(specRing);
   buildCorona();
@@ -1106,7 +1179,7 @@ function buildPodium(skinOf) {
     const d = byRank.get(p.rank); if (!d) return;
     const g = new THREE.Group(); g.position.set(p.x, DAIS_TOP, p.z); R.add(g);
     const wm = mtx(p.x, DAIS_TOP, ROT_Z + p.z);
-    add("dark", new THREE.BoxGeometry(2.4, p.h, 2.4), wm.clone().multiply(mtx(0, p.h / 2, 0)));
+    add("darkRot", new THREE.BoxGeometry(2.4, p.h, 2.4), wm.clone().multiply(mtx(0, p.h / 2, 0)));
     add("marble", new THREE.BoxGeometry(2.62, 0.14, 2.62), wm.clone().multiply(mtx(0, p.h + 0.07, 0)));
     add("marble", new THREE.BoxGeometry(2.6, 0.12, 2.6), wm.clone().multiply(mtx(0, 0.06, 0)));
     solidBox(p.x - 1.3, p.x + 1.3, ROT_Z + p.z - 1.3, ROT_Z + p.z + 1.3);
@@ -1144,7 +1217,11 @@ function buildPodium(skinOf) {
     ? new THREE.MeshStandardMaterial({ color: 0xdfe8ff, metalness: 0.9, roughness: 0.05, envMapIntensity: 3, transparent: true, opacity: 0.55 })
     : new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.03, transmission: 1, thickness: 1.6, ior: 1.6, dispersion: 3, envMapIntensity: 2.4, transparent: true });
   const glass = new THREE.Mesh(pg, glassMat); glass.userData.noAO = true; glass.layers.set(2); prism.add(glass);
-  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(pg), new THREE.LineBasicMaterial({ color: new THREE.Color(0xffffff).multiplyScalar(1.1), toneMapped: false })); prism.add(edges);
+  const body = new THREE.Mesh(pg, new THREE.MeshBasicMaterial({ color: new THREE.Color(0x9fb4e8).multiplyScalar(0.16), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false }));
+  body.userData.noAO = true; prism.add(body);
+  const core = new THREE.Mesh(pg.clone().scale(0.55, 0.55, 0.8), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xf2f0ff).multiplyScalar(0.35), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+  core.userData.noAO = true; prism.add(core);
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(pg), new THREE.LineBasicMaterial({ color: new THREE.Color(0xfff6e6).multiplyScalar(0.7), toneMapped: false })); prism.add(edges);
   beamIn = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.75, 16.6, 32, 1, true), beamMaterial(0xf2f6ff, 1.6, 0.6)); beamIn.position.set(0, 10.6 + 8.3, -1.2); beamIn.userData.noAO = true; R.add(beamIn);
   const HUES = [0xff3b3b, 0xff9a2e, 0xffe14a, 0x4dff7a, 0x3fd8ff, 0x5b6cff, 0xc25bff];
   HUES.forEach((h, i) => {
@@ -1156,6 +1233,16 @@ function buildPodium(skinOf) {
   const roll = reliefPanel(1024, 1462, drawRoll, 2);
   rollPlane = new THREE.Mesh(new THREE.PlaneGeometry(4.1, 5.85), new THREE.MeshStandardMaterial({ map: roll.map, normalMap: roll.normal, metalness: 0.55, roughness: 0.42, emissive: 0xffffff, emissiveMap: roll.map, emissiveIntensity: 0 }));
   rollPlane.position.set(0, 4.9, ROT_Z - 14.86); world.add(rollPlane);
+  // a gilded picture lamp over the board (its lit strip is the source of the warm wash on the names)
+  const lz = ROT_Z - 14.86;
+  const hood = new THREE.CylinderGeometry(0.17, 0.17, 3.4, 24, 1, false, -0.25, Math.PI + 0.5); hood.rotateZ(Math.PI / 2);
+  add("gold", hood, mtx(0, 8.32, lz + 0.42));
+  add("glowStrip", new THREE.BoxGeometry(3.24, 0.03, 0.3), mtx(0, 8.3, lz + 0.42));
+  [-1.2, 1.2].forEach(x => { add("gold", new THREE.CylinderGeometry(0.025, 0.025, 0.46, 8), mtx(x, 8.32, lz + 0.2, Math.PI / 2)); add("gold", new THREE.SphereGeometry(0.05, 10, 8), mtx(x, 8.32, lz + 0.0)); });
+  const washTex = canvasTex(128, 256, (g, w, h) => { const gr = g.createRadialGradient(w / 2, -h * 0.25, 0, w / 2, -h * 0.25, h * 1.15);
+    gr.addColorStop(0, "rgba(255,226,180,1)"); gr.addColorStop(0.45, "rgba(255,206,150,.42)"); gr.addColorStop(1, "rgba(255,190,130,0)"); g.fillStyle = gr; g.fillRect(0, 0, w, h); });
+  rollWash = new THREE.Mesh(new THREE.PlaneGeometry(4.1, 5.85), new THREE.MeshBasicMaterial({ map: washTex, color: 0xffd9a8, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -2 }));
+  rollWash.position.set(0, 4.9, lz + 0.01); rollWash.userData.noAO = true; world.add(rollWash);
   [[0, 7.88, 4.3, 0.1], [0, 1.92, 4.3, 0.1]].forEach(([x, y, w, h]) => box("gold", w, h, 0.1, x, y, ROT_Z - 14.84));
   [-2.1, 2.1].forEach(x => box("gold", 0.1, 6.06, 0.1, x, 4.9, ROT_Z - 14.84));
 }
@@ -1175,7 +1262,8 @@ for (let i = 0; i < LOAD_Q.lights; i++) {
 function applyShadows() { const n = QUALITY[quality].shadows; pool.forEach((s, i) => { s.castShadow = i < n; }); }
 applyShadows();
 const rotLight = new THREE.SpotLight(0xfff1d8, 0, 42, 0.42, 0.6, 1.2); rotLight.position.set(0, 26, ROT_Z - 1.2); rotLight.target.position.set(0, 2, ROT_Z - 1.2); scene.add(rotLight, rotLight.target);
-const rotFill = new THREE.PointLight(0x9fb4ff, 0, 30, 1.6); rotFill.position.set(0, 7, ROT_Z + 8); scene.add(rotFill);
+// soft sky bounce from the oculus; kept high and pale so it doesn't leave blue hot spots on the polished wall panels
+const rotFill = new THREE.PointLight(0xb7c4e6, 0, 30, 1.6); rotFill.position.set(0, 12, ROT_Z + 4); scene.add(rotFill);
 const brazierLights = BRAZIERS.map(p => { const l = new THREE.PointLight(0xff8a3a, 0, 16, 1.5); l.position.set(p.x, 2.5, p.z); scene.add(l); return l; });
 const chandLight = new THREE.PointLight(0xffc98a, 0, 24, 1.5); chandLight.userData = { z: CHANDELIER_ZS[0], w: 0 }; chandLight.position.set(0, 8.4, CHANDELIER_ZS[0]); scene.add(chandLight);
 
@@ -1484,6 +1572,19 @@ function glideLook(dt) {
   PL.yaw += wrapAngle(ty - PL.yaw) * Math.min(1, dt * 3.2); PL.pitch += (tp - PL.pitch) * Math.min(1, dt * 3.2);
 }
 const wrapAngle = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+// the point we test "looking at" against: the head from afar, the chest up close (so a big figure filling the view wins)
+function aimPoint(ex, out) {
+  headWorld(ex, out); if (!ex.fig) return out;
+  const d = out.distanceTo(camera.position), drop = (ex.podium ? 1.6 : 0.9) * clamp((7 - d) / 4, 0, 1);
+  out.y -= drop; return out;
+}
+// a sweat whose aim point sits behind another exhibit's statue doesn't get the card
+const occRay = new THREE.Raycaster(), occV = new THREE.Vector3();
+function occluded(ex, d) {
+  aimPoint(ex, occV); occV.sub(camera.position).normalize(); occRay.set(camera.position, occV); occRay.far = d;
+  for (const h of occRay.intersectObjects(hitTargets, false)) { const o = h.object.userData.ex; if (o === ex) return false; if (o && o.fig) return true; }
+  return false;
+}
 function stopGlide() { AP.active = false; AP.v = 0; AP.settle = 0; document.body.classList.remove("gliding"); stopTour(); }
 const STOPS = [];
 const S = { mode: "gate", introT: 0, ignited: 0, tour: false, tourI: 0, attn: null };
@@ -1519,26 +1620,29 @@ function cardHtml(ex) {
   if (!ex.d) {
     return `<div class="c-top"><span class="c-rank">THE HALL</span></div><div class="c-name">Prism Hall of Fame</div>
       <div class="c-index"><b>${fmtNum(META.total)}</b><span>sweats beaten so far</span></div>
-      <div class="c-meta">Every player in our sweat log, ranked by <b>index = FKDR² × stars</b> from their lifetime stats when we logged them. Cheaters count too, marked in red. The top 20 stand in this hall. The top three wait under the prism at the end.</div>
-      <div class="c-meta">Built from <b>${fmtNum(META.records)}</b> logged games, live data from ${esc(META.generated)}.</div>`;
+      <div class="c-meta">Ranked by <b>FKDR² × stars</b>. Cheaters in red. Top 3 under the prism.</div>`;
   }
   const d = ex.d;
   const chips = d.beaten.map(n => `<span class="chip" style="color:var(${ROSTER_VAR[n] || "--ivory"})">${esc(n)}</span>`).join("");
   const notes = (d.notes || []).map(n => `<div class="c-note">“${esc(n.text)}”<small>${esc(n.by || "someone")} · ${esc(fmtDate(n.at))}</small></div>`).join("");
-  const stat = (k, v) => `<div><dt>${k}</dt><dd>${v}</dd></div>`;
+  const stat = (k, v, more) => `<div${more ? ' class="x"' : ""}><dt>${k}</dt><dd>${v}</dd></div>`;
   return `<div class="c-top"><span class="c-rank">Nº ${d.rank} OF ${fmtNum(META.total)}</span>${d.cheating ? `<span class="c-flag">CHEATER</span>` : `<span class="c-tier">${esc(tierOf(d.index))}</span>`}</div>
     <div class="c-name">${esc(d.name)}</div><div class="c-tag">${prestigeHtml(d.star)}</div>
     <div class="c-index"><b>${fmtIdx(d.index)}</b><span>index · FKDR² × stars</span></div>
-    <dl class="c-grid">${stat("FKDR", fmtRatio(d.fkdr))}${stat("WLR", fmtRatio(d.wlr))}${stat("BBLR", fmtRatio(d.bblr))}${stat("KDR", fmtRatio(d.kdr))}${stat("Finals", fmtNum(d.finals))}${stat("Beds", fmtNum(d.beds))}${stat("Kills", fmtNum(d.kills))}${stat("Met", d.times + "×")}</dl>
-    <div class="c-sec">Beaten by</div><div class="chips">${chips || '<span class="c-meta">nobody tagged</span>'}</div>
+    <dl class="c-grid">${stat("FKDR", fmtRatio(d.fkdr))}${stat("WLR", fmtRatio(d.wlr))}${stat("Finals", fmtNum(d.finals))}${stat("BBLR", fmtRatio(d.bblr))}${stat("KDR", fmtRatio(d.kdr), 1)}${stat("Beds", fmtNum(d.beds), 1)}${stat("Kills", fmtNum(d.kills), 1)}${stat("Met", d.times + "×", 1)}</dl>
+    <div class="c-more"><div class="c-sec">Beaten by</div><div class="chips">${chips || '<span class="c-meta">nobody tagged</span>'}</div>
     <div class="c-meta">First logged <b>${esc(fmtDate(d.first))}</b>${d.times > 1 ? `, last <b>${esc(fmtDate(d.last))}</b>` : ""}${d.addedBy ? ` · added by <b>${esc(d.addedBy)}</b>` : ""}${d.boosting ? " · <b>boosting</b>" : ""}</div>
-    ${notes ? `<div class="c-sec">Notes</div>${notes}` : ""}`;
+    ${notes ? `<div class="c-sec">Notes</div>${notes}` : ""}</div><div class="c-tog"></div>`;
 }
 function showCard(ex, side) {
   if (ex === cardEx && card.classList.contains("show")) { card.classList.toggle("l", side === "l"); card.classList.toggle("r", side === "r"); return; }
   cardEx = ex; card.classList.remove("show"); clearTimeout(cardHideT);
-  cardHideT = setTimeout(() => { card.innerHTML = cardHtml(ex); card.classList.toggle("ded", !ex.d); card.classList.remove("l", "r"); card.classList.add(side); requestAnimationFrame(() => card.classList.add("show")); }, card.innerHTML ? 240 : 0);
+  cardHideT = setTimeout(() => { card.innerHTML = cardHtml(ex); card.classList.toggle("ded", !ex.d); card.classList.remove("l", "r", "open", "ovf"); card.scrollTop = 0; card.classList.add(side); requestAnimationFrame(() => card.classList.add("show")); }, card.innerHTML ? 240 : 0);
 }
+// phones show a compact card: a tap opens the rest, with a fade at the bottom while there's more to scroll
+const cardFade = () => card.classList.toggle("ovf", card.classList.contains("open") && card.scrollHeight - card.scrollTop - card.clientHeight > 4);
+card.addEventListener("click", () => { if (innerWidth > 720 || !cardEx || !cardEx.d) return; card.classList.toggle("open"); card.scrollTop = 0; cardFade(); });
+card.addEventListener("scroll", cardFade, { passive: true });
 function hideCard() { if (!cardEx) return; cardEx = null; clearTimeout(cardHideT); card.classList.remove("show"); }
 let toastT = 0;
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 3200); }
@@ -1680,8 +1784,8 @@ function updateExhibits(dt, time) {
     f.sword.children.forEach(m => m.material.emissiveIntensity = (m.material.color.getHex() === SWORD_COL.L ? 0.35 : 0.15) + raise * 0.9);
   }
   const rp = exhibits.filter(e => e.podium).reduce((a, e) => Math.max(a, e.power), 0);
-  rotLight.intensity = rp * 320; rotFill.intensity = rp * 24; rollPlane.material.emissiveIntensity = rp * 0.16;
-  specRing.material.uniforms.uPower.value = rp * 0.5; beamIn.material.uniforms.uPower.value = rp * 0.9;
+  rotLight.intensity = rp * 320; rotFill.intensity = rp * 16; rollPlane.material.emissiveIntensity = rp * 0.42; rollWash.material.opacity = rp * 0.2;
+  specRing.material.uniforms.uPower.value = rp * 0.26; beamIn.material.uniforms.uPower.value = rp * 0.9;
   prism.rotation.y = Math.sin(time * 0.3) * 0.6; prism.position.y = 10.6 + Math.sin(time * 0.7) * 0.15;
   prismBeams.forEach(piv => { const { a } = piv.userData, aa = a + time * 0.25; piv.rotation.set(Math.cos(aa) * 0.62, 0, Math.sin(aa) * 0.62); piv.position.y = prism.position.y; piv.children[0].material.uniforms.uPower.value = rp * 1.05; });
 }
@@ -1743,16 +1847,22 @@ function tick(dt, draw) {
   }
   // what are we looking at
   if (S.mode === "free") {
-    camera.getWorldDirection(fwd); let best = null, bestA = 0.42;
+    camera.getWorldDirection(fwd);
+    const cand = [];
     for (const ex of exhibits) {
-      headWorld(ex, tmpV); tmpV.sub(camera.position); const d = tmpV.length(); if (d > (ex.podium ? 26 : 13.5)) continue;
-      const a = fwd.angleTo(tmpV.normalize()), a2 = AP.ex === ex ? a * 0.5 : a;
-      if (a2 < bestA) { bestA = a2; best = ex; }
+      aimPoint(ex, tmpV); tmpV.sub(camera.position); const d = tmpV.length(); if (d > (ex.podium ? 26 : 13.5)) continue;
+      const a = fwd.angleTo(tmpV.normalize()), a2 = (AP.ex === ex ? a * 0.5 : a) * (1 + d / 20);
+      if (a2 < 0.42 * (1 + d / 20)) cand.push([a2, ex, d]);
     }
+    cand.sort((p, q) => p[0] - q[0]);
+    let best = null;
+    for (const [, ex, d] of cand) { if (!occluded(ex, d)) { best = ex; break; } }
     S.attn = best;
     if (best) { headWorld(best, tmpV).project(camera); showCard(best, tmpV.x < 0 ? "r" : "l"); } else hideCard();
     const ci = best && best.d ? STOPS.indexOf(best) : -1;
     rail.querySelectorAll("button").forEach((b, i) => b.classList.toggle("cur", i === ci));
+    S.freeT = (S.freeT || 0) + dt; S.walked = (S.walked || 0) + (AP.active ? 0 : (PL.speed || 0) * dt);
+    if (!S.hintOff && (S.freeT > 12 || S.walked > 8)) { S.hintOff = true; document.body.classList.add("hint-off"); }
     $("#progress i").style.width = clamp((START_Z - PL.pos.z) / (START_Z - (ROT_Z + 10)) * 100, 0, 100).toFixed(1) + "%";
   } else S.attn = null;
   updateExhibits(dt, time); updateLights(dt); ambientLights(time, U.flame.value);
@@ -1784,7 +1894,7 @@ async function buildHall() {
   try { await Promise.all(["700 50px Cinzel", "900 50px Cinzel", "700 50px 'Barlow Condensed'", "600 50px 'Barlow Condensed'"].map(f => document.fonts.load(f))); } catch (e) {}
   const skins = await Promise.all(DATA.map(d => loadSkin(d.skin).catch(() => null)));
   const skinOf = new Map(DATA.map((d, i) => [d.rank, skins[i]]));
-  slots.forEach(sl => { if (sl.ded || byRank.get(sl.rank)) buildNicheExhibit(sl, niches.get(sl), skinOf.get(sl.rank)); });
+  slots.forEach(sl => { if (sl.ded || byRank.get(sl.rank)) buildNicheExhibit(sl, niches.get(sl), skinOf.get(sl.rank)); else buildEmptyNiche(sl); });
   buildPodium(skinOf);
   const top = inscription([["HALL OF FAME", 230, 268, "#e2b866"]], 8.6, 1.55, 2048, 370); top.position.set(0, 10.5, DOOR_Z - 0.06); top.rotation.y = Math.PI; world.add(top);
   const gateIns = inscription([["THE GREATEST SWEATS WE'VE BEATEN", 132, 0, "#e2b866"]], 10.4, 1.5, 2560, 370); gateIns.position.set(0, 14.4, NAVE_END_Z + 0.06); world.add(gateIns);
@@ -1796,7 +1906,7 @@ async function buildHall() {
   setupReflection();
   captureEnvironment();
 }
-$("#brandSub").textContent = `Top 20 of ${fmtNum(META.total)} sweats · ranked by FKDR² × stars`;
+$("#brandSub").textContent = `${META.total > 20 ? `Top 20 of ${fmtNum(META.total)}` : `All ${fmtNum(META.total)}`} sweats · ranked by FKDR² × stars`;
 $("#qualityBtn").textContent = QUALITY[quality].label;
 if (TOUCH) document.body.classList.add("touch");
 renderer.shadowMap.autoUpdate = false;

@@ -72,8 +72,8 @@ body.free .bar.bottom { transform: translateY(100%); }
 body.free .hud { opacity: 1; }
 body.free .hud > * { pointer-events: auto; }
 #brand { top: calc(18px + env(safe-area-inset-top, 0px)); left: max(18px, env(safe-area-inset-left, 0px)); }
-#brand .t { font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: .14em; color: var(--gold); }
-#brand .s { font-family: var(--stat); font-size: 13px; letter-spacing: .08em; color: var(--mute); margin-top: 3px; }
+#brand .t { font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: .14em; color: var(--gold); text-shadow: 0 1px 2px rgba(0,0,0,.85), 0 0 12px rgba(0,0,0,.6); }
+#brand .s { font-family: var(--stat); font-size: 13px; letter-spacing: .08em; color: #c9c2b0; margin-top: 3px; text-shadow: 0 1px 2px #000, 0 0 8px rgba(0,0,0,.8); }
 #tools { top: calc(16px + env(safe-area-inset-top, 0px)); right: max(18px, env(safe-area-inset-right, 0px)); display: flex; gap: 8px; }
 .tbtn { font-family: var(--stat); font-weight: 600; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--ivory);
   background: rgba(12,14,20,.6); border: 1px solid rgba(226,184,102,.35); padding: 8px 12px 7px; cursor: pointer; backdrop-filter: blur(6px); }
@@ -81,8 +81,10 @@ body.free .hud > * { pointer-events: auto; }
 .tbtn:hover { border-color: var(--gold); color: #fff; }
 .tbtn[aria-pressed="true"] { background: var(--gold); color: #120e06; border-color: var(--gold); }
 .tbtn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-#rail { right: max(18px, env(safe-area-inset-right, 0px)); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 3px; }
-#rail button { all: unset; cursor: pointer; display: flex; align-items: center; justify-content: flex-end; gap: 8px; height: 18px; font-family: var(--stat); font-size: 12px; color: var(--mute); letter-spacing: .06em; }
+/* the rail sits on a soft dark scrim so the numbers stay readable over lit banners and chandeliers */
+#rail { right: max(8px, env(safe-area-inset-right, 0px)); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 3px; padding: 18px 10px 18px 34px;
+  background: radial-gradient(ellipse 100% 58% at 100% 50%, rgba(5,6,10,.62), rgba(5,6,10,.3) 60%, rgba(5,6,10,0) 100%); }
+#rail button { all: unset; cursor: pointer; display: flex; align-items: center; justify-content: flex-end; gap: 8px; height: 18px; font-family: var(--stat); font-size: 12px; color: #bdb6a4; letter-spacing: .06em; text-shadow: 0 1px 2px #000, 0 0 6px rgba(0,0,0,.9); }
 #rail button .nm { opacity: 0; transform: translateX(6px); transition: .2s; white-space: nowrap; }
 #rail button:hover .nm, #rail button:focus-visible .nm, #rail button.cur .nm { opacity: 1; transform: none; }
 #rail button .tick { width: 14px; height: 2px; background: currentColor; transition: .25s; }
@@ -91,13 +93,15 @@ body.free .hud > * { pointer-events: auto; }
 #rail button.cur .tick { width: 26px; box-shadow: 0 0 8px var(--gold); }
 #rail button.flag .rk { color: var(--flag); }
 #rail button:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
-#hint { bottom: calc(18px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); font-family: var(--stat); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); white-space: nowrap; }
+#hint { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); font-family: var(--stat); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: #c9c2b0; white-space: nowrap;
+  padding: 6px 14px 5px; background: rgba(5,6,10,.58); backdrop-filter: blur(6px); text-shadow: 0 1px 2px #000; }
+body.free.hint-off #hint { opacity: 0; pointer-events: none; transition: opacity 1.2s ease; } /* fades once you've found your feet */
 #hint kbd { font-family: var(--stat); color: var(--ivory); border: 1px solid rgba(241,234,217,.25); padding: 1px 6px; margin: 0 2px; }
-#progress { left: 50%; transform: translateX(-50%); bottom: calc(46px + env(safe-area-inset-bottom, 0px)); width: min(340px, 60vw); height: 2px; background: rgba(241,234,217,.12); }
+#progress { left: 50%; transform: translateX(-50%); bottom: calc(54px + env(safe-area-inset-bottom, 0px)); width: min(340px, 60vw); height: 2px; background: rgba(241,234,217,.12); }
 #progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); box-shadow: 0 0 10px var(--gold); }
 
 /* Detail card */
-#card { position: fixed; z-index: 25; top: 50%; width: min(360px, calc(100vw - 32px)); padding: 22px 22px 20px;
+#card { position: fixed; z-index: 25; top: 50%; box-sizing: border-box; width: min(404px, calc(100vw - 32px)); padding: 22px 22px 20px;
   background: linear-gradient(180deg, rgba(16,18,26,.86), rgba(8,9,13,.92)); border: 1px solid rgba(226,184,102,.3);
   box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.04); backdrop-filter: blur(10px);
   opacity: 0; pointer-events: none; transition: opacity .45s ease, transform .55s cubic-bezier(.2,.8,.2,1); }
@@ -129,6 +133,7 @@ body.free .hud > * { pointer-events: auto; }
 .c-close { all: unset; cursor: pointer; font-family: var(--stat); font-size: 12px; letter-spacing: .16em; color: var(--mute); text-transform: uppercase; }
 .c-close:hover { color: var(--ivory); }
 #card.ded .c-index b { font-size: 26px; }
+.c-tog { display: none; }
 
 #fail { position: fixed; inset: 0; display: none; place-items: center; text-align: center; padding: 24px; z-index: 50; background: var(--void); }
 .c-tier { font-family: var(--stat); font-weight: 700; font-size: 12px; letter-spacing: .2em; color: var(--gold); border: 1px solid rgba(226,184,102,.5); padding: 2px 8px 1px; text-transform: uppercase; }
@@ -136,7 +141,7 @@ body.free .hud > * { pointer-events: auto; }
 /* Free roam: crosshair, pause menu, touch joystick, jump button, toasts */
 #cross { left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(241,234,217,.85); box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 0 8px rgba(226,184,102,.5); pointer-events: none !important; }
 body.paused #cross, body.gliding #cross { opacity: 0; }
-#pause { left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(420px, calc(100vw - 32px)); padding: 22px 24px 18px; cursor: pointer; text-align: center;
+#pause { left: 50%; top: 50%; transform: translate(-50%, -50%); box-sizing: border-box; width: min(468px, calc(100vw - 32px)); padding: 22px 24px 18px; cursor: pointer; text-align: center;
   background: linear-gradient(180deg, rgba(16,18,26,.88), rgba(8,9,13,.94)); border: 1px solid rgba(226,184,102,.35); box-shadow: 0 30px 80px rgba(0,0,0,.6); backdrop-filter: blur(10px);
   visibility: hidden; opacity: 0 !important; transition: opacity .3s ease, visibility 0s linear .3s; }
 body.free.paused #pause { visibility: visible; opacity: 1 !important; transition: opacity .3s ease; pointer-events: auto; }
@@ -170,11 +175,25 @@ body.touch .gate-note .touch { display: inline; } body.touch .gate-note .desk { 
   #rail { display: none; }
   #hint { font-size: 11px; letter-spacing: .08em; }
   #hint .desk { display: none; }
-  #card, #card.l, #card.r { left: 16px; right: 16px; width: auto; top: calc(62px + env(safe-area-inset-top, 0px)); bottom: auto; transform: translateY(-20px); padding: 14px 16px; max-height: 34vh; overflow: auto; }
+  /* phone: a compact card under the toolbar (rank, name, index, four stats); tap it for the rest */
+  #card, #card.l, #card.r { left: 12px; right: 12px; width: auto; top: calc(54px + env(safe-area-inset-top, 0px)); bottom: auto; transform: translateY(-20px); padding: 12px 14px 10px; cursor: pointer; }
+  #card .c-more, #card .c-grid .x { display: none; }
+  #card.open .c-more { display: block; }
+  #card.open .c-grid .x { display: block; }
+  #card.open { max-height: calc(100% - 250px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); overflow: auto; overscroll-behavior: contain; }
+  #card.open.ovf { -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 36px), transparent); }
+  .c-tog { display: block; margin-top: 8px; text-align: center; font-family: var(--stat); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold-dim); }
+  .c-tog::after { content: "More \25BE"; }
+  #card.open .c-tog::after { content: "Less \25B4"; }
+  #card.ded .c-tog { display: none; }
+  #card.ded .c-more { display: block; }
+  .c-top { min-height: 18px; } .c-rank { font-size: 13px; }
+  .c-tag { font-size: 16px; }
   .p-keys { grid-template-columns: 1fr; }
-  #tools { flex-wrap: wrap; justify-content: flex-end; left: 16px; }
+  #tools { gap: 6px; top: calc(12px + env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); }
+  .tbtn { font-size: 12px; letter-spacing: .1em; padding: 7px 9px 6px; }
   #brand { display: none; }
-  .c-index { margin: 8px 0; padding: 6px 0; } .c-index b { font-size: 26px; } .c-grid dd { font-size: 17px; }
+  .c-index { margin: 6px 0 8px; padding: 4px 0; } .c-index b { font-size: 24px; } .c-grid dd { font-size: 17px; }
   #card.show { transform: none; }
   .c-name { font-size: 26px; margin: 2px 0; }
   #brand .s { display: none; }
@@ -212,7 +231,7 @@ body.shot *, body.shot { transition: none !important; }
 </div>
 <nav class="hud" id="rail" aria-label="Jump to a sweat"></nav>
 <div class="hud" id="progress"><i></i></div>
-<div class="hud" id="hint"><span class="desk"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Shift</kbd> run · <kbd>Space</kbd> jump · <kbd>Click</kbd> a sweat to go to them · <kbd>T</kbd> tour · <kbd>Esc</kbd> menu</span><span class="touch">Left thumb walk · drag to look · tap a sweat</span></div>
+<div class="hud" id="hint"><span class="desk"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Click</kbd> a sweat · <kbd>Esc</kbd> menu</span><span class="touch">Left thumb walk · drag to look · tap a sweat</span></div>
 <div class="hud" id="cross" aria-hidden="true"></div>
 <div class="hud" id="pause" role="button" tabindex="0" aria-label="Click to keep walking">
   <div class="p-t">Click to walk</div>
@@ -241,7 +260,7 @@ body.shot *, body.shot { transition: none !important; }
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="hof/hall.js?v=2026-11-17np"></script><!-- bump v with every hof/hall.js change, so a cached page never runs a newer or older script -->
+<script type="module" src="hof/hall.js?v=2026-11-17r1"></script><!-- bump v with every hof/hall.js change, so a cached page never runs a newer or older script -->
 
 </body>
 </html>

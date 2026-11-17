@@ -20991,7 +20991,7 @@ html[data-theme="ledger"] .sweat-tier-scale span.on { background: var(--tier); b
       <div class="toolbar-search-row">
       <div id="searchContainer" class="search-box">
         <svg class="search-box-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2" /><line x1="15.5" y1="15.5" x2="20.5" y2="20.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
-        <input type="text" id="searchInput" placeholder="Search username or notes..." aria-label="Search sweat players and notes" aria-keyshortcuts="/" />
+        <input type="text" id="searchInput" placeholder="Search names or notes" aria-label="Search sweat players and notes" aria-keyshortcuts="/" />
         <kbd class="search-box-kbd" aria-hidden="true">/</kbd>
         <button type="button" id="searchClearBtn" class="search-box-clear" aria-label="Clear search" hidden>&times;</button>
       </div>
@@ -21431,7 +21431,7 @@ html[data-theme="ledger"] .sweat-tier-scale span.on { background: var(--tier); b
       <div class="modal-content admin-key-modal-content">
       <button type="button" id="closeAdminKeyModal" class="modal-close" aria-label="Close">&times;</button>
       <h2 class="edit-modal-title">Your Key</h2>
-      <p class="admin-key-desc">Everyone has their own key. It signs your notes and lets you add, edit or remove sweats. Leave blank to browse read-only.</p>
+      <p class="admin-key-desc">Your key signs notes and lets you edit sweats. Leave blank to browse.</p>
       <input type="text" id="adminKeyInput" placeholder="Enter your key" autocomplete="off" aria-label="Your key" />
       <div id="adminKeyStatus" role="alert" aria-live="assertive"></div>
       <div class="edit-modal-actions">
@@ -25298,6 +25298,7 @@ function showUnmask(nick, entry) {
   denickUnmask.querySelector(".unmask-back .unmask-name").textContent = entry.username;
   // Private Bank keeps the searched nick on the opened card (CSS reads it).
   denickUnmask.querySelector(".unmask-back .unmask-k").dataset.nick = nick;
+  denickUnmask.querySelector(".unmask-back .unmask-txt").dataset.nick = nick;
   const backMeta = denickUnmask.querySelector(".unmask-back .unmask-meta");
   if (document.documentElement.dataset.theme === "deepcurrent") {
     // Deep Current leads with the searched nick. Each part is its own
@@ -26170,6 +26171,7 @@ function applyViewMode(mode) {
   cardGrid.hidden = mode !== 'grid';
   tableWrap.hidden = mode !== 'table';
   leaderboardWrap.hidden = mode !== 'leaderboard';
+  if (mode === 'leaderboard') emptyState.hidden = true;
 }
 
 // The backend serves sweats a page (up to 1000) at a time, newest first, so
@@ -26467,9 +26469,7 @@ form.addEventListener('submit', async e => {
   }
 
   if (!anyBeatenBySelected) {
-    status.textContent = document.documentElement.dataset.theme === "deepcurrent"
-      ? "Pick who beat them."
-      : "Please select at least one player who beat them.";
+    status.textContent = "Pick who beat them.";
     siteAudio.play("error");
     return;
   }
@@ -27190,7 +27190,7 @@ function renderSweatStats(list, person) {
     <div class="ss-total-row">
       <div>
         <div class="ss-value">${list.length.toLocaleString()}</div>
-        <div class="ss-sub">${recent ? `<b>+${recent}</b> in the last 30 days` : "None in the last 30 days"}</div>
+        <div class="ss-sub">${recent ? `<b>+${recent}</b> in 30 days` : "None in 30 days"}</div>
       </div>
       <div class="ss-spark" role="img" aria-label="Sweats per month: ${months.map(m => `${m.label} ${m.n}`).join(", ")}">
         ${months.map(m => `<span style="height:${Math.round(m.n / peak * 100)}%" data-tooltip="${m.label}: ${m.n}"></span>`).join("")}
@@ -28030,15 +28030,6 @@ function renderTableRows(filteredSweats, usernameCounts) {
 // one of them beat (Milo + Potat = the ones they both beat). Tapping a
 // picked name again drops it, as long as someone stays picked.
 let leaderboardPeople = [];
-// Sky Isles keeps the hint under the islands to a few words.
-const LB_HINT_SHORT = { skyisles: { many: "Tap a picked name to drop it.", one: "Tap names to compare." } };
-function leaderboardHintText() {
-  const short = LB_HINT_SHORT[currentThemeId()];
-  return leaderboardPeople.length > 1
-    ? (short ? short.many : "Only sweats every picked person beat. Tap a picked name again to drop it.")
-    : (short ? short.one : "Tap more names to see the sweats you beat together.");
-}
-document.addEventListener("themechange", () => { if (leaderboardPeople.length) leaderboardHint.textContent = leaderboardHintText(); });
 const beatenByAllPicked = s => leaderboardPeople.every(k => s[k]);
 function pickedLabel() {
   const names = leaderboardPeople.map(k => BEATEN_BY[k].label);
@@ -28439,8 +28430,7 @@ function countUpModalStats() {
   });
 }
 
-// The helper line under the leaderboard's name picker. Deep Current keeps
-// it to a few words so it stays on one line on phones.
+// The helper line under the leaderboard's name picker.
 function leaderboardHintText() {
   return leaderboardPeople.length > 1
     ? "Sweats you all beat. Pick a name again to drop it."
@@ -29391,9 +29381,9 @@ async function openPlayerModal(item, { retry = false } = {}) {
 
     const loggedDate = parseSweatDay(item.dataset.loggedDate);
     const when = loggedDate && !isNaN(loggedDate) ? loggedDate.toLocaleDateString() : "";
-    const starDelta = sinceBeatDeltaHtml(data.star, item.dataset.loggedStar, { suffix: "\u2605", label: "since you beat them", when });
-    const fkdrDelta = sinceBeatDeltaHtml(data.fkdr, item.dataset.loggedFkdr, { decimals: 2, label: "since", when });
-    const wlrDelta = sinceBeatDeltaHtml(data.wlr, item.dataset.loggedWlr, { decimals: 2, label: "since", when });
+    const starDelta = sinceBeatDeltaHtml(data.star, item.dataset.loggedStar, { suffix: "\u2605", label: "since win", when });
+    const fkdrDelta = sinceBeatDeltaHtml(data.fkdr, item.dataset.loggedFkdr, { decimals: 2, label: "since win", when });
+    const wlrDelta = sinceBeatDeltaHtml(data.wlr, item.dataset.loggedWlr, { decimals: 2, label: "since win", when });
 
     // Each tile also shows where this player's live number would land among
     // every tracked sweat (see trackedStanding), and big counts get
@@ -33383,7 +33373,7 @@ exportCsvBtn.addEventListener("click", exportCsv);
 const IS_MAC = /Mac|iP(hone|ad|od)/.test(navigator.platform || navigator.userAgent);
 const SHORTCUTS = [
   [["/"], "Search sweats"],
-  [THEME_IDS.map((_, i) => String(i + 1)), themeOptions.map(li => li.dataset.label).join(", ")],
+  [THEME_IDS.map((_, i) => String(i + 1)), "Switch theme"],
   [["G"], "Grid view"],
   [["T"], "Table view"],
   [["L"], "Leaderboard view"],
@@ -33805,6 +33795,7 @@ statusPill.addEventListener("click", () => {
   statusPill.setAttribute("aria-expanded", String(open));
   if (open && (!statusResult || Date.now() - statusLoadedAt > 3 * 60 * 1000)) loadStatus();
   else if (open) renderStatus();
+  if (open) requestAnimationFrame(() => statusPanel.scrollIntoView({ block: "nearest", behavior: "smooth" }));
 });
 statusRefreshBtn.addEventListener("click", () => loadStatus(true));
 if ("IntersectionObserver" in window) {

@@ -66,7 +66,7 @@ async function readWithProgress (res, onProgress) {
 async function loadFromBackend (id, what = 'replays') {
   const noun = what === 'clips' ? 'clip' : 'replay'
   const key = getKey()
-  if (!key) throw new Error(`This ${noun} needs your tracker key. Open the tracker site, enter your key there, then come back to this page.`)
+  if (!key) throw new Error(`This ${noun} needs your tracker key.`)
   const headers = { 'x-admin-key': key }
   setStatus('Waking up the server…', { progress: 0 })
   const infoRes = await fetch(`${BACKEND}/${what}/${encodeURIComponent(id)}`, { headers })
@@ -1015,7 +1015,7 @@ async function runViewer (tl, details) {
     $('rpClipFrom').textContent = range.from != null ? fmt(range.from) : '–'
     $('rpClipTo').textContent = range.to != null ? fmt(range.to) : '–'
     const len = ok ? range.to - range.from : 0
-    $('rpClipLen').textContent = ok ? Math.round(len / 1000) + ' s' : 'Mark a start and an end'
+    $('rpClipLen').textContent = ok ? Math.round(len / 1000) + '\u00a0s' : 'Mark a start and an end'
     const tooLong = len > 60000; const tooShort = ok && len < 2000
     $('rpClipLen').classList.toggle('is-bad', tooLong || tooShort)
     $('rpClipSave').disabled = !ok || tooLong || tooShort || !REPLAY_ID || !getKey()
@@ -1063,7 +1063,7 @@ async function runViewer (tl, details) {
         b.innerHTML = '<span class="rp-event-icon"></span><span class="rp-event-time"></span><span class="rp-event-text"></span>'
         b.querySelector('.rp-event-time').textContent = fmt(start)
         const what = c.title || (c.kind === 'bed' ? 'Bed break · ' + (c.victim || '') : c.kind === 'final' ? 'Final kill · ' + (c.victim || '') : 'Clip' + (c.people && c.people.length ? ' · ' + c.people.slice(0, 2).map(p => p.name).join(', ') : ''))
-        b.querySelector('.rp-event-text').textContent = what + ' · ' + Math.round((c.durationMs || 0) / 1000) + ' s'
+        b.querySelector('.rp-event-text').textContent = what + ' · ' + Math.round((c.durationMs || 0) / 1000) + '\u00a0s'
         b.title = 'Watch this part and mark it'
         b.addEventListener('click', () => { range.from = start; range.to = Math.min(tl.duration, start + (c.durationMs || 15000)); drawRange(); jump(start); play(true) })
         const open = document.createElement('a'); open.className = 'rp-clip-open'; open.href = 'replay.html?clip=' + encodeURIComponent(c.id); open.textContent = 'Open'; open.target = '_blank'; open.rel = 'noopener'

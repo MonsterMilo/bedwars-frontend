@@ -30,10 +30,10 @@ const ACTIONS = [
   ['hitboxes', 'Hitboxes', ['KeyB'], 'Views'],
   ['chat', 'Chat history', ['KeyT'], 'Views'],
   ['perf', 'Performance stats', ['Backquote'], 'Views'],
+  ['help', 'Controls', ['KeyH', 'Slash'], 'Views'],
   ['share', 'Copy a link to this moment', ['KeyC'], 'Clips'],
   ['clipStart', 'Clip starts here', ['KeyI'], 'Clips'],
-  ['clipEnd', 'Clip ends here', ['KeyO'], 'Clips'],
-  ['help', 'Controls', ['KeyH', 'Slash'], 'Views']
+  ['clipEnd', 'Clip ends here', ['KeyO'], 'Clips']
 ]
 
 class Keybinds {
@@ -78,7 +78,7 @@ function keyName (code) {
   if (/^Key[A-Z]$/.test(code)) return code.slice(3)
   if (/^Digit\d$/.test(code)) return code.slice(5)
   if (/^Numpad\d$/.test(code)) return 'Num ' + code.slice(6)
-  const names = { Space: 'Space', ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', Comma: ',', Period: '.', Slash: '/', Backslash: '\\', BracketLeft: '[', BracketRight: ']', Semicolon: ';', Quote: "'", Backquote: '`', Minus: '-', Equal: '=', ShiftLeft: 'Shift', ShiftRight: 'Right Shift', ControlLeft: 'Ctrl', AltLeft: 'Alt', Tab: 'Tab', Enter: 'Enter', CapsLock: 'Caps' }
+  const names = { Space: 'Space', ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', Comma: ',', Period: '.', Slash: '?', Backslash: '\\', BracketLeft: '[', BracketRight: ']', Semicolon: ';', Quote: "'", Backquote: '`', Minus: '-', Equal: '=', ShiftLeft: 'Shift', ShiftRight: 'Right Shift', ControlLeft: 'Ctrl', AltLeft: 'Alt', Tab: 'Tab', Enter: 'Enter', CapsLock: 'Caps' }
   return names[code] || code
 }
 

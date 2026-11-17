@@ -297,7 +297,7 @@
     .hero { grid-template-columns: 1fr; margin: 16px 0 14px; }
     .layout { grid-template-columns: 1fr; gap: 14px; }
     /* One sideways row that runs to the screen edges and fades out there, so it reads as a scroller. */
-    .rail { position: static; flex-direction: row; overflow-x: auto; gap: 6px; margin: 0 -16px; padding: 0 16px 4px; scroll-padding-inline: 16px; scrollbar-width: none;
+    .layout > .rail { position: static; flex-direction: row; overflow-x: auto; gap: 6px; margin: 0 -16px; padding: 0 16px 4px; scroll-padding-inline: 16px; scrollbar-width: none;
       -webkit-mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 28px), transparent); }
     .rail-label { display: none; }
     .cat { width: auto; flex: none; border: 1px solid var(--border); border-radius: var(--chip-r, 999px); padding: 7px 12px; white-space: nowrap; }
@@ -2491,7 +2491,7 @@ function resize() {
 }
 // ?at=1.2 holds every preview still at that second (for checking a single moment).
 let HOLD = parseFloat(new URLSearchParams(location.search).get("at"));
-window.__dbg = () => studio; window.__focus = () => { const f = studio.tick?.focus?.(); return f && { x: f.x, y: f.y, z: f.z, w: f.w, base: PREVIEWS[current?.preview]?.cam?.[1], end: studio.def?.end }; };
+window.__focus = () => { const f = studio.tick?.focus?.(); return f && { x: f.x, y: f.y, z: f.z, w: f.w, base: PREVIEWS[current?.preview]?.cam?.[1], end: studio.def?.end }; };
 window.__seek = (t) => { if (t < studio.t) studio.load(PREVIEWS[current.preview], current); HOLD = t; };
 // ?cam=x,y,z,tx,ty,tz places the camera (and stops the spin) for checking a view.
 const CAMQ = new URLSearchParams(location.search).get("cam")?.split(",").map(Number);

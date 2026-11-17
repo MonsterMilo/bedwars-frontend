@@ -7811,10 +7811,13 @@ html:not([data-theme]) .egg-toast {
   border: 1px solid rgba(0,217,255,0.35);
   border-radius: 2px;
   background:
+    linear-gradient(225deg, var(--accent) 0 5px, transparent 5.5px) 100% 0 / 10px 10px no-repeat,
     linear-gradient(180deg, var(--accent), var(--accent-2)) 0 0 / 3px 100% no-repeat,
     linear-gradient(100deg, rgba(0,217,255,0.1), transparent 55%),
-    rgba(14,10,34,0.92);
-  box-shadow: 0 0 16px rgba(0,217,255,0.22), 0 8px 20px rgba(0,0,0,0.45);
+    rgba(10,8,24,0.97);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 14px rgba(0,229,255,0.25), 0 8px 20px rgba(0,0,0,0.5);
 }
 html:not([data-theme]) .egg-toast b { color: var(--accent); text-shadow: 0 0 8px rgba(0,217,255,0.55); }
 html[data-theme="casefiles"] .egg-toast { font-family: 'Courier Prime', monospace; border-radius: 2px; transform: rotate(-0.6deg); }
@@ -13799,8 +13802,8 @@ html:not([data-theme]) .modal-deco i:nth-child(4) { bottom: 8px; right: 8px; bor
    so no frame of it reads as a hard seam across the content. */
 html:not([data-theme]) .modal-deco i:nth-child(5) { display: block; left: 0; right: 0; top: 0; height: 120px; background: linear-gradient(180deg, transparent, rgba(0,217,255,0.035) 40%, rgba(0,217,255,0.07) 50%, rgba(0,217,255,0.035) 60%, transparent); animation: hudScan 5s linear infinite; }
 @keyframes hudScan { from { transform: translateY(-130px); } to { transform: translateY(1200px); } }
-html:not([data-theme]) #playerModal #modalTitle::before { content: "\25C9  Target locked \00b7 "; color: #ff4fd8; letter-spacing: 0.2em; text-shadow: 0 0 6px #ff4fd8; animation: hudBlink 1.4s steps(1) infinite; }
-@keyframes hudBlink { 50% { opacity: 0.35; } }
+html:not([data-theme]) #playerModal #modalTitle::before { content: "\25C9  Target locked \00b7 "; color: #ff6fe0; letter-spacing: 0.2em; text-shadow: 0 0 8px rgba(255,79,216,0.75); animation: hudBlink 1.4s steps(1) infinite; }
+@keyframes hudBlink { 50% { opacity: 0.7; } }
 /* The skin in a targeting frame: corner brackets, a ring and a crosshair */
 html:not([data-theme]) #playerModal #modalSkin {
   border: none;
@@ -13822,7 +13825,7 @@ html:not([data-theme]) #playerModal .modal-stat-tile {
   border: none;
   border-radius: 0;
   border-left: 2px solid rgba(0,217,255,0.7);
-  background: linear-gradient(90deg, rgba(0,217,255,0.1), rgba(0,217,255,0.02) 60%, transparent);
+  background: linear-gradient(90deg, rgba(0,217,255,0.11), rgba(0,217,255,0.035) 65%, rgba(0,217,255,0.02));
   clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
   text-align: left;
 }
@@ -14282,6 +14285,12 @@ html:not([data-theme]) #emptyState .empty-icon { margin-bottom: 12px; filter: dr
 
 /* The replay hint sits by the short kicker, clear of the source line. */
 html:not([data-theme]) .unmask-hint { top: 12px; bottom: auto; }
+/* Phones: no room beside the kicker, so the hint becomes a fourth line
+   under the source, in the text column (the column lifts to make room). */
+@media (max-width: 700px) {
+  html:not([data-theme]) .unmask-back .unmask-txt { padding-bottom: 16px; }
+  html:not([data-theme]) .unmask-hint { top: auto; bottom: 9px; left: 92px; right: auto; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.62em; color: rgba(127,233,255,0.7); }
+}
 /* An empty card grid (no matches) adds no gap above the panel below. */
 html:not([data-theme]) #cardGrid:empty { margin-bottom: 0; }
 
@@ -14304,6 +14313,86 @@ html:not([data-theme]) :is(#form-container, #denickContainer, #activityContainer
   html:not([data-theme]) .toolbar-row .chip span { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 36px; padding: 6px 8px; text-align: center; }
   html:not([data-theme]) .toolbar-row .filter-reset { justify-content: center; min-height: 36px; border: 1px dashed rgba(0,217,255,0.25); border-radius: 2px; }
 }
+
+/* Section headers often land on the bright grid floor or the horizon
+   band: a soft dark pool behind the title side and the Hide pill keeps
+   the subtitle, pill and outlined numeral clear of the grid lines. */
+html:not([data-theme]) .panel-header::before {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  inset: -26px -16px -18px -16px;
+  pointer-events: none;
+  background:
+    radial-gradient(30% 50% at 30% 50%, rgba(6,4,16,0.86), rgba(6,4,16,0.6) 50%, rgba(6,4,16,0.22) 78%, rgba(6,4,16,0)),
+    radial-gradient(14% 50% at 86% 50%, rgba(6,4,16,0.75), rgba(6,4,16,0.4) 55%, rgba(6,4,16,0));
+}
+@media (max-width: 700px) { html:not([data-theme]) .panel-header::before { left: -8px; right: -8px; } }
+html:not([data-theme]) .panel-header p { color: #c4cbe6; }
+@media (min-width: 701px) { html:not([data-theme]) .panel-index { -webkit-text-stroke-color: rgba(0,217,255,0.3); } }
+html:not([data-theme]) .section-toggle {
+  border-radius: 2px;
+  border-color: rgba(0,217,255,0.4);
+  background: rgba(10,8,24,0.85);
+  color: #9fefff;
+  box-shadow: 0 0 10px rgba(0,217,255,0.12);
+}
+html:not([data-theme]) .section-toggle:hover { color: #fff; border-color: var(--accent); box-shadow: 0 0 12px rgba(0,217,255,0.3); }
+
+/* Saved-stats popup on wide screens: the short stat block sits level with
+   the middle of the skin frame instead of leaving a hole under Try again. */
+@media (min-width: 761px) {
+  html:not([data-theme]) #playerModal #modalStats:has(.modal-stats-fallback) { align-self: center; }
+}
+
+/* The leaderboard's drill-down heading as a mini section header: lit
+   slanted bar, italic display caps like the section titles. */
+html:not([data-theme]) .leaderboard-person-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15em;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(0,217,255,0.35), 0 0 3px #05040c, 0 0 10px #05040c;
+}
+html:not([data-theme]) .leaderboard-person-title::before {
+  content: "";
+  flex: none;
+  width: 18px;
+  height: 7px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transform: skewX(-20deg);
+  box-shadow: 0 0 8px rgba(0,217,255,0.6);
+}
+html:not([data-theme]) .leaderboard-person-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0,217,255,0.4), rgba(168,85,247,0.2) 50%, transparent);
+}
+
+/* Urchin tags as small danger pills like the Cheater chip, the raw red
+   icon eased toward the theme's pink-red with a soft glow. */
+html:not([data-theme]) .tag-badge {
+  padding: 3px 10px 3px 6px;
+  border: 1px solid color-mix(in srgb, var(--bad) 50%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--bad) 10%, transparent);
+  color: var(--bad);
+  font-size: 0.86em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+html:not([data-theme]) .tag-badge > span:empty { display: none; }
+html:not([data-theme]) .tag-badge:has(> span:empty) { padding-right: 6px; }
+html:not([data-theme]) .tag-icon { width: 16px; height: 16px; filter: saturate(0.8) hue-rotate(-12deg) brightness(1.12) drop-shadow(0 0 4px color-mix(in srgb, var(--bad) 70%, transparent)); }
+
+/* Theme menu: an off-season seasonal row keeps a faint outline, so its
+   corner badge sits on a box like the glowing in-season row's does. */
+html:not([data-theme]) #themeDropdownMenu li.theme-opt-seasonal:not(.in-season) { box-shadow: inset 0 0 0 1px rgba(0,217,255,0.16); }
 
 /* The drive-into-the-horizon switch scene draws on this. */
 .tto-drive-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -19357,7 +19446,7 @@ html[data-theme="northpole"] .sotd-stats { gap: 10px 12px; }
                 <div class="idle-harvest"><i class="hv-cloth"></i><i class="hv-pie"></i><i class="hv-steam s1"></i><i class="hv-steam s2"></i><i class="hv-steam s3"></i></div>
                 <div class="idle-northpole"><i class="np-plate"></i><i class="np-cookies"></i><i class="np-cocoa"></i><i class="np-steam s1"></i><i class="np-steam s2"></i><i class="np-steam s3"></i></div>
               </div>
-              <p id="statsEmptyText">Search a player, then Preview them here.</p>
+              <p id="statsEmptyText">Preview a player here.</p>
             </div>
 
             <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
@@ -23099,7 +23188,7 @@ const neonHorizon = (() => {
   let base = null, sun = null, hills = null;
   let phase = 0, bandShift = 0, boostT = 0, pointerX = 0, parallax = 0;
   let raf = 0, last = 0, lastScroll = window.scrollY;
-  let bassPeak = 0, beat = 0;
+  let bassPeak = 0, beat = 0, sunDim = 0;
   const racers = [];
   let nextRacer = 1;
   const RACER_COLORS = ["255,79,168", "255,224,102", "190,250,255", "190,130,255", "255,154,90"];
@@ -23296,13 +23385,17 @@ const neonHorizon = (() => {
     phase = (phase + dt * 0.35 * boost) % 1;
     bandShift = (bandShift + dt * 0.12) % 1;
     parallax += (pointerX - parallax) * Math.min(1, dt * 3);
+    // Past the hero the sun sinks to an ember: at full strength it pokes
+    // through the gaps between panels and tiles as bright orange slivers.
+    const dimTo = Math.min(1, Math.max(0, (window.scrollY - H * 0.15) / (H * 0.45)));
+    sunDim = dt ? sunDim + (dimTo - sunDim) * Math.min(1, dt * 4) : dimTo;
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(base, 0, 0, canvas.width, canvas.height);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     drawSun();
-    ctx.globalAlpha = Math.min(1, 0.88 + 0.06 * Math.sin(performance.now() / 1400) + Math.min(0.3, boostT * 0.2) + beat * 0.12);
+    ctx.globalAlpha = Math.min(1, 0.88 + 0.06 * Math.sin(performance.now() / 1400) + Math.min(0.3, boostT * 0.2) + beat * 0.12) * (1 - 0.66 * sunDim);
     const sunScale = 1 + beat * 0.035;
     const sw = (sunR * 2 + 4) * sunScale, sh = (sunR + 2) * sunScale;
     ctx.drawImage(sun, W / 2 - sw / 2 + parallax * 4, hz - sh, sw, sh);
@@ -23323,7 +23416,7 @@ const neonHorizon = (() => {
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
     }
     const glow = ctx.createLinearGradient(0, hz - 26, 0, hz + 34);
-    const ga = Math.min(1, 0.5 + Math.min(0.4, boostT * 0.3) + beat * 0.35);
+    const ga = Math.min(1, 0.5 + Math.min(0.4, boostT * 0.3) + beat * 0.35) * (1 - 0.35 * sunDim);
     glow.addColorStop(0, "rgba(255,47,160,0)");
     glow.addColorStop(0.45, `rgba(255,47,160,${ga})`);
     glow.addColorStop(1, "rgba(255,47,160,0)");
@@ -23353,7 +23446,13 @@ const neonHorizon = (() => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => { base = null; sync(); }, 120);
   });
-  if (!reduceMotion) {
+  if (reduceMotion) {
+    // Still frame: redraw once per scroll so the sun dims past the hero.
+    window.addEventListener("scroll", () => {
+      if (raf || !isNeon() || !base) return;
+      raf = requestAnimationFrame(() => { raf = 0; if (isNeon()) frame(0); });
+    }, { passive: true });
+  } else {
     window.addEventListener("scroll", () => {
       const y = window.scrollY;
       phase = (phase + Math.abs(y - lastScroll) * 0.0025 + 1) % 1;
@@ -23721,7 +23820,7 @@ function showUnmask(nick, entry) {
       <div class="unmask-face unmask-back">
         <div class="unmask-pic"><img alt="" /></div>
         <div class="unmask-txt"><span class="unmask-k"></span><span class="unmask-name"></span><span class="unmask-meta"></span></div>
-        <span class="unmask-hint">Click to replay</span>
+        <span class="unmask-hint">${matchMedia("(hover: none)").matches ? "Tap" : "Click"} to replay</span>
       </div>
     </div>`;
   denickUnmask.querySelector(".unmask-nick").textContent = nick;
@@ -24315,7 +24414,7 @@ function showStatsEmpty() {
 }
 // While a lookup is in flight the empty preview speeds up its idle scene
 // and names who it is looking for.
-const STATS_EMPTY_TEXT = "Search a player, then Preview them here.";
+const STATS_EMPTY_TEXT = "Preview a player here.";
 // The idle scene doesn't swap to a different animation when a lookup
 // starts; its running animations are eased up to a faster playbackRate
 // (and back down), which keeps every ring, beam and dial in phase.
@@ -25840,7 +25939,7 @@ function renderTable() {
   resultCount.textContent = filteredSweats.length === total
     ? `${total.toLocaleString()} tracked ${plural(total)}`
     : `${filteredSweats.length.toLocaleString()} of ${total.toLocaleString()} ${plural(total)} match`;
-  footerTally.textContent = ` \u00b7 ${total.toLocaleString()} ${plural(total)} tracked`;
+  footerTally.textContent = ` \u00b7 ${total.toLocaleString()} tracked ${plural(total)}`;
   updateFilterIndicators();
   updateSortHeaders();
 

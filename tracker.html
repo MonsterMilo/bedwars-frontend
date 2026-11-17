@@ -2301,6 +2301,11 @@ html[data-theme="ledger"] .filter-field.is-set { background: none; border-bottom
 html[data-theme="ledger"] .filter-prefix { font-family: 'EB Garamond', serif; font-style: italic; font-weight: 400; font-size: 0.95em; letter-spacing: 0; }
 html[data-theme="ledger"] .filter-field.is-set .filter-prefix { color: var(--gold); }
 html[data-theme="ledger"] .toolbar .filter-field input { font-family: 'Playfair Display', serif; }
+/* Empty lines read as blanks on a form: the sample amounts and the
+   unset date are faint italic, so only real values stand out in ink. */
+html[data-theme="ledger"] .toolbar .filter-field input::placeholder { color: var(--text-faint); opacity: 0.7; font: italic 400 15px 'EB Garamond', serif; }
+html[data-theme="ledger"] .toolbar .filter-field-date:not(.is-set) input { color: var(--text-faint); font: italic 400 15px 'EB Garamond', serif; }
+html[data-theme="ledger"] .toolbar .filter-field-date:not(.is-set) input::-webkit-calendar-picker-indicator { opacity: 0.5; }
 html[data-theme="ledger"] .toolbar #searchInput { border-radius: 0; }
 html[data-theme="ledger"] .filter-reset { border-radius: 0; font-family: 'EB Garamond', serif; font-size: 0.95em; }
 html[data-theme="ledger"] .filter-reset-count:not(:empty) { background: var(--gold); color: #fff; border-radius: 0; }
@@ -4998,6 +5003,18 @@ html[data-theme="ledger"] .page::after {
 }
 html[data-theme="ledger"] .page::before { inset: -14px; }
 html[data-theme="ledger"] .page::after { inset: -20px; }
+/* One width down the page: the Lookup, Denicking and Activity panels run
+   the full content width like the hero, section bar and sweat list. */
+html[data-theme="ledger"] :is(#form-container, #denickContainer, #activityContainer) { max-width: none; }
+
+/* Lookup preview tiles: the "F · FD" line splits evenly when it has to
+   wrap (never a lone unit on the second line), and a tile with no
+   percentile keeps the bar's height so all four tiles line up. */
+html[data-theme="ledger"] #statsColumns .stat-hero-sub { text-wrap: balance; }
+html[data-theme="ledger"] #statsColumns .stat-standing:empty { min-height: 25px; }
+@media (max-width: 480px) {
+  html[data-theme="ledger"] #statsColumns .stat-hero { padding-left: 6px; padding-right: 6px; }
+}
 
 html[data-theme="ledger"] .panel-header h2,
 html[data-theme="ledger"] .stat-hero-value,
@@ -7800,7 +7817,22 @@ html[data-theme="deepcurrent"] .egg-sub { font-family: 'JetBrains Mono', monospa
 html.app-standalone body { overscroll-behavior-y: contain; }
 html:not([data-theme]) .egg-toast { font-family: 'Chakra Petch', sans-serif; background: rgba(4,5,10,0.78); backdrop-filter: blur(6px); }
 html[data-theme="casefiles"] .egg-toast { font-family: 'Courier Prime', monospace; border-radius: 2px; transform: rotate(-0.6deg); }
-html[data-theme="ledger"] .egg-toast { font-family: 'EB Garamond', serif; font-size: 16px; border-color: #c9bf9e; }
+/* Private Bank: a cream slip with the cards' gold double rule and a
+   navy edge down the left, like a deposit receipt. */
+html[data-theme="ledger"] .egg-toast {
+  font-family: 'EB Garamond', serif;
+  font-size: 16px;
+  padding: 10px 16px 10px 18px;
+  color: var(--accent-2);
+  background: repeating-radial-gradient(ellipse at 100% 0, transparent 0 9px, rgba(169,130,46,0.06) 9px 10px), #fdfaf2;
+  border: 1px solid var(--gold);
+  border-left: 4px solid var(--accent-2);
+  border-radius: 0;
+  outline: 1px solid rgba(169,130,46,0.55);
+  outline-offset: -5px;
+  box-shadow: 0 14px 28px -14px rgba(22,35,58,0.45);
+}
+html[data-theme="ledger"] .egg-toast b { font-family: 'Playfair Display', serif; font-weight: 600; }
 html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: rgba(10,33,48,0.88); }
 .egg-toast b { font-weight: 700; }
 
@@ -10634,6 +10666,15 @@ html[data-theme="skyisles"] .pill.prestige-tag {
 html[data-theme="casefiles"] .filters-toggle { border-radius: 2px; border-style: dashed; background: #fffdf4; font-family: 'Courier Prime', monospace; text-transform: uppercase; }
 html[data-theme="casefiles"] .filters-toggle-count:not(:empty) { border-radius: 2px; background: var(--accent-2); color: #fbf6e6; }
 html[data-theme="ledger"] .filters-toggle { border-radius: 0; background: none; border-color: var(--border-strong); font-family: 'EB Garamond', serif; font-size: 1em; }
+/* Private Bank on a phone: the search gets a row of its own so the
+   placeholder fits, and Filters sits under the view switch, right above
+   the filter rows it opens. */
+@media (max-width: 760px) {
+  html[data-theme="ledger"] .toolbar-search-row { display: contents; }
+  html[data-theme="ledger"] .toolbar-top { gap: 8px; }
+  html[data-theme="ledger"] .toolbar-top > .view-toggle { order: 1; }
+  html[data-theme="ledger"] .filters-toggle { order: 2; justify-content: center; height: 40px; }
+}
 html[data-theme="deepcurrent"] .filters-toggle { border-radius: 12px; background: rgba(3,12,20,0.5); }
 html[data-theme="skyisles"] .filters-toggle {
   border: none;
@@ -11321,7 +11362,10 @@ html[data-theme="ledger"] .sotd-skin {
   left: 50%;
   transform: translateX(-50%);
   filter: sepia(0.35) saturate(0.85) contrast(1.05);
-  clip-path: ellipse(48% 34% at 50% 30%);
+  /* Clipped to the inside of the oval frame (the backdrop is inset
+     0 6px 18px in a 180px-wide figure: an oval 84x98 around y=98, less
+     the 6px ring), so the render never spills onto the serial below. */
+  clip-path: ellipse(78px 92px at 50% 78px);
 }
 html[data-theme="ledger"] .sotd-plate {
   display: block;
@@ -11330,9 +11374,10 @@ html[data-theme="ledger"] .sotd-plate {
   bottom: 0;
   left: 0; right: 0;
   text-align: center;
-  font: 600 0.8em 'EB Garamond', serif;
+  font: 600 0.8em/18px 'EB Garamond', serif;
   letter-spacing: 2px;
   color: var(--bad);
+  white-space: nowrap;
 }
 html[data-theme="ledger"] .sotd-plate::before { content: "N\00ba  A "; white-space: pre; }
 html[data-theme="ledger"] .sotd-plate::after { content: " B"; }
@@ -11348,6 +11393,18 @@ html[data-theme="ledger"] .sotd-deco .d1 { top: 12px; left: 16px; }
 html[data-theme="ledger"] .sotd-deco .d2 { top: 12px; right: 16px; }
 html[data-theme="ledger"] .sotd-deco .d3 { bottom: 12px; left: 16px; }
 html[data-theme="ledger"] .sotd-deco .d4 { bottom: 12px; right: 16px; }
+/* The serial sits centred under the oval, so the left-hand corner
+   denominations stand clear of it: the card gets enough room top and
+   bottom that the figure ends above the corner figures. */
+html[data-theme="ledger"] .sotd-card { padding-top: 40px; padding-bottom: 40px; }
+/* Fill the note: the four stat columns run the full width of the info
+   column instead of stopping at 580px, with the clock in its own column. */
+html[data-theme="ledger"] .sotd-stats { max-width: none; gap: 10px 36px; }
+/* On a phone the four figures go two by two, so full amounts fit. */
+@media (max-width: 480px) {
+  html[data-theme="ledger"] .sotd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 22px; }
+  html[data-theme="ledger"] .sotd-stat-value { overflow: visible; text-overflow: clip; font-size: 1.2em; }
+}
 html[data-theme="ledger"] .sotd-kicker {
   font: italic 400 1.05em 'EB Garamond', serif;
   letter-spacing: 0.5px;
@@ -11521,7 +11578,7 @@ html[data-theme="skyisles"] .sotd-clock { font: 400 0.6em var(--font-arcade); li
   .sotd-figure, html[data-theme="ledger"] .sotd-figure { height: 150px; }
   .sotd-skin { height: 140px; }
   html[data-theme="casefiles"] .sotd-skin { height: 136px; }
-  html[data-theme="ledger"] .sotd-skin { height: 210px; top: 14px; }
+  html[data-theme="ledger"] .sotd-skin { height: 210px; top: 14px; clip-path: ellipse(46px 60px at 50% 52px); }
   html[data-theme="ledger"] .sotd-backdrop { inset: 0 0 18px; }
   html[data-theme="ledger"] .sotd-deco i:nth-child(-n+4) { font-size: 0.85em; }
   html[data-theme="deepcurrent"] .sotd-skin { height: 108px; margin-bottom: 26px; }
@@ -12314,6 +12371,22 @@ html[data-theme="casefiles"] .lb-entry-count::before { content: "Sweats beaten: 
 html[data-theme="casefiles"] .lb-entry-count span { display: none; }
 
 /* ---- Private Bank: the richest-accounts page of a ledger ---- */
+/* The drill-down table under it opens with a ruled small-caps heading,
+   like the other ledger kickers. */
+html[data-theme="ledger"] .leaderboard-hint { font-family: 'EB Garamond', serif; font-style: italic; font-size: 0.9em; }
+html[data-theme="ledger"] .leaderboard-person-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 8px auto 16px;
+  font: 600 1em/1.2 'EB Garamond', serif;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+}
+html[data-theme="ledger"] .leaderboard-person-title::before,
+html[data-theme="ledger"] .leaderboard-person-title::after { content: ""; flex: 1; border-top: 1px solid rgba(169,130,46,0.5); }
 html[data-theme="ledger"] .lb-scene {
   max-width: 720px;
   padding: 22px 30px 20px;
@@ -13728,6 +13801,9 @@ html[data-theme="skyisles"] .pdeco i:nth-child(2) { left: 0; right: 0; bottom: 0
   .panel-index { right: 52px; bottom: auto; top: -6px; opacity: 0.8; }
   html:not([data-theme]) .panel-index { font-size: 3.6em; bottom: auto; }
   html[data-theme="ledger"] .panel-index::before { font-size: 56px; }
+  /* Pinned to the far right, above the Hide button and clear of the
+     title (the desktop offset of 150px would put it behind the text). */
+  html[data-theme="ledger"] .panel-index { right: 2px; top: -8px; bottom: auto; opacity: 0.75; }
   html[data-theme="deepcurrent"] .panel-index { font-size: 46px; }
   html[data-theme="skyisles"] .panel-index::before { font-size: 56px; }
   html[data-theme="casefiles"] .panel-index { display: none; }
@@ -13882,6 +13958,17 @@ html[data-theme="ledger"] #playerModal #modalSkin {
     #f6efdc;
   box-shadow: 0 0 0 5px #fdfaf2, 0 0 0 6px rgba(169,130,46,0.5);
 }
+/* On a phone the cameo stays a tall oval (not a full-width banner), with
+   the render inset so the head and hat sit inside the frame. */
+@media (max-width: 560px) {
+  html[data-theme="ledger"] #playerModal #modalSkin {
+    width: 156px;
+    height: 206px;
+    padding: 18px 16px 10px;
+    box-sizing: border-box;
+    margin: 6px auto 4px;
+  }
+}
 /* Stats as ledger lines: label, dotted leader, amount */
 html[data-theme="ledger"] #playerModal .modal-stats-grid { grid-template-columns: 1fr; gap: 0; align-content: start; }
 html[data-theme="ledger"] #playerModal .modal-stat-tile {
@@ -13900,8 +13987,10 @@ html[data-theme="ledger"] #playerModal .modal-stat-tile {
 html[data-theme="ledger"] #playerModal .modal-stat-label { display: flex; align-items: baseline; gap: 8px; font: 600 1.02em/1 'EB Garamond', serif; font-variant: small-caps; text-transform: lowercase; letter-spacing: 0.08em; color: var(--accent-2); }
 html[data-theme="ledger"] #playerModal .modal-stat-label::after { content: ""; flex: 1; border-bottom: 1px dotted rgba(169,130,46,0.8); }
 html[data-theme="ledger"] #playerModal .modal-stat-value { font-size: 1.45em; font-variant-numeric: tabular-nums; text-align: right; }
-html[data-theme="ledger"] #playerModal .modal-stat-tile > :not(.modal-stat-label):not(.modal-stat-value) { grid-column: 1 / -1; justify-self: start; }
-html[data-theme="ledger"] #playerModal .modal-stat-tile .modal-standing { justify-self: stretch; }
+html[data-theme="ledger"] #playerModal .modal-stat-tile > :not(.modal-stat-label):not(.modal-stat-value):not(.modal-standing) { grid-column: 1 / -1; justify-self: start; }
+/* The "Beats N%" gauge runs under each line, left-aligned on every row
+   (the star row included), at a fixed width so the bars line up. */
+html[data-theme="ledger"] #playerModal .modal-stat-tile > .modal-standing { grid-column: 1 / -1; justify-self: start; width: 220px; max-width: 100%; margin: 4px 0 0; }
 /* "Beaten by" becomes the signatures block */
 html[data-theme="ledger"] #playerModal .modal-record-beaten .modal-record-label { font-size: 0; }
 html[data-theme="ledger"] #playerModal .modal-record-beaten .modal-record-label::before { content: "Authorised signatures"; font-size: 11px; }
@@ -14156,7 +14245,13 @@ html[data-theme="casefiles"] #activityEmpty p::before { content: "The evidence l
 html[data-theme="casefiles"] #modalNotesEmpty::before { content: "No notes in this file."; }
 html[data-theme="ledger"] :is(#denickEmpty, #activityEmpty)::before { background: var(--gold); }
 html[data-theme="ledger"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='18' height='13' rx='1'/%3E%3Cpath d='M3 7l9 7 9-7'/%3E%3Ccircle cx='12' cy='14' r='2.6' fill='%23000'/%3E%3C/svg%3E"); }
-html[data-theme="ledger"] #denickEmpty p::before { content: "No sealed names to open. Search a nick to see whose it is, or a player for every name they've held."; }
+html[data-theme="ledger"] #denickEmpty p::before { content: "No sealed names yet. Search a nick or a player."; }
+html[data-theme="ledger"] :is(#denickEmpty p, #statsEmptyText) { text-wrap: balance; }
+/* An opened envelope is the answer, so the empty note steps aside. */
+html[data-theme="ledger"] #denickUnmask:not([hidden]) ~ #denickEmpty { display: none; }
+/* Shorter idle line under the dial (the scanning line is left as is). */
+html[data-theme="ledger"] #statsEmpty:not(.is-scanning) #statsEmptyText { font-size: 0; width: 100%; max-width: 330px; }
+html[data-theme="ledger"] #statsEmpty:not(.is-scanning) #statsEmptyText::before { content: "Preview a player to see their card."; font-size: 13.12px; }
 html[data-theme="ledger"] #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 3.5C13.5 4.5 8.5 9.5 7 16.5l-.8 4 3-3C15.8 16 19.6 11 20 3.5z'/%3E%3Cpath d='M6.2 20.5L16 8.5'/%3E%3Cpath d='M3 21h7' stroke-width='1.2'/%3E%3C/svg%3E"); }
 html[data-theme="ledger"] #activityEmpty p::before { content: "No transactions recorded. Every add, edit and delete is entered here as it happens."; }
 html[data-theme="ledger"] #modalNotesEmpty::before { content: "No memoranda."; }

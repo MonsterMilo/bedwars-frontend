@@ -8400,13 +8400,14 @@ html[data-theme="skyisles"] {
 html[data-theme="skyisles"] #starfield,
 html[data-theme="skyisles"] #bubblefield { display: none; }
 /* Hard colour bands instead of a smooth gradient, like a 16-colour palette
-   dithered sky, with a square pixel sun parked top-right. */
+   dithered sky. The square pixel sun is not part of this fixed layer: it
+   hangs beside the hero (.hero-pin below) so it scrolls away with it
+   instead of sitting behind every section header. */
 html[data-theme="skyisles"] #nebula {
   display: block;
   opacity: 1;
   overflow: hidden;
   background:
-    var(--px-sun) 7vw 150px / 96px 80px no-repeat,
     linear-gradient(180deg,
       #4f9fe6 0 14%, #5aa9ef 14% 26%, #67b4f5 26% 40%, #76bff9 40% 54%,
       #86c9fc 54% 68%, #97d3fe 68% 82%, #a9dcff 82% 100%);
@@ -8569,7 +8570,18 @@ html[data-theme="skyisles"] #credits {
 }
 html[data-theme="skyisles"] #credits a,
 html[data-theme="skyisles"] #credits kbd { color: #173247; }
-html[data-theme="skyisles"] .hero-pin { display: none; }
+/* The pixel sun, parked in the empty space left of the wordmark. It lives
+   in the page (not the fixed sky), so it scrolls away with the hero. */
+html[data-theme="skyisles"] .hero-pin {
+  display: block;
+  position: absolute;
+  left: 16px;
+  top: 112px;
+  width: 84px;
+  height: 70px;
+  background: var(--px-sun) 0 0 / 100% 100% no-repeat;
+  pointer-events: none;
+}
 
 /* ---------- Hotbar quick-nav ---------- */
 /* The sticky jump links read as the Minecraft hotbar: a dark strip of
@@ -9025,6 +9037,13 @@ html[data-theme="skyisles"] .search-box-kbd {
   border-color: #8fa3b3;
 }
 html[data-theme="skyisles"] .search-box-clear { border-radius: 0; background: #3a4a55; color: #fff; }
+/* Phones hide the "/" key hint, so the empty field gives its right
+   padding back to the placeholder (the clear button needs it only once
+   something is typed). */
+html[data-theme="skyisles"] .toolbar #searchInput { text-overflow: ellipsis; }
+@media (hover: none), (max-width: 760px) {
+  html[data-theme="skyisles"] .toolbar #searchInput:placeholder-shown { padding-right: 10px; }
+}
 html[data-theme="skyisles"] .search-box-clear:hover { background: var(--bad); color: #fff; }
 /* Filter fields are the dark text field themselves; the input inside is
    just transparent text. */
@@ -9046,7 +9065,11 @@ html[data-theme="skyisles"] .toolbar .filter-field input:focus {
   box-shadow: none;
   color: #fff;
 }
-html[data-theme="skyisles"] .filter-reset { border-radius: 0; font-family: var(--font-pixel); color: var(--text-dim); transition: none; }
+html[data-theme="skyisles"] .filter-reset { border-radius: 0; font-family: var(--font-pixel); color: var(--ink); transition: none; padding: 8px; }
+html[data-theme="skyisles"] .filter-reset:disabled { opacity: 0.6; }
+/* A touch narrower date field, so Reset fits at the end of the chip row
+   on desktop instead of dropping onto a row of its own. */
+html[data-theme="skyisles"] .toolbar .filter-field-date input { width: 118px; }
 html[data-theme="skyisles"] .filter-reset:hover:not(:disabled) { color: #fff; background: var(--accent); }
 html[data-theme="skyisles"] .filter-reset-count:not(:empty) { border-radius: 0; background: var(--bad); color: #fff; }
 /* View toggle as a three-slot mini hotbar. */
@@ -9329,11 +9352,21 @@ html[data-theme="skyisles"] .sweat-card.tier-t5 .sweat-card-frame::before {
 }
 /* Final Boss: end-stone island in the void, with an animated end-portal
    border of drifting specks and the bed they defend perched on top. */
+/* The bed rides on the end-stone cap itself: the strip reaches 22px higher
+   (transparent there) so the bed sits on the portal's top edge, out of
+   reach of the frame's mask, which would clip anything drawn on it. */
 html[data-theme="skyisles"] .sweat-card.tier-t5::before {
-  background: #dbde9f;
-  background-image: repeating-linear-gradient(90deg, #e8ebb2 0 4px, #cfd28f 4px 8px, #dbde9f 8px 14px);
-  height: 14px;
+  top: -26px;
+  height: 38px;
+  border-top: none;
+  background:
+    var(--px-bed) right 32px top 0 / 32px 18px no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0 22px / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, #e8ebb2 0 4px, #cfd28f 4px 8px, #dbde9f 8px 14px) 0 24px / 100% 14px no-repeat;
+  filter: drop-shadow(0 0 2px rgba(208,120,255,0.55));
+  animation: skyBedGlow 1.6s steps(2) infinite;
 }
+@keyframes skyBedGlow { 50% { filter: drop-shadow(0 0 2px rgba(255,255,255,0.8)); } }
 html[data-theme="skyisles"] .sweat-card.tier-t5::after {
   background: #cfd28f var(--px-stone) 0 0 / 16px 16px repeat;
   background-blend-mode: multiply;
@@ -9360,21 +9393,7 @@ html[data-theme="skyisles"] .sweat-card.tier-t5 .sweat-card-frame {
 @keyframes skyPortal {
   to { background-position: 24px -24px, -30px 30px, 18px 18px, -36px -36px, 0 0; }
 }
-html[data-theme="skyisles"] .sweat-card.tier-t5 .sweat-card-frame::after {
-  content: "";
-  position: absolute;
-  top: -16px;
-  right: 40px;
-  width: 32px;
-  height: 18px;
-  background: var(--px-bed) center / contain no-repeat;
-  filter: drop-shadow(0 0 0 #fff) drop-shadow(0 -2px 0 rgba(208,120,255,0.8)) drop-shadow(0 2px 0 rgba(208,120,255,0.8));
-  animation: skyBedAura 1.6s steps(2) infinite;
-}
 html[data-theme="skyisles"] .sweat-card.tier-t5 .sweat-card-frame::before { display: none; }
-@keyframes skyBedAura {
-  50% { filter: drop-shadow(0 -2px 0 rgba(255,255,255,0.9)) drop-shadow(2px 0 0 rgba(208,120,255,0.9)) drop-shadow(-2px 0 0 rgba(208,120,255,0.9)); }
-}
 html[data-theme="skyisles"] .pill.tier-pill { font-family: var(--font-arcade); font-size-adjust: none; font-weight: 400; font-size: 8px; padding: 5px 7px 4px; letter-spacing: 0.5px; }
 html[data-theme="skyisles"] .pill.tier-pill.t4 { background: #6e1a14; color: #ffb347; text-shadow: 1px 1px 0 #2a0400; }
 html[data-theme="skyisles"] .pill.tier-pill.t5 { background: #1a0f2e; color: #e0b8ff; text-shadow: 1px 1px 0 #000, 0 0 4px #b06ae8; }
@@ -9853,6 +9872,28 @@ html[data-theme="skyisles"] .modal-stat-tile.stat-finals .modal-stat-value { col
 html[data-theme="skyisles"] .modal-stat-tile.stat-wins .modal-stat-value { color: #ffff55; }
 html[data-theme="skyisles"] .modal-stat-tile .modal-standing { color: #7cfc4a; }
 html[data-theme="skyisles"] .modal-stat-tile .modal-standing-text { color: #e7e7e7; text-shadow: 1px 1px 0 #3f3f3f; }
+/* The popup's slots in a deeper grey, so the white labels and the small
+   "Beats N%" text read clearly (the light #8b8b8b slot stays elsewhere). */
+html[data-theme="skyisles"] #playerModal :is(.modal-stat-tile, .modal-tags-section, .modal-record) { background: #6f6f6f; }
+html[data-theme="skyisles"] #playerModal .modal-stat-tile .modal-standing-text { color: #fff; }
+/* Two-column popup: notes move up into the right column under the Urchin
+   tags, beside the tall saved-record panel, so neither column is left with
+   a big empty patch. */
+@media (min-width: 761px) {
+  html[data-theme="skyisles"] #playerModal .modal-content {
+    grid-template-areas:
+      "name name"
+      "live live"
+      "skin stats"
+      "record urchin"
+      "record match"
+      "record notes"
+      "clips clips"
+      "replays replays";
+    grid-template-rows: auto auto auto auto auto 1fr auto auto;
+  }
+  html[data-theme="skyisles"] #playerModal .modal-record[hidden] ~ .modal-notes { grid-column: 1 / -1; }
+}
 html[data-theme="skyisles"] .modal-stat-delta {
   border: none;
   background: #3a3a3a;
@@ -10003,16 +10044,23 @@ html[data-theme="skyisles"] .egg-sub {
   color: #ffff55;
   text-shadow: 2px 2px 0 #3f3f00;
 }
-/* Chat-style toasts as actual Minecraft chat lines. */
+/* Chat-style toasts as Minecraft chat lines, set on the dark tooltip
+   panel (purple inner rule, black outline, hard shadow) so nothing behind
+   bleeds through. */
 html[data-theme="skyisles"] .egg-toast {
   font-family: var(--font-pixel);
   font-size: 15px;
   color: #ffffff;
-  background: rgba(0,0,0,0.55);
+  padding: 9px 14px;
+  background: rgba(16,0,16,0.94);
   border: none;
   border-radius: 0;
-  box-shadow: none;
+  box-shadow: inset 0 0 0 2px #2a0960, 0 0 0 2px #000, 4px 4px 0 2px rgba(23,50,71,0.35);
   text-shadow: 2px 2px 0 #3f3f3f;
+}
+html[data-theme="skyisles"] #eggToasts { gap: 10px; left: 18px; bottom: 18px; max-width: calc(100vw - 40px); }
+@media (max-width: 620px) {
+  html[data-theme="skyisles"] #eggToasts { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* ---------- Empty states, skeletons, pagination ---------- */
@@ -10022,27 +10070,72 @@ html[data-theme="skyisles"] .empty-icon-skyisles {
   background: var(--px-isle-small) center / 90px auto no-repeat;
   animation: isleBob 2.4s steps(2) infinite;
 }
+/* Loading placeholders are blank islands: the same opaque face, grass cap
+   and dirt underside as a sweat card, with the empty slots blinking in
+   two steps instead of the whole card fading in and out. */
 html[data-theme="skyisles"] .skeleton-card {
+  position: relative;
   border: none;
   border-radius: 0;
+  padding: 26px 16px 18px;
   background: var(--panel);
-  box-shadow: var(--pxb2);
-  animation-timing-function: steps(2);
+  box-shadow: inset 0 -4px 0 0 #e1ecd8, var(--pxb2);
+  animation: none;
+  opacity: 1;
+}
+html[data-theme="skyisles"] .skeleton-card::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: -4px;
+  height: 18px;
+  background: var(--px-grasstop) 0 0 / 32px 12px repeat-x;
+  border-top: 2px solid var(--ink);
+  pointer-events: none;
+}
+html[data-theme="skyisles"] .skeleton-card::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: calc(100% + 2px);
+  height: 30px;
+  background: var(--px-dirt) 0 0 / 16px 16px repeat;
+  -webkit-mask: var(--sky-underside) 0 0 / 100% 100% no-repeat;
+  mask: var(--sky-underside) 0 0 / 100% 100% no-repeat;
+  filter: drop-shadow(0 2px 0 var(--ink));
+  pointer-events: none;
 }
 html[data-theme="skyisles"] .skeleton-block,
-html[data-theme="skyisles"] .skeleton-avatar { border-radius: 0; }
+html[data-theme="skyisles"] .skeleton-avatar {
+  border-radius: 0;
+  background: #c6d3dc;
+  box-shadow: inset 2px 2px 0 #a9b8c3;
+  animation: skySkelBlink 1.2s steps(1) infinite;
+}
+html[data-theme="skyisles"] .skeleton-avatar { background: #8b8b8b; box-shadow: var(--slot); animation-name: skySkelSlot; }
+@keyframes skySkelSlot { 50% { background-color: #a2a2a2; } }
+html[data-theme="skyisles"] .skeleton-card:nth-child(3n) .skeleton-block { animation-delay: 0.4s; }
+html[data-theme="skyisles"] .skeleton-card:nth-child(3n+1) .skeleton-block { animation-delay: 0.8s; }
+@keyframes skySkelBlink { 50% { background-color: #dde7ee; } }
+/* The cold-start note, short and in the theme's ink. */
+html[data-theme="skyisles"] .server-waking-note { font-size: 0; font-size-adjust: none; font-weight: 400; color: #1d4a6e; padding-bottom: 6px; }
+html[data-theme="skyisles"] .server-waking-note::before { content: "Waking the server\2026  "; font-size: 15px; }
+html[data-theme="skyisles"] .server-waking-elapsed { font-size: 15px; color: #4b6a82; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="skyisles"] .skeleton-block { animation: none; }
+}
 html[data-theme="skyisles"] .pagination-label { font-family: var(--font-pixel); color: #1d4a6e; }
 html[data-theme="skyisles"] .loading-state { animation-timing-function: steps(2); font-family: var(--font-pixel); }
 
 /* ---------- Phones ---------- */
 @media (max-width: 700px) {
-  html[data-theme="skyisles"] #nebula {
-    background:
-      var(--px-sun) 10px 10px / 48px 40px no-repeat,
-      linear-gradient(180deg,
-        #4f9fe6 0 14%, #5aa9ef 14% 26%, #67b4f5 26% 40%, #76bff9 40% 54%,
-        #86c9fc 54% 68%, #97d3fe 68% 82%, #a9dcff 82% 100%);
-  }
+  html[data-theme="skyisles"] .hero-pin { left: auto; right: 14px; top: 20px; width: 48px; height: 40px; }
+  /* The theme button sits left of centre on phones, so the menu hangs
+     from its left edge instead of running off the left of the screen
+     (the sound panel too, its button is further left still). */
+  html[data-theme="skyisles"] :is(#themeDropdownMenu, #audioPanel) { left: 0; right: auto; max-width: calc(100vw - 32px); transform-origin: top left; }
   html[data-theme="skyisles"] h1 { font-size: 1.7em; }
   html[data-theme="skyisles"] .hero-flourish {
     position: relative;
@@ -11497,6 +11590,33 @@ html[data-theme="skyisles"] .sotd-meta,
 html[data-theme="skyisles"] .sotd-note { font: 400 1.25em var(--font-pixel); }
 html[data-theme="skyisles"] .sotd-note { font-style: normal; }
 html[data-theme="skyisles"] .sotd-clock { font: 400 0.6em var(--font-arcade); line-height: 1.6; }
+/* On wide screens the right of the card would sit empty, so a little
+   Bed Wars island (bed, diamond generator) floats there, behind the text. */
+@media (min-width: 1000px) {
+  html[data-theme="skyisles"] .sotd-deco i.d5 {
+    display: block;
+    position: absolute;
+    right: 8%;
+    top: 50%;
+    width: 140px;
+    height: 111px;
+    margin-top: -36px;
+    background:
+      var(--px-diamond) 93px 0 / 22px 19px no-repeat,
+      var(--px-bed) 15px 20px / 50px 28px no-repeat,
+      var(--px-gen) 90px 26px / 28px 25px no-repeat,
+      var(--px-idleisle) 0 41px / 140px 70px no-repeat;
+    image-rendering: pixelated;
+    filter: drop-shadow(4px 4px 0 rgba(23,50,71,0.18));
+    animation: isleBob 2.4s steps(2) infinite;
+  }
+}
+/* The pixel digits are wide: on phones the four stats go 2 by 2 so the
+   finals and index counts show in full. */
+@media (max-width: 480px) {
+  html[data-theme="skyisles"] .sotd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+  html[data-theme="skyisles"] .sotd-stat-value { font-size: 1.45em; }
+}
 
 @media (max-width: 620px) {
   .sotd { margin-bottom: 20px; }
@@ -12110,7 +12230,7 @@ html[data-theme="skyisles"] .unmask-front .unmask-who { color: transparent; back
 html[data-theme="skyisles"] .unmask-front .unmask-q { display: none; }
 html[data-theme="skyisles"] .unmask-k { font-family: var(--font-label); color: #404040; letter-spacing: 0.06em; text-transform: none; font-size: 0.85em; }
 html[data-theme="skyisles"] .unmask-front .unmask-k::before { content: "Repair & Name"; }
-html[data-theme="skyisles"] .unmask-back .unmask-k::before { content: "Renamed Name Tag"; }
+html[data-theme="skyisles"] .unmask-back .unmask-k::before { content: "Name Tag"; }
 html[data-theme="skyisles"] .unmask-name { font-family: var(--font-pixel); font-weight: 400; font-size: 1.9em; color: #fff; text-shadow: 2px 2px 0 #3f3f3f; }
 html[data-theme="skyisles"] .unmask-front .unmask-name {
   display: inline-block;
@@ -12142,7 +12262,13 @@ html[data-theme="skyisles"] .unmask.play .unmask-fx { animation: siSparks 0.8s s
 html[data-theme="skyisles"] .unmask-back { background: #100010; box-shadow: inset 0 0 0 3px #2a0960, 0 0 0 3px #000; }
 html[data-theme="skyisles"] .unmask-back .unmask-name { color: #ffff55; text-shadow: 2px 2px 0 #3f3f00; font-style: italic; }
 html[data-theme="skyisles"] .unmask-back .unmask-k { color: #aaaaaa; }
-html[data-theme="skyisles"] .unmask-back .unmask-meta { color: #5555ff; }
+html[data-theme="skyisles"] .unmask-back .unmask-meta { color: #b3a8ff; }
+/* Phones: the source and age wrap onto a second line instead of being cut
+   off, and the empty prompt steps aside once a tag has been read. */
+@media (max-width: 620px) {
+  html[data-theme="skyisles"] .unmask-meta { white-space: normal; line-height: 1.45; }
+}
+html[data-theme="skyisles"] #denickUnmask:not([hidden]) ~ #denickEmpty { display: none; }
 /* The old name is cleared a letter-block at a time, then the new one is typed in. */
 @keyframes siNickOut {
   0%, 15% { opacity: 1; clip-path: inset(0 0 0 0); }
@@ -12449,6 +12575,14 @@ html[data-theme="skyisles"] .lb-entry-art {
 html[data-theme="skyisles"] .lb-entry-count { order: 2; font: 400 0.72em/1 var(--font-label); color: var(--ink); }
 html[data-theme="skyisles"] .lb-entry-count span { display: none; }
 html[data-theme="skyisles"] .lb-entry-count b { font: 400 1.5em/1 var(--font-pixel); color: #3f8f2a; }
+/* Phones: slimmer islands so four and a half fit across, the half-cut
+   fifth one (under the fade) showing the row scrolls sideways. */
+@media (max-width: 620px) {
+  html[data-theme="skyisles"] .lb-scene-body { grid-auto-columns: 70px; gap: 4px; height: 270px; padding-bottom: 6px; }
+  html[data-theme="skyisles"] .lb-entry { padding-bottom: calc(var(--share) * 130px); }
+  html[data-theme="skyisles"] .lb-entry-art { width: 60px; height: 34px; }
+  html[data-theme="skyisles"] .lb-entry .leaderboard-name { font-size: 0.72em; }
+}
 
 @media (max-width: 700px) {
   html:not([data-theme]) .lb-scene { padding: 0 10px 14px; }
@@ -13730,6 +13864,7 @@ html[data-theme="skyisles"] .pdeco i:nth-child(2) { left: 0; right: 0; bottom: 0
   html[data-theme="ledger"] .panel-index::before { font-size: 56px; }
   html[data-theme="deepcurrent"] .panel-index { font-size: 46px; }
   html[data-theme="skyisles"] .panel-index::before { font-size: 56px; }
+  html[data-theme="skyisles"] .panel-index { right: 48px; top: -2px; bottom: auto; }
   html[data-theme="casefiles"] .panel-index { display: none; }
   html:not([data-theme]) .panel-header::after { left: 0; }
   html .denick-mode-btn { letter-spacing: 0.2px !important; font-size: 0.72em !important; padding-left: 9px !important; padding-right: 9px !important; gap: 5px !important; }
@@ -14168,7 +14303,7 @@ html[data-theme="deepcurrent"] #activityEmpty p::before { content: "Ship's log i
 html[data-theme="deepcurrent"] #modalNotesEmpty::before { content: "No log entries."; }
 html[data-theme="skyisles"] :is(#denickEmpty, #activityEmpty)::before { background: #1d4a6e; }
 html[data-theme="skyisles"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 7h13v10H8L3 12z' stroke-linecap='square' stroke-linejoin='miter' stroke-width='2'/%3E%3Crect x='6.5' y='11' width='2' height='2' fill='%23000' stroke='none'/%3E%3Cpath d='M12 10.5h6M12 13.5h4' stroke-linecap='square' stroke-width='2'/%3E%3C/svg%3E"); }
-html[data-theme="skyisles"] #denickEmpty p::before { content: "No name tags to read. Search a nick to see who's behind it, or a player for every name they've used."; }
+html[data-theme="skyisles"] #denickEmpty p::before { content: "No name tags yet. Search a nick or a player."; }
 html[data-theme="skyisles"] #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 3h12v18H5z M8 3v18' stroke-linecap='square' stroke-linejoin='miter' stroke-width='2'/%3E%3Cpath d='M17 6h2v15H8' stroke-linecap='square' stroke-linejoin='miter' stroke-width='2'/%3E%3Cpath d='M10.5 9h4M10.5 12h4' stroke-linecap='square' stroke-width='2'/%3E%3C/svg%3E"); }
 html[data-theme="skyisles"] #activityEmpty p::before { content: "Nothing in the chat yet. Every add, edit and delete pops up here as it happens."; }
 html[data-theme="skyisles"] #modalNotesEmpty::before { content: "No notes yet."; }

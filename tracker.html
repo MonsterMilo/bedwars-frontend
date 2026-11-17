@@ -19386,6 +19386,127 @@ html[data-theme="casefiles"] .row-rival {
   html[data-theme="casefiles"] .lb-scene-body { display: flex; flex-wrap: wrap; justify-content: center; }
   html[data-theme="casefiles"] .lb-scene-body > .lb-entry { flex: 0 0 180px; }
 }
+
+/* Filter row: the active-filter count sits on RESET's corner like a tab,
+   so the button keeps its width and stays on the chip row. */
+html[data-theme="casefiles"] .filter-reset { position: relative; }
+html[data-theme="casefiles"] .filter-reset-count:not(:empty) {
+  position: absolute;
+  top: -5px;
+  right: -9px;
+  min-width: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 16px;
+  box-shadow: 1px 1px 0 rgba(60,40,10,0.25);
+}
+
+/* Unmask result: the nick that was looked up stays on the final card as a
+   small typed line (needs data-nick on the back face's .unmask-txt), and
+   the IDENTIFIED stamp shows on phones too, smaller, across the mugshot. */
+html[data-theme="casefiles"] .unmask-back .unmask-txt[data-nick]::after {
+  content: "Alias: " attr(data-nick);
+  font: 700 0.68em/1.2 'Courier Prime', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a32f1d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 700px) {
+  html[data-theme="casefiles"] .unmask-back::after {
+    display: block;
+    z-index: 1;
+    top: auto;
+    right: auto;
+    left: 10px;
+    bottom: 9px;
+    padding: 2px 6px;
+    border-width: 2.5px;
+    font-size: 0.74em;
+    background: rgba(251,245,230,0.55);
+    transform: rotate(-8deg);
+  }
+}
+
+/* Popup: the star lives in its own STAR tile, so the header shows just
+   the name; WINS (not ranked against the list) ends on a typed note where
+   the other tiles have their "Beats N%" meter. */
+html[data-theme="casefiles"] #playerModal:has(#modalStats .stat-star) .modal-name-tag { display: none; }
+html[data-theme="casefiles"] #playerModal .modal-stat-tile.stat-wins:not(:has(.modal-standing))::after {
+  content: "Not ranked";
+  display: block;
+  margin-top: 7px;
+  font: 700 0.6em/14px 'Courier Prime', monospace;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+
+/* Leaderboard: the picked person's list is headed like a sub-exhibit,
+   a small red typed label over the Anton title. */
+html[data-theme="casefiles"] .leaderboard-person-title {
+  font: 400 22px/1.1 'Anton', 'Arial Narrow', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #2a2118;
+}
+html[data-theme="casefiles"] .leaderboard-person-title::before {
+  content: "File";
+  display: block;
+  margin-bottom: 4px;
+  font: 700 11px/1 'Courier Prime', monospace;
+  letter-spacing: 0.16em;
+  color: #a32f1d;
+}
+
+/* Grid: the "pin a note here" slot shows faintly at rest, so cards with no
+   note read as an empty slot rather than a blank gap. */
+html[data-theme="casefiles"] .sweat-card .card-note-ghost { opacity: 0.38; }
+html[data-theme="casefiles"] .sweat-card:hover .card-note-ghost,
+html[data-theme="casefiles"] .sweat-card:focus-within .card-note-ghost { opacity: 0.85; }
+html[data-theme="casefiles"] .sweat-card .card-note-ghost:hover,
+html[data-theme="casefiles"] .sweat-card .card-note-ghost:focus-visible { opacity: 1; }
+
+/* Urchin Tags in the lookup preview: the same small typed value as the
+   popup, not the big display face of the stat numbers. */
+html[data-theme="casefiles"] #statUrchin {
+  font-family: 'Courier Prime', monospace;
+  font-weight: 400;
+  font-size: 0.85em;
+  letter-spacing: 0;
+  color: var(--text-dim);
+}
+
+/* Toasts: typed memo slips with a red margin rule and a strip of tape,
+   stacked bottom-right on desktop, clear of the form buttons. */
+html[data-theme="casefiles"] .egg-toast {
+  position: relative;
+  padding: 9px 14px 8px 16px;
+  background:
+    linear-gradient(90deg, transparent 6px, rgba(190,60,50,0.55) 6px 7px, transparent 7px),
+    #fbf6e6;
+  border-color: #c9b88f;
+  box-shadow: 2px 3px 0 rgba(60,40,10,0.14), 0 6px 14px rgba(60,40,10,0.14);
+  transform: rotate(-0.5deg);
+}
+html[data-theme="casefiles"] .egg-toast::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 46px;
+  height: 13px;
+  margin-left: -23px;
+  background: rgba(236,224,160,0.78);
+  box-shadow: 0 1px 1px rgba(60,40,10,0.12);
+  transform: rotate(-3deg);
+}
+html[data-theme="casefiles"] .egg-toast:nth-child(even) { transform: rotate(0.4deg); }
+html[data-theme="casefiles"] #eggToasts { gap: 12px; }
+@media (min-width: 621px) {
+  html[data-theme="casefiles"] #eggToasts { left: auto; right: 24px; bottom: 24px; align-items: flex-end; }
+}
 </style>
 </head>
 <body>

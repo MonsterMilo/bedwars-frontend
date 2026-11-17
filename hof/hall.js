@@ -70,6 +70,8 @@ const fmtDate = (d) => { const t = Date.parse(d + "T12:00:00Z"); return isNaN(t)
 const ROSTER_VAR = { Milo: "--r-milo", Potat: "--r-potat", ABoi: "--r-aboi", Zoiv: "--r-zoiv", Max: "--r-max", Sqoz: "--r-sqoz", Kermit: "--r-kermit", Ssent: "--r-ssent", Key: "--r-key" };
 const cssVar = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+// North Pole (the December theme picked on the tracker): snow in the hall, lit trees, garlands and wreaths.
+const NP = QS.get("theme") ? QS.get("theme") === "northpole" : store.get("siteTheme") === "northpole";
 const clamp = THREE.MathUtils.clamp, lerp = THREE.MathUtils.lerp;
 const ease = (t) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
@@ -805,15 +807,78 @@ function buildDust() {
     else { const a = r() * Math.PI * 2, rr = Math.sqrt(r()) * 13; pos.set([Math.sin(a) * rr, r() * 18, ROT_Z + Math.cos(a) * rr], i * 3); }
   }
   const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-  dust = new THREE.Points(g, new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uTime: U.time, uScale: { value: innerHeight * DPR }, uFog: { value: scene.fog.density } },
-    vertexShader: `uniform float uTime, uScale, uFog; varying float vA;
+  dust = new THREE.Points(g, new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uTime: U.time, uScale: { value: innerHeight * DPR }, uFog: { value: scene.fog.density }, uSnow: { value: NP ? 1 : 0 } },
+    vertexShader: `uniform float uTime, uScale, uFog, uSnow; varying float vA;
       void main(){ vec3 p = position; float s = fract(sin(dot(p.xz, vec2(12.9, 78.2))) * 437.5);
-        p.y = mod(p.y + uTime * (.05 + s * .08), 16.); p.x += sin(uTime * .21 + s * 40.) * .6; p.z += cos(uTime * .17 + s * 30.) * .6;
-        vec4 mv = modelViewMatrix * vec4(p, 1.); float d = -mv.z; vA = (.35 + .65 * pow(.5 + .5 * sin(uTime * (1. + s * 2.) + s * 60.), 3.)) * exp(-d * uFog * 1.5) * smoothstep(.4, 2.5, d) * mix(1., .12, smoothstep(5., 11., p.y));
-        gl_PointSize = uScale * .0045 * (.6 + s) / max(d, .1); gl_Position = projectionMatrix * mv; }`,
-    fragmentShader: `varying float vA; void main(){ float r = length(gl_PointCoord - .5) * 2.; gl_FragColor = vec4(vec3(1., .88, .7) * max(1. - r * r, 0.) * vA * .7, 1.); }`,
+        p.y = mod(p.y + uTime * mix(.05 + s * .08, -(.45 + s * .5), uSnow), 16.); p.x += sin(uTime * .21 + s * 40.) * .6; p.z += cos(uTime * .17 + s * 30.) * .6;
+        vec4 mv = modelViewMatrix * vec4(p, 1.); float d = -mv.z; vA = (.35 + .65 * pow(.5 + .5 * sin(uTime * (1. + s * 2.) + s * 60.), 3.)) * exp(-d * uFog * 1.5) * smoothstep(.4, 2.5, d) * mix(1., .12, smoothstep(5., 11., p.y) * (1. - uSnow));
+        gl_PointSize = uScale * .0045 * (.6 + s) * (1. + uSnow * .9) / max(d, .1); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `uniform float uSnow; varying float vA; void main(){ float r = length(gl_PointCoord - .5) * 2.; gl_FragColor = vec4(mix(vec3(1., .88, .7), vec3(.95, .97, 1.), uSnow) * max(1. - r * r, 0.) * vA * mix(.7, 1., uSnow), 1.); }`,
   }));
   dust.frustumCulled = false; dust.userData.noAO = true; scene.add(dust);
+}
+
+// ---------- North Pole: two lit trees by the Roll of Honour, garlands of lights between the columns, wreaths on the niches ----------
+const NP_BULBS = [0xff3b46, 0x3ddc76, 0xffc94a, 0x58a8ff];
+function northPoleMaterials() {
+  M.npPine = new THREE.MeshStandardMaterial({ color: 0x1d5a34, roughness: 0.82, metalness: 0, emissive: 0x0c2a17, emissiveIntensity: 0.35 });
+  M.npRed = new THREE.MeshStandardMaterial({ color: 0xc8202c, roughness: 0.22, metalness: 0.55, envMapIntensity: 1.6 });
+  M.npSnow = new THREE.MeshStandardMaterial({ color: 0xf4f8ff, roughness: 0.9, metalness: 0, emissive: 0xcfe0ff, emissiveIntensity: 0.12 });
+  M.npStar = glow(0xffd36b, 4);
+  NP_BULBS.forEach((c, i) => { M["npB" + i] = glow(c, 3.2); M["npB" + i].userData.base = new THREE.Color(c); });
+}
+function npBulb(i, x, y, z, r = 0.065) { add("npB" + (i % 4), new THREE.SphereGeometry(r, 8, 6), mtx(x, y, z)); }
+function npTree(x, z, H, R) {
+  add("wood", new THREE.CylinderGeometry(0.22, 0.3, 1.0, 12), mtx(x, 0.5, z));
+  add("velvet", new THREE.CylinderGeometry(R * 0.85, R * 0.9, 0.05, 40), mtx(x, 0.025, z));
+  const env = (y) => R * Math.max(0.04, 1 - (y - 0.8) / (H - 0.6));
+  for (let i = 0; i < 7; i++) {
+    const y0 = 0.8 + i * (H - 1.4) / 7, r = env(y0) * 1.04, h = Math.min(H * 0.32, r * 1.5 + 0.6);
+    add("npPine", new THREE.ConeGeometry(r, h, 20), mtx(x, y0 + h / 2, z, 0, i * 0.7));
+    add("npSnow", new THREE.ConeGeometry(r * 0.42, h * 0.3, 20), mtx(x, y0 + h - h * 0.15, z, 0, i * 0.7));
+  }
+  const N = 120, turns = 6.5;
+  for (let k = 0; k < N; k++) {
+    const u = k / N, y = 1.0 + u * (H - 1.7), a = u * turns * Math.PI * 2, r = env(y) * 0.9 + 0.06;
+    npBulb(k, x + Math.sin(a) * r, y, z + Math.cos(a) * r);
+  }
+  const rr = rng(Math.round(x * 100 + z));
+  for (let k = 0; k < 26; k++) {
+    const y = 1.2 + rr() * (H - 2.4), a = rr() * Math.PI * 2, r = env(y) * 0.86 + 0.1;
+    add(k % 3 ? "npRed" : "gold", new THREE.SphereGeometry(0.15 + rr() * 0.06, 14, 10), mtx(x + Math.sin(a) * r, y, z + Math.cos(a) * r));
+  }
+  const star = new THREE.Shape(); for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2, r = k % 2 ? 0.2 : 0.48; star[k ? "lineTo" : "moveTo"](Math.sin(a) * r, Math.cos(a) * r); }
+  const sg = new THREE.ExtrudeGeometry(star, { depth: 0.1, bevelEnabled: false }); sg.translate(0, 0, -0.05);
+  [0, Math.PI / 2].forEach(ry => add("npStar", sg, mtx(x, H + 0.35, z, 0, ry)));
+  addGlow(x, H + 0.35, z, 3.2, 1, 0.8, 0.4); addGlow(x, H * 0.5, z, 7, 0.45, 0.32, 0.18);
+  solidCirc(x, z, R * 0.92);
+}
+function npWreath(N) {
+  const at = (m) => N.clone().multiply(m);
+  const y = NICHE_SPRING + NICHE_HW + 0.18, z = 0.42;
+  add("npPine", new THREE.TorusGeometry(0.42, 0.13, 8, 28), at(mtx(0, y, z)));
+  for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2; add(k % 2 ? "npRed" : "gold", new THREE.SphereGeometry(0.055, 8, 6), at(mtx(Math.sin(a) * 0.42, y + Math.cos(a) * 0.42, z + 0.12))); }
+  [-1, 1].forEach(e => add("npRed", new THREE.BoxGeometry(0.26, 0.15, 0.05), at(mtx(e * 0.14, y - 0.42, z + 0.16, 0, 0, e * 0.35))));
+  [-1, 1].forEach(e => add("npRed", new THREE.BoxGeometry(0.07, 0.34, 0.03), at(mtx(e * 0.08, y - 0.62, z + 0.15, 0, 0, e * 0.25))));
+}
+function npGarland(s, za, zb) {
+  const x = s * (COL_X - 0.62), pts = [];
+  for (let k = 0; k <= 16; k++) { const t = k / 16; pts.push(new THREE.Vector3(x, 7.35 - Math.sin(t * Math.PI) * 0.85, lerp(za, zb, t))); }
+  const curve = new THREE.CatmullRomCurve3(pts);
+  add("npPine", new THREE.TubeGeometry(curve, 40, 0.11, 7), null);
+  const n = Math.round(Math.abs(zb - za) / 0.42);
+  for (let k = 1; k < n; k++) { const p = curve.getPoint(k / n); npBulb(k + (s > 0 ? 1 : 0), p.x - s * 0.04, p.y - 0.14, p.z, 0.06); }
+  add("npRed", new THREE.BoxGeometry(0.06, 0.24, 0.34), mtx(x - s * 0.06, 7.38, za));
+}
+function buildNorthPole(niches) {
+  northPoleMaterials();
+  [-1, 1].forEach(s => { const a = Math.PI - 0.56; npTree(s * Math.sin(a) * 11.3, ROT_Z + Math.cos(a) * 11.3, 7.6, 2.3); });
+  [-1, 1].forEach(s => { for (let k = 0; k < BAYS; k++) npGarland(s, COL_ZS[k], COL_ZS[k + 1]); });
+  niches.forEach((N, sl) => npWreath(N));
+}
+function npTwinkle(time) {
+  for (let i = 0; i < 4; i++) { const m = M["npB" + i]; if (!m) return; const f = 0.55 + 0.45 * Math.sin(time * (1.3 + i * 0.37) + i * 1.9); m.color.copy(m.userData.base).multiplyScalar(3.2 * (0.35 + 0.65 * f)); }
+  if (M.npStar) M.npStar.color.setRGB(1, 0.83, 0.42).multiplyScalar(3.4 + Math.sin(time * 2.1) * 0.6);
 }
 
 // ---------- Chandeliers, braziers, moonbeams ----------
@@ -1691,6 +1756,7 @@ function tick(dt, draw) {
     $("#progress i").style.width = clamp((START_Z - PL.pos.z) / (START_Z - (ROT_Z + 10)) * 100, 0, 100).toFixed(1) + "%";
   } else S.attn = null;
   updateExhibits(dt, time); updateLights(dt); ambientLights(time, U.flame.value);
+  if (NP) npTwinkle(time);
   grade.uniforms.uTime.value = time % 10;
   if (S.mode !== "gate") grade.uniforms.uFade.value = Math.min(1, grade.uniforms.uFade.value + dt);
   if (draw) { renderer.shadowMap.needsUpdate = true; renderReflection(); composer.render(dt); }
@@ -1714,6 +1780,7 @@ async function buildHall() {
   buildNave(); buildRotunda();
   const niches = new Map(slots.map(sl => [sl, buildNiche(sl)]));
   CHANDELIER_ZS.forEach(chandelier); BRAZIERS.forEach(brazier); OCULUS_ZS.forEach(moonBeam);
+  if (NP) buildNorthPole(niches);
   try { await Promise.all(["700 50px Cinzel", "900 50px Cinzel", "700 50px 'Barlow Condensed'", "600 50px 'Barlow Condensed'"].map(f => document.fonts.load(f))); } catch (e) {}
   const skins = await Promise.all(DATA.map(d => loadSkin(d.skin).catch(() => null)));
   const skinOf = new Map(DATA.map((d, i) => [d.rank, skins[i]]));

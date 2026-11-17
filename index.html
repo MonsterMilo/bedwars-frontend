@@ -13,6 +13,8 @@
 <script>
   // The tracker used to live here. Its links carry ?player=, ?lb= or #section, so pass those on.
   if (location.search || (location.hash && location.hash !== '#')) location.replace('tracker.html' + location.search + location.hash);
+  // North Pole (the December theme) picked on the tracker: snow, lights and Christmas beams here too.
+  try { if (localStorage.getItem('siteTheme') === 'northpole') document.documentElement.setAttribute('data-np', ''); } catch (e) {}
 </script>
 <title>Prism</title>
 <meta name="description" content="Prism: the Bed Wars tracker, cosmetics library and map atlas.">
@@ -149,6 +151,16 @@
     .foot .stat:not([hidden]) ~ .stat:not([hidden])::before { display: none; }
     .foot .by { margin-left: 0; }
   }
+
+  /* ---------- North Pole (December theme, picked on the tracker) ---------- */
+  html[data-np] .mark { position: relative; }
+  html[data-np] .mark::before { content: ""; position: absolute; left: .32em; top: -.62em; width: 1.05em; height: .9em; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 34'%3E%3Cpath d='M5 26C7 14 15 3 27 4c6 1 9 5 10 12-4-3-7-3-10-1-1 5 0 9 1 12Z' fill='%23d6333a'/%3E%3Cpath d='M12 24c3-8 8-15 15-17' stroke='%23ff8a8f' stroke-width='2' fill='none' stroke-linecap='round' opacity='.6'/%3E%3Ccircle cx='36' cy='18' r='4.2' fill='%23fff'/%3E%3Crect x='2' y='23' width='30' height='9' rx='4.5' fill='%23f6f9ff'/%3E%3C/svg%3E") center / contain no-repeat; transform: rotate(-12deg); pointer-events: none; }
+  html[data-np] h1 { position: relative; }
+  html[data-np] h1::before { content: ""; position: absolute; left: -.04em; top: -.1em; width: .4em; height: .34em; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 34'%3E%3Cpath d='M5 26C7 14 15 3 27 4c6 1 9 5 10 12-4-3-7-3-10-1-1 5 0 9 1 12Z' fill='%23d6333a'/%3E%3Cpath d='M12 24c3-8 8-15 15-17' stroke='%23ff8a8f' stroke-width='2' fill='none' stroke-linecap='round' opacity='.6'/%3E%3Ccircle cx='36' cy='18' r='4.2' fill='%23fff'/%3E%3Crect x='2' y='23' width='30' height='9' rx='4.5' fill='%23f6f9ff'/%3E%3C/svg%3E") center / contain no-repeat; transform: rotate(-16deg); pointer-events: none; z-index: 1; filter: drop-shadow(0 6px 10px rgba(0,0,0,.4)); }
+  html[data-np] .grad { background-image: linear-gradient(100deg, #ffffff 0%, #e6f4ff 24%, #ff6b70 48%, #5fd68e 72%, #ffd25e 100%); }
+  html[data-np] .np-cap { position: absolute; left: 10px; right: 10px; top: -7px; height: 13px; z-index: 3; pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 13' preserveAspectRatio='none'%3E%3Cpath d='M0 0H80V8C74 8 72 12.5 66 12.5S58 7 52 8 44 13 38 12.5 30 7 24 8 16 12 10 11 2 7 0 8Z' fill='%23f7fbff'/%3E%3Cpath d='M0 3H80' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E") 0 0 / 80px 13px repeat-x;
+    border-radius: 10px 10px 4px 4px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.45)); }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
@@ -188,6 +200,8 @@
     { name: 'Prism Recordings', href: 'recordings.html', color: [75, 227, 168], text: 'Every game you recorded: your targets, the kill log, clips and the 3D replay.', go: 'Watch recordings', preview: 'recordings' }
   ];
 
+  var NP = document.documentElement.hasAttribute('data-np');
+  if (NP) { var NPC = [[255, 77, 85], [72, 212, 126], [255, 206, 92], [140, 200, 255]]; PAGES.forEach(function (pg, i) { pg.color = NPC[i % NPC.length]; }); }
   var API = 'https://bedwars-backend.onrender.com';
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var DPR = Math.min(2, window.devicePixelRatio || 1);
@@ -203,7 +217,7 @@
     if (pg.preview === 'players') thumb = '<div class="thumb"><div class="tlist" id="players"></div></div>';
     else if (pg.preview) thumb = '<div class="thumb open"><canvas data-draw="' + pg.preview + '"></canvas></div>';
     else a.style.gridTemplateColumns = 'minmax(0,1fr)';
-    a.innerHTML = thumb + '<div><h2>' + esc(pg.name) + '</h2><p>' + esc(pg.text) + '</p><span class="go">' + esc(pg.go || 'Open') + ' ' + ARROW + '</span></div>';
+    a.innerHTML = (NP ? '<i class="np-cap" aria-hidden="true"></i>' : '') + thumb + '<div><h2>' + esc(pg.name) + '</h2><p>' + esc(pg.text) + '</p><span class="go">' + esc(pg.go || 'Open') + ' ' + ARROW + '</span></div>';
     cardsEl.appendChild(a);
   });
   var cards = Array.prototype.slice.call(cardsEl.children);
@@ -716,5 +730,6 @@ function start() {
   if (P.reduce) { addEventListener("resize", () => requestAnimationFrame(frame)); addEventListener("pointermove", () => { if (spin.drag) requestAnimationFrame(frame); }); }
 }
 </script>
+<script src="seasonal/northpole.js?v=1"></script>
 </body>
 </html>

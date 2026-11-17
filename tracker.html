@@ -19381,6 +19381,65 @@ html[data-theme="ledger"] #playerModal #modalTitle::before { content: "Statement
   html[data-theme="ledger"] .toolbar .toolbar-actions-left .chip span { display: flex; justify-content: center; flex: 1; }
   html[data-theme="ledger"] .toolbar .toolbar-row .filter-reset { justify-content: center; margin: 0; }
 }
+
+/* Phone filters: Stars and FKDR share the first line, Index and the
+   wider Since date share the second, so no field sits alone. */
+@media (max-width: 480px) {
+  html[data-theme="ledger"] .toolbar .filter-fields { grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 8px 10px; }
+  html[data-theme="ledger"] .toolbar .filter-fields .filter-field { grid-column: span 5; }
+  html[data-theme="ledger"] .toolbar .filter-fields .filter-field:nth-child(3) { grid-column: span 4; }
+  html[data-theme="ledger"] .toolbar .filter-fields .filter-field-date { grid-column: span 6; }
+  html[data-theme="ledger"] .toolbar .filter-field-date input,
+  html[data-theme="ledger"] .toolbar .filter-field-date input:focus { padding-left: 6px; padding-right: 0; }
+}
+
+/* Envelope: a shallow flap with the wax seal at its tip, and the address
+   set low on the envelope, so the seal never sits on the nick. */
+html[data-theme="ledger"] .unmask-front { align-items: flex-end; padding-bottom: 10px; }
+html[data-theme="ledger"] .unmask-front .unmask-txt { padding: 0 0 0 14px; }
+html[data-theme="ledger"] .unmask-front .unmask-k { line-height: 1.25; }
+html[data-theme="ledger"] .unmask-fx::before { height: 30px; }
+html[data-theme="ledger"] .unmask-fx::after { top: 30px; width: 30px; height: 30px; margin: -17px 0 0 -15px; }
+@keyframes bankSealDrop {
+  0% { transform: none; }
+  40% { transform: scale(1.08) rotate(-6deg); }
+  100% { transform: translateY(12px) rotate(24deg) scale(0.8); opacity: 0; }
+}
+html[data-theme="ledger"] .unmask.play .unmask-fx::after { animation-name: bankSealDrop; }
+@media (max-width: 700px) {
+  html[data-theme="ledger"] #denickUnmask .unmask-card { height: 124px; }
+  html[data-theme="ledger"] .unmask-front .unmask-name { font-size: 1.75em; }
+  html[data-theme="ledger"] .unmask-fx::before { height: 26px; }
+  html[data-theme="ledger"] .unmask-fx::after { top: 26px; width: 26px; height: 26px; margin: -15px 0 0 -13px; }
+}
+
+/* Popup: the star badge shows once, as the STAR line of the statement,
+   whenever that line is there. */
+html[data-theme="ledger"] #playerModal:has(#modalStats .stat-star) .modal-name-tag { display: none; }
+
+/* Popup corner controls: the close button gets the same square gold-ruled
+   frame as Copy link, at rest and when focused. */
+html[data-theme="ledger"] #playerModal .modal-close { border-radius: 2px; border-color: var(--border); font-size: 18px; }
+html[data-theme="ledger"] #playerModal .modal-close:hover,
+html[data-theme="ledger"] #playerModal .modal-close:active { transform: none; border-color: var(--border-strong); }
+html[data-theme="ledger"] #playerModal .modal-close:focus-visible,
+html[data-theme="ledger"] #playerModal .modal-copy-link:focus-visible { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(169,130,46,0.22); }
+
+/* Threat level: a cream panel ruled in gold like the stat tiles; only
+   the ring and the filled pips take the tier colour. */
+html[data-theme="ledger"] .sweat-meter { background: var(--panel); border-color: rgba(169,130,46,0.6); }
+html[data-theme="ledger"] .sweat-gauge .g-track { stroke: rgba(169,130,46,0.16); }
+html[data-theme="ledger"] .sweat-gauge .g-ticks { stroke: rgba(169,130,46,0.45); }
+html[data-theme="ledger"] .sweat-gauge .g-fill { filter: drop-shadow(0 1px 2px rgba(22,35,58,0.25)); }
+html[data-theme="ledger"] .sweat-tier { text-shadow: none; }
+html[data-theme="ledger"] .sweat-tier-scale span { border-radius: 0; background: rgba(169,130,46,0.22); }
+html[data-theme="ledger"] .sweat-tier-scale span.on { background: var(--tier); box-shadow: none; }
+
+/* Client of the day on phone: the top corner figure would crowd the
+   kicker, so only the bottom-right one is kept. */
+@media (max-width: 620px) {
+  html[data-theme="ledger"] .sotd-deco i.d2 { display: none; }
+}
 </style>
 </head>
 <body>

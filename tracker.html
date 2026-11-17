@@ -16296,6 +16296,44 @@ html[data-theme="harvest"] .egg-sub { font-family: var(--font-hand); font-size: 
 
 html[data-theme="harvest"] .sotd-stats { gap: 10px 12px; }
 @media (max-width: 480px) { html[data-theme="harvest"] .sotd-stats { gap: 12px 16px; } }
+
+/* ---------- Empty results ----------
+   When the filters match nobody, every silo stands empty: no rank numbers
+   (nine growers "tied for 1st"), no tap-more hint, and the tally shrinks to
+   the silos instead of a tall empty sky. No grower has a ribbon only when
+   every count is 0. */
+html[data-theme="harvest"] #leaderboardWrap:not(:has(.lb-entry[data-medal])) .lb-scene-body { height: auto; padding-top: 14px; }
+html[data-theme="harvest"] #leaderboardWrap:not(:has(.lb-entry[data-medal])) .lb-entry-rank { display: none; }
+html[data-theme="harvest"] #leaderboardWrap:not(:has(.lb-entry[data-medal])) .lb-scene-sub::before { content: "No sweats in under these filters"; }
+html[data-theme="harvest"] #leaderboardWrap:not(:has(.lb-entry[data-medal])) .leaderboard-hint { display: none; }
+/* A lone "Beaten by ... 0" tag hangs in the middle, not off to one side. */
+html[data-theme="harvest"] .sweat-stats:has(> .ss-tile:only-child) { grid-template-columns: minmax(0, 340px); justify-content: center; }
+html[data-theme="harvest"] .sweat-stats > .ss-tile:only-child { grid-column: 1 / -1; }
+
+/* ---------- Popup fit ----------
+   The skin sizes to the stats beside it (not its own image), so no blank
+   band opens under the tiles, and the UUID line sits snug under the name. */
+@media (min-width: 761px) {
+  html[data-theme="harvest"] #playerModal #modalSkin { contain: size; }
+}
+html[data-theme="harvest"] #playerModal #modalUsername .modal-uuid-row { display: flex; justify-content: center; margin-top: 6px; }
+
+/* ---------- Phone: fox, sort label, toasts ---------- */
+@media (max-width: 900px) {
+  html[data-theme="harvest"] .table-wrap thead tr::before { font-family: var(--font-stencil); letter-spacing: 0.16em; color: rgba(251,241,220,0.8); text-shadow: 0 1px 0 rgba(40,10,5,0.55); }
+}
+/* Desktop: the tag hangs bottom-right, clear of the Lookup box. */
+@media (min-width: 621px) {
+  html[data-theme="harvest"] #eggToasts { left: auto; right: 16px; align-items: flex-end; }
+  html[data-theme="harvest"] .egg-toast { clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%); padding-left: 14px; padding-right: 24px; }
+}
+@media (max-width: 620px) {
+  /* The fox climbs up left of the hand hole, clear of the LOT number. */
+  html[data-theme="harvest"] .rival-mark,
+  html[data-theme="harvest"] .sweat-card.is-rival::after { right: auto; left: calc(50% - 100px); }
+  /* Toasts drop in at the top, off the buttons above the bottom nav. */
+  html[data-theme="harvest"] #eggToasts { bottom: auto; top: calc(12px + env(safe-area-inset-top, 0px)); }
+}
 /* @@END-HARVEST@@ */
 /* @@PRISM@@ */
 /* ============================================================

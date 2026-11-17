@@ -389,8 +389,9 @@ html[data-theme="harvest"] {
   --good-soft: rgba(79,122,50,0.12);
   --bad: #b3261e;
   --bad-soft: rgba(179,38,30,0.1);
-  --neutral: #34557a;
-  --neutral-soft: rgba(52,85,122,0.1);
+  /* Plum, not navy: WLR and the "Tryhard" step stay in the warm palette. */
+  --neutral: #6e3d63;
+  --neutral-soft: rgba(110,61,99,0.1);
   --gold: #c98a1c;
   --radius-s: 3px;
   --radius-m: 5px;
@@ -14633,7 +14634,10 @@ html[data-theme="harvest"] .theme-dropdown-menu li { color: var(--hv-ink); borde
 /* Phone: the controls row is centred and the menu is wider than the space
    left of the theme button, so anchor it to the row and centre it there. */
 @media (max-width: 620px) {
-  html[data-theme="harvest"] .hero-controls { position: relative; }
+  /* relative (not the base static) so the menu can anchor to the row; clear
+     the desktop top/right offsets or the row slides 18px onto the card, and
+     lift it over the card's frame, with room for that frame (it sits 9px outside the card). */
+  html[data-theme="harvest"] .hero-controls { position: relative; top: auto; right: auto; z-index: 20; margin-bottom: 20px; }
   html[data-theme="harvest"] .theme-dropdown { position: static; }
   html[data-theme="harvest"] .theme-dropdown-menu { left: 50%; right: auto; transform: translateX(-50%); max-width: calc(100vw - 32px); }
 }
@@ -14958,6 +14962,8 @@ html[data-theme="harvest"] .sweat-row.tier-t4 { background: linear-gradient(90de
   will-change: transform;
 }
 @media (max-width: 620px) { .hv-turkey { bottom: calc(env(safe-area-inset-bottom, 0px) + 74px); } }
+.hv-turkey { transition: opacity 0.35s ease; }
+.hv-turkey.hv-faint { opacity: 0.22; pointer-events: none; }
 .hv-turkey-body { width: 100%; height: 100%; transform: scaleX(var(--dir, 1)); }
 .hv-turkey svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .hv-turkey svg > * { transform-box: view-box; }
@@ -15543,7 +15549,8 @@ html[data-theme="harvest"] .sweat-card:nth-child(6n+6) .sweat-card-footer::after
   background: var(--hv-prop) center bottom / contain no-repeat;
   filter: drop-shadow(0 2px 1px rgba(59,36,20,0.4));
 }
-html[data-theme="harvest"] .sweat-card:nth-child(5n+2) { --hv-prop: radial-gradient(circle at 38% 42%, #e86a5a 0 18%, transparent 19%), radial-gradient(circle at 30% 60%, #b8362b 0 40%, transparent 42%), radial-gradient(circle at 66% 62%, #c9443a 0 38%, transparent 40%); }
+/* A real apple (stem and leaf), so it doesn't read as a red smudge. */
+html[data-theme="harvest"] .sweat-card:nth-child(5n+2) { --hv-prop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 26'%3E%3Cpath d='M12 7 C8 4 2 5 2 12 C2 19 7 25 10 24 C11 23.6 13 23.6 14 24 C17 25 22 19 22 12 C22 5 16 4 12 7 Z' fill='%23b8302a'/%3E%3Cpath d='M12 7 C16 4 22 5 22 12 C22 19 17 25 14 24 C16 19 17 12 12 7 Z' fill='%238e2420'/%3E%3Cellipse cx='7' cy='11' rx='2' ry='3.4' fill='%23e4685a' opacity='.7' transform='rotate(20 7 11)'/%3E%3Cpath d='M12 7 C12 4 13 2 14.5 1' stroke='%234a2e18' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3Cpath d='M13.4 3.4 C16 1 19.6 1.6 20.6 3 C18.6 4.8 15.8 5 13.4 3.4 Z' fill='%236e8a2e'/%3E%3C/svg%3E"); }
 html[data-theme="harvest"] .sweat-card:nth-child(7n+4) { --hv-prop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-20 -22 40 44'%3E%3Cg transform='translate(0 0) rotate(0) scale(1)'%3E%3Cpath d='M0 -20 L3 -11 L9 -14 L7 -6 L15 -8 L11 -2 L17 1 L9 4 L11 9 L3 7 L1 13 L0 20 L-1 13 L-3 7 L-11 9 L-9 4 L-17 1 L-11 -2 L-15 -8 L-7 -6 L-9 -14 L-3 -11 Z' fill='%23c4471f'/%3E%3Cpath d='M0 -14 V18' stroke='rgba(70,30,10,.45)' stroke-width='1.2'/%3E%3Cpath d='M0 2 L10 -6 M0 2 L-10 -6 M0 6 L8 6 M0 6 L-8 6' stroke='rgba(70,30,10,.45)' stroke-width='.9'/%3E%3C/g%3E%3C/svg%3E"); }
 html[data-theme="harvest"] .sweat-card:nth-child(6n+6) { --hv-prop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-20 -22 40 44'%3E%3Cg transform='translate(0 0) rotate(0) scale(1)'%3E%3Cpath d='M0 -19 C4 -19 5 -15 3 -13 C8 -14 9 -9 5 -7 C10 -7 10 -1 5 0 C10 1 9 7 4 6 C7 10 4 14 1 12 L0 20 L-1 12 C-4 14 -7 10 -4 6 C-9 7 -10 1 -5 0 C-10 -1 -10 -7 -5 -7 C-9 -9 -8 -14 -3 -13 C-5 -15 -4 -19 0 -19 Z' fill='%23b8691f'/%3E%3Cpath d='M0 -14 V18' stroke='rgba(70,30,10,.45)' stroke-width='1.2'/%3E%3C/g%3E%3C/svg%3E"); }
 
@@ -15814,6 +15821,15 @@ html[data-theme="harvest"] .note-item:nth-child(even) { transform: rotate(0.5deg
 html[data-theme="harvest"] .note-item-author { font-family: 'Bitter', serif; font-weight: 800; }
 html[data-theme="harvest"] .modal-notes-count { border-radius: 2px; background: var(--hv-red); color: #fbf1dc; }
 html[data-theme="harvest"] #modalNotesEmpty::before { content: "No tags tied on yet."; font-family: var(--font-hand); }
+/* Wide popup: the notes pin up in the right column under the tags, beside
+   the tall record stub, instead of leaving that column empty. */
+@media (min-width: 761px) {
+  html[data-theme="harvest"] #playerModal .modal-content {
+    grid-template-areas: "name name" "live live" "skin stats" "record urchin" "record match" "record notes" "clips clips" "replays replays";
+    grid-template-rows: auto auto auto auto auto 1fr auto auto;
+  }
+  html[data-theme="harvest"] #playerModal .modal-record[hidden] ~ .modal-notes { grid-column: 1 / -1; }
+}
 html[data-theme="harvest"] .flip-sheen { --sheen: rgba(255,236,190,0.6); }
 html[data-theme="harvest"] .confirm-icon { filter: drop-shadow(0 2px 3px rgba(59,36,20,0.4)); }
 html[data-theme="harvest"] #editModal .edit-modal-actions { background: linear-gradient(180deg, rgba(251,243,226,0), #f2e2c2 30%); }
@@ -15854,13 +15870,18 @@ html[data-theme="harvest"] .lb-scene-body {
   padding: 0 6px;
 }
 html[data-theme="harvest"] .lb-entry { flex-direction: column; align-items: center; justify-content: flex-end; gap: 0; text-align: center; padding-bottom: 4px; }
-html[data-theme="harvest"] .lb-entry:hover { transform: translateY(-3px); }
+html[data-theme="harvest"] .lb-entry:hover { transform: none; }
+/* Lift on a real hover only, so a tapped silo on a phone doesn't stay raised
+   above its neighbours. */
+@media (hover: hover) { html[data-theme="harvest"] .lb-entry:hover { transform: translateY(-3px); } }
 html[data-theme="harvest"] .lb-entry-art {
   display: block;
   order: 2;
   position: relative;
   width: 54px;
-  height: calc(56px + var(--share) * 160px);
+  /* The base is tall enough for the roof, the grower coin and the rank
+     numeral under it, so the numeral never hides behind the coin. */
+  height: calc(82px + var(--share) * 134px);
   border-radius: 50% 50% 0 0 / 24px 24px 0 0;
   background:
     repeating-linear-gradient(180deg, rgba(40,46,50,0.16) 0 2px, rgba(255,255,255,0.12) 2px 3px, transparent 3px 11px),
@@ -15881,7 +15902,7 @@ html[data-theme="harvest"] .lb-entry.active .lb-entry-art i:first-child { backgr
 html[data-theme="harvest"] .lb-entry::after { content: ""; order: 3; width: 70px; height: 10px; border-radius: 2px; background: linear-gradient(180deg, #cfc6b4, #a59a85); box-shadow: 0 3px 4px rgba(59,36,20,0.4); }
 html[data-theme="harvest"] .lb-entry .lb-avatar {
   position: absolute;
-  bottom: calc(10px + 4px + 28px + var(--share) * 110px);
+  bottom: calc(80px + var(--share) * 120px);
   left: 50%;
   margin-left: -17px;
   z-index: 1;
@@ -15946,7 +15967,8 @@ html[data-theme="harvest"] .empty-state-text { font-style: italic; color: #6e503
    its own board, like the section signs, instead of sitting on the art. */
 html[data-theme="harvest"] .site-footer {
   position: relative;
-  max-width: 760px;
+  /* Narrow enough that its right end stops short of the barn in the scene. */
+  max-width: 600px;
   margin-left: auto;
   margin-right: auto;
   padding: 16px 26px 18px;
@@ -16216,8 +16238,17 @@ html[data-theme="harvest"] .unmask.play .unmask-fx { animation: hvSackOff 0.9s c
   45% { transform: translateY(-8px) rotate(4deg) scaleY(1.04); opacity: 1; }
   100% { transform: translate(40px, -140%) rotate(28deg) scaleY(0.8); opacity: 0; }
 }
-html[data-theme="harvest"] .unmask-back { box-shadow: inset 0 0 0 1px rgba(91,58,34,0.3), inset 0 0 0 5px #fbf3e2, inset 0 0 0 6px var(--hv-blue), 0 10px 20px -12px rgba(59,36,20,0.6); }
-html[data-theme="harvest"] .unmask-back .unmask-k { color: var(--hv-blue); }
+/* The answer side: a full barn-red frame (the sack side's is faded) and a
+   dark red kicker, in the same family as the field signs. */
+html[data-theme="harvest"] .unmask-back { box-shadow: inset 0 0 0 1px rgba(91,58,34,0.3), inset 0 0 0 5px #fbf3e2, inset 0 0 0 7px var(--hv-red), 0 10px 20px -12px rgba(59,36,20,0.6); }
+html[data-theme="harvest"] .unmask-back .unmask-k { color: var(--hv-red-dk); }
+/* Touch: the hint shows after a tap, so it says tap, and gets its own line
+   under the meta instead of crowding it in the corner. */
+@media (hover: none) {
+  html[data-theme="harvest"] .unmask-back .unmask-txt { padding-bottom: 16px; }
+  html[data-theme="harvest"] .unmask-hint { left: 100px; right: auto; bottom: 9px; font-size: 0; letter-spacing: 0; }
+  html[data-theme="harvest"] .unmask-hint::before { content: "Tap to replay"; font-size: 13px; }
+}
 
 /* ---------- Results empty states ---------- */
 html[data-theme="harvest"] #emptyState .empty-state-text,
@@ -16226,6 +16257,18 @@ html[data-theme="harvest"] #emptyState .empty-state-text::before,
 html[data-theme="harvest"] #leaderboardEmptyState .empty-state-text::before { font: 400 19px/1.3 var(--font-hand); color: var(--text-dim); }
 html[data-theme="harvest"] #emptyState .empty-state-text::before { content: "Nothing in the field matches that. Try another row."; }
 html[data-theme="harvest"] #leaderboardEmptyState .empty-state-text::before { content: "No crop's come in under these filters."; }
+/* These sit straight on the farm scene, so give them a small paper tag to
+   stay readable over the fence and the scarecrow. */
+html[data-theme="harvest"] :is(#emptyState, #leaderboardEmptyState) {
+  width: fit-content;
+  max-width: min(440px, calc(100% - 24px));
+  padding: 22px 26px 20px;
+  border-radius: 4px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath d='M0 .5h6M0 3.5h6' stroke='rgba(120,80,40,.07)' stroke-width='1'/%3E%3Cpath d='M.5 0v6M3.5 0v6' stroke='rgba(120,80,40,.05)' stroke-width='1'/%3E%3C/svg%3E"), linear-gradient(180deg, #fbf3e2, #f4e7cc);
+  box-shadow: 0 0 0 1px rgba(91,58,34,0.3), 0 0 0 5px #fbf3e2, 0 0 0 6px rgba(143,74,44,0.5), 0 12px 22px -10px rgba(59,36,20,0.55);
+}
+html[data-theme="harvest"] :is(#emptyState, #leaderboardEmptyState) .empty-icon { margin-bottom: 10px; }
+html[data-theme="harvest"] :is(#emptyState, #leaderboardEmptyState) .empty-state-text::before { color: #5a3a22; }
 
 /* ---------- A new crate arriving live ---------- */
 html[data-theme="harvest"] .sweat-card.live-new { animation: hvCrateDrop 0.6s cubic-bezier(.3,.8,.35,1.05) backwards, hvLiveArrive 1.6s ease-out 0.5s 2; }
@@ -29871,6 +29914,37 @@ const hvWind = { base: 0.35, gust: 0, mouse: 0, get x() { return this.base + thi
   const PARDON_KEY = "hvPardons";
   function pardons() { try { const o = JSON.parse(localStorage.getItem(PARDON_KEY) || "{}"); return o.y === new Date().getFullYear() ? o.n : 0; } catch (e) { return 0; } }
   function addPardon() { const n = pardons() + 1; try { localStorage.setItem(PARDON_KEY, JSON.stringify({ y: new Date().getFullYear(), n })); } catch (e) {} return n; }
+  // The turkey's lane is fixed to the bottom of the screen, so it walks
+  // across whatever panel is scrolled there. Over a panel it goes faint and
+  // lets clicks through (like the big front leaves); in the margins and the
+  // open field between panels it stays bold and can be pardoned.
+  function solid(el) {
+    const cs = getComputedStyle(el);
+    if (cs.backgroundImage !== "none") return true;
+    const m = /rgba?\(([^)]+)\)/.exec(cs.backgroundColor);
+    const a = m ? m[1].split(",").map(Number) : [];
+    return a.length > 3 ? a[3] > 0.3 : a.length === 3;
+  }
+  function overContent(b) {
+    const r = b.el.getBoundingClientRect();
+    const pg = document.querySelector(".page");
+    const col = pg ? pg.getBoundingClientRect() : null;
+    if (!col || r.right < col.left || r.left > col.right) return false;
+    const y = r.top + r.height * 0.55;
+    for (const f of [0.3, 0.5, 0.7]) {
+      const x = r.left + r.width * f;
+      if (x < col.left || x > col.right) continue;
+      for (const el of document.elementsFromPoint(x, y)) {
+        if (host.contains(el)) continue;
+        if (!pg.contains(el) || el === pg) break;
+        let n = el, hit = false;
+        while (n && n !== pg) { if (solid(n)) { hit = true; break; } n = n.parentElement; }
+        if (hit) return true;
+        break;
+      }
+    }
+    return false;
+  }
   function leave() { if (bird) { bird.el.remove(); bird = null; } cancelAnimationFrame(raf); raf = 0; }
   function spawn() {
     if (bird || !hvOn() || hvCalm() || document.hidden) return;
@@ -29883,7 +29957,7 @@ const hvWind = { base: 0.35, gust: 0, mouse: 0, get x() { return this.base + thi
     el.setAttribute("aria-label", "Pardon the turkey");
     host.appendChild(el);
     const size = W < 620 ? 70 : 104;
-    bird = { el, x: rtl ? W + 20 : -size - 20, dir: rtl ? -1 : 1, state: "walk", until: hvRnd(1.6, 3), size, fleeing: false, gobbled: 0 };
+    bird = { el, x: rtl ? W + 20 : -size - 20, dir: rtl ? -1 : 1, state: "walk", until: hvRnd(1.6, 3), size, fleeing: false, gobbled: 0, checked: 0 };
     el.style.width = `${size}px`;
     el.style.setProperty("--dir", bird.dir);
     el.addEventListener("click", pardon);
@@ -29903,11 +29977,12 @@ const hvWind = { base: 0.35, gust: 0, mouse: 0, get x() { return this.base + thi
           const r = Math.random();
           b.state = b.state !== "walk" ? "walk" : r < 0.55 ? "peck" : r < 0.8 ? "strut" : "look";
           b.until = b.state === "walk" ? hvRnd(1.4, 3.4) : b.state === "peck" ? hvRnd(1.2, 2.2) : hvRnd(1.6, 2.6);
-          b.el.className = `hv-turkey ${b.state === "walk" ? "walking" : b.state}`;
+          b.el.className = `hv-turkey ${b.state === "walk" ? "walking" : b.state}${b.faint ? " hv-faint" : ""}`;
           if (b.state === "strut" && b.gobbled < 2 && Math.random() < 0.7) { b.gobbled++; siteAudio.play("gobble", { x: b.x + b.size / 2, soft: true }); }
         }
       }
       b.el.style.transform = `translateX(${b.x.toFixed(1)}px)`;
+      if (now - b.checked > 200) { b.checked = now; b.faint = !b.fleeing && overContent(b); b.el.classList.toggle("hv-faint", b.faint); }
       if (b.x < -b.size - 60 || b.x > window.innerWidth + 60) { leave(); plan(false); return; }
       raf = requestAnimationFrame(tick);
     };

@@ -132,6 +132,7 @@
   .rp-toast { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); padding: 10px 18px; border-radius: var(--r-m); font-weight: 700; z-index: 4; pointer-events: none; opacity: 0; transition: opacity .25s; }
   .rp-toast.is-on { opacity: 1; }
   .rp-noself { position: absolute; left: 14px; top: calc(var(--ov-y) + var(--y-f)); padding: 8px 12px; border-radius: var(--r-s); font-size: 0.82em; line-height: 1.35; max-width: 280px; color: var(--dim); z-index: 1; }
+  .rp-noself span { display: block; } /* one sentence per line, so neither wraps a lone word */
   @keyframes rp-in { from { opacity: 0; transform: translateY(4px); } }
   @keyframes rp-fadein { from { opacity: 0; } }
   @keyframes rp-slide { from { opacity: 0; transform: translateX(10px); } }
@@ -240,7 +241,7 @@
   .rp-event-bed .rp-event-icon { background: var(--bed); border-radius: 2px; transform: rotate(45deg); }
   .rp-event-end .rp-event-icon { background: var(--gold); }
   .rp-event-time { color: var(--dim); font-variant-numeric: tabular-nums; font-size: 0.86em; flex: none; min-width: 3.2em; text-align: right; }
-  .rp-event-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .rp-event-text { flex: 1; min-width: 0; overflow-wrap: anywhere; text-wrap: pretty; }
   html[data-theme="skyisles"] .rp-event-text { line-height: 1.2; }
   .rp-empty { color: var(--faint); font-size: 0.9em; }
 
@@ -272,6 +273,11 @@
   .rp-pick-acts a { border: 1px solid var(--border, var(--glass-line)); background: var(--panel); color: var(--text); }
   .rp-pick-acts a:hover { border-color: var(--border-strong, var(--accent)); }
   .rp-pick svg { width: 16px; height: 16px; }
+  /* Courier is wide: when the two buttons stack, make them one even column. */
+  @media (max-width: 480px) {
+    html[data-theme="casefiles"] .rp-pick-acts { display: grid; justify-content: center; }
+    html[data-theme="casefiles"] .rp-pick-acts > * { justify-content: center; }
+  }
   html[data-theme="skyisles"] .rp-pick code { font: inherit; }
   .rp-pick input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
   .rp-pick code { font-size: 0.92em; padding: 1px 5px; border-radius: min(5px, var(--r-s)); background: var(--panel-2); color: var(--text); }
@@ -358,6 +364,8 @@
   .rp-chip small { color: var(--faint); font-weight: 600; }
   .rp-chip[aria-pressed="true"] { background: var(--panel-2); color: var(--text); border-color: var(--border-strong); }
   .rp-chip[aria-pressed="false"] { opacity: 0.6; }
+  html[data-theme="skyisles"] .rp-chips { gap: 4px; }
+  html[data-theme="skyisles"] .rp-chip { gap: 4px; padding-inline: 7px; }
   .rp-event-kill .rp-event-icon { background: var(--dim); }
   .rp-event-elim .rp-event-icon { background: var(--accent-2); }
   .rp-event-clip .rp-event-icon { background: var(--accent); }
@@ -436,7 +444,7 @@
     .rp-modes { flex: 4 1 0; min-width: 0; align-self: stretch; }
     .rp-iconbar { flex: 5 1 0; min-width: 0; }
     .rp-mode { flex: 1 1 0; justify-content: center; padding: 7px 4px; }
-    .rp-icon { flex: 1 1 0; width: auto; min-width: 0; }
+    .rp-iconbar .rp-icon { flex: 1 1 0; width: auto; min-width: 0; }
     .rp-hide-narrow { display: none; }
     .rp-tmap[data-mode="mini"] { width: 140px; height: 140px; }
     .rp-binds { grid-template-columns: 1fr; }
@@ -519,7 +527,7 @@
 
     <div class="rp-follow glass" id="rpFollow" hidden></div>
     <div class="rp-feed" id="rpFeed" aria-live="off"></div>
-    <div class="rp-noself glass" id="rpNoSelf" hidden>Older replays didn't record you. Everyone else is here.</div>
+    <div class="rp-noself glass" id="rpNoSelf" hidden><span>Older replays didn't record you.</span> <span>Everyone else is here.</span></div>
     <div class="rp-chat" id="rpChat" aria-live="off"></div>
     <div class="rp-toast glass" id="rpToast" role="status"></div>
     <div class="rp-fade" id="rpFade" aria-hidden="true"></div>
@@ -581,7 +589,6 @@
         <p class="rp-keys-tip">Click a key to change it.</p>
         <div class="rp-binds" id="rpKeys"></div>
         <button type="button" class="rp-btn rp-keys-reset" id="rpKeysReset">Reset keys</button>
-        <p><span class="rp-mouse-only">Click</span><span class="rp-touch-only">Tap</span> outside to close.</p>
       </div>
     </div>
 

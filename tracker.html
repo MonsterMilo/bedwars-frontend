@@ -18259,11 +18259,17 @@ html[data-theme="northpole"] body.np-popup #northpoleFront { visibility: hidden;
     radial-gradient(circle at 58% 66%, rgba(160,170,200,0.28) 0 11%, transparent 12%),
     radial-gradient(circle at 40% 36%, #fffdf2, #f2ecd8 60%, #d8d2bf);
   box-shadow: 0 0 30px 6px rgba(255,248,220,0.35), 0 0 110px 40px rgba(170,200,255,0.16);
+  transition: opacity 0.45s ease, filter 0.45s ease;
 }
+/* Dimmed while a section's HIDE pill passes over it (see northpole.js). */
+#northpoleField .np-moon.np-moon-dim { opacity: 0.22; filter: blur(1.5px); }
 #northpoleField .np-land { left: 0; right: 0; bottom: 0; height: min(50vh, 540px); }
 #northpoleField .np-land svg { display: block; width: 100%; height: 100%; }
 #northpoleField .np-tree { right: max(6px, 4vw); bottom: 0; width: min(230px, 17vw); aspect-ratio: 240 / 360; }
 #northpoleField .np-snowman { left: max(6px, 2.5vw); bottom: 4px; width: min(138px, 11.5vw); aspect-ratio: 170 / 240; }
+/* Where the page gutter is narrow, he stands half in the corner so the
+   section baubles scrolling past don't land on his hat. */
+@media (max-width: 1500px) { #northpoleField .np-snowman { left: -34px; } }
 #northpoleField .np-tree svg, #northpoleField .np-snowman svg { display: block; width: 100%; height: 100%; overflow: visible; }
 #northpoleField .np-sleighs { left: 0; top: 0; width: 1px; height: 1px; }
 /* Chimney smoke rising, window lights flickering, glints in the snow. */
@@ -18496,6 +18502,8 @@ html[data-theme="northpole"] .card::after {
   border-radius: 12px 12px 0 0;
 }
 html[data-theme="northpole"] :is(#form-container, #denickContainer, #activityContainer) > :not(.success-flourish):not(.pdeco) { position: relative; z-index: 1; }
+/* Every panel runs the same width as the stats strip, toolbar and presents. */
+html[data-theme="northpole"] :is(#form-container, #denickContainer, #activityContainer) { max-width: 1200px; }
 
 /* ---------- Section headers: a snowy sign with a sprig of holly ---------- */
 html[data-theme="northpole"] .panel-header { position: relative; gap: 16px; margin-top: 70px; }
@@ -18541,7 +18549,7 @@ html[data-theme="northpole"] .panel-icon {
   border-radius: 50%;
   border: 0;
   background: radial-gradient(circle at 34% 30%, #ff9a9a, #d42f35 45%, #7a1218);
-  box-shadow: inset 0 -4px 8px rgba(0,0,0,0.3), 0 8px 14px -6px rgba(0,0,0,0.6), 0 0 0 2px rgba(255,231,160,0.35);
+  box-shadow: inset 0 -4px 8px rgba(0,0,0,0.3), 0 8px 14px -6px rgba(0,0,0,0.6), 0 0 0 2px rgba(255,231,160,0.35), 0 0 0 6px rgba(10,20,45,0.4), 0 0 18px 8px rgba(10,20,45,0.35);
 }
 html[data-theme="northpole"] .panel-icon::before { content: ""; position: absolute; inset: 13px; background: var(--np-icon) center / contain no-repeat; z-index: 1; }
 html[data-theme="northpole"] .panel-icon::after {
@@ -18582,7 +18590,8 @@ html[data-theme="northpole"] .section-toggle {
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  box-shadow: 0 2px 0 rgba(31,42,61,0.3);
+  /* A navy rim keeps the white pill distinct when it scrolls over the moon. */
+  box-shadow: 0 0 0 2px rgba(12,24,52,0.6), 0 2px 0 2px rgba(12,24,52,0.35), 0 4px 10px rgba(6,12,30,0.4);
 }
 html[data-theme="northpole"] .section-toggle:hover { color: var(--np-red); border-color: var(--np-red); }
 
@@ -18848,10 +18857,15 @@ html[data-theme="northpole"] .card-note-ghost {
   font-size: 1.02em;
 }
 html[data-theme="northpole"] .card-note-ghost::after { content: "Tie on a tag"; }
-html[data-theme="northpole"] .sweat-card .card-note-ghost:hover { color: var(--np-ink); border-color: #fffaf2; background: rgba(255,250,242,0.85); }
+/* The empty tag slot stays faintly in view, so a card without a note reads
+   as having room for one rather than a gap; it brightens on hover. */
+html[data-theme="northpole"] .sweat-card .card-note-ghost { opacity: 0.45; }
+html[data-theme="northpole"] .sweat-card:hover .card-note-ghost,
+html[data-theme="northpole"] .sweat-card:focus-within .card-note-ghost { opacity: 0.85; }
+html[data-theme="northpole"] .sweat-card .card-note-ghost:hover,
+html[data-theme="northpole"] .sweat-card .card-note-ghost:focus-visible { opacity: 1; color: var(--np-ink); border-color: #fffaf2; background: rgba(255,250,242,0.85); }
 html[data-theme="northpole"] .sweat-card-footer { border-top: 1.5px dashed rgba(255,250,242,0.35); }
 html[data-theme="northpole"] .sweat-card-date { font-family: var(--font-np); font-weight: 800; letter-spacing: 0.04em; color: rgba(255,250,242,0.92); font-size: 0.8em; text-shadow: 0 1px 1px rgba(0,0,0,0.35); }
-html[data-theme="northpole"] .sweat-card-date::before { content: "Wrapped "; opacity: 0.75; }
 html[data-theme="northpole"] .icon-btn {
   color: var(--np-ink);
   background: rgba(255,250,242,0.92);
@@ -18951,6 +18965,9 @@ html[data-theme="northpole"] .sweat-card.tier-t5 { box-shadow: inset 0 0 0 1px r
 }
 @keyframes npTopper { 0%, 100% { transform: scale(1) rotate(-2deg); filter: drop-shadow(0 0 6px rgba(255,210,94,0.7)); } 50% { transform: scale(1.07) rotate(2deg); filter: drop-shadow(0 0 14px rgba(255,210,94,0.95)); } }
 html[data-theme="northpole"] .pill.tier-pill.t4 { color: #fff; background: #2f5f9a; border-color: #1d3d6a; }
+/* In the table the tag is display: table inside a collapsed table, which
+   drops its rounded corners: keep it a pill. */
+html[data-theme="northpole"] .row-tier-pill { border-collapse: separate; padding: 2px 9px 1px; letter-spacing: 0.06em; }
 html[data-theme="northpole"] .pill.tier-pill.t5 { color: #3a2400; background: linear-gradient(180deg, #ffe08a, #e2a93a); border-color: #a8701a; box-shadow: 0 0 10px rgba(255,210,94,0.6); }
 html[data-theme="northpole"] .sweat-row.tier-t4 > td:first-child::before { background: #2f5f9a; }
 html[data-theme="northpole"] .sweat-row.tier-t5 > td:first-child::before { background: linear-gradient(180deg, #ffd25e, #c1272d); }
@@ -19448,7 +19465,7 @@ html[data-theme="northpole"] .ss-flag-bar { height: 8px; border-radius: 999px; b
 html[data-theme="northpole"] .ss-flag-bar .cheat { background: #2b2b33; }
 html[data-theme="northpole"] .ss-flag-bar .boost { background: #f2cf7a; }
 html[data-theme="northpole"] .ss-flag-legend { justify-content: center; font-weight: 800; color: rgba(255,250,242,0.92); }
-html[data-theme="northpole"] .ss-flag-legend i { border-radius: 50%; }
+html[data-theme="northpole"] .ss-flag-legend i { border-radius: 50%; box-shadow: 0 0 0 1.5px #fff8ec, 0 1px 2px 1.5px rgba(40,6,10,0.35); }
 
 /* ---------- Search bar: a frosted window ----------
    A pine garland swags over the toolbar, the search box is a window pane
@@ -19483,11 +19500,13 @@ html[data-theme="northpole"] .toolbar #searchInput {
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 60' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='rgba(255,255,255,.75)' stroke-linecap='round'%3E%3Cpath d='M0 0 L14.86 10.16' stroke-width='2.25'/%3E%3Cpath d='M14.86 10.16 L26.59 17.88' stroke-width='1.9'/%3E%3Cpath d='M26.59 17.88 L36.1 23.3' stroke-width='1.55'/%3E%3Cpath d='M36.1 23.3 L44.16 26.13' stroke-width='1.2'/%3E%3Cpath d='M44.16 26.13 L49.94 29.44' stroke-width='0.85'/%3E%3Cpath d='M31.35 20.59 L32.18 26' stroke-width='1.2'/%3E%3Cpath d='M32.18 26 L32.71 30.24' stroke-width='0.85'/%3E%3Cpath d='M31.35 20.59 L36.43 18.55' stroke-width='1.2'/%3E%3Cpath d='M36.43 18.55 L40.53 17.37' stroke-width='0.85'/%3E%3Cpath d='M20.72 14.02 L21.35 21.01' stroke-width='1.55'/%3E%3Cpath d='M21.35 21.01 L22.88 26.27' stroke-width='1.2'/%3E%3Cpath d='M22.88 26.27 L24.06 30.37' stroke-width='0.85'/%3E%3Cpath d='M21.04 17.52 L18.49 19.93' stroke-width='1.2'/%3E%3Cpath d='M21.04 17.52 L23.97 19.44' stroke-width='1.2'/%3E%3Cpath d='M20.72 14.02 L27.39 11.82' stroke-width='1.55'/%3E%3Cpath d='M27.39 11.82 L32.75 10.7' stroke-width='1.2'/%3E%3Cpath d='M32.75 10.7 L36.89 9.67' stroke-width='0.85'/%3E%3Cpath d='M24.06 12.92 L26.99 14.85' stroke-width='1.2'/%3E%3Cpath d='M24.06 12.92 L25.27 9.63' stroke-width='1.2'/%3E%3Cpath d='M7.43 5.08 L8.06 14.06' stroke-width='1.9'/%3E%3Cpath d='M8.06 14.06 L8.98 21.02' stroke-width='1.55'/%3E%3Cpath d='M8.98 21.02 L9.72 26.44' stroke-width='1.2'/%3E%3Cpath d='M9.72 26.44 L11.28 30.42' stroke-width='0.85'/%3E%3Cpath d='M8.52 17.54 L6.08 20.06' stroke-width='1.2'/%3E%3Cpath d='M8.52 17.54 L11.54 19.34' stroke-width='1.2'/%3E%3Cpath d='M7.75 9.57 L4.43 12.61' stroke-width='1.55'/%3E%3Cpath d='M4.43 12.61 L2.39 15.46' stroke-width='1.2'/%3E%3Cpath d='M7.75 9.57 L11.46 12.11' stroke-width='1.55'/%3E%3Cpath d='M11.46 12.11 L14.36 14.09' stroke-width='1.2'/%3E%3Cpath d='M7.43 5.08 L16.03 2.42' stroke-width='1.9'/%3E%3Cpath d='M16.03 2.42 L22.86 0.82' stroke-width='1.55'/%3E%3Cpath d='M22.86 0.82 L27.83 -1.48' stroke-width='1.2'/%3E%3Cpath d='M27.83 -1.48 L31.77 -3.12' stroke-width='0.85'/%3E%3Cpath d='M19.44 1.62 L22.2 3.8' stroke-width='1.2'/%3E%3Cpath d='M19.44 1.62 L20.94 -1.56' stroke-width='1.2'/%3E%3Cpath d='M0 60 L14.04 52.33' stroke-width='2.25'/%3E%3Cpath d='M14.04 52.33 L26.13 49.23' stroke-width='1.9'/%3E%3Cpath d='M26.13 49.23 L34.94 45.08' stroke-width='1.55'/%3E%3Cpath d='M34.94 45.08 L42.1 42.56' stroke-width='1.2'/%3E%3Cpath d='M42.1 42.56 L47.99 41.9' stroke-width='0.85'/%3E%3Cpath d='M38.52 43.82 L41.73 45.85' stroke-width='0.85'/%3E%3Cpath d='M38.52 43.82 L39.76 40.23' stroke-width='0.85'/%3E%3Cpath d='M30.53 47.15 L34.9 49.31' stroke-width='1.2'/%3E%3Cpath d='M34.9 49.31 L38.42 50.73' stroke-width='0.85'/%3E%3Cpath d='M30.53 47.15 L31.64 42.42' stroke-width='1.2'/%3E%3Cpath d='M31.64 42.42 L32.33 38.68' stroke-width='0.85'/%3E%3Cpath d='M20.09 50.78 L25.06 54.55' stroke-width='1.55'/%3E%3Cpath d='M25.06 54.55 L29.17 57.15' stroke-width='1.2'/%3E%3Cpath d='M29.17 57.15 L32.45 59.07' stroke-width='0.85'/%3E%3Cpath d='M22.57 52.66 L22.64 55.78' stroke-width='1.2'/%3E%3Cpath d='M22.57 52.66 L25.59 51.89' stroke-width='1.2'/%3E%3Cpath d='M20.09 50.78 L22.63 45.08' stroke-width='1.55'/%3E%3Cpath d='M22.63 45.08 L25.21 40.96' stroke-width='1.2'/%3E%3Cpath d='M25.21 40.96 L27.7 38.09' stroke-width='0.85'/%3E%3Cpath d='M21.36 47.93 L24.38 47.16' stroke-width='1.2'/%3E%3Cpath d='M21.36 47.93 L19.92 45.16' stroke-width='1.2'/%3E%3Cpath d='M7.02 56.16 L14.39 59.28' stroke-width='1.9'/%3E%3Cpath d='M14.39 59.28 L19.61 62.7' stroke-width='1.55'/%3E%3Cpath d='M19.61 62.7 L23.85 65.1' stroke-width='1.2'/%3E%3Cpath d='M23.85 65.1 L26.98 67.23' stroke-width='0.85'/%3E%3Cpath d='M17 60.99 L17.28 64.1' stroke-width='1.2'/%3E%3Cpath d='M17 60.99 L19.96 60.01' stroke-width='1.2'/%3E%3Cpath d='M10.7 57.72 L11.77 61.58' stroke-width='1.55'/%3E%3Cpath d='M11.77 61.58 L13.31 64.29' stroke-width='1.2'/%3E%3Cpath d='M10.7 57.72 L14.22 55.8' stroke-width='1.55'/%3E%3Cpath d='M14.22 55.8 L17.03 54.46' stroke-width='1.2'/%3E%3Cpath d='M7.02 56.16 L8.38 48.28' stroke-width='1.9'/%3E%3Cpath d='M8.38 48.28 L9.63 42.17' stroke-width='1.55'/%3E%3Cpath d='M9.63 42.17 L9.73 37.3' stroke-width='1.2'/%3E%3Cpath d='M9.73 37.3 L9.03 33.57' stroke-width='0.85'/%3E%3Cpath d='M9.01 45.22 L11.79 43.81' stroke-width='1.2'/%3E%3Cpath d='M9.01 45.22 L7 42.83' stroke-width='1.2'/%3E%3Cpath d='M7.7 52.22 L11.21 50.31' stroke-width='1.55'/%3E%3Cpath d='M11.21 50.31 L14.09 49.11' stroke-width='1.2'/%3E%3Cpath d='M7.7 52.22 L5.04 49.24' stroke-width='1.55'/%3E%3Cpath d='M5.04 49.24 L2.54 47.37' stroke-width='1.2'/%3E%3Cpath d='M400 0 L385.14 10.16' stroke-width='2.25'/%3E%3Cpath d='M385.14 10.16 L373.07 17.32' stroke-width='1.9'/%3E%3Cpath d='M373.07 17.32 L365 24.73' stroke-width='1.55'/%3E%3Cpath d='M365 24.73 L357.97 29.58' stroke-width='1.2'/%3E%3Cpath d='M357.97 29.58 L353.05 34.08' stroke-width='0.85'/%3E%3Cpath d='M361.48 27.15 L357.4 25.9' stroke-width='0.85'/%3E%3Cpath d='M361.48 27.15 L361.19 31.42' stroke-width='0.85'/%3E%3Cpath d='M379.11 13.74 L372.55 11.24' stroke-width='1.55'/%3E%3Cpath d='M372.55 11.24 L367.98 8.21' stroke-width='1.2'/%3E%3Cpath d='M367.98 8.21 L363.97 6.75' stroke-width='0.85'/%3E%3Cpath d='M375.83 12.49 L374.77 9.14' stroke-width='1.2'/%3E%3Cpath d='M375.83 12.49 L372.81 14.28' stroke-width='1.2'/%3E%3Cpath d='M379.11 13.74 L378.16 20.7' stroke-width='1.55'/%3E%3Cpath d='M378.16 20.7 L377.3 26.11' stroke-width='1.2'/%3E%3Cpath d='M377.3 26.11 L377.06 30.37' stroke-width='0.85'/%3E%3Cpath d='M378.63 17.22 L375.61 19.01' stroke-width='1.2'/%3E%3Cpath d='M378.63 17.22 L381.06 19.75' stroke-width='1.2'/%3E%3Cpath d='M392.57 5.08 L383.97 2.42' stroke-width='1.9'/%3E%3Cpath d='M383.97 2.42 L377.15 0.78' stroke-width='1.55'/%3E%3Cpath d='M377.15 0.78 L372.16 -1.49' stroke-width='1.2'/%3E%3Cpath d='M372.16 -1.49 L368.07 -2.71' stroke-width='0.85'/%3E%3Cpath d='M388.27 3.75 L386.64 -0.44' stroke-width='1.55'/%3E%3Cpath d='M386.64 -0.44 L385.53 -3.77' stroke-width='1.2'/%3E%3Cpath d='M388.27 3.75 L384.56 6.29' stroke-width='1.55'/%3E%3Cpath d='M384.56 6.29 L382.15 8.85' stroke-width='1.2'/%3E%3Cpath d='M392.57 5.08 L391.94 14.06' stroke-width='1.9'/%3E%3Cpath d='M391.94 14.06 L392.96 21' stroke-width='1.55'/%3E%3Cpath d='M392.96 21 L394.15 26.35' stroke-width='1.2'/%3E%3Cpath d='M394.15 26.35 L395.14 30.5' stroke-width='0.85'/%3E%3Cpath d='M392.45 17.53 L390.05 20.09' stroke-width='1.2'/%3E%3Cpath d='M392.45 17.53 L395.49 19.29' stroke-width='1.2'/%3E%3Cpath d='M400 60 L386.84 52.81' stroke-width='2.25'/%3E%3Cpath d='M386.84 52.81 L378.22 44.89' stroke-width='1.9'/%3E%3Cpath d='M378.22 44.89 L372.62 37.69' stroke-width='1.55'/%3E%3Cpath d='M372.62 37.69 L367.23 33.04' stroke-width='1.2'/%3E%3Cpath d='M367.23 33.04 L362.77 29.73' stroke-width='0.85'/%3E%3Cpath d='M369.92 35.36 L370.07 31.81' stroke-width='0.85'/%3E%3Cpath d='M369.92 35.36 L366.43 36.03' stroke-width='0.85'/%3E%3Cpath d='M382.53 48.85 L382.95 43.02' stroke-width='1.55'/%3E%3Cpath d='M382.95 43.02 L383.83 38.54' stroke-width='1.2'/%3E%3Cpath d='M383.83 38.54 L384.45 35.03' stroke-width='0.85'/%3E%3Cpath d='M382.53 48.85 L376.75 49.76' stroke-width='1.55'/%3E%3Cpath d='M376.75 49.76 L372.36 51.02' stroke-width='1.2'/%3E%3Cpath d='M372.36 51.02 L368.93 51.97' stroke-width='0.85'/%3E%3Cpath d='M393.42 56.4 L392.14 49.01' stroke-width='1.9'/%3E%3Cpath d='M392.14 49.01 L392.02 43.16' stroke-width='1.55'/%3E%3Cpath d='M392.02 43.16 L390.93 38.73' stroke-width='1.2'/%3E%3Cpath d='M390.93 38.73 L389.65 35.41' stroke-width='0.85'/%3E%3Cpath d='M392.78 52.71 L395.28 49.91' stroke-width='1.55'/%3E%3Cpath d='M392.78 52.71 L389.49 50.91' stroke-width='1.55'/%3E%3Cpath d='M393.42 56.4 L386.51 59.32' stroke-width='1.9'/%3E%3Cpath d='M386.51 59.32 L380.78 60.48' stroke-width='1.55'/%3E%3Cpath d='M380.78 60.48 L376.21 60.41' stroke-width='1.2'/%3E%3Cpath d='M376.21 60.41 L372.73 59.69' stroke-width='0.85'/%3E%3Cpath d='M389.96 57.86 L386.67 56.07' stroke-width='1.55'/%3E%3Cpath d='M389.96 57.86 L388.96 61.48' stroke-width='1.55'/%3E%3Cpath d='M0 30 L8.96 30.9' stroke-width='1.9'/%3E%3Cpath d='M8.96 30.9 L15.97 31.25' stroke-width='1.55'/%3E%3Cpath d='M15.97 31.25 L21.42 30.72' stroke-width='1.2'/%3E%3Cpath d='M21.42 30.72 L25.6 29.84' stroke-width='0.85'/%3E%3Cpath d='M12.46 31.07 L14.5 33.93' stroke-width='1.2'/%3E%3Cpath d='M12.46 31.07 L14.78 28.43' stroke-width='1.2'/%3E%3Cpath d='M4.48 30.45 L6.91 34.24' stroke-width='1.55'/%3E%3Cpath d='M6.91 34.24 L9.24 36.86' stroke-width='1.2'/%3E%3Cpath d='M4.48 30.45 L7.61 27.22' stroke-width='1.55'/%3E%3Cpath d='M7.61 27.22 L10.21 24.86' stroke-width='1.2'/%3E%3Cpath d='M400 34 L391.04 34.9' stroke-width='1.9'/%3E%3Cpath d='M391.04 34.9 L384.03 34.68' stroke-width='1.55'/%3E%3Cpath d='M384.03 34.68 L378.69 33.47' stroke-width='1.2'/%3E%3Cpath d='M378.69 33.47 L374.66 32.05' stroke-width='0.85'/%3E%3Cpath d='M387.54 34.79 L385.44 31.98' stroke-width='1.2'/%3E%3Cpath d='M387.54 34.79 L385.27 37.47' stroke-width='1.2'/%3E%3Cpath d='M395.52 34.45 L392.39 31.22' stroke-width='1.55'/%3E%3Cpath d='M392.39 31.22 L389.96 28.69' stroke-width='1.2'/%3E%3Cpath d='M395.52 34.45 L393.09 38.24' stroke-width='1.55'/%3E%3Cpath d='M393.09 38.24 L391.15 41.16' stroke-width='1.2'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 120px 100% no-repeat,
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 60' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='rgba(255,255,255,.75)' stroke-linecap='round'%3E%3Cpath d='M0 0 L14.86 10.16' stroke-width='2.25'/%3E%3Cpath d='M14.86 10.16 L26.59 17.88' stroke-width='1.9'/%3E%3Cpath d='M26.59 17.88 L36.1 23.3' stroke-width='1.55'/%3E%3Cpath d='M36.1 23.3 L44.16 26.13' stroke-width='1.2'/%3E%3Cpath d='M44.16 26.13 L49.94 29.44' stroke-width='0.85'/%3E%3Cpath d='M31.35 20.59 L32.18 26' stroke-width='1.2'/%3E%3Cpath d='M32.18 26 L32.71 30.24' stroke-width='0.85'/%3E%3Cpath d='M31.35 20.59 L36.43 18.55' stroke-width='1.2'/%3E%3Cpath d='M36.43 18.55 L40.53 17.37' stroke-width='0.85'/%3E%3Cpath d='M20.72 14.02 L21.35 21.01' stroke-width='1.55'/%3E%3Cpath d='M21.35 21.01 L22.88 26.27' stroke-width='1.2'/%3E%3Cpath d='M22.88 26.27 L24.06 30.37' stroke-width='0.85'/%3E%3Cpath d='M21.04 17.52 L18.49 19.93' stroke-width='1.2'/%3E%3Cpath d='M21.04 17.52 L23.97 19.44' stroke-width='1.2'/%3E%3Cpath d='M20.72 14.02 L27.39 11.82' stroke-width='1.55'/%3E%3Cpath d='M27.39 11.82 L32.75 10.7' stroke-width='1.2'/%3E%3Cpath d='M32.75 10.7 L36.89 9.67' stroke-width='0.85'/%3E%3Cpath d='M24.06 12.92 L26.99 14.85' stroke-width='1.2'/%3E%3Cpath d='M24.06 12.92 L25.27 9.63' stroke-width='1.2'/%3E%3Cpath d='M7.43 5.08 L8.06 14.06' stroke-width='1.9'/%3E%3Cpath d='M8.06 14.06 L8.98 21.02' stroke-width='1.55'/%3E%3Cpath d='M8.98 21.02 L9.72 26.44' stroke-width='1.2'/%3E%3Cpath d='M9.72 26.44 L11.28 30.42' stroke-width='0.85'/%3E%3Cpath d='M8.52 17.54 L6.08 20.06' stroke-width='1.2'/%3E%3Cpath d='M8.52 17.54 L11.54 19.34' stroke-width='1.2'/%3E%3Cpath d='M7.75 9.57 L4.43 12.61' stroke-width='1.55'/%3E%3Cpath d='M4.43 12.61 L2.39 15.46' stroke-width='1.2'/%3E%3Cpath d='M7.75 9.57 L11.46 12.11' stroke-width='1.55'/%3E%3Cpath d='M11.46 12.11 L14.36 14.09' stroke-width='1.2'/%3E%3Cpath d='M7.43 5.08 L16.03 2.42' stroke-width='1.9'/%3E%3Cpath d='M16.03 2.42 L22.86 0.82' stroke-width='1.55'/%3E%3Cpath d='M22.86 0.82 L27.83 -1.48' stroke-width='1.2'/%3E%3Cpath d='M27.83 -1.48 L31.77 -3.12' stroke-width='0.85'/%3E%3Cpath d='M19.44 1.62 L22.2 3.8' stroke-width='1.2'/%3E%3Cpath d='M19.44 1.62 L20.94 -1.56' stroke-width='1.2'/%3E%3Cpath d='M0 60 L14.04 52.33' stroke-width='2.25'/%3E%3Cpath d='M14.04 52.33 L26.13 49.23' stroke-width='1.9'/%3E%3Cpath d='M26.13 49.23 L34.94 45.08' stroke-width='1.55'/%3E%3Cpath d='M34.94 45.08 L42.1 42.56' stroke-width='1.2'/%3E%3Cpath d='M42.1 42.56 L47.99 41.9' stroke-width='0.85'/%3E%3Cpath d='M38.52 43.82 L41.73 45.85' stroke-width='0.85'/%3E%3Cpath d='M38.52 43.82 L39.76 40.23' stroke-width='0.85'/%3E%3Cpath d='M30.53 47.15 L34.9 49.31' stroke-width='1.2'/%3E%3Cpath d='M34.9 49.31 L38.42 50.73' stroke-width='0.85'/%3E%3Cpath d='M30.53 47.15 L31.64 42.42' stroke-width='1.2'/%3E%3Cpath d='M31.64 42.42 L32.33 38.68' stroke-width='0.85'/%3E%3Cpath d='M20.09 50.78 L25.06 54.55' stroke-width='1.55'/%3E%3Cpath d='M25.06 54.55 L29.17 57.15' stroke-width='1.2'/%3E%3Cpath d='M29.17 57.15 L32.45 59.07' stroke-width='0.85'/%3E%3Cpath d='M22.57 52.66 L22.64 55.78' stroke-width='1.2'/%3E%3Cpath d='M22.57 52.66 L25.59 51.89' stroke-width='1.2'/%3E%3Cpath d='M20.09 50.78 L22.63 45.08' stroke-width='1.55'/%3E%3Cpath d='M22.63 45.08 L25.21 40.96' stroke-width='1.2'/%3E%3Cpath d='M25.21 40.96 L27.7 38.09' stroke-width='0.85'/%3E%3Cpath d='M21.36 47.93 L24.38 47.16' stroke-width='1.2'/%3E%3Cpath d='M21.36 47.93 L19.92 45.16' stroke-width='1.2'/%3E%3Cpath d='M7.02 56.16 L14.39 59.28' stroke-width='1.9'/%3E%3Cpath d='M14.39 59.28 L19.61 62.7' stroke-width='1.55'/%3E%3Cpath d='M19.61 62.7 L23.85 65.1' stroke-width='1.2'/%3E%3Cpath d='M23.85 65.1 L26.98 67.23' stroke-width='0.85'/%3E%3Cpath d='M17 60.99 L17.28 64.1' stroke-width='1.2'/%3E%3Cpath d='M17 60.99 L19.96 60.01' stroke-width='1.2'/%3E%3Cpath d='M10.7 57.72 L11.77 61.58' stroke-width='1.55'/%3E%3Cpath d='M11.77 61.58 L13.31 64.29' stroke-width='1.2'/%3E%3Cpath d='M10.7 57.72 L14.22 55.8' stroke-width='1.55'/%3E%3Cpath d='M14.22 55.8 L17.03 54.46' stroke-width='1.2'/%3E%3Cpath d='M7.02 56.16 L8.38 48.28' stroke-width='1.9'/%3E%3Cpath d='M8.38 48.28 L9.63 42.17' stroke-width='1.55'/%3E%3Cpath d='M9.63 42.17 L9.73 37.3' stroke-width='1.2'/%3E%3Cpath d='M9.73 37.3 L9.03 33.57' stroke-width='0.85'/%3E%3Cpath d='M9.01 45.22 L11.79 43.81' stroke-width='1.2'/%3E%3Cpath d='M9.01 45.22 L7 42.83' stroke-width='1.2'/%3E%3Cpath d='M7.7 52.22 L11.21 50.31' stroke-width='1.55'/%3E%3Cpath d='M11.21 50.31 L14.09 49.11' stroke-width='1.2'/%3E%3Cpath d='M7.7 52.22 L5.04 49.24' stroke-width='1.55'/%3E%3Cpath d='M5.04 49.24 L2.54 47.37' stroke-width='1.2'/%3E%3Cpath d='M400 0 L385.14 10.16' stroke-width='2.25'/%3E%3Cpath d='M385.14 10.16 L373.07 17.32' stroke-width='1.9'/%3E%3Cpath d='M373.07 17.32 L365 24.73' stroke-width='1.55'/%3E%3Cpath d='M365 24.73 L357.97 29.58' stroke-width='1.2'/%3E%3Cpath d='M357.97 29.58 L353.05 34.08' stroke-width='0.85'/%3E%3Cpath d='M361.48 27.15 L357.4 25.9' stroke-width='0.85'/%3E%3Cpath d='M361.48 27.15 L361.19 31.42' stroke-width='0.85'/%3E%3Cpath d='M379.11 13.74 L372.55 11.24' stroke-width='1.55'/%3E%3Cpath d='M372.55 11.24 L367.98 8.21' stroke-width='1.2'/%3E%3Cpath d='M367.98 8.21 L363.97 6.75' stroke-width='0.85'/%3E%3Cpath d='M375.83 12.49 L374.77 9.14' stroke-width='1.2'/%3E%3Cpath d='M375.83 12.49 L372.81 14.28' stroke-width='1.2'/%3E%3Cpath d='M379.11 13.74 L378.16 20.7' stroke-width='1.55'/%3E%3Cpath d='M378.16 20.7 L377.3 26.11' stroke-width='1.2'/%3E%3Cpath d='M377.3 26.11 L377.06 30.37' stroke-width='0.85'/%3E%3Cpath d='M378.63 17.22 L375.61 19.01' stroke-width='1.2'/%3E%3Cpath d='M378.63 17.22 L381.06 19.75' stroke-width='1.2'/%3E%3Cpath d='M392.57 5.08 L383.97 2.42' stroke-width='1.9'/%3E%3Cpath d='M383.97 2.42 L377.15 0.78' stroke-width='1.55'/%3E%3Cpath d='M377.15 0.78 L372.16 -1.49' stroke-width='1.2'/%3E%3Cpath d='M372.16 -1.49 L368.07 -2.71' stroke-width='0.85'/%3E%3Cpath d='M388.27 3.75 L386.64 -0.44' stroke-width='1.55'/%3E%3Cpath d='M386.64 -0.44 L385.53 -3.77' stroke-width='1.2'/%3E%3Cpath d='M388.27 3.75 L384.56 6.29' stroke-width='1.55'/%3E%3Cpath d='M384.56 6.29 L382.15 8.85' stroke-width='1.2'/%3E%3Cpath d='M392.57 5.08 L391.94 14.06' stroke-width='1.9'/%3E%3Cpath d='M391.94 14.06 L392.96 21' stroke-width='1.55'/%3E%3Cpath d='M392.96 21 L394.15 26.35' stroke-width='1.2'/%3E%3Cpath d='M394.15 26.35 L395.14 30.5' stroke-width='0.85'/%3E%3Cpath d='M392.45 17.53 L390.05 20.09' stroke-width='1.2'/%3E%3Cpath d='M392.45 17.53 L395.49 19.29' stroke-width='1.2'/%3E%3Cpath d='M400 60 L386.84 52.81' stroke-width='2.25'/%3E%3Cpath d='M386.84 52.81 L378.22 44.89' stroke-width='1.9'/%3E%3Cpath d='M378.22 44.89 L372.62 37.69' stroke-width='1.55'/%3E%3Cpath d='M372.62 37.69 L367.23 33.04' stroke-width='1.2'/%3E%3Cpath d='M367.23 33.04 L362.77 29.73' stroke-width='0.85'/%3E%3Cpath d='M369.92 35.36 L370.07 31.81' stroke-width='0.85'/%3E%3Cpath d='M369.92 35.36 L366.43 36.03' stroke-width='0.85'/%3E%3Cpath d='M382.53 48.85 L382.95 43.02' stroke-width='1.55'/%3E%3Cpath d='M382.95 43.02 L383.83 38.54' stroke-width='1.2'/%3E%3Cpath d='M383.83 38.54 L384.45 35.03' stroke-width='0.85'/%3E%3Cpath d='M382.53 48.85 L376.75 49.76' stroke-width='1.55'/%3E%3Cpath d='M376.75 49.76 L372.36 51.02' stroke-width='1.2'/%3E%3Cpath d='M372.36 51.02 L368.93 51.97' stroke-width='0.85'/%3E%3Cpath d='M393.42 56.4 L392.14 49.01' stroke-width='1.9'/%3E%3Cpath d='M392.14 49.01 L392.02 43.16' stroke-width='1.55'/%3E%3Cpath d='M392.02 43.16 L390.93 38.73' stroke-width='1.2'/%3E%3Cpath d='M390.93 38.73 L389.65 35.41' stroke-width='0.85'/%3E%3Cpath d='M392.78 52.71 L395.28 49.91' stroke-width='1.55'/%3E%3Cpath d='M392.78 52.71 L389.49 50.91' stroke-width='1.55'/%3E%3Cpath d='M393.42 56.4 L386.51 59.32' stroke-width='1.9'/%3E%3Cpath d='M386.51 59.32 L380.78 60.48' stroke-width='1.55'/%3E%3Cpath d='M380.78 60.48 L376.21 60.41' stroke-width='1.2'/%3E%3Cpath d='M376.21 60.41 L372.73 59.69' stroke-width='0.85'/%3E%3Cpath d='M389.96 57.86 L386.67 56.07' stroke-width='1.55'/%3E%3Cpath d='M389.96 57.86 L388.96 61.48' stroke-width='1.55'/%3E%3Cpath d='M0 30 L8.96 30.9' stroke-width='1.9'/%3E%3Cpath d='M8.96 30.9 L15.97 31.25' stroke-width='1.55'/%3E%3Cpath d='M15.97 31.25 L21.42 30.72' stroke-width='1.2'/%3E%3Cpath d='M21.42 30.72 L25.6 29.84' stroke-width='0.85'/%3E%3Cpath d='M12.46 31.07 L14.5 33.93' stroke-width='1.2'/%3E%3Cpath d='M12.46 31.07 L14.78 28.43' stroke-width='1.2'/%3E%3Cpath d='M4.48 30.45 L6.91 34.24' stroke-width='1.55'/%3E%3Cpath d='M6.91 34.24 L9.24 36.86' stroke-width='1.2'/%3E%3Cpath d='M4.48 30.45 L7.61 27.22' stroke-width='1.55'/%3E%3Cpath d='M7.61 27.22 L10.21 24.86' stroke-width='1.2'/%3E%3Cpath d='M400 34 L391.04 34.9' stroke-width='1.9'/%3E%3Cpath d='M391.04 34.9 L384.03 34.68' stroke-width='1.55'/%3E%3Cpath d='M384.03 34.68 L378.69 33.47' stroke-width='1.2'/%3E%3Cpath d='M378.69 33.47 L374.66 32.05' stroke-width='0.85'/%3E%3Cpath d='M387.54 34.79 L385.44 31.98' stroke-width='1.2'/%3E%3Cpath d='M387.54 34.79 L385.27 37.47' stroke-width='1.2'/%3E%3Cpath d='M395.52 34.45 L392.39 31.22' stroke-width='1.55'/%3E%3Cpath d='M392.39 31.22 L389.96 28.69' stroke-width='1.2'/%3E%3Cpath d='M395.52 34.45 L393.09 38.24' stroke-width='1.55'/%3E%3Cpath d='M393.09 38.24 L391.15 41.16' stroke-width='1.2'/%3E%3C/g%3E%3C/svg%3E") 100% 0 / 120px 100% no-repeat,
-    linear-gradient(180deg, rgba(232,243,255,0.96), rgba(214,231,250,0.96));
-  box-shadow: inset 0 0 0 4px #fffaf2, inset 0 0 0 5px rgba(31,42,61,0.18), inset 0 3px 10px rgba(40,80,140,0.2), 0 2px 0 rgba(31,42,61,0.15);
+    radial-gradient(90px 40px at 0 0, rgba(176,205,236,0.45), transparent 70%),
+    radial-gradient(90px 40px at 100% 100%, rgba(176,205,236,0.4), transparent 70%),
+    linear-gradient(180deg, #fffdf8, #f4ede0);
+  box-shadow: inset 0 0 0 4px #fffaf2, inset 0 0 0 5px rgba(31,42,61,0.18), inset 0 2px 6px rgba(40,80,140,0.14), 0 2px 0 rgba(31,42,61,0.15);
   caret-color: var(--np-red);
 }
-html[data-theme="northpole"] .toolbar #searchInput::placeholder { color: rgba(47,80,120,0.6); font-style: normal; }
+html[data-theme="northpole"] .toolbar #searchInput::placeholder { color: #7d8799; font-style: normal; }
 html[data-theme="northpole"] .toolbar #searchInput:focus { box-shadow: inset 0 0 0 4px #fffaf2, inset 0 0 0 5px var(--np-red), inset 0 3px 10px rgba(40,80,140,0.2), 0 0 0 3px rgba(193,39,45,0.2); }
 html[data-theme="northpole"] .search-box-icon { color: #3a6a9a; }
 html[data-theme="northpole"] .search-box-kbd { border-radius: 5px; background: #fffaf2; border-color: rgba(31,42,61,0.25); color: var(--np-ink); font-family: var(--font-np); font-weight: 800; }
@@ -19558,20 +19577,21 @@ html[data-theme="northpole"] .toolbar-divider { width: 14px; height: 14px; backg
 html[data-theme="northpole"] .filter-reset { font-family: var(--font-np); font-weight: 800; color: #55627a; }
 html[data-theme="northpole"] .filter-reset:not(:disabled):hover { color: var(--np-red); }
 
-/* ---------- Presents: a candy cane, pinecone or holly tucked on some ---------- */
-html[data-theme="northpole"] .sweat-card-footer { position: relative; }
-html[data-theme="northpole"] .sweat-card:nth-child(5n+2) .sweat-card-footer::after,
-html[data-theme="northpole"] .sweat-card:nth-child(7n+4) .sweat-card-footer::after,
-html[data-theme="northpole"] .sweat-card:nth-child(6n+6) .sweat-card-footer::after {
+/* ---------- Presents: a candy cane, pinecone or holly tucked on some ----------
+   Tucked into the gift tag's top corner, under the string. */
+html[data-theme="northpole"] .sweat-card:nth-child(5n+2) .sweat-card-top::after,
+html[data-theme="northpole"] .sweat-card:nth-child(7n+4) .sweat-card-top::after,
+html[data-theme="northpole"] .sweat-card:nth-child(6n+6) .sweat-card-top::after {
   content: "";
   position: absolute;
-  right: 46px;
-  bottom: -14px;
-  width: 30px;
-  height: 26px;
+  right: -12px;
+  top: -18px;
+  width: 46px;
+  height: 46px;
   pointer-events: none;
-  background: var(--np-prop) center bottom / contain no-repeat;
-  filter: drop-shadow(0 2px 1px rgba(10,20,40,0.4));
+  background: var(--np-prop) center / contain no-repeat;
+  filter: drop-shadow(0 2px 1px rgba(10,20,40,0.45));
+  transform: rotate(14deg);
 }
 html[data-theme="northpole"] .sweat-card:nth-child(5n+2) { --np-prop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 50'%3E%3Cpath d='M8 48 V14 C8 4 22 4 22 14' stroke='%23fffaf0' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3Cpath d='M8 48 V14 C8 4 22 4 22 14' stroke='%23d42f35' stroke-width='7' fill='none' stroke-linecap='round' stroke-dasharray='4 5'/%3E%3Cpath d='M6 44 V14' stroke='%23fff' stroke-width='1.4' opacity='.5'/%3E%3C/svg%3E"); }
 html[data-theme="northpole"] .sweat-card:nth-child(7n+4) { --np-prop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 36'%3E%3Cpath d='M16 8 q4 -2 6 2 q-4 4 -6 -2 Z M14 8 q-4 -2 -6 2 q4 4 6 -2 Z' fill='%238a5a32'/%3E%3Cpath d='M17 13 q4 -2 6 2 q-4 4 -6 -2 Z M13 13 q-4 -2 -6 2 q4 4 6 -2 Z' fill='%237a4a28'/%3E%3Cpath d='M18 18 q4 -2 6 2 q-4 4 -6 -2 Z M12 18 q-4 -2 -6 2 q4 4 6 -2 Z' fill='%238a5a32'/%3E%3Cpath d='M18 23 q4 -2 6 2 q-4 4 -6 -2 Z M12 23 q-4 -2 -6 2 q4 4 6 -2 Z' fill='%236e4222'/%3E%3Cpath d='M17 28 q4 -2 6 2 q-4 4 -6 -2 Z M13 28 q-4 -2 -6 2 q4 4 6 -2 Z' fill='%237a4a28'/%3E%3Cpath d='M15 4 V32' stroke='%235a3a1e' stroke-width='3'/%3E%3Cpath d='M12 8 q3 -6 6 0' fill='%236e4222'/%3E%3Cpath d='M11 6 q4 -2 8 0' stroke='%23f4f8ff' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); }
@@ -19584,8 +19604,8 @@ html[data-theme="northpole"] #playerModal { --rival: #2b2b33; }
 html[data-theme="northpole"] .sweat-card.is-rival .sweat-card-name::before { content: "Coal \00b7  Naughty \00d7" attr(data-rival-roman); letter-spacing: 0.12em; white-space: nowrap; color: #2b2b33; }
 html[data-theme="northpole"] .rival-mark {
   top: -24px;
-  left: auto;
-  right: 22px;
+  left: 20px;
+  right: auto;
   width: 52px;
   height: 40px;
   padding: 0;
@@ -19673,7 +19693,7 @@ html[data-theme="northpole"] .dash-empty {
   background: radial-gradient(circle at 50% 42%, rgba(242,207,122,0.18), transparent 60%);
   color: #55627a;
 }
-html[data-theme="northpole"] #statsEmptyText { font-family: var(--font-hand); font-size: 1.08em; }
+html[data-theme="northpole"] #statsEmptyText { font-family: var(--font-hand); font-size: 1.08em; text-wrap: balance; }
 html[data-theme="northpole"] .idle-northpole { display: block; }
 .idle-northpole i { position: absolute; display: block; }
 .idle-northpole .np-plate {
@@ -19809,15 +19829,41 @@ html[data-theme="northpole"] .modal-stat-delta { border-radius: 999px; backgroun
 html[data-theme="northpole"] .modal-standing-bar { height: 8px; border-radius: 999px; background: rgba(31,42,61,0.1); box-shadow: inset 0 1px 2px rgba(31,42,61,0.2); }
 html[data-theme="northpole"] .modal-standing-bar > span { border-radius: 999px; box-shadow: none; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,0.35) 0 4px, transparent 4px 8px); }
 html[data-theme="northpole"] .modal-standing-text { color: #6b7891; }
+/* The preview's standing bars wear the same candy stripes as the popup's,
+   each in its tile's own colour. A tile with no standing keeps an empty
+   track in the bar row, so all four tiles line up. */
+html[data-theme="northpole"] .stat-hero.fkdr .modal-standing { color: var(--accent-2); }
+html[data-theme="northpole"] .stat-hero.wlr .modal-standing { color: var(--neutral); }
+html[data-theme="northpole"] .stat-hero.kdr .modal-standing { color: var(--gold); }
+html[data-theme="northpole"] .stat-hero.bblr .modal-standing { color: var(--good); }
+html[data-theme="northpole"] #statsColumns .stat-standing:empty { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+html[data-theme="northpole"] #statsColumns .stat-standing:empty::before {
+  content: "";
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(31,42,61,0.07);
+  box-shadow: inset 0 1px 2px rgba(31,42,61,0.14);
+}
+html[data-theme="northpole"] #statsColumns .stat-standing:empty::after {
+  content: "\2014";
+  flex: none;
+  font-size: 0.6em;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #9aa3b4;
+}
+/* KDR isn't saved with a sweat, so it never has a standing. */
+html[data-theme="northpole"] #statsColumns .stat-hero.kdr .stat-standing:empty::after { content: "Not tracked"; }
 /* The record box is an envelope: a flap on top and a wax seal. */
 html[data-theme="northpole"] .modal-record {
   position: relative;
   border: 0;
   border-radius: 6px;
-  padding: 24px 20px 14px;
+  padding: 44px 20px 14px;
   background:
-    linear-gradient(160deg, transparent 49.5%, rgba(140,100,50,0.25) 50%, transparent 51%) 0 0 / 50% 22px no-repeat,
-    linear-gradient(200deg, transparent 49.5%, rgba(140,100,50,0.25) 50%, transparent 51%) 100% 0 / 50% 22px no-repeat,
+    linear-gradient(170deg, transparent 49.5%, rgba(140,100,50,0.25) 50%, transparent 51%) 0 0 / 50% 30px no-repeat,
+    linear-gradient(190deg, transparent 49.5%, rgba(140,100,50,0.25) 50%, transparent 51%) 100% 0 / 50% 30px no-repeat,
     linear-gradient(180deg, #f6ead2, #ecdbbb);
   box-shadow: inset 0 0 0 1px rgba(120,80,40,0.25), 0 3px 6px -3px rgba(10,20,40,0.4);
 }
@@ -19825,13 +19871,52 @@ html[data-theme="northpole"] .modal-record::before {
   content: "";
   position: absolute;
   left: 50%;
-  top: 8px;
+  top: 14px;
   width: 26px;
   height: 26px;
   margin-left: -13px;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 2 C26 2 28 5 32 6 C36 9 35 13 38 17 C39 22 36 25 36 29 C33 34 29 33 25 37 C20 39 17 36 13 36 C8 34 7 30 4 27 C2 22 4 18 3 14 C5 9 9 9 12 5 C15 3 17 2 20 2 Z' fill='%23b8232b'/%3E%3Ccircle cx='20' cy='20' r='12' fill='%23a51d24'/%3E%3Ccircle cx='20' cy='20' r='12' fill='none' stroke='%237a1218' stroke-width='1.4'/%3E%3Cpath d='M20 11 L26 19 H23 L27 25 H13 L17 19 H14 Z' fill='%237a1218'/%3E%3Crect x='18.8' y='25' width='2.4' height='3' fill='%237a1218'/%3E%3Cpath d='M10 14 C12 10 16 8 20 8' stroke='%23ff8a8a' stroke-width='1.4' fill='none' opacity='.5'/%3E%3C/svg%3E") center / contain no-repeat;
   filter: drop-shadow(0 1px 1px rgba(60,5,8,0.4));
 }
+/* Two columns on desktop that end level: the snow globe stands beside the
+   stats and Urchin row, the envelope beside the notes. */
+@media (min-width: 761px) {
+  html[data-theme="northpole"] #playerModal .modal-content {
+    grid-template-areas:
+      "name name"
+      "live live"
+      "skin stats"
+      "skin urchin"
+      "record notes"
+      "record match"
+      "clips clips"
+      "replays replays";
+    grid-template-rows: auto auto auto auto auto 1fr auto auto;
+  }
+  html[data-theme="northpole"] #playerModal .modal-record { margin-top: 26px; }
+  html[data-theme="northpole"] #playerModal #modalNotes { margin-top: 26px; }
+  html[data-theme="northpole"] #playerModal .modal-record[hidden] + .modal-tags-urchin,
+  html[data-theme="northpole"] #playerModal .modal-record[hidden] ~ .modal-match { grid-column: auto; }
+  html[data-theme="northpole"] #playerModal .modal-match { margin-top: 16px; }
+  /* No envelope (saved stats, or a player not on the list): the right
+     column stacks stats, Urchin and notes at the normal gap beside the
+     globe, and any spare height collects under the last row. */
+  html[data-theme="northpole"] #playerModal .modal-content:has(> .modal-record[hidden]) {
+    grid-template-areas:
+      "name name"
+      "live live"
+      "skin stats"
+      "skin urchin"
+      "skin notes"
+      "skin match"
+      "clips clips"
+      "replays replays";
+    grid-template-rows: auto auto auto auto auto 1fr auto auto;
+  }
+  html[data-theme="northpole"] #playerModal .modal-content:has(> .modal-record[hidden]) #modalNotes { margin-top: 16px; }
+}
+/* Wins has no standing bar, so its figure sits in the middle of the tile. */
+html[data-theme="northpole"] .modal-stat-tile.stat-wins:not(.modal-stat-skeleton) { display: flex; flex-direction: column; justify-content: center; }
 html[data-theme="northpole"] .modal-record-label { font-family: var(--font-np); font-weight: 900; letter-spacing: 0.14em; color: #7a6040; }
 html[data-theme="northpole"] .modal-record-value { font-family: var(--font-np); font-weight: 900; color: var(--np-ink); }
 /* Notes are gift tags tied on with red string. */
@@ -19848,7 +19933,7 @@ html[data-theme="northpole"] .note-item:nth-child(even) { transform: rotate(0.5d
 html[data-theme="northpole"] .note-item-text { font-family: var(--font-hand); font-size: 1.08em; }
 html[data-theme="northpole"] .note-item-author { font-family: var(--font-np); font-weight: 900; color: var(--np-red); }
 html[data-theme="northpole"] .modal-notes-count { border-radius: 999px; background: var(--np-red); color: #fffaf2; }
-html[data-theme="northpole"] #modalNotesEmpty::before { content: "No tags yet."; font-family: var(--font-hand); }
+html[data-theme="northpole"] #modalNotesEmpty::before { content: "No notes yet."; font-family: var(--font-hand); }
 html[data-theme="northpole"] .flip-sheen { --sheen: rgba(220,240,255,0.7); }
 html[data-theme="northpole"] .confirm-icon { filter: drop-shadow(0 2px 3px rgba(10,20,40,0.4)); }
 html[data-theme="northpole"] #editModal .edit-modal-actions { background: linear-gradient(180deg, rgba(255,253,248,0), #f4ecdd 30%); }
@@ -19865,12 +19950,12 @@ html[data-theme="northpole"] .shortcuts-list li { border-bottom: 1px dotted rgba
    baubles and a star. #1's star glows gold; 2nd/3rd get silver/bronze
    ornaments. */
 html[data-theme="northpole"] .lb-scene {
-  max-width: 940px;
+  max-width: none;
   padding: 18px 14px 0;
   border-radius: 12px;
   overflow: hidden;
   background:
-    linear-gradient(180deg, transparent calc(100% - 26px), #f4f8fd calc(100% - 26px), #d4e0ee),
+    linear-gradient(180deg, transparent calc(100% - 50px), #f4f8fd calc(100% - 50px), #d4e0ee),
     radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1.6px) 0 0 / 37px 41px,
     radial-gradient(circle, rgba(255,255,255,0.6) 0.8px, transparent 1.4px) 11px 17px / 23px 29px,
     radial-gradient(70% 50% at 50% 100%, rgba(255,214,140,0.25), transparent 70%),
@@ -19969,17 +20054,45 @@ html[data-theme="northpole"] .lb-entry .lb-avatar {
   background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.4), transparent 50%), var(--chip-color);
   box-shadow: 0 -5px 0 -2px #d9a441, 0 0 0 2px #fffaf2, 0 3px 5px rgba(0,0,0,0.35);
 }
-html[data-theme="northpole"] .lb-entry-rank { position: absolute; z-index: 1; left: 0; right: 0; bottom: 64px; font-size: 0; }
-html[data-theme="northpole"] .lb-entry-rank::before { content: attr(data-n); font: 900 13px/1 var(--font-np); color: rgba(255,255,255,0.85); text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+html[data-theme="northpole"] .lb-entry-rank { position: absolute; z-index: 1; left: 0; right: 0; bottom: 56px; font-size: 0; }
+/* Places past 3rd: a small cream bauble with the number, where the medals hang. */
+html[data-theme="northpole"] .lb-entry-rank::before {
+  content: attr(data-n);
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-left: 44px;
+  border-radius: 50%;
+  font: 900 11px/20px var(--font-np);
+  color: var(--np-red-dk);
+  background: radial-gradient(circle at 35% 30%, #fff, #f1e7d4 60%, #cdbf9f);
+  box-shadow: 0 -4px 0 -2px #d9a441, 0 2px 2px rgba(5,10,25,0.5);
+}
 html[data-theme="northpole"] .lb-entry[data-medal] .lb-entry-rank { bottom: 56px; }
-html[data-theme="northpole"] .lb-entry[data-medal] .lb-entry-rank::before { content: ""; display: inline-block; width: 22px; height: 26px; margin-left: 44px; background: var(--np-medal) center / contain no-repeat; filter: drop-shadow(0 2px 2px rgba(5,10,25,0.5)); }
+html[data-theme="northpole"] .lb-entry[data-medal] .lb-entry-rank::before { content: ""; display: inline-block; width: 22px; height: 26px; margin-left: 44px; border-radius: 0; box-shadow: none; background: var(--np-medal) center / contain no-repeat; filter: drop-shadow(0 2px 2px rgba(5,10,25,0.5)); }
 html[data-theme="northpole"] .lb-entry[data-medal="1"] { --np-medal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 70'%3E%3Cdefs%3E%3CradialGradient id='g' cx='.35' cy='.3' r='.8'%3E%3Cstop offset='0' stop-color='%23fff3c4'/%3E%3Cstop offset='.55' stop-color='%23e2a93a'/%3E%3Cstop offset='1' stop-color='%238a5a10'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M22 0 V19' stroke='%23c9a04a' stroke-width='1.4'/%3E%3Ccircle cx='22' cy='18' r='3' fill='none' stroke='%23d9b24a' stroke-width='1.6'/%3E%3Crect x='16' y='20' width='12' height='8' rx='1.5' fill='%23d9b24a'/%3E%3Cpath d='M16 23 h12 M16 26 h12' stroke='%23a87a26' stroke-width='1'/%3E%3Ccircle cx='22' cy='46' r='19' fill='url(%23g)'/%3E%3Cpath d='M3 46 Q22 54.55 41 46' stroke='%23ffe7a0' stroke-width='2.2' fill='none' opacity='.85'/%3E%3Cpath d='M5.66 37.45 Q22 44.1 38.34 37.45' stroke='%23ffe7a0' stroke-width='1.2' stroke-dasharray='1 3' fill='none' stroke-linecap='round'/%3E%3Cellipse cx='14.78' cy='38.02' rx='4.18' ry='6.08' transform='rotate(-30 14.78 38.02)' fill='%23fff' opacity='.55'/%3E%3C/svg%3E"); }
 html[data-theme="northpole"] .lb-entry[data-medal="2"] { --np-medal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 70'%3E%3Cdefs%3E%3CradialGradient id='g' cx='.35' cy='.3' r='.8'%3E%3Cstop offset='0' stop-color='%23ffffff'/%3E%3Cstop offset='.55' stop-color='%23c9d2df'/%3E%3Cstop offset='1' stop-color='%237d8aa0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M22 0 V19' stroke='%23c9a04a' stroke-width='1.4'/%3E%3Ccircle cx='22' cy='18' r='3' fill='none' stroke='%23d9b24a' stroke-width='1.6'/%3E%3Crect x='16' y='20' width='12' height='8' rx='1.5' fill='%23d9b24a'/%3E%3Cpath d='M16 23 h12 M16 26 h12' stroke='%23a87a26' stroke-width='1'/%3E%3Ccircle cx='22' cy='46' r='19' fill='url(%23g)'/%3E%3Cpath d='M3 46 Q22 54.55 41 46' stroke='%23ffe7a0' stroke-width='2.2' fill='none' opacity='.85'/%3E%3Cpath d='M5.66 37.45 Q22 44.1 38.34 37.45' stroke='%23ffe7a0' stroke-width='1.2' stroke-dasharray='1 3' fill='none' stroke-linecap='round'/%3E%3Cellipse cx='14.78' cy='38.02' rx='4.18' ry='6.08' transform='rotate(-30 14.78 38.02)' fill='%23fff' opacity='.55'/%3E%3C/svg%3E"); }
 html[data-theme="northpole"] .lb-entry[data-medal="3"] { --np-medal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 70'%3E%3Cdefs%3E%3CradialGradient id='g' cx='.35' cy='.3' r='.8'%3E%3Cstop offset='0' stop-color='%23ffd2a8'/%3E%3Cstop offset='.55' stop-color='%23c27a3a'/%3E%3Cstop offset='1' stop-color='%236a3a14'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M22 0 V19' stroke='%23c9a04a' stroke-width='1.4'/%3E%3Ccircle cx='22' cy='18' r='3' fill='none' stroke='%23d9b24a' stroke-width='1.6'/%3E%3Crect x='16' y='20' width='12' height='8' rx='1.5' fill='%23d9b24a'/%3E%3Cpath d='M16 23 h12 M16 26 h12' stroke='%23a87a26' stroke-width='1'/%3E%3Ccircle cx='22' cy='46' r='19' fill='url(%23g)'/%3E%3Cpath d='M3 46 Q22 54.55 41 46' stroke='%23ffe7a0' stroke-width='2.2' fill='none' opacity='.85'/%3E%3Cpath d='M5.66 37.45 Q22 44.1 38.34 37.45' stroke='%23ffe7a0' stroke-width='1.2' stroke-dasharray='1 3' fill='none' stroke-linecap='round'/%3E%3Cellipse cx='14.78' cy='38.02' rx='4.18' ry='6.08' transform='rotate(-30 14.78 38.02)' fill='%23fff' opacity='.55'/%3E%3C/svg%3E"); }
 html[data-theme="northpole"] .lb-entry .leaderboard-name { order: 4; max-width: 100%; margin-top: 6px; font: 900 0.98em/1.1 var(--font-np); color: var(--np-ink); }
 html[data-theme="northpole"] .lb-entry-count { order: 5; font: 400 0.95em/1.2 var(--font-hand); color: #4b5870; }
 html[data-theme="northpole"] .lb-entry-count b { color: var(--np-red); }
-html[data-theme="northpole"] .leaderboard-hint { color: #d6e2f3; font-family: var(--font-hand); font-size: 1.05em; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+/* A soft navy pill keeps the caption readable over any part of the village. */
+html[data-theme="northpole"] .leaderboard-hint {
+  width: fit-content;
+  max-width: calc(100% - 16px);
+  margin: -12px auto 8px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: rgba(12,24,52,0.62);
+  box-shadow: 0 0 0 1px rgba(220,236,255,0.14);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  color: rgba(255,250,242,0.92);
+  font-family: var(--font-hand);
+  font-size: 1.05em;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-wrap: balance;
+}
 html[data-theme="northpole"] .leaderboard-person-title {
   display: inline-block;
   padding: 6px 18px 7px;
@@ -20016,7 +20129,8 @@ html[data-theme="northpole"] .denick-ask-new { border-radius: 999px; }
 html[data-theme="northpole"] :is(#denickEmpty, #activityEmpty)::before { background: var(--np-red); }
 html[data-theme="northpole"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='10' width='17' height='11' rx='1.2'/%3E%3Crect x='2.5' y='7' width='19' height='3.4' rx='1'/%3E%3Cpath d='M12 7v14'/%3E%3Cpath d='M12 7c-2-3.6-6-3.6-5.4-1.2.4 1.4 3.2 1.2 5.4 1.2zM12 7c2-3.6 6-3.6 5.4-1.2-.4 1.4-3.2 1.2-5.4 1.2z'/%3E%3Cpath d='M15.6 13.4c0-1.2 1-1.8 1.8-1.4.9.4.8 1.6-.1 2.1-.5.3-.8.6-.8 1.2' stroke-width='1.4'/%3E%3Ccircle cx='16.5' cy='17.6' r='.6' fill='%23000'/%3E%3C/svg%3E"); }
 html[data-theme="northpole"] #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3.5h11a2 2 0 0 1 2 2V18a2.5 2.5 0 0 1-2.5 2.5H7.5'/%3E%3Cpath d='M6 3.5a2 2 0 0 0-2 2v1.5h4V5.5a2 2 0 0 0-2-2z'/%3E%3Cpath d='M8 7v11a2.5 2.5 0 0 1-5 0v-1h10'/%3E%3Cpath d='M11 8h5M11 11h5M11 14h3'/%3E%3Cpath d='M15.5 14.5l.8.8 1.7-1.8' stroke-width='1.4'/%3E%3C/svg%3E"); }
-html[data-theme="northpole"] #denickEmpty p::before { content: "Nobody unwrapped yet. Search a nick to see who's under it, or a player for every name they've used."; }
+html[data-theme="northpole"] #denickEmpty p::before { content: "Nobody unwrapped yet. Search a nick or a player."; }
+html[data-theme="northpole"] #denickEmpty p { text-wrap: balance; }
 html[data-theme="northpole"] #activityEmpty p::before { content: "The workshop log is empty. Every sweat added, edited or removed shows up here."; }
 html[data-theme="northpole"] .empty-icon-northpole { display: block; color: var(--np-red); }
 html[data-theme="northpole"] .empty-state-text { font-family: var(--font-hand); font-size: 1.08em; color: #55627a; }
@@ -20152,17 +20266,42 @@ html[data-theme="northpole"] .sweat-row.live-edit { animation: npLiveEditRow 1.6
   html[data-theme="northpole"] .sotd-name { font-size: 2.1em; }
   html[data-theme="northpole"] .sotd-deco .d5 { width: 44px; height: 70px; right: 12px; top: -12px; background-size: 42px 42px, 100% 30px; }
   html[data-theme="northpole"] .toolbar .pdeco { left: -10px; right: -10px; }
-  html[data-theme="northpole"] .lb-scene-body { height: 300px; }
+  /* The tree row scrolls sideways here; it fades out at the right edge so
+     the cut reads as more to come. */
+  html[data-theme="northpole"] .lb-scene-body {
+    height: 300px;
+    padding-right: 36px;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent);
+  }
   html[data-theme="northpole"] .sweat-stats::before { left: -4px; right: -4px; }
+}
+@media (max-width: 620px) {
+  /* The sound panel opens from its button's left edge, clear of the screen edge. */
+  html[data-theme="northpole"] #audioPanel { left: 0; right: auto; max-width: calc(100vw - 48px); }
+  /* The theme menu opens under the whole button row as a two-column grid,
+     short enough to end well above the bottom nav. */
+  html[data-theme="northpole"] .hero-controls { position: relative; top: 0; }
+  html[data-theme="northpole"] #themeDropdown { position: static; }
+  html[data-theme="northpole"] #themeDropdownMenu { top: calc(100% + 12px); left: 8px; right: 8px; min-width: 0; }
+  html[data-theme="northpole"] #themeDropdownMenu:not([hidden]) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 4px; }
+  html[data-theme="northpole"] #themeDropdownMenu li[data-theme-value] { gap: 9px; padding: 7px 6px; min-width: 0; }
+  html[data-theme="northpole"] #themeDropdownMenu .theme-opt-text { min-width: 0; }
+  html[data-theme="northpole"] #themeDropdownMenu .theme-opt-tag { white-space: normal; text-wrap: balance; }
+  html[data-theme="northpole"] #themeDropdownMenu li.theme-season-head { grid-column: 1 / -1; }
+  html[data-theme="northpole"] #themeDropdownMenu .theme-opt-badge { right: 6px; }
+  /* The moon moves up into the empty corner above the title. */
+  #northpoleField .np-moon { top: 14px; right: 14px; width: 54px; height: 54px; box-shadow: 0 0 20px 4px rgba(255,248,220,0.3), 0 0 60px 20px rgba(170,200,255,0.14); }
+  html[data-theme="northpole"] .table-wrap thead tr::before { color: rgba(255,250,242,0.82); }
 }
 @media (max-width: 480px) {
   html[data-theme="northpole"] h1 { font-size: 2.1em; }
+  html[data-theme="northpole"] .sotd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; }
   html[data-theme="northpole"] .sotd-skin { height: 120px; margin-bottom: 18px; }
   html[data-theme="northpole"] .sotd-name { font-size: 1.8em; }
   html[data-theme="northpole"] .sotd-kicker { letter-spacing: 0.14em; font-size: 0.72em; padding-right: 40px; }
   html[data-theme="northpole"] .sotd-deco .d5 { width: 36px; height: 58px; right: 8px; top: -10px; background-size: 34px 34px, 100% 26px; }
-  html[data-theme="northpole"] .sotd-stats { gap: 8px; }
-  html[data-theme="northpole"] .sotd-stat-value { font-size: 1.05em; }
+  html[data-theme="northpole"] .sotd-stat-value { font-size: 1.25em; }
   html[data-theme="northpole"] .hero-eyebrow { letter-spacing: 0.14em; }
 }
 html[data-theme="northpole"] .toolbar .filter-field-date input { width: 148px; }
@@ -20297,9 +20436,55 @@ html[data-theme="northpole"] .unmask-back .unmask-k { color: var(--np-green); }
 html[data-theme="northpole"] #emptyState .empty-state-text,
 html[data-theme="northpole"] #leaderboardEmptyState .empty-state-text { font-size: 0; }
 html[data-theme="northpole"] #emptyState .empty-state-text::before,
-html[data-theme="northpole"] #leaderboardEmptyState .empty-state-text::before { font: 400 19px/1.3 var(--font-hand); color: var(--text-dim); }
-html[data-theme="northpole"] #emptyState .empty-state-text::before { content: "No presents here. Try another name."; }
+html[data-theme="northpole"] #leaderboardEmptyState .empty-state-text::before { font: 400 21px/1.3 var(--font-hand); color: var(--np-ink); }
+html[data-theme="northpole"] #emptyState .empty-state-text::before { content: "No presents yet."; }
+html[data-theme="northpole"]:has(#resetFiltersBtn:not(:disabled)) #emptyState .empty-state-text::before { content: "No match. Try another name."; }
+html[data-theme="northpole"] #emptyState,
+html[data-theme="northpole"] #leaderboardEmptyState {
+  max-width: 460px;
+  margin: 24px auto 44px;
+  padding: 30px 24px 26px;
+  border-radius: 10px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .24 0 0 0 0 .32 0 0 0 .4 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E"), linear-gradient(180deg, #fffdf8, #f3ebdc);
+  box-shadow: 0 0 0 1px rgba(31,42,61,0.2), 0 0 0 5px var(--np-red), 0 0 0 6px #f2cf7a, 0 0 0 9px var(--np-green-dk), 0 18px 30px -12px rgba(5,10,25,0.75);
+}
+html[data-theme="northpole"] #emptyState .empty-icon,
+html[data-theme="northpole"] #leaderboardEmptyState .empty-icon { width: 84px; height: 84px; margin-bottom: 10px; }
 html[data-theme="northpole"] #leaderboardEmptyState .empty-state-text::before { content: "Nobody on the list with these filters."; }
+
+/* ---------- Loading: blank presents waiting to be filled ---------- */
+html[data-theme="northpole"] .skeleton-card {
+  position: relative;
+  padding: 50px 18px 18px;
+  border: 0;
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, transparent 34px, rgba(0,0,0,0.25) 34px 36px, transparent 36px),
+    linear-gradient(90deg, transparent calc(50% - 7px), #f2cf6e calc(50% - 7px) calc(50% + 7px), transparent calc(50% + 7px)) 0 0 / 100% 34px no-repeat,
+    linear-gradient(180deg, #c4434a 0 34px, #a8252c 36px, #8a1c22);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), 0 4px 0 #5e1216, 0 18px 24px -14px rgba(0,0,0,0.7);
+}
+html[data-theme="northpole"] .skeleton-card:nth-child(4n+3) { background: linear-gradient(180deg, transparent 34px, rgba(0,0,0,0.25) 34px 36px, transparent 36px), linear-gradient(90deg, transparent calc(50% - 7px), #e8343a calc(50% - 7px) calc(50% + 7px), transparent calc(50% + 7px)) 0 0 / 100% 34px no-repeat, linear-gradient(180deg, #2f7d55 0 34px, #1d6a43 36px, #12462c); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), 0 4px 0 #0b2a1a, 0 18px 24px -14px rgba(0,0,0,0.7); }
+html[data-theme="northpole"] .skeleton-card:nth-child(4n+4) { background: linear-gradient(180deg, transparent 34px, rgba(0,0,0,0.25) 34px 36px, transparent 36px), linear-gradient(90deg, transparent calc(50% - 7px), #f4f8ff calc(50% - 7px) calc(50% + 7px), transparent calc(50% + 7px)) 0 0 / 100% 34px no-repeat, linear-gradient(180deg, #3a64a0 0 34px, #24508a 36px, #173460); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), 0 4px 0 #0e2140, 0 18px 24px -14px rgba(0,0,0,0.7); }
+/* snow on the lid */
+html[data-theme="northpole"] .skeleton-card::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  top: -9px;
+  height: 16px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 24' preserveAspectRatio='none'%3E%3Cpath d='M0 24 V12 C10 4 22 5 30 9 C40 2 56 3 64 10 C74 5 86 4 96 8 C108 1 124 3 132 10 C142 5 154 6 160 12 V24 Z' fill='%23f6faff'/%3E%3Cpath d='M0 24 V18 C14 14 24 20 36 17 C50 13 62 20 78 16 C94 13 106 20 122 16 C136 13 150 19 160 17 V24 Z' fill='%23dce7f6'/%3E%3Cpath d='M6 11 C14 6 22 7 28 10 M68 9 C76 5 86 5 94 8 M110 5 C118 3 126 5 130 9' stroke='%23fff' stroke-width='1.6' fill='none' stroke-linecap='round' opacity='.9'/%3E%3C/svg%3E") 0 0 / 160px 100% repeat-x;
+  filter: drop-shadow(0 2px 1px rgba(10,20,40,0.25));
+}
+html[data-theme="northpole"] .skeleton-card { animation: none; }
+html[data-theme="northpole"] .skeleton-block { background: rgba(255,250,242,0.32); animation: loadingPulse 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { html[data-theme="northpole"] .skeleton-block { animation: none; } }
+html[data-theme="northpole"] .skeleton-avatar { border-radius: 50%; }
+html[data-theme="northpole"] .server-waking-note { color: rgba(243,234,216,0.88); font-family: var(--font-np); font-weight: 700; text-shadow: 0 1px 3px rgba(5,10,25,0.7); font-size: 0; }
+/* A short line on screen; screen readers still get the full sentence. */
+html[data-theme="northpole"] .server-waking-note::before { content: "Waking the elves\2026  "; font-size: 15px; }
+html[data-theme="northpole"] .server-waking-note .server-waking-elapsed { font-size: 15px; }
 
 /* ---------- A new present arriving live ---------- */
 html[data-theme="northpole"] .sweat-card.live-new { animation: npGiftDrop 0.6s cubic-bezier(.3,.8,.35,1.05) backwards, npLiveArrive 1.6s ease-out 0.5s 2; }
@@ -32477,6 +32662,77 @@ function npBuildScene() {
 }
 if (npOn()) npBuildScene();
 document.addEventListener("themechange", () => { if (npOn()) npBuildScene(); });
+
+// The moon is fixed to the sky, so a section's HIDE pill can scroll across
+// it. While one does, the moon dims behind a haze so the two pale shapes
+// don't pile up, and it comes back once the pill has passed.
+(() => {
+  let queued = false;
+  const check = () => {
+    queued = false;
+    const moon = npField.querySelector(".np-moon");
+    if (!moon) return;
+    let hit = false;
+    if (npOn()) {
+      const m = moon.getBoundingClientRect();
+      if (m.width) {
+        hit = [...document.querySelectorAll(".section-toggle")].some(t => {
+          const r = t.getBoundingClientRect();
+          return r.width && r.right > m.left - 12 && r.left < m.right + 12 && r.bottom > m.top - 12 && r.top < m.bottom + 12;
+        });
+      }
+    }
+    moon.classList.toggle("np-moon-dim", hit);
+  };
+  const queue = () => { if (!queued) { queued = true; requestAnimationFrame(check); } };
+  window.addEventListener("scroll", queue, { passive: true });
+  window.addEventListener("resize", queue);
+  document.addEventListener("themechange", queue);
+  queue();
+})();
+
+// A player with no skin (the render fails even on its retry) gets a little
+// present in the avatar circle instead of an empty space. Other themes get
+// the empty space back.
+const NP_NOSKIN = "data:image/svg+xml," + encodeURIComponent("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect x=\"17\" y=\"30\" width=\"30\" height=\"22\" rx=\"2\" fill=\"#c4262e\"/><rect x=\"36\" y=\"30\" width=\"11\" height=\"22\" fill=\"#000\" opacity=\".14\"/><rect x=\"15\" y=\"24\" width=\"34\" height=\"8\" rx=\"2\" fill=\"#d9363c\"/><rect x=\"15\" y=\"30\" width=\"34\" height=\"2\" fill=\"#000\" opacity=\".18\"/><rect x=\"29\" y=\"24\" width=\"6\" height=\"28\" fill=\"#f2cf6e\"/><rect x=\"29\" y=\"24\" width=\"1.6\" height=\"28\" fill=\"#fff\" opacity=\".4\"/><path d=\"M32 24 C27 14 18 15 22 21 C24 23.5 29 24 32 24 Z M32 24 C37 14 46 15 42 21 C40 23.5 35 24 32 24 Z\" fill=\"#f2cf6e\" stroke=\"#c98a1c\" stroke-width=\"1.2\" stroke-linejoin=\"round\"/><circle cx=\"32\" cy=\"23\" r=\"2.6\" fill=\"#e2a93a\" stroke=\"#c98a1c\" stroke-width=\"1\"/></svg>");
+const NP_AVATARS = ".sweat-card-avatar, .user-avatar, .ss-who img";
+const npNoSkin = (img) => {
+  img.dataset.npSrc = img.src;
+  img.classList.add("np-noskin");
+  img.src = NP_NOSKIN;
+};
+document.addEventListener("error", (e) => {
+  const img = e.target;
+  if (!npOn() || !(img instanceof HTMLImageElement) || !img.matches(NP_AVATARS)) return;
+  if (/[?&]retry=/.test(img.src)) npNoSkin(img);
+}, true);
+document.addEventListener("themechange", () => {
+  if (npOn()) {
+    document.querySelectorAll(NP_AVATARS).forEach(img => {
+      if (img.complete && !img.naturalWidth && /[?&]retry=/.test(img.src)) npNoSkin(img);
+    });
+  } else {
+    document.querySelectorAll("img.np-noskin").forEach(img => {
+      img.classList.remove("np-noskin");
+      img.style.opacity = 0;
+      img.src = img.dataset.npSrc;
+    });
+  }
+});
+
+// On a phone the sweats search box is too narrow for the full hint in this
+// theme's rounder type, so it gets a shorter one; the original comes back
+// on wider screens and in other themes.
+(function northpoleSearchHint() {
+  const input = document.getElementById("searchInput");
+  if (!input) return;
+  const full = input.getAttribute("placeholder");
+  const narrow = window.matchMedia("(max-width: 480px)");
+  const set = () => input.setAttribute("placeholder", npOn() && narrow.matches ? "Search sweats..." : full);
+  narrow.addEventListener("change", set);
+  document.addEventListener("themechange", set);
+  set();
+})();
 
 // ---------- Snowfall ----------
 (function northpoleSnow() {

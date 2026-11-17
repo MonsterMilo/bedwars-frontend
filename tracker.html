@@ -3931,6 +3931,7 @@ html[data-theme="deepcurrent"] .flip-sheen { --sheen: rgba(80,255,220,0.3); }
   color: var(--text-dim);
   white-space: nowrap;
 }
+.modal-standing.is-unranked .modal-standing-text { color: var(--text-faint); }
 .stat-star .modal-standing { color: var(--gold); }
 .stat-fkdr .modal-standing { color: var(--accent-2); }
 .stat-wlr .modal-standing { color: var(--neutral); }
@@ -4103,6 +4104,9 @@ html[data-theme="deepcurrent"] .modal-standing-bar > span { box-shadow: 0 0 6px 
 @media (max-width: 620px) {
   h1 { font-size: 2em; }
   .hero-controls { position: static; margin: 16px 0 18px; justify-content: center; }
+  /* Centre the menus under their button instead of right-aligning them,
+     so the wide theme list can't run off the left edge of a phone. */
+  .hero-controls .theme-dropdown-menu { right: auto; left: 50%; translate: -50% 0; max-width: calc(100vw - 32px); }
   .toolbar-row { justify-content: center; }
   /* Keeps the three jump links on one row on a phone instead of wrapping
      Denicking onto a second line (which doubled the sticky bar's height and
@@ -7798,7 +7802,21 @@ html[data-theme="deepcurrent"] .egg-sub { font-family: 'JetBrains Mono', monospa
 #pullRefresh.spinning svg { animation: pullSpin 0.8s linear infinite; }
 @keyframes pullSpin { to { transform: rotate(360deg); } }
 html.app-standalone body { overscroll-behavior-y: contain; }
-html:not([data-theme]) .egg-toast { font-family: 'Chakra Petch', sans-serif; background: rgba(4,5,10,0.78); backdrop-filter: blur(6px); }
+/* Neon: a HUD readout like the panels - lit left edge, cyan rim and glow,
+   accent names (in the page's own font; Neon doesn't load Chakra Petch). */
+html:not([data-theme]) .egg-toast {
+  padding-left: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(0,217,255,0.35);
+  border-radius: 2px;
+  background:
+    linear-gradient(180deg, var(--accent), var(--accent-2)) 0 0 / 3px 100% no-repeat,
+    linear-gradient(100deg, rgba(0,217,255,0.1), transparent 55%),
+    rgba(14,10,34,0.92);
+  box-shadow: 0 0 16px rgba(0,217,255,0.22), 0 8px 20px rgba(0,0,0,0.45);
+}
+html:not([data-theme]) .egg-toast b { color: var(--accent); text-shadow: 0 0 8px rgba(0,217,255,0.55); }
 html[data-theme="casefiles"] .egg-toast { font-family: 'Courier Prime', monospace; border-radius: 2px; transform: rotate(-0.6deg); }
 html[data-theme="ledger"] .egg-toast { font-family: 'EB Garamond', serif; font-size: 16px; border-color: #c9bf9e; }
 html[data-theme="deepcurrent"] .egg-toast { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: rgba(10,33,48,0.88); }
@@ -10101,7 +10119,10 @@ html:not([data-theme]) #neonHorizon { display: block; }
 html:not([data-theme]) #starfield,
 html:not([data-theme]) #nebula { display: none; }
 /* Section headers can land on the grid's bright horizon band. */
-html:not([data-theme]) .panel-header p { text-shadow: 0 1px 3px #05060f, 0 0 12px #05060f; }
+html:not([data-theme]) :is(.panel-header p, .site-footer-meta) {
+  color: var(--text-dim);
+  text-shadow: 0 0 2px #05040c, 0 0 5px #05040c, 0 0 10px #05040c, 0 0 18px rgba(5,4,12,0.85);
+}
 html:not([data-theme]) .panel-header h2 { filter: drop-shadow(0 1px 3px #05060f) drop-shadow(0 0 8px #05060f); }
 
 /* ============================================================
@@ -10302,6 +10323,11 @@ html:not([data-theme]) .card-note-ghost {
 }
 html:not([data-theme]) .card-note-ghost::after { content: "ADD INTEL"; }
 html:not([data-theme]) .sweat-card .card-note-ghost:hover { text-shadow: 0 0 8px rgba(0,217,255,0.6); box-shadow: inset 0 0 14px rgba(0,217,255,0.12); }
+/* Neon keeps the slot faintly lit at rest, so a card without intel reads
+   as an empty readout rather than a half-blank panel. */
+html:not([data-theme]) .sweat-card .card-note-ghost { opacity: 0.3; }
+html:not([data-theme]) .sweat-card:is(:hover, :focus-within, :focus-visible) .card-note-ghost { opacity: 0.85; }
+html:not([data-theme]) .sweat-card .card-note-ghost:is(:hover, :focus-visible) { opacity: 1; }
 
 html[data-theme="casefiles"] .card-note-ghost {
   margin-top: 2px;
@@ -11100,6 +11126,7 @@ html[data-theme="skyisles"] .saved-list-retry { border-radius: 0; font-family: v
 .sotd-stat { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .sotd-stat-label { font-size: 0.68em; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-faint); }
 .sotd-stat-value { font-size: 1.3em; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sotd-stat-value .v-short { display: none; }
 .sotd-stat-bar { position: relative; height: 4px; border-radius: 4px; background: var(--border); overflow: hidden; }
 .sotd-stat-bar i {
   position: absolute;
@@ -11534,7 +11561,12 @@ html[data-theme="skyisles"] .sotd-clock { font: 400 0.6em var(--font-arcade); li
 
   .sotd-stats { gap: 8px 12px; }
   .sotd-stat-value { font-size: 1.05em; }
+  .sotd-stat-value .v-full { display: none; }
+  .sotd-stat-value .v-short { display: inline; }
   .sotd-stat-label { font-size: 0.6em; letter-spacing: 0.8px; }
+  /* Neon: the sun slab stops at the fighter's feet instead of running
+     30px on into the stat labels below. */
+  html:not([data-theme]) .sotd-backdrop i:is(:nth-child(1), :nth-child(2)) { bottom: 0; }
   .sotd-clock { grid-column: 1 / -1; align-self: auto; margin-top: 10px; text-align: center; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -12232,7 +12264,7 @@ html:not([data-theme]) .lb-scene-body {
   box-shadow: inset 0 0 0 2px #000, inset 0 0 40px rgba(0,217,255,0.12), 0 0 0 6px #120a22;
 }
 html:not([data-theme]) .lb-entry {
-  --row: #7fe9ff;
+  --row: var(--chip-color, #7fe9ff);
   display: grid;
   grid-template-columns: 64px 34px minmax(0, 1fr) auto;
   gap: 14px;
@@ -12243,12 +12275,10 @@ html:not([data-theme]) .lb-entry {
   text-shadow: 0 0 8px currentColor;
   border-radius: 4px;
 }
-html:not([data-theme]) .lb-entry[data-place="1"] { --row: #ffe066; animation: neonHiScore 1.6s steps(1) infinite; }
-html:not([data-theme]) .lb-entry[data-place="2"] { --row: #ff8ae6; }
-html:not([data-theme]) .lb-entry[data-place="3"] { --row: #b98bff; }
-html:not([data-theme]) .lb-entry[data-place="4"], html:not([data-theme]) .lb-entry[data-place="7"] { --row: #7fe9ff; }
-html:not([data-theme]) .lb-entry[data-place="5"], html:not([data-theme]) .lb-entry[data-place="8"] { --row: #74ffb0; }
-html:not([data-theme]) .lb-entry[data-place="6"], html:not([data-theme]) .lb-entry[data-place="9"] { --row: #ffb36b; }
+/* Rows glow in each member's roster colour (--row above, the same as the
+   chip beside it and their avatar dots elsewhere); only the 1ST/2ND badges
+   carry gold and silver. The leader's row still blinks. */
+html:not([data-theme]) .lb-entry[data-place="1"] { animation: neonHiScore 1.6s steps(1) infinite; }
 html:not([data-theme]) .lb-entry:hover, html:not([data-theme]) .lb-entry.active { transform: none; background: rgba(255,255,255,0.06); }
 html:not([data-theme]) .lb-entry.active { box-shadow: inset 3px 0 0 var(--row); }
 html:not([data-theme]) .lb-entry-rank { font-size: 0; }
@@ -13765,9 +13795,10 @@ html:not([data-theme]) .modal-deco i:nth-child(1) { top: 8px; left: 8px; border-
 html:not([data-theme]) .modal-deco i:nth-child(2) { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
 html:not([data-theme]) .modal-deco i:nth-child(3) { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
 html:not([data-theme]) .modal-deco i:nth-child(4) { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
-/* A scan line sweeping down the screen */
-html:not([data-theme]) .modal-deco i:nth-child(5) { display: block; left: 0; right: 0; top: 0; height: 80px; background: linear-gradient(180deg, transparent, rgba(0,217,255,0.07) 80%, rgba(0,217,255,0.25) 98%, transparent); animation: hudScan 5s linear infinite; }
-@keyframes hudScan { from { transform: translateY(-90px); } to { transform: translateY(1200px); } }
+/* A soft scan glow sweeping down the screen: it fades out on both sides,
+   so no frame of it reads as a hard seam across the content. */
+html:not([data-theme]) .modal-deco i:nth-child(5) { display: block; left: 0; right: 0; top: 0; height: 120px; background: linear-gradient(180deg, transparent, rgba(0,217,255,0.035) 40%, rgba(0,217,255,0.07) 50%, rgba(0,217,255,0.035) 60%, transparent); animation: hudScan 5s linear infinite; }
+@keyframes hudScan { from { transform: translateY(-130px); } to { transform: translateY(1200px); } }
 html:not([data-theme]) #playerModal #modalTitle::before { content: "\25C9  Target locked \00b7 "; color: #ff4fd8; letter-spacing: 0.2em; text-shadow: 0 0 6px #ff4fd8; animation: hudBlink 1.4s steps(1) infinite; }
 @keyframes hudBlink { 50% { opacity: 0.35; } }
 /* The skin in a targeting frame: corner brackets, a ring and a crosshair */
@@ -14144,7 +14175,9 @@ html[data-theme="skyisles"] .row-rival .rival-icon { display: none; }
 #modalNotesEmpty::before { font-size: 13.5px; }
 html:not([data-theme]) :is(#denickEmpty, #activityEmpty)::before { background: #00d9ff; }
 html:not([data-theme]) #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 9.5c0-2 2-3 5-3h9c3 0 5 1 5 3 0 4-2.6 7-5.6 7-2.2 0-2.9-2.2-3.9-2.2s-1.7 2.2-3.9 2.2c-3 0-5.6-3-5.6-7z'/%3E%3Cellipse cx='8' cy='10.8' rx='2' ry='1.3'/%3E%3Cellipse cx='16' cy='10.8' rx='2' ry='1.3'/%3E%3C/svg%3E"); }
-html:not([data-theme]) #denickEmpty p::before { content: "No target on the scanner. Search a nick to see who's behind it, or a player for their nick history."; }
+html:not([data-theme]) #denickEmpty p::before { content: "No target yet. Search a nick or player."; }
+/* A decoded target replaces the "nothing yet" prompt, in every theme. */
+#denickUnmask:not([hidden]) ~ #denickEmpty { display: none; }
 html:not([data-theme]) #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='4' width='19' height='16' rx='2'/%3E%3Cpath d='M6.5 10l3 2.2-3 2.2M11.5 15h6'/%3E%3C/svg%3E"); }
 html:not([data-theme]) #activityEmpty p::before { content: "Log is idle. Every add, edit and delete streams in here the moment it happens."; }
 html:not([data-theme]) #modalNotesEmpty::before { content: "No intel yet."; }
@@ -14228,9 +14261,49 @@ html:not([data-theme]) .sotd-backdrop i:nth-child(2) {
 }
 html:not([data-theme]) .sotd-skin { filter: drop-shadow(0 0 18px rgba(255,79,168,0.5)) drop-shadow(0 12px 10px rgba(0,0,0,0.6)); }
 
-/* Leaderboard top 3 in the sun's colors, top to horizon. */
-html:not([data-theme]) .lb-entry[data-place="2"] { --row: #ff9a5a; }
-html:not([data-theme]) .lb-entry[data-place="3"] { --row: #ff4fa8; }
+/* No-matches state: its own chamfered glass panel like the toolbar above,
+   so the message never sits bare on the sun or the grid floor. */
+html:not([data-theme]) #emptyState {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0,217,255,0.18);
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+  background:
+    linear-gradient(180deg, var(--accent), var(--accent-2) 70%, transparent) 0 0 / 3px calc(100% - 22px) no-repeat,
+    radial-gradient(420px 220px at 50% 0, rgba(0,217,255,0.08), transparent 70%),
+    linear-gradient(180deg, rgba(20,15,48,0.92), rgba(10,8,24,0.94));
+  color: var(--text-dim);
+  letter-spacing: 0.3px;
+}
+html:not([data-theme]) #emptyState .empty-icon { margin-bottom: 12px; filter: drop-shadow(0 0 8px rgba(0,217,255,0.45)); }
+
+/* The replay hint sits by the short kicker, clear of the source line. */
+html:not([data-theme]) .unmask-hint { top: 12px; bottom: auto; }
+/* An empty card grid (no matches) adds no gap above the panel below. */
+html:not([data-theme]) #cardGrid:empty { margin-bottom: 0; }
+
+/* Every section's panels share one content width (the toolbar, stats
+   strip and card grid's 1200px), so section edges line up down the page. */
+html:not([data-theme]) :is(#form-container, #denickContainer, #activityContainer) { max-width: 1200px; }
+
+/* Filters on narrow screens: the four filter pills and then the flag
+   toggles and Reset each sit as an even 2x2 grid instead of wrapping
+   raggedly (Index alone on a row, Reset floating under the chips). */
+@media (max-width: 760px) {
+  html:not([data-theme]) .toolbar-row { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 8px; }
+  html:not([data-theme]) .toolbar-row .filter-fields { grid-column: 1 / -1; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+  html:not([data-theme]) .toolbar-row .filter-field { min-width: 0; padding-left: 10px; }
+  html:not([data-theme]) .toolbar-row .filter-field-date { grid-column: auto; }
+  html:not([data-theme]) .toolbar .toolbar-row .filter-field-date input { padding-left: 6px; padding-right: 2px; font-size: 13px; }
+  html:not([data-theme]) .toolbar-row .toolbar-actions-left { display: contents; }
+  html:not([data-theme]) .toolbar-row .chip span::before { display: none; }
+  html:not([data-theme]) .toolbar-row .chip { display: flex; min-width: 0; }
+  html:not([data-theme]) .toolbar-row .chip span { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 36px; padding: 6px 8px; text-align: center; }
+  html:not([data-theme]) .toolbar-row .filter-reset { justify-content: center; min-height: 36px; border: 1px dashed rgba(0,217,255,0.25); border-radius: 2px; }
+}
 
 /* The drive-into-the-horizon switch scene draws on this. */
 .tto-drive-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -19209,7 +19282,7 @@ html[data-theme="northpole"] .sotd-stats { gap: 10px 12px; }
     <div>
       <span class="exhibit-tag exhibit-tag-lookup">Exhibit A</span>
       <h2>Sweat Lookup</h2>
-      <p>Search a player, review their stats, and log the win.</p>
+      <p>Search a player and log the win.</p>
     </div>
     <button type="button" class="section-toggle" data-section="lookup" aria-expanded="true" aria-controls="lookupBody" aria-label="Hide Sweat Lookup"><span class="section-toggle-label">Hide</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
@@ -19284,7 +19357,7 @@ html[data-theme="northpole"] .sotd-stats { gap: 10px 12px; }
                 <div class="idle-harvest"><i class="hv-cloth"></i><i class="hv-pie"></i><i class="hv-steam s1"></i><i class="hv-steam s2"></i><i class="hv-steam s3"></i></div>
                 <div class="idle-northpole"><i class="np-plate"></i><i class="np-cookies"></i><i class="np-cocoa"></i><i class="np-steam s1"></i><i class="np-steam s2"></i><i class="np-steam s3"></i></div>
               </div>
-              <p id="statsEmptyText">Search a player, then Preview to see their card here before you log it.</p>
+              <p id="statsEmptyText">Search a player, then Preview them here.</p>
             </div>
 
             <div id="statsDisplay" aria-live="polite" role="region" aria-label="Player statistics">
@@ -19476,7 +19549,7 @@ html[data-theme="northpole"] .sotd-stats { gap: 10px 12px; }
       <path d="M30 40 h4 M26 46 h12" stroke="currentColor" stroke-width="1.1" opacity="0.4" stroke-linecap="round" />
       <g stroke="#3a7cc4" stroke-width="1.5" stroke-linecap="round"><path d="M50 6 v14 M43.9 9.5 l12.2 7 M43.9 16.5 l12.2 -7" /><path d="M50 9 l-2 -2 M50 9 l2 -2 M50 17 l-2 2 M50 17 l2 2" stroke-width="1.1" /></g>
     </svg>
-    <div class="empty-state-text">No sweats match these filters yet.</div>
+    <div class="empty-state-text">No matching sweats.</div>
   </div>
 
   <div class="table-wrap card" id="tableWrap" hidden>
@@ -19600,7 +19673,7 @@ html[data-theme="northpole"] .sotd-stats { gap: 10px 12px; }
     <div>
       <span class="exhibit-tag exhibit-tag-denick">Exhibit C</span>
       <h2>Denicking</h2>
-      <p>Look up a nick or a player in the database.</p>
+      <p>Look up nicks and players.</p>
     </div>
     <button type="button" class="section-toggle" data-section="denick" aria-expanded="true" aria-controls="denickBody" aria-label="Hide Denicking"><span class="section-toggle-label">Hide</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
@@ -19632,7 +19705,7 @@ html[data-theme="northpole"] .sotd-stats { gap: 10px 12px; }
         <circle cx="21" cy="21" r="13" fill="none" stroke="currentColor" stroke-width="2.5" />
         <line x1="30.5" y1="30.5" x2="41" y2="41" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
       </svg>
-      <p>Search a nick to see who's used it, or a player to see their nick history.</p>
+      <p>Search a nick or player.</p>
     </div>
     <div id="denickAskRow" class="denick-ask-row" hidden>
       <button type="button" id="denickAskLink" class="denick-ask-link">Searched and still no luck? Ask Milo to denick it</button>
@@ -24242,7 +24315,7 @@ function showStatsEmpty() {
 }
 // While a lookup is in flight the empty preview speeds up its idle scene
 // and names who it is looking for.
-const STATS_EMPTY_TEXT = "Search a player, then Preview to see their card here before you log it.";
+const STATS_EMPTY_TEXT = "Search a player, then Preview them here.";
 // The idle scene doesn't swap to a different animation when a lookup
 // starts; its running animations are eased up to a faster playbackRate
 // (and back down), which keeps every ring, beam and dial in phase.
@@ -25200,7 +25273,10 @@ function updateStatsDisplay(stats) {
   renderTagBadges(statUrchin, statUrchinReason, stats.urchinTagsData || [], URCHIN_TAG_ICONS);
 
   document.querySelectorAll("#statsColumns .stat-standing").forEach(el => {
-    el.innerHTML = trackedStandingHtml(el.dataset.field, stats[el.dataset.field]);
+    // KDR isn't saved on sweats, so it can't be ranked: an empty meter keeps
+    // its tile the same shape as the other three.
+    el.innerHTML = trackedStandingHtml(el.dataset.field, stats[el.dataset.field]) ||
+      `<div class="modal-standing is-unranked" data-tooltip="Not saved on sweats, so not ranked"><span class="modal-standing-bar"></span><span class="modal-standing-text">Not ranked</span></div>`;
   });
   renderSweatMeter(stats);
 
@@ -25630,6 +25706,15 @@ function sotdPick(players) {
   return sotdPickFor(today, yesterdaysPick ? pool.filter(p => p !== yesterdaysPick) : pool);
 }
 // Time left until midnight Eastern.
+// Big counts carry a short form too ("1.35M"), which phones show instead
+// of an ellipsis-cut "1,353,..." in the narrow four-up stat row.
+function sotdBigNum(n) {
+  const full = Math.round(n).toLocaleString();
+  if (Math.abs(n) < 100000) return full;
+  const short = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: n >= 1e6 ? 2 : 0 }).format(n);
+  return `<span class="v-full">${full}</span><span class="v-short">${short}</span>`;
+}
+
 function sotdTimeLeft() {
   const parts = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: SOTD_TZ, hour: "numeric", minute: "numeric", second: "numeric", hourCycle: "h23" })
     .formatToParts(new Date()).map(p => [p.type, Number(p.value)]));
@@ -25668,8 +25753,8 @@ function renderSweatOfDay() {
   const stats = [
     ["FKDR", fkdr.toFixed(2), sotdPercentile(players, pick, r => num(r.fkdr))],
     ["WLR", num(s.wlr) === null ? "–" : num(s.wlr).toFixed(2), sotdPercentile(players, pick, r => num(r.wlr))],
-    ["Finals", num(s.finals) === null ? "–" : Math.round(num(s.finals)).toLocaleString(), sotdPercentile(players, pick, r => num(r.finals))],
-    ["Index", Math.round(index).toLocaleString(), sotdPercentile(players, pick, r => (num(r.fkdr) || 0) ** 2 * (num(r.star) || 0))],
+    ["Finals", num(s.finals) === null ? "–" : sotdBigNum(num(s.finals)), sotdPercentile(players, pick, r => num(r.finals))],
+    ["Index", sotdBigNum(index), sotdPercentile(players, pick, r => (num(r.fkdr) || 0) ** 2 * (num(r.star) || 0))],
   ];
   const noteSrc = [...pick.records].reverse().find(r => sweatNotes(r).length);
   const notes = noteSrc ? sweatNotes(noteSrc) : [];
@@ -25830,6 +25915,14 @@ function bustUrlFor(uuid) {
   return `https://visage.surgeplay.com/bust/256/${cleanUuid}`;
 }
 
+// A plain pixel Steve, drawn inline, for when a skin never loads (an
+// unknown UUID, or the skin service down), so the avatar slot isn't left
+// blank. The bust version adds his shirt and shoulders under the head.
+const STEVE_FACE_RECTS = '<rect width="8" height="8" fill="#b4846d"/><rect width="8" height="2" fill="#2f200d"/><rect y="2" width="1" height="1" fill="#2f200d"/><rect x="7" y="2" width="1" height="1" fill="#2f200d"/><rect x="1" y="4" width="1" height="1" fill="#fff"/><rect x="2" y="4" width="1" height="1" fill="#523d89"/><rect x="5" y="4" width="1" height="1" fill="#523d89"/><rect x="6" y="4" width="1" height="1" fill="#fff"/><rect x="3" y="5" width="2" height="1" fill="#94604a"/><rect x="2" y="6" width="4" height="1" fill="#6a4030"/>';
+const steveSvg = (inner, box) => "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${box}" shape-rendering="crispEdges">${inner}</svg>`);
+const STEVE_FACE = steveSvg(STEVE_FACE_RECTS, "0 0 8 8");
+const STEVE_BUST = steveSvg(`<rect x="2" y="8" width="12" height="8" fill="#00a8a8"/><rect x="2" y="8" width="2" height="8" fill="#b4846d"/><rect x="12" y="8" width="2" height="8" fill="#b4846d"/><rect x="6" y="8" width="4" height="1" fill="#b4846d"/><g transform="translate(4 0)">${STEVE_FACE_RECTS}</g>`, "0 0 16 16");
+
 function withRetryingAvatar(imgEl, uuid, username, url = avatarUrlFor(uuid)) {
   let retryCount = 0;
   imgEl.loading = "lazy";
@@ -25837,6 +25930,9 @@ function withRetryingAvatar(imgEl, uuid, username, url = avatarUrlFor(uuid)) {
     if (retryCount < 1) {
       retryCount++;
       setTimeout(() => { imgEl.src = url + "?retry=" + Date.now(); }, 200);
+    } else {
+      imgEl.onerror = null;
+      imgEl.src = url.includes("/bust/") ? STEVE_BUST : STEVE_FACE;
     }
   };
   imgEl.onload = () => { imgEl.style.opacity = 1; };
@@ -26315,8 +26411,8 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
     ? `Beaten by ${pickedLabel()} together (${personSweats.length})`
     : `${pickedLabel()}'s Sweats (${counts[leaderboardPeople[0]]})`;
   leaderboardHint.textContent = leaderboardPeople.length > 1
-    ? "Only sweats every picked person beat. Tap a picked name again to drop it."
-    : "Tap more names to see the sweats you beat together.";
+    ? "Sweats you all beat. Pick a name again to drop it."
+    : "Pick more names to compare.";
   // Same fix as the Table view: hide the drill-down table's own header
   // chrome instead of leaving it visible above an empty body - the
   // ranking grid above it stays put either way, since that's showing
@@ -27517,6 +27613,9 @@ async function openPlayerModal(item, { retry = false } = {}) {
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Failed to load stats."));
     const data = await res.json();
     if (modal.dataset.activeUuid !== uuid) return;
+    // A partial answer (no ratios) falls back to the saved stats too,
+    // instead of throwing halfway through drawing the tiles.
+    if (!data || !Number.isFinite(Number(data.fkdr)) || !Number.isFinite(Number(data.wlr))) throw new Error("Live stats unavailable.");
 
     const currentName = data.currentName;
     const originalName = data.originalName;
@@ -27539,8 +27638,8 @@ async function openPlayerModal(item, { retry = false } = {}) {
       <div class="modal-stat-tile ${cls}"><div class="modal-stat-label">${label}</div><div class="modal-stat-value">${value}</div>${extra}${trackedStandingHtml(field, live)}</div>`;
     modalStats.innerHTML =
       statTile("stat-star", "Star", `<span class="pill prestige-tag">${prestigeTagHtml(Number(data.star) || 0)}</span>`, "star", data.star, starDelta) +
-      statTile("stat-fkdr", "FKDR", data.fkdr.toFixed(2), "fkdr", data.fkdr, fkdrDelta) +
-      statTile("stat-wlr", "WLR", data.wlr.toFixed(2), "wlr", data.wlr, wlrDelta) +
+      statTile("stat-fkdr", "FKDR", Number(data.fkdr).toFixed(2), "fkdr", data.fkdr, fkdrDelta) +
+      statTile("stat-wlr", "WLR", Number(data.wlr).toFixed(2), "wlr", data.wlr, wlrDelta) +
       statTile("stat-finals", "Finals", Number(data.finals).toLocaleString(), "finals", data.finals) +
       statTile("stat-wins", "Wins", Number(data.wins).toLocaleString(), null, null);
     renderModalRecord(uuid, item);
@@ -27554,7 +27653,9 @@ async function openPlayerModal(item, { retry = false } = {}) {
     renderTagBadges(modalTags, modalTagsReason, urchinResult.tags, URCHIN_TAG_ICONS);
   } catch (err) {
     if (modal.dataset.activeUuid === uuid) {
-      showSavedStatsFallback(item, err.message || "Failed to load stats.");
+      // Only our own messages (backend errors, the check above) are shown;
+      // a network or script error gets one plain line, never raw text.
+      showSavedStatsFallback(item, (err && err.name === "Error" && err.message) || "Live stats unavailable.");
       modalTags.textContent = "Unavailable";
     }
   }
@@ -27594,7 +27695,7 @@ function showSavedStatsFallback(item, message) {
   modalStats.querySelector(".modal-stats-fallback-msg").textContent =
     // Backend errors come without a full stop ("No Hypixel data"), so add
     // one before the second sentence.
-    (tiles ? `${/[.!?]$/.test(message.trim()) ? message.trim() : message.trim() + "."} Showing the stats saved when they were added.` : message).trim();
+    (tiles ? `${/[.!?]$/.test(message.trim()) ? message.trim() : message.trim() + "."} Showing saved stats.` : message).trim();
   modalStats.querySelector(".modal-stats-retry").addEventListener("click", () => {
     if (modal.dataset.activeUuid !== (item.dataset.uuid || "")) return;
     closeModal.focus();

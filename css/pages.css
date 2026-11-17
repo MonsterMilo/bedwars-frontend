@@ -72,3 +72,20 @@ button.chip:hover:not([aria-pressed="true"]) { color: var(--text); border-color:
 @media (prefers-reduced-motion: reduce) {
   .grid > .card, .games > .game { animation: none !important; }
 }
+
+/* ---------- North Pole (December): snow caps on cards and panels ----------
+   seasonal/northpole.js adds the snowfall and the string of lights. */
+html[data-theme="northpole"] .hero h1 { font-weight: 700; letter-spacing: 0; text-shadow: 0 3px 0 rgba(4,10,26,0.35); }
+html[data-theme="northpole"] .card::before,
+html[data-theme="northpole"] .game::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 11px; z-index: 2; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 11' preserveAspectRatio='none'%3E%3Cpath d='M0 0H80V5C76 5 74 9 69 9S63 4 58 5 52 10 46 9 40 4 34 5 28 8 22 8 16 4 11 5 4 9 0 7Z' fill='%23f7fbff'/%3E%3Cpath d='M0 5C4 7 8 6 11 5' stroke='%23c9dcf0' fill='none'/%3E%3C/svg%3E") 0 0 / 80px 11px repeat-x;
+  filter: drop-shadow(0 2px 1px rgba(4,12,30,0.35));
+}
+html[data-theme="northpole"] .panel::before {
+  content: ""; position: absolute; left: 10px; right: 10px; top: -6px; height: 13px; pointer-events: none; border-radius: 8px 8px 0 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 13' preserveAspectRatio='none'%3E%3Cpath d='M0 0H80V8C74 8 72 12.5 66 12.5S58 7 52 8 44 13 38 12.5 30 7 24 8 16 12 10 11 2 7 0 8Z' fill='%23f7fbff'/%3E%3Cpath d='M0 3H80' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E") 0 0 / 80px 13px repeat-x;
+  filter: drop-shadow(0 2px 1px rgba(4,12,30,0.35));
+}
+html[data-theme="northpole"] .card:hover, html[data-theme="northpole"] a.card:hover { border-color: rgba(242,193,78,0.6); }
+html[data-theme="northpole"] .page { padding-top: 34px; }

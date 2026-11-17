@@ -16749,7 +16749,7 @@ html[data-theme="prism"] .sotd-note { color: var(--text-dim); }
 /* ---------- Leaderboard: beams of light ----------
    One column per person; their beam rises as high as their share, in
    their own colour, with the count lit at its top. */
-html[data-theme="prism"] .lb-scene { max-width: 900px; padding: 18px 18px 14px; border-radius: var(--radius-l); background: var(--pr-glass); border: 1px solid var(--border); box-shadow: var(--pr-hi), var(--shadow-card); }
+html[data-theme="prism"] .lb-scene { max-width: none; padding: 18px 18px 14px; border-radius: var(--radius-l); background: var(--pr-glass); border: 1px solid var(--border); box-shadow: var(--pr-hi), var(--shadow-card); }
 html[data-theme="prism"] .lb-scene-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
 html[data-theme="prism"] .lb-scene-title::before { content: "Spectrum"; font-weight: 800; font-size: 1.15em; letter-spacing: -0.01em; }
 html[data-theme="prism"] .lb-scene-sub::before { content: "Sweats beaten, per person"; font-family: var(--pr-mono); font-size: 0.7em; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-faint); }
@@ -16999,24 +16999,32 @@ html[data-theme="prism"] .status-row { border-top-color: rgba(255,255,255,0.06);
 
 /* ---------- Stat tiles with no "Beats %" meter ----------
    KDR (preview) and Wins (popup) aren't saved on sweats, so they can't be
-   ranked. When the tiles beside them carry a meter, they get an empty
-   track with "Beats —" in its place, so every tile in the grid has the
-   same shape. */
+   ranked. When the tiles beside them carry a meter, they get a quiet
+   "Not ranked" caption in its place (no empty track), so every tile in
+   the grid keeps the same height without looking like missing data. */
 html[data-theme="prism"] #statsColumns:has(.modal-standing) .stat-standing:empty::after,
 html[data-theme="prism"] #modalStats:has(.modal-standing) .modal-stat-tile:not(.stat-star):not(:has(.modal-standing))::after {
-  content: "Beats \2014";
+  content: "Not ranked";
   display: block;
   margin-top: 8px;
-  padding-left: 8px;
-  font-size: 0.6em;
-  font-weight: 700;
-  line-height: 1.2;
-  text-align: right;
+  font-family: var(--pr-mono);
+  font-size: 0.56em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  text-align: center;
   white-space: nowrap;
   color: var(--text-faint);
-  background: linear-gradient(rgba(255,255,255,0.07), rgba(255,255,255,0.07)) left center / calc(100% - 5.7em) 4px no-repeat;
+  opacity: 0.8;
 }
 html[data-theme="prism"] #modalStats:has(.modal-standing) .modal-stat-tile:not(.stat-star):not(:has(.modal-standing))::after { margin-top: 7px; }
+
+/* ---------- Section panels: one content width ----------
+   Lookup, Denicking and the sightings card use the full 1200px column,
+   like the spotlight, toolbar, grid and table, so left edges line up
+   down the page instead of stepping in and out. */
+html[data-theme="prism"] :is(#form-container, #denickContainer, #activityContainer) { max-width: none; }
 
 /* ---------- Spotlight card: stats use the card's width ----------
    The info column runs under the countdown, which keeps the top-right
@@ -17150,6 +17158,14 @@ html[data-theme="prism"] .status-panel { scroll-margin-bottom: 24px; }
   html[data-theme="prism"] .denick-avatar { grid-row: 1 / span 2; align-self: center; }
   html[data-theme="prism"] .denick-row-info { grid-column: 2; grid-row: 1; }
   html[data-theme="prism"] .denick-row-side { grid-column: 2; grid-row: 2; flex-direction: row; justify-content: flex-start; align-items: center; gap: 6px; }
+  /* Filters: the three toggles and Reset sit in an even 2x2 grid under
+     the fields, instead of two half-empty rows. */
+  html[data-theme="prism"] #toolbarFilters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  html[data-theme="prism"] #toolbarFilters > .filter-fields { grid-column: 1 / -1; }
+  html[data-theme="prism"] #toolbarFilters > .toolbar-actions-left { display: contents; }
+  html[data-theme="prism"] #toolbarFilters .chip { display: flex; }
+  html[data-theme="prism"] #toolbarFilters .chip span { flex: 1; text-align: center; white-space: nowrap; }
+  html[data-theme="prism"] #toolbarFilters .filter-reset { justify-content: center; margin: 0; }
 }
 
 @media (max-width: 760px) {
@@ -17161,6 +17177,18 @@ html[data-theme="prism"] .status-panel { scroll-margin-bottom: 24px; }
   html[data-theme="prism"] #prismField .pf-band { width: 70vw; }
   html[data-theme="prism"] .card,
   html[data-theme="prism"] .sweat-card { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(17,19,28,0.92); }
+}
+@media (max-width: 480px) {
+  /* Spectrum: exactly five beams per view and the scroll snaps between
+     them, so the right edge never cuts a beam in half. */
+  html[data-theme="prism"] .lb-scene-body {
+    grid-auto-columns: calc((100% - 4 * 6px) / 5);
+    scroll-snap-type: x mandatory;
+  }
+  html[data-theme="prism"] .lb-entry { scroll-snap-align: start; }
+  html[data-theme="prism"] .lb-scene-body.fade-right { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 12px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 12px), transparent); }
+  html[data-theme="prism"] .lb-scene-body.fade-left { -webkit-mask-image: linear-gradient(90deg, transparent, #000 12px); mask-image: linear-gradient(90deg, transparent, #000 12px); }
+  html[data-theme="prism"] .lb-scene-body.fade-left.fade-right { -webkit-mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 12px), transparent); mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 12px), transparent); }
 }
 /* @@END-PRISM@@ */
 /* @@NORTHPOLE@@ */

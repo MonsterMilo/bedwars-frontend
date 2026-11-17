@@ -144,17 +144,14 @@
     .lede { max-width: 40ch; }
   }
   @media (max-width: 560px) {
-    .card { grid-template-columns: 112px minmax(0, 1fr); gap: 14px; }
+    .card { grid-template-columns: 136px minmax(0, 1fr); gap: 14px; }
     .card:hover { transform: none; }
     .card .tlist .av { display: none; }
     .card .tlist li { grid-template-columns: minmax(0,1fr) auto; }
-    .foot { gap: 14px; }
-    .foot .live { display: flex; width: 100%; gap: 0; }
-    .foot .live::before { display: none; }
-    .foot .stat { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; letter-spacing: .02em; padding: 10px 0; }
-    .foot .stat:not([hidden]) ~ .stat:not([hidden]) { padding-left: 12px; border-left: 1px solid var(--line); }
-    .foot .stat b { font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
-    .foot .stat:not([hidden]) ~ .stat:not([hidden])::before { display: none; }
+    .foot { gap: 8px 14px; font-size: 12.5px; }
+    .foot .live { width: 100%; gap: 4px 0; }
+    .foot .live::before { margin-right: 8px; }
+    .foot .stat:not([hidden]) ~ .stat:not([hidden])::before { margin: 0 9px 0 6px; }
     .foot .by { margin-left: 0; }
   }
 
@@ -169,9 +166,12 @@
     border-radius: 10px 10px 4px 4px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.45)); }
   /* the string of lights hangs above the logo's Santa hat, not on it */
   html[data-np] .topbar { padding-top: max(30px, env(safe-area-inset-top, 0px)); }
-  /* snow falls over the page but behind the cards, so it never sits on their text */
+  /* snow falls over the 3D scene but behind all the page content, so it never sits on any text */
   html[data-np] main { isolation: auto; }
-  html[data-np] .cards { position: relative; z-index: 4; }
+  html[data-np] .wrap { position: relative; z-index: 4; }
+  /* flakes behind small text would still peek through the gaps between letters: a soft dark halo hides them */
+  html[data-np] :is(.lede, .eyebrow, .mark, .foot) { text-shadow: 0 0 3px var(--bg), 0 0 8px var(--bg), 0 0 14px rgba(4,5,10,.8); }
+  html[data-np] .pill { background: rgba(8,10,18,.82); }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
@@ -362,7 +362,7 @@
   function tint(C) { return 'rgb(' + C.split(',').map(function (v) { return Math.round(+v + (255 - v) * 0.6); }).join(',') + ')'; } // the colour, lightened
   function drawCosmetic(ctx, w, h, t, C) {
     ctx.clearRect(0, 0, w, h);
-    var m = Math.min(w, h), size = m * 0.6, cx = w / 2, cy = h * 0.48 + Math.sin(t * 1.6) * m * 0.02, light = tint(C);
+    var m = Math.min(w, h), size = m * 0.76, cx = w / 2, cy = h * 0.48 + Math.sin(t * 1.6) * m * 0.02, light = tint(C);
     // soft round glow that fades out well inside the box
     var gr = m * 0.46, g = ctx.createRadialGradient(cx, cy, 0, cx, cy, gr); g.addColorStop(0, 'rgba(' + C + ',0.28)'); g.addColorStop(0.5, 'rgba(' + C + ',0.08)'); g.addColorStop(1, 'rgba(' + C + ',0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
@@ -490,9 +490,9 @@
       [[22 + L.hot[i] * 16, .07], [9, .2], [2, .95]].forEach(function (s) { ctx.strokeStyle = rgba(c, s[1] * k); ctx.lineWidth = s[0]; ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(fx, fy); ctx.stroke(); });
     });
     ctx.globalCompositeOperation = 'source-over';
-    var pts = [0, 1, 2].map(function (k) { var a = -Math.PI / 2 + k * Math.PI * 2 / 3; return [P.x + Math.cos(a) * P.size * 0.5, P.y + 0.08 * P.size + Math.sin(a) * P.size * 0.5]; });
+    var pts = [0, 1, 2].map(function (k) { var a = -Math.PI / 2 + k * Math.PI * 2 / 3; return [P.x + Math.cos(a) * P.size * 0.5, P.y + 0.06 * P.size + Math.sin(a) * P.size * 0.5]; }); // same size and place as the 3D prism face-on
     ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); ctx.lineTo(pts[1][0], pts[1][1]); ctx.lineTo(pts[2][0], pts[2][1]); ctx.closePath();
-    ctx.fillStyle = 'rgba(200,220,255,0.06)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.lineJoin = 'round'; ctx.fillStyle = 'rgba(200,220,255,0.06)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = Math.max(1.5, P.size * 0.012); ctx.stroke();
   }
 
   // The flat beams are only a fallback: they fade in if the 3D scene isn't up after a moment
@@ -550,17 +550,21 @@ function start() {
   const scene = new THREE.Scene(); scene.background = BG;
   const FOV = 22, camera = new THREE.PerspectiveCamera(FOV, 1, 10, 20000);
 
-  // Environment: a dark studio with light strips, for crisp reflections on the glass.
+  // Environment: a dark studio lit by soft glowing panels (each fades out at its edges), blurred a
+  // little, so the glass shows smooth gradients instead of hard-edged flat slabs.
   const pmrem = new THREE.PMREMGenerator(renderer);
   const studio = new THREE.Scene(); studio.background = new THREE.Color(0x010206);
-  const strip = (w, h, color, k, pos) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide })); m.position.set(...pos); m.lookAt(0, 0, 0); studio.add(m); };
-  strip(7, 0.35, 0xffffff, 3, [0, 4, 2.5]);
-  strip(0.3, 6, 0xffffff, 2, [4.5, 0, 1.5]);
-  strip(0.5, 5, 0x00d9ff, 3, [-4.5, 0.5, 0.5]);
-  strip(4, 0.4, 0xa855f7, 3, [0, -4, 1.5]);
-  strip(2.2, 2.2, 0xffb84d, 1.6, [2.5, 1, -4]);
-  strip(1, 7, 0x9fd8ff, 1.2, [-3.5, 0, 5]);
-  scene.environment = pmrem.fromScene(studio, 0).texture;
+  const soft = (() => { const c = document.createElement("canvas"); c.width = c.height = 128; const x = c.getContext("2d");
+    const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, "#fff"); g.addColorStop(0.35, "rgba(255,255,255,0.75)"); g.addColorStop(1, "rgba(255,255,255,0)");
+    x.fillStyle = g; x.fillRect(0, 0, 128, 128); const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx; })();
+  const strip = (w, h, color, k, pos) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), map: soft, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); m.position.set(...pos); m.lookAt(0, 0, 0); studio.add(m); };
+  strip(6, 1.2, 0xffffff, 2.2, [0, 4, 2.5]);
+  strip(0.9, 6, 0xffffff, 1.6, [4.5, 0, 1.5]);
+  strip(1.2, 5, 0x00d9ff, 1.8, [-4.5, 0.5, 0.5]);
+  strip(4, 1.2, 0xa855f7, 1.8, [0, -4, 1.5]);
+  strip(3, 3, 0xffb84d, 0.7, [2.5, 1, -4]);
+  strip(2.4, 7, 0x9fd8ff, 0.8, [-3.5, 0, 5]);
+  scene.environment = pmrem.fromScene(studio, 0.04).texture;
 
   /* ---- background: faint colour wash + vignette, far behind everything ---- */
   const bgMat = new THREE.ShaderMaterial({
@@ -659,19 +663,21 @@ function start() {
   const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.045, bevelSize: 0.04, bevelSegments: 8, curveSegments: 16 });
   geo.translate(0, -0.12, -depth / 2); geo.computeVertexNormals();
   const glass = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff, metalness: 0, roughness: 0.015, transmission: 1, thickness: 1.25, ior: 1.52, dispersion: 4.5,
+    color: 0xffffff, metalness: 0, roughness: 0.015, transmission: 1, thickness: 1.25, ior: 1.52, dispersion: 2.5,
     attenuationColor: new THREE.Color(0xcfe6ff), attenuationDistance: 600,
-    clearcoat: 1, clearcoatRoughness: 0.02, specularIntensity: 1, specularColor: new THREE.Color(0xffffff), envMapIntensity: 1.0,
+    clearcoat: 1, clearcoatRoughness: 0.02, specularIntensity: 1, specularColor: new THREE.Color(0xffffff), envMapIntensity: 0.7,
     iridescence: 0.35, iridescenceIOR: 1.3, iridescenceThicknessRange: [200, 600]
   });
   const prism = new THREE.Mesh(geo, glass); prism.renderOrder = 3;
-  // A faint fresnel rim so the edges always catch some light.
+  // A faint fresnel rim so the edges always catch some light, and a soft cool glow on the
+  // triangle faces (brighter at the top) so the glass reads as a solid block, not an empty frame.
   const rimMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     uniforms: { uT: { value: 0 } },
-    vertexShader: `varying vec3 vN, vV, vP; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position; gl_Position = projectionMatrix * mv; }`,
-    fragmentShader: `uniform float uT; varying vec3 vN, vV, vP; void main(){ float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 3.0);
+    vertexShader: `varying vec3 vN, vV, vP; varying float vFace; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position; vFace = abs(normal.z); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `uniform float uT; varying vec3 vN, vV, vP; varying float vFace; void main(){ float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 3.0);
       float h = fract(vP.x * 0.3 + vP.y * 0.22 + uT * 0.04); vec3 c = mix(vec3(0.0, 0.85, 1.0), vec3(0.66, 0.33, 0.97), smoothstep(0.0, 0.5, h)); c = mix(c, vec3(1.0, 0.72, 0.3), smoothstep(0.5, 1.0, h));
-      gl_FragColor = vec4(c * f * 0.35, 1.0); }` });
+      vec3 body = vec3(0.55, 0.72, 1.0) * (0.012 + 0.03 * smoothstep(-0.9, 0.95, vP.y)) * smoothstep(0.6, 1.0, vFace);
+      gl_FragColor = vec4(c * f * 0.35 + body, 1.0); }` });
   const rim = new THREE.Mesh(geo, rimMat); rim.renderOrder = 4; prism.add(rim);
   const prismGroup = new THREE.Group(); prismGroup.add(prism); scene.add(prismGroup);
   const key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(300, 500, 800); scene.add(key);
@@ -697,9 +703,10 @@ function start() {
   }
 
   // Drag to spin: press on or near the prism and drag. Let go and it keeps spinning,
-  // then eases back to its slow turn. The prism ignores plain mouse movement.
-  const AUTO = 0.32;
-  const spin = { drag: false, id: null, lx: 0, ly: 0, vy: AUTO, vx: 0, tiltX: 0.12, lastL: null };
+  // then eases back to its slow sway. The prism ignores plain mouse movement.
+  // On its own it sways gently either side of face-on, so it always reads as a triangle.
+  const SWAY = 0.5;
+  const spin = { drag: false, id: null, lx: 0, ly: 0, vy: 0, vx: 0, tiltX: 0.12, lastL: null };
   const nearPrism = (e) => { const L = spin.lastL; if (!L) return false; const r = canvas.getBoundingClientRect();
     const dx = e.clientX - r.left - L.prism.x, dy = e.clientY - r.top - L.prism.y; return Math.hypot(dx, dy) < L.prism.size * 0.75; };
   addEventListener("pointerdown", (e) => {
@@ -748,7 +755,11 @@ function start() {
     prismGroup.position.set(px, py, 0); prismGroup.scale.setScalar(S * 0.5);
     spin.lastL = L;
     if (!spin.drag) {
-      if (!P.reduce || spin.vy !== AUTO) { prismGroup.rotation.y += dt * spin.vy; spin.vy += (( P.reduce ? 0 : AUTO) - spin.vy) * Math.min(1, dt * 1.6); }
+      prismGroup.rotation.y += dt * spin.vy; spin.vy *= Math.max(0, 1 - dt * 1.6);
+      const free = Math.min(1, Math.abs(spin.vy) / 0.5); // still spinning from a drag: let it run
+      const home = Math.round(prismGroup.rotation.y / Math.PI) * Math.PI; // the nearest face-on angle (front or back)
+      const target = home + (P.reduce ? 0 : SWAY * Math.sin(t * 0.3));
+      prismGroup.rotation.y += (target - prismGroup.rotation.y) * Math.min(1, dt * 1.2) * (1 - free);
       spin.tiltX += dt * spin.vx; spin.vx *= Math.max(0, 1 - dt * 3);
       spin.tiltX += (0.12 - spin.tiltX) * Math.min(1, dt * 0.8);
     }

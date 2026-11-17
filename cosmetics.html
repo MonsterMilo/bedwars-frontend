@@ -138,6 +138,13 @@
   .search input:focus { outline: none; border-color: var(--border-strong); box-shadow: var(--glow); }
   .search kbd { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font: 12px/1 var(--font); color: var(--faint); border: 1px solid var(--border); border-radius: 5px; padding: 4px 7px; }
   .search input:not(:placeholder-shown) ~ kbd { display: none; }
+  /* The clear button in the theme's own colour, not the browser's blue. */
+  .search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; margin-right: -4px; cursor: pointer; background: var(--dim);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m4 4 8 8M12 4l-8 8' stroke='%23000' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m4 4 8 8M12 4l-8 8' stroke='%23000' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .search input::-webkit-search-cancel-button:hover { background: var(--text); }
+  /* No keyboard on touch screens, so no "/" shortcut hint. */
+  @media (hover: none) { .search kbd { display: none; } .search input { padding-right: 16px; } }
 
   /* Body: category rail + results */
   .layout { display: grid; grid-template-columns: 220px 1fr; gap: 28px; align-items: start; }
@@ -150,6 +157,8 @@
   .cat .n { margin-left: auto; font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
 
   .bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  /* The filters wrap as one group: when they don't fit beside the heading they all move under it together. */
+  .ctrls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .bar h2 { margin: 0 auto 0 0; font-family: var(--font-title); font-size: 22px; font-weight: 700; }
   html[data-theme="casefiles"] .bar h2 { font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
   .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
@@ -192,6 +201,10 @@
   .stage { position: relative; background: radial-gradient(90% 80% at 50% 38%, var(--studio-a), var(--studio-b)); overflow: hidden; }
   .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
   .stage canvas:active { cursor: grabbing; }
+  /* While a recording loads: a small spinner (only if it takes a moment). */
+  .stage.loading::after { content: ""; position: absolute; left: 50%; top: 50%; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--accent) 25%, transparent); border-top-color: var(--accent); opacity: 0; animation: spin .8s linear infinite, show .2s .3s forwards; pointer-events: none; }
+  @keyframes spin { to { transform: rotate(1turn); } }
+  @keyframes show { to { opacity: 1; } }
   .stage .chat-stage { position: absolute; left: 6%; right: 6%; bottom: 16%; display: grid; gap: 8px; }
   .chat-line { font: 600 15px/1.35 'Courier New', monospace; color: #fff; background: rgba(0,0,0,.45); padding: 4px 8px; width: fit-content; max-width: 100%; text-shadow: 2px 2px 0 rgba(0,0,0,.6); animation: chatin .45s var(--ease) both; }
   .thumb .chat-line { font-size: 10.5px; padding: 3px 6px; }
@@ -345,6 +358,7 @@
     <main>
       <div class="bar">
         <h2 id="heading">All cosmetics</h2>
+        <div class="ctrls">
         <div class="seg" id="rarSeg" role="group" aria-label="Filter by rarity">
           <button type="button" data-r="all" aria-pressed="true">All</button>
           <button type="button" data-r="common" aria-pressed="false">Common</button>
@@ -364,6 +378,7 @@
           <option value="price-lo">Price, low to high</option>
           <option value="name">A to Z</option>
         </select>
+        </div>
       </div>
       <div class="grid" id="grid"></div>
       <div class="empty" id="empty" hidden><b>Nothing matches that</b>Try another word, or clear the category.</div>
@@ -394,7 +409,6 @@
       </div>
       <p class="desc" id="sDesc"></p>
       <div id="soundBox" hidden>
-        <p class="block-h">Sound</p>
         <button class="btn sound-btn" id="playSound" type="button"><svg viewBox="0 0 16 16"><path d="M4 3v10l9-5z" fill="currentColor"/></svg>Play sound<span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>
       </div>
       <div class="facts">
@@ -509,7 +523,7 @@ const ITEMS = [
   { id: "final-smash", cat: "final", name: "Final Smash", rar: "legendary", price: 100000, get: "shop", desc: "Killing an enemy will smash them out of the world.", tags: "armor stand launch", rec: "final-smash", hero: 1.2, rise: 5 },
   { id: "rainbow", cat: "final", name: "Rainbow", rar: "legendary", price: null, get: "event", season: "Easter", desc: "Whoa, that's a full rainbow all the way!", tags: "rainbow colors", rec: "rainbow", hero: 2.0 },
   { id: "petal-gust", cat: "final", name: "Petal Gust", rar: "legendary", price: null, get: "event", season: "Easter", desc: "Create a gust of petals around your foe!", tags: "flowers petals tulips", rec: "petal-gust", hero: 2.5 },
-  { id: "batcrux", cat: "final", name: "Batcrux", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Killing an enemy splits their soul into 7 Batcruxes.", tags: "bats smoke spooky", rec: "batcrux", hero: 2.5, rise: 4 },
+  { id: "batcrux", cat: "final", name: "Batcrux", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Killing an enemy splits their soul into 7 Batcruxes.", tags: "bats smoke spooky", rec: "batcrux", hero: 2.5, rise: 4, thumbNoTags: 1 },
   { id: "soul-ripper", cat: "final", name: "Soul Ripper", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Killing an enemy rips their soul of their body, leaving them lingering a few more seconds in the common world.", tags: "soul ghost spooky", rec: "soul-ripper", hero: 1.6 },
   { id: "shattered", cat: "final", name: "Shattered", rar: "legendary", price: null, get: "bundle", season: "Halloween", desc: "Shatter your enemies to dust!", tags: "glass shards", rec: "shattered", hero: 1.3 },
   { id: "pumpkin-popper", cat: "final", name: "Pumpkin Popper", rar: "legendary", price: null, get: "bundle", season: "Halloween", desc: "Killing a player will cause Pumpkins to explode from their body.", tags: "pumpkins pie", rec: "pumpkin-popper", hero: 1.5 },
@@ -1238,40 +1252,40 @@ const ITEMS = [
   { id: "bed-shattering-ice", cat: "bed", name: "Shattering Ice", rar: "epic", price: null, get: "event", season: "Holidays", desc: "Plays the Shattering Ice Bed Destroy when you break a bed.", tags: "bed break", rec: "bed-shattering-ice", hero: 2.38, cam: [[-10.52, 2.84, -4.18], [0, 0.8, 0], 5.7, 33.9, [-9.05, 2.61, -3.6], [0, 0.8, 0]] },
   { id: "bed-burned-up", cat: "bed", name: "Burned Up", rar: "legendary", price: null, get: "event", season: "Summer", desc: "Plays the Burned Up Bed Destroy when you break a bed.", tags: "bed break", rec: "bed-burned-up", hero: 1.15, cam: [[-9.87, 4.16, -3.93], [0, 2.25, 0], 5.3, 31.8, [-8.49, 3.95, -3.38], [0, 2.25, 0]] },
   // Projectile trails (begin): every card flies one standard shot (sgen.py) with what that trail spawns each tick, measured from recorded shots (tgen.py)
-  { id: "trail-black-smoke", cat: "trail", name: "Black Smoke", rar: "common", price: 5000, get: "shop", desc: "Selects the Black Smoke Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-black-smoke", songs: ["trail-black-smoke", "trail-black-smoke-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-ender", cat: "trail", name: "Ender", rar: "common", price: 5000, get: "shop", desc: "Selects the Ender Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-ender", songs: ["trail-ender", "trail-ender-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-lava", cat: "trail", name: "Lava", rar: "common", price: 5000, get: "shop", desc: "Selects the Lava Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-lava", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-potion", cat: "trail", name: "Potion", rar: "common", price: 5000, get: "shop", desc: "Selects the Potion Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-potion", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-slime", cat: "trail", name: "Slime", rar: "common", price: 5000, get: "shop", desc: "Selects the Slime Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-slime", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-water", cat: "trail", name: "Water", rar: "common", price: 5000, get: "shop", desc: "Selects the Water Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-water", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-blue-dust", cat: "trail", name: "Blue Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Blue Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-blue-dust", songs: ["trail-blue-dust", "trail-blue-dust-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-cursed-flames", cat: "trail", name: "Cursed Flames", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Selects the Cursed Flames Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-cursed-flames", songs: ["trail-cursed-flames", "trail-cursed-flames-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-lunar-dust", cat: "trail", name: "Lunar Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Lunar Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-lunar-dust", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-notes", cat: "trail", name: "Notes", rar: "rare", price: 10000, get: "shop", desc: "Selects the Notes Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-notes", songs: ["trail-notes", "trail-notes-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-purple-dust", cat: "trail", name: "Purple Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Purple Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-purple-dust", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-red-dust", cat: "trail", name: "Red Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Red Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-red-dust", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-angry-villager", cat: "trail", name: "Angry Villager", rar: "epic", price: 25000, get: "shop", desc: "Selects the Angry Villager Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-angry-villager", songs: ["trail-angry-villager", "trail-angry-villager-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-bone", cat: "trail", name: "Bone", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Bone Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-bone", songs: ["trail-bone", "trail-bone-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-candy-basket", cat: "trail", name: "Candy Basket", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Candy Basket Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-candy-basket", songs: ["trail-candy-basket", "trail-candy-basket-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-fire", cat: "trail", name: "Fire", rar: "epic", price: 25000, get: "shop", desc: "Selects the Fire Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-fire", songs: ["trail-fire", "trail-fire-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-firework", cat: "trail", name: "Firework", rar: "epic", price: 25000, get: "shop", desc: "Selects the Firework Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-firework", songs: ["trail-firework", "trail-firework-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-green-star", cat: "trail", name: "Green Star", rar: "epic", price: 25000, get: "shop", desc: "Selects the Green Star Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-green-star", songs: ["trail-green-star", "trail-green-star-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-hoops", cat: "trail", name: "Hoops", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Hoops Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-hoops", songs: ["trail-hoops", "trail-hoops-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-howling-wind", cat: "trail", name: "Howling Wind", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Howling Wind Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-howling-wind", songs: ["trail-howling-wind", "trail-howling-wind-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-magic", cat: "trail", name: "Magic", rar: "epic", price: 25000, get: "shop", desc: "Selects the Magic Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-magic", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-meteor-blaze", cat: "trail", name: "Meteor Blaze", rar: "epic", price: null, get: "slumber", desc: "Selects the Meteor Blaze Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-meteor-blaze", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-rocket", cat: "trail", name: "Rocket", rar: "epic", price: 25000, get: "shop", desc: "Selects the Rocket Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-rocket", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-bite", cat: "trail", name: "Bite", rar: "legendary", price: null, get: "challenges", desc: "Selects the Bite Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-bite", songs: ["trail-bite", "trail-bite-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-bloody", cat: "trail", name: "Bloody", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the Bloody Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-bloody", songs: ["trail-bloody", "trail-bloody-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-cheese", cat: "trail", name: "Cheese", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Cheese Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-cheese", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-dna", cat: "trail", name: "DNA", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the DNA Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-dna", songs: ["trail-dna", "trail-dna-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-hearts", cat: "trail", name: "Hearts", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Hearts Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-hearts", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-jack-o-lantern", cat: "trail", name: "Jack O' Lantern", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the Jack O' Lantern Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-jack-o-lantern", songs: ["trail-jack-o-lantern", "trail-jack-o-lantern-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-merry", cat: "trail", name: "Merry", rar: "legendary", price: null, get: "event", season: "Holidays", desc: "Selects the Merry Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-merry", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-rainbow", cat: "trail", name: "Rainbow", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Rainbow Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-rainbow", songs: ["trail-rainbow", "trail-rainbow-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-stormy", cat: "trail", name: "Stormy", rar: "legendary", price: null, get: "event", season: "Summer", desc: "Selects the Stormy Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-stormy", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-trick-or-treat", cat: "trail", name: "Trick or Treat", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the Trick or Treat Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-trick-or-treat", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
-  { id: "trail-twin-dragon", cat: "trail", name: "Twin Dragon", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Twin Dragon Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-twin-dragon", stage: "void", bright: 1.9, hero: 0.95, cam: [[-20, 6, -10], [0, 1.5, 0], 8, 60, [-5, 3.5, -9.5], [-5, 1.5, 0]] },
+  { id: "trail-black-smoke", cat: "trail", name: "Black Smoke", rar: "common", price: 5000, get: "shop", desc: "Selects the Black Smoke Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-black-smoke", songs: ["trail-black-smoke", "trail-black-smoke-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-ender", cat: "trail", name: "Ender", rar: "common", price: 5000, get: "shop", desc: "Selects the Ender Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-ender", songs: ["trail-ender", "trail-ender-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-lava", cat: "trail", name: "Lava", rar: "common", price: 5000, get: "shop", desc: "Selects the Lava Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-lava", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-potion", cat: "trail", name: "Potion", rar: "common", price: 5000, get: "shop", desc: "Selects the Potion Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-potion", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-slime", cat: "trail", name: "Slime", rar: "common", price: 5000, get: "shop", desc: "Selects the Slime Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-slime", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-water", cat: "trail", name: "Water", rar: "common", price: 5000, get: "shop", desc: "Selects the Water Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-water", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-blue-dust", cat: "trail", name: "Blue Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Blue Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-blue-dust", songs: ["trail-blue-dust", "trail-blue-dust-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-cursed-flames", cat: "trail", name: "Cursed Flames", rar: "rare", price: null, get: "event", season: "Halloween", desc: "Selects the Cursed Flames Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-cursed-flames", songs: ["trail-cursed-flames", "trail-cursed-flames-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-lunar-dust", cat: "trail", name: "Lunar Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Lunar Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-lunar-dust", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-notes", cat: "trail", name: "Notes", rar: "rare", price: 10000, get: "shop", desc: "Selects the Notes Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-notes", songs: ["trail-notes", "trail-notes-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-purple-dust", cat: "trail", name: "Purple Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Purple Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-purple-dust", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-red-dust", cat: "trail", name: "Red Dust", rar: "rare", price: 10000, get: "shop", desc: "Selects the Red Dust Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-red-dust", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-angry-villager", cat: "trail", name: "Angry Villager", rar: "epic", price: 25000, get: "shop", desc: "Selects the Angry Villager Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-angry-villager", songs: ["trail-angry-villager", "trail-angry-villager-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-bone", cat: "trail", name: "Bone", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Bone Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-bone", songs: ["trail-bone", "trail-bone-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-candy-basket", cat: "trail", name: "Candy Basket", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Candy Basket Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-candy-basket", songs: ["trail-candy-basket", "trail-candy-basket-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-fire", cat: "trail", name: "Fire", rar: "epic", price: 25000, get: "shop", desc: "Selects the Fire Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-fire", songs: ["trail-fire", "trail-fire-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-firework", cat: "trail", name: "Firework", rar: "epic", price: 25000, get: "shop", desc: "Selects the Firework Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-firework", songs: ["trail-firework", "trail-firework-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-green-star", cat: "trail", name: "Green Star", rar: "epic", price: 25000, get: "shop", desc: "Selects the Green Star Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-green-star", songs: ["trail-green-star", "trail-green-star-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-hoops", cat: "trail", name: "Hoops", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Hoops Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-hoops", songs: ["trail-hoops", "trail-hoops-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-howling-wind", cat: "trail", name: "Howling Wind", rar: "epic", price: null, get: "event", season: "Halloween", desc: "Selects the Howling Wind Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-howling-wind", songs: ["trail-howling-wind", "trail-howling-wind-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-magic", cat: "trail", name: "Magic", rar: "epic", price: 25000, get: "shop", desc: "Selects the Magic Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-magic", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-meteor-blaze", cat: "trail", name: "Meteor Blaze", rar: "epic", price: null, get: "slumber", desc: "Selects the Meteor Blaze Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-meteor-blaze", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-rocket", cat: "trail", name: "Rocket", rar: "epic", price: 25000, get: "shop", desc: "Selects the Rocket Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-rocket", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-bite", cat: "trail", name: "Bite", rar: "legendary", price: null, get: "challenges", desc: "Selects the Bite Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-bite", songs: ["trail-bite", "trail-bite-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-bloody", cat: "trail", name: "Bloody", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the Bloody Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-bloody", songs: ["trail-bloody", "trail-bloody-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-cheese", cat: "trail", name: "Cheese", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Cheese Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-cheese", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-dna", cat: "trail", name: "DNA", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the DNA Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-dna", songs: ["trail-dna", "trail-dna-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-hearts", cat: "trail", name: "Hearts", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Hearts Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-hearts", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-jack-o-lantern", cat: "trail", name: "Jack O' Lantern", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the Jack O' Lantern Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-jack-o-lantern", songs: ["trail-jack-o-lantern", "trail-jack-o-lantern-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-merry", cat: "trail", name: "Merry", rar: "legendary", price: null, get: "event", season: "Holidays", desc: "Selects the Merry Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-merry", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-rainbow", cat: "trail", name: "Rainbow", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Rainbow Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-rainbow", songs: ["trail-rainbow", "trail-rainbow-bow"], takeNames: ["Fireball", "Bow"], stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-stormy", cat: "trail", name: "Stormy", rar: "legendary", price: null, get: "event", season: "Summer", desc: "Selects the Stormy Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-stormy", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-trick-or-treat", cat: "trail", name: "Trick or Treat", rar: "legendary", price: null, get: "event", season: "Halloween", desc: "Selects the Trick or Treat Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-trick-or-treat", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
+  { id: "trail-twin-dragon", cat: "trail", name: "Twin Dragon", rar: "legendary", price: 100000, get: "shop", desc: "Selects the Twin Dragon Projectile Trail.", tags: "projectile fireball arrow bow", rec: "trail-twin-dragon", stage: "void", bright: 1.9, hero: 0.87, cam: [[2.5, 3.2, -11.5], [-6.5, 1.7, 0], 8, 60, [1.5, 2.8, -9.5], [-6, 1.7, 0]] },
   // Projectile trails (end)
   // Kill messages: Hypixel's exact wording
   { id: "km-fire", cat: "msg", name: "Fire", rar: "common", price: 5000, get: "shop", desc: "Select the Fire Kill Messages!", tags: "chat",
@@ -1430,6 +1444,11 @@ function render() {
     b.innerHTML = `<div class="thumb">${thumb}<span class="rar">${RAR[it.rar][0]}</span>${it.season ? `<span class="season">${it.season}</span>` : ""}</div>
       <div class="meta"><span class="nm">${it.name}</span><span class="sub"><span class="cn">${catOf(it.cat).name}</span>${price}</span></div>`;
     b.onclick = () => openStudio(it.id);
+    // Start fetching the recording when a card is pointed at (a short hover, or a press), so the popup opens on it sooner.
+    if (it.rec) {
+      let hov = 0; const pre = () => loadRec(it.songs?.[0] || it.rec).catch(() => {});
+      b.onpointerenter = () => { hov = setTimeout(pre, 150); }; b.onpointerleave = () => clearTimeout(hov); b.onpointerdown = pre;
+    }
     grid.appendChild(b);
   });
   $("empty").hidden = visible.length > 0;
@@ -2025,17 +2044,27 @@ const loadRec = (id) => recLoading[id] || (recLoading[id] = fetchJson(`cosmetics
 const REC_CAM = [[-10.4, 2.2, -2.6], [0, 1.45, -1.3], 5, 40, [-8.4, 2.6, -2.6], [0, 1.8, -1.0]];
 for (const it of ITEMS) if (it.rec) {
   it.preview = "rec:" + it.id;
-  PREVIEWS[it.preview] = { stage: it.stage || "arena", bright: it.bright, cam: it.cam || REC_CAM, rec: it.rec, loop: null, hero: it.hero || 2.1, build(S) {
+  // Trails start just after the shot (start), so the first frame already has the projectile and its trail.
+  PREVIEWS[it.preview] = { stage: it.stage || "arena", bright: it.bright, cam: it.cam || REC_CAM, rec: it.rec, loop: null, hero: it.hero || 2.1, start: it.cat === "trail" ? 0.55 : 0, build(S) {
     const def = this; let run = null;
     // Snow Globe plays one of several jingles; the viewer picks which (def.take).
     const rec = it.songs?.[def.take || 0] || it.rec;
-    const go = (d) => { def.loop = (Math.max(d.end, d.cam) - d.ev[0][0]) / 1000 + 1.4; run = REC.build(S, d); };
+    const go = (d) => { def.loop = recLoop(it, d); run = REC.build(S, d); };
     if (recData[rec]) go(recData[rec]);
-    else loadRec(rec).then((d) => { if (S.def === def && S.it === it && (it.songs?.[def.take || 0] || it.rec) === rec) { S.t = 0; go(d); } });
+    else loadRec(rec).then((d) => { if (S.def === def && S.it === it && (it.songs?.[def.take || 0] || it.rec) === rec) { S.t = 0; go(d); S.preroll(def.start); } });
     const f = (t) => run?.(t);
-    f.focus = () => run?.focus?.(); f.me = () => run?.me?.();
+    f.focus = () => run?.focus?.(); f.me = () => run?.me?.(); f.ready = () => !!run;
     return f;
   } };
+}
+// How long one play of a recording lasts before it starts again.
+function recLoop(it, d) {
+  const t0 = d.ev[0][0];
+  // Glyphs start again right after the last burst, while the picture is still showing, so the stage never sits empty.
+  if (it.cat === "glyph") return (d.end - t0) / 1000 + 0.2;
+  // Trails: once what they leave behind has gone (Cheese and Trick or Treat drop items that stay a while).
+  if (it.cat === "trail") { let last = 0; for (const e of d.ev) if (e[1] === "p" || e[1] === "kill" || e[1] === "obj") last = Math.max(last, e[0]); return Math.max(2.4, (last - t0) / 1000 + 0.5); }
+  return (Math.max(d.end, d.cam) - t0) / 1000 + 1.4;
 }
 // Island toppers: built block by block on the arena as the in-game preview does,
 // held, then built again. The camera is set back far enough to see the whole build.
@@ -2254,7 +2283,10 @@ function makeStudio(canvas, w, h) {
     S.bright = def.bright || 1; S.skyK = 1; scene.background = null; mcAmb.intensity = 0.4 * Math.PI * S.bright; mcL0.intensity = mcL1.intensity = 0.6 * Math.PI * Math.min(S.bright, 1.25);
     S.flash(0); S.setStage(def.stage); arena?.userData.reset();
     S.def = def; S.it = it; S.t = 0; S.tick = def.build(S, it);
+    if (S.tick?.ready?.()) S.preroll(def.start);
   };
+  // Plays ahead to `t` at once (sounds in that stretch play straight away).
+  S.preroll = (t) => { for (let n = 0; t && S.t < t && n < 600; n++) S.step(1 / 60); };
   // Runs fn once, the first tick at or after `time` (calls are told apart by order).
   S.at = (time, fn) => { const k = S.ci++; if (S.t >= time && !S.fired.has(k)) { S.fired.add(k); fn(); } };
   S.audible = false;
@@ -2356,10 +2388,12 @@ async function makeThumbs() {
     T.camera.position.set(C[4][0], C[4][1] + (def.thumbY ? .4 : 0), C[4][2]); T.camera.lookAt(C[5][0], def.thumbY || C[5][1], C[5][2]);
     Math.random = seeded(it.id.length * 97 + 13);
     T.load(def, it);
-    const steps = Math.round(def.hero * 60);
+    const steps = Math.round((def.hero - T.t) * 60); // T.t is past 0 when the preview starts later (trails)
     for (let i = 0; i < steps; i++) T.step(1 / 60);
     Math.random = realRandom;
     if (def.rec || def.top) await new Promise((r) => setTimeout(r, 0)); // let item and block meshes attach (they are added once their models load)
+    // Batcrux's bats carry long name tags that run off the card: the picture leaves them out (the popup still shows them).
+    if (it.thumbNoTags) T.item.traverse((o) => { if (o.isSprite && o.renderOrder >= 10) o.visible = false; }); // name tags are the only sprites drawn at order 10+
     const me = it.follow && T.tick?.me?.(); // dances that ride off: the picture keeps the same view of the winner
     if (me) { T.camera.position.set(me.x + C[4][0] - C[5][0], me.y + 1 + C[4][1] - C[5][1], me.z + C[4][2] - C[5][2]); T.camera.lookAt(me.x, me.y + 1, me.z); }
     T.renderer.render(T.scene, T.camera);
@@ -2412,7 +2446,7 @@ function resize() {
 }
 // ?at=1.2 holds every preview still at that second (for checking a single moment).
 let HOLD = parseFloat(new URLSearchParams(location.search).get("at"));
-window.__focus = () => { const f = studio.tick?.focus?.(); return f && { x: f.x, y: f.y, z: f.z, w: f.w, base: PREVIEWS[current?.preview]?.cam?.[1], end: studio.def?.end }; };
+window.__dbg = () => studio; window.__focus = () => { const f = studio.tick?.focus?.(); return f && { x: f.x, y: f.y, z: f.z, w: f.w, base: PREVIEWS[current?.preview]?.cam?.[1], end: studio.def?.end }; };
 window.__seek = (t) => { if (t < studio.t) studio.load(PREVIEWS[current.preview], current); HOLD = t; };
 // ?cam=x,y,z,tx,ty,tz places the camera (and stops the spin) for checking a view.
 const CAMQ = new URLSearchParams(location.search).get("cam")?.split(",").map(Number);
@@ -2446,6 +2480,7 @@ function followRec(dt) {
   controls.target.x += dx; controls.target.y += dy; controls.target.z += dz;
   studio.camera.position.x += dx; studio.camera.position.y += dy * (rise ? 0.8 : 0.3); studio.camera.position.z += dz;
 }
+const stageEl = $("stage");
 function frame(now) {
   if (CAMQ?.length === 6) { controls.autoRotate = false; studio.camera.position.set(CAMQ[0], CAMQ[1], CAMQ[2]); controls.target.set(CAMQ[3], CAMQ[4], CAMQ[5]); }
   raf = requestAnimationFrame(frame);
@@ -2455,7 +2490,12 @@ function frame(now) {
   if (!(CAMQ?.length === 6)) followRec(HOLD >= 0 ? 1 : dt);
   // Victory dances fade out over their last moments and back in as they start again, instead of jumping back.
   const L = studio.def?.loop, cv = studio.renderer.domElement;
-  const op = (current?.cat === "dance" || current?.cat === "trail") && L && !(HOLD >= 0) ? clamp((L - studio.t) / 0.7, 0, 1) * clamp(studio.t / 0.45, 0, 1) : 1;
+  // A recording still loading shows nothing rather than an empty stage.
+  const s0 = studio.def?.start || 0;
+  const loading = !!studio.tick?.ready && !studio.tick.ready();
+  if (stageEl.classList.contains("loading") !== loading) stageEl.classList.toggle("loading", loading);
+  const op = loading ? 0
+    : (current?.cat === "dance" || current?.cat === "trail") && L && !(HOLD >= 0) ? clamp((L - studio.t) / 0.7, 0, 1) * clamp((studio.t - s0) / (s0 ? 0.25 : 0.45), 0, 1) : 1;
   if (cv.style.opacity !== String(op)) cv.style.opacity = op === 1 ? "" : op.toFixed(3);
   if (zoomGoal != null) {
     const off = studio.camera.position.clone().sub(controls.target), d = off.length();
@@ -2474,6 +2514,7 @@ function openStudio(id, push = true) {
   ensureStudio(); resize();
   const chatOnly = !!it.lines;
   $("stage").classList.toggle("chat-mode", chatOnly);
+  stageEl.classList.remove("loading");
   cancelAnimationFrame(raf); stopSounds();
   if (!chatOnly) {
     const C = PREVIEWS[it.preview].cam || STAGE_CAM[PREVIEWS[it.preview].stage || "island"];
@@ -2497,7 +2538,7 @@ function openStudio(id, push = true) {
   $("sCat").textContent = catOf(it.cat).name;
   $("sRar").innerHTML = `<span class="rar-name" style="--rc:${RAR[it.rar][1]}">${RAR[it.rar][0]}</span>`;
   $("sName").textContent = it.name;
-  const desc = shortDesc(it.desc);
+  const desc = shortDesc(it);
   $("sDesc").textContent = desc; $("sDesc").hidden = !desc;
   $("sRarity").innerHTML = `<span class="rar-dot" style="--rc:${RAR[it.rar][1]}"></span>${RAR[it.rar][0]}`;
   $("sPrice").innerHTML = it.price != null ? `${TOKEN}${fmtPrice(it.price)}` : '<span class="muted">Not sold</span>';
@@ -2506,11 +2547,15 @@ function openStudio(id, push = true) {
   $("playSound").classList.remove("playing");
   if (push) history.replaceState(null, "", "#" + it.id);
 }
-// The game's "Select the X." lines only repeat the name, and "This change is cosmetic." says nothing: drop them.
-function shortDesc(d = "") {
-  d = d.replace(/\s*This change is cosmetic\.\s*/i, " ").trim();
-  if (/^Selects? the /.test(d) && d.split(/(?<=[.!?])\s+(?=[A-Z])/).length === 1) return "";
-  return d;
+// The game's templated lines ("Select the X Glyph.", "Plays the X Death Cry when you die.",
+// "Select X as your Shopkeeper!") only repeat the name, and "This change is cosmetic." says nothing:
+// drop those sentences and keep any real wording (Batcrux, the shouting kill messages...).
+function shortDesc(it) {
+  // The name is swapped for a marker first, so a name with a full stop ("Mr. Giftman") stays one sentence.
+  const d = (it.desc || "").split(it.name).join("\u0001");
+  return d.split(/(?<=[.!?])\s+(?=[A-Z])/)
+    .filter((x) => !/^This change is cosmetic\.?$/i.test(x.trim()) && !(/^(Selects?|Plays)\b/.test(x) && x.includes("\u0001")))
+    .join(" ").split("\u0001").join(it.name).trim();
 }
 function closeStudio() {
   const el = $("studio"); el.classList.remove("open");

@@ -22,6 +22,8 @@
     }
     var theme = 'prism'
     try { theme = localStorage.getItem('siteTheme') || 'prism' } catch (e) {}
+    // North Pole stays hidden until December 1.
+    if (theme === 'northpole' && Date.now() < new Date(2026, 11, 1).getTime()) theme = 'prism'
     if (!FONTS[theme]) theme = 'prism'
     document.documentElement.setAttribute('data-theme', theme)
     var link = document.createElement('link')

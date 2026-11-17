@@ -32,6 +32,10 @@
       localStorage.setItem("siteTheme", "neon");
       ["hgBloodMoon", "hgPumpkins", "spookyNudge", "seasonTried"].forEach(k => localStorage.removeItem(k));
     }
+    // North Pole stays hidden until December 1 (local time); a saved pick
+    // shows Prism until then and comes back on its own.
+    window.NP_HIDDEN = Date.now() < new Date(2026, 11, 1).getTime();
+    if (savedTheme === "northpole" && window.NP_HIDDEN) savedTheme = "prism";
     // Nothing saved yet: new visitors start on the default Prism theme.
     window.SAVED_THEME_AT_START = savedTheme || "prism";
   } catch (e) {}
@@ -23956,6 +23960,8 @@ const themeDropdown = document.getElementById("themeDropdown");
 const themeDropdownBtn = document.getElementById("themeDropdownBtn");
 const themeDropdownMenu = document.getElementById("themeDropdownMenu");
 const themeDropdownLabel = document.getElementById("themeDropdownLabel");
+// North Pole is left out of the menu (and the number keys) until December 1.
+if (window.NP_HIDDEN) themeDropdownMenu.querySelector('li[data-theme-value="northpole"]')?.remove();
 const themeOptions = Array.from(themeDropdownMenu.querySelectorAll("li[data-theme-value]"));
 const THEME_IDS = themeOptions.map(li => li.dataset.themeValue);
 const THEME_LABELS = Object.fromEntries(themeOptions.map(li => [li.dataset.themeValue, li.dataset.label]));
@@ -23988,7 +23994,7 @@ function openThemeDropdown() {
 const SEASONAL_THEMES = [
   { id: "harvest", month: 10, tag: document.getElementById("seasonTagHarvest"), tried: "seasonTriedHarvest", idle: "Returns every November", glyph: "\u{1F342}" },
   { id: "northpole", month: 11, tag: document.getElementById("seasonTagNorthpole"), tried: "seasonTriedNorthpole", idle: "Returns every December", glyph: "\u{1F384}" },
-];
+].filter(t => THEME_IDS.includes(t.id));
 const seasonGlyph = document.querySelector("#themeDropdownMenu .season-glyph");
 // Thanksgiving (US): the fourth Thursday of November.
 function thanksgivingDay(year) {
@@ -24732,7 +24738,7 @@ function applyTheme(themeId, opts = {}) {
     if (themeBg) themeColorMeta.setAttribute("content", themeBg);
     themeOptions.forEach(li => li.setAttribute("aria-selected", li.dataset.themeValue === themeId ? "true" : "false"));
     if (themeId === "skyisles") pickSkySplash();
-    try { localStorage.setItem(THEME_STORAGE_KEY, themeId); } catch (e) {}
+    if (!opts.keepSaved) try { localStorage.setItem(THEME_STORAGE_KEY, themeId); } catch (e) {}
     // A pick by the visitor (not the page putting a saved theme back) is
     // stamped and sent to the backend under their key, so their last theme
     // follows them to any device they use the key on.
@@ -24802,8 +24808,10 @@ function syncThemeFromServer(prefs) {
 // a saved theme that no longer exists).
 let savedTheme = "prism";
 try { savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || "prism"; } catch (e) {}
+// A saved North Pole pick is kept for when it comes back on December 1.
+const keepSaved = savedTheme === "northpole" && window.NP_HIDDEN;
 if (!THEME_IDS.includes(savedTheme)) savedTheme = "prism";
-applyTheme(savedTheme, { animate: false, remember: false });
+applyTheme(savedTheme, { animate: false, remember: false, keepSaved });
 
 // Custom tooltips - replaces native title="" (unstyled, un-themeable, and
 // on the browser's own delay) with one shared #customTooltip element
@@ -33732,8 +33740,7 @@ function northpoleTitleStunt(release) {
 // newest entry at the top with a new id; only the top one is ever shown.
 const WHATS_NEW = [
   { id: "2026-12-northpole", html: "&#127876; <b>New:</b> the North Pole theme for December. Catch the gingerbread man, and watch for the sleigh." },
-  { id: "2026-11-polish", html: "&#10024; <b>New:</b> phone leaderboards fade at the edge when there's more to scroll, and in the home-screen app you can pull down to refresh." },
-];
+  { id: "2026-11-polish", html: "&#10024; <b>New:</b> phone leaderboards fade at the edge when there's more to scroll, and in the home-screen app you can pull down to refresh." },].filter(n => !(window.NP_HIDDEN && n.id === "2026-12-northpole")); // shown from December 1
 (function whatsNew() {
   const latest = WHATS_NEW[0];
   if (!latest) return;

@@ -14,7 +14,8 @@
   // The tracker used to live here. Its links carry ?player=, ?lb= or #section, so pass those on.
   if (location.search || (location.hash && location.hash !== '#')) location.replace('tracker.html' + location.search + location.hash);
   // North Pole (the December theme) picked on the tracker: snow, lights and Christmas beams here too.
-  try { if (localStorage.getItem('siteTheme') === 'northpole') document.documentElement.setAttribute('data-np', ''); } catch (e) {}
+  // Hidden until December 1.
+  try { if (localStorage.getItem('siteTheme') === 'northpole' && Date.now() >= new Date(2026, 11, 1).getTime()) document.documentElement.setAttribute('data-np', ''); } catch (e) {}
 </script>
 <title>Prism</title>
 <meta name="description" content="Prism: the Bed Wars tracker, cosmetics library and map atlas.">

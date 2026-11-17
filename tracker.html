@@ -9072,6 +9072,45 @@ html[data-theme="skyisles"] .filter-reset:disabled { opacity: 0.6; }
 html[data-theme="skyisles"] .toolbar .filter-field-date input { width: 118px; }
 html[data-theme="skyisles"] .filter-reset:hover:not(:disabled) { color: #fff; background: var(--accent); }
 html[data-theme="skyisles"] .filter-reset-count:not(:empty) { border-radius: 0; background: var(--bad); color: #fff; }
+/* The active-filter count sits on Reset's corner like an item-stack
+   number, so Reset keeps the same width and stays at the end of the chip
+   row when a filter or search is on (it used to wrap onto a row alone). */
+html[data-theme="skyisles"] .filter-reset { position: relative; }
+html[data-theme="skyisles"] .filter-reset-count:not(:empty) {
+  position: absolute;
+  top: -4px;
+  right: -3px;
+  min-width: 16px;
+  padding: 0 3px;
+  line-height: 16px;
+  font-family: var(--font-pixel);
+  box-shadow: 1px 1px 0 #3f0000;
+}
+/* Phones: the four stat fields and three toggles in even rows - Stars,
+   FKDR and Index side by side, Since across the full width, then the
+   three toggles as equal slots - instead of wrapping ragged. */
+@media (max-width: 760px) {
+  html[data-theme="skyisles"] .filter-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  html[data-theme="skyisles"] .toolbar-actions-left { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+  html[data-theme="skyisles"] .toolbar-actions-left .chip { min-width: 0; }
+  html[data-theme="skyisles"] .toolbar-actions-left .chip span { display: flex; align-items: center; width: 100%; min-height: 100%; }
+}
+@media (max-width: 600px) {
+  html[data-theme="skyisles"] .filter-field:not(.filter-field-date) {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    height: auto;
+    min-height: 52px;
+    padding: 6px 4px 4px 10px;
+  }
+  html[data-theme="skyisles"] .filter-field:not(.filter-field-date) .filter-prefix { font-size: 0.72em; }
+  html[data-theme="skyisles"] .toolbar .filter-field:not(.filter-field-date) input { width: 100%; padding: 0; font-size: 15px; }
+  html[data-theme="skyisles"] .toolbar-actions-left .chip span { min-height: 46px; padding: 6px 6px 5px 30px; line-height: 1.15; }
+  html[data-theme="skyisles"] .toolbar-actions-left .chip span::before { left: 9px; }
+  html[data-theme="skyisles"] .toolbar-actions-left .chip span::after { left: 10px; }
+}
 /* View toggle as a three-slot mini hotbar. */
 html[data-theme="skyisles"] .view-toggle {
   border-radius: 0;
@@ -9290,8 +9329,10 @@ html[data-theme="skyisles"] .sweat-card-stats {
   background: transparent;
   padding: 0;
 }
+/* Same deeper grey as the popup's slots, so the two match and the white
+   labels read clearly. */
 html[data-theme="skyisles"] .card-stat {
-  background: #8b8b8b;
+  background: #6f6f6f;
   box-shadow: var(--slot);
   border: none;
   border-radius: 0;
@@ -9301,10 +9342,10 @@ html[data-theme="skyisles"] .card-stat + .card-stat { border-left: none; }
 html[data-theme="skyisles"] .card-stat-label {
   font-family: var(--font-label); font-size-adjust: none;
   font-weight: 700;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.5px;
-  color: #e7e7e7;
-  text-shadow: 1px 1px 0 #3f3f3f;
+  color: #fff;
+  text-shadow: 1px 1px 0 #2a2a2a;
 }
 html[data-theme="skyisles"] .card-stat-value {
   font-family: var(--font-pixel);
@@ -9409,6 +9450,9 @@ html[data-theme="skyisles"] .ss-label { color: #ffff55; font-family: var(--font-
 html[data-theme="skyisles"] .ss-value { color: #ffffff; font-family: var(--font-pixel); font-weight: 700; text-shadow: 3px 3px 0 #3f3f3f; }
 html[data-theme="skyisles"] .ss-who, html[data-theme="skyisles"] .ss-sub, html[data-theme="skyisles"] .ss-flag-legend { color: #cfcfcf; font-family: var(--font-pixel); }
 html[data-theme="skyisles"] .ss-sub b { color: #7cfc4a; }
+/* A lone tile (nothing matches the filters) runs the full width of the
+   strip as one slim bar instead of sitting alone at the left. */
+html[data-theme="skyisles"] .ss-tile:only-child { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: 16px; }
 html[data-theme="skyisles"] .ss-who img { border-radius: 0; box-shadow: 0 0 0 2px #555; }
 html[data-theme="skyisles"] .ss-spark span {
   border-radius: 0;
@@ -9451,6 +9495,7 @@ html[data-theme="skyisles"] .dash-empty {
   box-shadow: inset 0 0 0 2px var(--ink), inset 4px 4px 0 2px rgba(23,50,71,0.12);
 }
 html[data-theme="skyisles"] #statsEmpty.is-scanning { color: var(--accent-2); }
+html[data-theme="skyisles"] #statsEmptyText { max-width: 40ch; text-wrap: balance; }
 html[data-theme="skyisles"] .idle-isle { display: block; }
 .idle-isle i { position: absolute; display: block; background: center / contain no-repeat; }
 .idle-isle .isle-cloud { left: 0; top: 10px; width: 64px; height: 20px; background-image: var(--px-cloud2); opacity: 0.9; animation: isleCloud 9s steps(36) infinite; }
@@ -9764,6 +9809,10 @@ html[data-theme="skyisles"] .confirm-icon {
 html[data-theme="skyisles"] #status,
 html[data-theme="skyisles"] #editStatus,
 html[data-theme="skyisles"] #adminKeyStatus { display: inline-block; font-family: var(--font-pixel); }
+/* An empty status line doesn't hold its row open under the note, so Add
+   Sweat sits right below the form instead of after a dead gap. */
+html[data-theme="skyisles"] .dash-left #status:empty { margin-top: 0; min-height: 0; }
+html[data-theme="skyisles"] .dash-left .add-sweat-row { padding-top: 16px; }
 html[data-theme="skyisles"] #status.typewriter-play,
 html[data-theme="skyisles"] #editStatus.typewriter-play,
 html[data-theme="skyisles"] #adminKeyStatus.typewriter-play { animation: skyType 0.7s steps(14) both; }
@@ -10044,18 +10093,18 @@ html[data-theme="skyisles"] .egg-sub {
   color: #ffff55;
   text-shadow: 2px 2px 0 #3f3f00;
 }
-/* Chat-style toasts as Minecraft chat lines, set on the dark tooltip
-   panel (purple inner rule, black outline, hard shadow) so nothing behind
-   bleeds through. */
+/* Chat-style toasts as Minecraft chat lines, on the same dark panel as
+   the stats strip (grey inner rule, ink outline, hard shadow), so all the
+   dark UI matches and nothing behind bleeds through. */
 html[data-theme="skyisles"] .egg-toast {
   font-family: var(--font-pixel);
   font-size: 15px;
   color: #ffffff;
-  padding: 9px 14px;
-  background: rgba(16,0,16,0.94);
+  padding: 10px 15px;
+  background: #212121;
   border: none;
   border-radius: 0;
-  box-shadow: inset 0 0 0 2px #2a0960, 0 0 0 2px #000, 4px 4px 0 2px rgba(23,50,71,0.35);
+  box-shadow: inset 0 0 0 2px #555555, inset 0 0 0 4px #1a1a1a, var(--pxb2), 6px 6px 0 0 rgba(23,50,71,0.3);
   text-shadow: 2px 2px 0 #3f3f3f;
 }
 html[data-theme="skyisles"] #eggToasts { gap: 10px; left: 18px; bottom: 18px; max-width: calc(100vw - 40px); }
@@ -12259,14 +12308,15 @@ html[data-theme="skyisles"] .unmask-fx {
     radial-gradient(3px 3px at 34% 62%, #ffe066 60%, transparent 70%);
 }
 html[data-theme="skyisles"] .unmask.play .unmask-fx { animation: siSparks 0.8s steps(4) 0.05s both; }
-html[data-theme="skyisles"] .unmask-back { background: #100010; box-shadow: inset 0 0 0 3px #2a0960, 0 0 0 3px #000; }
+/* The renamed tag on the dark panel the stats strip and toasts use. */
+html[data-theme="skyisles"] .unmask-back { background: #212121; box-shadow: inset 0 0 0 2px #555555, inset 0 0 0 4px #1a1a1a, 0 0 0 3px var(--ink); }
 html[data-theme="skyisles"] .unmask-back .unmask-name { color: #ffff55; text-shadow: 2px 2px 0 #3f3f00; font-style: italic; }
 html[data-theme="skyisles"] .unmask-back .unmask-k { color: #aaaaaa; }
-html[data-theme="skyisles"] .unmask-back .unmask-meta { color: #b3a8ff; }
+html[data-theme="skyisles"] .unmask-back .unmask-meta { color: #cfcfcf; }
 /* Phones: the source and age wrap onto a second line instead of being cut
    off, and the empty prompt steps aside once a tag has been read. */
 @media (max-width: 620px) {
-  html[data-theme="skyisles"] .unmask-meta { white-space: normal; line-height: 1.45; }
+  html[data-theme="skyisles"] .unmask-meta { white-space: normal; line-height: 1.45; font-size: 0.72em; text-wrap: balance; }
 }
 html[data-theme="skyisles"] #denickUnmask:not([hidden]) ~ #denickEmpty { display: none; }
 /* The old name is cleared a letter-block at a time, then the new one is typed in. */
@@ -12583,6 +12633,31 @@ html[data-theme="skyisles"] .lb-entry-count b { font: 400 1.5em/1 var(--font-pix
   html[data-theme="skyisles"] .lb-entry-art { width: 60px; height: 34px; }
   html[data-theme="skyisles"] .lb-entry .leaderboard-name { font-size: 0.72em; }
 }
+/* The column grows to its tallest island instead of a fixed height, so
+   no band of empty sky is left between the islands and the hint. */
+html[data-theme="skyisles"] .lb-scene { margin-bottom: 6px; }
+html[data-theme="skyisles"] .leaderboard-ranking { margin-bottom: 6px; }
+html[data-theme="skyisles"] .lb-scene-body { height: auto; min-height: 150px; }
+html[data-theme="skyisles"] .leaderboard-hint { margin: 0 0 10px; font-family: var(--font-pixel); font-size: 0.86em; color: var(--ink); }
+/* Counts in dark green, big enough to read at a glance. */
+html[data-theme="skyisles"] .lb-entry-count { margin-top: 2px; font-size: 0.86em; }
+html[data-theme="skyisles"] .lb-entry-count b { font-size: 1.45em; color: #1f5c12; text-shadow: 1px 1px 0 rgba(255,255,255,0.55); }
+/* Wide screens: bigger islands, heads and names, so the podium fills the
+   panel instead of floating as small specks across the sky. */
+@media (min-width: 900px) {
+  html[data-theme="skyisles"] .lb-scene-body { gap: 10px; }
+  html[data-theme="skyisles"] .lb-entry { gap: 4px; padding-bottom: calc(var(--share) * 170px); }
+  html[data-theme="skyisles"] .lb-entry-art { width: 100px; height: 54px; }
+  html[data-theme="skyisles"] .lb-entry .lb-avatar { width: 48px; height: 48px; font-size: 0.95em; }
+  html[data-theme="skyisles"] .lb-entry .leaderboard-name { font-size: 0.98em; }
+  html[data-theme="skyisles"] .lb-entry-rank::before { font-size: 18px; }
+  html[data-theme="skyisles"] .lb-entry-count { font-size: 1em; }
+}
+/* Nothing matches (no one has a medal): the empty island and its line
+   are the only content, not a podium of zeros tied at 1st. The stale
+   grid "no results" line from before the switch is dropped too. */
+html[data-theme="skyisles"] #leaderboardWrap:not(:has(.lb-entry[data-medal])) :is(.lb-scene, #leaderboardHint, #leaderboardPersonTitle) { display: none; }
+html[data-theme="skyisles"] #defeatedBody:has(> #leaderboardWrap:not([hidden])) > #emptyState { display: none; }
 
 @media (max-width: 700px) {
   html:not([data-theme]) .lb-scene { padding: 0 10px 14px; }
@@ -22857,6 +22932,32 @@ function pickSkySplash() {
   if (el) el.dataset.splash = SKY_SPLASHES[Math.floor(Math.random() * SKY_SPLASHES.length)];
 }
 
+// Sky Isles: a skin that still fails after its one retry shows a pixel
+// Steve head (what Minecraft shows for an unknown skin) instead of an
+// empty frame. Capture phase, so this runs before the img's own onerror.
+const SKY_STEVE_HEAD = "data:image/svg+xml," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" shape-rendering="crispEdges">' +
+  '<rect width="8" height="8" fill="#b4846a"/><rect width="8" height="2" fill="#2f200d"/>' +
+  '<rect y="2" width="1" height="1" fill="#2f200d"/><rect x="7" y="2" width="1" height="1" fill="#2f200d"/>' +
+  '<rect x="1" y="2" width="6" height="1" fill="#c69a7c"/>' +
+  '<rect x="1" y="4" width="1" height="1" fill="#fff"/><rect x="2" y="4" width="1" height="1" fill="#4b3a8c"/>' +
+  '<rect x="5" y="4" width="1" height="1" fill="#4b3a8c"/><rect x="6" y="4" width="1" height="1" fill="#fff"/>' +
+  '<rect x="3" y="5" width="2" height="1" fill="#8a5a40"/>' +
+  '<rect x="2" y="6" width="4" height="1" fill="#6a3e2c"/><rect x="2" y="7" width="1" height="1" fill="#6a3e2c"/><rect x="5" y="7" width="1" height="1" fill="#6a3e2c"/>' +
+  '</svg>');
+const SKY_AVATAR_SEL = ".sweat-card-avatar, .user-avatar, .ss-who img";
+function skySteveFallback(img) {
+  if (img.matches(SKY_AVATAR_SEL) && /[?&]retry=/.test(img.src)) img.src = SKY_STEVE_HEAD;
+}
+document.addEventListener("error", (e) => {
+  if (e.target instanceof HTMLImageElement && currentThemeId() === "skyisles") skySteveFallback(e.target);
+}, true);
+// Skins that already failed under another theme get the head on switching in.
+document.addEventListener("themechange", (e) => {
+  if (e.detail.theme !== "skyisles") return;
+  document.querySelectorAll(SKY_AVATAR_SEL).forEach(img => { if (img.complete && !img.naturalWidth) skySteveFallback(img); });
+});
+
 function applyTheme(themeId, opts = {}) {
   window.loadThemeFonts(themeId);
   const swap = () => {
@@ -24339,6 +24440,16 @@ const statsDisplay = document.getElementById('statsDisplay');
 const statsEmpty = document.getElementById('statsEmpty');
 const clearPreviewBtn = document.getElementById("clearPreviewBtn");
 const searchInput = document.getElementById('searchInput');
+// Sky Isles' wide pixel font cuts the full search hint off beside the
+// Filters button on phones, so it gets a short one there.
+const SEARCH_HINT_FULL = searchInput.placeholder;
+const searchHintNarrow = window.matchMedia("(max-width: 600px)");
+function updateSearchHint() {
+  searchInput.placeholder = currentThemeId() === "skyisles" && searchHintNarrow.matches ? "Search..." : SEARCH_HINT_FULL;
+}
+searchHintNarrow.addEventListener("change", updateSearchHint);
+document.addEventListener("themechange", updateSearchHint);
+updateSearchHint();
 
 const statsAvatar = document.getElementById('statsAvatar');
 const statsUsername = document.getElementById('statsUsername');
@@ -24378,6 +24489,15 @@ function showStatsEmpty() {
 // While a lookup is in flight the empty preview speeds up its idle scene
 // and names who it is looking for.
 const STATS_EMPTY_TEXT = "Search a player, then Preview to see their card here before you log it.";
+// Sky Isles keeps the idle line to a few words.
+const STATS_EMPTY_SHORT = { skyisles: "Preview a player to see their card." };
+const statsEmptyIdleText = () => STATS_EMPTY_SHORT[currentThemeId()] || STATS_EMPTY_TEXT;
+function refreshStatsEmptyText() {
+  const text = document.getElementById("statsEmptyText");
+  if (text && !statsEmpty.classList.contains("is-scanning")) text.textContent = statsEmptyIdleText();
+}
+document.addEventListener("themechange", refreshStatsEmptyText);
+refreshStatsEmptyText();
 // The idle scene doesn't swap to a different animation when a lookup
 // starts; its running animations are eased up to a faster playbackRate
 // (and back down), which keeps every ring, beam and dial in phase.
@@ -24408,7 +24528,7 @@ function setStatsScanning(name) {
   if (scanning !== wasScanning) siteAudio.scan(scanning);
   rampIdleScene(scanning ? (IDLE_SCAN_RATE[document.documentElement.dataset.theme] || 3.5) : 1);
   if (!text) return;
-  const next = scanning ? `Scanning Hypixel for ${name}…` : STATS_EMPTY_TEXT;
+  const next = scanning ? `Scanning Hypixel for ${name}…` : statsEmptyIdleText();
   if (text.textContent === next) return;
   text.textContent = next;
   if (scanning !== wasScanning && text.animate && !statsEmpty.hidden) {
@@ -26355,6 +26475,15 @@ function renderTableRows(filteredSweats, usernameCounts) {
 // one of them beat (Milo + Potat = the ones they both beat). Tapping a
 // picked name again drops it, as long as someone stays picked.
 let leaderboardPeople = [];
+// Sky Isles keeps the hint under the islands to a few words.
+const LB_HINT_SHORT = { skyisles: { many: "Tap a picked name to drop it.", one: "Tap names to compare." } };
+function leaderboardHintText() {
+  const short = LB_HINT_SHORT[currentThemeId()];
+  return leaderboardPeople.length > 1
+    ? (short ? short.many : "Only sweats every picked person beat. Tap a picked name again to drop it.")
+    : (short ? short.one : "Tap more names to see the sweats you beat together.");
+}
+document.addEventListener("themechange", () => { if (leaderboardPeople.length) leaderboardHint.textContent = leaderboardHintText(); });
 const beatenByAllPicked = s => leaderboardPeople.every(k => s[k]);
 function pickedLabel() {
   const names = leaderboardPeople.map(k => BEATEN_BY[k].label);
@@ -26449,9 +26578,7 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   leaderboardPersonTitle.textContent = leaderboardPeople.length > 1
     ? `Beaten by ${pickedLabel()} together (${personSweats.length})`
     : `${pickedLabel()}'s Sweats (${counts[leaderboardPeople[0]]})`;
-  leaderboardHint.textContent = leaderboardPeople.length > 1
-    ? "Only sweats every picked person beat. Tap a picked name again to drop it."
-    : "Tap more names to see the sweats you beat together.";
+  leaderboardHint.textContent = leaderboardHintText();
   // Same fix as the Table view: hide the drill-down table's own header
   // chrome instead of leaving it visible above an empty body - the
   // ranking grid above it stays put either way, since that's showing

@@ -16908,12 +16908,117 @@ html[data-theme="prism"] .bnav-link.active::before { background: var(--pr-spectr
 .tto-prism-band.v { background: linear-gradient(90deg, transparent, rgba(169,139,255,0.55), transparent); filter: blur(18px); }
 .tto-prism-band.g { background: linear-gradient(90deg, transparent, rgba(255,196,107,0.5), transparent); filter: blur(18px); }
 
+/* ---------- Theme menu: seasonal tags ----------
+   The corner tags read in the mono face (at 9px the bold sans closed up
+   its G's into O's), as small pills like the rest of the theme's tags,
+   and the seasonal rows stand a little further apart so a tag never
+   sits on the row above it. */
+html[data-theme="prism"] .theme-opt-badge {
+  top: -8px;
+  padding: 2px 8px 1px;
+  border-radius: 999px;
+  font-family: var(--pr-mono);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.12em;
+  color: #07080d;
+}
+html[data-theme="prism"] #themeDropdownMenu li.theme-opt-seasonal { margin-top: 16px; }
+
+/* ---------- Tier pills (grid, table, leaderboard list) ----------
+   Rounded, in the spotlight's style. display:block, not the base's
+   display:table: a table box picks up the results table's collapsed
+   borders and drops its rounded corners. */
+html[data-theme="prism"] .pill.tier-pill { font-weight: 600; letter-spacing: 0.14em; text-shadow: none; }
+html[data-theme="prism"] .pill.tier-pill.t4 { color: #ffc2dc; background: rgba(255,122,182,0.1); border: 1px solid rgba(255,122,182,0.42); }
+html[data-theme="prism"] .pill.tier-pill.t5 { color: #fff; background: linear-gradient(var(--panel-2), var(--panel-2)) padding-box, var(--pr-spectrum) border-box; border: 1px solid transparent; }
+html[data-theme="prism"] .row-tier-pill { display: block; width: fit-content; margin-top: 5px; padding: 2px 8px 1px; font-size: 0.58em; line-height: 1.35; }
+/* The row's tier stripe in the beam colours too. */
+html[data-theme="prism"] .sweat-row.tier-t4 > td:first-child::before { background: #ff7ab6; box-shadow: 0 0 8px rgba(255,122,182,0.55); }
+html[data-theme="prism"] .sweat-row.tier-t5 > td:first-child::before { background: linear-gradient(180deg, #5ee7ff, #a98bff, #ffc46b); box-shadow: 0 0 10px rgba(169,139,255,0.6); }
+html[data-theme="prism"] .sweat-row.tier-t5 { background: linear-gradient(90deg, rgba(169,139,255,0.08), transparent 45%); }
+/* Every row the same height, pill or not, so the list keeps one rhythm. */
+@media (min-width: 761px) {
+  html[data-theme="prism"] .table-wrap .sweat-row > td { height: 70px; }
+}
+
+/* ---------- Avatars that never load ----------
+   prismAvatarFallback swaps in a glass tile with the player's initial;
+   the frame shows even while a skin is still on its way. */
+html[data-theme="prism"] .sweat-card-avatar,
+html[data-theme="prism"] .table-wrap .user-avatar { background-color: rgba(255,255,255,0.03); }
+
+/* ---------- Player popup ---------- */
+@media (min-width: 761px) {
+  /* The saved record runs as one full-width row under the skin and the
+     live stats, instead of a tall box beside the short tags row (which
+     left a big gap and pushed the popup past the fold). */
+  html[data-theme="prism"] #playerModal .modal-content {
+    grid-template-areas:
+      "name name"
+      "live live"
+      "skin stats"
+      "record record"
+      "urchin urchin"
+      "match match"
+      "notes notes"
+      "clips clips"
+      "replays replays";
+    grid-template-rows: none;
+  }
+  html[data-theme="prism"] #playerModal .modal-record { flex-direction: row; align-items: center; gap: 12px 34px; }
+  html[data-theme="prism"] #playerModal .modal-record-beaten { margin-left: auto; align-items: flex-end; }
+  html[data-theme="prism"] #playerModal #modalSkin { align-self: stretch; height: auto; min-height: 250px; }
+}
+@media (max-width: 760px) {
+  /* Room above the name for the copy-link and close buttons. */
+  html[data-theme="prism"] #playerModal .modal-content { padding-top: 54px; }
+}
+
+/* ---------- Sweat Lookup preview ----------
+   The skin card runs the full height of the stats beside it. */
+@media (min-width: 621px) {
+  html[data-theme="prism"] #statsContent { align-items: stretch; }
+  html[data-theme="prism"] .skin-stage { display: flex; }
+  html[data-theme="prism"] .skin-tilt { display: flex; flex: 1; }
+  html[data-theme="prism"] .skin-tilt #statsAvatar { height: auto; min-height: 270px; flex: 1; }
+}
+
+/* ---------- Sticky jump-to nav ----------
+   Floats a little below the top edge once stuck, so its rounded ends
+   and top border stay whole. Headings land below it. */
+@media (min-width: 621px) {
+  html[data-theme="prism"] .quick-nav { top: 12px; }
+  html[data-theme="prism"] .panel-header { scroll-margin-top: 80px; }
+}
+
+/* ---------- Footer status panel ---------- */
+html[data-theme="prism"] .status-panel { background: var(--pr-glass); border-color: var(--border); border-radius: var(--radius-l); box-shadow: var(--pr-hi), var(--shadow-card); }
+html[data-theme="prism"] .status-list { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+html[data-theme="prism"] .status-row { border-top-color: rgba(255,255,255,0.06); }
+
 /* ---------- Phones ---------- */
+@media (max-width: 620px) {
+  /* The theme menu centres under its button instead of hanging off its
+     right edge, which ran it past the left side of the screen. */
+  html[data-theme="prism"] #themeDropdownMenu { left: 50%; right: auto; transform: translateX(-50%); max-width: calc(100vw - 32px); }
+  /* The sound button sits first in the row, so its panel opens rightwards. */
+  html[data-theme="prism"] #audioPanel { left: 0; right: auto; max-width: calc(100vw - 32px); }
+  /* The spotlight's stats go 2x2 so the big numbers fit whole. */
+  html[data-theme="prism"] .sotd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+  html[data-theme="prism"] .sotd-stat-value { font-size: 1.2em; }
+  /* The section numerals move off the titles, to the far right. */
+  html[data-theme="prism"] .panel-index { right: 0; top: -34px; bottom: auto; font-size: 4.4em; opacity: 0.7; }
+  html[data-theme="prism"] .bottom-nav { background: rgba(10,12,18,0.93); }
+  html[data-theme="prism"] .lb-scene-sub::before { content: "Per person"; }
+}
+
 @media (max-width: 760px) {
   html[data-theme="prism"] h1 { font-size: 2.4rem; }
   html[data-theme="prism"] .hero-flourish { width: 170px; }
   html[data-theme="prism"] .lb-scene { padding: 14px 10px 10px; }
-  html[data-theme="prism"] .lb-scene-body { height: 240px; grid-auto-columns: 70px; }
+  /* Narrower beams, so a sixth peeks in at the edge as a scroll hint. */
+  html[data-theme="prism"] .lb-scene-body { height: 240px; grid-auto-columns: 54px; }
   html[data-theme="prism"] #prismField .pf-band { width: 70vw; }
   html[data-theme="prism"] .card,
   html[data-theme="prism"] .sweat-card { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(17,19,28,0.92); }
@@ -30264,6 +30369,32 @@ function prismTitleStunt(release) {
   heroTitle.animate(frames, { duration: 1500, easing: "cubic-bezier(.4,0,.2,1)" }).finished.then(release, release);
   setTimeout(() => burstPrism(r.left + r.width / 2, r.top + r.height / 2, true, true), 1150);
 }
+
+// Avatars that never load (no skin on record, or the skin server is down)
+// get a glass tile with the player's initial, so the card or row doesn't
+// show an empty gap. withRetryingAvatar retries once; the tile goes in on
+// the second failure. Errors don't bubble, hence the capture listener.
+const PRISM_AVATAR_SEL = ".sweat-card-avatar, .table-wrap .user-avatar, .ss-who img";
+function prismAvatarFallback(img) {
+  const name = (img.alt || "").replace(/^Avatar of /, "");
+  const initial = ((name.match(/[A-Za-z0-9]/) || ["?"])[0]).toUpperCase();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">`
+    + `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#232838"/><stop offset="1" stop-color="#11141d"/></linearGradient>`
+    + `<linearGradient id="s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5ee7ff"/><stop offset=".5" stop-color="#a98bff"/><stop offset="1" stop-color="#ffc46b"/></linearGradient></defs>`
+    + `<rect x="1" y="1" width="62" height="62" rx="14" fill="url(#g)" stroke="rgba(255,255,255,0.14)"/>`
+    + `<rect x="14" y="1" width="36" height="1.5" fill="url(#s)" opacity=".8"/>`
+    + `<text x="32" y="42" text-anchor="middle" font-family="Manrope, Segoe UI, system-ui, sans-serif" font-size="28" font-weight="800" fill="#eef1f8">${initial}</text></svg>`;
+  img.src = "data:image/svg+xml," + encodeURIComponent(svg);
+  img.style.opacity = 1;
+}
+document.addEventListener("error", (e) => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement) || img.src.startsWith("data:")) return;
+  if (document.documentElement.dataset.theme !== "prism" || !img.matches(PRISM_AVATAR_SEL)) return;
+  const fails = (Number(img.dataset.prFails) || 0) + 1;
+  img.dataset.prFails = String(fails);
+  if (fails >= 2) prismAvatarFallback(img);
+}, true);
 // @@END-PRISM-JS@@
 // @@NORTHPOLE-JS@@
 // ---- North Pole: Christmas in a snowy village ----

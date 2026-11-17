@@ -2321,6 +2321,29 @@ html[data-theme="deepcurrent"] .filter-reset-count,
 html[data-theme="deepcurrent"] .search-box-kbd { font-family: 'JetBrains Mono', monospace; }
 html[data-theme="deepcurrent"] .filter-prefix { font-family: 'JetBrains Mono', monospace; font-weight: 600; letter-spacing: 0.06em; }
 html[data-theme="deepcurrent"] .toolbar #searchInput { background: rgba(3,12,20,0.5); }
+/* On phones the theme menu opens rightward from its button, so it keeps
+   the page's side gutter instead of running off the left edge. */
+/* Phone filters: the readouts sit in two even rows, and the three chips
+   share a 2x2 grid with Reset so nothing is left alone on a line. */
+@media (max-width: 760px) {
+  html[data-theme="deepcurrent"] .toolbar #searchInput:placeholder-shown { padding-right: 12px; }
+  html[data-theme="deepcurrent"] .toolbar #searchInput { text-overflow: ellipsis; }
+  html[data-theme="deepcurrent"] .toolbar-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  html[data-theme="deepcurrent"] .toolbar-row > .filter-fields { grid-column: 1 / -1; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  html[data-theme="deepcurrent"] .filter-fields > .filter-field { grid-column: span 6; min-width: 0; }
+  html[data-theme="deepcurrent"] .filter-fields > .filter-field-date { padding-left: 10px; padding-right: 4px; }
+  html[data-theme="deepcurrent"] .filter-field-date .filter-prefix { letter-spacing: 0.02em; }
+  html[data-theme="deepcurrent"] .toolbar .filter-field-date input { min-width: 0; padding-left: 4px; padding-right: 0; font-size: 12px; letter-spacing: 0; }
+  html[data-theme="deepcurrent"] .toolbar .filter-field-date input::-webkit-calendar-picker-indicator { margin-left: 1px; padding: 0; width: 13px; }
+  html[data-theme="deepcurrent"] .toolbar-actions-left { display: contents; }
+  html[data-theme="deepcurrent"] .toolbar-row > .chip,
+  html[data-theme="deepcurrent"] .toolbar-actions-left > .chip { display: flex; }
+  html[data-theme="deepcurrent"] .toolbar-actions-left > .chip span { flex: 1; text-align: center; padding-left: 8px; padding-right: 8px; white-space: nowrap; }
+  html[data-theme="deepcurrent"] .toolbar-row > .filter-reset { justify-content: center; border: 1.5px dashed var(--border); }
+}
+@media (max-width: 480px) {
+  html[data-theme="deepcurrent"] #themeDropdownMenu { right: auto; left: 0; max-width: calc(100vw - 32px); }
+}
 
 /* Theme switch - a hand-built dropdown (button + listbox) rather than a
    native <select>, whose option-list styling the browser won't hand over
@@ -2783,6 +2806,25 @@ html[data-theme="skyisles"] #leaderboardEmptyState .empty-state-text::before {
 html[data-theme="casefiles"] #emptyState .empty-state-text::before { content: "No exhibits on file match this search."; }
 html[data-theme="ledger"] #emptyState .empty-state-text::before { content: "No matching entries found in this ledger."; }
 html[data-theme="deepcurrent"] #emptyState .empty-state-text::before { content: "Nothing surfaced matching this search."; }
+/* Framed like the Lookup/Denicking empty prompts instead of floating on the
+   open water. */
+html[data-theme="deepcurrent"] #emptyState,
+html[data-theme="deepcurrent"] #leaderboardEmptyState {
+  max-width: 560px;
+  box-sizing: border-box;
+  margin: 8px auto 40px;
+  padding: 28px 20px 26px;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-m);
+  background:
+    radial-gradient(circle at 50% 30%, rgba(53,230,196,0.08), transparent 70%),
+    rgba(6,26,40,0.88);
+  box-shadow: var(--shadow-card);
+}
+html[data-theme="deepcurrent"] #emptyState .empty-icon,
+html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-icon { width: 44px; height: 44px; margin-bottom: 10px; }
+html[data-theme="deepcurrent"] #emptyState .empty-state-text::before,
+html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text::before { font-size: 14px; }
 html[data-theme="casefiles"] #leaderboardEmptyState .empty-state-text::before { content: "No victims on file match these filters."; }
 html[data-theme="ledger"] #leaderboardEmptyState .empty-state-text::before { content: "No matching victims recorded in this ledger."; }
 html[data-theme="deepcurrent"] #leaderboardEmptyState .empty-state-text::before { content: "No catches match these filters."; }
@@ -3229,16 +3271,16 @@ html[data-theme="ledger"] .pill.prestige-tag {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 2px rgba(138,106,31,0.25);
 }
 html[data-theme="deepcurrent"] .pill.prestige-tag {
-  --mc-0: #4d6d78;
-  --mc-1: #4a6cf0;
-  --mc-2: #1fbf8f;
-  --mc-3: #1aa3a3;
+  --mc-0: #7d97a1;
+  --mc-1: #7b93ff;
+  --mc-2: #3ee0a8;
+  --mc-3: #3fd8d8;
   --mc-4: #e0566b;
   --mc-5: #9b6bff;
   --mc-6: #f2b35a;
   --mc-7: #9fb8c0;
-  --mc-8: #6f8c96;
-  --mc-9: #5b8cff;
+  --mc-8: #8ea8b2;
+  --mc-9: #7ea4ff;
   --mc-a: #5ef2b5;
   --mc-b: #5ff0f0;
   --mc-c: #ff7a8a;
@@ -3247,13 +3289,13 @@ html[data-theme="deepcurrent"] .pill.prestige-tag {
   --mc-f: #e8fbff;
 }
 html[data-theme="deepcurrent"] .pill.prestige-tag {
-  border: 1px solid rgba(255,255,255,0.22);
-  background: radial-gradient(circle at 28% 22%, rgba(120,200,210,0.22), rgba(2,16,24,0.92) 60%);
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.25), 0 0 8px rgba(53,230,196,0.18);
+  border: 1px solid rgba(160,230,235,0.28);
+  background: linear-gradient(180deg, rgba(160,230,235,0.08), transparent 55%), rgba(2,14,22,0.9);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
 }
 html[data-theme="casefiles"] .pill.prestige-tag span,
 html[data-theme="ledger"] .pill.prestige-tag span { text-shadow: none; }
-html[data-theme="deepcurrent"] .pill.prestige-tag span { text-shadow: 0 0 5px; }
+html[data-theme="deepcurrent"] .pill.prestige-tag span { text-shadow: none; }
 
 /* The one denick badge left - "Current", marking whichever row is the most
    recent match (the nick's present owner, or the nick a player is using
@@ -6449,7 +6491,7 @@ html[data-theme="deepcurrent"] .add-sweat-row .btn.success-pulse {
    .hero positioning trick (see the comment on .hero-pin above), just cast
    as a running instrument light instead of a flat gold tack. */
 html[data-theme="deepcurrent"] .hero-pin {
-  display: block;
+  display: none;
   position: absolute;
   top: -9px;
   left: 50%;
@@ -6476,23 +6518,21 @@ html[data-theme="deepcurrent"] .hero-pin::before {
    randomization for what's just a decorative accent. */
 html[data-theme="deepcurrent"] .hero-flourish {
   display: block;
-  width: 90px;
-  height: 20px;
-  margin: 10px auto 6px;
-  background-image: radial-gradient(circle, rgba(255,255,255,0.9) 0 1px, transparent 1.6px),
-                     radial-gradient(circle, var(--accent) 0 1.6px, transparent 2px),
-                     radial-gradient(circle, rgba(255,255,255,0.6) 0 1px, transparent 1.4px);
-  background-size: 14px 14px, 18px 18px, 11px 11px;
-  background-position: 6px 4px, 40px 10px, 70px 2px;
+  width: 60px;
+  height: 18px;
+  margin: 6px auto 0;
+  --dc-ring: transparent 0 calc(100% - 1.8px), rgba(190,255,245,0.8) calc(100% - 1.3px) calc(100% - 0.3px), transparent 100%;
+  background-image: radial-gradient(circle closest-side, var(--dc-ring)),
+                    radial-gradient(circle closest-side, transparent 0 calc(100% - 1.8px), var(--accent) calc(100% - 1.3px) calc(100% - 0.3px), transparent 100%),
+                    radial-gradient(circle closest-side, var(--dc-ring));
+  background-size: 7px 7px, 10px 10px, 6px 6px;
+  background-position: 10px 9px, 25px 3px, 44px 8px;
   background-repeat: no-repeat;
-  opacity: 0.85;
   animation: heroBubbleDrift 3.2s ease-in-out infinite;
-  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
 }
 @keyframes heroBubbleDrift {
-  0%, 100% { background-position: 6px 4px, 40px 10px, 70px 2px; }
-  50% { background-position: 8px -1px, 38px 5px, 72px -2px; }
+  0%, 100% { background-position: 10px 9px, 25px 3px, 44px 8px; }
+  50% { background-position: 11px 6px, 24px 1px, 45px 5px; }
 }
 
 /* Byline restyled as a mono transmission readout, matching the JetBrains
@@ -8121,6 +8161,14 @@ html[data-theme="deepcurrent"] .sweat-row.tier-t5 > td:first-child::before {
   50% { background: #35e6c4; box-shadow: 0 0 14px rgba(53,230,196,0.9); }
 }
 html[data-theme="deepcurrent"] .sweat-row.tier-t5 { background: linear-gradient(90deg, rgba(155,107,255,0.12), transparent 45%); }
+/* The badge is display: table, so it picked up the table's collapsed
+   borders and lost its rounding; rows also keep one height with or
+   without a badge. */
+html[data-theme="deepcurrent"] .row-tier-pill { border-collapse: separate; margin-top: 3px; }
+@media (min-width: 761px) {
+  html[data-theme="deepcurrent"] .table-wrap tbody tr.sweat-row { height: 68px; }
+  html[data-theme="deepcurrent"] .table-wrap tbody tr.tier-row > td.index-cell { padding-top: 6px; padding-bottom: 6px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .sweat-card.tier-t5 .sweat-card-frame, .sweat-row.tier-t5 > td:first-child::before { animation: none !important; }
@@ -10412,6 +10460,14 @@ html[data-theme="deepcurrent"] .card-note-ghost {
 html[data-theme="deepcurrent"] .card-note-ghost::before { content: "\25CC"; font-size: 1.25em; }
 html[data-theme="deepcurrent"] .card-note-ghost::after { content: "NO LOG \00B7  ADD ONE"; }
 html[data-theme="deepcurrent"] .sweat-card .card-note-ghost:hover { background: rgba(53,230,196,0.08); border-color: rgba(53,230,196,0.6); box-shadow: inset 0 0 18px rgba(53,230,196,0.15); }
+/* Deep Current keeps the empty log slot faintly visible at rest, so cards
+   without a log don't show a bare band between the stats and the footer;
+   it brightens on hover/focus like the other themes. */
+html[data-theme="deepcurrent"] .sweat-card .card-note-ghost { opacity: 0.45; }
+html[data-theme="deepcurrent"] .sweat-card .card-note-ghost::after { content: "NO LOG YET"; }
+html[data-theme="deepcurrent"] .sweat-card:is(:hover, :focus-within, :focus-visible) .card-note-ghost { opacity: 0.85; }
+html[data-theme="deepcurrent"] .sweat-card:is(:hover, :focus-within, :focus-visible) .card-note-ghost::after { content: "NO LOG \00B7  ADD ONE"; }
+html[data-theme="deepcurrent"] .sweat-card .card-note-ghost:is(:hover, :focus-visible) { opacity: 1; }
 
 html[data-theme="skyisles"] .card-note-ghost {
   margin-top: 12px;
@@ -10533,6 +10589,15 @@ html[data-theme="deepcurrent"] .site-footer-end::after { background: linear-grad
 html[data-theme="deepcurrent"] .site-footer-end-text::before { content: "\25C9  Seafloor reached"; }
 html[data-theme="deepcurrent"] .site-footer-end-text { animation: notePing 2.4s ease-in-out infinite; }
 html[data-theme="deepcurrent"] .site-footer-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.74em; }
+/* Bubbles drift behind the footer buttons; give the glass pills a solid
+   enough backing that a passing bubble never cuts through their text. */
+html[data-theme="deepcurrent"] .site-footer-top {
+  background: rgba(6,26,40,0.9);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+html[data-theme="deepcurrent"] .site-footer-top:hover { background: rgba(10,44,60,0.95); }
+html[data-theme="deepcurrent"] .site-footer-meta { text-shadow: 0 0 6px #041624, 0 0 2px #041624; }
 /* Sky Isles: dig all the way down and you hit bedrock. */
 html[data-theme="skyisles"] .site-footer-end {
   font-family: var(--font-label); font-size-adjust: none;
@@ -10971,13 +11036,14 @@ html[data-theme="skyisles"] .site-footer-end-text {
     margin: -9px 0 0 -9px;
     border-radius: 50%;
     border: 1.5px solid rgba(53,230,196,0.7);
-    animation: bnavPing 2.6s ease-out infinite;
+    animation: dcBnavPing 2.6s ease-out infinite;
   }
   html[data-theme="deepcurrent"] .bnav-link.active::after { animation-delay: 1.3s; }
 }
-@keyframes bnavPing {
-  from { transform: scale(0.6); opacity: 0.9; }
-  to { transform: scale(4.2); opacity: 0; }
+@keyframes dcBnavPing {
+  from { transform: scale(0.9); opacity: 0.85; }
+  70% { opacity: 0; }
+  to { transform: scale(2.1); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   html[data-theme="deepcurrent"] .bnav-link.active::before,
@@ -11510,6 +11576,10 @@ html[data-theme="deepcurrent"] .sotd-plate::before { content: "SPEC-"; }
 html[data-theme="deepcurrent"] .sotd-kicker { font-family: 'JetBrains Mono', monospace; letter-spacing: 1.5px; color: var(--accent); }
 html[data-theme="deepcurrent"] .sotd-kicker-text::before { content: "// "; opacity: 0.6; }
 html[data-theme="deepcurrent"] .sotd-date { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+html[data-theme="deepcurrent"] .sotd-record-part + .sotd-record-part { white-space: nowrap; }
+@media (max-width: 480px) {
+  html[data-theme="deepcurrent"] .sotd-record { font-size: 0.86em; letter-spacing: -0.01em; }
+}
 html[data-theme="deepcurrent"] .sotd-name { font-family: 'Chakra Petch', sans-serif; font-weight: 700; letter-spacing: 0.5px; text-shadow: 0 0 22px rgba(53,230,196,0.25); }
 html[data-theme="deepcurrent"] .sotd-tier { font-family: 'JetBrains Mono', monospace; border-radius: 3px; }
 html[data-theme="deepcurrent"] .sotd-stat-label,
@@ -11628,6 +11698,12 @@ html[data-theme="skyisles"] .sotd-clock { font: 400 0.6em var(--font-arcade); li
      30px on into the stat labels below. */
   html:not([data-theme]) .sotd-backdrop i:is(:nth-child(1), :nth-child(2)) { bottom: 0; }
   .sotd-clock { grid-column: 1 / -1; align-self: auto; margin-top: 10px; text-align: center; }
+}
+/* Deep Current's mono readouts are wide, so on phones the four numbers sit
+   in a 2x2 grid and big values (finals, index) show in full. */
+@media (max-width: 480px) {
+  html[data-theme="deepcurrent"] .sotd-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; }
+  html[data-theme="deepcurrent"] .sotd-stat-value { font-size: 1.15em; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sotd-card, .sotd-card *, .sotd-deco i, .sotd-backdrop i { animation: none !important; }
@@ -12178,6 +12254,21 @@ html[data-theme="deepcurrent"] .unmask.play .unmask-fx::before { animation: dcPi
 html[data-theme="deepcurrent"] .unmask.play .unmask-fx::after { animation: dcPing 0.8s ease-out 0.4s both; }
 html[data-theme="deepcurrent"] .unmask-back { box-shadow: inset 3px 0 0 #62e6d6, inset 0 0 30px rgba(98,230,214,0.08); }
 html[data-theme="deepcurrent"] .unmask-back .unmask-pic { border-radius: 6px; box-shadow: inset 0 0 0 1px var(--gold); }
+/* The unmask card is a compact contact readout, not a full-width bar, and
+   the "no contact yet" prompt under it goes away once a contact is shown. */
+html[data-theme="deepcurrent"] .unmask { max-width: 560px; margin-left: auto; margin-right: auto; }
+html[data-theme="deepcurrent"] #denickUnmask:not([hidden]) ~ #denickEmpty { display: none; }
+/* The back face's meta now leads with the searched nick; let it take a
+   second line on narrow cards rather than cutting off the time. */
+html[data-theme="deepcurrent"] .unmask-back .unmask-meta { white-space: normal; line-height: 1.35; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+html[data-theme="deepcurrent"] .unmask-back .unmask-seg { white-space: nowrap; }
+html[data-theme="deepcurrent"] .unmask-back .unmask-seg + .unmask-seg::before { content: "\00B7\00A0"; }
+/* Narrow cards: the time gets its own line instead of wrapping wherever
+   the width runs out. */
+@media (max-width: 560px) {
+  html[data-theme="deepcurrent"] .unmask-back .unmask-seg-time { display: block; }
+  html[data-theme="deepcurrent"] .unmask-back .unmask-seg + .unmask-seg-time::before { content: none; }
+}
 @keyframes dcPing {
   0% { opacity: 0.9; transform: scale(1); }
   100% { opacity: 0; transform: scale(9); }
@@ -12459,7 +12550,7 @@ html[data-theme="ledger"] .lb-entry-count b { font: 600 1.1em/1 'Playfair Displa
 html[data-theme="ledger"] .lb-entry-count span { font-style: italic; color: var(--gold); }
 html[data-theme="ledger"] .lb-scene-foot { display: block; height: 6px; margin-top: 10px; border-top: 1px solid var(--gold); border-bottom: 1px solid var(--gold); }
 
-/* ---- Deep Current: a depth chart; the most sweats sinks deepest ---- */
+/* ---- Deep Current: a depth chart; the most sweats sink deepest ---- */
 html[data-theme="deepcurrent"] .lb-scene {
   padding: 0 0 12px 46px;
   border-radius: 14px;
@@ -12489,8 +12580,38 @@ html[data-theme="deepcurrent"] .lb-scene::before {
 }
 html[data-theme="deepcurrent"] .lb-scene-head { display: flex; justify-content: space-between; padding: 10px 14px 0 0; }
 html[data-theme="deepcurrent"] .lb-scene-title::before { content: "Depth chart"; font: 600 0.78em/1 'JetBrains Mono', monospace; letter-spacing: 0.2em; text-transform: uppercase; color: #62e6d6; }
-html[data-theme="deepcurrent"] .lb-scene-sub::before { content: "Most sweats sinks deepest"; font: 400 0.72em/1 'JetBrains Mono', monospace; color: rgba(160,220,230,0.6); }
+html[data-theme="deepcurrent"] .lb-scene-sub::before { content: "Most sweats sink deepest"; font: 400 0.72em/1 'JetBrains Mono', monospace; color: rgba(160,220,230,0.6); }
 html[data-theme="deepcurrent"] .lb-scene-body { align-items: start; height: 330px; padding-right: 10px; }
+html[data-theme="deepcurrent"] .leaderboard-person-title { font: 600 0.82em/1.3 'JetBrains Mono', monospace; letter-spacing: 0.16em; text-transform: uppercase; color: #62e6d6; }
+html[data-theme="deepcurrent"] .leaderboard-person-title::before { content: "// "; opacity: 0.6; }
+/* The hint gets its own breathing room between the chart and the list
+   heading, in the theme's quiet mono log voice. */
+html[data-theme="deepcurrent"] .leaderboard-hint {
+  margin: -8px auto 18px;
+  max-width: 64ch;
+  font: 400 0.74em/1.5 'JetBrains Mono', monospace;
+  color: var(--text-dim);
+  text-wrap: balance;
+  text-shadow: 0 0 6px #041624, 0 0 2px #041624;
+}
+/* When more divers sit off to the right, say so in the chart's corner
+   (the edge fade alone is easy to miss on a phone). */
+html[data-theme="deepcurrent"] .lb-scene:has(.lb-scene-body.fade-right) .lb-scene-foot {
+  display: block;
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  z-index: 2;
+  pointer-events: none;
+  font: 600 10px/1 'JetBrains Mono', monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(98,230,214,0.7);
+}
+html[data-theme="deepcurrent"] .lb-scene:has(.lb-scene-body.fade-right) .lb-scene-foot::before { content: "More divers \2192"; animation: notePing 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="deepcurrent"] .lb-scene:has(.lb-scene-body.fade-right) .lb-scene-foot::before { animation: none; }
+}
 html[data-theme="deepcurrent"] .lb-entry {
   flex-direction: column;
   align-items: center;
@@ -13505,7 +13626,7 @@ html[data-theme="deepcurrent"] .panel-header h2 {
   line-height: 1.05;
   text-shadow: 0 0 22px rgba(53,230,196,0.25);
 }
-html[data-theme="deepcurrent"] .panel-header p { font-family: 'JetBrains Mono', monospace; font-size: 0.74em; letter-spacing: 0.02em; }
+html[data-theme="deepcurrent"] .panel-header p { font-family: 'JetBrains Mono', monospace; font-size: 0.74em; letter-spacing: 0.02em; text-shadow: 0 0 10px #041624, 0 0 6px #041624, 0 0 3px #041624, 0 0 1px #041624; }
 html[data-theme="deepcurrent"] .panel-header p::before { content: "> "; color: var(--accent); }
 html[data-theme="deepcurrent"] .panel-index {
   right: 140px;
@@ -13689,6 +13810,31 @@ html[data-theme="deepcurrent"] :is(.dash-left, #editModal) .chip.cheat-chip inpu
 html[data-theme="deepcurrent"] :is(.dash-left, #editModal) .chip.boost-chip input:checked + span::before { background: radial-gradient(circle at 16px 50%, #fff 0 3.5px, transparent 4px), var(--gold); }
 
 /* Add Sweat: a ballast-blow lever plate, bolted at both ends */
+/* The status line sits under Add Sweat, so the button follows the note
+   directly instead of floating below an empty status slot. */
+html[data-theme="deepcurrent"] .dash-left > #status { order: 1; margin-top: 10px; }
+/* Errors and cautions get the alarm/brass tones and a small warning glyph
+   (classes set by deepCurrentStatusTone in the script). */
+html[data-theme="deepcurrent"] #status.dc-status-error,
+html[data-theme="deepcurrent"] #status.dc-status-warn {
+  color: #ff8a8a;
+  text-shadow: 0 0 10px rgba(255,90,90,0.35);
+  text-wrap: balance;
+  line-height: 1.4;
+}
+html[data-theme="deepcurrent"] #status.dc-status-warn { color: #f0c47a; text-shadow: 0 0 10px rgba(201,154,74,0.35); }
+html[data-theme="deepcurrent"] #status.dc-status-error::before,
+html[data-theme="deepcurrent"] #status.dc-status-warn::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: -2px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.5 15 14H1z' fill='none' stroke='%23000' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='M8 6v4' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='12' r='.9'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.5 15 14H1z' fill='none' stroke='%23000' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='M8 6v4' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='12' r='.9'/%3E%3C/svg%3E") center / contain no-repeat;
+}
 html[data-theme="deepcurrent"] #addSweatBtn {
   border-radius: 8px;
   font-family: 'Chakra Petch', sans-serif;
@@ -13837,7 +13983,7 @@ html[data-theme="skyisles"] .pdeco i:nth-child(2) { left: 0; right: 0; bottom: 0
   /* Pinned to the far right, above the Hide button and clear of the
      title (the desktop offset of 150px would put it behind the text). */
   html[data-theme="ledger"] .panel-index { right: 2px; top: -8px; bottom: auto; opacity: 0.75; }
-  html[data-theme="deepcurrent"] .panel-index { font-size: 46px; }
+  html[data-theme="deepcurrent"] .panel-index { font-size: 34px; right: 4px; top: -4px; bottom: auto; }
   html[data-theme="skyisles"] .panel-index::before { font-size: 56px; }
   html[data-theme="casefiles"] .panel-index { display: none; }
   html:not([data-theme]) .panel-header::after { left: 0; }
@@ -14044,13 +14190,23 @@ html[data-theme="ledger"] #playerModal:has(.modal-record-rival) .modal-mark {
 html[data-theme="ledger"] #playerModal .modal-mark::before { content: "\2694"; position: absolute; left: 0; right: 0; top: 50px; text-align: center; color: #f0d28a; font-size: 14px; }
 
 /* ---------------- Deep Current: a contact report on a sonar console ---------------- */
-html[data-theme="deepcurrent"] #playerModal #modalTitle::before { content: "Contact report \00b7  "; font-family: 'JetBrains Mono', monospace; color: #62e6d6; letter-spacing: 0.16em; }
+html[data-theme="deepcurrent"] #playerModal #modalTitle { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.14em; gap: 0; }
+html[data-theme="deepcurrent"] #playerModal #modalTitle::before { content: "Contact report"; margin-right: 12px; color: #62e6d6; }
+html[data-theme="deepcurrent"] #playerModal #modalTitle .modal-live-dot { margin-right: 10px; }
+html[data-theme="deepcurrent"] #playerModal .modal-uuid-row { margin-top: 8px; line-height: 1; }
+html[data-theme="deepcurrent"] #playerModal .modal-close { top: 22px; right: 26px; }
+html[data-theme="deepcurrent"] #playerModal .modal-copy-link { top: 22px; right: 66px; }
+@media (max-width: 760px) {
+  html[data-theme="deepcurrent"] #playerModal .modal-close { top: 14px; right: 22px; }
+  html[data-theme="deepcurrent"] #playerModal .modal-copy-link { top: 14px; right: 60px; }
+  html[data-theme="deepcurrent"] #playerModal #modalUsername { padding-top: 16px; }
+}
 html[data-theme="deepcurrent"] .modal-deco i:nth-child(-n+4) { display: block; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #e9cf8a, #8a6a2c 70%); box-shadow: 0 1px 1px rgba(0,0,0,0.6); }
 html[data-theme="deepcurrent"] .modal-deco i:nth-child(1) { top: 10px; left: 10px; }
 html[data-theme="deepcurrent"] .modal-deco i:nth-child(2) { top: 10px; right: 10px; }
 html[data-theme="deepcurrent"] .modal-deco i:nth-child(3) { bottom: 10px; left: 10px; }
 html[data-theme="deepcurrent"] .modal-deco i:nth-child(4) { bottom: 10px; right: 10px; }
-/* Stats on dial plates: a semicircle gauge filled to the standing */
+/* Stats on riveted dial plates */
 html[data-theme="deepcurrent"] #playerModal .modal-stat-tile {
   position: relative;
   border-radius: 12px;
@@ -14063,28 +14219,84 @@ html[data-theme="deepcurrent"] #playerModal .modal-stat-tile {
     linear-gradient(180deg, rgba(10,40,60,0.9), rgba(4,20,32,0.95));
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.6), inset 0 0 0 3px rgba(4,20,32,0.9), inset 0 0 0 4px rgba(98,230,214,0.12);
 }
-html[data-theme="deepcurrent"] #playerModal .modal-standing { position: static; }
-html[data-theme="deepcurrent"] #playerModal .modal-standing-bar { display: none; }
-html[data-theme="deepcurrent"] #playerModal .modal-standing::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 8px;
-  width: 92px;
-  height: 46px;
-  margin-left: -46px;
-  border-radius: 46px 46px 0 0;
-  background: conic-gradient(from -90deg at 50% 100%, #62e6d6 0deg, #62e6d6 calc(var(--pct) * 1.8deg), rgba(98,230,214,0.12) calc(var(--pct) * 1.8deg) 180deg, transparent 180deg);
-  -webkit-mask: radial-gradient(circle at 50% 100%, transparent 36px, #000 37px);
-  mask: radial-gradient(circle at 50% 100%, transparent 36px, #000 37px);
-  opacity: 0.85;
-  z-index: 0;
-}
-html[data-theme="deepcurrent"] #playerModal .modal-stat-tile:has(.modal-standing) { padding-top: 22px; }
+/* Standing: the same segmented sonar bar as the Lookup preview, centred
+   under the value */
+html[data-theme="deepcurrent"] #playerModal .modal-standing { width: 100%; max-width: 210px; margin: 10px auto 0; gap: 10px; }
+html[data-theme="deepcurrent"] #playerModal .modal-standing-text { font-size: 0.66em; letter-spacing: 0.04em; }
 html[data-theme="deepcurrent"] #playerModal .modal-stat-tile > * { position: relative; z-index: 1; }
+/* Tiles with no "Beats N%" reading (Wins here, KDR in the Lookup preview)
+   centre their readout in the plate instead of ending in an empty strip
+   under it; tiles with a bar are already full, so they don't move. */
+html[data-theme="deepcurrent"] #playerModal .modal-stat-tile,
+html[data-theme="deepcurrent"] #statsColumns .stat-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+html[data-theme="deepcurrent"] #statsColumns .stat-hero .stat-standing:empty { display: none; }
+/* ...but when the other tiles do have a bar, the tile without one (Wins in
+   the popup, KDR in the preview) gets a muted, empty "Not ranked" row in
+   the same slot, so every tile ends on the same three rows. */
+html[data-theme="deepcurrent"] #statsColumns:has(.stat-standing:not(:empty)) .stat-hero .stat-standing:empty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+html[data-theme="deepcurrent"] #statsColumns:has(.stat-standing:not(:empty)) .stat-hero .stat-standing:empty::before,
+html[data-theme="deepcurrent"] #modalStats:has(.modal-standing) .modal-stat-tile:not(:has(.modal-standing)):not(.modal-stat-skeleton)::after {
+  background:
+    repeating-linear-gradient(90deg, rgba(98,230,214,0.2) 0 9px, transparent 9px 12px) left center / 100% 2px no-repeat,
+    rgba(53,230,196,0.06);
+}
+html[data-theme="deepcurrent"] #statsColumns:has(.stat-standing:not(:empty)) .stat-hero .stat-standing:empty::before {
+  content: "";
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+}
+html[data-theme="deepcurrent"] #statsColumns:has(.stat-standing:not(:empty)) .stat-hero .stat-standing:empty::after {
+  content: "Not ranked";
+  flex: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6em;
+  font-weight: 700;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+/* The popup tile's ::before is its ring texture, so the whole row is one
+   ::after: the bar is a background sized to leave room for the label. */
+html[data-theme="deepcurrent"] #modalStats:has(.modal-standing) .modal-stat-tile:not(:has(.modal-standing)):not(.modal-stat-skeleton)::after {
+  content: "Not ranked";
+  position: relative;
+  z-index: 1;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 210px;
+  margin: 10px auto 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66em;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  text-align: right;
+  color: var(--text-faint);
+  white-space: nowrap;
+  background-size: calc(100% - 11.5ch - 10px) 2px, calc(100% - 11.5ch - 10px) 6px;
+  background-position: left center, left center;
+  background-repeat: no-repeat;
+  border-radius: 3px;
+}
 /* The skin in a brass porthole */
 @media (min-width: 761px) {
   html[data-theme="deepcurrent"] #playerModal #modalSkin { align-self: start; width: 220px; height: 220px; min-height: 0; padding: 16px; box-sizing: border-box; }
+}
+@media (max-width: 760px) {
+  html[data-theme="deepcurrent"] #playerModal #modalSkin { width: 168px; height: 168px; padding: 12px; box-sizing: border-box; align-self: center; }
+}
+@media (max-width: 560px) {
+  html[data-theme="deepcurrent"] #playerModal #modalSkin { width: min(200px, 56vw); height: min(200px, 56vw); }
 }
 html[data-theme="deepcurrent"] #playerModal #modalSkin {
   border-radius: 50%;
@@ -14093,6 +14305,26 @@ html[data-theme="deepcurrent"] #playerModal #modalSkin {
     radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18), transparent 35%),
     radial-gradient(circle, #0c3a55, #03121e 75%);
   box-shadow: 0 0 0 2px #3d2e12, inset 0 0 0 2px #e9cf8a, inset 0 0 26px rgba(0,0,0,0.8), 0 0 24px rgba(98,230,214,0.25);
+}
+/* Desktop popup: the porthole is shorter than the stat tiles, so let each
+   column flow on its own - the dive log sits straight under the porthole
+   and Urchin tags straight under the tiles, instead of both waiting for
+   the taller of the two and leaving an empty band. */
+@media (min-width: 761px) {
+  html[data-theme="deepcurrent"] #playerModal .modal-content {
+    grid-template-areas:
+      "name name"
+      "live live"
+      "skin stats"
+      "record stats"
+      "record urchin"
+      "record match"
+      "notes notes"
+      "clips clips"
+      "replays replays";
+    grid-template-rows: auto auto auto auto auto 1fr auto auto auto;
+  }
+  html[data-theme="deepcurrent"] #playerModal .modal-record:not([hidden]) ~ .modal-tags-urchin { margin-top: 12px; }
 }
 /* Rival: the HOSTILE tab clipped to the edge */
 html[data-theme="deepcurrent"] #playerModal:has(.modal-record-rival) .modal-mark {
@@ -14293,10 +14525,22 @@ html[data-theme="ledger"] #activityEmpty p::before { content: "No transactions r
 html[data-theme="ledger"] #modalNotesEmpty::before { content: "No memoranda."; }
 html[data-theme="deepcurrent"] :is(#denickEmpty, #activityEmpty)::before { background: #62e6d6; }
 html[data-theme="deepcurrent"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='11' width='17' height='7' rx='3.5'/%3E%3Cpath d='M9 11V7.5h5V11M12 7.5V4h3M19.5 14.5l2-2v4z'/%3E%3Ccircle cx='8' cy='14.5' r='.8' fill='%23000'/%3E%3Ccircle cx='12' cy='14.5' r='.8' fill='%23000'/%3E%3C/svg%3E"); }
-html[data-theme="deepcurrent"] #denickEmpty p::before { content: "No contact on sonar. Search a nick to see who's running silent under it, or a player for their nick history."; }
+html[data-theme="deepcurrent"] #denickEmpty p::before { content: "No contact yet. Search a nick or a player."; }
+html[data-theme="deepcurrent"] :is(#denickEmpty p, #statsEmptyText) { text-wrap: balance; }
+html[data-theme="deepcurrent"] #statsEmpty:not(.is-scanning) #statsEmptyText { font-size: 0; width: 100%; max-width: 280px; }
+html[data-theme="deepcurrent"] #statsEmpty:not(.is-scanning) #statsEmptyText::before { content: "Preview a player to see their card."; font-size: 13.12px; line-height: 19.68px; }
 html[data-theme="deepcurrent"] #activityEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='2'/%3E%3Cpath d='M12 7v14M8 10.5h8M4.5 13.5c0 4.3 3.4 7.5 7.5 7.5s7.5-3.2 7.5-7.5'/%3E%3C/svg%3E"); }
 html[data-theme="deepcurrent"] #activityEmpty p::before { content: "Ship's log is quiet. Every add, edit and delete is recorded here as it happens."; }
-html[data-theme="deepcurrent"] #modalNotesEmpty::before { content: "No log entries."; }
+html[data-theme="deepcurrent"] #modalNotesEmpty::before { content: "No log entries yet."; }
+/* Framed like the other empty prompts (dashed, faint sonar glow). */
+html[data-theme="deepcurrent"] #modalNotesEmpty {
+  padding: 14px 16px;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 30%, rgba(53,230,196,0.07), transparent 70%), rgba(6,26,40,0.6);
+  text-align: center;
+}
+html[data-theme="deepcurrent"] #modalNotesEmpty::before { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.04em; color: var(--text-faint); }
 html[data-theme="skyisles"] :is(#denickEmpty, #activityEmpty)::before { background: #1d4a6e; }
 html[data-theme="skyisles"] #denickEmpty { --empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 7h13v10H8L3 12z' stroke-linecap='square' stroke-linejoin='miter' stroke-width='2'/%3E%3Crect x='6.5' y='11' width='2' height='2' fill='%23000' stroke='none'/%3E%3Cpath d='M12 10.5h6M12 13.5h4' stroke-linecap='square' stroke-width='2'/%3E%3C/svg%3E"); }
 html[data-theme="skyisles"] #denickEmpty p::before { content: "No name tags to read. Search a nick to see who's behind it, or a player for every name they've used."; }
@@ -24774,8 +25018,23 @@ function showUnmask(nick, entry) {
   denickUnmask.querySelector(".unmask-back .unmask-name").textContent = entry.username;
   // Private Bank keeps the searched nick on the opened card (CSS reads it).
   denickUnmask.querySelector(".unmask-back .unmask-k").dataset.nick = nick;
-  denickUnmask.querySelector(".unmask-back .unmask-meta").textContent =
-    `${entry.source}${entry.updated ? ` \u00b7 ${denickTimeAgo(entry.updated)}` : ""}`;
+  const backMeta = denickUnmask.querySelector(".unmask-back .unmask-meta");
+  if (document.documentElement.dataset.theme === "deepcurrent") {
+    // Deep Current leads with the searched nick. Each part is its own
+    // unbreakable span (the CSS adds the dots between them), so a wrap
+    // never strands a dot at the end of a line.
+    const parts = [nick, entry.source, entry.updated ? denickTimeAgo(entry.updated) : ""].filter(Boolean);
+    backMeta.replaceChildren();
+    parts.forEach((text, i) => {
+      if (i) backMeta.append(" ");
+      const seg = document.createElement("span");
+      seg.className = "unmask-seg" + (i && i === parts.length - 1 && entry.updated ? " unmask-seg-time" : "");
+      seg.textContent = text;
+      backMeta.append(seg);
+    });
+  } else {
+    backMeta.textContent = `${entry.source}${entry.updated ? ` \u00b7 ${denickTimeAgo(entry.updated)}` : ""}`;
+  }
   const img = denickUnmask.querySelector(".unmask-back img");
   img.src = `https://mc-heads.net/body/${encodeURIComponent(entry.username)}/120`;
   img.addEventListener("error", () => { img.style.visibility = "hidden"; }, { once: true });
@@ -25909,7 +26168,9 @@ form.addEventListener('submit', async e => {
   }
 
   if (!anyBeatenBySelected) {
-    status.textContent = "Please select at least one player who beat them.";
+    status.textContent = document.documentElement.dataset.theme === "deepcurrent"
+      ? "Pick who beat them."
+      : "Please select at least one player who beat them.";
     siteAudio.play("error");
     return;
   }
@@ -26853,6 +27114,20 @@ function renderSweatOfDay() {
   const who = names.length > 2 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names.join(" and ");
   sotdEl.querySelector(".sotd-record").textContent =
     `${who ? `Beaten by ${who}` : "Beaten"}${times > 1 ? ` · ${times} times` : ""} · first on ${first.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
+  // Deep Current reads it as a terse log line, split into unbreakable
+  // parts so a narrow card wraps between them instead of mid-phrase.
+  if (theme === "deepcurrent") {
+    const rec = sotdEl.querySelector(".sotd-record");
+    const parts = [who ? `Beaten by ${who}` : "Beaten", times > 1 ? `${times}\u00d7` : "", `since ${first.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`].filter(Boolean);
+    rec.textContent = "";
+    parts.forEach((t, i) => {
+      if (i) rec.append(" ");
+      const part = document.createElement("span");
+      part.className = "sotd-record-part";
+      part.textContent = i ? `\u00b7 ${t}` : t;
+      rec.append(part);
+    });
+  }
   if (latestNote) {
     const noteEl = sotdEl.querySelector(".sotd-note");
     noteEl.textContent = `“${latestNote.text}”`;
@@ -27252,6 +27527,44 @@ cardGrid.addEventListener("click", (e) => {
   card.classList.add("card-pressed");
 });
 
+// Deep Current: when a skin render still fails after its one retry (or the
+// popup's skin fails at all), swap in an "unknown contact" silhouette with
+// the player's initials instead of leaving an empty, frameless gap. A
+// capture listener sees every img error without touching the shared
+// avatar helpers, and runs before their own onerror (which is a no-op by
+// then). The data: image then fires the normal onload, so the existing
+// fade-in/"loaded" hooks show it inside the usual frame or porthole.
+function deepCurrentFallbackSkin(name, kind) {
+  const ini = (String(name || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 2) || "?").toUpperCase();
+  const glass = `fill="rgba(53,230,196,0.13)" stroke="#35e6c4" stroke-opacity="0.75" stroke-width="1.4"`;
+  const label = (x, y, size) => `<text x="${x}" y="${y}" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="700" font-size="${size}" fill="#9ff7e6">${ini}</text>`;
+  let vb, body;
+  if (kind === "full") {
+    vb = "0 0 64 112";
+    body = `<rect x="20" y="31" width="24" height="36" rx="2" ${glass}/><rect x="9" y="31" width="10" height="34" rx="2" ${glass}/><rect x="45" y="31" width="10" height="34" rx="2" ${glass}/><rect x="20.5" y="68" width="11" height="38" rx="2" ${glass}/><rect x="32.5" y="68" width="11" height="38" rx="2" ${glass}/><rect x="19" y="4" width="26" height="25" rx="3" ${glass}/>${label(32, 21, 10)}`;
+  } else if (kind === "bust") {
+    vb = "0 0 64 64";
+    body = `<rect x="9" y="42" width="46" height="24" rx="4" ${glass}/><rect x="17" y="9" width="30" height="30" rx="3" ${glass}/>${label(32, 29, 12)}`;
+  } else {
+    vb = "0 0 64 64";
+    body = `<rect x="1" y="1" width="62" height="62" rx="8" fill="#08283a" stroke="#35e6c4" stroke-opacity="0.5" stroke-width="1.4"/><circle cx="32" cy="32" r="22" fill="none" stroke="#35e6c4" stroke-opacity="0.18"/>${label(32, 40, 22)}`;
+  }
+  return "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}">${body}</svg>`);
+}
+document.addEventListener("error", (e) => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement) || document.documentElement.dataset.theme !== "deepcurrent") return;
+  const src = img.currentSrc || img.src || "";
+  const m = /visage\.surgeplay\.com\/(face|bust|full|head)\//.exec(src);
+  if (!m) return;
+  const isPopup = img.id === "modalSkin";
+  if (!isPopup && !/[?&]retry=/.test(src)) return;
+  const name = (img.alt || "").replace(/^Avatar of /, "") ||
+    (isPopup ? (document.querySelector("#modalUsername .modal-copy-name") || {}).textContent : "") ||
+    (img.closest("#sotd") ? (img.closest("#sotd").querySelector(".sotd-name") || {}).textContent : "");
+  img.src = deepCurrentFallbackSkin(name, m[1] === "head" ? "face" : m[1]);
+}, true);
+
 // Shared row builder for both the Table view and the Leaderboard drill-down -
 // identical columns in both (including Beaten By, useful in the leaderboard
 // too since it shows who ELSE beat this player) so their widths line up.
@@ -27512,9 +27825,7 @@ function renderLeaderboard(filteredSweats, usernameCounts) {
   leaderboardPersonTitle.textContent = leaderboardPeople.length > 1
     ? `Beaten by ${pickedLabel()} together (${personSweats.length})`
     : `${pickedLabel()}'s Sweats (${counts[leaderboardPeople[0]]})`;
-  leaderboardHint.textContent = leaderboardPeople.length > 1
-    ? "Sweats you all beat. Pick a name again to drop it."
-    : "Pick more names to compare.";
+  leaderboardHint.textContent = leaderboardHintText();
   // Same fix as the Table view: hide the drill-down table's own header
   // chrome instead of leaving it visible above an empty body - the
   // ranking grid above it stays put either way, since that's showing
@@ -27814,6 +28125,45 @@ function countUpModalStats() {
     requestAnimationFrame(step);
   });
 }
+
+// The helper line under the leaderboard's name picker. Deep Current keeps
+// it to a few words so it stays on one line on phones.
+function leaderboardHintText() {
+  return leaderboardPeople.length > 1
+    ? "Sweats you all beat. Pick a name again to drop it."
+    : "Pick more names to compare.";
+}
+document.addEventListener("themechange", () => {
+  if (leaderboardHint.textContent) leaderboardHint.textContent = leaderboardHintText();
+});
+
+// Deep Current sets section subtitles in small mono type, where the full
+// sentences run to two lines on phones; it uses short versions, and a short
+// search placeholder on phones so it isn't cut off next to Filters. Other
+// themes get the original text back.
+const DC_PANEL_SUBTITLES = {
+  sweatLookupSection: "Find a player, log the win.",
+  denickingSection: "Look up a nick or player.",
+  activitySection: "Edits, deletes and restores.",
+};
+const dcPhoneQuery = matchMedia("(max-width: 480px)");
+function applyDeepCurrentCopy() {
+  const dc = document.documentElement.dataset.theme === "deepcurrent";
+  for (const [id, text] of Object.entries(DC_PANEL_SUBTITLES)) {
+    const p = document.querySelector(`#${id} > div > p`);
+    if (!p) continue;
+    if (p.dataset.fullText === undefined) p.dataset.fullText = p.textContent;
+    p.textContent = dc ? text : p.dataset.fullText;
+  }
+  const search = document.getElementById("searchInput");
+  if (search) {
+    if (search.dataset.fullPlaceholder === undefined) search.dataset.fullPlaceholder = search.placeholder;
+    search.placeholder = dc && dcPhoneQuery.matches ? "Search\u2026" : search.dataset.fullPlaceholder;
+  }
+}
+applyDeepCurrentCopy();
+document.addEventListener("themechange", applyDeepCurrentCopy);
+dcPhoneQuery.addEventListener("change", applyDeepCurrentCopy);
 
 // "Beats 82% of tracked" meter under a player-popup stat: the share of
 // tracked sweats with a lower saved value for that field. Skipped when
@@ -29226,6 +29576,23 @@ const SUCCESS_MESSAGES = {
   deepcurrent: "Sweat logged.",
   skyisles: "Sweat defeated! +XP",
 };
+
+// Deep Current: tint the Add Sweat status line by what it says - success
+// and progress stay teal, the same-day duplicate prompt reads as a caution
+// and anything else (validation and fetch failures) as an alarm - so an
+// error never looks like a success. Classes only; the text is untouched.
+(function deepCurrentStatusTone() {
+  const calm = new Set([...Object.values(SUCCESS_MESSAGES), "Fetching stats..."]);
+  const sync = () => {
+    const text = status.textContent.trim();
+    const on = document.documentElement.dataset.theme === "deepcurrent" && !!text;
+    const warn = on && /already added today/.test(text);
+    status.classList.toggle("dc-status-warn", warn);
+    status.classList.toggle("dc-status-error", on && !warn && !calm.has(text));
+  };
+  new MutationObserver(sync).observe(status, { childList: true, characterData: true, subtree: true });
+  new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
 
 function buildNeonFlourish(container) {
   const flash = document.createElement("div");

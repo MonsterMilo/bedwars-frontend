@@ -49,7 +49,8 @@
 
   main { position: relative; min-height: 100%; display: flex; flex-direction: column; isolation: isolate; }
   #scene, #flat { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; display: block; }
-  #flat { pointer-events: none; }
+  #flat { pointer-events: none; z-index: -2; opacity: 0; transition: opacity 1.2s ease; } /* under the scene, which fades in over it */
+  #flat.on { opacity: 1; }
   #scene { opacity: 0; transition: opacity 1.2s ease; }
   #scene.on { opacity: 1; }
 
@@ -89,6 +90,7 @@
   .card:hover::after, .card:focus-visible::after { opacity: 1; }
   .thumb { position: relative; aspect-ratio: 16 / 11; border-radius: clamp(10px, .8vw, 14px); overflow: hidden; background: #080a11; box-shadow: 0 0 0 1px rgba(255,255,255,0.05) inset; }
   .thumb canvas, .thumb .tlist { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .thumb.list { background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)); box-shadow: none; }
   .thumb.open { background: none; box-shadow: none; overflow: visible; }
   .card h2 { margin: 0 0 6px; font-size: clamp(20px, 1.45vw, 28px); font-weight: 800; letter-spacing: -.015em; }
   .card p { margin: 0; color: var(--dim); font-size: clamp(14px, .9vw, 16px); line-height: 1.5; text-wrap: pretty; }
@@ -109,15 +111,19 @@
   @keyframes rise { from { transform: translateY(16px); opacity: 0.2; } }
 
   /* Tracker preview: top players, scrolling */
-  .tlist { overflow: hidden; font-size: clamp(11px, .72vw, 13px); }
+  .tlist { overflow: hidden; font-size: clamp(11px, .72vw, 13px); -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 22px), transparent); }
   .tlist ol { list-style: none; margin: 0; padding: 7px; display: flex; flex-direction: column; gap: 4px; transition: transform .7s var(--ease); }
   .tlist li { display: grid; grid-template-columns: 1.6em minmax(0,1fr) auto; align-items: center; gap: 7px; height: 2.05em; padding: 0 7px; border-radius: 6px; background: rgba(255,255,255,0.04); }
   .tlist .av { width: 1.6em; height: 1.6em; border-radius: 4px; image-rendering: pixelated; background: rgba(255,255,255,.06); }
   .tlist .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
   .tlist .st { font: 700 .92em var(--mono); }
+  .tlist .st i { font-style: normal; font-size: .8em; margin-left: 1px; opacity: .85; }
   .tlist li.ghost .nm, .tlist li.ghost .st { height: 8px; border-radius: 4px; background: rgba(255,255,255,.08); color: transparent; animation: pulse 1.4s ease-in-out infinite; }
   .tlist li.ghost .nm { width: 70%; } .tlist li.ghost .st { width: 38px; }
-  .tlist .msg { position: absolute; inset: auto 0 6px; text-align: center; font: 600 10px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+  .tlist.done { -webkit-mask-image: none; mask-image: none; }
+  .tlist.done ol { opacity: .45; }
+  .tlist.done li.ghost .nm, .tlist.done li.ghost .st { animation: none; }
+  .tlist .msg { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); white-space: nowrap; padding: 5px 10px; border-radius: 999px; background: rgba(6,8,14,0.88); border: 1px solid var(--line-2); font: 600 10px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
   @keyframes pulse { 50% { opacity: .45; } }
 
   @media (min-width: 981px) and (max-height: 820px) {
@@ -138,17 +144,18 @@
     .lede { max-width: 40ch; }
   }
   @media (max-width: 560px) {
-    .card { grid-template-columns: 112px minmax(0, 1fr); gap: 14px; }
+    .card { --tw: 136px; grid-template-columns: var(--tw) minmax(0, 1fr); gap: 12px; }
+    .card h2 { font-size: 19px; } /* "Cosmetics Library" stays on one line like the other titles */
     .card:hover { transform: none; }
     .card .tlist .av { display: none; }
-    .card .tlist li { grid-template-columns: minmax(0,1fr) auto; }
-    .foot { gap: 14px; }
-    .foot .live { display: flex; width: 100%; gap: 0; }
-    .foot .live::before { display: none; }
-    .foot .stat { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; letter-spacing: .02em; padding: 10px 0; }
-    .foot .stat:not([hidden]) ~ .stat:not([hidden]) { padding-left: 12px; border-left: 1px solid var(--line); }
-    .foot .stat b { font-size: 19px; font-weight: 800; letter-spacing: -.01em; }
-    .foot .stat:not([hidden]) ~ .stat:not([hidden])::before { display: none; }
+    /* three rows fill the thumbnail evenly (top and bottom gaps match); the next row waits just below */
+    .card .tlist { -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 6px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 6px), transparent); }
+    .card .tlist ol { padding: 6px; }
+    .card .tlist li { grid-template-columns: minmax(0,1fr) auto; height: calc((var(--tw) * 11 / 16 - 20px) / 3); }
+    .foot { gap: 8px 14px; font-size: 12.5px; }
+    .foot .live { width: 100%; gap: 4px 0; }
+    .foot .live::before { margin-right: 8px; }
+    .foot .stat:not([hidden]) ~ .stat:not([hidden])::before { margin: 0 9px 0 6px; }
     .foot .by { margin-left: 0; }
   }
 
@@ -157,10 +164,20 @@
   html[data-np] .mark::before { content: ""; position: absolute; left: .32em; top: -.62em; width: 1.05em; height: .9em; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 34'%3E%3Cpath d='M5 26C7 14 15 3 27 4c6 1 9 5 10 12-4-3-7-3-10-1-1 5 0 9 1 12Z' fill='%23d6333a'/%3E%3Cpath d='M12 24c3-8 8-15 15-17' stroke='%23ff8a8f' stroke-width='2' fill='none' stroke-linecap='round' opacity='.6'/%3E%3Ccircle cx='36' cy='18' r='4.2' fill='%23fff'/%3E%3Crect x='2' y='23' width='30' height='9' rx='4.5' fill='%23f6f9ff'/%3E%3C/svg%3E") center / contain no-repeat; transform: rotate(-12deg); pointer-events: none; }
   html[data-np] h1 { position: relative; }
   html[data-np] h1::before { content: ""; position: absolute; left: -.04em; top: -.1em; width: .4em; height: .34em; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 34'%3E%3Cpath d='M5 26C7 14 15 3 27 4c6 1 9 5 10 12-4-3-7-3-10-1-1 5 0 9 1 12Z' fill='%23d6333a'/%3E%3Cpath d='M12 24c3-8 8-15 15-17' stroke='%23ff8a8f' stroke-width='2' fill='none' stroke-linecap='round' opacity='.6'/%3E%3Ccircle cx='36' cy='18' r='4.2' fill='%23fff'/%3E%3Crect x='2' y='23' width='30' height='9' rx='4.5' fill='%23f6f9ff'/%3E%3C/svg%3E") center / contain no-repeat; transform: rotate(-16deg); pointer-events: none; z-index: 1; filter: drop-shadow(0 6px 10px rgba(0,0,0,.4)); }
-  html[data-np] .grad { background-image: linear-gradient(100deg, #ffffff 0%, #e6f4ff 24%, #ff6b70 48%, #5fd68e 72%, #ffd25e 100%); }
+  html[data-np] .grad { background-image: linear-gradient(100deg, #ffffff 0%, #e6f4ff 16%, #ff6b70 32%, #ffffff 48%, #5fd68e 64%, #e6f4ff 80%, #ffd25e 100%); } /* white between red and green, so they never blend to brown */
   html[data-np] .np-cap { position: absolute; left: 10px; right: 10px; top: -7px; height: 13px; z-index: 3; pointer-events: none;
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 13' preserveAspectRatio='none'%3E%3Cpath d='M0 0H80V8C74 8 72 12.5 66 12.5S58 7 52 8 44 13 38 12.5 30 7 24 8 16 12 10 11 2 7 0 8Z' fill='%23f7fbff'/%3E%3Cpath d='M0 3H80' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E") 0 0 / 80px 13px repeat-x;
     border-radius: 10px 10px 4px 4px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.45)); }
+  /* the string of lights hangs above the logo's Santa hat, not on it */
+  html[data-np] .topbar { padding-top: max(30px, env(safe-area-inset-top, 0px)); }
+  /* where the page scrolls (stacked layout), the lights hang from the top of the page and scroll away with the topbar */
+  @media (max-width: 980px) { html[data-np] .np-garland { position: absolute; } }
+  /* snow falls over the 3D scene but behind all the page content, so it never sits on any text */
+  html[data-np] main { isolation: auto; }
+  html[data-np] .wrap { position: relative; z-index: 4; }
+  /* flakes behind small text would still peek through the gaps between letters: a soft dark halo hides them */
+  html[data-np] :is(.lede, .eyebrow, .mark, .foot) { text-shadow: 0 0 3px var(--bg), 0 0 8px var(--bg), 0 0 14px rgba(4,5,10,.8); }
+  html[data-np] .pill { background: rgba(8,10,18,.82); }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
@@ -197,7 +214,7 @@
     { name: 'Prism Tracker', href: 'tracker.html', color: [0, 217, 255], text: 'The players worth knowing: stars, FKDR, notes and nicks.', go: 'Open tracker', preview: 'players' },
     { name: 'Cosmetics Library', href: 'cosmetics.html', color: [168, 85, 247], text: 'Every kill effect, death cry and skin, with rarity and price.', go: 'Browse cosmetics', preview: 'cosmetic' },
     { name: 'Prism Atlas', href: 'atlas.html', color: [255, 184, 77], text: 'Every Bed Wars map in 3D, from the top down or on foot.', go: 'Explore maps', preview: 'atlas' },
-    { name: 'Prism Recordings', href: 'recordings.html', color: [75, 227, 168], text: 'Every game you recorded: your targets, the kill log, clips and the 3D replay.', go: 'Watch recordings', preview: 'recordings' }
+    { name: 'Prism Recordings', href: 'recordings.html', color: [75, 227, 168], text: 'Your recorded games: kill log, clips and 3D replay.', go: 'Watch recordings', preview: 'recordings' }
   ];
 
   var NP = document.documentElement.hasAttribute('data-np');
@@ -214,7 +231,7 @@
     var a = document.createElement('a'); a.className = 'card'; a.href = pg.href;
     a.style.setProperty('--c', pg.color.join(',')); a.style.animationDelay = (0.7 + i * 0.14) + 's';
     var thumb = '';
-    if (pg.preview === 'players') thumb = '<div class="thumb"><div class="tlist" id="players"></div></div>';
+    if (pg.preview === 'players') thumb = '<div class="thumb list"><div class="tlist" id="players"></div></div>';
     else if (pg.preview) thumb = '<div class="thumb open"><canvas data-draw="' + pg.preview + '"></canvas></div>';
     else a.style.gridTemplateColumns = 'minmax(0,1fr)';
     a.innerHTML = (NP ? '<i class="np-cap" aria-hidden="true"></i>' : '') + thumb + '<div><h2>' + esc(pg.name) + '</h2><p>' + esc(pg.text) + '</p><span class="go">' + esc(pg.go || 'Open') + ' ' + ARROW + '</span></div>';
@@ -250,20 +267,22 @@
       for (var i = 0; i < hot.length; i++) hot[i] += (hotT[i] - hot[i]) * 0.1;
       mouse.x += (mouse.tx - mouse.x) * 0.05; mouse.y += (mouse.ty - mouse.y) * 0.05;
       return { W: r.width, H: r.height, prism: { x: x, y: y, size: size }, targets: targets, hot: hot, narrow: narrow,
-        source: narrow ? { x: -40, y: y - size * 0.95 } : { x: -60, y: y - size * 0.32 } };
+        source: narrow ? { x: -40, y: y - size * 0.5 } : { x: -60, y: y - size * 0.32 } };
     },
     ready3d: false
   };
 
   /* ---------- live top players (same index as the site: FKDR² × stars) ---------- */
-  var PRESTIGE = ['#aaaaaa', '#ffffff', '#ffaa00', '#55ffff', '#00aa00', '#00aaaa', '#aa0000', '#ff55ff', '#5555ff', '#aa00aa'];
+  // the Hypixel prestige colours, with the dark ones lifted so they read at this small size
+  var PRESTIGE = ['#b8b8b8', '#ffffff', '#ffaa00', '#55ffff', '#4fd65a', '#3fcfcf', '#ff5555', '#ff55ff', '#8080ff', '#d65bd6'];
   function starColor(s) { if (s >= 1000) return ['#ff5555', '#ffaa00', '#ffff55', '#55ff55', '#55ffff', '#ff55ff'][Math.floor(s / 100) % 6]; return PRESTIGE[Math.floor(s / 100) % 10]; }
   var listEl = document.getElementById('players');
   function playersList(rows, msg) {
     if (!listEl) return;
-    listEl.innerHTML = ''; var ol = document.createElement('ol'); listEl.appendChild(ol);
+    listEl.innerHTML = ''; listEl.classList.remove('done'); var ol = document.createElement('ol'); listEl.appendChild(ol);
     if (!rows) {
       for (var g = 0; g < 5; g++) ol.insertAdjacentHTML('beforeend', '<li class="ghost"><span class="av"></span><span class="nm">.</span><span class="st">.</span></li>');
+      listEl.classList.toggle('done', !!msg); // a message means it stopped loading: rows go still and dim
       if (msg) listEl.insertAdjacentHTML('beforeend', '<div class="msg">' + esc(msg) + '</div>');
       return;
     }
@@ -272,7 +291,7 @@
       ol.innerHTML = '';
       for (var i = 0; i < Math.min(n + 1, rows.length); i++) {
         var p = rows[(i + offset) % rows.length];
-        ol.insertAdjacentHTML('beforeend', '<li><img class="av" alt="" loading="lazy" src="https://mc-heads.net/avatar/' + encodeURIComponent(p.uuid || p.name) + '/24"><span class="nm">' + esc(p.name) + '</span><span class="st" style="color:' + starColor(p.star) + '">[' + p.star + '✫]</span></li>');
+        ol.insertAdjacentHTML('beforeend', '<li><img class="av" alt="" loading="lazy" src="https://mc-heads.net/avatar/' + encodeURIComponent(p.uuid || p.name) + '/24"><span class="nm">' + esc(p.name) + '</span><span class="st" style="color:' + starColor(p.star) + '">' + p.star + '<i>✫</i></span></li>');
       }
     }
     render();
@@ -319,7 +338,8 @@
       }
       clearTimeout(slow);
       if (!res || !res.ok) { playersList(null, res && (res.status === 401 || res.status === 403) ? 'Key needed' : 'Server asleep'); return; }
-      var list = await res.json().catch(function () { return null; });
+      var j = await res.json().catch(function () { return null; });
+      var list = Array.isArray(j) ? j : (j && j.sweats); // a bare list, or the paged { sweats: [...] } shape
       if (!Array.isArray(list)) { playersList(null, 'Key needed'); return; }
       var best = new Map();
       list.forEach(function (s) {
@@ -335,7 +355,7 @@
   }
 
   /* ---------- the real 1.8 diamond sword as a solid voxel model (each pixel is a little block),
-     spinning like a dropped item. Sides are drawn, so it looks solid even edge-on. ---------- */
+     swinging slowly side to side (never edge-on, so the picture never goes empty). Sides are drawn, so it looks solid. ---------- */
   function loadImg(src) { var im = new Image(); im.src = src; return im; }
   var swordImg = loadImg('home/diamond-sword.png'), swordVox = null;
   function voxels(im) {
@@ -345,25 +365,26 @@
     return px;
   }
   function shade(p, k) { return 'rgb(' + Math.round(p.r * k) + ',' + Math.round(p.g * k) + ',' + Math.round(p.b * k) + ')'; }
-  function drawCosmetic(ctx, w, h, t) {
+  function tint(C) { return 'rgb(' + C.split(',').map(function (v) { return Math.round(+v + (255 - v) * 0.6); }).join(',') + ')'; } // the colour, lightened
+  function drawCosmetic(ctx, w, h, t, C) {
     ctx.clearRect(0, 0, w, h);
-    var m = Math.min(w, h), size = m * 0.6, cx = w / 2, cy = h * 0.48 + Math.sin(t * 1.6) * m * 0.02;
+    var m = Math.min(w, h), size = m * 0.76, cx = w / 2, cy = h * 0.48 + Math.sin(t * 1.6) * m * 0.02, light = tint(C);
     // soft round glow that fades out well inside the box
-    var gr = m * 0.46, g = ctx.createRadialGradient(cx, cy, 0, cx, cy, gr); g.addColorStop(0, 'rgba(168,85,247,0.28)'); g.addColorStop(0.5, 'rgba(168,85,247,0.08)'); g.addColorStop(1, 'rgba(168,85,247,0)');
+    var gr = m * 0.46, g = ctx.createRadialGradient(cx, cy, 0, cx, cy, gr); g.addColorStop(0, 'rgba(' + C + ',0.28)'); g.addColorStop(0.5, 'rgba(' + C + ',0.08)'); g.addColorStop(1, 'rgba(' + C + ',0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
     function sparks(front) {
       for (var i = 0; i < 12; i++) {
         var a = t * (0.5 + (i % 5) * 0.07) + i * 2.399, r = m * (0.3 + (i % 4) * 0.04), z = Math.sin(a);
         if ((z >= 0) === front) continue;
         var x = cx + Math.cos(a) * r, y = cy + Math.sin(a * 1.3 + i) * m * 0.26, s = Math.max(1, m * (0.012 + Math.abs(z) * 0.01));
-        ctx.globalAlpha = 0.3 + Math.abs(z) * 0.55; ctx.fillStyle = i % 3 ? '#d6bcff' : '#9ff6ff'; ctx.fillRect(x - s / 2, y - s / 2, s, s);
+        ctx.globalAlpha = 0.3 + Math.abs(z) * 0.55; ctx.fillStyle = i % 3 ? light : '#9ff6ff'; ctx.fillRect(x - s / 2, y - s / 2, s, s);
       }
       ctx.globalAlpha = 1;
     }
     sparks(false);
     if (!swordVox && swordImg.complete && swordImg.naturalWidth) swordVox = voxels(swordImg);
     if (swordVox) {
-      var a = t * 1.1, ca = Math.cos(a), sa = Math.sin(a), u = size / 16, T = 1.15; // T: thickness in pixels
+      var a = Math.sin(t * 0.9) * 1.1, ca = Math.cos(a), sa = Math.sin(a), u = size / 16, T = 1.15; // T: thickness in pixels
       var X = function (i) { return (i - 8) * u; }, Y = function (j) { return cy + (j - 8) * u; };
       // sides first (far to near), then the face that points at us
       var sides = [];
@@ -389,9 +410,9 @@
 
   /* ---------- a replay playing: a little screen with a waveform, kill and bed markers on the
      timeline and the playhead sweeping across, REC light blinking ---------- */
-  function drawRecordings(ctx, w, h, t) {
+  function drawRecordings(ctx, w, h, t, C) {
     ctx.clearRect(0, 0, w, h);
-    var m = Math.min(w, h), G = '75,227,168';
+    var m = Math.min(w, h), G = C;
     var gr = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, m * 0.6); gr.addColorStop(0, 'rgba(' + G + ',0.16)'); gr.addColorStop(1, 'rgba(' + G + ',0)');
     ctx.fillStyle = gr; ctx.fillRect(0, 0, w, h);
     var sw = Math.min(w * 0.86, h * 0.86 * 1.45), sh = sw / 1.45, x0 = (w - sw) / 2, y0 = (h - sh) / 2 + Math.sin(t * 1.4) * m * 0.012, r = sw * 0.07;
@@ -438,10 +459,10 @@
 
   /* ---------- a real Bed Wars map (Whiskers, from the Atlas) seen from above, slowly turning ---------- */
   var mapImg = loadImg('home/map-whiskers.png');
-  function drawAtlas(ctx, w, h, t) {
+  function drawAtlas(ctx, w, h, t, C) {
     ctx.clearRect(0, 0, w, h);
     var size = Math.min(w, h) * 0.7, cx = w / 2, cy = h / 2; // its corners stay inside the box while it turns
-    var gr = Math.min(w, h) * 0.48, g = ctx.createRadialGradient(cx, cy, 0, cx, cy, gr); g.addColorStop(0, 'rgba(255,184,77,0.14)'); g.addColorStop(1, 'rgba(255,184,77,0)');
+    var gr = Math.min(w, h) * 0.48, g = ctx.createRadialGradient(cx, cy, 0, cx, cy, gr); g.addColorStop(0, 'rgba(' + C + ',0.14)'); g.addColorStop(1, 'rgba(' + C + ',0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
     if (!(mapImg.complete && mapImg.naturalWidth)) return;
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * 0.12);
@@ -453,7 +474,11 @@
 
   /* ---------- card preview canvases + the flat fallback beams ---------- */
   var previews = [];
-  document.querySelectorAll('canvas[data-draw]').forEach(function (c) { previews.push({ c: c, ctx: c.getContext('2d'), fn: { atlas: drawAtlas, recordings: drawRecordings }[c.dataset.draw] || drawCosmetic }); });
+  // each preview is drawn in its card's colour (so North Pole's colours carry into the pictures)
+  document.querySelectorAll('canvas[data-draw]').forEach(function (c) {
+    var pg = PAGES.filter(function (p) { return p.preview === c.dataset.draw; })[0];
+    previews.push({ c: c, ctx: c.getContext('2d'), color: (pg ? pg.color : [168, 85, 247]).join(','), fn: { atlas: drawAtlas, recordings: drawRecordings }[c.dataset.draw] || drawCosmetic });
+  });
   function sizeCanvas(c, w, h) { var W = Math.round(w * DPR), H = Math.round(h * DPR); if (c.width !== W || c.height !== H) { c.width = W; c.height = H; } }
 
   var flat = document.getElementById('flat'), fctx = flat.getContext('2d');
@@ -461,7 +486,7 @@
   function drawFlat(now, L) {
     sizeCanvas(flat, L.W, L.H); var ctx = fctx; ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, L.W, L.H);
     var bg = ctx.createRadialGradient(L.prism.x, L.prism.y, 0, L.prism.x, L.prism.y, L.W * 0.6); bg.addColorStop(0, 'rgba(60,90,160,0.10)'); bg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = bg; ctx.fillRect(0, 0, L.W, L.H);
-    var t = now / 1000, it = reduce ? 9 : (now - introStart) / 1000, P = L.prism;
+    var t = now / 1000, it = reduce ? 9 : (now - window.PRISM.introStart) / 1000, P = L.prism;
     var grow = Math.min(1, Math.max(0, it / 0.6)), split = Math.min(1, Math.max(0, (it - 0.55) / 0.7));
     ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
     var ex = L.source.x + (P.x - L.source.x) * grow, ey = L.source.y + (P.y - L.source.y) * grow;
@@ -471,21 +496,38 @@
       [[22 + L.hot[i] * 16, .07], [9, .2], [2, .95]].forEach(function (s) { ctx.strokeStyle = rgba(c, s[1] * k); ctx.lineWidth = s[0]; ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(fx, fy); ctx.stroke(); });
     });
     ctx.globalCompositeOperation = 'source-over';
-    var pts = [0, 1, 2].map(function (k) { var a = -Math.PI / 2 + k * Math.PI * 2 / 3; return [P.x + Math.cos(a) * P.size * 0.5, P.y + 0.08 * P.size + Math.sin(a) * P.size * 0.5]; });
+    var pts = [0, 1, 2].map(function (k) { var a = -Math.PI / 2 + k * Math.PI * 2 / 3; return [P.x + Math.cos(a) * P.size * 0.5, P.y + 0.06 * P.size + Math.sin(a) * P.size * 0.5]; }); // same size and place as the 3D prism face-on
     ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); ctx.lineTo(pts[1][0], pts[1][1]); ctx.lineTo(pts[2][0], pts[2][1]); ctx.closePath();
-    ctx.fillStyle = 'rgba(200,220,255,0.06)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
+    // a soft pale edge and a faint body glow (brighter at the top), close to how the 3D glass reads face-on
+    var body = ctx.createLinearGradient(0, pts[0][1], 0, pts[1][1]); body.addColorStop(0, 'rgba(170,200,255,0.12)'); body.addColorStop(1, 'rgba(170,200,255,0.04)');
+    ctx.lineJoin = 'round'; ctx.fillStyle = body; ctx.fill();
+    ctx.strokeStyle = 'rgba(215,230,255,0.16)'; ctx.lineWidth = Math.max(4, P.size * 0.035); ctx.stroke();
+    ctx.strokeStyle = 'rgba(235,242,255,0.5)'; ctx.lineWidth = Math.max(1.5, P.size * 0.01); ctx.stroke();
   }
 
-  var start = performance.now(), flatOff = false;
+  // The flat beams are only a fallback: they fade in if the 3D scene isn't up after a moment
+  // (with the intro starting then). They sit under the scene, so when it is ready it simply fades in
+  // over them, and they go once it's fully shown. Normal loads never show them.
+  var start = performance.now();
+  var flatTimer = setTimeout(function () {
+    if (window.PRISM.ready3d) return;
+    window.PRISM.flatShown = true; window.PRISM.introStart = performance.now(); flat.classList.add('on');
+    if (reduce) requestAnimationFrame(frame);
+  }, 1200);
+  window.PRISM.on3d = function () {
+    clearTimeout(flatTimer);
+    if (!window.PRISM.flatShown) { flat.hidden = true; return; }
+    setTimeout(function () { flat.hidden = true; }, reduce ? 0 : 1300); // the scene's fade is 1.2s
+  };
   function frame(now) {
     var t = reduce ? 2 : (now - start) / 1000;
-    previews.forEach(function (o) { var r = o.c.getBoundingClientRect(); if (!r.width) return; sizeCanvas(o.c, r.width, r.height); o.ctx.setTransform(1, 0, 0, 1, 0, 0); o.fn(o.ctx, o.c.width, o.c.height, t, false); });
-    if (!window.PRISM.ready3d) drawFlat(now, window.PRISM.layout());
-    else if (!flatOff) { flatOff = true; flat.hidden = true; }
+    previews.forEach(function (o) { var r = o.c.getBoundingClientRect(); if (!r.width) return; sizeCanvas(o.c, r.width, r.height); o.ctx.setTransform(1, 0, 0, 1, 0, 0); o.fn(o.ctx, o.c.width, o.c.height, t, o.color); });
+    if (!flat.hidden) drawFlat(now, window.PRISM.layout());
     if (!reduce) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
   if (reduce) addEventListener('resize', function () { requestAnimationFrame(frame); });
+  if (reduce) [swordImg, mapImg].forEach(function (im) { im.addEventListener('load', function () { requestAnimationFrame(frame); }); }); // still pictures: draw again once they load
 })();
 </script>
 
@@ -518,17 +560,22 @@ function start() {
   const scene = new THREE.Scene(); scene.background = BG;
   const FOV = 22, camera = new THREE.PerspectiveCamera(FOV, 1, 10, 20000);
 
-  // Environment: a dark studio with light strips, for crisp reflections on the glass.
+  // Environment: a dark studio lit by soft glowing panels (each fades out at its edges), blurred a
+  // little, so the glass shows smooth gradients instead of hard-edged flat slabs.
   const pmrem = new THREE.PMREMGenerator(renderer);
   const studio = new THREE.Scene(); studio.background = new THREE.Color(0x010206);
-  const strip = (w, h, color, k, pos) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide })); m.position.set(...pos); m.lookAt(0, 0, 0); studio.add(m); };
-  strip(7, 0.35, 0xffffff, 3, [0, 4, 2.5]);
-  strip(0.3, 6, 0xffffff, 2, [4.5, 0, 1.5]);
-  strip(0.5, 5, 0x00d9ff, 3, [-4.5, 0.5, 0.5]);
-  strip(4, 0.4, 0xa855f7, 3, [0, -4, 1.5]);
-  strip(2.2, 2.2, 0xffb84d, 1.6, [2.5, 1, -4]);
-  strip(1, 7, 0x9fd8ff, 1.2, [-3.5, 0, 5]);
-  scene.environment = pmrem.fromScene(studio, 0).texture;
+  const soft = (() => { const c = document.createElement("canvas"); c.width = c.height = 128; const x = c.getContext("2d");
+    const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, "#fff"); g.addColorStop(0.35, "rgba(255,255,255,0.75)"); g.addColorStop(1, "rgba(255,255,255,0)");
+    x.fillStyle = g; x.fillRect(0, 0, 128, 128); const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx; })();
+  const strip = (w, h, color, k, pos) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), map: soft, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); m.position.set(...pos); m.lookAt(0, 0, 0); studio.add(m); };
+  strip(6, 1.2, 0xffffff, 2.2, [0, 4, 2.5]);
+  strip(0.9, 6, 0xffffff, 1.2, [4.5, 0, 1.5]);
+  // the side panels are only lightly tinted, so a flat side face reflects a pale sheen, not a block of colour
+  strip(1.2, 5, 0xbfeeff, 1.0, [-4.5, 0.5, 0.5]);
+  strip(4, 1.2, 0xdccbff, 1.0, [0, -4, 1.5]);
+  strip(3, 3, 0xffe6c2, 0.4, [2.5, 1, -4]);
+  strip(2.4, 7, 0xcfe8ff, 0.8, [-3.5, 0, 5]);
+  scene.environment = pmrem.fromScene(studio, 0.04).texture;
 
   /* ---- background: faint colour wash + vignette, far behind everything ---- */
   const bgMat = new THREE.ShaderMaterial({
@@ -627,19 +674,22 @@ function start() {
   const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.045, bevelSize: 0.04, bevelSegments: 8, curveSegments: 16 });
   geo.translate(0, -0.12, -depth / 2); geo.computeVertexNormals();
   const glass = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff, metalness: 0, roughness: 0.015, transmission: 1, thickness: 1.25, ior: 1.52, dispersion: 4.5,
+    color: 0xffffff, metalness: 0, roughness: 0.04, transmission: 1, thickness: 1.25, ior: 1.52, dispersion: 2.5,
     attenuationColor: new THREE.Color(0xcfe6ff), attenuationDistance: 600,
-    clearcoat: 1, clearcoatRoughness: 0.02, specularIntensity: 1, specularColor: new THREE.Color(0xffffff), envMapIntensity: 1.0,
-    iridescence: 0.35, iridescenceIOR: 1.3, iridescenceThicknessRange: [200, 600]
+    clearcoat: 0.5, clearcoatRoughness: 0.05, specularIntensity: 1, specularColor: new THREE.Color(0xffffff), envMapIntensity: 0.7,
+    iridescence: 0.1, iridescenceIOR: 1.3, iridescenceThicknessRange: [250, 420]
   });
   const prism = new THREE.Mesh(geo, glass); prism.renderOrder = 3;
-  // A faint fresnel rim so the edges always catch some light.
+  // A faint fresnel rim so the edges always catch some light, and a soft cool glow on the
+  // triangle faces (brighter at the top) so the glass reads as a solid block, not an empty frame.
   const rimMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     uniforms: { uT: { value: 0 } },
-    vertexShader: `varying vec3 vN, vV, vP; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position; gl_Position = projectionMatrix * mv; }`,
-    fragmentShader: `uniform float uT; varying vec3 vN, vV, vP; void main(){ float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 3.0);
+    vertexShader: `varying vec3 vN, vV, vP; varying float vFace; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position; vFace = abs(normal.z); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `uniform float uT; varying vec3 vN, vV, vP; varying float vFace; void main(){ float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 3.0);
       float h = fract(vP.x * 0.3 + vP.y * 0.22 + uT * 0.04); vec3 c = mix(vec3(0.0, 0.85, 1.0), vec3(0.66, 0.33, 0.97), smoothstep(0.0, 0.5, h)); c = mix(c, vec3(1.0, 0.72, 0.3), smoothstep(0.5, 1.0, h));
-      gl_FragColor = vec4(c * f * 0.35, 1.0); }` });
+      vec3 body = vec3(0.55, 0.72, 1.0) * (0.012 + 0.03 * smoothstep(-0.9, 0.95, vP.y)) * smoothstep(0.6, 1.0, vFace);
+      c = mix(c, vec3(0.8, 0.88, 1.0), 0.6 * (1.0 - vFace)); // pale on the side faces, colour stays on the triangle edges
+      gl_FragColor = vec4(c * f * 0.3 + body, 1.0); }` });
   const rim = new THREE.Mesh(geo, rimMat); rim.renderOrder = 4; prism.add(rim);
   const prismGroup = new THREE.Group(); prismGroup.add(prism); scene.add(prismGroup);
   const key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(300, 500, 800); scene.add(key);
@@ -665,9 +715,10 @@ function start() {
   }
 
   // Drag to spin: press on or near the prism and drag. Let go and it keeps spinning,
-  // then eases back to its slow turn. The prism ignores plain mouse movement.
-  const AUTO = 0.32;
-  const spin = { drag: false, id: null, lx: 0, ly: 0, vy: AUTO, vx: 0, tiltX: 0.12, lastL: null };
+  // then eases back to its slow sway. The prism ignores plain mouse movement.
+  // On its own it sways gently either side of face-on, so it always reads as a triangle.
+  const SWAY = 0.34;
+  const spin = { drag: false, id: null, lx: 0, ly: 0, vy: 0, vx: 0, tiltX: 0.12, lastL: null };
   const nearPrism = (e) => { const L = spin.lastL; if (!L) return false; const r = canvas.getBoundingClientRect();
     const dx = e.clientX - r.left - L.prism.x, dy = e.clientY - r.top - L.prism.y; return Math.hypot(dx, dy) < L.prism.size * 0.75; };
   addEventListener("pointerdown", (e) => {
@@ -689,6 +740,7 @@ function start() {
   const t0 = performance.now(); let shown = false, last = t0;
   function frame(now) {
     if (document.hidden && shown) { requestAnimationFrame(frame); return; }
+    if (!shown && !P.flatShown) P.introStart = now; // the flat fallback never showed: play the whole intro here (restarted after the first, slow render)
     const L = P.layout(); resize(L);
     const t = P.reduce ? 3 : (now - t0) / 1000, dt = Math.min(0.05, (now - last) / 1000); last = now;
     const it = P.reduce ? 9 : (now - P.introStart) / 1000;
@@ -715,7 +767,13 @@ function start() {
     prismGroup.position.set(px, py, 0); prismGroup.scale.setScalar(S * 0.5);
     spin.lastL = L;
     if (!spin.drag) {
-      if (!P.reduce || spin.vy !== AUTO) { prismGroup.rotation.y += dt * spin.vy; spin.vy += (( P.reduce ? 0 : AUTO) - spin.vy) * Math.min(1, dt * 1.6); }
+      prismGroup.rotation.y += dt * spin.vy; spin.vy *= Math.max(0, 1 - dt * 1.6);
+      const free = Math.min(1, Math.abs(spin.vy) / 0.5); // still spinning from a drag: let it run
+      const home = Math.round(prismGroup.rotation.y / Math.PI) * Math.PI; // the nearest face-on angle (front or back)
+      const face = Math.atan2(W / 2 - px, camZ); // turned to face the camera, so the sway shows the same sliver of side face either way
+      const target = home + face + (P.reduce ? 0 : SWAY * Math.sin(t * 0.3));
+      if (!shown) prismGroup.rotation.y = target; // first frame: start already in the sway, no turn-in
+      prismGroup.rotation.y += (target - prismGroup.rotation.y) * Math.min(1, dt * 1.2) * (1 - free);
       spin.tiltX += dt * spin.vx; spin.vx *= Math.max(0, 1 - dt * 3);
       spin.tiltX += (0.12 - spin.tiltX) * Math.min(1, dt * 0.8);
     }
@@ -723,7 +781,7 @@ function start() {
     prismGroup.rotation.z = 0;
     rimMat.uniforms.uT.value = t;
     composer.render();
-    if (!shown) { shown = true; canvas.classList.add("on"); P.ready3d = true; }
+    if (!shown) { shown = true; canvas.classList.add("on"); P.ready3d = true; if (!P.flatShown) P.introStart = performance.now(); if (P.on3d) P.on3d(); }
     if (!P.reduce) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

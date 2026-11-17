@@ -291,6 +291,8 @@ function makeMaterials() {
   M.darkRot = tex(T.darkSoft, { roughness: 1.6, envMapIntensity: 0.8 });
   // the rotunda's wall panels: satin rather than mirror polish, so the oculus fill light spreads into a sheen instead of hot spots
   M.darkPanel = tex(T.dark, { roughness: 2.8, envMapIntensity: 1.2 });
+  // the podium lecterns sit right in front of you: the soft black marble at twice the density, so its veins stay small up close
+  M.darkLect = tex(T.darkSoft, { roughness: 1.4, envMapIntensity: 0.9 });
 }
 function bounce(mat, k0, k1, y0, y1) {
   mat.onBeforeCompile = (sh) => {
@@ -346,16 +348,22 @@ function drawPlaque(d) {
   return (g, w, h, H) => {
     bronzeBg(g, w, h, H); panelFrame(g, w, h, H);
     g.textAlign = "center"; g.textBaseline = "alphabetic";
-    g.fillStyle = C(H, "#e2b866"); g.font = `700 52px Cinzel, Georgia, serif`; g.fillText(`Nº ${d.rank}`, w / 2, 118);
-    g.fillStyle = C(H, "#fbf4e4"); fitFont(g, d.name, "'Barlow Condensed', sans-serif", 700, w - 150, 128); g.fillText(d.name, w / 2, 252);
+    g.fillStyle = C(H, "#e2b866"); g.font = `700 52px Cinzel, Georgia, serif`;
+    if (!d.cheating) g.fillText(`Nº ${d.rank}`, w / 2, 118);
+    else { // a cheater: the rank and a red CHEATER tag share the top line, centred together
+      const rt = `Nº ${d.rank}`, rw = g.measureText(rt).width; g.font = `700 44px 'Barlow Condensed', sans-serif`;
+      const tag = "C H E A T E R", tw = g.measureText(tag).width + 44, gap = 26, x0 = w / 2 - (rw + gap + tw) / 2;
+      g.textAlign = "left"; g.font = `700 52px Cinzel, Georgia, serif`; g.fillText(rt, x0, 118);
+      g.fillStyle = C(H, "#d8283c"); g.fillRect(x0 + rw + gap, 72, tw, 60);
+      g.fillStyle = H ? "#000" : "#fff"; g.font = `700 44px 'Barlow Condensed', sans-serif`; g.fillText(tag, x0 + rw + gap + 22, 117); g.textAlign = "center";
+    }
+    g.fillStyle = C(H, d.cheating ? "#ff8f9b" : "#fbf4e4"); fitFont(g, d.name, "'Barlow Condensed', sans-serif", 700, w - 150, 128); g.fillText(d.name, w / 2, 252);
     const parts = prestigeParts(d.star); g.font = `700 62px 'Barlow Condensed', sans-serif`;
     const tw = parts.reduce((a, p) => a + g.measureText(p.c).width, 0); let x = w / 2 - tw / 2; g.textAlign = "left";
     parts.forEach(p => { g.fillStyle = H ? "#fff" : p.color; g.fillText(p.c, x, 336); x += g.measureText(p.c).width; });
     g.textAlign = "center"; g.fillStyle = C(H, "#e2b866"); g.font = `700 68px Cinzel, Georgia, serif`; g.fillText(fmtIdx(d.index), w / 2, 428);
     const foot = `I N D E X   ·   ${tierOf(d.index).toUpperCase().split("").join(" ")}`;
     g.fillStyle = C(H, "#ecd49c"); fitFont(g, foot, "'Barlow Condensed', sans-serif", 600, w - 170, 50); g.fillText(foot, w / 2, 496);
-    if (d.cheating) { g.save(); g.translate(w - 128, 100); g.rotate(0.32); g.fillStyle = C(H, "#e0354a"); g.fillRect(-150, -27, 300, 54);
-      g.fillStyle = H ? "#000" : "#fff"; g.font = `700 33px 'Barlow Condensed', sans-serif`; g.fillText("CHEATER", 0, 12); g.restore(); }
   };
 }
 function drawEmptyPlaque(rank) {
@@ -423,8 +431,9 @@ function drawRoll(g, w, h, H) {
     const r = rng(5); for (let i = 0; i < 1400; i++) { g.fillStyle = `rgba(255,255,255,${r() * 0.03})`; g.fillRect(r() * w, r() * h, 2, 2); } }
   panelFrame(g, w, h, H, 16);
   g.textAlign = "center"; g.fillStyle = C(H, "#e8c070"); g.font = `700 ${fitFont(g, "ROLL OF HONOUR", "Cinzel, Georgia, serif", 700, w - 150, 96)}px Cinzel, Georgia, serif`; g.fillText("ROLL OF HONOUR", w / 2, 168);
-  g.fillStyle = C(H, "#c9ad74"); g.font = `600 36px 'Barlow Condensed', sans-serif`; g.fillText("THE GREATEST SWEATS WE'VE BEATEN", w / 2, 224);
-  g.fillRect(w / 2 - 180, 250, 360, 3);
+  g.fillStyle = C(H, "#d6b97c"); g.font = `700 46px 'Barlow Condensed', sans-serif`; if ("letterSpacing" in g) g.letterSpacing = "3px";
+  g.fillText("THE GREATEST SWEATS WE'VE BEATEN", w / 2, 234); if ("letterSpacing" in g) g.letterSpacing = "0px";
+  g.fillRect(w / 2 - 180, 262, 360, 3);
   // rows spread down the whole board (a short list gets bigger type), with a faint gold rule between them
   const n = Math.max(12, DATA.length), top = 340, step = (h - top - 96) / (n - 1), fs = Math.min(step * 0.66, 60);
   DATA.forEach((d, i) => {
@@ -450,7 +459,7 @@ function boxUV(g, size) {
   }
   g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
 }
-const UV_SIZE = { wall: 4, vault: 4, marble: 2, dark: 2, darkRot: 2, darkPanel: 2 };
+const UV_SIZE = { wall: 4, vault: 4, marble: 2, dark: 2, darkRot: 2, darkPanel: 2, darkLect: 1 };
 const _m4 = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(), _s = new THREE.Vector3(1, 1, 1);
 function mtx(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = sx, sz = sx) { return new THREE.Matrix4().compose(_v.set(x, y, z), _q.setFromEuler(_e.set(rx, ry, rz, "YXZ")), _s.set(sx, sy, sz)); }
 function add(key, geo, m, opts = {}) {
@@ -472,7 +481,7 @@ function flipGeo(g) {
   for (let i = 0; i < n.length; i++) n[i] = -n[i];
   return g;
 }
-const CAST = new Set(["marble", "dark", "darkRot", "darkPanel", "gold", "goldDull", "iron", "velvet", "wood"]);
+const CAST = new Set(["marble", "dark", "darkRot", "darkPanel", "darkLect", "gold", "goldDull", "iron", "velvet", "wood"]);
 function flushStatic() {
   for (const [key, list] of BATCH) {
     const mesh = new THREE.Mesh(mergeGeometries(list, false), M[key]);
@@ -844,7 +853,9 @@ function buildDust() {
 }
 
 // ---------- North Pole: two lit trees in the rotunda, garlands of lights between the columns, wreaths on the niches ----------
-const NP_BULBS = [0xff3b46, 0x3ddc76, 0xffc94a, 0x58a8ff];
+const NP_BULBS = [0xff1418, 0x3ddc76, 0xffc94a, 0x58a8ff];
+// red is dim to the eye, so its bulbs burn brighter to glow (and bloom) like the others instead of reading as flat pink paint
+const NP_BULB_K = [6.5, 3.2, 3.2, 3.2];
 // pine needles: short strokes in a tileable colour map plus a height map that becomes a normal map
 function needleMaps() {
   const S2 = 512, r = rng(17), strokes = [];
@@ -855,7 +866,7 @@ function needleMaps() {
   const draw = (H) => (g, w, h) => {
     if (!H) { g.fillStyle = "#17482a"; g.fillRect(0, 0, w, h); }
     strokes.forEach(([x, y, dx, dy, k, lw]) => {
-      g.strokeStyle = H ? `rgba(255,255,255,${0.35 + k * 0.65})` : (k < 0.35 ? `rgba(8,30,16,.75)` : k < 0.8 ? `rgba(46,112,64,.8)` : `rgba(96,160,104,.7)`);
+      g.strokeStyle = H ? `rgba(255,255,255,${0.35 + k * 0.65})` : (k < 0.35 ? `rgba(10,34,18,.5)` : k < 0.8 ? `rgba(40,100,58,.6)` : `rgba(78,140,88,.45)`);
       g.lineWidth = lw; g.lineCap = "round";
       for (const ox of [-w, 0, w]) for (const oy of [-h, 0, h]) { g.beginPath(); g.moveTo(x + ox, y + oy); g.lineTo(x + ox + dx, y + oy + dy); g.stroke(); }
     });
@@ -863,18 +874,18 @@ function needleMaps() {
   const map = canvasTex(S2, S2, draw(false)), ht = canvasTex(S2, S2, (g, w, h) => { g.fillStyle = "#000"; g.fillRect(0, 0, w, h); draw(true)(g, w, h); }, false);
   ht.wrapS = ht.wrapT = THREE.RepeatWrapping;
   const normal = bakeNormal(S2, S2, ht, 1.6, 0); ht.dispose();
-  [map, normal].forEach(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(10, 2); });
+  [map, normal].forEach(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(20, 4); }); // fine needles: up close they read as texture, not as scratches
   return { map, normal };
 }
 function northPoleMaterials() {
   const nm = needleMaps();
-  M.npPine = new THREE.MeshStandardMaterial({ map: nm.map, normalMap: nm.normal, normalScale: new THREE.Vector2(1.2, 1.2), roughness: 0.78, metalness: 0, emissive: 0xffffff, emissiveMap: nm.map, emissiveIntensity: 0.16 });
+  M.npPine = new THREE.MeshStandardMaterial({ map: nm.map, normalMap: nm.normal, normalScale: new THREE.Vector2(0.8, 0.8), roughness: 0.78, metalness: 0, emissive: 0xffffff, emissiveMap: nm.map, emissiveIntensity: 0.16 });
   M.npRed = new THREE.MeshStandardMaterial({ color: 0xc8202c, roughness: 0.22, metalness: 0.55, envMapIntensity: 1.6 });
   M.npGreen = new THREE.MeshStandardMaterial({ color: 0x1f6b3c, roughness: 0.3, metalness: 0.35, envMapIntensity: 1.3 });
   M.npIvory = new THREE.MeshStandardMaterial({ color: 0xe9e0cc, roughness: 0.45, metalness: 0.1 });
   M.npSnow = new THREE.MeshStandardMaterial({ color: 0xf4f8ff, roughness: 0.9, metalness: 0, emissive: 0xcfe0ff, emissiveIntensity: 0.12 });
   M.npStar = glow(0xffd36b, 2.4);
-  NP_BULBS.forEach((c, i) => { M["npB" + i] = glow(c, 3.2); M["npB" + i].userData.base = new THREE.Color(c); });
+  NP_BULBS.forEach((c, i) => { M["npB" + i] = glow(c, NP_BULB_K[i]); M["npB" + i].userData.base = new THREE.Color(c); });
 }
 function npBulb(i, x, y, z, r = 0.065) { add("npB" + (i % 4), new THREE.SphereGeometry(r, 8, 6), mtx(x, y, z)); }
 // one tier of branches: a cone whose lower rim splays out into drooping branch tips
@@ -950,7 +961,7 @@ function buildNorthPole(niches) {
   niches.forEach((N, sl) => npWreath(N));
 }
 function npTwinkle(time) {
-  for (let i = 0; i < 4; i++) { const m = M["npB" + i]; if (!m) return; const f = 0.55 + 0.45 * Math.sin(time * (1.3 + i * 0.37) + i * 1.9); m.color.copy(m.userData.base).multiplyScalar(3.2 * (0.35 + 0.65 * f)); }
+  for (let i = 0; i < 4; i++) { const m = M["npB" + i]; if (!m) return; const f = 0.55 + 0.45 * Math.sin(time * (1.3 + i * 0.37) + i * 1.9); m.color.copy(m.userData.base).multiplyScalar(NP_BULB_K[i] * (0.35 + 0.65 * f)); }
   if (M.npStar) M.npStar.color.setRGB(1, 0.83, 0.42).multiplyScalar(2.2 + Math.sin(time * 2.1) * 0.35);
 }
 
@@ -1202,7 +1213,7 @@ function buildPodium(skinOf) {
     const fig = makePlayer(skinOf.get(p.rank) || fallbackSkin()); fig.root.scale.multiplyScalar(p.s); fig.root.position.y = p.h + 0.14; g.add(fig.root); fig.phase = p.rank * 3.1;
     // lectern at the foot of the dais with the plaque
     const lect = new THREE.Group(); lect.position.set(p.x * 1.3, 0, ROT_Z + (p.rank === 1 ? 9.3 : 8.6)); if (p.rank !== 1) lect.rotation.y = -Math.sign(p.x) * 0.25; world.add(lect); lect.updateMatrixWorld();
-    add("dark", new THREE.BoxGeometry(2.2, 0.62, 1.0), lect.matrixWorld.clone().multiply(mtx(0, 0.31, -0.25)));
+    add("darkLect", new THREE.BoxGeometry(2.2, 0.62, 1.0), lect.matrixWorld.clone().multiply(mtx(0, 0.31, -0.25)));
     add("gold", new THREE.BoxGeometry(2.26, 0.05, 1.06), lect.matrixWorld.clone().multiply(mtx(0, 0.645, -0.25)));
     const lean = new THREE.Group(); lean.position.set(0, 0.67, 0.2); lean.rotation.x = -0.62; lect.add(lean);
     const back = new THREE.Mesh(new THREE.BoxGeometry(2.04, 1.12, 0.06), M.gold); back.position.set(0, 0.56, -0.04); lean.add(back);
@@ -1241,7 +1252,9 @@ function buildPodium(skinOf) {
     beam.position.y = -5.5; piv.add(beam); piv.userData = { a: (i / HUES.length) * Math.PI * 2, i }; prismBeams.push(piv);
   });
   // Roll of Honour on the back wall, facing the entrance
-  const roll = reliefPanel(1024, 1462, drawRoll, 2);
+  // drawn at 1.5x on medium/high so the small type stays crisp from across the rotunda (the layout is in 1024-wide units)
+  const rk = LOAD_Q.tex >= 2048 ? 1.5 : 1;
+  const roll = reliefPanel(1024 * rk, 1462 * rk, (g, w, h, H) => { g.save(); g.scale(rk, rk); drawRoll(g, w / rk, h / rk, H); g.restore(); }, 2);
   rollPlane = new THREE.Mesh(new THREE.PlaneGeometry(4.1, 5.85), new THREE.MeshStandardMaterial({ map: roll.map, normalMap: roll.normal, metalness: 0.55, roughness: 0.42, emissive: 0xffffff, emissiveMap: roll.map, emissiveIntensity: 0 }));
   rollPlane.position.set(0, 4.9, ROT_Z - 14.86); world.add(rollPlane);
   // a gilded picture lamp over the board (its lit strip is the source of the warm wash on the names)
@@ -1680,7 +1693,7 @@ function cardHtml(ex) {
 function showCard(ex, side) {
   if (ex === cardEx && card.classList.contains("show")) { card.classList.toggle("l", side === "l"); card.classList.toggle("r", side === "r"); return; }
   cardEx = ex; card.classList.remove("show"); clearTimeout(cardHideT);
-  cardHideT = setTimeout(() => { card.innerHTML = cardHtml(ex); card.classList.toggle("ded", !ex.d); card.classList.remove("l", "r", "open", "ovf"); card.classList.add(side); requestAnimationFrame(() => card.classList.add("show")); }, card.innerHTML ? 240 : 0);
+  cardHideT = setTimeout(() => { card.innerHTML = cardHtml(ex); card.classList.toggle("ded", !ex.d); card.classList.remove("l", "r", "open", "ovf"); card.classList.add(side); card.classList.toggle("pod", !!ex.podium); requestAnimationFrame(() => card.classList.add("show")); }, card.innerHTML ? 240 : 0);
 }
 // phones show a compact card: a tap opens the rest, with a fade at the bottom while there's more to scroll
 const cardBody = () => card.querySelector(".c-body");

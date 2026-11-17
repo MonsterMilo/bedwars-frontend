@@ -68,8 +68,11 @@
   html[data-theme="harvest"] { --studio-a: #4a2b1a; --studio-b: #1c0f08; }
   html[data-theme="northpole"] { --studio-a: #1d3a75; --studio-b: #070e22; }
   /* On the light themes the brightest team colours are deepened so names stay readable; the map rings sit on the dark studio, so they keep the real colours. */
-  html[data-theme="casefiles"], html[data-theme="ledger"], html[data-theme="skyisles"], html[data-theme="harvest"] { --t-white: #9b9b9b; --t-yellow: #c99a00; --t-aqua: #149e9e; --t-green: #2c9a45; --t-gray: #707070; }
-  .thumb { --t-white: #e8e8e8; --t-yellow: #f5d742; --t-aqua: #4fe3e3; --t-green: #4ade6b; --t-gray: #9a9a9a; }
+  html[data-theme="casefiles"], html[data-theme="ledger"], html[data-theme="skyisles"], html[data-theme="harvest"] { --t-white: #9b9b9b; --t-yellow: #c99a00; --t-aqua: #149e9e; --t-green: #2c9a45; --t-gray: #707070; --t-red: #c8302a; --t-blue: #3550c8; --bed: #b86e00; }
+  .thumb { --t-white: #e8e8e8; --t-yellow: #f5d742; --t-aqua: #4fe3e3; --t-green: #4ade6b; --t-gray: #9a9a9a; --t-red: #ff5555; --t-blue: #5b7bff; }
+  /* Badges, chips and pills: round by default, square in the square-cornered themes. */
+  :root { --r-pill: 999px; }
+  html[data-theme="casefiles"], html[data-theme="ledger"], html[data-theme="skyisles"] { --r-pill: var(--r-s); }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
   body { min-height: 100vh; }
@@ -80,14 +83,16 @@
   [hidden] { display: none !important; }
 
   .page-bg { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; display: block; }
+  /* The timeline lives in a band at the bottom (its bars are at most 1.5 x min(240px, 26%) tall):
+     fade the canvas out above that, so the playhead line doesn't run up between the panels. */
+  .page-bg { --band: calc(1.5 * min(240px, 26%)); -webkit-mask-image: linear-gradient(transparent calc(100% - var(--band) - 70px), #000 calc(100% - var(--band) - 30px)); mask-image: linear-gradient(transparent calc(100% - var(--band) - 70px), #000 calc(100% - var(--band) - 30px)); }
   .page { position: relative; z-index: 1; max-width: 1320px; margin: 0 auto; padding: 22px 24px 60px; }
   .top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
   .back { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--dim); font-size: 14px; padding: 6px 10px 6px 6px; border-radius: var(--r-s); }
   .back:hover { color: var(--text); background: var(--panel); }
   .back svg { width: 16px; height: 16px; }
-  .open-file { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--dim); border: 1px dashed var(--border-strong); padding: 5px 11px; border-radius: 999px; text-decoration: none; transition: color .15s, background .15s; }
+  .open-file { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--dim); border: 1px dashed var(--border-strong); padding: 5px 11px; border-radius: var(--r-pill); text-decoration: none; transition: color .15s, background .15s; }
   .open-file:hover { color: var(--text); background: var(--panel); }
-  html[data-theme="skyisles"] .open-file, html[data-theme="ledger"] .open-file { border-radius: var(--r-s); }
   .open-file svg { width: 14px; height: 14px; }
 
   .hero { margin: 26px 0 22px; display: grid; grid-template-columns: 1fr minmax(280px, 460px); gap: 24px; align-items: end; }
@@ -101,13 +106,15 @@
   .hero h1 span { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
   html[data-theme="prism"] .hero h1 span { background-image: linear-gradient(90deg, #5ee7ff, #a98bff 55%, #ffc46b); }
   .tally { margin: 10px 0 0; color: var(--dim); font-size: 15px; min-height: 1.2em; }
+  html[data-theme="skyisles"] :is(.back, .tally) { font-size: 17px; }
   .tally b { color: var(--text); font-weight: 700; }
   .search { position: relative; }
   .search svg { position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
   .search input { width: 100%; padding: 14px 44px 14px 42px; border-radius: var(--r-m); border: 1px solid var(--border); background: var(--panel); font-size: 16px; transition: border-color .2s, box-shadow .2s; }
   .search input::placeholder { color: var(--faint); }
   .search input:focus { outline: none; border-color: var(--border-strong); box-shadow: var(--glow); }
-  .search kbd { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font: 12px/1 var(--font); color: var(--faint); border: 1px solid var(--border); border-radius: 5px; padding: 4px 7px; }
+  .search kbd { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font: 12px/1 var(--font); color: var(--faint); border: 1px solid var(--border); border-radius: min(5px, var(--r-s)); padding: 4px 7px; }
+  @media (hover: none) { .search kbd { display: none; } .search input { padding-right: 14px; } }
   .search input:not(:placeholder-shown) ~ kbd { display: none; }
   .note { margin: 0 0 18px; padding: 12px 14px; border-radius: var(--r-m); background: var(--panel); border: 1px solid var(--border-strong); font-size: 14.5px; }
   .note a { color: var(--accent); }
@@ -125,14 +132,13 @@
   .bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
   .bar h2 { margin: 0 auto 0 0; font-family: var(--font-title); font-size: 22px; font-weight: 700; }
   html[data-theme="casefiles"] .bar h2 { font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
-  .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
-  .seg button { border: 0; background: none; padding: 6px 12px; border-radius: 999px; font-size: 13px; color: var(--dim); }
+  .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-pill); padding: 3px; }
+  .seg button { border: 0; background: none; padding: 6px 12px; border-radius: var(--r-pill); font-size: 13px; color: var(--dim); }
   .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
-  html[data-theme="skyisles"] .seg, html[data-theme="ledger"] .seg, html[data-theme="casefiles"] .seg, html[data-theme="skyisles"] .seg button, html[data-theme="ledger"] .seg button, html[data-theme="casefiles"] .seg button { border-radius: var(--r-s); }
 
   /* One recording in the list */
   .games { display: flex; flex-direction: column; gap: 12px; }
-  .game { --rc: var(--faint); position: relative; display: grid; grid-template-columns: 172px minmax(0, 1fr) auto; text-decoration: none; color: inherit; border: 1px solid var(--border); border-radius: var(--r-m); background: var(--panel); overflow: hidden; transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .2s; animation: rise .5s var(--ease) both; }
+  .game { --rc: var(--faint); position: relative; display: grid; grid-template-columns: 172px minmax(0, 1fr) 230px; text-decoration: none; color: inherit; border: 1px solid var(--border); border-radius: var(--r-m); background: var(--panel); overflow: hidden; transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .2s; animation: rise .5s var(--ease) both; }
   .game::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--rc), transparent); opacity: .85; }
   .game:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--rc) 55%, var(--border)); box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--rc) 30%, transparent); }
   .game.has-target { --rc: var(--bad); }
@@ -149,21 +155,24 @@
   .title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
   .title b { font-family: var(--font-title); font-size: 19px; font-weight: 700; }
   html[data-theme="casefiles"] .title b { font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
-  .chipline { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--dim); }
-  .chipline .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--faint); }
-  .chipline .ph { white-space: nowrap; }
-  .chipline .ph::before { content: ""; display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: var(--faint); margin-right: 6px; vertical-align: middle; }
-  .watched { font-size: 11px; font-weight: 700; color: var(--faint); border: 1px solid var(--border); border-radius: 999px; padding: 1px 7px; }
+  /* Each part brings its own dot; the row is pulled 15px left and clipped, so a part
+     that starts a line (the first, or one that wrapped) never shows a stray dot. */
+  .chipline { font-size: 13px; color: var(--dim); overflow: hidden; }
+  .chipline .cl { display: flex; flex-wrap: wrap; align-items: center; row-gap: 1px; margin-left: -15px; }
+  .chipline .cl > span { white-space: nowrap; }
+  .chipline .cl > span::before, .chipline .ph::before { content: ""; display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: var(--faint); margin: 0 6px; vertical-align: middle; }
+  .watched { font-size: 11px; font-weight: 700; color: var(--faint); border: 1px solid var(--border); border-radius: var(--r-pill); padding: 1px 7px; }
   .teams { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13.5px; margin-top: 2px; }
-  .tm { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); min-width: 0; }
-  .tm i { width: 9px; height: 9px; border-radius: 3px; background: var(--tc); flex: none; }
+  .tm { display: inline-flex; align-items: flex-start; gap: 6px; color: var(--dim); min-width: 0; }
+  .tm i { width: 9px; height: 9px; border-radius: min(3px, var(--r-s)); background: var(--tc); flex: none; margin-top: calc((1.5em - 9px) / 2); }
   .tm.is-out { opacity: .5; }
+  html[data-theme="casefiles"] .tm.is-out, html[data-theme="ledger"] .tm.is-out, html[data-theme="skyisles"] .tm.is-out, html[data-theme="harvest"] .tm.is-out { opacity: .72; }
   .tm .tg { color: var(--bad); font-weight: 700; }
   .targets { display: flex; flex-wrap: wrap; gap: 6px; }
-  .tgt { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; padding: 3px 9px 3px 7px; border-radius: 999px; background: color-mix(in srgb, var(--bad) 12%, transparent); color: var(--text); border: 1px solid color-mix(in srgb, var(--bad) 35%, transparent); text-decoration: none; }
+  .tgt { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; padding: 3px 9px 3px 7px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--bad) 12%, transparent); color: var(--text); border: 1px solid color-mix(in srgb, var(--bad) 35%, transparent); text-decoration: none; }
   .tgt svg { width: 13px; height: 13px; color: var(--bad); flex: none; }
   .tm .me { color: var(--text); font-weight: 700; }
-  .side { padding: 14px 18px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 8px; border-left: 1px solid var(--border); min-width: 190px; }
+  .side { padding: 14px 18px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 8px; border-left: 1px solid var(--border); min-width: 0; }
   .nums { display: flex; gap: 16px; font-variant-numeric: tabular-nums; }
   .nums div { display: flex; flex-direction: column; align-items: flex-end; }
   .nums b { font-size: 19px; line-height: 1.1; }
@@ -180,9 +189,11 @@
   .btn.danger { color: var(--bad); }
   .btn.danger:hover:not(:disabled) { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, var(--panel)); }
   .btn svg { width: 16px; height: 16px; }
-  .empty { padding: 60px 20px; text-align: center; color: var(--dim); border: 1px dashed var(--border); border-radius: var(--r-l); background: color-mix(in srgb, var(--panel) 60%, transparent); }
+  .empty { padding: 60px 20px; text-align: center; color: var(--dim); border: 1px dashed var(--border); border-radius: var(--r-l); text-wrap: balance; }
+  /* Solid, so the background timeline's ruler and timecode don't show through the text (beats pages.css's see-through fill). */
+  .page .empty { background: var(--panel); }
   .empty b { display: block; color: var(--text); font-size: 17px; margin-bottom: 4px; }
-  .skel { height: 126px; border-radius: var(--r-m); background: linear-gradient(90deg, var(--panel), var(--panel-2), var(--panel)); background-size: 200% 100%; animation: shimmer 1.2s infinite linear; }
+  .skel { position: relative; overflow: hidden; height: 126px; border: 1px solid var(--border); border-radius: var(--r-m); background: linear-gradient(90deg, var(--panel), var(--panel-2), var(--panel)); background-size: 200% 100%; animation: shimmer 1.2s infinite linear; }
   @keyframes shimmer { to { background-position: -200% 0; } }
 
   /* One game */
@@ -195,7 +206,10 @@
   .g-head h1 { margin: 6px 0 0; font-family: var(--font-title); font-size: clamp(28px, 4vw, 44px); line-height: 1.05; letter-spacing: -.01em; }
   html[data-theme="casefiles"] .g-head h1 { font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
   .g-head p { margin: 8px 0 0; color: var(--dim); }
-  .result { display: inline-block; font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; color: var(--rc); background: color-mix(in srgb, var(--rc) 14%, transparent); }
+  .g-head p.chipline { font-size: inherit; }
+  .g-head p.chipline .cl { margin-left: -17px; }
+  .g-head p.chipline .cl > span::before { margin: 0 7px; }
+  .result { display: inline-block; font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; padding: 3px 9px; border-radius: var(--r-pill); color: var(--rc); background: color-mix(in srgb, var(--rc) 14%, transparent); }
   .g-head .acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
   .g-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
   .panel { position: relative; border: 1px solid var(--border); background: var(--panel); border-radius: var(--r-l); padding: 16px 18px; animation: rise .5s var(--ease) both; }
@@ -226,13 +240,22 @@
   tr:hover td .pov { opacity: 1; }
   td .pov:hover { color: var(--accent); }
   td.z { color: var(--faint); }
-  .ms { overflow-x: auto; }
-  .ms table td, .ms table th { padding-left: 6px; padding-right: 6px; }
-  .log { list-style: none; margin: 0; padding: 0; max-height: 600px; overflow-y: auto; scrollbar-width: thin; }
+  /* Wide table: it scrolls sideways inside the panel, and fades at the edge while there's more to see. */
+  .ms-wrap { overflow-x: auto; scrollbar-width: thin; }
+  .ms-wrap.more, .rail.more, .filters.more { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); }
+  .ms table td, .ms table th { padding-left: 6px; padding-right: 6px; white-space: nowrap; }
+  /* When the table doesn't fit (phones), Iron and Gold step aside so K to Pressure all show. */
+  .ms-wrap.tight :is(th, td):is(:nth-child(6), :nth-child(7)) { display: none; }
+  .ms-wrap.tight th { letter-spacing: .02em; }
+  /* On wide screens the log column stays in view while the left column scrolls, and the log
+     scrolls inside it, fading at the bottom while there's more. */
+  .g-grid > div:last-child { position: sticky; top: 16px; }
+  .log { list-style: none; margin: 0; padding: 0; max-height: max(320px, calc(100vh - 150px)); overflow-y: auto; scrollbar-width: thin; }
+  .log.more { -webkit-mask-image: linear-gradient(#000 calc(100% - 40px), transparent); mask-image: linear-gradient(#000 calc(100% - 40px), transparent); }
   .log li a { display: grid; grid-template-columns: 52px 14px 1fr; gap: 8px; align-items: baseline; padding: 6px 8px; border-radius: var(--r-s); text-decoration: none; font-size: 14px; }
   .log li a:hover { background: var(--panel-2); }
   .log time { color: var(--faint); font: 600 12.5px 'JetBrains Mono', ui-monospace, monospace; }
-  .log i { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); align-self: center; }
+  .log i { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); align-self: start; margin-top: calc(.75em - 4px); }
   .log .k-final i { background: var(--bad); }
   .log .k-bed i { background: var(--bed); border-radius: 2px; transform: rotate(45deg); }
   .log .k-eliminated i { background: var(--accent-2); }
@@ -240,7 +263,7 @@
   .log .who { font-weight: 700; color: var(--pc, var(--text)); }
   .log .fb { font-size: 10.5px; font-weight: 800; color: var(--gold); letter-spacing: .06em; text-transform: uppercase; margin-left: 6px; }
   .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-  .chip { border: 1px solid var(--border); background: transparent; color: var(--dim); border-radius: 999px; padding: 3px 10px; font-size: 13px; font-weight: 700; }
+  .chip { border: 1px solid var(--border); background: transparent; color: var(--dim); border-radius: var(--r-pill); padding: 3px 10px; font-size: 13px; font-weight: 700; }
   .chip[aria-pressed="true"] { background: var(--panel-2); color: var(--text); border-color: var(--border-strong); }
   .clips { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
   .clips a { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: var(--r-s); background: var(--panel-2); text-decoration: none; font-size: 14px; }
@@ -248,14 +271,32 @@
   .clips .k { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); min-width: 56px; }
   .clips .k.bed { color: var(--bed); } .clips .k.final { color: var(--bad); }
   .clips span:last-child { margin-left: auto; color: var(--faint); font-size: 12.5px; white-space: nowrap; }
+  /* Jersey 10 runs small: the fixed small sizes get the same bump as the theme's body text. */
+  html[data-theme="skyisles"] .chipline, html[data-theme="skyisles"] .teams, html[data-theme="skyisles"] .mini, html[data-theme="skyisles"] .log li a, html[data-theme="skyisles"] table, html[data-theme="skyisles"] .clips a, html[data-theme="skyisles"] .tgt, html[data-theme="skyisles"] .chip { font-size: 15px; }
+  html[data-theme="skyisles"] :is(.cat, .seg button, .btn, .open-file) { font-size: 16px; }
+  html[data-theme="skyisles"] .g-head p.chipline { font-size: 17px; }
+  html[data-theme="skyisles"] :is(.nums small, .clips .k, .result, .watched, th, .cat .n) { font-size: 13px; }
+  /* North Pole: the game header gets the same snow cap as the cards, and the snow falls
+     behind the page so it doesn't dot names and numbers. */
+  html[data-theme="northpole"] .g-head::before, html[data-theme="northpole"] .skel::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 11px; z-index: 2; pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 11' preserveAspectRatio='none'%3E%3Cpath d='M0 0H80V5C76 5 74 9 69 9S63 4 58 5 52 10 46 9 40 4 34 5 28 8 22 8 16 4 11 5 4 9 0 7Z' fill='%23f7fbff'/%3E%3Cpath d='M0 5C4 7 8 6 11 5' stroke='%23c9dcf0' fill='none'/%3E%3C/svg%3E") 0 0 / 80px 11px repeat-x;
+    filter: drop-shadow(0 2px 1px rgba(4,12,30,0.35));
+  }
+  html[data-theme="northpole"] .np-snowfall { z-index: 0; }
+  /* The string of lights hangs over the header and scrolls away with it, instead of
+     staying fixed over the cards and tables. */
+  html[data-theme="northpole"] .np-garland { position: absolute; }
 
   @media (max-width: 900px) {
     .page { padding: 14px 16px 50px; }
     .hero { grid-template-columns: 1fr; margin: 16px 0 14px; }
     .layout { grid-template-columns: 1fr; gap: 14px; }
     .rail { position: static; flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; scrollbar-width: none; }
+    /* Phones: no playhead knob or timecode peeking out in the gutters beside the panels. */
+    .page-bg { --band: min(240px, 26%); -webkit-mask-image: linear-gradient(transparent calc(100% - var(--band) - 40px), #000 calc(100% - var(--band) - 20px)); mask-image: linear-gradient(transparent calc(100% - var(--band) - 40px), #000 calc(100% - var(--band) - 20px)); }
     .rail-label { display: none; }
-    .cat { width: auto; flex: none; border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; white-space: nowrap; }
+    .cat { width: auto; flex: none; border: 1px solid var(--border); border-radius: var(--r-pill); padding: 7px 12px; white-space: nowrap; }
     .cat[aria-pressed="true"] { box-shadow: none; border-color: var(--accent); }
     .cat svg { width: 16px; height: 16px; }
     .seg { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
@@ -267,7 +308,10 @@
     .g-head { grid-template-columns: 1fr; }
     .g-head .thumb { display: none; }
     .g-head .acts { justify-content: flex-start; }
-    .g-grid { grid-template-columns: 1fr; }
+    .g-grid { grid-template-columns: minmax(0, 1fr); }
+    .g-grid > * { min-width: 0; }
+    .g-grid > div:last-child { position: static; }
+    .log { max-height: none; overflow: visible; }
     td .pov { opacity: 1; }
   }
   /* Phones: the map sits small beside the title and the rest gets the full width,
@@ -278,14 +322,29 @@
     .game .thumb { grid-column: 1; grid-row: 1 / 3; width: 56px; height: 56px; min-height: 0; margin: 14px 0 0 14px; border-radius: var(--r-s); }
     .game .thumb canvas { width: 50px; height: 50px; filter: none; }
     .game .thumb::after, .game .thumb .blank span { display: none; }
-    .game .title { grid-column: 2; grid-row: 1; align-self: end; padding: 14px 14px 0 4px; }
+    .game .title { grid-column: 2; grid-row: 1; align-self: end; padding: 14px 14px 0 12px; }
     .game .title b { font-size: 18px; }
-    .game .chipline { grid-column: 2; grid-row: 2; align-self: start; padding: 2px 14px 0 4px; font-size: 12.5px; }
+    .game .chipline { grid-column: 2; grid-row: 2; align-self: start; margin-left: 12px; padding: 2px 14px 0 0; font-size: 12.5px; }
     .game .targets { grid-column: 1 / -1; padding: 12px 14px 0; }
     .game .teams { grid-column: 1 / -1; padding: 10px 14px 14px; margin: 0; font-size: 13px; gap: 3px 12px; }
-    .game .side { grid-column: 1 / -1; }
+    .game .side { grid-column: 1 / -1; flex-wrap: wrap; column-gap: 18px; row-gap: 6px; }
+    .game .side > .mini:last-child { margin-left: auto; }
     .game:hover .thumb canvas { transform: none; }
     td .pov { font-size: 0; margin-left: 6px; }
+    .team th:first-child { width: auto; }
+    .team th:not(:first-child) { width: 34px; padding-left: 4px; padding-right: 8px; }
+    .team th:last-child { width: 48px; padding-right: 12px; }
+    .team td:not(:first-child) { padding-left: 4px; padding-right: 8px; }
+    .team td:last-child { padding-right: 12px; }
+    .team-head { flex-wrap: wrap; row-gap: 2px; }
+    .panel { padding: 14px; }
+    .ms table { font-size: 13px; }
+    .ms table td, .ms table th { padding-left: 4px; padding-right: 4px; }
+    .ms table td:first-child, .ms table th:first-child { padding-left: 8px; }
+    .ms table td:last-child, .ms table th:last-child { padding-right: 8px; }
+    .filters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 5px; }
+    .chip { flex: none; padding: 3px 8px; }
+    .g-head p.chipline { font-size: 15px; }
     td .pov::after { content: ""; display: inline-block; width: 9px; height: 10px; vertical-align: -1px; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
@@ -309,7 +368,7 @@
       </div>
       <label class="search">
         <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <input id="q" type="search" placeholder="Search a player or map, e.g. lighthouse" autocomplete="off" aria-label="Search recordings">
+        <input id="q" type="search" placeholder="Search players or maps" autocomplete="off" aria-label="Search recordings">
         <kbd>/</kbd>
       </label>
     </div>
@@ -358,7 +417,7 @@
   function clock(ms) { ms = Math.max(0, ms || 0); var s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   function mins(ms) { var m = Math.round((ms || 0) / 60000); return m + ' min'; }
   function when(d) { var t = new Date(d); return isNaN(t) ? '' : t.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }); }
-  function time(d) { var t = new Date(d); return isNaN(t) ? '' : t.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }); }
+  function time(d) { var t = new Date(d); return isNaN(t) ? '' : t.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); }
   // Hypixel mode ids or plain names, both work
   function modeKey(m) {
     var s = String(m || '').toLowerCase();
@@ -434,9 +493,28 @@
     });
   }
 
+  // Edge fade while a strip can still scroll: sideways ('x') or down ('y').
+  function edgeFade(el, axis) {
+    el.classList.toggle('more', axis === 'y' ? el.scrollTop + el.clientHeight < el.scrollHeight - 2 : el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+  }
+  // Match stats: drop Iron and Gold only when the full table doesn't fit.
+  function fitMs() {
+    var el = $('msWrap'); if (!el) return;
+    el.classList.remove('tight');
+    if (el.scrollWidth > el.clientWidth + 1) el.classList.add('tight');
+    edgeFade(el, 'x');
+  }
+  var FADES = { msWrap: 'x', log: 'y', logFilters: 'x', rail: 'x' };
+  function refade() { fitMs(); Object.keys(FADES).forEach(function (id) { var el = $(id); if (el) edgeFade(el, FADES[id]); }); }
+  addEventListener('resize', refade);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refade);
+  $('rail').addEventListener('scroll', function () { edgeFade($('rail'), 'x'); }, { passive: true });
+  edgeFade($('rail'), 'x');
+
   if (!KEY) {
-    $('note').innerHTML = 'Recordings need your tracker key. Open the <a href="tracker.html">tracker</a>, enter your key there, then come back. You can still watch a replay file with the button above.';
+    $('note').innerHTML = 'Add your key in the <a href="tracker.html">tracker</a> to see recordings.';
     $('note').hidden = false;
+    $('tally').hidden = true;
     $('games').innerHTML = '<div class="empty"><b>Nothing to show yet</b>Your recorded games show up here once your key is in.</div>';
     return;
   }
@@ -492,9 +570,10 @@
     $('nSnipe').textContent = one ? g0.filter(function (g) { return targetsOf(g).length; }).length : '';
     $('nNew').textContent = one ? g0.filter(function (g) { return !isWatched(g); }).length : '';
     $('heading').textContent = { all: 'All recordings', snipe: 'Snipes', new: 'Not watched yet' }[state.res];
+    edgeFade($('rail'), 'x');
     var list = shown();
     var box = $('games');
-    if (!list.length) box.innerHTML = '<div class="empty">' + (g0.length ? '<b>Nothing matches that</b>Try another filter' + (state.pages > 1 ? ' or another page' : '') + '.' : '<b>No recordings yet</b>Recorded games show up here once they’re uploaded.') + '</div>';
+    if (!list.length) box.innerHTML = '<div class="empty">' + (g0.length ? '<b>Nothing matches that</b>Try another filter' + (state.pages > 1 ? ' or another page' : '') + '.' : state.q ? '<b>No matches</b>Nothing for “' + esc(state.q) + '”.' : '<b>No recordings yet</b>Recorded games show up here once they’re uploaded.') + '</div>';
     else box.innerHTML = list.map(function (g, i) {
       var s = g.summary || {};
       var tot = s.totals || {};
@@ -503,7 +582,7 @@
       return '<a class="game ' + res + '" href="#g=' + esc(g.id) + '" style="animation-delay:' + Math.min(i * 35, 500) + 'ms">' +
         mapThumb(g) +
         '<div class="mid"><div class="title"><b>' + esc(g.map || 'Unknown map') + '</b>' + (isWatched(g) ? '<span class="watched">Watched</span>' : '') + '</div>' +
-        '<div class="chipline"><span>' + esc(modeName(g.mode)) + '</span><span class="dot"></span><span>' + esc(when(g.playedAt)) + '</span><span class="dot"></span><span>' + esc(time(g.playedAt)) + '</span><span class="ph">' + esc(clock(g.durationMs)) + '</span></div>' + targetChips(tg) + teamsLine(g) + '</div>' +
+        '<div class="chipline"><span class="cl"><span>' + esc(modeName(g.mode)) + '</span><span>' + esc(when(g.playedAt)) + '</span><span>' + esc(time(g.playedAt)) + '<span class="ph">' + esc(mins(g.durationMs)) + '</span></span></span></div>' + targetChips(tg) + teamsLine(g) + '</div>' +
         '<div class="side">' + (g.summary ? '<div class="nums"><div><b>' + (tot.kills || 0) + '</b><small>Kills</small></div><div><b>' + (tot.finals || 0) + '</b><small>Finals</small></div><div><b>' + (tot.beds || 0) + '</b><small>Beds</small></div></div>' : '<span class="mini">Summary not ready yet</span>') +
         '<div class="mini">' + (g.clips ? '<span>' + ICON.clip + g.clips + ' clip' + (g.clips === 1 ? '' : 's') + '</span>' : '') + (g.matchStats ? '<span>' + ICON.stats + 'Match stats</span>' : '') + '' + '</div></div>' +
         '</a>';
@@ -549,7 +628,7 @@
     var html = '<div class="g-head ' + res + '">' + mapThumb(g) + '<div>' +
       (badge ? '<span class="result">' + badge + '</span>' : '') +
       '<h1>' + esc(g.map || 'Unknown map') + '</h1>' +
-      '<p>' + esc(modeName(g.mode)) + ' · ' + esc(new Date(g.playedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })) + ' · ' + esc(mins(g.durationMs)) + (s && s.self ? ' · recorded by ' + esc(s.self.name) : '') + '</p>' + targetChips(tg) + '</div>' +
+      '<p class="chipline"><span class="cl"><span>' + esc(modeName(g.mode)) + '</span><span>' + esc(new Date(g.playedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })) + '</span><span>' + esc(mins(g.durationMs)) + '</span></span></p>' + targetChips(tg) + '</div>' +
       '<div class="acts"><a class="btn primary" data-watch="' + esc(id) + '" href="' + watchUrl(id, start || null) + '"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 001.5.86l12-7.5a1 1 0 000-1.72l-12-7.5A1 1 0 007 4.5z"/></svg>Watch the game</a>' +
       '<button type="button" class="btn danger" id="delGame"' + (isAdmin ? '' : ' hidden') + ' title="Remove this recording from the site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Delete</button></div></div>';
     html += '<div class="g-grid"><div>';
@@ -572,10 +651,10 @@
     // Match stats.
     if (g.matchStats && g.matchStats.players && g.matchStats.players.length) {
       var ms = g.matchStats;
-      html += '<div class="panel ms"><h2>Our match stats' + (ms.team ? ' <small>' + esc(ms.team) + '</small>' : '') + '</h2><table><thead><tr><th>Player</th><th>K</th><th>D</th><th>F</th><th>Beds</th><th>Iron</th><th>Gold</th><th>Dia</th><th>Em</th><th title="Time on an enemy island while their bed was up">Pressure</th></tr></thead><tbody>' +
+      html += '<div class="panel ms"><h2>Our match stats' + (ms.team ? ' <small>' + esc(ms.team) + '</small>' : '') + '</h2><div class="ms-wrap" id="msWrap"><table><thead><tr><th>Player</th><th>K</th><th>D</th><th>F</th><th>Beds</th><th>Iron</th><th>Gold</th><th>Dia</th><th>Em</th><th title="Time on an enemy island while their bed was up">Pressure</th></tr></thead><tbody>' +
         ms.players.map(function (p) {
           return '<tr><td><span class="nm' + (p.finalDeath ? ' is-out' : '') + '">' + esc(p.name) + '</span>' + (p.me ? '<span class="you">YOU</span>' : '') + '</td><td>' + p.kills + '</td><td>' + p.deaths + '</td><td>' + p.finals + '</td><td>' + p.beds + '</td><td>' + p.iron + '</td><td>' + p.gold + '</td><td>' + p.dia + '</td><td>' + p.em + '</td><td>' + clock(p.pressureMs) + '</td></tr>';
-        }).join('') + '</tbody></table></div>';
+        }).join('') + '</tbody></table></div></div>';
     }
     // Clips.
     html += '<div class="panel"><h2>Clips <small>' + g.clips.length + '</small></h2>';
@@ -605,12 +684,16 @@
     html += '</div></div>';
     v.innerHTML = html;
     drawMaps(v);
+    // Edge fades on the scrolling match stats table and log, only while there's more to scroll to.
+    ['msWrap', 'log', 'logFilters'].forEach(function (id) { var el = $(id); if (el) el.addEventListener('scroll', function () { edgeFade(el, FADES[id]); }, { passive: true }); });
+    refade();
     var lf = $('logFilters');
     if (lf) lf.addEventListener('click', function (e) {
       var b = e.target.closest('button'); if (!b) return;
       var f = b.getAttribute('data-f');
       lf.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
       $('log').querySelectorAll('li').forEach(function (li) { li.hidden = f !== 'all' && li.getAttribute('data-k') !== f; });
+      edgeFade($('log'), 'y');
     });
     $('delGame').addEventListener('click', function () {
       var ids = g.replayIds && g.replayIds.length ? g.replayIds : [id];

@@ -408,15 +408,17 @@
     <div class="layout">
       <nav class="rail" id="rail" aria-label="Show">
         <p class="rail-label">Show</p>
-        <button type="button" class="cat" data-r="all" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M3 15h18M7 5v4M12 5v4M17 5v4M7 15v4M12 15v4M17 15v4"/></svg>All recordings<span class="n" id="nAll"></span></button>
-        <button type="button" class="cat" data-r="snipe" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Snipes<span class="n" id="nSnipe"></span></button>
-        <button type="button" class="cat" data-r="new" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Not watched yet<span class="n" id="nNew"></span></button>
+        <button type="button" class="cat" data-m="" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M3 15h18M7 5v4M12 5v4M17 5v4M7 15v4M12 15v4M17 15v4"/></svg>All<span class="n" id="nAll"></span></button>
+        <button type="button" class="cat" data-m="1s" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0114 0"/></svg>Solos<span class="n" data-n="1s"></span></button>
+        <button type="button" class="cat" data-m="2s" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="3"/><circle cx="16" cy="9.5" r="2.5"/><path d="M2.5 19.5a6 6 0 0112 0M14.5 19.5h7a5 5 0 00-7-4.6"/></svg>Doubles<span class="n" data-n="2s"></span></button>
+        <button type="button" class="cat" data-m="3s" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="7" r="2.8"/><circle cx="5.5" cy="10" r="2.3"/><circle cx="18.5" cy="10" r="2.3"/><path d="M7 20a5 5 0 0110 0M1.5 19a4 4 0 016-3.4M22.5 19a4 4 0 00-6-3.4"/></svg>3v3v3v3<span class="n" data-n="3s"></span></button>
+        <button type="button" class="cat" data-m="4s" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="7" r="2.5"/><circle cx="16" cy="7" r="2.5"/><circle cx="8" cy="15" r="2.5"/><circle cx="16" cy="15" r="2.5"/></svg>4v4v4v4<span class="n" data-n="4s"></span></button>
       </nav>
       <main>
         <div class="bar">
           <h2 id="heading">All recordings</h2>
           <div class="pick" id="pick">
-            <button type="button" class="pick-btn" id="pickBtn" aria-haspopup="true" aria-expanded="false"><span id="pickText">All snipers</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button type="button" class="pick-btn" id="pickBtn" aria-haspopup="true" aria-expanded="false"><span id="pickText">All</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
             <div class="pick-menu" id="pickMenu" role="group" aria-label="Snipers" hidden></div>
           </div>
         </div>
@@ -560,16 +562,16 @@
   api('/whoami').then(function (j) { isAdmin = !!(j && j.admin); if (isAdmin && shownGame && !$('gameView').hidden) renderGame(shownGame); }).catch(function () {});
 
   // ---------- The list ----------
-  var state = { page: 1, q: '', res: 'all', pages: 1, with: [] };
+  var state = { page: 1, q: '', mode: '', pages: 1, with: [] };
   try { state.with = JSON.parse(localStorage.getItem('recordingsWith')) || []; } catch (e) {}
   var last = null;
   var roster = []; // [{ key, label, names, games }] from the server
   function loadList() {
     $('games').innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
     var q = state.q;
-    var w = state.with.join(',');
-    api('/games?page=' + state.page + (q ? '&q=' + encodeURIComponent(q) : '') + (w ? '&with=' + encodeURIComponent(w) : '')).then(function (j) {
-      if (q !== state.q || w !== state.with.join(',')) return;
+    var w = state.with.join(','), md = state.mode;
+    api('/games?page=' + state.page + (q ? '&q=' + encodeURIComponent(q) : '') + (w ? '&with=' + encodeURIComponent(w) : '') + (md ? '&mode=' + md : '')).then(function (j) {
+      if (q !== state.q || w !== state.with.join(',') || md !== state.mode) return;
       last = j; state.pages = j.pages || 1;
       if (j.roster) { roster = j.roster; renderPick(); }
       $('tally').innerHTML = '<b>' + j.total + '</b> game' + (j.total === 1 ? '' : 's') + (q ? ' with “' + esc(q) + '”' : ' recorded');
@@ -604,22 +606,14 @@
     stats: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
     eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>'
   };
-  function shown() {
-    return last.games.filter(function (g) {
-      if (state.res === 'new' && isWatched(g)) return false;
-      if (state.res === 'snipe' && !targetsOf(g).length) return false;
-      return true;
-    });
-  }
+  function shown() { return last.games; }
   function renderList() {
     if (!last) return;
     var g0 = last.games;
     // counts are for what's loaded; with one page that's everything
-    var one = state.pages <= 1;
-    $('nAll').textContent = last.total;
-    $('nSnipe').textContent = one ? g0.filter(function (g) { return targetsOf(g).length; }).length : '';
-    $('nNew').textContent = one ? g0.filter(function (g) { return !isWatched(g); }).length : '';
-    $('heading').textContent = { all: 'All recordings', snipe: 'Snipes', new: 'Not watched yet' }[state.res];
+    $('nAll').textContent = last.all != null ? last.all : last.total;
+    $('rail').querySelectorAll('[data-n]').forEach(function (el) { el.textContent = last.modes ? last.modes[el.getAttribute('data-n')] : ''; });
+    $('heading').textContent = { '': 'All recordings', '1s': 'Solos', '2s': 'Doubles', '3s': '3v3v3v3', '4s': '4v4v4v4' }[state.mode];
     edgeFade($('rail'), 'x');
     var list = shown();
     var box = $('games');
@@ -647,18 +641,18 @@
   $('q').addEventListener('input', function () { clearTimeout(qTimer); qTimer = setTimeout(function () { state.q = $('q').value.trim(); state.page = 1; loadList(); }, 300); });
   $('rail').addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
-    state.res = b.getAttribute('data-r');
+    state.mode = b.getAttribute('data-m'); state.page = 1;
     $('rail').querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
-    renderList();
+    loadList();
   });
   // Snipers checklist: games any ticked person played, on any of their accounts.
   var TICK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="m2.5 6.2 2.3 2.3 4.7-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function renderPick() {
     state.with = state.with.filter(function (k) { return roster.some(function (r) { return r.key === k; }); });
     var n = state.with.length;
-    $('pickText').innerHTML = n === 0 ? 'All snipers' : n === 1 ? esc(labelOf(state.with[0])) : 'Snipers <span class="ct">' + n + '</span>';
+    $('pickText').innerHTML = n === 0 ? 'All' : n === 1 ? esc(labelOf(state.with[0])) : 'Snipers <span class="ct">' + n + '</span>';
     $('pickMenu').innerHTML = roster.map(function (r) {
-      return '<button type="button" class="pick-row" role="menuitemcheckbox" data-k="' + esc(r.key) + '" aria-checked="' + (state.with.indexOf(r.key) >= 0) + '"><span class="box">' + TICK + '</span><span><b>' + esc(r.label) + '</b><small>' + esc((r.names || []).join(' · ')) + '</small></span><span class="n">' + r.games + '</span></button>';
+      return '<button type="button" class="pick-row" role="menuitemcheckbox" data-k="' + esc(r.key) + '" aria-checked="' + (state.with.indexOf(r.key) >= 0) + '"><span class="box">' + TICK + '</span><span><b>' + esc(r.label) + '</b></span><span class="n">' + r.games + '</span></button>';
     }).join('') + '<div class="pick-foot"><span>' + (n ? 'Games with any ticked' : 'Showing everyone') + '</span><button type="button" id="pickClear"' + (n ? '' : ' disabled') + '>Clear</button></div>';
   }
   function setWith(list) {
@@ -669,6 +663,7 @@
   function openPick(open) { $('pickMenu').hidden = !open; $('pickBtn').setAttribute('aria-expanded', String(open)); }
   $('pickBtn').addEventListener('click', function () { openPick($('pickMenu').hidden); });
   $('pickMenu').addEventListener('click', function (e) {
+    e.stopPropagation(); // stays open for ticking several; closes on a click outside
     if (e.target.closest('#pickClear')) return setWith([]);
     var b = e.target.closest('.pick-row'); if (!b) return;
     var k = b.getAttribute('data-k');

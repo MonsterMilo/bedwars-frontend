@@ -507,7 +507,7 @@ async function runViewer (tl, details) {
         const uuid = r.m.track.uuid.replace(/-/g, '')
         try {
           const [st, ur] = await Promise.all([
-            fetch(`${BACKEND}/stats/uuid/${uuid}`, { headers }).then(x => x.ok ? x.json() : null).catch(() => null),
+            fetch(`${BACKEND}/stats/uuid/${uuid}?replay=1`, { headers }).then(x => x.ok ? x.json() : null).catch(() => null),
             r.m.track.name ? fetch(`${BACKEND}/urchin/${encodeURIComponent(r.m.track.name)}`, { headers }).then(x => x.ok ? x.json() : null).catch(() => null) : null
           ])
           if (st && st.star != null) {

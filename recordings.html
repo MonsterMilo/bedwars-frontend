@@ -137,6 +137,30 @@
   .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-pill); padding: 3px; }
   .seg button { border: 0; background: none; padding: 6px 12px; border-radius: var(--r-pill); font-size: 13px; color: var(--dim); }
   .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  /* Snipers checklist: which of us played */
+  .pick { position: relative; }
+  .pick-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-pill); padding: 7px 12px 7px 14px; font-size: 13.5px; font-weight: 700; color: var(--text); transition: border-color .2s, box-shadow .2s; }
+  .pick-btn:hover, .pick-btn[aria-expanded="true"] { border-color: var(--border-strong); }
+  .pick-btn[aria-expanded="true"] { box-shadow: var(--glow); }
+  .pick-btn .ct { font-size: 11.5px; font-weight: 800; background: var(--accent); color: var(--accent-ink); border-radius: var(--r-pill); padding: 1px 7px; }
+  .pick-btn svg { width: 14px; height: 14px; color: var(--faint); transition: transform .2s var(--ease); }
+  .pick-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .pick-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; width: min(340px, calc(100vw - 32px)); padding: 6px; border: 1px solid var(--glass-line); border-radius: var(--r-m); background: var(--glass-2); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: var(--shadow); animation: pop .18s var(--ease) both; }
+  @keyframes pop { from { opacity: 0; transform: translateY(-4px); } }
+  .pick-row { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; text-align: left; background: none; border: 0; padding: 7px 8px; border-radius: var(--r-s); }
+  .pick-row:hover { background: color-mix(in srgb, var(--text) 6%, transparent); }
+  .pick-row .box { width: 18px; height: 18px; border-radius: min(5px, var(--r-s)); border: 1.5px solid var(--faint); display: grid; place-items: center; transition: background .15s, border-color .15s; }
+  .pick-row .box svg { width: 12px; height: 12px; color: var(--accent-ink); opacity: 0; transform: scale(.6); transition: opacity .15s, transform .2s var(--ease); }
+  .pick-row[aria-checked="true"] .box { background: var(--accent); border-color: var(--accent); }
+  .pick-row[aria-checked="true"] .box svg { opacity: 1; transform: none; }
+  .pick-row b { display: block; font-size: 14px; }
+  .pick-row small { display: block; color: var(--faint); font-size: 11.5px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pick-row .n { font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .pick-foot { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px 2px; margin-top: 4px; border-top: 1px solid var(--border); font-size: 12px; color: var(--faint); }
+  .pick-foot button { background: none; border: 0; color: var(--accent); font-weight: 700; font-size: 12.5px; padding: 4px 0; }
+  .pick-foot button:disabled { color: var(--faint); cursor: default; }
+  .tm .sn { color: var(--text); font-weight: 700; }
+  .tm .who { color: var(--faint); font-size: 11.5px; font-weight: 600; margin-left: 4px; }
 
   /* One recording in the list */
   .games { display: flex; flex-direction: column; gap: 12px; }
@@ -190,6 +214,8 @@
   .btn.primary:hover { box-shadow: var(--glow); }
   .btn.danger { color: var(--bad); }
   .btn.danger:hover:not(:disabled) { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, var(--panel)); }
+  .btn.danger.armed, .btn.danger.armed:hover { background: var(--bad); border-color: var(--bad); color: #fff; animation: armed .8s ease-in-out infinite alternate; }
+  @keyframes armed { to { box-shadow: 0 0 0 4px color-mix(in srgb, var(--bad) 25%, transparent); } }
   .btn svg { width: 16px; height: 16px; }
   .empty { padding: 60px 20px; text-align: center; color: var(--dim); border: 1px dashed var(--border); border-radius: var(--r-l); text-wrap: balance; }
   /* Solid, so the background timeline's ruler and timecode don't show through the text (beats pages.css's see-through fill). */
@@ -254,14 +280,18 @@
   .g-grid > div:last-child { position: sticky; top: 16px; }
   .log { list-style: none; margin: 0; padding: 0; max-height: max(320px, calc(100vh - 150px)); overflow-y: auto; scrollbar-width: thin; }
   .log.more { -webkit-mask-image: linear-gradient(#000 calc(100% - 40px), transparent); mask-image: linear-gradient(#000 calc(100% - 40px), transparent); }
-  .log li a { display: grid; grid-template-columns: 52px 14px 1fr; gap: 8px; align-items: baseline; padding: 6px 8px; border-radius: var(--r-s); text-decoration: none; font-size: 14px; }
+  .log li a { display: grid; grid-template-columns: 46px 24px 1fr; gap: 10px; align-items: center; padding: 6px 8px; border-radius: var(--r-s); text-decoration: none; font-size: 14px; }
   .log li a:hover { background: var(--panel-2); }
   .log time { color: var(--faint); font: 600 12.5px 'JetBrains Mono', ui-monospace, monospace; }
-  .log i { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); align-self: start; margin-top: calc(.75em - 4px); }
-  .log .k-final i { background: var(--bad); }
-  .log .k-bed i { background: var(--bed); border-radius: 2px; transform: rotate(45deg); }
-  .log .k-eliminated i { background: var(--accent-2); }
-  .log .k-left i { background: transparent; border: 1.5px solid var(--faint); }
+  /* Event icons: a small tile tinted in the event's colour, with the theme's corners. */
+  .log i { --ic: var(--dim); width: 24px; height: 24px; display: grid; place-items: center; border-radius: min(7px, var(--r-s)); color: var(--ic); background: color-mix(in srgb, var(--ic) 13%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ic) 26%, transparent); transition: transform .2s var(--ease); }
+  .log i svg { width: 15px; height: 15px; }
+  .log li a:hover i { transform: scale(1.08); }
+  .log .k-final i { --ic: var(--bad); }
+  .log .k-bed i { --ic: var(--bed); }
+  .log .k-eliminated i { --ic: var(--accent-2); }
+  .log .k-left i { --ic: var(--faint); background: transparent; }
+  html[data-theme="skyisles"] .log i { box-shadow: inset 0 0 0 2px var(--ic); }
   .log .who { font-weight: 700; color: var(--pc, var(--text)); }
   .log .fb { font-size: 10.5px; font-weight: 800; color: var(--gold); letter-spacing: .06em; text-transform: uppercase; margin-left: 6px; }
   .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
@@ -275,7 +305,7 @@
   .clips span:last-child { margin-left: auto; color: var(--faint); font-size: 12.5px; white-space: nowrap; }
   /* Jersey 10 runs small: the fixed small sizes get the same bump as the theme's body text. */
   html[data-theme="skyisles"] .chipline, html[data-theme="skyisles"] .teams, html[data-theme="skyisles"] .mini, html[data-theme="skyisles"] .log li a, html[data-theme="skyisles"] table, html[data-theme="skyisles"] .clips a, html[data-theme="skyisles"] .tgt, html[data-theme="skyisles"] .chip { font-size: 15px; }
-  html[data-theme="skyisles"] :is(.cat, .seg button, .btn, .open-file) { font-size: 16px; }
+  html[data-theme="skyisles"] :is(.cat, .seg button, .btn, .open-file, .pick-btn) { font-size: 16px; }
   html[data-theme="skyisles"] .g-head p.chipline { font-size: 17px; }
   html[data-theme="skyisles"] :is(.nums small, .clips .k, .result, .watched, th, .cat .n) { font-size: 13px; }
   /* North Pole: the game header gets the same snow cap as the cards, and the snow falls
@@ -385,12 +415,9 @@
       <main>
         <div class="bar">
           <h2 id="heading">All recordings</h2>
-          <div class="seg" id="modeSeg" role="group" aria-label="Mode">
-            <button type="button" data-m="all" aria-pressed="true">All modes</button>
-            <button type="button" data-m="solo" aria-pressed="false">Solos</button>
-            <button type="button" data-m="doubles" aria-pressed="false">Doubles</button>
-            <button type="button" data-m="threes" aria-pressed="false">3s</button>
-            <button type="button" data-m="fours" aria-pressed="false">4s</button>
+          <div class="pick" id="pick">
+            <button type="button" class="pick-btn" id="pickBtn" aria-haspopup="true" aria-expanded="false"><span id="pickText">All snipers</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <div class="pick-menu" id="pickMenu" role="group" aria-label="Snipers" hidden></div>
           </div>
         </div>
         <div class="games" id="games"></div>
@@ -423,6 +450,12 @@
   // Hypixel mode ids or plain names, both work
   function modeKey(m) {
     var s = String(m || '').toLowerCase();
+    if (/duel/.test(s)) return /rush/.test(s) ? 'rush' : 'duels';
+    if (/two_four|^4v4$/.test(s)) return 'v4';
+    if (/^1s$/.test(s)) return 'solo';
+    if (/^2s$/.test(s)) return 'doubles';
+    if (/^3s$/.test(s)) return 'threes';
+    if (/^4s$/.test(s)) return 'fours';
     if (/eight_one|solo/.test(s)) return 'solo';
     if (/eight_two|double/.test(s)) return 'doubles';
     if (/four_three|three|3v3/.test(s)) return 'threes';
@@ -431,7 +464,7 @@
   }
   function modeName(m) {
     var k = modeKey(m);
-    if (k) return { solo: 'Solos', doubles: 'Doubles', threes: '3v3v3v3', fours: '4v4v4v4' }[k];
+    if (k) return { solo: 'Solos', doubles: 'Doubles', threes: '3v3v3v3', fours: '4v4v4v4', v4: '4v4', duels: 'Duels', rush: 'Rush Duels' }[k];
     return String(m || '').replace(/^BEDWARS_/, '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
   function api(path, opts) {
@@ -523,32 +556,48 @@
 
   // Milo (full access) can remove a recording from the game's page.
   var isAdmin = false;
-  api('/whoami').then(function (j) { isAdmin = !!(j && j.admin); var b = $('delGame'); if (b) b.hidden = !isAdmin; }).catch(function () {});
+  var shownGame = null; // the game on screen, drawn again once we know who's looking
+  api('/whoami').then(function (j) { isAdmin = !!(j && j.admin); if (isAdmin && shownGame && !$('gameView').hidden) renderGame(shownGame); }).catch(function () {});
 
   // ---------- The list ----------
-  var state = { page: 1, q: '', res: 'all', mode: 'all', pages: 1 };
+  var state = { page: 1, q: '', res: 'all', pages: 1, with: [] };
+  try { state.with = JSON.parse(localStorage.getItem('recordingsWith')) || []; } catch (e) {}
   var last = null;
+  var roster = []; // [{ key, label, names, games }] from the server
   function loadList() {
     $('games').innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
     var q = state.q;
-    api('/games?page=' + state.page + (q ? '&q=' + encodeURIComponent(q) : '')).then(function (j) {
-      if (q !== state.q) return;
+    var w = state.with.join(',');
+    api('/games?page=' + state.page + (q ? '&q=' + encodeURIComponent(q) : '') + (w ? '&with=' + encodeURIComponent(w) : '')).then(function (j) {
+      if (q !== state.q || w !== state.with.join(',')) return;
       last = j; state.pages = j.pages || 1;
+      if (j.roster) { roster = j.roster; renderPick(); }
       $('tally').innerHTML = '<b>' + j.total + '</b> game' + (j.total === 1 ? '' : 's') + (q ? ' with “' + esc(q) + '”' : ' recorded');
       renderList();
     }).catch(function (err) {
       $('games').innerHTML = '<div class="empty"><b>Couldn’t load the recordings</b>' + esc(err.message) + '. The server may be waking up, try again in a minute.</div>';
     });
   }
+  // Only who matters: us (each account with whose it is) and the sniped player(s).
+  function labelOf(key) { var r = roster.filter(function (x) { return x.key === key; })[0]; return r ? r.label : key; }
   function teamsLine(g) {
-    var s = g.summary, tset = {};
+    var s = g.summary, tset = {}, sn = {};
     targetsOf(g).forEach(function (t) { tset[t.ingame.toLowerCase()] = 1; });
+    (g.snipers || []).forEach(function (x) { sn[String(x.name).toLowerCase()] = x.who; });
     if (!s || !s.teams) return '';
-    return '<div class="teams">' + s.teams.slice().sort(function (a, b) { return ORDER.indexOf(a.team) - ORDER.indexOf(b.team); }).map(function (t) {
+    var html = s.teams.slice().sort(function (a, b) { return ORDER.indexOf(a.team) - ORDER.indexOf(b.team); }).map(function (t) {
+      var keep = t.players.filter(function (n) { var k = String(n).toLowerCase(); return tset[k] || sn[k]; });
+      if (!keep.length) return '';
       var out = t.eliminatedAt != null;
-      var names = '<span>' + t.players.map(function (n) { return s.self && n === s.self.name ? '<span class="me">' + esc(n) + '</span>' : tset[String(n).toLowerCase()] ? '<span class="tg">' + esc(n) + '</span>' : esc(n); }).join(', ') + '</span>';
+      var names = '<span>' + keep.map(function (n) {
+        var k = String(n).toLowerCase();
+        if (tset[k]) return '<span class="tg">' + esc(n) + '</span>';
+        var lb = labelOf(sn[k]);
+        return '<span class="sn">' + esc(n) + '</span>' + (lb.toLowerCase() !== k ? '<span class="who">' + esc(lb) + '</span>' : '');
+      }).join(', ') + '</span>';
       return '<span class="tm' + (out ? ' is-out' : '') + '" style="--tc:' + tc(t.team) + '" title="' + esc(t.team) + (out ? ' was eliminated' : '') + '"><i></i>' + names + '</span>';
-    }).join('') + '</div>';
+    }).join('');
+    return html ? '<div class="teams">' + html + '</div>' : '';
   }
   var ICON = {
     clip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>',
@@ -559,7 +608,6 @@
     return last.games.filter(function (g) {
       if (state.res === 'new' && isWatched(g)) return false;
       if (state.res === 'snipe' && !targetsOf(g).length) return false;
-      if (state.mode !== 'all' && modeKey(g.mode) !== state.mode) return false;
       return true;
     });
   }
@@ -575,7 +623,7 @@
     edgeFade($('rail'), 'x');
     var list = shown();
     var box = $('games');
-    if (!list.length) box.innerHTML = '<div class="empty">' + (g0.length ? '<b>Nothing matches that</b>Try another filter' + (state.pages > 1 ? ' or another page' : '') + '.' : state.q ? '<b>No matches</b>Nothing for “' + esc(state.q) + '”.' : '<b>No recordings yet</b>Recorded games show up here once they’re uploaded.') + '</div>';
+    if (!list.length) box.innerHTML = '<div class="empty">' + (g0.length ? '<b>Nothing matches that</b>Try another filter' + (state.pages > 1 ? ' or another page' : '') + '.' : state.with.length ? '<b>No games with them</b>Tick someone else, or clear the list.' : state.q ? '<b>No matches</b>Nothing for “' + esc(state.q) + '”.' : '<b>No recordings yet</b>Recorded games show up here once they’re uploaded.') + '</div>';
     else box.innerHTML = list.map(function (g, i) {
       var s = g.summary || {};
       var tot = s.totals || {};
@@ -603,16 +651,65 @@
     $('rail').querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
     renderList();
   });
-  $('modeSeg').addEventListener('click', function (e) {
-    var b = e.target.closest('button'); if (!b) return;
-    state.mode = b.getAttribute('data-m');
-    $('modeSeg').querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
-    renderList();
+  // Snipers checklist: games any ticked person played, on any of their accounts.
+  var TICK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="m2.5 6.2 2.3 2.3 4.7-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function renderPick() {
+    state.with = state.with.filter(function (k) { return roster.some(function (r) { return r.key === k; }); });
+    var n = state.with.length;
+    $('pickText').innerHTML = n === 0 ? 'All snipers' : n === 1 ? esc(labelOf(state.with[0])) : 'Snipers <span class="ct">' + n + '</span>';
+    $('pickMenu').innerHTML = roster.map(function (r) {
+      return '<button type="button" class="pick-row" role="menuitemcheckbox" data-k="' + esc(r.key) + '" aria-checked="' + (state.with.indexOf(r.key) >= 0) + '"><span class="box">' + TICK + '</span><span><b>' + esc(r.label) + '</b><small>' + esc((r.names || []).join(' · ')) + '</small></span><span class="n">' + r.games + '</span></button>';
+    }).join('') + '<div class="pick-foot"><span>' + (n ? 'Games with any ticked' : 'Showing everyone') + '</span><button type="button" id="pickClear"' + (n ? '' : ' disabled') + '>Clear</button></div>';
+  }
+  function setWith(list) {
+    state.with = list; state.page = 1;
+    try { localStorage.setItem('recordingsWith', JSON.stringify(list)); } catch (e) {}
+    renderPick(); loadList();
+  }
+  function openPick(open) { $('pickMenu').hidden = !open; $('pickBtn').setAttribute('aria-expanded', String(open)); }
+  $('pickBtn').addEventListener('click', function () { openPick($('pickMenu').hidden); });
+  $('pickMenu').addEventListener('click', function (e) {
+    if (e.target.closest('#pickClear')) return setWith([]);
+    var b = e.target.closest('.pick-row'); if (!b) return;
+    var k = b.getAttribute('data-k');
+    setWith(state.with.indexOf(k) >= 0 ? state.with.filter(function (x) { return x !== k; }) : state.with.concat(k));
   });
+  document.addEventListener('click', function (e) { if (!$('pickMenu').hidden && !e.target.closest('#pick')) openPick(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('pickMenu').hidden) { openPick(false); $('pickBtn').focus(); } });
   $('prev').addEventListener('click', function () { if (state.page > 1) { state.page--; loadList(); scrollTo(0, 0); } });
   $('next').addEventListener('click', function () { if (state.page < state.pages) { state.page++; loadList(); scrollTo(0, 0); } });
 
   // ---------- One game ----------
+  // "What happened" icons: drawn on a 16 grid, two tones (line + a soft fill).
+  var EV_ICON = {
+    // crossed swords
+    kill: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><g transform="matrix(-1 0 0 1 16 0)" opacity=".55"><path d="M2.4 2.4 5.6 3.2 10.2 7.8 7.8 10.2 3.2 5.6Z" fill="currentColor" fill-opacity=".22"/><path d="M6.6 12 12 6.6M10.4 10.4l2.5 2.5"/><circle cx="13.6" cy="13.6" r="1" fill="currentColor" stroke="none"/></g><path d="M2.4 2.4 5.6 3.2 10.2 7.8 7.8 10.2 3.2 5.6Z" fill="currentColor" fill-opacity=".22"/><path d="M6.6 12 12 6.6M10.4 10.4l2.5 2.5"/><circle cx="13.6" cy="13.6" r="1" fill="currentColor" stroke="none"/></svg>',
+    // skull
+    final: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.8c-3.3 0-5.6 2.3-5.6 5.3 0 1.8.9 3.1 2.1 3.9v2.2c0 .5.4.9.9.9h5.2c.5 0 .9-.4.9-.9V11c1.2-.8 2.1-2.1 2.1-3.9 0-3-2.3-5.3-5.6-5.3z" fill="currentColor" fill-opacity=".18"/><circle cx="5.8" cy="7.6" r="1.25" fill="currentColor" stroke="none"/><circle cx="10.2" cy="7.6" r="1.25" fill="currentColor" stroke="none"/><path d="M7.2 10.4 8 9.4l.8 1M6.6 14.1v-1.5M9.4 14.1v-1.5"/></svg>',
+    // bed with a crack above it
+    bed: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 7h5c1 0 1.8.8 1.8 1.8v1.4H7.4z" fill="currentColor" fill-opacity=".2" stroke="none"/><path d="M1.8 5v8.5M1.8 10.2h12.4v3.3M14.2 10.2V8.8c0-1-.8-1.8-1.8-1.8H7.4v3.2"/><rect x="3.2" y="7.4" width="3" height="2.2" rx="1" fill="currentColor" fill-opacity=".35" stroke="none"/><path d="m11 1.6-1.3 2.1 1.7.9-1.2 1.8" stroke-width="1.3"/></svg>',
+    // flag
+    eliminated: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 14.5V2"/><path d="M3.5 2.6h8.2l-1.9 2.9 1.9 2.9H3.5z" fill="currentColor" fill-opacity=".22"/><path d="M1.8 14.5h4.4"/></svg>',
+    // door with an arrow out
+    left: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.2H3.6c-.5 0-.9.4-.9.9v9.8c0 .5.4.9.9.9h5.9"/><path d="M7 8h7M11.6 5.4 14.2 8l-2.6 2.6"/></svg>'
+  };
+  var EV_NAME = { kill: 'Kill', final: 'Final kill', bed: 'Bed broken', eliminated: 'Team out', left: 'Left' };
+  // Two clicks: the first arms the button for a few seconds, the second deletes.
+  function twoClick(btn, run) {
+    var armed = 0, label = btn.lastChild.textContent;
+    var disarm = function () { clearTimeout(armed); armed = 0; btn.classList.remove('armed'); btn.lastChild.textContent = label; };
+    btn.addEventListener('click', function () {
+      if (btn.disabled) return;
+      if (!armed) {
+        btn.classList.add('armed'); btn.lastChild.textContent = 'Click again to delete';
+        armed = setTimeout(disarm, 4000);
+        return;
+      }
+      disarm();
+      run(btn, label);
+    });
+    btn.addEventListener('blur', function () { if (armed) disarm(); });
+  }
   function loadGame(id) {
     var v = $('gameView');
     v.innerHTML = '<div class="skel" style="height:180px;margin-top:22px"></div>';
@@ -621,6 +718,7 @@
     });
   }
   function renderGame(g) {
+    shownGame = g;
     var v = $('gameView');
     var s = g.summary;
     var id = g.id;
@@ -632,8 +730,25 @@
       '<h1>' + esc(g.map || 'Unknown map') + '</h1>' +
       '<p class="chipline"><span class="cl"><span>' + esc(modeName(g.mode)) + '</span><span>' + esc(new Date(g.playedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })) + '</span><span>' + esc(mins(g.durationMs)) + '</span></span></p>' + targetChips(tg) + '</div>' +
       '<div class="acts"><a class="btn primary" data-watch="' + esc(id) + '" href="' + watchUrl(id, start || null) + '"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 001.5.86l12-7.5a1 1 0 000-1.72l-12-7.5A1 1 0 007 4.5z"/></svg>Watch the game</a>' +
-      '<button type="button" class="btn danger" id="delGame"' + (isAdmin ? '' : ' hidden') + ' title="Remove this recording from the site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Delete</button></div></div>';
+      (!isAdmin ? '' : '<button type="button" class="btn danger" id="delGame" title="Remove this recording from the site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Delete</button>') + '</div></div>';
     html += '<div class="g-grid"><div>';
+    // Match stats.
+    if (g.matchStats && g.matchStats.players && g.matchStats.players.length) {
+      var ms = g.matchStats;
+      html += '<div class="panel ms"><h2>Our match stats' + (ms.team ? ' <small>' + esc(ms.team) + '</small>' : '') + '</h2><div class="ms-wrap" id="msWrap"><table><thead><tr><th>Player</th><th>K</th><th>D</th><th>F</th><th>Beds</th><th>Iron</th><th>Gold</th><th>Dia</th><th>Em</th><th title="Time on an enemy island while their bed was up and one of them was there">Pressure</th></tr></thead><tbody>' +
+        ms.players.map(function (p) {
+          return '<tr><td><span class="nm' + (p.finalDeath ? ' is-out' : '') + '">' + esc(p.name) + '</span>' + (p.me ? '<span class="you">YOU</span>' : '') + '</td><td>' + p.kills + '</td><td>' + p.deaths + '</td><td>' + p.finals + '</td><td>' + p.beds + '</td><td>' + p.iron + '</td><td>' + p.gold + '</td><td>' + p.dia + '</td><td>' + p.em + '</td><td>' + clock(p.pressureMs) + '</td></tr>';
+        }).join('') + '</tbody></table></div></div>';
+    }
+    // Clips.
+    html += '<div class="panel"><h2>Clips <small>' + g.clips.length + '</small></h2>';
+    if (!g.clips.length) html += '<p class="mini">No clips from this game. Mark one in the replay viewer’s Clips tab.</p>';
+    else html += '<ul class="clips">' + g.clips.map(function (c) {
+      var k = c.kind === 'bed' ? 'Bed' : c.kind === 'final' ? 'Final' : 'Clip';
+      var text = c.title || (c.kind === 'manual' ? (c.people || []).slice(0, 3).join(', ') : (c.victim || '') + (c.by ? ' by ' + c.by : ''));
+      return '<li><a href="replay.html?clip=' + encodeURIComponent(c.id) + '"><span class="k ' + esc(c.kind) + '">' + k + '</span><span>' + esc(text || 'Clip') + '</span><span>' + Math.round((c.durationMs || 0) / 1000) + ' s</span></a></li>';
+    }).join('') + '</ul>';
+    html += '</div>';
     // Teams.
     if (s) {
       html += '<div class="panel"><h2>Teams <small>' + s.totals.kills + ' kills · ' + s.totals.finals + ' finals · ' + s.totals.beds + ' beds</small></h2>';
@@ -650,23 +765,7 @@
       });
       html += '</div>';
     } else html += '<div class="panel"><h2>Teams</h2><p class="mini">This game’s summary isn’t ready yet. It’s worked out when the game is clipped.</p></div>';
-    // Match stats.
-    if (g.matchStats && g.matchStats.players && g.matchStats.players.length) {
-      var ms = g.matchStats;
-      html += '<div class="panel ms"><h2>Our match stats' + (ms.team ? ' <small>' + esc(ms.team) + '</small>' : '') + '</h2><div class="ms-wrap" id="msWrap"><table><thead><tr><th>Player</th><th>K</th><th>D</th><th>F</th><th>Beds</th><th>Iron</th><th>Gold</th><th>Dia</th><th>Em</th><th title="Time on an enemy island while their bed was up">Pressure</th></tr></thead><tbody>' +
-        ms.players.map(function (p) {
-          return '<tr><td><span class="nm' + (p.finalDeath ? ' is-out' : '') + '">' + esc(p.name) + '</span>' + (p.me ? '<span class="you">YOU</span>' : '') + '</td><td>' + p.kills + '</td><td>' + p.deaths + '</td><td>' + p.finals + '</td><td>' + p.beds + '</td><td>' + p.iron + '</td><td>' + p.gold + '</td><td>' + p.dia + '</td><td>' + p.em + '</td><td>' + clock(p.pressureMs) + '</td></tr>';
-        }).join('') + '</tbody></table></div></div>';
-    }
-    // Clips.
-    html += '<div class="panel"><h2>Clips <small>' + g.clips.length + '</small></h2>';
-    if (!g.clips.length) html += '<p class="mini">No clips from this game. Mark one in the replay viewer’s Clips tab.</p>';
-    else html += '<ul class="clips">' + g.clips.map(function (c) {
-      var k = c.kind === 'bed' ? 'Bed' : c.kind === 'final' ? 'Final' : 'Clip';
-      var text = c.title || (c.kind === 'manual' ? (c.people || []).slice(0, 3).join(', ') : (c.victim || '') + (c.by ? ' by ' + c.by : ''));
-      return '<li><a href="replay.html?clip=' + encodeURIComponent(c.id) + '"><span class="k ' + esc(c.kind) + '">' + k + '</span><span>' + esc(text || 'Clip') + '</span><span>' + Math.round((c.durationMs || 0) / 1000) + ' s</span></a></li>';
-    }).join('') + '</ul>';
-    html += '</div></div>';
+    html += '</div>';
     // Kill log.
     html += '<div>';
     if (s && s.events && s.events.length) {
@@ -680,7 +779,7 @@
           else if (e.kind === 'left') text = '<span class="who" style="--pc:' + tc(e.team) + '">' + esc(e.victim) + '</span> left the game';
           else text = (e.by ? '<span class="who" style="--pc:' + tc(e.byTeam) + '">' + esc(e.by) + '</span> ' + (e.kind === 'final' ? 'final killed' : 'killed') + ' ' : '') + '<span class="who" style="--pc:' + tc(e.team) + '">' + esc(e.victim) + '</span>' + (e.by ? '' : (e.kind === 'final' ? ' died for good' : ' died')) + (e.firstBlood ? '<span class="fb">First blood</span>' : '');
           var follow = e.kind === 'bed' ? e.by : e.by || e.victim;
-          return '<li class="k-' + esc(e.kind) + '" data-k="' + esc(e.kind) + '"><a data-watch="' + esc(id) + '" href="' + watchUrl(id, e.t - 5000, follow || who) + '" title="' + esc(e.text || '') + '"><time>' + clock(e.t - start) + '</time><i></i><span>' + text + '</span></a></li>';
+          return '<li class="k-' + esc(e.kind) + '" data-k="' + esc(e.kind) + '"><a data-watch="' + esc(id) + '" href="' + watchUrl(id, e.t - 5000, follow || who) + '" title="' + esc(e.text || '') + '"><time>' + clock(e.t - start) + '</time><i title="' + (EV_NAME[e.kind] || '') + '">' + (EV_ICON[e.kind] || EV_ICON.kill) + '</i><span>' + text + '</span></a></li>';
         }).join('') + '</ul></div>';
     } else if (s) html += '<div class="panel"><h2>What happened</h2><p class="mini">No kills or beds were seen in this recording.</p></div>';
     html += '</div></div>';
@@ -697,13 +796,12 @@
       $('log').querySelectorAll('li').forEach(function (li) { li.hidden = f !== 'all' && li.getAttribute('data-k') !== f; });
       edgeFade($('log'), 'y');
     });
-    $('delGame').addEventListener('click', function () {
+    if (isAdmin) twoClick($('delGame'), function (b, label) {
       var ids = g.replayIds && g.replayIds.length ? g.replayIds : [id];
-      if (!confirm('Delete this recording of ' + (g.map || 'this game') + '? Its replay file' + (ids.length > 1 ? 's (' + ids.length + ' copies)' : '') + ' and its clips go for good.')) return;
-      var b = this; b.disabled = true; b.lastChild.textContent = 'Deleting…';
+      b.disabled = true; b.lastChild.textContent = 'Deleting…';
       Promise.all(ids.map(function (rid) { return api('/replays/' + encodeURIComponent(rid), { method: 'DELETE' }); })).then(function () {
         last = null; location.hash = '';
-      }).catch(function (err) { b.disabled = false; b.lastChild.textContent = 'Delete'; alert('Couldn’t delete it: ' + err.message); });
+      }).catch(function (err) { b.disabled = false; b.lastChild.textContent = 'Couldn’t delete: ' + err.message; setTimeout(function () { b.lastChild.textContent = label; }, 4000); });
     });
     document.title = (g.map || 'Game') + ' · Prism Recordings';
   }

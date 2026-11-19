@@ -25,7 +25,10 @@ const tick = () => new Promise(r => setTimeout(r, 0))
 const MODES = {
   BEDWARS_EIGHT_ONE: 'Solo', BEDWARS_EIGHT_TWO: 'Doubles', BEDWARS_FOUR_THREE: '3v3v3v3', BEDWARS_FOUR_FOUR: '4v4v4v4', BEDWARS_TWO_FOUR: '4v4'
 }
-const modeName = (m) => MODES[m] || String(m || '').replace(/^BEDWARS_/, '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+// Duels (normal and rush) and 4v4 have their own ids: BEDWARS_TWO_ONE_DUELS(_RUSH), BEDWARS_TWO_FOUR.
+const isDuels = (m) => /DUEL/i.test(String(m || ''))
+const is4v4 = (m) => /TWO_FOUR|^4v4$/i.test(String(m || ''))
+const modeName = (m) => MODES[m] || (isDuels(m) ? (/RUSH/i.test(m) ? 'Rush Duels' : 'Duels') : '') || String(m || '').replace(/^BEDWARS_/, '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
 
 function setStatus (text, { error = false, progress = null } = {}) {
   const box = $('atLoading')
@@ -126,6 +129,8 @@ const CATS = [
   { id: 'all', name: 'All maps', icon: '<rect x="3" y="3" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/>' },
   { id: 'eight', name: 'Solo & Doubles', icon: '<circle cx="10" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.5v3M10 14.5v3M2.5 10h3M14.5 10h3M4.7 4.7l2.1 2.1M13.2 13.2l2.1 2.1M15.3 4.7l-2.1 2.1M6.8 13.2l-2.1 2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
   { id: 'four', name: '3s & 4s', icon: '<circle cx="10" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.5v4M10 13.5v4M2.5 10h4M13.5 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
+  { id: 'duels', name: 'Duels', icon: '<path d="M3 3l8.5 8.5M3 3h2.6M3 3v2.6M17 3l-8.5 8.5M17 3h-2.6M17 3v2.6M10.5 13.5l3-3M13 13l3 3M9.5 13.5l-3-3M7 13l-3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' },
+  { id: 'v4', name: '4v4', icon: '<circle cx="5" cy="6.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="6.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 15c.4-2.4 1.8-3.8 3.5-3.8s3.1 1.4 3.5 3.8M11.5 15c.4-2.4 1.8-3.8 3.5-3.8s3.1 1.4 3.5 3.8M10 3v14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>' },
   { id: 'event', name: 'Event maps', icon: '<path d="M10 2.5l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>' },
   { id: 'other', name: 'Other maps', icon: '<path d="M1.5 5v12.5l5.5-3 6 3 5.5-3V2l-5.5 3-6-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 2v12.5M13 5v12.5" stroke="currentColor" stroke-width="1.5"/>' }
 ]
@@ -134,6 +139,10 @@ const HAVES = { all: 'All maps', rot: 'In rotation', out: 'Out of rotation', nee
 const MAP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg>'
 
 function catOfEntry (e) {
+  // Only ever played as Duels or 4v4 (they aren't on the rotation list): those categories.
+  const modes = (e.map && e.map.modes) || []
+  if (modes.length && modes.every(isDuels)) return 'duels'
+  if (modes.length && modes.every(is4v4)) return 'v4'
   if (e.r && e.r.season) return 'event'
   if (e.r) return e.r.teams === 8 ? 'eight' : 'four'
   return 'other'
@@ -215,7 +224,7 @@ async function showList () {
     const a = document.createElement(e.map ? 'a' : 'div')
     a.className = 'card' + (e.map ? '' : ' is-missing')
     a.style.animationDelay = `${Math.min(i, 12) * 30}ms`
-    a.style.setProperty('--rc', e.cat === 'event' ? '#ffb547' : e.cat === 'four' ? 'var(--accent-2)' : e.cat === 'other' ? 'var(--faint)' : 'var(--accent)')
+    a.style.setProperty('--rc', e.cat === 'event' ? '#ffb547' : e.cat === 'four' ? 'var(--accent-2)' : e.cat === 'duels' ? 'var(--bad, #ff6b81)' : e.cat === 'v4' ? 'var(--gold, #ffc46b)' : e.cat === 'other' ? 'var(--faint)' : 'var(--accent)')
     if (e.map) a.href = 'atlas.html?map=' + encodeURIComponent(e.map.slug)
     const thumb = document.createElement('div'); thumb.className = 'thumb'
     if (e.map) {

@@ -300,6 +300,14 @@
   .clips { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
   .clips a { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: var(--r-s); background: var(--panel-2); text-decoration: none; font-size: 14px; }
   .clips a:hover { box-shadow: inset 0 0 0 1px var(--border-strong); }
+  .clips li { display: flex; gap: 6px; align-items: stretch; }
+  .clips li a { flex: 1; min-width: 0; }
+  .clip-del { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: var(--r-s); background: var(--panel-2); color: var(--faint); padding: 0 10px; cursor: pointer; font: 700 12.5px var(--font); }
+  .clip-del svg { width: 15px; height: 15px; }
+  .clip-del:hover, .clip-del.armed { color: var(--bad); }
+  .clip-del span:empty { display: none; }
+  .clip-new { margin-left: auto; padding: 6px 12px; font-family: var(--font); font-size: 13px; }
+  .clip-new svg { width: 16px; height: 16px; }
   .clips .k { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); min-width: 56px; }
   .clips .k.bed { color: var(--bed); } .clips .k.final { color: var(--bad); }
   .clips span:last-child { margin-left: auto; color: var(--faint); font-size: 12.5px; white-space: nowrap; }
@@ -736,12 +744,13 @@
         }).join('') + '</tbody></table></div></div>';
     }
     // Clips.
-    html += '<div class="panel"><h2>Clips <small>' + g.clips.length + '</small></h2>';
-    if (!g.clips.length) html += '<p class="mini">No clips from this game. Mark one in the replay viewer’s Clips tab.</p>';
+    html += '<div class="panel"><h2>Clips <small>' + g.clips.length + '</small><a class="btn clip-new" href="replay.html?id=' + encodeURIComponent(id) + '#tab=clips">' + ICON.clip + 'Make a clip</a></h2>';
+    if (!g.clips.length) html += '<p class="mini">No clips from this game yet.</p>';
     else html += '<ul class="clips">' + g.clips.map(function (c) {
       var k = c.kind === 'bed' ? 'Bed' : c.kind === 'final' ? 'Final' : 'Clip';
-      var text = c.title || (c.kind === 'manual' ? (c.people || []).slice(0, 3).join(', ') : (c.victim || '') + (c.by ? ' by ' + c.by : ''));
-      return '<li><a href="replay.html?clip=' + encodeURIComponent(c.id) + '"><span class="k ' + esc(c.kind) + '">' + k + '</span><span>' + esc(text || 'Clip') + '</span><span>' + Math.round((c.durationMs || 0) / 1000) + ' s</span></a></li>';
+      var text = c.title || (c.source === 'site' && c.follow ? c.follow : c.kind === 'manual' ? (c.people || []).slice(0, 3).join(', ') : (c.victim || '') + (c.by ? ' by ' + c.by : ''));
+      return '<li><a href="replay.html?clip=' + encodeURIComponent(c.id) + '"><span class="k ' + esc(c.kind) + '">' + k + '</span><span>' + esc(text || 'Clip') + '</span><span>' + Math.round((c.durationMs || 0) / 1000) + ' s</span></a>' +
+        (isAdmin ? '<button type="button" class="clip-del" data-clip="' + esc(c.id) + '" title="Delete this clip" aria-label="Delete this clip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg><span></span></button>' : '') + '</li>';
     }).join('') + '</ul>';
     html += '</div>';
     // Teams.
@@ -790,6 +799,14 @@
       lf.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
       $('log').querySelectorAll('li').forEach(function (li) { li.hidden = f !== 'all' && li.getAttribute('data-k') !== f; });
       edgeFade($('log'), 'y');
+    });
+    if (isAdmin) document.querySelectorAll('.clip-del').forEach(function (b) {
+      twoClick(b, function () {
+        b.disabled = true;
+        api('/clips/' + encodeURIComponent(b.getAttribute('data-clip')), { method: 'DELETE' }).then(function () {
+          var li = b.closest('li'); if (li) li.remove();
+        }).catch(function (err) { b.disabled = false; b.lastChild.textContent = 'Couldn’t delete'; setTimeout(function () { b.lastChild.textContent = ''; }, 3000); });
+      });
     });
     if (isAdmin) twoClick($('delGame'), function (b, label) {
       var ids = g.replayIds && g.replayIds.length ? g.replayIds : [id];

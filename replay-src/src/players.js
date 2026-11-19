@@ -110,7 +110,7 @@ function arrowBoxes (slim) {
 function textSprite (text, { color = '#ffffff', scale = 0.3, plate = true } = {}) {
   const c = document.createElement('canvas')
   const ctx = c.getContext('2d')
-  const font = '600 40px "Segoe UI", Arial, sans-serif'
+  const font = '40px Minecraft, "Segoe UI", sans-serif' // 5 canvas pixels per font pixel
   const parts = []
   let cur = color
   for (const p of String(text).split(/(§[0-9a-fk-or])/i)) {
@@ -127,7 +127,7 @@ function textSprite (text, { color = '#ffffff', scale = 0.3, plate = true } = {}
   ctx.textBaseline = 'middle'
   let x = 12
   for (const [p, col] of parts) {
-    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillText(p, x + 3, 31)
+    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillText(p, x + 5, 33)
     ctx.fillStyle = col; ctx.fillText(p, x, 28)
     x += ctx.measureText(p).width
   }

@@ -5,6 +5,8 @@
 // and animated textures (water, lava, fire...) handled by the shader.
 // Runs inside the mesh worker; pure data, so Node tests can use it too.
 
+const { lightRGB } = require('./light')
+
 const DIRS = {
   down: [0, -1, 0], up: [0, 1, 0], north: [0, 0, -1], south: [0, 0, 1], west: [-1, 0, 0], east: [1, 0, 0]
 }
@@ -79,6 +81,7 @@ class Mesher {
     this.info = new Map() // state id -> block info
     this.quads = new Map() // "name[props]" -> quads in block space
     this.cols = new Map() // "cx,cz" -> Array(16) of Uint16Array|null
+    this.light = null // a Light (light.js) once the worker has worked it out
   }
 
   // --- World store ---
@@ -112,7 +115,8 @@ class Mesher {
     b.cullSame = CULL_SAME.test(name)
     b.neighbourDependent = /_fence$|fence$|_pane$|iron_bars|_wall$|_stairs$|_door$|^(sunflower|lilac|tall_grass|large_fern|rose_bush|peony)$|^grass_block$|^fire$/.test(name)
     const q = b.air || b.special ? [] : this.modelQuads(name, props)
-    b.solid = !b.air && !NOT_SOLID.test(name) && !b.special && q.length > 0 && isFullCube(q)
+    b.full = !b.air && !b.special && q.length > 0 && isFullCube(q)
+    b.solid = b.full && !NOT_SOLID.test(name)
     b.ao = !b.air && !b.special && q.every(f => f.ao)
     this.info.set(id, b)
     return b
@@ -245,7 +249,7 @@ class Mesher {
       const lx = i & 15; const ly = i >> 8; const lz = (i >> 4) & 15
       const target = b.translucent ? out.trans : out.opaque
       if (b.special === 'fluid') { this.fluid(target, b, x, y, z, lx, ly, lz); continue }
-      if (b.special === 'chest') { this.chest(target, b, lx, ly, lz); continue }
+      if (b.special === 'chest') { this.chest(target, b, lx, ly, lz, x, y, z); continue }
       let quads
       if (b.neighbourDependent) { const s = this.withNeighbours(b, x, y, z); quads = this.modelQuads(s.name, s.props) } else quads = this.modelQuads(b.name, b.props)
       const tint = this.tintFor(b.name)
@@ -258,7 +262,7 @@ class Mesher {
         const shade = q.shade ? SHADE[q.dir] || 1 : 1
         const col = q.tint ? tint : null
         const ao = q.ao && b.ao !== false ? this.faceAo(q, x, y, z) : null
-        target.quad(q, lx, ly, lz, shade, col, ao)
+        target.quad(q, lx, ly, lz, shade, col, ao, false, this.light ? this.faceLight(q, x, y, z) : null)
       }
     }
     return { opaque: out.opaque.finish(), trans: out.trans.finish() }
@@ -290,6 +294,48 @@ class Mesher {
     return res
   }
 
+  /**
+   * Smooth lighting (BlockModelRenderer's ambient occlusion face): each
+   * corner of a face on the block's edge averages the light of the four
+   * cells around it on the outside, with solid ones counting as the face's
+   * own cell. Other faces take the light of the block's own cell.
+   */
+  faceLight (q, x, y, z) {
+    const L = this.light
+    const out = new Array(12)
+    const n = q.dir && DIRS[q.dir]
+    let axis = -1
+    if (n) {
+      axis = n[0] ? 0 : n[1] ? 1 : 2
+      const plane = n[axis] > 0 ? 1 : 0
+      if (!q.pos.every(p => Math.abs(p[axis] - plane) < 1e-4)) axis = -1
+    }
+    if (axis < 0) return this.flatLight(L.cell(x, y, z))
+    const fx = x + n[0]; const fy = y + n[1]; const fz = z + n[2]
+    const c = L.cell(fx, fy, fz)
+    for (let k = 0; k < 4; k++) {
+      const p = q.pos[k]
+      const t = []
+      for (let a = 0; a < 3; a++) if (a !== axis) t.push([a, p[a] > 0.5 ? 1 : -1])
+      const d1 = [0, 0, 0]; d1[t[0][0]] = t[0][1]
+      const d2 = [0, 0, 0]; d2[t[1][0]] = t[1][1]
+      const o1 = L.opaque(fx + d1[0], fy + d1[1], fz + d1[2]); const o2 = L.opaque(fx + d2[0], fy + d2[1], fz + d2[2])
+      let v1 = L.get(fx + d1[0], fy + d1[1], fz + d1[2]); let v2 = L.get(fx + d2[0], fy + d2[1], fz + d2[2])
+      let vc = o1 && o2 ? v1 : L.get(fx + d1[0] + d2[0], fy + d1[1] + d2[1], fz + d1[2] + d2[2])
+      if (!v1) v1 = c
+      if (!v2) v2 = c
+      if (!vc) vc = c
+      lightRGB(((c >> 4) + (v1 >> 4) + (v2 >> 4) + (vc >> 4)) / 4, ((c & 15) + (v1 & 15) + (v2 & 15) + (vc & 15)) / 4, out, k * 3)
+    }
+    return out
+  }
+
+  flatLight (v) {
+    const out = lightRGB(v >> 4, v & 15, new Array(12))
+    for (let k = 3; k < 12; k++) out[k] = out[k - 3]
+    return out
+  }
+
   fluid (out, b, x, y, z, lx, ly, lz) {
     const isWater = b.name === 'water'
     const same = (dx, dy, dz) => this.blockInfo(this.get(x + dx, y + dy, z + dz)).name === b.name
@@ -316,16 +362,20 @@ class Mesher {
     const still = this.d.textures[isWater ? 'block/water_still' : 'block/lava_still']
     const tint = isWater ? this.d.tints.water : null
     const make = (dir, pos) => ({ pos, uv: [[0, 0], [16, 0], [16, 16], [0, 16]], tex: still, dir })
-    if (!up) out.quad(make('up', [[0, hNW, 0], [1, hNE, 0], [1, hSE, 1], [0, hSW, 1]]), lx, ly, lz, 1, tint, null, true)
+    // Liquids are lit by the brighter of their own cell and the one above (BlockLiquid).
+    let lit = null
+    if (this.light) { const a = this.light.cell(x, y, z); const u = this.light.cell(x, y + 1, z); lit = this.flatLight(Math.max(a >> 4, u >> 4) << 4 | Math.max(a & 15, u & 15)) }
+    if (!up) out.quad(make('up', [[0, hNW, 0], [1, hNE, 0], [1, hSE, 1], [0, hSW, 1]]), lx, ly, lz, 1, tint, null, true, lit)
     const sideOpen = (dx, dy, dz) => { const n = this.blockInfo(this.get(x + dx, y + dy, z + dz)); return n.name !== b.name && !n.solid }
-    if (sideOpen(0, -1, 0)) out.quad(make('down', [[0, 0, 1], [1, 0, 1], [1, 0, 0], [0, 0, 0]]), lx, ly, lz, 0.5, tint, null, true)
-    if (sideOpen(0, 0, -1)) out.quad(make('north', [[1, hNE, 0], [0, hNW, 0], [0, 0, 0], [1, 0, 0]]), lx, ly, lz, 0.8, tint, null, true)
-    if (sideOpen(0, 0, 1)) out.quad(make('south', [[0, hSW, 1], [1, hSE, 1], [1, 0, 1], [0, 0, 1]]), lx, ly, lz, 0.8, tint, null, true)
-    if (sideOpen(-1, 0, 0)) out.quad(make('west', [[0, hNW, 0], [0, hSW, 1], [0, 0, 1], [0, 0, 0]]), lx, ly, lz, 0.6, tint, null, true)
-    if (sideOpen(1, 0, 0)) out.quad(make('east', [[1, hSE, 1], [1, hNE, 0], [1, 0, 0], [1, 0, 1]]), lx, ly, lz, 0.6, tint, null, true)
+    if (sideOpen(0, -1, 0)) out.quad(make('down', [[0, 0, 1], [1, 0, 1], [1, 0, 0], [0, 0, 0]]), lx, ly, lz, 0.5, tint, null, true, lit)
+    if (sideOpen(0, 0, -1)) out.quad(make('north', [[1, hNE, 0], [0, hNW, 0], [0, 0, 0], [1, 0, 0]]), lx, ly, lz, 0.8, tint, null, true, lit)
+    if (sideOpen(0, 0, 1)) out.quad(make('south', [[0, hSW, 1], [1, hSE, 1], [1, 0, 1], [0, 0, 1]]), lx, ly, lz, 0.8, tint, null, true, lit)
+    if (sideOpen(-1, 0, 0)) out.quad(make('west', [[0, hNW, 0], [0, hSW, 1], [0, 0, 1], [0, 0, 0]]), lx, ly, lz, 0.6, tint, null, true, lit)
+    if (sideOpen(1, 0, 0)) out.quad(make('east', [[1, hSE, 1], [1, hNE, 0], [1, 0, 0], [1, 0, 1]]), lx, ly, lz, 0.6, tint, null, true, lit)
   }
 
-  chest (out, b, lx, ly, lz) {
+  chest (out, b, lx, ly, lz, x, y, z) {
+    const lit = this.light ? this.flatLight(this.light.cell(x, y, z)) : null
     const tex = this.d.textures[b.name === 'ender_chest' ? 'entity/chest/ender' : b.name === 'trapped_chest' ? 'entity/chest/trapped' : 'entity/chest/normal']
     if (!tex) return
     const yr = { north: 0, east: 90, south: 180, west: 270 }[b.props.facing] || 0
@@ -340,7 +390,7 @@ class Mesher {
         const [ru, rv, rw, rh] = R[dir]
         const corners = faceCorners(dir, from, to).map(p => rotY(p, yr)).map(p => [p[0] / 16, p[1] / 16, p[2] / 16])
         const uv = [px(ru, rv), px(ru + rw, rv), px(ru + rw, rv + rh), px(ru, rv + rh)]
-        out.quad({ pos: corners, uv, tex, dir: rotDir(dir, 0, yr) }, lx, ly, lz, SHADE[rotDir(dir, 0, yr)], null, null)
+        out.quad({ pos: corners, uv, tex, dir: rotDir(dir, 0, yr) }, lx, ly, lz, SHADE[rotDir(dir, 0, yr)], null, null, false, lit)
       }
     }
     box([1, 0, 1], [15, 10, 15], 0, 19, 14, 10, 14)
@@ -367,7 +417,7 @@ function isFullCube (quads) {
 /** Collects quads into typed arrays. */
 class Builder {
   constructor (m) { this.m = m; this.pos = []; this.uv = []; this.col = []; this.anim = []; this.n = 0 }
-  quad (q, lx, ly, lz, shade, tint, ao, fluid) {
+  quad (q, lx, ly, lz, shade, tint, ao, fluid, lit) {
     const t = q.tex; const W = this.m.W; const H = this.m.H
     const r = tint ? tint[0] / 255 : 1; const g = tint ? tint[1] / 255 : 1; const bl = tint ? tint[2] / 255 : 1
     for (let k = 0; k < 4; k++) {
@@ -379,7 +429,8 @@ class Builder {
       this.uv.push((t.x + uu / 16 * t.w) / W, (t.y + vv / 16 * t.h) / H)
       const a = ao ? ao[k] : 1
       const s = shade * a
-      this.col.push(r * s, g * s, bl * s)
+      if (lit) this.col.push(r * s * lit[k * 3], g * s * lit[k * 3 + 1], bl * s * lit[k * 3 + 2])
+      else this.col.push(r * s, g * s, bl * s)
       this.anim.push(t.n, t.ft, t.stride / W)
     }
     this.n++

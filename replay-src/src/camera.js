@@ -8,6 +8,8 @@
 // Looking, moving and zooming all ease in and out rather than jumping.
 const THREE = require('three')
 
+const DEG = Math.PI / 180
+
 const wrapPi = (a) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a }
 const ease = (rate, dt) => 1 - Math.exp(-rate * dt)
 
@@ -16,6 +18,8 @@ class ReplayCamera {
     this.camera = camera
     this.dom = dom
     camera.rotation.order = 'YXZ'
+    this.bob = new THREE.Matrix4(); this.bobInv = new THREE.Matrix4(); this.bobbing = true
+    this.armYaw = 0; this.armPitch = 0; this.swayX = 0; this.swayY = 0; this.fovMod = 1; this.lastNow = null; this.lastModel = null
     this.mode = 'free'
     this.model = null
     this.yaw = 0; this.pitch = -0.5 // what we show
@@ -139,6 +143,52 @@ class ReplayCamera {
     this.tPitch = Math.atan2(d.y, Math.hypot(d.x, d.z))
   }
 
+  /**
+   * What seeing through their eyes adds, in Minecraft 1.8's own terms:
+   * view bobbing (EntityRenderer.setupViewBobbing) for the camera and the
+   * hand, the hand trailing behind turns (ItemRenderer.rotateWithPlayerRotations,
+   * renderArmYaw/Pitch easing halfway each tick), and the field of view
+   * widening while sprinting and narrowing while a bow is drawn
+   * (EntityPlayerSP.getFovModifier, eased halfway each tick).
+   */
+  eyesExtras (st, view) {
+    const model = this.model; const tr = model.track; const t = model.now
+    // Replay time since the last frame (0 when paused, a snap after a seek).
+    const dtr = this.lastNow == null || model !== this.lastModel ? Infinity : t - this.lastNow
+    this.lastNow = t; this.lastModel = model
+    const settle = (ms) => dtr < 0 || dtr > 400 ? 1 : 1 - Math.pow(0.5, dtr / ms)
+    // Bobbing.
+    const b = this.bobbing && tr.bobAt ? tr.bobAt(t) : null
+    const B = this.bob.identity()
+    if (b) {
+      const f1 = -b.walk; const f2 = b.yaw; const f3 = b.pitch
+      B.multiply(new THREE.Matrix4().makeTranslation(Math.sin(f1 * Math.PI) * f2 * 0.5, -Math.abs(Math.cos(f1 * Math.PI) * f2), 0))
+      B.multiply(new THREE.Matrix4().makeRotationZ(Math.sin(f1 * Math.PI) * f2 * 3 * DEG))
+      B.multiply(new THREE.Matrix4().makeRotationX(Math.abs(Math.cos(f1 * Math.PI - 0.2) * f2) * 5 * DEG))
+      B.multiply(new THREE.Matrix4().makeRotationX(f3 * DEG))
+    }
+    this.bobInv.copy(B).invert()
+    // Hand sway.
+    const yaw = view ? view.head : st ? st.head : 0; const pitch = view ? view.pitch : st ? st.pitch : 0
+    if (dtr === Infinity || dtr < 0 || dtr > 400) { this.armYaw = yaw; this.armPitch = pitch }
+    const k = settle(50)
+    this.armYaw += (((yaw - this.armYaw) % 360 + 540) % 360 - 180) * k
+    this.armPitch += (pitch - this.armPitch) * k
+    this.swayX = (pitch - this.armPitch) * 0.1
+    this.swayY = (((yaw - this.armYaw) % 360 + 540) % 360 - 180) * 0.1
+    // Field of view.
+    let want = 1
+    const flags = tr.flags.at(t) || 0
+    if (flags & 0x08) want *= 1.15 // sprinting: (0.13 / 0.1 + 1) / 2
+    const item = tr.equip[0].at(t)
+    if ((flags & 0x10) && item && item.id === 261) {
+      let f = (t - tr.flags.since(t)) / 50 / 20
+      f = f > 1 ? 1 : f * f
+      want *= 1 - f * 0.15
+    }
+    this.fovMod = dtr === Infinity ? want : this.fovMod + (want - this.fovMod) * settle(50)
+  }
+
   update (dt) {
     const cam = this.camera
     const look = this.smooth ? ease(16, dt) : 1
@@ -167,7 +217,13 @@ class ReplayCamera {
         let roll = 0
         if (ago >= 0 && ago < 500) { const f = 1 - ago / 500; roll = -Math.sin(f * f * f * f * Math.PI) * 14 * Math.PI / 180 }
         this.roll = roll
-        cam.rotation.set(this.pitch, this.yaw, roll)
+        this.eyesExtras(st, view)
+        // EntityRenderer.setupCameraTransform: the hurt tilt and view bobbing
+        // move the world in eye space, so the camera gets the opposite.
+        cam.rotation.set(this.pitch, this.yaw, 0)
+        cam.updateMatrix()
+        const m = cam.matrix.clone().multiply(this.bobInv).multiply(new THREE.Matrix4().makeRotationZ(roll))
+        m.decompose(cam.position, cam.quaternion, cam.scale)
         g.visible = false // their own model would block the view
         return
       }

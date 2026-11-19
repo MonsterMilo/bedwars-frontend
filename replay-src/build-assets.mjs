@@ -222,6 +222,11 @@ const copies = {
   ...Object.fromEntries([...Array(10).keys()].map(i => ['blocks/destroy_stage_' + i + '.png', '1.8.8/blocks/destroy_stage_' + i + '.png'])),
   'entity/glint.png': '1.8.8/misc/enchanted_item_glint.png',
   'particles.png': '1.8.8/particle/particles.png',
+  'shadow.png': '1.8.8/misc/shadow.png',
+  'clouds.png': '1.8.8/environment/clouds.png',
+  'underwater.png': '1.8.8/misc/underwater.png',
+  'fire_layer_0.png': '1.8.8/blocks/fire_layer_0.png',
+  'fire_layer_1.png': '1.8.8/blocks/fire_layer_1.png',
   'explosion.png': '1.13.2/entity/explosion.png'
 }
 for (const [to, from] of Object.entries(copies)) {

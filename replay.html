@@ -422,6 +422,10 @@
   .rp-cw-done .rp-cw-nav { grid-template-columns: 1fr 1fr; }
   .rp-cw-prev { height: 6px; border-radius: 3px; background: var(--panel-2); overflow: hidden; }
   .rp-cw-prev i { display: block; height: 100%; width: var(--p, 0%); background: var(--accent); }
+  .rp-clipbtn { height: 34px; padding: 0 12px 0 10px; gap: 6px; background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 800; }
+  .rp-clipbtn svg { width: 17px; height: 17px; }
+  .rp-clipbtn:hover { filter: brightness(1.08); box-shadow: var(--glow); }
+  .rp-set-keys { width: 100%; justify-content: center; height: 34px; margin-top: 10px; background: var(--panel-2); border-color: var(--glass-line); }
   .rp-cw-video { height: 32px; justify-content: center; }
   a.rp-event { text-decoration: none; color: inherit; }
   .rp-field { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 8px; font-size: 0.9em; color: var(--dim); }
@@ -500,8 +504,8 @@
 
   /* A clip inside the tracker's player popup (?embed=1): only the view, the
      camera buttons, the kill feed and the play bar. */
-  .rp-embed .rp-side, .rp-embed .rp-home, .rp-embed #rpPanelBtn, .rp-embed #rpHelpBtn, .rp-embed #rpFullBtn,
-  .rp-embed .rp-chat, .rp-embed .rp-noself, .rp-embed #rpMapBtn, .rp-embed #rpHitBtn, .rp-embed #rpChatBtn, .rp-embed #rpShareBtn, .rp-embed .rp-tmap { display: none !important; }
+  .rp-embed .rp-side, .rp-embed .rp-home, .rp-embed #rpPanelBtn, .rp-embed #rpClipBtn,
+  .rp-embed .rp-chat, .rp-embed .rp-noself, .rp-embed .rp-tmap { display: none !important; }
   /* Compact: everything a size down so the clip itself has the room. */
   .rp-embed .rp-titlecard { padding: 3px 8px; border-radius: var(--r-s); flex: 0 1 auto; }
   .rp-embed .rp-title { font-size: 0.8em; }
@@ -571,13 +575,8 @@
         <button type="button" class="rp-mode" data-mode="overview" aria-pressed="false" title="Whole map from above (M)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg><span>Map</span></button>
       </div>
       <div class="rp-iconbar glass">
-        <button type="button" class="rp-icon" id="rpMapBtn" title="Tactical map (G)" aria-label="Tactical map" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="10" r="1.6" fill="currentColor"/><path d="M14 15l3-3M3 16l5-4 4 3 3-3 6 5"/></svg></button>
-        <button type="button" class="rp-icon rp-hide-narrow" id="rpHitBtn" title="Hitboxes and reach (B)" aria-label="Hitboxes and reach" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10v18H7z"/><path d="M7 7h10"/><path d="M12 7v-3"/></svg></button>
-        <button type="button" class="rp-icon rp-hide-narrow" id="rpChatBtn" title="Chat history (T)" aria-label="Chat history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><path d="M8 8h8M8 12h5"/></svg></button>
-        <button type="button" class="rp-icon" id="rpShareBtn" title="Copy a link to this moment (C)" aria-label="Copy a link to this moment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"/></svg></button>
-        <button type="button" class="rp-icon" id="rpHelpBtn" title="Controls (?)" aria-label="Controls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg></button>
+        <button type="button" class="rp-btn rp-clipbtn" id="rpClipBtn" title="Make a clip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg><span>Clip</span></button>
         <button type="button" class="rp-icon" id="rpSettingsBtn" title="Settings" aria-label="Settings" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></button>
-        <button type="button" class="rp-icon rp-hide-narrow" id="rpFullBtn" title="Full screen" aria-label="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 00-2 2v3M21 8V5a2 2 0 00-2-2h-3M3 16v3a2 2 0 002 2h3M16 21h3a2 2 0 002-2v-3"/></svg></button>
         <button type="button" class="rp-icon" id="rpPanelBtn" title="Players and events" aria-label="Players and events" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M15 3v18"/></svg></button>
       </div>
     </div>
@@ -606,24 +605,14 @@
       <label class="rp-set"><span>Kill feed<small>Kills, finals and beds, top right</small></span><input type="checkbox" class="rp-switch" data-set="feed"></label>
       <label class="rp-set"><span>Name tags</span><input type="checkbox" class="rp-switch" data-set="names"></label>
       <label class="rp-set"><span>See invisible players<small>Shown as a faint ghost</small></span><input type="checkbox" class="rp-switch" data-set="invis"></label>
-      <label class="rp-set"><span>Particles</span><input type="checkbox" class="rp-switch" data-set="particles"></label>
-      <label class="rp-set"><span>Smooth camera</span><input type="checkbox" class="rp-switch" data-set="smooth"></label>
-      <label class="rp-set"><span>Look speed</span><input type="range" min="0.3" max="2.5" step="0.1" data-set="sensitivity"></label>
       <label class="rp-set"><span>Sound volume<small>Plays up to 2× speed</small></span><input type="range" min="0" max="1" step="0.05" data-set="volume"></label>
-      <label class="rp-set"><span>Hearing distance<small>How far sounds carry (game: 1×)</small></span><input type="range" min="1" max="5" step="0.5" data-set="hearing"></label>
       <h3 class="rp-set-head">Players</h3>
       <label class="rp-set"><span>Potion timers<small>Over heads</small></span><input type="checkbox" class="rp-switch" data-set="timers"></label>
       <label class="rp-set"><span>Hitboxes and reach<small>Like F3+B, with hit reach (B)</small></span><input type="checkbox" class="rp-switch" data-set="hitboxes"></label>
-      <label class="rp-set"><span>Smooth aim in their eyes<small>Eases their camera between updates</small></span><input type="checkbox" class="rp-switch" data-set="smoothAim"></label>
-      <label class="rp-set"><span>Hand in their eyes<small>Their held item or arm, like in game</small></span><input type="checkbox" class="rp-switch" data-set="hand"></label>
-      <label class="rp-set"><span>Crosshair in their eyes<small>With the outline of the block they're aiming at</small></span><input type="checkbox" class="rp-switch" data-set="aim"></label>
       <h3 class="rp-set-head">Graphics</h3>
       <label class="rp-set"><span>Field of view <output></output></span><input type="range" min="30" max="110" step="1" data-set="fov"></label>
-      <label class="rp-set"><span>Field of view in their eyes <output></output></span><input type="range" min="30" max="110" step="1" data-set="eyesFov"></label>
       <label class="rp-set"><span>View distance <output></output></span><input type="range" min="64" max="480" step="16" data-set="view"></label>
-      <label class="rp-set"><span>Resolution</span><select data-set="res"><option value="0.5">Half</option><option value="0.75">Three quarters</option><option value="1">Full</option><option value="1.5">Sharper</option></select></label>
-      <label class="rp-set"><span>Frame limit</span><select data-set="fps"><option value="0">None</option><option value="30">30 fps</option><option value="60">60 fps</option><option value="120">120 fps</option><option value="144">144 fps</option></select></label>
-      <p class="rp-set-foot">Performance stats: <kbd>`</kbd></p>
+      <button type="button" class="rp-btn rp-set-keys" id="rpHelpBtn">Controls and keys</button>
     </div>
 
     <div class="rp-help" id="rpHelp" hidden>
@@ -774,7 +763,7 @@
     </div>
   </aside>
 </div>
-<script src="replay/app.js?v=20261119x"></script>
+<script src="replay/app.js?v=20261119y"></script>
 <script src="seasonal/northpole.js?v=1" data-lite></script>
 <script>
   // Page chrome only (the replay engine is in app.js).

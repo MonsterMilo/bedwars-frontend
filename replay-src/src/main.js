@@ -231,6 +231,8 @@ async function runViewer (tl, details) {
   // Hearing used to default to 2x, which made far-away blocks loud (Milo
   // 2026-11-19): back to the game's distance unless picked since.
   if (!(settings.v >= 2)) { if (settings.hearing === 2) settings.hearing = 1; settings.v = 2 }
+  // Settings that were taken out (Milo 2026-11-19: fluff): always as here.
+  Object.assign(settings, { particles: true, smooth: true, sensitivity: 1, hearing: 1, smoothAim: true, hand: true, aim: true, eyesFov: 85, res: 1, fps: 0 })
   const saveSettings = () => { if (EMBED) return; try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ } }
   // A clip in the popup: no side panel or chat. It plays with sound (it only
   // starts after a card is clicked), even if the full viewer was muted.
@@ -268,7 +270,6 @@ async function runViewer (tl, details) {
     camera.fov = cam.mode === 'eyes' ? settings.eyesFov : settings.fov; camera.far = settings.view + 60; camera.updateProjectionMatrix()
     blocks.uniforms.fogFar.value = settings.view; blocks.uniforms.fogNear.value = settings.view * 0.5
     if (resScale !== settings.res) { resScale = settings.res; resize() }
-    $('rpHitBtn').setAttribute('aria-pressed', String(!!settings.hitboxes))
     $('rp').classList.toggle('is-collapsed', !settings.panel)
     $('rpPanelBtn').setAttribute('aria-pressed', String(settings.panel))
     $('rpSound').innerHTML = settings.volume > 0 ? ICON.sound : ICON.mute
@@ -492,11 +493,8 @@ async function runViewer (tl, details) {
   function setMap (mode) {
     tmap.setMode(mode)
     if (mode !== 'full') { settings.map = mode; saveSettings() }
-    $('rpMapBtn').setAttribute('aria-pressed', String(mode !== 'off'))
-    $('rpMapBtn').title = 'Tactical map: ' + (mode === 'off' ? 'off' : mode === 'mini' ? 'corner' : 'full') + ' (' + binds.label('map') + ')'
   }
   const cycleMap = () => setMap(tmap.mode === 'off' ? 'mini' : tmap.mode === 'mini' ? 'full' : 'off')
-  $('rpMapBtn').addEventListener('click', cycleMap)
   setMap(EMBED ? 'off' : settings.map === 'off' ? 'off' : 'mini')
 
   // --- Stars, FKDR and Urchin tags in the player list (needs a key) ---
@@ -741,13 +739,10 @@ async function runViewer (tl, details) {
     $('rpSettings').hidden = true; $('rpSettingsBtn').setAttribute('aria-pressed', 'false')
   })
   const help = $('rpHelp')
-  $('rpHelpBtn').addEventListener('click', (e) => { e.stopPropagation(); help.hidden = !help.hidden })
+  $('rpHelpBtn').addEventListener('click', (e) => { e.stopPropagation(); help.hidden = !help.hidden; $('rpSettings').hidden = true; $('rpSettingsBtn').setAttribute('aria-pressed', 'false') })
   $('rpHelpBtn').addEventListener('click', () => { if (!help.hidden) renderBindings($('rpKeys'), binds) })
   help.addEventListener('click', () => { help.hidden = true })
   help.querySelector('.rp-help-box').addEventListener('click', (e) => e.stopPropagation())
-  $('rpFullBtn').addEventListener('click', () => {
-    if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {})
-  })
 
   // --- Timeline (drag to scrub, hover to preview) ---
   const timeline = $('rpTimeline')
@@ -839,7 +834,6 @@ async function runViewer (tl, details) {
     saveSettings(); applySettings()
     toast(settings.hitboxes ? 'Hitboxes and reach on' : 'Hitboxes off')
   }
-  $('rpHitBtn').addEventListener('click', toggleHitboxes)
   $('rpKeysReset').addEventListener('click', (e) => { e.stopPropagation(); binds.reset(); renderBindings($('rpKeys'), binds) })
   binds.onChange = () => setMap(tmap.mode)
 
@@ -895,7 +889,6 @@ async function runViewer (tl, details) {
   $('rpChatSearch').addEventListener('input', (e) => { chatLogQuery = e.target.value.trim(); renderChatLog(true) })
   $('rpChatSearch').addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); toggleChatLog(false) } })
   $('rpChatLogClose').addEventListener('click', () => toggleChatLog(false))
-  $('rpChatBtn').addEventListener('click', () => toggleChatLog())
 
   // --- What each player is doing when they aren't drawn ---
   function statusOf (r) {
@@ -983,7 +976,6 @@ async function runViewer (tl, details) {
     history.replaceState(null, '', url)
     try { await navigator.clipboard.writeText(url); toast('Link to ' + fmt(now) + ' copied') } catch { toast('Link is in the address bar') }
   }
-  $('rpShareBtn').addEventListener('click', copyShareLink)
   function applyShared () {
     const h = new URLSearchParams(location.hash.slice(1))
     if (!h.has('t')) return false
@@ -1236,6 +1228,12 @@ async function runViewer (tl, details) {
     } catch (err) { $('rpClipNote').textContent = err.message } finally { btn.textContent = 'Post clip'; if (clipStep !== 'done') drawRange() }
   })
   clipGo(1)
+  // The Clip button: the clip maker, from its first step (or where it is).
+  $('rpClipBtn').addEventListener('click', () => {
+    settings.panel = true; applySettings(); $('rpTabClips').click()
+    if (clipStep === 'done') { range.from = range.to = null; clipWho = '' }
+    if (clipStep === 'done' || clipStep === 1) { if (!clipWho && watchedName()) clipWho = watchedName(); clipGo(1) }
+  })
 
   // Clips already made from this game. Milo can delete them.
   let admin = false

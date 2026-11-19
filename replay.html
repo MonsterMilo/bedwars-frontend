@@ -377,14 +377,53 @@
 
   /* Clips tab */
   .rp-clipper { display: flex; flex-direction: column; gap: 10px; }
-  .rp-clip-marks { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
-  .rp-clip-mark { flex-direction: column; height: auto; padding: 6px 8px; background: var(--panel-2); border-color: var(--glass-line); gap: 0; }
-  .rp-clip-mark small { color: var(--dim); font-weight: 600; font-size: 0.78em; }
-  .rp-clip-mark b { font-variant-numeric: tabular-nums; font-size: 1.1em; }
-  .rp-clip-len { text-align: center; color: var(--dim); font-size: 0.84em; font-weight: 700; max-width: 90px; }
-  .rp-clip-len.is-bad { color: var(--bad); }
+  .rp-cw-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; counter-reset: s; }
+  .rp-cw-steps li { display: flex; align-items: center; gap: 7px; padding: 6px 8px; border-radius: var(--r-s); background: var(--panel-2); color: var(--faint); font-size: 0.84em; font-weight: 700; cursor: default; }
+  .rp-cw-steps li b { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--glass-line); color: var(--dim); font-size: 0.85em; }
+  .rp-cw-steps li.is-on { color: var(--text); box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .rp-cw-steps li.is-on b { background: var(--accent); color: var(--accent-ink); }
+  .rp-cw-steps li.is-done { color: var(--dim); cursor: pointer; }
+  .rp-cw-steps li.is-done b { background: color-mix(in srgb, var(--accent) 35%, transparent); color: var(--text); }
+  .rp-clipper section { display: flex; flex-direction: column; gap: 10px; }
+  .rp-clipper section[hidden] { display: none; }
+  .rp-cw-q { margin: 4px 0 0; font-weight: 800; font-size: 1.02em; display: flex; flex-direction: column; gap: 2px; }
+  .rp-cw-q small { font-weight: 600; font-size: 0.8em; color: var(--dim); }
+  .rp-cw-q small b { color: var(--text); }
+  .rp-cw-teams { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .rp-cw-team-name { display: block; font-size: 0.74em; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--team); margin: 0 2px 5px; }
+  .rp-cw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .rp-cw-who { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 7px 8px; border: 1px solid transparent; border-radius: var(--r-s); background: var(--panel-2); color: var(--text); font: 600 0.88em var(--font); text-align: left; cursor: pointer; position: relative; overflow: hidden; }
+  .rp-cw-who::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--team); }
+  .rp-cw-who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rp-cw-who:hover { border-color: var(--glass-line); }
+  .rp-cw-who.is-picked { border-color: var(--accent); }
+  .rp-cw-who .rp-head { width: 22px; height: 22px; flex: none; }
+  .rp-range { position: relative; height: 38px; touch-action: none; cursor: pointer; }
+  .rp-range-track { position: absolute; left: 0; right: 0; top: 15px; height: 8px; border-radius: 4px; background: var(--panel-2); box-shadow: inset 0 0 0 1px var(--glass-line); }
+  .rp-range-fill { position: absolute; top: 13px; height: 12px; border-radius: 4px; background: color-mix(in srgb, var(--accent) 35%, transparent); box-shadow: inset 0 0 0 1.5px var(--accent); pointer-events: none; }
+  .rp-range-marks { position: absolute; inset: 0; pointer-events: none; }
+  .rp-range-mark { position: absolute; top: 9px; width: 3px; height: 20px; margin-left: -1px; border-radius: 2px; background: var(--dim); }
+  .rp-range-mark.is-final { background: var(--bad); } .rp-range-mark.is-bed { background: var(--bed, #e8c930); } .rp-range-mark.is-kill { background: var(--text); }
+  .rp-range-h { position: absolute; top: 6px; width: 14px; height: 26px; margin-left: -7px; padding: 0; border: 0; border-radius: 4px; background: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,.4); cursor: ew-resize; }
+  .rp-cw-times { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
+  .rp-cw-time { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .rp-cw-time small { color: var(--dim); font-weight: 600; font-size: 0.78em; }
+  .rp-cw-time span { display: flex; align-items: center; gap: 4px; }
+  .rp-cw-time b { font-variant-numeric: tabular-nums; min-width: 40px; text-align: center; }
+  .rp-cw-time .rp-btn { width: 26px; height: 26px; padding: 0; justify-content: center; border-color: var(--glass-line); }
+  .rp-clip-len { text-align: center; color: var(--dim); font-size: 0.84em; font-weight: 700; }
+  .rp-clip-len.is-bad, .rp-cw-bad { color: var(--bad); }
   .rp-clip-quick { display: flex; gap: 6px; }
-  .rp-clip-quick .rp-btn { flex: 1; height: 32px; border-color: var(--glass-line); font-size: 0.88em; }
+  .rp-clip-quick .rp-btn { flex: 1; height: 32px; border-color: var(--glass-line); font-size: 0.88em; gap: 6px; }
+  .rp-clip-quick kbd { padding: 0 5px; border-radius: min(4px, var(--r-s)); background: var(--panel-2); border: 1px solid var(--glass-line); font: 600 0.85em var(--font); }
+  .rp-cw-moments { max-height: 180px; overflow: auto; }
+  .rp-cw-nav { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
+  .rp-cw-nav .rp-btn { height: 36px; justify-content: center; text-decoration: none; }
+  .rp-cw-done .rp-cw-nav { grid-template-columns: 1fr 1fr; }
+  .rp-cw-prev { height: 6px; border-radius: 3px; background: var(--panel-2); overflow: hidden; }
+  .rp-cw-prev i { display: block; height: 100%; width: var(--p, 0%); background: var(--accent); }
+  .rp-cw-video { height: 32px; justify-content: center; }
+  a.rp-event { text-decoration: none; color: inherit; }
   .rp-field { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 8px; font-size: 0.9em; color: var(--dim); }
   .rp-field input, .rp-field select { min-width: 0; background: var(--panel-2); border: 1px solid var(--glass-line); border-radius: var(--r-s); padding: 7px 10px; color: var(--text); }
   .rp-clip-go { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -670,26 +709,64 @@
       </div>
       <div class="rp-panel" id="rpPaneClips" hidden>
         <div class="rp-clipper">
-          <div class="rp-clip-marks">
-            <button type="button" class="rp-btn rp-clip-mark" id="rpClipIn"><small>Start <kbd>I</kbd></small><b id="rpClipFrom">–</b></button>
-            <span class="rp-clip-len" id="rpClipLen">Mark a start and an end</span>
-            <button type="button" class="rp-btn rp-clip-mark" id="rpClipOut"><small>End <kbd>O</kbd></small><b id="rpClipTo">–</b></button>
-          </div>
-          <div class="rp-clip-quick">
-            <button type="button" class="rp-btn" id="rpClipLast">Last 20 s</button>
-            <button type="button" class="rp-btn" id="rpClipPlay">Watch it</button>
-            <button type="button" class="rp-btn" id="rpClipClear">Clear</button>
-          </div>
-          <label class="rp-field"><span>Title</span><input type="text" id="rpClipTitle" maxlength="80" placeholder="Optional"></label>
-          <label class="rp-field"><span>About</span><select id="rpClipFollow"></select></label>
-          <div class="rp-clip-go">
-            <button type="button" class="rp-btn rp-primary" id="rpClipSave" disabled>Save clip</button>
-            <button type="button" class="rp-btn rp-secondary" id="rpClipVideo" disabled>Download video</button>
-          </div>
-          <p class="rp-note rp-clip-warn" id="rpClipWarn"></p>
-          <p class="rp-note" id="rpClipNote"></p>
-          <p class="rp-note" id="rpClipQuota"></p>
-          <p class="rp-note">Saved clips show on that player and their teammates. Videos record at 1080p with chat and sound.</p>
+          <ol class="rp-cw-steps" id="rpCwSteps">
+            <li data-step="1"><b>1</b>Player</li>
+            <li data-step="2"><b>2</b>Part</li>
+            <li data-step="3"><b>3</b>Preview</li>
+          </ol>
+          <section data-cw-pane="1">
+            <p class="rp-cw-q">Who is the clip about?</p>
+            <ul class="rp-cw-teams" id="rpClipPlayers"></ul>
+          </section>
+          <section data-cw-pane="2" hidden>
+            <p class="rp-cw-q">Pick the part <small>following <b class="rp-cw-whoname"></b></small></p>
+            <div class="rp-range" id="rpRange">
+              <div class="rp-range-track"></div>
+              <div class="rp-range-marks"></div>
+              <div class="rp-range-fill"></div>
+              <button type="button" class="rp-range-h" data-h="from" aria-label="Start"></button>
+              <button type="button" class="rp-range-h" data-h="to" aria-label="End"></button>
+            </div>
+            <div class="rp-cw-times">
+              <div class="rp-cw-time"><small>Start</small><span><button type="button" class="rp-btn" data-nudge="from:-1" aria-label="Start 1 s earlier">−</button><b id="rpClipFrom">–</b><button type="button" class="rp-btn" data-nudge="from:1" aria-label="Start 1 s later">+</button></span></div>
+              <span class="rp-clip-len" id="rpClipLen"></span>
+              <div class="rp-cw-time"><small>End</small><span><button type="button" class="rp-btn" data-nudge="to:-1" aria-label="End 1 s earlier">−</button><b id="rpClipTo">–</b><button type="button" class="rp-btn" data-nudge="to:1" aria-label="End 1 s later">+</button></span></div>
+            </div>
+            <div class="rp-clip-quick">
+              <button type="button" class="rp-btn" id="rpClipIn">Start here <kbd>I</kbd></button>
+              <button type="button" class="rp-btn" id="rpClipOut">End here <kbd>O</kbd></button>
+            </div>
+            <p class="rp-note rp-cw-bad" id="rpClipLenNote"></p>
+            <h3 class="rp-sub-head" id="rpClipMomentsHead">Their moments</h3>
+            <div class="rp-list rp-cw-moments" id="rpClipMoments"></div>
+            <div class="rp-cw-nav">
+              <button type="button" class="rp-btn" id="rpClipBack2">Back</button>
+              <button type="button" class="rp-btn rp-primary" id="rpClipNext">Preview</button>
+            </div>
+          </section>
+          <section data-cw-pane="3" hidden>
+            <p class="rp-cw-q">Preview <small><span id="rpClipFromTo"></span>following <b class="rp-cw-whoname"></b></small></p>
+            <div class="rp-cw-prev"><i id="rpClipPrevBar"></i></div>
+            <button type="button" class="rp-btn" id="rpClipReplay">Watch again</button>
+            <p class="rp-note rp-clip-warn" id="rpClipWarn"></p>
+            <label class="rp-field"><span>Title</span><input type="text" id="rpClipTitle" maxlength="80" placeholder="Optional"></label>
+            <div class="rp-cw-nav">
+              <button type="button" class="rp-btn" id="rpClipBack3">Back</button>
+              <button type="button" class="rp-btn rp-primary" id="rpClipSave" disabled>Post clip</button>
+            </div>
+            <p class="rp-note" id="rpClipNote"></p>
+            <p class="rp-note" id="rpClipQuota"></p>
+            <p class="rp-note">Shows on that player and their teammates.</p>
+            <button type="button" class="rp-btn rp-secondary rp-cw-video" id="rpClipVideo" disabled>Download as video</button>
+          </section>
+          <section data-cw-pane="done" hidden class="rp-cw-done">
+            <p class="rp-cw-q">Clip posted</p>
+            <div class="rp-cw-nav">
+              <a class="rp-btn rp-primary" id="rpClipOpen" href="#">Watch it</a>
+              <button type="button" class="rp-btn" id="rpClipAnother">Make another</button>
+            </div>
+            <p class="rp-note" id="rpClipQuotaDone"></p>
+          </section>
         </div>
         <h3 class="rp-sub-head">Clips from this game</h3>
         <ul class="rp-list" id="rpClipList"></ul>
@@ -697,7 +774,7 @@
     </div>
   </aside>
 </div>
-<script src="replay/app.js?v=20261119w"></script>
+<script src="replay/app.js?v=20261119x"></script>
 <script src="seasonal/northpole.js?v=1" data-lite></script>
 <script>
   // Page chrome only (the replay engine is in app.js).

@@ -119,7 +119,11 @@ class Hud {
       if (p.fx.visible) {
         const lines = list.slice(0, 4)
         const key = lines.map(e => e.name + clock(e.left)).join('|')
-        p.fx.position.y = (m.tag.position.y || 2.2) + 0.12 + lines.length * 0.11
+        // The lines are drawn at the bottom of the sprite: sit that bottom
+        // just above the name tag (and the "invisible" label, if shown).
+        const tagTop = (m.tag.position.y || 2.2) + m.tag.scale.y / 2
+        const above = m.invisTag && m.invisTag.visible ? Math.max(tagTop, m.invisTag.position.y + m.invisTag.scale.y / 2) : tagTop
+        p.fx.position.y = above + 0.06 + p.fx.scale.y / 2
         if (key !== p.fx.userData.key) {
           p.fx.userData.key = key
           drawEffects(p.fx, lines)

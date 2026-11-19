@@ -501,10 +501,10 @@ async function runViewer (tl, details) {
     if (!key || EMBED) return
     const headers = { 'x-admin-key': key }
     const queue = rows.filter(r => !r.m.track.nicked && r.m.track.uuid && /^[0-9a-f-]{32,36}$/i.test(r.m.track.uuid))
-    // Everyone's Urchin tags in one request (real accounts only), kept an hour
+    // Everyone's Urchin tags in one request (real accounts only), kept a day
     // in this browser so opening replays again asks nothing (Milo 2026-11-18:
     // repeat lookups got the Urchin key blocked).
-    const TAGS_MS = 60 * 60 * 1000
+    const TAGS_MS = 24 * 60 * 60 * 1000
     let saved = {}
     try { saved = JSON.parse(localStorage.getItem('replayUrchin') || '{}') || {} } catch { saved = {} }
     const now = Date.now()

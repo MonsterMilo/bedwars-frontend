@@ -15,6 +15,7 @@ const { Sounds } = require('./sounds')
 const { synthesize } = require('./soundsynth')
 const { tickGlint } = require('./glint')
 const { Cracks } = require('./cracks')
+const { Outline } = require('./outline')
 const { ReplayCamera } = require('./camera')
 const { TacticalMap } = require('./tactical')
 const { FirstPersonHand } = require('./fphand')
@@ -137,6 +138,8 @@ async function start (bytes, details = null) {
 
 async function runViewer (tl, details) {
   setStatus('Drawing the map…', { progress: 0 })
+  // Name tags are drawn in the Minecraft font, so have it first.
+  try { await Promise.race([document.fonts.load('40px Minecraft'), new Promise(resolve => setTimeout(resolve, 3000))]) } catch { /* fallback font */ }
   const stage = $('rpStage')
   const renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1))
@@ -215,6 +218,7 @@ async function runViewer (tl, details) {
     return c
   }
   const cracks = new Cracks(scene, tl, world)
+  const outline = new Outline(scene, world)
   tl.sounds = synthesize(tl)
   const particles = new Particles(scene, tl, { colorOf })
   const sounds = new Sounds(tl)
@@ -222,7 +226,7 @@ async function runViewer (tl, details) {
 
   // --- Settings (remembered in this browser) ---
   const SETTINGS_KEY = 'replaySettings'
-  const settings = { chat: true, feed: true, names: true, invis: true, particles: true, hearing: 2, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860, smoothAim: true, timers: true, hitboxes: false, hand: true, fov: 70, eyesFov: 85, res: 1, fps: 0, view: 320, map: 'mini', moments: { kill: true, final: true, bed: true, elim: true } }
+  const settings = { chat: true, feed: true, names: true, invis: true, particles: true, hearing: 2, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860, smoothAim: true, timers: true, hitboxes: false, hand: true, aim: true, fov: 70, eyesFov: 85, res: 1, fps: 0, view: 320, map: 'mini', moments: { kill: true, final: true, bed: true, elim: true } }
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) } catch { /* private window */ }
   const saveSettings = () => { if (EMBED) return; try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ } }
   // A clip in the popup: no side panel or chat. It plays with sound (it only
@@ -1100,7 +1104,7 @@ async function runViewer (tl, details) {
   // Chat and kill feed painted onto the video (the page's own are HTML).
   function drawOverlay (ctx, w, h) {
     const k = h / 1080
-    const font = (px, bold) => (bold ? '700 ' : '') + Math.round(px * k) + 'px Consolas, Menlo, monospace'
+    const font = (px, bold) => (bold ? '700 ' : '') + Math.round(px * k) + 'px Minecraft, Consolas, monospace'
     const paint = (l, x, y, align) => {
       let width = 0
       for (const seg of l.segs || [{ text: l.text }]) { ctx.font = font(26, seg.bold); width += ctx.measureText(seg.text).width }
@@ -1141,6 +1145,13 @@ async function runViewer (tl, details) {
         y += 46 * k
       }
     }
+    // Their crosshair, inverting what's behind it like the game's.
+    if (cam.mode === 'eyes' && settings.aim && cam.model && cam.model.present) {
+      const u = Math.max(2, Math.round(2 * k)); const cx = Math.round(w / 2 - u / 2); const cy = Math.round(h / 2 - u / 2)
+      ctx.save(); ctx.globalCompositeOperation = 'difference'; ctx.fillStyle = '#ffffff'
+      ctx.fillRect(cx - 4 * u, cy, 9 * u, u); ctx.fillRect(cx, cy - 4 * u, u, 4 * u); ctx.fillRect(cx, cy + u, u, 4 * u)
+      ctx.restore()
+    }
   }
 
   // Start just after the cages open, when there's something to see. A clip
@@ -1164,10 +1175,27 @@ async function runViewer (tl, details) {
   window.addEventListener('hashchange', () => applyShared())
 
   const drawSize = new THREE.Vector2()
+  const crossEl = $('rpCross')
   let prevNow = now
   let lastStatus = 0
   let last = performance.now()
   let lastCamSent = 0
+  // The controls fade out after a few seconds without the mouse moving,
+  // and come back when it does (not while a menu is open or the mouse is
+  // on them).
+  {
+    const rp = $('rp'); let idleTimer = 0; let overUi = 0
+    const open = () => ['rpSettings', 'rpHelp', 'rpChatLog', 'rpSpeedMenu', 'rpRec'].some(id => $(id) && !$(id).hidden) || !!document.querySelector('.rp-dock:focus-within input, .rp-main > .rp-pop:not([hidden])')
+    const sleep = () => { if (overUi || open() || scrubbing) wake(); else rp.classList.add('is-idle') }
+    const wake = () => { rp.classList.remove('is-idle'); clearTimeout(idleTimer); idleTimer = setTimeout(sleep, 3000) }
+    for (const ev of ['mousemove', 'pointerdown', 'wheel', 'touchstart']) window.addEventListener(ev, wake, { passive: true })
+    for (const el of document.querySelectorAll('.rp-top, .rp-dock, .rp-follow, .rp-side, .rp-tmap')) {
+      el.addEventListener('pointerenter', () => { overUi++ })
+      el.addEventListener('pointerleave', () => { overUi = Math.max(0, overUi - 1) })
+    }
+    wake()
+  }
+
   function frame (ts) {
     requestAnimationFrame(frame)
     // Frame cap (not while recording a video).
@@ -1201,6 +1229,11 @@ async function runViewer (tl, details) {
     tickGlint(ts / 1000)
     if (ts - lastCamSent > 500) { blocks.setCamera(camera.position); lastCamSent = ts }
     hud.update(now, cam.mode === 'eyes' ? cam.model : null)
+    // Their crosshair and the block they're aiming at.
+    const aiming = cam.mode === 'eyes' && settings.aim && !!cam.model && cam.model.present
+    if (crossEl.hidden === aiming) crossEl.hidden = !aiming
+    renderer.getDrawingBufferSize(drawSize)
+    outline.update(aiming, camera, aiming ? models.filter(m => m !== cam.model && m.present) : [], drawSize.x, drawSize.y)
     renderer.render(scene, camera)
     // Their hand, in a pass of its own over the world (like the game).
     if (cam.mode === 'eyes' && settings.hand && cam.model && cam.model.present && hand.update(cam.model, now, camera.fov, camera.aspect, cam.roll)) {
@@ -1221,7 +1254,7 @@ async function runViewer (tl, details) {
     updatePerf(ts, performance.now() - started)
   }
   requestAnimationFrame(frame)
-  window.__replay = { cracks, tl, seek, play, cam, models, views, particles, sounds, world, blocks, settings, tmap, hud, hand, recorder, binds, moments, shareLink, applyShared, get now () { return now }, ready: () => mapReady && blocks.left === 0 }
+  window.__replay = { cracks, outline, tl, seek, play, cam, models, views, particles, sounds, world, blocks, settings, tmap, hud, hand, recorder, binds, moments, shareLink, applyShared, get now () { return now }, ready: () => mapReady && blocks.left === 0 }
 }
 
 const ICON = {

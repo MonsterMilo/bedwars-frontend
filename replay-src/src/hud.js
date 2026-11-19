@@ -160,7 +160,7 @@ function drawEffects (sprite, lines) {
   const h = lines.length * lh + 8
   ctx.clearRect(0, 0, c.width, c.height)
   const top = c.height - h
-  ctx.font = '700 22px "Segoe UI", Arial, sans-serif'
+  ctx.font = '24px Minecraft, "Segoe UI", sans-serif'
   let w = 0
   for (const e of lines) w = Math.max(w, ctx.measureText(e.name + '  ' + clock(e.left)).width)
   w = Math.min(c.width, w + 30)
@@ -185,7 +185,7 @@ function drawEffects (sprite, lines) {
 function drawReach (sprite, reach) {
   const { c, ctx, tex } = sprite.userData
   ctx.clearRect(0, 0, c.width, c.height)
-  ctx.font = '800 34px "Segoe UI", Arial, sans-serif'
+  ctx.font = '32px Minecraft, "Segoe UI", sans-serif'
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
   const text = reach.toFixed(2) + ' bl'
   ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.strokeText(text, c.width / 2, c.height / 2)

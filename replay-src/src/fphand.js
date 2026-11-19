@@ -74,7 +74,7 @@ class FirstPersonHand {
    * Places the hand for `model` at replay time t. Returns false when there's
    * nothing to draw (invisible, a spectator, no player).
    */
-  update (model, t, fov, aspect, roll) {
+  update (model, t, fov, aspect, roll, view) {
     this.camera.fov = fov; this.camera.aspect = aspect; this.camera.updateProjectionMatrix()
     this.camera.rotation.set(0, 0, roll || 0)
     if (!model || !model.present || model.ghost) { this.holder.visible = false; return false }
@@ -187,7 +187,13 @@ class FirstPersonHand {
       a.m.multiply(FLIP)
       arm.matrix.copy(a.m)
     }
+    // EntityRenderer.renderHand: the same view bobbing as the world, then
+    // ItemRenderer.rotateWithPlayerRotations (the hand lags behind turns).
     this.holder.matrix.identity()
+    if (view) {
+      if (view.bob) this.holder.matrix.copy(view.bob)
+      this.holder.matrix.multiply(new THREE.Matrix4().makeRotationX(view.swayX * D)).multiply(new THREE.Matrix4().makeRotationY(view.swayY * D))
+    }
     return true
   }
 }

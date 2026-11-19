@@ -89,6 +89,49 @@ function living (tl, colorOf, add) {
   }
 }
 
+/**
+ * The puff of smoke when a player dies (EntityLivingBase.onDeathUpdate: 20
+ * explode particles over the body). In vanilla it comes after the
+ * one-second fall-over; Hypixel turns the dead into spectators at once, so
+ * there the puff is where they vanish.
+ */
+function deathSmoke (tl, add) {
+  const byName = new Map()
+  for (const tr of tl.tracks.values()) if (tr.kind === 'player' && tr.tx) byName.set(tr.name, tr)
+  const at = []
+  for (const d of tl.deaths || []) {
+    if (d.disconnected) continue
+    const tr = byName.get(d.name); if (!tr) continue
+    // Where they were last seen alive, up to half a second before.
+    let k = Math.min(tr.tx.length - 1, Math.floor((d.t - tr.t0) / 50))
+    let n = 0
+    while (k >= 0 && !tr.talive[k] && n < 10) { k--; n++ }
+    if (k < 0 || !tr.talive[k]) continue
+    at.push({ t: d.t, x: tr.tx[k], y: tr.ty[k], z: tr.tz[k], id: tr.id })
+  }
+  for (const tr of tl.tracks.values()) {
+    if (tr.kind !== 'player' || !tr.tx) continue
+    for (const t of tr.deaths) {
+      const s = tr.stateAt(t); if (!s) continue
+      if (at.some(a => a.id === tr.id && Math.abs(a.t - t) < 2000)) continue
+      at.push({ t: t + 1000, x: s.x, y: s.y, z: s.z, id: tr.id })
+    }
+  }
+  for (const a of at) {
+    const r = rng(a.t * 31 + a.id)
+    for (let i = 0; i < 20; i++) {
+      // EntityExplodeFX: size rand*rand*6+1, grey, drifts up, 1-4 s.
+      const g = 0.7 + r() * 0.3
+      add({
+        t0: a.t, life: (16 / (r() * 0.8 + 0.2) + 2) / 20,
+        x: a.x + r() * 1.2 - 0.6, y: a.y + r() * 1.8, z: a.z + r() * 1.2 - 0.6,
+        vx: (gauss(r) * 0.02 + (r() * 2 - 1) * 0.05) * 10, vy: (gauss(r) * 0.02 + (r() * 2 - 1) * 0.05) * 10 + 0.3, vz: (gauss(r) * 0.02 + (r() * 2 - 1) * 0.05) * 10,
+        grav: 0.4, color: [g, g, g], size: (r() * r() * 6 + 1) * 0.2, cell: 0, anim: 1
+      })
+    }
+  }
+}
+
 class Particles {
   constructor (scene, timeline, { colorOf }) {
     this.list = this.expand(timeline, colorOf)
@@ -200,6 +243,7 @@ class Particles {
       }
     })
     living(tl, colorOf, (p) => out.push(p))
+    deathSmoke(tl, (p) => out.push(p))
     return out
   }
 

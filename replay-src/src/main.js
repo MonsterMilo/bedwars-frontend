@@ -16,6 +16,10 @@ const { synthesize } = require('./soundsynth')
 const { tickGlint } = require('./glint')
 const { Cracks } = require('./cracks')
 const { Outline } = require('./outline')
+const { Shadows } = require('./shadows')
+const { setEntityLight } = require('./entlight')
+const { EntityFire, EyesOverlays } = require('./fire')
+const { Clouds } = require('./clouds')
 const { ReplayCamera } = require('./camera')
 const { TacticalMap } = require('./tactical')
 const { FirstPersonHand } = require('./fphand')
@@ -219,6 +223,8 @@ async function runViewer (tl, details) {
   }
   const cracks = new Cracks(scene, tl, world)
   const outline = new Outline(scene, world)
+  const shadows = new Shadows(scene, world, mesher)
+  shadows.brightness = (x, y, z) => blocks.light.brightness(x, y, z)
   tl.sounds = synthesize(tl)
   const particles = new Particles(scene, tl, { colorOf })
   const sounds = new Sounds(tl)
@@ -244,6 +250,13 @@ async function runViewer (tl, details) {
   const binds = new Keybinds()
   cam.binds = binds
   const hand = new FirstPersonHand(items)
+  const overlays = new EyesOverlays(hand.scene)
+  const fire = new EntityFire(scene)
+  const clouds = new Clouds(scene, { color: blocks.uniforms.fogColor, near: blocks.uniforms.fogNear, far: blocks.uniforms.fogFar })
+  const skyColor = new THREE.Color(SKY); const waterFog = new THREE.Color(0.02, 0.02, 0.2); const airFog = new THREE.Color(FOG)
+  let underwater = false
+  let eyeLight = 1 // how lit the spot their eyes are in is (for the hand and overlays)
+  const eyeColor = new THREE.Color(1, 1, 1)
   const hud = new Hud(scene, models)
   cam.solidAt = (x, y, z) => {
     const v = world.get(Math.floor(x), Math.floor(y), Math.floor(z))
@@ -1418,8 +1431,22 @@ async function runViewer (tl, details) {
     previewTick()
     for (const m of models) m.update(now)
     for (const v of views) v.update(now, camera)
+    // Lit by the light where they are (Entity.getBrightnessForRender: two
+    // thirds of the way up their body).
+    for (const m of models) {
+      if (!m.present) continue
+      if (!m.lightColor) m.lightColor = new THREE.Color()
+      const p = m.group.position
+      setEntityLight(m.group, blocks.light.color(p.x, p.y + 1.19, p.z, m.lightColor))
+    }
+    for (const v of views) {
+      if (!v.group.visible) continue
+      if (!v.lightColor) v.lightColor = new THREE.Color()
+      const p = v.group.position
+      setEntityLight(v.group, blocks.light.color(p.x, p.y + 0.3, p.z, v.lightColor))
+    }
     // Their eyes have a field of view of their own (wider, like most players use).
-    const wantFov = cam.mode === 'eyes' ? settings.eyesFov : settings.fov
+    const wantFov = cam.mode === 'eyes' ? Math.round(settings.eyesFov * cam.fovMod * 100) / 100 : settings.fov
     if (camera.fov !== wantFov) { camera.fov = wantFov; camera.updateProjectionMatrix() }
     cam.update(dt)
     cracks.update(now)
@@ -1435,18 +1462,51 @@ async function runViewer (tl, details) {
     tickGlint(ts / 1000)
     if (ts - lastCamSent > 500) { blocks.setCamera(camera.position); lastCamSent = ts }
     hud.update(now, cam.mode === 'eyes' ? cam.model : null)
-    // Their crosshair and the block they're aiming at.
+    // Shadows under everything standing in the world (not invisible players).
+    const casters = []
+    for (const m of models) if (m.present && !m.ghost && !(cam.mode === 'eyes' && m === cam.model)) casters.push({ x: m.group.position.x, y: m.group.position.y, z: m.group.position.z, size: 0.5, opacity: 1 })
+    for (const v of views) {
+      if (!v.group.visible) continue
+      const ty = v.track.type
+      const sh = ty === 'item' ? [0.15, 0.75] : ty === 'tnt' || ty === 'falling_block' || ty === 'villager' || ty === 'iron_golem' ? [0.5, 1] : ty === 'silverfish' ? [0.3, 1] : null
+      if (sh) casters.push({ x: v.group.position.x, y: v.group.position.y, z: v.group.position.z, size: sh[0], opacity: sh[1] })
+    }
+    shadows.update(casters, camera)
+    fire.update(models, camera, now, cam.mode === 'eyes' ? cam.model : null)
+    clouds.update(camera, now / 1000)
+    // Head under water in their eyes: dark blue fog close in (EntityRenderer.setupFog).
+    const eyeBlock = cam.mode === 'eyes' && cam.model && cam.model.present ? world.get(Math.floor(camera.position.x), Math.floor(camera.position.y), Math.floor(camera.position.z)) >> 4 : 0
+    const wet = eyeBlock === 8 || eyeBlock === 9
+    if (wet !== underwater) {
+      underwater = wet
+      blocks.uniforms.fogColor.value.copy(wet ? waterFog : airFog)
+      blocks.uniforms.fogNear.value = wet ? 0 : settings.view * 0.5
+      blocks.uniforms.fogFar.value = wet ? 20 : settings.view
+      scene.background = wet ? waterFog.clone() : skyColor.clone()
+    }
     const aiming = cam.mode === 'eyes' && settings.aim && !!cam.model && cam.model.present
     if (crossEl.hidden === aiming) crossEl.hidden = !aiming
     renderer.getDrawingBufferSize(drawSize)
     outline.update(aiming, camera, aiming ? models.filter(m => m !== cam.model && m.present) : [], drawSize.x, drawSize.y)
     renderer.render(scene, camera)
-    // Their hand, in a pass of its own over the world (like the game).
-    if (cam.mode === 'eyes' && settings.hand && cam.model && cam.model.present && hand.update(cam.model, now, camera.fov, camera.aspect, cam.roll)) {
-      renderer.autoClear = false
-      renderer.clearDepth()
-      renderer.render(hand.scene, hand.camera)
-      renderer.autoClear = true
+    // Their hand, in a pass of its own over the world (like the game), with
+    // the fire and underwater overlays on top.
+    const inEyes = cam.mode === 'eyes' && cam.model && cam.model.present
+    if (inEyes) {
+      const showHand = hand.update(cam.model, now, 70, camera.aspect, cam.roll, cam) && settings.hand
+      if (!showHand) hand.holder.visible = false
+      // The hand is lit by the light at their eyes, like in game.
+      blocks.light.color(camera.position.x, camera.position.y, camera.position.z, eyeColor)
+      setEntityLight(hand.holder, eyeColor)
+      eyeLight = eyeColor.g
+      const flags = cam.model.track.flags.at(now) || 0
+      const over = overlays.update({ burning: !cam.model.ghost && (flags & 0x01), water: underwater, yaw: cam.armYaw, pitch: cam.armPitch, now, light: eyeLight })
+      if (showHand || over) {
+        renderer.autoClear = false
+        renderer.clearDepth()
+        renderer.render(hand.scene, hand.camera)
+        renderer.autoClear = true
+      }
     }
     if (recorder) recorder.frame()
     tmap.update(now, cam)
@@ -1460,7 +1520,7 @@ async function runViewer (tl, details) {
     updatePerf(ts, performance.now() - started)
   }
   requestAnimationFrame(frame)
-  window.__replay = { cracks, outline, tl, seek, play, cam, models, views, particles, sounds, world, blocks, settings, tmap, hud, hand, recorder, binds, moments, shareLink, applyShared, get now () { return now }, ready: () => mapReady && blocks.left === 0 }
+  window.__replay = { cracks, outline, fire, shadows, tl, seek, play, cam, models, views, particles, sounds, world, blocks, settings, tmap, hud, hand, recorder, binds, moments, shareLink, applyShared, get now () { return now }, ready: () => mapReady && blocks.left === 0 }
 }
 
 const ICON = {

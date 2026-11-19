@@ -400,6 +400,40 @@ class Track {
    * 150 ms), then softened a little more (about 40 ms), which keeps real
    * flicks quick but makes steady aiming glide.
    */
+  /**
+   * View bobbing at t, worked out tick by tick like EntityPlayer does for
+   * its own camera: how far they've walked (distanceWalkedModified, 0.6 a
+   * block), and cameraYaw / cameraPitch, which ease toward the walking
+   * speed on the ground (at most 0.1) and toward the fall speed in the air.
+   */
+  bobAt (t) {
+    if (!this.tx) return null
+    const n = this.tx.length
+    if (!this.tbob) {
+      const walk = new Float32Array(n); const cy = new Float32Array(n); const cp = new Float32Array(n)
+      let dyPrev = 0
+      for (let k = 1; k < n; k++) {
+        const ok = this.talive[k] && this.talive[k - 1]
+        const dx = ok ? this.tx[k] - this.tx[k - 1] : 0; const dy = ok ? this.ty[k] - this.ty[k - 1] : 0; const dz = ok ? this.tz[k] - this.tz[k - 1] : 0
+        const h = Math.hypot(dx, dz)
+        const moved = ok && h < 4 && Math.abs(dy) < 4
+        walk[k] = walk[k - 1] + (moved ? h * 0.6 : 0)
+        // On the ground: not rising or falling this tick or the last.
+        const ground = moved && Math.abs(dy) < 1e-3 && Math.abs(dyPrev) < 1e-3
+        dyPrev = moved ? dy : 0
+        const f = ground ? Math.min(0.1, h) : 0
+        const f1 = ground || !moved ? 0 : Math.atan(-dy * 0.2) * 15
+        cy[k] = cy[k - 1] + (f - cy[k - 1]) * 0.4
+        cp[k] = cp[k - 1] + (f1 - cp[k - 1]) * 0.8
+      }
+      this.tbob = { walk, cy, cp }
+    }
+    const p = Math.max(0, (t - this.t0) / 50)
+    const k = Math.min(n - 1, Math.floor(p)); const j = Math.min(n - 1, k + 1); const f = p - k
+    const { walk, cy, cp } = this.tbob
+    return { walk: walk[k] + (walk[j] - walk[k]) * f, yaw: cy[k] + (cy[j] - cy[k]) * f, pitch: cp[k] + (cp[j] - cp[k]) * f }
+  }
+
   viewAt (t) {
     if (!this.views) this.buildViews()
     const v = this.views

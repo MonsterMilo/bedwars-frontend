@@ -2,6 +2,7 @@
 // worker sends back, and the shader that draws them (atlas texture,
 // animated water/lava/fire frames, corner shading, fog).
 const THREE = require('three')
+const { LightGrid } = require('./light')
 
 const VERT = `
 attribute vec3 anim;
@@ -47,6 +48,7 @@ class BlockRenderer {
     this.meshes = new Map()
     this.left = Infinity
     this.onProgress = () => {}
+    this.light = new LightGrid() // the worker's light, for lighting entities
     this.worker = new Worker(workerUrl)
     this.worker.onmessage = ({ data }) => this.onMessage(data)
     this.uniforms = {
@@ -85,6 +87,7 @@ class BlockRenderer {
 
   onMessage (m) {
     if (m.type === 'progress' || m.type === 'idle') { this.left = m.type === 'idle' ? 0 : m.left; this.onProgress(this.left); return }
+    if (m.type === 'light') { this.light.apply(m.grid); return }
     if (m.type !== 'section') return
     const old = this.meshes.get(m.key)
     if (old) { for (const mesh of old) { this.group.remove(mesh); mesh.geometry.dispose() } this.meshes.delete(m.key) }

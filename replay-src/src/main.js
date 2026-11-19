@@ -1234,6 +1234,7 @@ async function runViewer (tl, details) {
     if (clipStep === 'done') { range.from = range.to = null; clipWho = '' }
     if (clipStep === 'done' || clipStep === 1) { if (!clipWho && watchedName()) clipWho = watchedName(); clipGo(1) }
   })
+  clipGo(1)
 
   // Clips already made from this game. Milo can delete them.
   let admin = false

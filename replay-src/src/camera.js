@@ -27,6 +27,7 @@ class ReplayCamera {
     this.speed = 12 // blocks per second when flying
     this.sensitivity = 1
     this.smooth = true
+    this.eyeP = { x: 0, y: 0, z: 0 }
     this.vel = new THREE.Vector3()
     this.dist = 6; this.tDist = 6
     this.focus = null // smoothed point the follow camera circles
@@ -202,7 +203,9 @@ class ReplayCamera {
       const present = this.model.present
       if (this.mode === 'eyes' && present) {
         const st = this.model.state
-        const p = g.position
+        // Their real path, not the glided one other players see (which
+        // makes jumps and landings feel floaty from the inside).
+        const p = (this.model.track.eyePosAt && this.model.track.eyePosAt(this.model.now, this.eyeP)) || g.position
         const sneak = this.model.pose.position.y < 0
         cam.position.set(p.x, p.y + (sneak ? 1.54 : 1.62), p.z)
         // Where their head points (not their body, which lags behind).

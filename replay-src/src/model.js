@@ -368,6 +368,35 @@ class Track {
     }
   }
 
+  /**
+   * Where they really were at t, for seeing through their eyes: a curve
+   * straight through the server's positions (monotone, so it never dips
+   * below the floor), without the 3-tick glide the game uses for other
+   * players. Jumps peak and land as sharply as they did for them.
+   */
+  eyePosAt (t, out) {
+    const i = this.indexAt(t)
+    const T = this.t; const n = T.length
+    if (i < 0 || !this.alive[i]) return null
+    const j = i + 1
+    if (j >= n || !this.alive[j] || T[j] - T[i] > 400 || T[j] <= T[i]) { out.x = this.x[i]; out.y = this.y[i]; out.z = this.z[i]; return out }
+    const h = T[j] - T[i]; const f = Math.min(1, (t - T[i]) / h)
+    const ok = (k) => k >= 0 && k < n && this.alive[k] && Math.abs(T[k] - (k < i ? T[i] : T[j])) <= 400 && T[k] !== (k < i ? T[i] : T[j])
+    const hasA = ok(i - 1); const hasB = ok(j + 1)
+    const h00 = 2 * f * f * f - 3 * f * f + 1; const h10 = f * f * f - 2 * f * f + f; const h01 = -2 * f * f * f + 3 * f * f; const h11 = f * f * f - f * f
+    for (const [a, key] of [[this.x, 'x'], [this.y, 'y'], [this.z, 'z']]) {
+      const p0 = a[i]; const p1 = a[j]; const d = (p1 - p0) / h
+      // Fritsch-Carlson slopes, flat at a peak. Next to a still stretch
+      // (standing, then a jump or a landing) the segment keeps its own
+      // slope, so take-offs and landings are sudden, like in game.
+      const slope = (other, own) => other === 0 ? own : other * own < 0 ? 0 : 2 / (1 / other + 1 / own)
+      const m0 = hasA && d ? slope((p0 - a[i - 1]) / (T[i] - T[i - 1]), d) : d
+      const m1 = hasB && d ? slope((a[j + 1] - p1) / (T[j + 1] - T[j]), d) : d
+      out[key] = h00 * p0 + h10 * h * m0 + h01 * p1 + h11 * h * m1
+    }
+    return out
+  }
+
   tickStateAt (t) {
     const n = this.tx.length
     const p = (t - this.t0) / 50

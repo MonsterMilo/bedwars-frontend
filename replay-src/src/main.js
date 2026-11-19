@@ -501,6 +501,25 @@ async function runViewer (tl, details) {
     if (!key || EMBED) return
     const headers = { 'x-admin-key': key }
     const queue = rows.filter(r => !r.m.track.nicked && r.m.track.uuid && /^[0-9a-f-]{32,36}$/i.test(r.m.track.uuid))
+    // Everyone's Urchin tags in one request (real accounts only), kept an hour
+    // in this browser so opening replays again asks nothing (Milo 2026-11-18:
+    // repeat lookups got the Urchin key blocked).
+    const TAGS_MS = 60 * 60 * 1000
+    let saved = {}
+    try { saved = JSON.parse(localStorage.getItem('replayUrchin') || '{}') || {} } catch { saved = {} }
+    const now = Date.now()
+    for (const u of Object.keys(saved)) if (!(now - saved[u].at < TAGS_MS)) delete saved[u]
+    const ids = queue.map(r => r.m.track.uuid.replace(/-/g, '').toLowerCase()).filter(u => /^[0-9a-f]{12}4/.test(u))
+    const ask = ids.filter(u => !saved[u])
+    const tagsOf = ask.length
+      ? fetch(`${BACKEND}/urchin/uuids`, { method: 'POST', headers: { ...headers, 'content-type': 'application/json' }, body: JSON.stringify({ uuids: ask }) })
+        .then(x => x.ok ? x.json() : null).catch(() => null)
+        .then(d => {
+          for (const [u, tags] of Object.entries((d && d.tags) || {})) saved[u] = { at: Date.now(), tags }
+          try { localStorage.setItem('replayUrchin', JSON.stringify(saved)) } catch { /* storage full or off */ }
+          return saved
+        })
+      : Promise.resolve(saved)
     const work = async () => {
       while (queue.length) {
         const r = queue.shift()
@@ -508,7 +527,7 @@ async function runViewer (tl, details) {
         try {
           const [st, ur] = await Promise.all([
             fetch(`${BACKEND}/stats/uuid/${uuid}?replay=1`, { headers }).then(x => x.ok ? x.json() : null).catch(() => null),
-            r.m.track.name ? fetch(`${BACKEND}/urchin/${encodeURIComponent(r.m.track.name)}`, { headers }).then(x => x.ok ? x.json() : null).catch(() => null) : null
+            tagsOf.then(all => (all[uuid.toLowerCase()] ? { tags: all[uuid.toLowerCase()].tags } : null))
           ])
           if (st && st.star != null) {
             r.stats.textContent = ''

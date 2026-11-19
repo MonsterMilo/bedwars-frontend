@@ -27015,7 +27015,18 @@ function updateFilterIndicators() {
 // Fetch Urchin tags from backend
 const NONE_URCHIN_RESULT = { tags: [], isCheaterTagged: false };
 
+// Answers kept 10 min on this page, so reopening a player doesn't ask again
+// (Milo 2026-11-18: repeat lookups got the Urchin key blocked).
+const urchinMemo = new Map();
 async function fetchUrchinTags(username) {
+  const memoKey = String(username).toLowerCase();
+  const memo = urchinMemo.get(memoKey);
+  if (memo && Date.now() - memo.at < 10 * 60 * 1000) return memo.result;
+  const result = await fetchUrchinTagsLive(username);
+  if (result !== NONE_URCHIN_RESULT) urchinMemo.set(memoKey, { at: Date.now(), result });
+  return result;
+}
+async function fetchUrchinTagsLive(username) {
   try {
     const res = await fetch(`${backendBaseURL}/urchin/${encodeURIComponent(username)}`, { headers: adminHeaders() });
     if (!res.ok) throw new Error("Urchin fetch failed");

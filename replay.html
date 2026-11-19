@@ -400,6 +400,9 @@
   .rp-cliprow .rp-event { flex: 1; min-width: 0; }
   .rp-clip-open { color: var(--dim); font-size: 0.84em; font-weight: 700; text-decoration: none; padding: 4px 8px; border-radius: var(--r-s); }
   .rp-clip-open:hover { color: var(--accent); background: var(--panel-2); }
+  .rp-clip-del:hover, .rp-clip-del.is-sure { color: var(--bad); }
+  button.rp-clip-open { background: none; border: 0; cursor: pointer; font-family: inherit; }
+  .rp-clip-warn { color: var(--warn, #e8b33a); font-weight: 600; }
 
   /* Player list: stats and tags */
   .rp-head { grid-row: 1 / 4; }
@@ -683,8 +686,10 @@
             <button type="button" class="rp-btn rp-primary" id="rpClipSave" disabled>Save clip</button>
             <button type="button" class="rp-btn rp-secondary" id="rpClipVideo" disabled>Download video</button>
           </div>
+          <p class="rp-note rp-clip-warn" id="rpClipWarn"></p>
           <p class="rp-note" id="rpClipNote"></p>
-          <p class="rp-note">Saved clips show on everyone's panel. Videos record at 1080p with chat and sound.</p>
+          <p class="rp-note" id="rpClipQuota"></p>
+          <p class="rp-note">Saved clips show on that player and their teammates. Videos record at 1080p with chat and sound.</p>
         </div>
         <h3 class="rp-sub-head">Clips from this game</h3>
         <ul class="rp-list" id="rpClipList"></ul>
@@ -692,7 +697,7 @@
     </div>
   </aside>
 </div>
-<script src="replay/app.js?v=20261119v"></script>
+<script src="replay/app.js?v=20261119w"></script>
 <script src="seasonal/northpole.js?v=1" data-lite></script>
 <script>
   // Page chrome only (the replay engine is in app.js).

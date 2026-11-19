@@ -29604,18 +29604,20 @@ function buildClipCard(c, uuid, other) {
   // it - "(as X)" never sits next to the killer's name (Milo 2026-11-07:
   // "by ToenailTim222ng (as itz_ava676)" read as if Milo was the nick).
   const nickOf = (real, shown) => (shown && real && shown.toLowerCase() !== String(real).toLowerCase() ? shown : "");
+  // A clip made on the website: its title (or who it follows), no "clipped by".
+  const site = c.kind === "manual" && c.source === "site";
   const verb = c.kind === "bed" ? "bed broken by" : c.kind === "manual" ? "clipped by" : "killed by";
-  const byText = c.by ? `${verb} ${c.by}` : "";
+  const byText = c.by && !site ? `${verb} ${c.by}` : "";
   let whose;
-  if (c.kind === "manual") {
+  if (site) {
+    whose = c.title || (c.follow ? `Following ${c.follow}` : (c.people || []).map(p => p.name).slice(0, 3).join(", "));
+  } else if (c.kind === "manual") {
     whose = other ? (c.people || []).map(p => p.name).slice(0, 3).join(", ") : (nickOf(openPlayerName, me && me.name) ? `As ${me.name}` : "");
-  } else if (other) {
-    const real = c.username || c.victim || "";
+  } else {
+    // Always whose kill or bed it was, on their own card too (Milo 2026-11-19).
+    const real = (other ? c.username : c.username || openPlayerName) || c.victim || "";
     const nick = nickOf(real, c.victim);
     whose = nick ? `${real} (as ${nick})` : real;
-  } else {
-    const nick = nickOf(openPlayerName, c.victim);
-    whose = nick ? `As ${nick}` : "";
   }
   // Two lines, so neither half gets cut off.
   for (const text of [whose, byText].filter(Boolean)) {

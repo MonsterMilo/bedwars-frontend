@@ -226,12 +226,16 @@ async function runViewer (tl, details) {
 
   // --- Settings (remembered in this browser) ---
   const SETTINGS_KEY = 'replaySettings'
-  const settings = { chat: true, feed: true, names: true, invis: true, particles: true, hearing: 2, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860, smoothAim: true, timers: true, hitboxes: false, hand: true, aim: true, fov: 70, eyesFov: 85, res: 1, fps: 0, view: 320, map: 'mini', moments: { kill: true, final: true, bed: true, elim: true } }
+  const settings = { chat: true, feed: true, names: true, invis: true, particles: true, hearing: 1, smooth: true, sensitivity: 1, volume: 0.7, panel: window.innerWidth > 860, smoothAim: true, timers: true, hitboxes: false, hand: true, aim: true, fov: 70, eyesFov: 85, res: 1, fps: 0, view: 320, map: 'mini', moments: { kill: true, final: true, bed: true, elim: true } }
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}) } catch { /* private window */ }
+  // Hearing used to default to 2x, which made far-away blocks loud (Milo
+  // 2026-11-19): back to the game's distance unless picked since.
+  if (!(settings.v >= 2)) { if (settings.hearing === 2) settings.hearing = 1; settings.v = 2 }
   const saveSettings = () => { if (EMBED) return; try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ } }
   // A clip in the popup: no side panel or chat. It plays with sound (it only
   // starts after a card is clicked), even if the full viewer was muted.
-  if (EMBED) { settings.panel = false; settings.chat = false; if (!(settings.volume > 0)) settings.volume = settings.lastVolume || 0.7 }
+  // Clips are heard as in the game.
+  if (EMBED) { settings.panel = false; settings.chat = false; settings.hearing = 1; if (!(settings.volume > 0)) settings.volume = settings.lastVolume || 0.7 }
   const clip = details && details.isClip ? details : null
 
   const cam = new ReplayCamera(camera, renderer.domElement)
@@ -1011,6 +1015,7 @@ async function runViewer (tl, details) {
 
   // --- Clips: mark a part, save it for everyone in it, or save it as a video ---
   const range = { from: null, to: null }
+  let quota = null // { limit, used, left }: this key's clips in this game
   const clipBand = $('rpClipBand')
   const followSel = $('rpClipFollow')
   followSel.textContent = ''
@@ -1019,6 +1024,14 @@ async function runViewer (tl, details) {
     const o = document.createElement('option'); o.value = r.m.track.name; o.textContent = r.m.track.name + (r.team ? ' (' + r.team.team.label + ')' : '')
     followSel.appendChild(o)
   }
+  // Picking who it's about follows them.
+  followSel.addEventListener('change', () => {
+    const r = rows.find(x => x.m.track.name === followSel.value)
+    if (!r) return
+    const m = currentModel(r)
+    if (!(cam.model && r.all.includes(cam.model) && (cam.mode === 'follow' || cam.mode === 'eyes'))) { cam.tYaw = cam.yaw = -m.group.rotation.y + Math.PI; cam.tPitch = -0.35; cam.setMode('follow', m) }
+    drawRange()
+  })
   const watchedName = () => (cam.model && (cam.mode === 'follow' || cam.mode === 'eyes') && cam.model.track.name) || ((rows.find(r => r.m.track.self) || { m: { track: {} } }).m.track.name) || ''
   function markClip (which) {
     const t = Math.round(now)
@@ -1041,11 +1054,36 @@ async function runViewer (tl, details) {
     $('rpClipLen').textContent = ok ? Math.round(len / 1000) + '\u00a0s' : 'Mark a start and an end'
     const tooLong = len > 60000; const tooShort = ok && len < 2000
     $('rpClipLen').classList.toggle('is-bad', tooLong || tooShort)
-    $('rpClipSave').disabled = !ok || tooLong || tooShort || !REPLAY_ID || !getKey()
+    const noneLeft = !!(quota && quota.left === 0)
+    $('rpClipSave').disabled = !ok || tooLong || tooShort || !REPLAY_ID || !getKey() || noneLeft
+    $('rpClipQuota').textContent = quota && quota.limit != null ? (quota.left ? quota.left + ' of ' + quota.limit + ' clips left in this game' : 'You\'ve used your ' + quota.limit + ' clips in this game') : ''
+    $('rpClipWarn').textContent = ok && !tooLong && !tooShort ? farWarning(followSel.value, range.from, range.to) : ''
     $('rpClipVideo').disabled = !ok || len > 180000 || len < 1000 || !recorder.supported
     $('rpClipNote').textContent = !REPLAY_ID ? 'Saving needs the whole game opened from the tracker. Videos work anywhere.'
       : tooLong ? 'A saved clip can be up to 60 seconds.' : tooShort ? 'A clip needs at least 2 seconds.'
         : !recorder.supported ? 'This browser can\'t record video. Try Chrome or Edge.' : ''
+  }
+  // The recorder only got what was near them: warn (but still allow it)
+  // when who it's about was far from them or out of view.
+  function farWarning (name, from, to) {
+    const r = rows.find(x => x.m.track.name === name)
+    const me = rows.find(x => x.m.track.self)
+    if (!r || r === me) return ''
+    const where = (row, t) => { for (const x of row.all) { const st = x.track.stateAt(t); if (st) return st } return null }
+    let n = 0; let unseen = 0; let maxD = 0
+    for (let t = from; t <= to; t += 500) {
+      if (r.deaths.some(d => t >= d.t && (d.final || t - d.t < 5500))) continue
+      n++
+      const a = where(r, t)
+      if (!a) { unseen++; continue }
+      const b = me && where(me, t)
+      if (b) maxD = Math.max(maxD, Math.hypot(a.x - b.x, a.z - b.z))
+    }
+    if (!n) return ''
+    const rec = me ? me.m.track.name : 'the recorder'
+    if (unseen / n > 0.15) return name + ' is out of ' + rec + '\'s view for part of this, so some of it may not show.'
+    if (maxD > 48) return rec + ' was up to ' + Math.round(maxD) + ' blocks away, so some of it may not show.'
+    return ''
   }
   $('rpClipIn').addEventListener('click', () => markClip('from'))
   $('rpClipOut').addEventListener('click', () => markClip('to'))
@@ -1062,6 +1100,7 @@ async function runViewer (tl, details) {
         body: JSON.stringify({ from: range.from, to: range.to, title: $('rpClipTitle').value.trim(), follow: followSel.value || undefined })
       })
       const j = await res.json().catch(() => ({}))
+      if (j.quota) quota = j.quota
       if (!res.ok) throw new Error(j.error || 'Couldn\'t save the clip (' + res.status + ')')
       toast('Clip saved')
       $('rpClipTitle').value = ''
@@ -1069,14 +1108,29 @@ async function runViewer (tl, details) {
     } catch (err) { $('rpClipNote').textContent = err.message } finally { btn.textContent = 'Save clip'; drawRange() }
   })
 
-  // Clips already made from this game.
+  // Clips already made from this game. Milo can delete them.
+  let admin = false
+  if (REPLAY_ID && getKey()) fetch(`${BACKEND}/whoami`, { headers: { 'x-admin-key': getKey() } }).then(r => r.ok ? r.json() : null).then(j => { if (j && j.admin) { admin = true; loadClips() } }).catch(() => {})
+  async function deleteClip (c, btn) {
+    if (!btn.classList.contains('is-sure')) { btn.classList.add('is-sure'); btn.textContent = 'Sure?'; setTimeout(() => { btn.classList.remove('is-sure'); btn.textContent = 'Delete' }, 3000); return }
+    btn.disabled = true
+    try {
+      const res = await fetch(`${BACKEND}/clips/${encodeURIComponent(c.id)}`, { method: 'DELETE', headers: { 'x-admin-key': getKey() } })
+      if (!res.ok) throw new Error()
+      toast('Clip deleted')
+      loadClips()
+    } catch { btn.disabled = false; toast('Couldn\'t delete the clip') }
+  }
   async function loadClips () {
     const box = $('rpClipList')
     if (!REPLAY_ID || !getKey()) { box.innerHTML = '<li class="rp-empty">Open the game from the tracker to see its clips.</li>'; return }
     try {
       const res = await fetch(`${BACKEND}/replays/${encodeURIComponent(REPLAY_ID)}/clips`, { headers: { 'x-admin-key': getKey() } })
       if (!res.ok) throw new Error()
-      const { clips = [] } = await res.json()
+      const j = await res.json()
+      const clips = j.clips || []
+      quota = j.quota || null
+      drawRange()
       box.textContent = ''
       if (!clips.length) box.innerHTML = '<li class="rp-empty">No clips from this game yet.</li>'
       for (const c of clips) {
@@ -1085,12 +1139,13 @@ async function runViewer (tl, details) {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'rp-event rp-event-' + (c.kind === 'bed' ? 'bed' : c.kind === 'manual' ? 'clip' : 'final')
         b.innerHTML = '<span class="rp-event-icon"></span><span class="rp-event-time"></span><span class="rp-event-text"></span>'
         b.querySelector('.rp-event-time').textContent = fmt(start)
-        const what = c.title || (c.kind === 'bed' ? 'Bed break · ' + (c.victim || '') : c.kind === 'final' ? 'Final kill · ' + (c.victim || '') : 'Clip' + (c.people && c.people.length ? ' · ' + c.people.slice(0, 2).map(p => p.name).join(', ') : ''))
+        const what = c.title || (c.kind === 'bed' ? 'Bed break · ' + (c.victim || '') : c.kind === 'final' ? 'Final kill · ' + (c.victim || '') : c.source === 'site' && c.follow ? 'Clip · ' + c.follow : 'Clip' + (c.people && c.people.length ? ' · ' + c.people.slice(0, 2).map(p => p.name).join(', ') : ''))
         b.querySelector('.rp-event-text').textContent = what + ' · ' + Math.round((c.durationMs || 0) / 1000) + '\u00a0s'
         b.title = 'Watch this part and mark it'
         b.addEventListener('click', () => { range.from = start; range.to = Math.min(tl.duration, start + (c.durationMs || 15000)); drawRange(); jump(start); play(true) })
         const open = document.createElement('a'); open.className = 'rp-clip-open'; open.href = 'replay.html?clip=' + encodeURIComponent(c.id); open.textContent = 'Open'; open.target = '_blank'; open.rel = 'noopener'
         li.append(b, open)
+        if (admin) { const del = document.createElement('button'); del.type = 'button'; del.className = 'rp-clip-open rp-clip-del'; del.textContent = 'Delete'; del.addEventListener('click', () => deleteClip(c, del)); li.append(del) }
         box.appendChild(li)
       }
     } catch { box.innerHTML = '<li class="rp-empty">Couldn\'t load the clips.</li>' }
@@ -1191,6 +1246,11 @@ async function runViewer (tl, details) {
   drawRange()
   loadClips()
   if (!clip && applyShared()) play(false)
+  // From Recordings' "Make a clip": the Clips tab open, about who's followed.
+  if (!clip && new URLSearchParams(location.hash.slice(1)).get('tab') === 'clips') {
+    settings.panel = true; applySettings(); $('rpTabClips').click()
+    if (watchedName()) { followSel.value = watchedName(); drawRange() }
+  }
   window.addEventListener('hashchange', () => applyShared())
 
   const drawSize = new THREE.Vector2()

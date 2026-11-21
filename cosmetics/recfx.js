@@ -793,6 +793,10 @@ class Splash extends FX { // EntitySplashFX (splash after a drip lands)
   }
   update() { this.prev(); this.my -= this.grav; this.move(this.mx, this.my, this.mz); this.mx *= 0.98; this.my *= 0.98; this.mz *= 0.98; if (this.maxAge-- <= 0) this.dead = true; if (this.onGround) { if (rand() < 0.5) this.dead = true; this.mx *= 0.7; this.mz *= 0.7; } }
 }
+class Wake extends FX { // EntityFishWakeFX (wake, 5): stays where sent, cycles the 4 splash sprites
+  constructor(x, y, z, mx, my, mz) { super(x, y, z, 0, 0, 0, false); this.tex = 19; this.hw = 0.005; this.maxAge = Math.floor(8 / (rand() * 0.8 + 0.2)); this.mx = mx; this.my = my; this.mz = mz; }
+  update() { this.prev(); this.move(this.mx, this.my, this.mz); this.mx *= 0.98; this.my *= 0.98; this.mz *= 0.98; this.tex = 19 + (60 - this.maxAge) % 4; if (this.maxAge-- <= 0) this.dead = true; }
+}
 // EntityFireworkSparkFX: the sparks of a firework burst (and of a rocket's trail).
 class Spark extends FX {
   constructor(x, y, z, mx, my, mz) { super(x, y, z, 0, 0, 0, false); this.mx = mx; this.my = my; this.mz = mz; this.scale *= 0.75; this.maxAge = 48 + randInt(12); this.baseTex = 160; this.trail = false; this.twinkle = false; this.fade = null; this.full = true; }
@@ -1669,6 +1673,8 @@ export function createRecFx(kit0) {
         case 1: p = new LargeExplode(x, y, z, a); break;
         case 2: p = new HugeExplode(x, y, z); break;
         case 3: p = new Spark(x, y, z, a, b, c); p.a = 0.99; break; // fireworksSpark
+        case 5: p = new Wake(x, y, z, a, b, c); break;
+        case 6: p = new Splash(x, y, z, a, b, c); break;
         case 9: p = new Crit(x, y, z, a, b, c); break;
         case 10: p = new Crit(x, y, z, a, b, c); p.r *= 0.3; p.g *= 0.8; p.tex = 66; break; // magicCrit
         case 17: { p = new Spell(x, y, z, a, b, c); const f = rand() * 0.5 + 0.35; p.r = f; p.g = 0; p.b = f; break; } // witchMagic

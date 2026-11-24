@@ -5,6 +5,7 @@ import { BACKEND, ApiError, post, patch, del, enc } from '../lib/api.js';
 import { siteKey } from '../lib/key.js';
 import { toast } from '../lib/toast.js';
 import { notesOf, ROSTER } from './model.js';
+import { play } from '../lib/audio.js';
 
 export const sweats = signal([]);
 // { state: 'loading'|'ready'|'saved'|'error', savedAt, progress, error }
@@ -154,6 +155,7 @@ async function poll() {
     save(list);
     const quiet = Date.now() - localWriteAt < 20_000;
     if (fresh.length && !quiet) {
+      play('arrive');
       toast(fresh.length === 1 ? `New sweat: ${brief(fresh[0])}` : `${fresh.length} new sweats: ${fresh.slice(0, 3).map(brief).join(', ')}${fresh.length > 3 ? '…' : ''}`, 6000);
     } else if (edits.length && !quiet) {
       toast(edits.length === 1 ? editBrief(edits[0].before, edits[0].after) : `${edits.length} sweats were just updated`, 5000);
@@ -177,7 +179,8 @@ function replace(doc) {
   save(sweats.value);
 }
 function wrote() { localWriteAt = Date.now(); }
-function guard(err) { if (err && err.status === 401) lockedOut(); throw err; }
+function guard(err) { play('error'); if (err && err.status === 401) lockedOut(); throw err; }
+const ok = (sound, v) => { play(sound); return v; };
 
 // Adds a sweat. Resolves { duplicate } when someone already has them and
 // confirm wasn't given; otherwise the saved entry.
@@ -194,7 +197,7 @@ export async function addSweat(body, { confirm = false } = {}) {
 }
 export async function updateSweat(id, changes) {
   wrote();
-  try { const doc = await patch(`/sweats/${enc(id)}`, changes); replace(doc); return doc; } catch (e) { return guard(e); }
+  try { const doc = await patch(`/sweats/${enc(id)}`, changes); replace(doc); return ok('save', doc); } catch (e) { return guard(e); }
 }
 export async function removeSweat(id) {
   wrote();
@@ -202,21 +205,22 @@ export async function removeSweat(id) {
     await del(`/sweats/${enc(id)}`);
     sweats.value = sweats.value.filter(s => s._id !== id);
     save(sweats.value);
+    play('delete');
   } catch (e) { guard(e); }
 }
 export async function restoreSweat(id) {
   wrote();
-  try { const doc = await post(`/sweats/${enc(id)}/restore`, {}); if (doc && doc._id) { sweats.value = [doc, ...sweats.value]; save(sweats.value); } return doc; } catch (e) { return guard(e); }
+  try { const doc = await post(`/sweats/${enc(id)}/restore`, {}); if (doc && doc._id) { sweats.value = [doc, ...sweats.value]; save(sweats.value); } return ok('success', doc); } catch (e) { return guard(e); }
 }
 export async function addNote(id, text) {
   wrote();
-  try { const doc = await post(`/sweats/${enc(id)}/notes`, { text }); replace(doc); return doc; } catch (e) { return guard(e); }
+  try { const doc = await post(`/sweats/${enc(id)}/notes`, { text }); replace(doc); return ok('save', doc); } catch (e) { return guard(e); }
 }
 export async function editNote(id, noteId, text) {
   wrote();
-  try { const doc = await patch(`/sweats/${enc(id)}/notes/${enc(noteId)}`, { text }); replace(doc); return doc; } catch (e) { return guard(e); }
+  try { const doc = await patch(`/sweats/${enc(id)}/notes/${enc(noteId)}`, { text }); replace(doc); return ok('save', doc); } catch (e) { return guard(e); }
 }
 export async function deleteNote(id, noteId) {
   wrote();
-  try { const doc = await del(`/sweats/${enc(id)}/notes/${enc(noteId)}`); replace(doc); return doc; } catch (e) { return guard(e); }
+  try { const doc = await del(`/sweats/${enc(id)}/notes/${enc(noteId)}`); replace(doc); return ok('delete', doc); } catch (e) { return guard(e); }
 }

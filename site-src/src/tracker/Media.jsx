@@ -1,8 +1,9 @@
 // What we recorded with a player: match stats, clips and full replays.
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
 import { Icon } from '../ui/icons.jsx';
 import { get, enc } from '../lib/api.js';
 import { useAsync } from '../lib/useAsync.js';
+import { quietMusic } from '../lib/audio.js';
 
 const TEAM = { Red: '#ff5555', Blue: '#5577ff', Green: '#3fcf5f', Yellow: '#e8c930', Aqua: '#3fd6d6', White: '#c9ced8', Pink: '#ff66d0', Gray: '#9aa0a8' };
 const mmss = ms => { const s = Math.round((ms || 0) / 1000); return s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`; };
@@ -64,6 +65,8 @@ export function Clips({ uuid, name }) {
   const { data } = useAsync(signal => get(q, { signal, maxAge: 5 * 60_000 }), [q], { skip: !uuid });
   const [active, setActive] = useState(null);
   const [err, setErr] = useState('');
+  // The music sits well under a playing clip.
+  useEffect(() => { quietMusic(!!active); return () => quietMusic(false); }, [active]);
   if (!data) return null;
   const items = [...(data.clips || []).map(c => ({ c, other: false })), ...(data.sameGame || []).map(c => ({ c, other: true }))];
   if (!items.length) return null;

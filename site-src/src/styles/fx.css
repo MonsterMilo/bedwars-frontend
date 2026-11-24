@@ -1,0 +1,45 @@
+/* Click effects and easter eggs (lib/fx.js). Everything is drawn into one
+   fixed, click-through layer so it can never shift layout or block a click.
+   Motion is WAAPI; this is only the look. */
+#fx-layer { position: fixed; inset: 0; z-index: 7000; pointer-events: none; overflow: hidden; }
+.fx { position: absolute; left: 0; top: 0; pointer-events: none; will-change: transform, opacity; }
+.fx-shard { width: 9px; height: 8px; margin: -4px 0 0 -4.5px; clip-path: polygon(50% 0, 100% 100%, 0 100%); background: var(--c); }
+.fx-halo { width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.8); box-shadow: -2px 0 6px rgba(94,231,255,0.7), 2px 0 6px rgba(255,196,107,0.6); }
+.fx-flare { width: 3px; height: 70px; margin: -35px 0 0 -1.5px; border-radius: 2px; background: linear-gradient(180deg, transparent, #fff, transparent); }
+.fx-px { width: 6px; height: 6px; background: var(--c); }
+.fx-word {
+  z-index: 2; white-space: nowrap; line-height: 1; transform: translate(-50%, -50%);
+  font-family: var(--font); font-weight: 800; font-size: 20px; letter-spacing: -0.01em; color: #fff;
+  text-shadow: -2px 0 0 rgba(94,231,255,0.7), 2px 0 0 rgba(255,196,107,0.6), 0 0 18px rgba(169,139,255,0.6);
+}
+.fx-word small { display: block; margin-top: 4px; font-family: var(--mono); font-weight: 500; font-size: 0.5em; letter-spacing: 0.24em; text-align: center; opacity: 0.85; }
+html[data-surface="light"] .fx-word { color: #141824; text-shadow: -2px 0 0 rgba(94,231,255,0.8), 2px 0 0 rgba(255,196,107,0.8); }
+
+/* Toasts from the easter eggs, bottom left. */
+#egg-toasts { position: fixed; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 7050; display: flex; flex-direction: column; gap: 6px; pointer-events: none; max-width: calc(100vw - 32px); }
+.egg-toast {
+  max-width: 420px; padding: 8px 12px; font-size: 0.88rem; line-height: 1.35; color: var(--text);
+  background: color-mix(in srgb, var(--panel-solid) 94%, transparent); border: 1px solid var(--line-2); border-radius: 14px;
+  box-shadow: var(--hi), var(--shadow); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+}
+.egg-toast b { font-weight: 700; }
+
+/* BED DESTROYED! */
+#egg-scene { position: fixed; inset: 0; z-index: 6900; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; padding: 16px; }
+.egg-scene-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(169,139,255,0.22), rgba(6,7,11,0.9) 70%); }
+.egg-scene-bg::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--spectrum); opacity: 0.5; }
+.egg-bed { position: relative; width: 288px; height: 90px; max-width: 80vw; }
+.egg-bed svg { position: absolute; top: 0; width: 50%; height: 90px; shape-rendering: crispEdges; overflow: visible; }
+.egg-bed .egg-bed-head { left: 0; }
+.egg-bed .egg-bed-foot { left: 50%; }
+.egg-title { position: relative; margin: 0; font-family: var(--font); font-weight: 800; font-size: clamp(34px, 7vw, 76px); line-height: 1; letter-spacing: -0.02em; color: #fff;
+  text-shadow: -3px 0 0 rgba(94,231,255,0.8), 3px 0 0 rgba(255,196,107,0.75), 0 0 32px rgba(255,92,114,0.7); }
+.egg-sub { position: relative; margin: 0; font-family: var(--mono); font-size: clamp(13px, 2vw, 18px); letter-spacing: 0.18em; text-transform: uppercase; color: #eef1f8; }
+
+/* Adding a sweat: a beam across the button splits upward. */
+.success-flourish { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 50; overflow: visible; }
+.flourish-beam { position: absolute; left: -10%; right: -10%; top: 50%; height: 2px; margin-top: -1px; background: linear-gradient(90deg, transparent, #fff 30%, #fff 70%, transparent); box-shadow: 0 0 14px 3px rgba(255,255,255,0.4); transform-origin: 0 50%; }
+.flourish-ray { position: absolute; left: 50%; top: 50%; width: 2px; height: 140px; margin-left: -1px; transform-origin: 50% 100%; translate: 0 -100%; border-radius: 2px; }
+.flourish-word { position: absolute; left: 50%; top: -18px; font-weight: 800; font-size: 15px; white-space: nowrap; color: var(--text); text-shadow: -1px 0 0 rgba(94,231,255,0.8), 1px 0 0 rgba(255,196,107,0.7); }
+
+[data-title-stunt] { cursor: default; user-select: none; -webkit-user-select: none; }

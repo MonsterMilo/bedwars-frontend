@@ -12,6 +12,8 @@ import { sweats, addSweat } from './store.js';
 import { statsFromPlayer, indexOf, canWrite, today, personLabel, ROSTER_KEYS } from './model.js';
 import { RosterPicker, FlagPicker, Gauge, TierBadge, fixed, NoteAuthor } from './ui.jsx';
 import { TagList } from './Tags.jsx';
+import { play, scan } from '../lib/audio.js';
+import { successFlourish, technoblade } from '../lib/fx.js';
 
 const NAME = /^[A-Za-z0-9_]{1,16}$/;
 const RECENT = 'trackerRecentLookups';
@@ -50,14 +52,23 @@ export function Lookup({ onOpen }) {
   const [done, setDone] = useState(null);
   const input = useRef(null);
   const ctrl = useRef(null);
+  const addRow = useRef(null);
+  const techno = useRef(false);
+  function typeName(v) {
+    setName(v);
+    const t = v.trim().toLowerCase() === 'technoblade';
+    if (t && !techno.current) technoblade(input.current);
+    techno.current = t;
+  }
 
   async function look(e, override) {
     if (e) e.preventDefault();
     const n = (override || name).trim();
-    if (!NAME.test(n)) { setError({ message: 'Names are 1 to 16 letters, numbers or _.' }); return; }
+    if (!NAME.test(n)) { setError({ message: 'Names are 1 to 16 letters, numbers or _.' }); play('error'); return; }
     if (ctrl.current) ctrl.current.abort();
     const c = ctrl.current = new AbortController();
     setBusy(true); setError(null); setDupe(null); setDone(null);
+    scan(true);
     try {
       const m = await get(`/mojang/${enc(n)}`, { signal: c.signal, maxAge: 10 * 60_000 });
       const res = await get(`/player/${m.id}`, { signal: c.signal, maxAge: 60_000 });
@@ -68,8 +79,10 @@ export function Lookup({ onOpen }) {
       setName(m.name);
       const next = [m.name, ...recent.filter(x => x.toLowerCase() !== m.name.toLowerCase())].slice(0, 8);
       setRecent(next); writeJson(RECENT, next);
+      scan(false); play('found');
     } catch (err) {
       if (c.signal.aborted) return;
+      scan(false); play('error');
       setPreview(null);
       setError(err.notFound ? { message: `No Minecraft account is called ${n}.` } : err);
     } finally { if (!c.signal.aborted) setBusy(false); }
@@ -94,12 +107,14 @@ export function Lookup({ onOpen }) {
     };
     try {
       const res = await addSweat(body, { confirm });
-      if (res && res.duplicate) { setDupe(res.duplicate); return; }
+      if (res && res.duplicate) { setDupe(res.duplicate); play('error'); return; }
       setDupe(null);
       setDone(res);
       toast(`Added ${preview.name}`);
+      // After the row re-renders (it was the duplicate warning a moment ago).
+      setTimeout(() => { const row = addRow.current; successFlourish(row, row && row.querySelector('.add-btn')); }, 0);
       setBeaten({}); setFlags({ cheating: false, boosting: false }); setNote('');
-    } catch (err) { setError(err); } finally { setSaving(false); }
+    } catch (err) { setError(err); play('error'); } finally { setSaving(false); }
   }
 
   const st = preview && preview.stats;
@@ -112,7 +127,7 @@ export function Lookup({ onOpen }) {
       <h2 class="panel-title" id="lookup-h"><Icon name="search" />Sweat Lookup</h2>
       <form class="lookup-form" onSubmit={look} role="search">
         <label class="sr-only" for="lk-name">Username</label>
-        <input id="lk-name" ref={input} class="input" value={name} onInput={e => setName(e.currentTarget.value)} placeholder="Username" maxLength={16} autocomplete="off" spellcheck={false} />
+        <input id="lk-name" ref={input} class="input" value={name} onInput={e => typeName(e.currentTarget.value)} placeholder="Username" maxLength={16} autocomplete="off" spellcheck={false} />
         <button class="btn primary" type="submit" disabled={busy}>{busy ? 'Looking…' : 'Preview'}</button>
         {preview && <button class="btn ghost" type="button" onClick={clear}>Clear</button>}
       </form>
@@ -172,9 +187,9 @@ export function Lookup({ onOpen }) {
                   </span>
                 </div>
               ) : (
-                <div class="add-row">
+                <div class="add-row" ref={addRow}>
                   <button class="btn primary add-btn" type="button" disabled={saving} onClick={() => add(false)}><Icon name="check" />{saving ? 'Adding…' : 'Add Sweat'}</button>
-                  {done && <span class="good small" role="status">Added. <button type="button" class="link" onClick={() => onOpen(done)}>Open</button></span>}
+                  {done && <span class="good small" role="status">Added. <button type="button" data-flip class="link" onClick={() => onOpen(done)}>Open</button></span>}
                 </div>
               )}
             </div>

@@ -1,6 +1,6 @@
 // The player popup: live stats against what we logged, our record against
 // them, tags and notes.
-import { useMemo, useState } from 'preact/hooks';
+import { useMemo, useState, useEffect } from 'preact/hooks';
 import { Icon } from '../ui/icons.jsx';
 import { Star } from '../ui/mc.jsx';
 import { Dialog } from '../ui/Dialog.jsx';
@@ -19,6 +19,7 @@ import { TagList } from './Tags.jsx';
 import { Notes } from './Notes.jsx';
 import { standing, Standing } from './Lookup.jsx';
 import { MatchStats, Clips, Replays } from './Media.jsx';
+import { flipOpen } from '../lib/fx.js';
 
 // Every entry for this player, the opened one first.
 export function entriesFor(all, target) {
@@ -98,6 +99,8 @@ export function PlayerModal({ target, onClose, onEdit }) {
   const rival = useMemo(() => (rec ? rivalFor(rivalMap(all), rec) : null), [all, rec]);
   const allBy = [...new Set(entries.flatMap(beatenBy))];
   const [shown, setShown] = useState(false);
+  const who = target && (target._id || target.username);
+  useEffect(() => { if (who) flipOpen(document.querySelector('dialog.player-dialog')); }, [who]);
 
   function copyLink() {
     const u = new URL(location.href);

@@ -20,7 +20,7 @@ const dayText = d => { const x = parseDay(d); return x ? x.toLocaleDateString(un
 // ---------- summary ----------
 function PlayerTile({ cls, label, s, children, onOpen }) {
   return (
-    <button type="button" class={`ss-tile ss-player ${cls}`} onClick={() => onOpen(s)} aria-label={`${label}: ${s.username}. View their stats`}>
+    <button type="button" data-flip class={`ss-tile ss-player ${cls}`} onClick={() => onOpen(s)} aria-label={`${label}: ${s.username}. View their stats`}>
       <span class="ss-label">{label}</span>
       <span class="ss-value">{children}</span>
       <span class="ss-who"><Avatar id={s.uuid || s.username} size={18} />{s.username}</span>
@@ -64,7 +64,7 @@ function Sotd({ all, onOpen }) {
       <img class="sotd-body" src={`https://mc-heads.net/body/${s.uuid || s.username}/140`} alt="" loading="lazy" />
       <div class="sotd-main">
         <p class="eyebrow"><Icon name="star" />In the spotlight</p>
-        <h2 id="sotd-h" class="sotd-name"><Star star={s.star} /> <button type="button" class="link" onClick={() => onOpen(s)}>{s.username}</button></h2>
+        <h2 id="sotd-h" class="sotd-name"><Star star={s.star} /> <button type="button" data-flip class="link" onClick={() => onOpen(s)}>{s.username}</button></h2>
         <div class="sotd-sub">
           <TierBadge index={index} />
           <span class="faint small">Beaten {pick.times}× since {dayText(pick.first)}</span>
@@ -148,7 +148,7 @@ function Card({ s, count, rival, live, onOpen, onEdit, onRemove, i }) {
   const last = notes[notes.length - 1];
   return (
     <article class={`card sweat-card ${s.cheating ? 'is-cheat' : ''} ${live ? 'is-live' : ''} ${rival ? 'is-rival' : ''}`} style={{ '--i': Math.min(i, 20) }}>
-      <button type="button" class="card-hit" onClick={() => onOpen(s)} aria-label={`${s.username}, ${Math.floor(Number(s.star) || 0)} stars. View their stats`} />
+      <button type="button" data-flip class="card-hit" onClick={() => onOpen(s)} aria-label={`${s.username}, ${Math.floor(Number(s.star) || 0)} stars. View their stats`} />
       <div class="card-top">
         <Avatar id={s.uuid || s.username} size={40} />
         <div class="card-id">
@@ -190,9 +190,9 @@ function Table({ items, counts, sort, setSort, live, onOpen, onEdit, onRemove })
           {items.map(s => {
             const n = counts[identityKey(s)] || 1;
             return (
-              <tr key={s._id} class={live.has(s._id) ? 'is-live' : ''} onClick={() => onOpen(s)}>
+              <tr key={s._id} data-flip class={live.has(s._id) ? 'is-live' : ''} onClick={() => onOpen(s)}>
                 <td class="num"><Star star={s.star} /></td>
-                <td><span class="player-cell"><Avatar id={s.uuid || s.username} size={24} /><button type="button" class="link-plain" onClick={e => { e.stopPropagation(); onOpen(s); }}>{s.username}</button>{n > 1 && <span class="chip small-chip">×{n}</span>}{notesOf(s).length > 0 && <Icon name="list" class="faint" />}</span></td>
+                <td><span class="player-cell"><Avatar id={s.uuid || s.username} size={24} /><button type="button" data-flip class="link-plain" onClick={e => { e.stopPropagation(); onOpen(s); }}>{s.username}</button>{n > 1 && <span class="chip small-chip">×{n}</span>}{notesOf(s).length > 0 && <Icon name="list" class="faint" />}</span></td>
                 <td class="num mono">{fixed(s.fkdr)}</td>
                 <td class="num mono">{fixed(s.wlr)}</td>
                 <td class="num mono">{whole(indexOf(s))}</td>

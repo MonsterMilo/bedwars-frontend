@@ -1,6 +1,6 @@
 // Settings: every look-and-feel choice, applied live and kept per browser.
 import { Dialog } from './Dialog.jsx';
-import { prefs, setPref, resetPrefs, ACCENTS } from '../lib/prefs.js';
+import { prefs, setPref, resetPrefs, ACCENTS, fxPage } from '../lib/prefs.js';
 import { useSignal } from '../lib/signal.js';
 import { MODES } from '../lib/bedwars.js';
 
@@ -21,6 +21,8 @@ const ZONES = [['local', 'This device'], ['America/Los_Angeles', 'Pacific'], ['A
 
 export function Settings({ open, onClose }) {
   const p = useSignal(prefs);
+  const fx = useSignal(fxPage);
+  const canSound = typeof window !== 'undefined' && !!(window.AudioContext || window.webkitAudioContext);
   return (
     <Dialog open={open} onClose={onClose} title="Settings" side class="settings">
       <div class="settings-body">
@@ -45,6 +47,21 @@ export function Settings({ open, onClose }) {
           </div>
           <label class="check"><input type="checkbox" checked={p.effects} onChange={e => setPref('effects', e.currentTarget.checked)} /> Light effects behind the page</label>
         </section>
+
+        {fx && (
+          <section class="settings-group" aria-labelledby="sg-sound">
+            <h3 id="sg-sound">Sound and effects</h3>
+            {canSound && <label class="check"><input type="checkbox" checked={p.sound} onChange={e => setPref('sound', e.currentTarget.checked)} /> Sounds</label>}
+            {canSound && (
+              <label class="field">
+                <span>Volume <output class="mono">{p.volume}%</output></span>
+                <input type="range" min="0" max="100" step="5" value={p.volume} disabled={!p.sound} onInput={e => setPref('volume', Number(e.currentTarget.value))} />
+              </label>
+            )}
+            {canSound && <label class="check"><input type="checkbox" checked={p.music} disabled={!p.sound} onChange={e => setPref('music', e.currentTarget.checked)} /> Music</label>}
+            <label class="check"><input type="checkbox" checked={p.fx} onChange={e => setPref('fx', e.currentTarget.checked)} /> Click effects and easter eggs</label>
+          </section>
+        )}
 
         <section class="settings-group" aria-labelledby="sg-read">
           <h3 id="sg-read">Reading</h3>

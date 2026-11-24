@@ -92,7 +92,7 @@ button.chip { cursor: pointer; font: inherit; font-size: 0.78rem; font-weight: 6
 .note-field label { font-size: 0.82rem; font-weight: 600; color: var(--dim); }
 .note-field textarea, .note-editor textarea { min-height: 64px; padding: 10px 12px; resize: vertical; line-height: 1.45; font: inherit; }
 .note-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.add-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.add-row { position: relative; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .add-btn { min-height: 46px; padding: 0 22px; }
 .notice.warn-notice { border-color: color-mix(in srgb, var(--warn) 45%, transparent); color: var(--text); flex-wrap: wrap; align-items: center; }
 .notice.warn-notice .grow { flex: 1 1 180px; }

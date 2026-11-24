@@ -28,11 +28,30 @@ export const DEFAULTS = {
   timeZone: 'local',    // local | an IANA zone
   hour12: true,
   mode: 'overall',      // default Bed Wars mode tab
-  lbPeriod: 'lifetime'  // default leaderboard period
+  lbPeriod: 'lifetime', // default leaderboard period
+  fx: true,             // click bursts and easter eggs (tracker)
+  sound: true,          // sound effects (tracker)
+  volume: 55,           // 0-100
+  music: true           // background music under the sounds
 };
 
 const STORAGE = 'prismSitePrefs';
-export const prefs = signal({ ...DEFAULTS, ...readJson(STORAGE, {}) });
+// The old tracker kept its sound settings under "siteAudio"; carry them over once.
+function initial() {
+  const saved = readJson(STORAGE, {});
+  if (!('sound' in saved)) {
+    const old = readJson('siteAudio', null);
+    if (old && typeof old === 'object') {
+      if (typeof old.muted === 'boolean') saved.sound = !old.muted;
+      if (Number.isFinite(old.volume)) saved.volume = Math.round(Math.max(0, Math.min(1, old.volume)) * 100);
+      if (typeof old.ambience === 'boolean') saved.music = old.ambience;
+    }
+  }
+  return { ...DEFAULTS, ...saved };
+}
+export const prefs = signal(initial());
+// Set by pages that have sounds and click effects, so Settings shows them.
+export const fxPage = signal(false);
 
 export function setPref(key, value) {
   prefs.value = { ...prefs.value, [key]: value };

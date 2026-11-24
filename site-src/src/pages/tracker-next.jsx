@@ -4,7 +4,8 @@ import '../styles/base.css';
 import '../styles/shell.css';
 import '../styles/common.css';
 import '../styles/tracker.css';
-import { useState, useEffect, useCallback } from 'preact/hooks';
+import '../styles/fx.css';
+import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
 import { mount } from '../lib/mount.js';
 import { Shell } from '../ui/Shell.jsx';
 import { Icon } from '../ui/icons.jsx';
@@ -22,10 +23,18 @@ import { Status } from '../tracker/Status.jsx';
 import { useSignal } from '../lib/signal.js';
 import { keyOwner } from '../lib/key.js';
 import { readUrl, writeUrl } from '../tracker/url.js';
+import { prefs, setPref } from '../lib/prefs.js';
+import { toast } from '../lib/toast.js';
+import { play } from '../lib/audio.js';
+import { installFx, bindTitle, flipClose, setChatNames } from '../lib/fx.js';
+import { ROSTER } from '../tracker/model.js';
+
+installFx();
+setChatNames(Object.entries(ROSTER).filter(([k]) => k !== 'key').map(([, r]) => r.label));
 
 const SECTIONS = [['lookup', 'Lookup', 'search'], ['denick', 'Denicking', 'mask'], ['sweats', 'Sweats', 'trophy'], ['activity', 'Activity', 'history']];
 const HIDDEN = 'trackerHiddenSections';
-const SHORTCUTS = [['/', 'Search sweats'], ['K', 'Sweat Lookup'], ['G', 'Grid view'], ['T', 'Table view'], ['L', 'Leaderboard view'], ['?', 'Show this list'], ['Esc', 'Close a popup']];
+const SHORTCUTS = [['/', 'Search sweats'], ['K', 'Sweat Lookup'], ['G', 'Grid view'], ['T', 'Table view'], ['L', 'Leaderboard view'], ['M', 'Sound on or off'], ['?', 'Show this list'], ['Esc', 'Close a popup']];
 
 function typing(e) {
   const t = e.target;
@@ -43,6 +52,8 @@ function Tracker() {
   const [hidden, setHidden] = useState(() => readJson(HIDDEN, []));
   const admin = useSignal(keyOwner) === 'admin';
   const sections = SECTIONS.filter(([id]) => id !== 'activity' || admin);
+  const title = useRef(null);
+  useEffect(() => bindTitle(title.current), []);
 
   useEffect(() => {
     if (!siteKey.value) { lockedOut(); return; }
@@ -57,9 +68,17 @@ function Tracker() {
   }, []);
 
   const open = useCallback(s => { setPlayer(s); writeUrl({ player: s.username }); }, []);
-  const close = useCallback(() => { setPlayer(null); writeUrl({ player: '' }); }, []);
+  const close = useCallback(() => {
+    writeUrl({ player: '' });
+    flipClose(document.querySelector('dialog.player-dialog')).then(() => setPlayer(null));
+  }, []);
   const edit = useCallback(s => setEditId(s._id), []);
-  const toggle = id => { const next = hidden.includes(id) ? hidden.filter(x => x !== id) : [...hidden, id]; setHidden(next); writeJson(HIDDEN, next); };
+  const toggle = id => {
+    const showing = hidden.includes(id);
+    const next = showing ? hidden.filter(x => x !== id) : [...hidden, id];
+    setHidden(next); writeJson(HIDDEN, next);
+    play('slide', { open: showing });
+  };
 
   useEffect(() => {
     const onKey = e => {
@@ -70,6 +89,7 @@ function Tracker() {
       else if (k === 'g' || k === 'G') clickTab('Grid');
       else if (k === 't' || k === 'T') clickTab('Table');
       else if (k === 'l' || k === 'L') clickTab('Leaderboard');
+      else if (k === 'm' || k === 'M') { const on = !prefs.value.sound; setPref('sound', on); toast(on ? 'Sound on' : 'Sound off'); }
       else if (k === '?') setHelp(h => !h);
     };
     document.addEventListener('keydown', onKey);
@@ -82,13 +102,13 @@ function Tracker() {
         <header class="page-head">
           <div class="grow">
             <p class="eyebrow"><Icon name="list" />Tracker</p>
-            <h1>Sweat Tracker</h1>
+            <h1 ref={title} data-title-stunt>Sweat Tracker</h1>
           </div>
           <nav class="jump" aria-label="Sections">
             {sections.map(([id, label, icon]) => (
               <span key={id} class="jump-item">
                 <a href={`#${id}`} class="btn small ghost"><Icon name={icon} />{label}</a>
-                <button type="button" class="btn icon small ghost" aria-pressed={!hidden.includes(id)} aria-label={`${hidden.includes(id) ? 'Show' : 'Hide'} ${label}`} title={hidden.includes(id) ? 'Show' : 'Hide'} onClick={() => toggle(id)}><Icon name={hidden.includes(id) ? 'down' : 'check'} /></button>
+                <button type="button" data-quiet class="btn icon small ghost" aria-pressed={!hidden.includes(id)} aria-label={`${hidden.includes(id) ? 'Show' : 'Hide'} ${label}`} title={hidden.includes(id) ? 'Show' : 'Hide'} onClick={() => toggle(id)}><Icon name={hidden.includes(id) ? 'down' : 'check'} /></button>
               </span>
             ))}
             <button type="button" class="btn icon small ghost" aria-label="Keyboard shortcuts" title="Shortcuts (?)" onClick={() => setHelp(true)}><Icon name="info" /></button>

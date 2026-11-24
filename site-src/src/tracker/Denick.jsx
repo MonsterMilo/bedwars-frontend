@@ -8,6 +8,7 @@ import { readJson, writeJson } from '../lib/storage.js';
 import { ago } from '../lib/format.js';
 import { search, subtitle, myRequests, sendRequest, REQUEST_LABELS } from './denick.js';
 import { readUrl, writeUrl } from './url.js';
+import { play, scan } from '../lib/audio.js';
 
 const MODES = [['nick', 'Nick → Owners'], ['player', 'Player → Nicks']];
 const NAME = /^[A-Za-z0-9_]{1,16}$/;
@@ -39,13 +40,14 @@ function AskDialog({ open, onClose, nick: initialNick, requests, reload }) {
   useEffect(() => { if (open) { setNick(initialNick || ''); setReplay(''); setNote(''); setState({}); } }, [open]);
   async function submit(e) {
     e.preventDefault();
-    if (!NAME.test(nick.trim())) { setState({ error: 'Enter the nick (letters, numbers and _ only).' }); return; }
+    if (!NAME.test(nick.trim())) { setState({ error: 'Enter the nick (letters, numbers and _ only).' }); play('error'); return; }
     setState({ busy: true });
     try {
       await sendRequest({ nick: nick.trim(), replay: replay.trim(), note: note.trim() });
       setState({ sent: true }); setNick(''); setReplay(''); setNote('');
+      play('success');
       reload();
-    } catch (err) { setState({ error: err.message }); }
+    } catch (err) { setState({ error: err.message }); play('error'); }
   }
   const seen = seenIds();
   return (
@@ -105,14 +107,15 @@ export function Denick() {
 
   async function run(query = q, m = mode) {
     const v = query.trim();
-    if (!NAME.test(v)) { setError('Names are 1 to 16 letters, numbers or _.'); return; }
+    if (!NAME.test(v)) { setError('Names are 1 to 16 letters, numbers or _.'); play('error'); return; }
     const t = ++token.current;
     setBusy(true); setError(''); setRes(null); setPage(1);
+    scan(true);
     writeUrl({ denick: v, denickMode: m });
     try {
       const out = await search(m, v);
-      if (t === token.current) setRes({ query: v, mode: m, ...out });
-    } catch (err) { if (t === token.current) setError(err.message || 'Search failed.'); } finally { if (t === token.current) setBusy(false); }
+      if (t === token.current) { setRes({ query: v, mode: m, ...out }); scan(false); play(out.results.length ? 'found' : 'error'); }
+    } catch (err) { if (t === token.current) { setError(err.message || 'Search failed.'); scan(false); play('error'); } } finally { if (t === token.current) setBusy(false); }
   }
   const setMode = m => { setModeState(m); setRes(null); writeUrl({ denickMode: m }); };
   function openAsk(nick) {

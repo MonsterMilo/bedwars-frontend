@@ -9,6 +9,8 @@ import { SECTIONS, currentPage } from '../lib/site.js';
 import { siteKey, keyOwner, keyDialog } from '../lib/key.js';
 import { toasts } from '../lib/toast.js';
 import { useSignal } from '../lib/signal.js';
+import { ItemIcon } from './items.jsx';
+import { startBackdrop } from '../lib/backdrop.js';
 
 export function Logo({ size = 28 }) {
   return (
@@ -42,7 +44,7 @@ function NavGroup({ section, page, unlocked }) {
         <div class="nav-menu" role="menu">
           {section.pages.map(p => (
             <a key={p.href} href={p.href} role="menuitem" class={`nav-item ${page && page.href === p.href ? 'current' : ''}`} aria-current={page && page.href === p.href ? 'page' : undefined}>
-              <span class="nav-ico"><Icon name={p.icon} /></span>
+              <span class="nav-ico" style={{ '--hue': section.hue }}><ItemIcon id={p.item} /></span>
               <span><strong>{p.label}</strong><small>{p.desc}</small></span>
             </a>
           ))}
@@ -64,6 +66,7 @@ export function Shell({ children, wide = false, search = true }) {
   const searchRef = useRef(null);
 
   useEffect(() => { checkKey(); }, [key]);
+  useEffect(() => { startBackdrop(); }, []);
   useEffect(() => {
     const onKey = e => {
       if (e.key === '/' && !/input|textarea|select/i.test(document.activeElement && document.activeElement.tagName) && searchRef.current) {
@@ -102,7 +105,7 @@ export function Shell({ children, wide = false, search = true }) {
             {SECTIONS.map(s => (
               <div key={s.id} class="mobile-group">
                 <h2>{s.title}{s.locked && !unlocked && <Icon name="lock" class="nav-lock" label="Needs a key" />}</h2>
-                {s.pages.map(p => <a key={p.href} href={p.href} aria-current={page && page.href === p.href ? 'page' : undefined}><Icon name={p.icon} />{p.label}</a>)}
+                {s.pages.map(p => <a key={p.href} href={p.href} aria-current={page && page.href === p.href ? 'page' : undefined}><span class="nav-ico small" style={{ '--hue': s.hue }}><ItemIcon id={p.item} /></span>{p.label}</a>)}
               </div>
             ))}
           </nav>

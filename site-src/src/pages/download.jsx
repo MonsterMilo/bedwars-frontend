@@ -7,7 +7,8 @@ import '../styles/download.css';
 import { mount } from '../lib/mount.js';
 import { Shell, Logo } from '../ui/Shell.jsx';
 import { Icon } from '../ui/icons.jsx';
-import { Loading, ErrorBox, copyText } from '../ui/common.jsx';
+import { Loading, ErrorBox, copyText, HeadArt } from '../ui/common.jsx';
+import { ItemIcon } from '../ui/items.jsx';
 import { useAsync } from '../lib/useAsync.js';
 import { date, num } from '../lib/format.js';
 import { toast } from '../lib/toast.js';
@@ -146,10 +147,11 @@ function Download() {
       <div class="page wrap">
         <header class="page-head">
           <div class="grow">
-            <p class="eyebrow"><Icon name="download" />Download</p>
+            <p class="eyebrow"><ItemIcon id="block:enchanting" />Download</p>
             <h1>Prism</h1>
             <p>An open-source plugin platform for Minecraft 1.8.9. It runs inside Lunar Client.</p>
           </div>
+          <HeadArt items={['block:enchanting', 'ui:enchanted_book', 'res:diamond']} />
         </header>
 
         <div class="dl-layout">

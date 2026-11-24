@@ -7,7 +7,7 @@
 
 .picker { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 16px; min-height: 520px; }
 .picker-cats { display: grid; align-content: start; gap: 2px; }
-.picker-cats button { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 38px; padding: 0 12px; border: 0; border-radius: var(--r-s); background: transparent; color: var(--dim); font-weight: 600; font-size: 0.9rem; text-align: left; cursor: pointer; }
+.picker-cats button { display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 0 12px; border: 0; border-radius: var(--r-s); background: transparent; color: var(--dim); font-weight: 600; font-size: 0.9rem; text-align: left; cursor: pointer; }
 .picker-cats button:hover { color: var(--text); background: var(--panel-2); }
 .picker-cats button[aria-selected="true"] { color: var(--text); background: var(--panel-hover); box-shadow: inset 2px 0 0 var(--accent); }
 .picker-cats button.has { color: var(--text); }
@@ -16,13 +16,14 @@
 .picker-tools { display: flex; gap: 8px; }
 .picker-tools .btn svg { width: 14px; height: 14px; }
 .pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; margin: 0; padding: 2px; list-style: none; max-height: 560px; overflow-y: auto; align-content: start; }
-.pick { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 8px 6px 6px; border-radius: var(--r-m); border: 1px solid var(--line); background: var(--panel-2); text-align: left; font-size: 0.86rem; font-weight: 600; cursor: pointer; transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease); }
+.pick { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; height: 100%; padding: 6px 8px 6px 6px; border-radius: var(--r-m); border: 1px solid var(--line); background: linear-gradient(160deg, var(--panel-2), color-mix(in srgb, var(--bg) 40%, var(--panel-2))); text-align: left; font-size: 0.86rem; font-weight: 600; cursor: pointer; transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease); }
 .pick:hover { border-color: var(--line-3); }
 .pick.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--panel-2)); }
-.pick > span:last-of-type { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pick-text { display: grid; flex: 1; min-width: 0; }
+.pick-text > span, .pick-text small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pick-text small { font-size: 0.72rem; font-weight: 500; color: var(--faint); }
+.cat-ico { width: 22px; flex: none; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.45)); }
 .pick-check { width: 16px; height: 16px; color: var(--accent); flex: none; }
-.pick-thumb { display: grid; place-items: center; flex: none; border-radius: 9px; overflow: hidden; background: color-mix(in srgb, var(--bg) 60%, transparent); color: var(--faint); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }
-.pick-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .pick-none { padding: 12px; }
 @media (max-width: 640px) {
   .picker { grid-template-columns: minmax(0, 1fr); min-height: 0; }

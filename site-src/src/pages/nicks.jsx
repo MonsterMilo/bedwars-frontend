@@ -10,13 +10,14 @@ import { mount } from '../lib/mount.js';
 import { Shell } from '../ui/Shell.jsx';
 import { Icon } from '../ui/icons.jsx';
 import { Star } from '../ui/mc.jsx';
-import { Tabs, Avatar, ErrorBox, Empty, SourceNote } from '../ui/common.jsx';
+import { Tabs, Avatar, ErrorBox, Empty, SourceNote, HeadArt } from '../ui/common.jsx';
 import { get, post, enc, ApiError } from '../lib/api.js';
 import { num, date, ago, duration } from '../lib/format.js';
 import { siteKey, keyOwner, keyDialog } from '../lib/key.js';
 import { useSignal } from '../lib/signal.js';
 import { playerUrl } from '../lib/players.js';
 import COSMETICS from '../data/cosmetics.json';
+import { CosmeticThumb, ItemIcon, killLine } from '../ui/items.jsx';
 
 const NAME = /^[A-Za-z0-9_]{1,16}$/;
 const CATS = Object.entries(COSMETICS).filter(([cat]) => cat !== 'spray');
@@ -24,12 +25,8 @@ const MODE_LABELS = { '1s': 'Solos', '2s': 'Doubles', '3s': '3v3v3v3', '4s': '4v
 const params = new URLSearchParams(location.search);
 
 // ---------- cosmetic picker ----------
-function Thumb({ item, size = 40 }) {
-  return (
-    <span class="pick-thumb" style={{ width: `${size}px`, height: `${size}px` }}>
-      {item.thumb ? <img src={`cosmetics/thumbs/${item.lib}.webp`} alt="" loading="lazy" width={size} height={size} /> : <span aria-hidden="true">{item.name.replace(/[^A-Za-z0-9#]/g, '').slice(0, 2)}</span>}
-    </span>
-  );
+function Thumb({ item, cat, size = 40 }) {
+  return <CosmeticThumb item={item} cat={cat} size={size} class="pick-thumb" />;
 }
 
 function CosmeticPicker({ picked, onPick }) {
@@ -46,7 +43,7 @@ function CosmeticPicker({ picked, onPick }) {
       <div class="picker-cats" role="tablist" aria-label="Cosmetic type">
         {CATS.map(([id, g]) => (
           <button key={id} type="button" role="tab" aria-selected={cat === id ? 'true' : 'false'} class={picked[g.field] ? 'has' : ''} onClick={() => { setCat(id); setQ(''); }}>
-            {g.label}{picked[g.field] && <span class="dot" aria-label="(picked)" />}
+            <span class="cat-ico"><ItemIcon id={`cat:${id}`} /></span><span class="grow">{g.label}</span>{picked[g.field] && <span class="dot" aria-label="(picked)" />}
           </button>
         ))}
       </div>
@@ -61,8 +58,8 @@ function CosmeticPicker({ picked, onPick }) {
             return (
               <li key={it.id}>
                 <button type="button" class={`pick ${on ? 'on' : ''}`} aria-pressed={on ? 'true' : 'false'} onClick={() => onPick(group.field, on ? null : it.id)} title={it.verified ? it.name : `${it.name} (id not confirmed yet)`}>
-                  <Thumb item={it} />
-                  <span>{it.name}</span>
+                  <Thumb item={it} cat={cat} />
+                  <span class="pick-text"><span>{it.name}</span>{it.line && <small>{killLine(it.line)}</small>}</span>
                   {on && <Icon name="check" class="pick-check" />}
                 </button>
               </li>
@@ -76,13 +73,13 @@ function CosmeticPicker({ picked, onPick }) {
 }
 
 function PickedList({ picked, onPick }) {
-  const rows = CATS.map(([, g]) => g).filter(g => picked[g.field]).map(g => ({ g, it: g.items.find(i => i.id === picked[g.field]) }));
+  const rows = CATS.filter(([, g]) => picked[g.field]).map(([cat, g]) => ({ cat, g, it: g.items.find(i => i.id === picked[g.field]) }));
   if (!rows.length) return <p class="faint small">No cosmetics picked yet.</p>;
   return (
     <ul class="picked">
-      {rows.map(({ g, it }) => (
+      {rows.map(({ cat, g, it }) => (
         <li key={g.field} class="picked-row">
-          <Thumb item={it} size={32} />
+          <Thumb item={it} cat={cat} size={36} />
           <span class="grow"><small>{g.label}</small><strong>{it.name}</strong></span>
           {it.lib && <a class="btn icon ghost small" href={`cosmetics.html#${it.lib}`} target="_blank" rel="noopener" aria-label={`See ${it.name} in the library`}><Icon name="external" /></a>}
           <button type="button" class="btn icon ghost small" onClick={() => onPick(g.field, null)} aria-label={`Remove ${it.name}`}><Icon name="close" /></button>
@@ -285,10 +282,11 @@ function NickFinder() {
       <div class="page wrap">
         <header class="page-head">
           <div class="grow">
-            <p class="eyebrow"><Icon name="mask" />Nick Finder</p>
+            <p class="eyebrow"><ItemIcon id="ui:eye" />Nick Finder</p>
             <h1>Who's behind the nick?</h1>
             <p>Pick what you saw them use. Adding the game narrows it down a lot.</p>
           </div>
+          <HeadArt items={['ui:nametag', 'ui:eye', 'block:obsidian']} />
         </header>
 
         <form class="nick-form" onSubmit={submit} noValidate>

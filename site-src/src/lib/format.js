@@ -53,3 +53,11 @@ export function duration(ms) {
   if (m < 60) return `${m} min`;
   return `${Math.floor(m / 60)} h ${m % 60} min`;
 }
+// How long something lasted, roughly: "3 days", "8 months", "5.4 years".
+export function span(ms) {
+  const d = (Number(ms) || 0) / 86400000;
+  if (d < 1) return 'under a day';
+  if (d < 60) return `${Math.round(d)} day${Math.round(d) === 1 ? '' : 's'}`;
+  if (d < 730) return `${Math.round(d / 30.44)} months`;
+  return `${(d / 365.25).toFixed(1)} years`;
+}

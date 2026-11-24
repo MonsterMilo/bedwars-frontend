@@ -18,8 +18,9 @@
 .nav-item:hover, .nav-item:focus-visible, .nav-item.current { background: var(--panel-2); }
 .nav-item strong { display: block; font-size: 0.93rem; }
 .nav-item small { display: block; color: var(--faint); font-size: 0.8rem; line-height: 1.35; }
-.nav-ico { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 10px; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); }
-.nav-ico svg { width: 18px; height: 18px; }
+.nav-ico { --hue: var(--accent); display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 11px; background: radial-gradient(100% 90% at 30% 15%, color-mix(in srgb, var(--hue) 26%, transparent), transparent 65%), color-mix(in srgb, var(--bg) 55%, var(--panel-2)); border: 1px solid color-mix(in srgb, var(--hue) 28%, transparent); }
+.nav-ico .item-icon { width: 66%; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.45)); }
+.nav-ico.small { width: 32px; height: 32px; border-radius: 9px; }
 .head-tools { margin-left: auto; display: flex; align-items: center; gap: 4px; }
 .head-search { width: 260px; margin-right: 6px; }
 .key-btn.on { color: var(--good); }
@@ -27,14 +28,13 @@
 .mobile-nav { display: grid; gap: 18px; padding-block: 8px 20px; border-top: 1px solid var(--line); animation: fade-in var(--dur) var(--ease); }
 .mobile-group h2 { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; }
 .mobile-group a { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 6px; font-weight: 600; border-radius: var(--r-s); }
-.mobile-group a svg { width: 20px; height: 20px; color: var(--accent); }
 .mobile-group a[aria-current="page"] { background: var(--panel-2); }
 @media (max-width: 1080px) { .head-search { width: 200px; } }
 @media (max-width: 900px) {
   .nav, .head-search { display: none; }
   .menu-btn { display: inline-flex; }
 }
-main { display: block; min-height: calc(100vh - 160px); outline: none; }
+main { display: block; min-height: calc(100vh - 160px); outline: none; overflow-x: clip; }
 
 /* --- footer --- */
 .site-foot { margin-top: 80px; border-top: 1px solid var(--line); padding-block: 28px max(28px, env(safe-area-inset-bottom)); }
@@ -49,7 +49,7 @@ main { display: block; min-height: calc(100vh - 160px); outline: none; }
 .psearch-box { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 6px 0 12px; border-radius: var(--r-s); border: 1px solid var(--line-2); background: color-mix(in srgb, var(--bg) 55%, transparent); transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
 .psearch-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
 .psearch-icon { width: 18px; height: 18px; color: var(--faint); flex: none; }
-.psearch-input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; min-height: 38px; font-size: 0.93rem; }
+.psearch-input { flex: 1 1 0; width: 0; min-width: 0; border: 0; background: transparent; outline: none; min-height: 38px; font-size: 0.93rem; }
 .psearch-input::-webkit-search-cancel-button { display: none; }
 .psearch-input:focus-visible { box-shadow: none; }
 .psearch-kbd { font-family: var(--mono); font-size: 0.72rem; color: var(--faint); border: 1px solid var(--line-2); border-radius: 6px; padding: 1px 7px; }

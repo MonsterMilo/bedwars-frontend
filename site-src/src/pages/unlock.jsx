@@ -4,7 +4,7 @@ import '../styles/shell.css';
 import '../styles/common.css';
 import { mount } from '../lib/mount.js';
 import { Shell } from '../ui/Shell.jsx';
-import { Icon } from '../ui/icons.jsx';
+import { ItemIcon } from '../ui/items.jsx';
 import { KeyForm } from '../ui/KeyDialog.jsx';
 import { ALL_PAGES } from '../lib/site.js';
 
@@ -19,7 +19,7 @@ function Unlock() {
     <Shell>
       <div class="wrap">
         <section class="panel lit pad lock-card reveal" aria-labelledby="unlock-h">
-          <Icon name="lock" class="big" />
+          <span class="tile big" style={{ '--hue': '#ff7a8a' }}><ItemIcon id={(page && page.item) || 'ui:book'} /></span>
           <h1 id="unlock-h">{page ? page.label : 'This page'} needs a key</h1>
           <p class="dim">{q.get('bad') ? 'Your saved key didn\'t work. Enter it again.' : 'Enter your key to open it. It stays in this browser only.'}</p>
           <div class="unlock-form"><KeyForm autofocus onDone={() => location.replace(next)} /></div>

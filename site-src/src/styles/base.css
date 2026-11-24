@@ -49,7 +49,7 @@ html[data-motion="reduce"] *, html[data-motion="reduce"] *::before, html[data-mo
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { font-size: calc(16px * var(--text-scale)); scrollbar-color: var(--line-3) transparent; -webkit-text-size-adjust: 100%; }
+html { overflow-x: clip; font-size: calc(16px * var(--text-scale)); scrollbar-color: var(--line-3) transparent; -webkit-text-size-adjust: 100%; }
 body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.5; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 a { color: inherit; text-decoration: none; }
 html[data-underline="on"] main a:not(.btn):not(.card-link) { text-decoration: underline; text-underline-offset: 3px; }
@@ -148,3 +148,37 @@ html[data-surface="light"] .bg-field::before { opacity: 0.6; }
 /* reveal on load */
 .reveal { animation: reveal 520ms var(--ease) both; }
 @keyframes reveal { from { opacity: 0; transform: translateY(10px); } }
+
+/* --- the drifting-blocks backdrop (lib/backdrop.js) --- */
+#backdrop { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+/* --- Minecraft item icons (one sprite; tools/item-icons.py) --- */
+.item-icon { display: block; width: 100%; aspect-ratio: 1; background-image: url(../assets/items.png); background-repeat: no-repeat; background-size: calc(var(--n) * 100%) 100%; background-position: calc(var(--i) / (var(--n) - 1) * 100%) 0; }
+
+/* An icon on a lit tile: used for page and card icons. --hue tints it. */
+.tile { --hue: var(--accent); position: relative; display: grid; place-items: center; flex: none; width: 52px; height: 52px; border-radius: 15px; isolation: isolate;
+  background: radial-gradient(120% 90% at 30% 15%, color-mix(in srgb, var(--hue) 30%, transparent), transparent 60%), linear-gradient(160deg, color-mix(in srgb, var(--hue) 14%, var(--panel-2)), color-mix(in srgb, var(--bg) 70%, var(--panel-2)));
+  border: 1px solid color-mix(in srgb, var(--hue) 34%, transparent); box-shadow: var(--hi), 0 10px 24px -14px color-mix(in srgb, var(--hue) 70%, transparent); }
+.tile::after { content: ''; position: absolute; inset: 18% 18% auto; height: 40%; border-radius: 50%; background: color-mix(in srgb, var(--hue) 40%, transparent); filter: blur(12px); opacity: 0.55; z-index: -1; }
+.tile .item-icon { width: 62%; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.45)); }
+.tile.big { width: 72px; height: 72px; border-radius: 20px; }
+
+/* Rarity colours for cosmetics. */
+.rar-common { --rar: #a9b0c2; } .rar-rare { --rar: #59a6ff; } .rar-epic { --rar: #b76dff; } .rar-legendary { --rar: #ffb341; } .rar-none { --rar: var(--line-3); }
+
+/* A cosmetic picture: its preview, or an icon for its kind. */
+.cos-pic { position: relative; display: grid; place-items: center; flex: none; overflow: hidden; border-radius: 10px; background: radial-gradient(90% 90% at 50% 30%, color-mix(in srgb, var(--rar) 22%, transparent), transparent 70%), color-mix(in srgb, var(--bg) 70%, var(--panel-2)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rar) 45%, transparent); }
+.cos-pic img { width: 100%; height: 100%; object-fit: cover; }
+.cos-pic.icon .item-icon { width: 64%; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
+.cos-pic::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--rar); opacity: 0.85; }
+.rar-none.cos-pic::after { display: none; }
+
+/* Inventory slots, as in game but in the site's dark glass. */
+.inv { padding: 10px; border-radius: 14px; background: linear-gradient(180deg, color-mix(in srgb, var(--panel-2) 90%, #2a2f42), color-mix(in srgb, var(--bg) 60%, var(--panel-2))); border: 1px solid var(--line-2); box-shadow: var(--hi), inset 0 -1px 0 rgba(0,0,0,0.4); }
+.slot { position: relative; display: grid; place-items: center; aspect-ratio: 1; min-width: 0; border-radius: 5px; background: color-mix(in srgb, var(--bg) 82%, #1d2130);
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.55), inset -2px -2px 0 rgba(255,255,255,0.07); transition: background var(--dur) var(--ease); }
+.slot:hover { background: color-mix(in srgb, var(--bg) 60%, #2a3044); }
+.slot .item-icon { width: 76%; filter: drop-shadow(1px 2px 0 rgba(0,0,0,0.45)); }
+.slot.blank .item-icon { display: none; }
+html[data-surface="light"] .slot { background: #c6c6c6; box-shadow: inset 2px 2px 0 #373737, inset -2px -2px 0 #fff; }
+html[data-surface="light"] .inv { background: #e1e3ea; }

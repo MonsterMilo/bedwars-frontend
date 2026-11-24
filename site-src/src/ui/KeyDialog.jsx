@@ -2,7 +2,7 @@
 import { useState } from 'preact/hooks';
 import { Dialog } from './Dialog.jsx';
 import { Icon } from './icons.jsx';
-import { siteKey, keyOwner, setKey } from '../lib/key.js';
+import { siteKey, keyOwner, keyInfo, setKey } from '../lib/key.js';
 import { useSignal } from '../lib/signal.js';
 import { get } from '../lib/api.js';
 import { toast } from '../lib/toast.js';
@@ -12,6 +12,7 @@ export async function checkKey() {
   try {
     const who = await get('/whoami', { maxAge: 5 * 60_000 });
     keyOwner.value = who && who.who ? who.who : false;
+    keyInfo.value = who && who.who ? { admin: !!who.admin, editWindowDays: who.editWindowDays, deleteWindowDays: who.deleteWindowDays } : {};
   } catch { /* offline: leave it unknown */ }
   return keyOwner.value;
 }

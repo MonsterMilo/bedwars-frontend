@@ -20,16 +20,21 @@ const ROSTER_LABEL = { milo: "Milo", potat: "Potat", aballs: "ABoi", zoiv: "Zoiv
 async function loadLive() {
   const btn = document.querySelector("#enter");
   const slow = setTimeout(() => { btn.textContent = "Waking up the server…"; }, 3000);
-  // /site/hall: the top 20, worked out on the server (the full tracked list
-  // needs a key). An older backend without it: the full list, with the key.
+  // /site/hall: the top 20, worked out on the server. An older backend
+  // without it: the full list.
+  // Private page: both need the key. A wrong key goes back to unlock.
   let res, hall = null;
+  let key = ""; try { key = localStorage.getItem("bedwarsAdminKey") || ""; } catch (e) {}
+  const headers = key ? { "x-admin-key": key } : {};
+  const lockedOut = () => location.replace("unlock.html?bad=1&next=" + encodeURIComponent(location.pathname.split("/").pop() + location.search + location.hash));
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      res = await fetch(API + "/site/hall", { cache: "no-store" });
+      res = await fetch(API + "/site/hall", { cache: "no-store", headers });
       if (res.ok) { hall = await res.json(); break; }
+      if (res.status === 401) { lockedOut(); return new Promise(() => {}); }
       if (res.status === 404) {
-        let key = ""; try { key = localStorage.getItem("bedwarsAdminKey") || ""; } catch (e) {}
-        res = await fetch(API + "/sweats", { cache: "no-store", headers: key ? { "x-admin-key": key } : {} });
+        res = await fetch(API + "/sweats", { cache: "no-store", headers });
+        if (res.status === 401) { lockedOut(); return new Promise(() => {}); }
         if (res.ok) break;
       }
     } catch (e) {}

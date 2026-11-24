@@ -75,3 +75,5 @@ export function get(path, { maxAge = 60_000, signal } = {}) {
 }
 export const post = (path, body, opts) => request('POST', path, { body, ...opts });
 export const enc = encodeURIComponent;
+export const patch = (path, body, opts) => request('PATCH', path, { body, ...opts });
+export const del = (path, opts) => request('DELETE', path, opts);

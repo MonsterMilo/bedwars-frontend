@@ -1,4 +1,5 @@
-// The tracker, rebuilt: lookup and add, the tracked list, player popups.
+// The tracker: lookup and add, the tracked list, player popups, denicking.
+// (The old hand-written page is kept, unlinked, as tracker-classic.html.)
 // Needs a key (the html sends you to unlock.html without one).
 import '../styles/base.css';
 import '../styles/shell.css';

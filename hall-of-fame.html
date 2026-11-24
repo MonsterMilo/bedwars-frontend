@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>
+  // Private page: without a key, go to the unlock page and come back after.
+  try { if (!localStorage.getItem("bedwarsAdminKey")) location.replace("unlock.html?next=" + encodeURIComponent(location.pathname.split("/").pop() + location.search + location.hash)); } catch (e) {}
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- Hall of Fame: a free-roam 3D hall of the 20 biggest sweats by index (FKDR^2 x stars),
      built live from the backend's /sweats list. The 3D code lives in hof/hall.js (loaded with a ?v= query).
@@ -319,7 +323,7 @@ body.shot *, body.shot { transition: none !important; }
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="hof/hall.js?v=2026-11-24a"></script><!-- bump v with every hof/hall.js change, so a cached page never runs a newer or older script -->
+<script type="module" src="hof/hall.js?v=2026-11-24b"></script><!-- bump v with every hof/hall.js change, so a cached page never runs a newer or older script -->
 
 </body>
 </html>

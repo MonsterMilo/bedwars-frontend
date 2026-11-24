@@ -11,7 +11,7 @@ import { ALL_PAGES } from '../lib/site.js';
 const q = new URLSearchParams(location.search);
 const raw = q.get('next') || '';
 // Only our own private pages, never another site.
-const next = /^(tracker|recordings)\.html(?:[?#][^\s]*)?$/.test(raw) ? raw : 'tracker.html';
+const next = /^(tracker|tracker-next|recordings|hall-of-fame)\.html(?:[?#][^\s]*)?$/.test(raw) ? raw : 'tracker.html';
 const page = ALL_PAGES.find(p => next.startsWith(p.href));
 
 function Unlock() {

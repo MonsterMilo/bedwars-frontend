@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
 import { mount } from '../lib/mount.js';
 import { Shell } from '../ui/Shell.jsx';
 import { Icon } from '../ui/icons.jsx';
+import { ItemIcon } from '../ui/items.jsx';
 import { Dialog } from '../ui/Dialog.jsx';
 import { siteKey } from '../lib/key.js';
 import { readJson, writeJson } from '../lib/storage.js';
@@ -112,7 +113,7 @@ function Tracker() {
       <div class="page wrap tracker">
         <header class="page-head">
           <div class="grow">
-            <p class="eyebrow"><Icon name="list" />Tracker</p>
+            <p class="eyebrow"><ItemIcon id="ui:book" />Tracker</p>
             <h1 ref={title} data-title-stunt>Sweat Tracker</h1>
           </div>
           <nav class="jump" aria-label="Sections">

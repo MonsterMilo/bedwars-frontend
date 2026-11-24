@@ -8,6 +8,7 @@ import { Shell, Logo } from '../ui/Shell.jsx';
 import { PlayerSearch } from '../ui/PlayerSearch.jsx';
 import { Icon } from '../ui/icons.jsx';
 import { Avatar } from '../ui/common.jsx';
+import { ItemIcon } from '../ui/items.jsx';
 import { SECTIONS } from '../lib/site.js';
 import { siteKey, keyOwner, keyDialog } from '../lib/key.js';
 import { recent, favourites, playerUrl, clearRecent } from '../lib/players.js';
@@ -40,6 +41,13 @@ function People() {
   );
 }
 
+// Blocks and items floating around the hero: [icon, left, top, size, delay].
+const FLOAT = [
+  ['block:red_wool', '8%', '18%', 58, 0], ['ui:sword', '16%', '58%', 54, 1.2], ['cat:bed', '4%', '78%', 50, 2.1],
+  ['block:diamond', '86%', '14%', 56, 0.6], ['res:emerald', '92%', '52%', 40, 1.8], ['block:tnt', '80%', '72%', 52, 2.6],
+  ['ui:pearl', '24%', '8%', 34, 3.1], ['ui:fireball', '73%', '40%', 34, 0.3]
+];
+
 function Home() {
   const key = useSignal(siteKey);
   const owner = useSignal(keyOwner);
@@ -48,6 +56,9 @@ function Home() {
     <Shell search={false}>
       <section class="hero wrap">
         <div class="hero-beam" aria-hidden="true"><span /><span /><span /></div>
+        <div class="hero-float" aria-hidden="true">
+          {FLOAT.map(([id, x, y, size, delay]) => <span key={id} style={{ left: x, top: y, width: `${size}px`, animationDelay: `${delay}s` }}><ItemIcon id={id} /></span>)}
+        </div>
         <div class="hero-mark reveal"><Logo size={56} /></div>
         <h1 class="hero-title reveal">Prism</h1>
         <p class="hero-sub reveal">Bed Wars stats, nicks and the players worth knowing.</p>
@@ -57,9 +68,9 @@ function Home() {
 
       <div class="wrap sections">
         {SECTIONS.map((s, si) => (
-          <section key={s.id} class={`section reveal ${s.locked ? 'locked' : ''}`} style={{ animationDelay: `${120 + si * 80}ms` }} aria-labelledby={`sec-${s.id}`}>
+          <section key={s.id} class={`section reveal ${s.locked ? 'locked' : ''}`} style={{ animationDelay: `${120 + si * 80}ms`, '--hue': s.hue }} aria-labelledby={`sec-${s.id}`}>
             <header class="section-head">
-              <h2 id={`sec-${s.id}`}>{s.title}</h2>
+              <h2 id={`sec-${s.id}`}><span class="sec-dot" aria-hidden="true" />{s.title}</h2>
               <span class="faint">{s.blurb}</span>
               {s.locked && (unlocked
                 ? <span class="chip good"><Icon name="unlock" />Unlocked</span>
@@ -68,7 +79,8 @@ function Home() {
             <div class="cards">
               {s.pages.map(p => (
                 <a key={p.href} href={p.href} class="card panel card-link">
-                  <span class="card-ico"><Icon name={p.icon} /></span>
+                  <span class="card-art" aria-hidden="true"><ItemIcon id={p.item} /></span>
+                  <span class="tile"><ItemIcon id={p.item} /></span>
                   <span class="card-text">
                     <strong>{p.label}{s.locked && !unlocked && <Icon name="lock" class="card-lock" label="Needs a key" />}</strong>
                     <small>{p.desc}</small>

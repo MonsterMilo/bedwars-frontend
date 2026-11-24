@@ -1,5 +1,6 @@
 // Small shared pieces: tabs, stat tiles, avatars, load/error states.
 import { Icon } from './icons.jsx';
+import { ItemIcon } from './items.jsx';
 
 // Tabs as a segmented control. options: [[value, label, disabled?]]
 export function Tabs({ label, value, options, onChange, class: cls = '' }) {
@@ -27,11 +28,13 @@ export function Tabs({ label, value, options, onChange, class: cls = '' }) {
   );
 }
 
-export function Stat({ label, value, sub, tone, big = false }) {
+// icon: an item icon id; color: a CSS colour for the value.
+export function Stat({ label, value, sub, tone, big = false, icon, color }) {
   return (
-    <div class={`stat ${big ? 'big' : ''} ${tone ? `tone-${tone}` : ''}`}>
+    <div class={`stat ${big ? 'big' : ''} ${tone ? `tone-${tone}` : ''} ${icon ? 'has-icon' : ''}`}>
+      {icon && <span class="stat-icon"><ItemIcon id={icon} /></span>}
       <span class="stat-label">{label}</span>
-      <span class="stat-value mono">{value}</span>
+      <span class="stat-value mono" style={color ? { color } : undefined}>{value}</span>
       {sub !== undefined && <span class="stat-sub">{sub}</span>}
     </div>
   );
@@ -79,4 +82,14 @@ export function SourceNote({ sources }) {
 export function copyText(text, toast) {
   const done = () => toast && toast('Copied');
   if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {});
+}
+
+// Floating blocks and items on the right of a page head (decoration only).
+// items: up to 3 icon ids, biggest first.
+export function HeadArt({ items }) {
+  return (
+    <div class="head-art" aria-hidden="true">
+      {items.slice(0, 3).map((id, i) => <span key={id} class={`art-${i}`}><ItemIcon id={id} /></span>)}
+    </div>
+  );
 }

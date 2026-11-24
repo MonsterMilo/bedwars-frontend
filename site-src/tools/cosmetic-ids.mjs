@@ -29,7 +29,11 @@ const norm = s => String(s).toLowerCase().replace(/['’]/g, '').replace(/[^a-z0
 const pretty = s => s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
 const html = readFileSync(join(root, 'cosmetics.html'), 'utf8');
-const items = [...html.matchAll(/\{\s*id:\s*"([^"]+)",\s*cat:\s*"([a-z]+)",\s*name:\s*"([^"]+)"/g)].map(m => ({ lib: m[1], cat: m[2], name: m[3] }));
+// Each library card: id, category, name, rarity, and (kill messages) the first line.
+const items = [...html.matchAll(/\{\s*id:\s*"([^"]+)",\s*cat:\s*"([a-z]+)",\s*name:\s*"([^"]+)"(?:,\s*rar:\s*"([a-z]+)")?([\s\S]*?)(?=\n\s*\{\s*id:|\n\];)/g)].map(m => {
+  const line = /lines:\s*km\(\["((?:[^"\\]|\\.)*)"/.exec(m[5]);
+  return { lib: m[1], cat: m[2], name: m[3], rar: m[4] || null, line: line ? line[1] : null };
+});
 const seen = JSON.parse(readFileSync(join(here, '..', 'data/seen-cosmetic-ids.json'), 'utf8'));
 const backend = JSON.parse(readFileSync(join(here, '..', 'data/backend-cosmetic-ids.json'), 'utf8'));
 
@@ -46,7 +50,8 @@ for (const [cat, c] of Object.entries(CATS)) {
     if (id) { used.add(id); matched++; }
     list.push({
       id: id || c.prefix + it.name.toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, ''),
-      name: it.name, lib: it.lib, thumb: existsSync(join(root, 'cosmetics/thumbs', `${it.lib}.webp`)), verified: !!id
+      name: it.name, lib: it.lib, thumb: existsSync(join(root, 'cosmetics/thumbs', `${it.lib}.webp`)), verified: !!id,
+      ...(it.rar ? { rar: it.rar } : {}), ...(it.line ? { line: it.line } : {})
     });
   }
   for (const id of known) {

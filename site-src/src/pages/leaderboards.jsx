@@ -9,7 +9,8 @@ import { mount } from '../lib/mount.js';
 import { Shell } from '../ui/Shell.jsx';
 import { Icon } from '../ui/icons.jsx';
 import { PlayerName, Star } from '../ui/mc.jsx';
-import { Tabs, Avatar, Loading, ErrorBox, Empty } from '../ui/common.jsx';
+import { Tabs, Avatar, Loading, ErrorBox, Empty, HeadArt } from '../ui/common.jsx';
+import { ItemIcon } from '../ui/items.jsx';
 import { get } from '../lib/api.js';
 import { useAsync, useParam } from '../lib/useAsync.js';
 import { num, ago } from '../lib/format.js';
@@ -20,6 +21,8 @@ import { playerUrl } from '../lib/players.js';
 const PERIODS = [['lifetime', 'Lifetime'], ['monthly', 'Month'], ['weekly', 'Week'], ['daily', 'Day']];
 const STAT_ORDER = ['level', 'wins', 'finals'];
 
+const PODIUM = { 1: 'block:gold', 2: 'block:diamond', 3: 'block:emerald' };
+
 function Podium({ leaders }) {
   const top = leaders.slice(0, 3);
   if (top.length < 3) return null;
@@ -29,8 +32,9 @@ function Podium({ leaders }) {
       {order.map(l => (
         <li key={l.uuid} class={`place p${l.rank}`}>
           <a href={playerUrl(l.uuid)} class="place-link">
-            <img class="place-body" src={`https://mc-heads.net/body/${l.uuid}/${l.rank === 1 ? 150 : 120}`} alt="" loading="lazy" />
             <span class="place-rank">{l.rank}</span>
+            <img class="place-body" src={`https://mc-heads.net/body/${l.uuid}/${l.rank === 1 ? 150 : 120}`} alt="" loading="lazy" />
+            <span class="place-block" aria-hidden="true"><ItemIcon id={PODIUM[l.rank]} /></span>
             <span class="place-name">{l.star != null && <Star star={l.star} />}{l.rankInfo ? <PlayerName player={l.rankInfo} name={l.name || '?'} rank={false} /> : <span class="mono">{l.name || 'Unknown'}</span>}</span>
             {l.value != null && <span class="place-value mono">{num(l.value)}</span>}
           </a>
@@ -62,10 +66,11 @@ function Leaderboards() {
       <div class="page wrap">
         <header class="page-head">
           <div class="grow">
-            <p class="eyebrow"><Icon name="trophy" />Leaderboards</p>
+            <p class="eyebrow"><ItemIcon id="block:gold" />Leaderboards</p>
             <h1>Top Bed Wars players</h1>
+            {data && <p class="faint small lb-src">From {data.source}{boards.some(b => b.period === 'daily') ? ' and Astrus' : ''} · updated {ago(data.at)}</p>}
           </div>
-          {data && <p class="faint small">From {data.source}{boards.some(b => b.period === 'daily') ? ' and Astrus' : ''} · updated {ago(data.at)}</p>}
+          <HeadArt items={['block:gold', 'ui:totem', 'res:gold']} />
         </header>
 
         {loading && !data && <div class="panel pad"><Loading lines={8} label="Loading leaderboards" /></div>}
@@ -88,7 +93,7 @@ function Leaderboards() {
                     <tbody>
                       {shown.map(l => (
                         <tr key={l.uuid} class={l.rank <= 3 ? `top top${l.rank}` : ''}>
-                          <td class="num rank">{l.rank}</td>
+                          <td class="num rank">{l.rank <= 3 ? <span class={`medal m${l.rank}`}>{l.rank}</span> : l.rank}</td>
                           <td>
                             <span class="player-cell">
                               <a href={playerUrl(l.uuid)}>

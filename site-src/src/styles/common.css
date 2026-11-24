@@ -1,0 +1,63 @@
+/* Shared page pieces: page heads, stat tiles, tables, load states. */
+.page { padding-block: 32px 0; display: grid; gap: var(--gap); }
+.page-head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 24px; margin-bottom: 8px; }
+.page-head h1 { font-size: clamp(1.7rem, 3.4vw, 2.5rem); font-weight: 800; letter-spacing: -0.02em; }
+.page-head p { color: var(--dim); max-width: 60ch; }
+.page-head .grow { flex: 1; min-width: 240px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.eyebrow svg { width: 16px; height: 16px; }
+.grow { flex: 1; }
+.row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap); }
+@media (max-width: 960px) { .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 680px) { .grid-2, .grid-3 { grid-template-columns: minmax(0, 1fr); } }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.stat { display: grid; gap: 2px; padding: 14px 16px; border-radius: var(--r-m); background: var(--panel-2); border: 1px solid var(--line); min-width: 0; }
+.stat-label { font-size: 0.76rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
+.stat-value { font-size: 1.35rem; font-weight: 700; overflow-wrap: anywhere; }
+.stat.big .stat-value { font-size: 1.8rem; }
+.stat-sub { font-size: 0.8rem; color: var(--dim); }
+.stat.tone-accent .stat-value { color: var(--accent); }
+.stat.tone-good .stat-value { color: var(--good); }
+.stat.tone-bad .stat-value { color: var(--bad); }
+
+.avatar { border-radius: 6px; image-rendering: pixelated; flex: none; background: var(--panel-2); }
+
+.loading { display: grid; gap: 10px; padding: 6px 0; }
+.skel-line { height: 14px; }
+.notice .grow { flex: 1; }
+.empty { display: grid; justify-items: center; gap: 8px; }
+.empty svg { width: 28px; height: 28px; opacity: 0.6; }
+
+.source-note { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.78rem; color: var(--faint); margin-top: 12px; }
+.src { display: inline-flex; align-items: center; gap: 6px; }
+.src .dot { width: 6px; height: 6px; }
+.src-ok .dot { color: var(--good); }
+.src-failed .dot { color: var(--bad); }
+.src-busy .dot { color: var(--warn); }
+
+.table-wrap { overflow-x: auto; margin-inline: calc(var(--pad) * -1); padding-inline: var(--pad); }
+.table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.table th { text-align: left; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); padding: 8px 10px; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+.table td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.table tr:last-child td { border-bottom: 0; }
+.table .num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.table th.num { text-align: right; }
+.table tbody tr { transition: background var(--dur) var(--ease); }
+.table tbody tr:hover { background: color-mix(in srgb, var(--panel-hover) 60%, transparent); }
+.player-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.player-cell a { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.player-cell a:hover .mc { text-decoration: underline; text-underline-offset: 3px; }
+
+.link { color: var(--accent); font-weight: 600; }
+.link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.link svg { width: 14px; height: 14px; vertical-align: -2px; margin-left: 3px; }
+.seg button:disabled { opacity: 0.4; cursor: not-allowed; }
+.seg.small button { min-height: 30px; padding: 0 11px; font-size: 0.82rem; }
+.tag-list { display: grid; gap: 8px; }
+.lock-card { display: grid; justify-items: center; text-align: center; gap: 14px; padding: 48px 24px; max-width: 520px; margin: 40px auto; }
+.lock-card svg.big { width: 40px; height: 40px; color: var(--accent); }
+.lock-card h1 { font-size: 1.5rem; }
+.unlock-form { width: 100%; max-width: 360px; text-align: left; }

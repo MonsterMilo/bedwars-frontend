@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<script>
+  // Private page: without a key, go to the unlock page and come back after.
+  try { if (!localStorage.getItem("bedwarsAdminKey")) location.replace("unlock.html?next=" + encodeURIComponent(location.pathname.split("/").pop() + location.search + location.hash)); } catch (e) {}
+</script>
 <!-- Content Security Policy: the page may only talk to the backend, the
      denick gists and Google Fonts, and only show images from the skin
      sites. If a script ever got injected it couldn't send someone's saved
@@ -25368,6 +25372,11 @@ const ADMIN_KEY_STORAGE = "bedwarsAdminKey";
 function getAdminKey() {
   try { return localStorage.getItem(ADMIN_KEY_STORAGE) || ""; } catch { return ""; }
 }
+// The tracked list needs a key (the backend answers 401 without one): send
+// people to the unlock page, then straight back here.
+function lockedOut() {
+  location.replace(`unlock.html?bad=1&next=${encodeURIComponent(location.pathname.split("/").pop() + location.search + location.hash)}`);
+}
 function adminHeaders(extra = {}) {
   const key = getAdminKey();
   return key ? { ...extra, "x-admin-key": key } : extra;
@@ -26556,7 +26565,8 @@ async function fetchAllSweats() {
   do {
     const params = new URLSearchParams({ paged: '1', limit: '1000' });
     if (cursor) params.set('cursor', cursor);
-    const res = await fetch(`${backendBaseURL}/sweats?${params}`);
+    const res = await fetch(`${backendBaseURL}/sweats?${params}`, { headers: adminHeaders() });
+    if (res.status === 401) { lockedOut(); throw new Error("Needs a key"); }
     if (!res.ok) throw new Error("Failed to fetch sweats");
     const data = await res.json();
     if (Array.isArray(data)) { saveSweatsForOffline(data); return data; }
@@ -34089,7 +34099,7 @@ async function pollLiveSweats() {
     if (!liveChangedSince) liveChangedSince = newestChangeTime(sweats);
     const params = new URLSearchParams({ paged: "1", limit: String(LIVE_PAGE) });
     if (liveChangedSince) params.set("changedSince", liveChangedSince);
-    const res = await fetch(`${backendBaseURL}/sweats?${params}`);
+    const res = await fetch(`${backendBaseURL}/sweats?${params}`, { headers: adminHeaders() });
     if (!res.ok) return;
     const data = await res.json();
     if (!data || !Array.isArray(data.sweats)) return;

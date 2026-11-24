@@ -1,0 +1,61 @@
+/* Nick Finder. */
+.nick-form { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr); gap: var(--gap); align-items: start; }
+.nick-side { display: grid; gap: var(--gap); position: sticky; top: 84px; }
+@media (max-width: 1020px) { .nick-form { grid-template-columns: minmax(0, 1fr); } .nick-side { position: static; } }
+.nick-go .btn.primary { min-height: 48px; font-size: 1rem; }
+.bad-text { color: var(--bad) !important; }
+
+.picker { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 16px; min-height: 520px; }
+.picker-cats { display: grid; align-content: start; gap: 2px; }
+.picker-cats button { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 38px; padding: 0 12px; border: 0; border-radius: var(--r-s); background: transparent; color: var(--dim); font-weight: 600; font-size: 0.9rem; text-align: left; cursor: pointer; }
+.picker-cats button:hover { color: var(--text); background: var(--panel-2); }
+.picker-cats button[aria-selected="true"] { color: var(--text); background: var(--panel-hover); box-shadow: inset 2px 0 0 var(--accent); }
+.picker-cats button.has { color: var(--text); }
+.picker-cats .dot { color: var(--accent); width: 7px; height: 7px; }
+.picker-body { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 12px; min-width: 0; }
+.picker-tools { display: flex; gap: 8px; }
+.picker-tools .btn svg { width: 14px; height: 14px; }
+.pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; margin: 0; padding: 2px; list-style: none; max-height: 560px; overflow-y: auto; align-content: start; }
+.pick { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 8px 6px 6px; border-radius: var(--r-m); border: 1px solid var(--line); background: var(--panel-2); text-align: left; font-size: 0.86rem; font-weight: 600; cursor: pointer; transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease); }
+.pick:hover { border-color: var(--line-3); }
+.pick.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--panel-2)); }
+.pick > span:last-of-type { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pick-check { width: 16px; height: 16px; color: var(--accent); flex: none; }
+.pick-thumb { display: grid; place-items: center; flex: none; border-radius: 9px; overflow: hidden; background: color-mix(in srgb, var(--bg) 60%, transparent); color: var(--faint); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }
+.pick-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.pick-none { padding: 12px; }
+@media (max-width: 640px) {
+  .picker { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .picker-cats { display: flex; overflow-x: auto; gap: 4px; padding-bottom: 4px; }
+  .picker-cats button { flex: none; }
+  .picker-cats button[aria-selected="true"] { box-shadow: inset 0 -2px 0 var(--accent); }
+  .pick-grid { max-height: 420px; }
+}
+
+.picked { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.picked-row { display: flex; align-items: center; gap: 10px; padding: 4px 4px 4px 4px; border-radius: var(--r-s); background: var(--panel-2); border: 1px solid var(--line); }
+.picked-row .grow { display: grid; min-width: 0; }
+.picked-row small { font-size: 0.72rem; color: var(--faint); }
+.picked-row strong { font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.picked-row .btn.icon { width: 30px; min-height: 30px; }
+.picked-row .btn svg { width: 15px; height: 15px; }
+
+.games { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; max-height: 300px; overflow-y: auto; }
+.game { display: grid; gap: 2px; width: 100%; padding: 10px 12px; border-radius: var(--r-s); border: 1px solid var(--line); background: var(--panel-2); text-align: left; cursor: pointer; }
+.game:hover { border-color: var(--line-3); }
+.game.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--panel-2)); }
+.game strong { font-size: 0.9rem; }
+.linkish { padding: 0; border: 0; background: none; color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+.results-anchor { display: grid; gap: var(--gap); scroll-margin-top: 84px; }
+.searching { display: flex; align-items: center; gap: 16px; padding: 8px 0; }
+.spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line-2); border-top-color: var(--accent); border-right-color: var(--accent-2); animation: spin 0.9s linear infinite; }
+html[data-motion="reduce"] .spinner { animation: spin 2.4s linear infinite !important; animation-duration: 2.4s !important; animation-iteration-count: infinite !important; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.game-chip { margin-bottom: 12px; }
+.game-chip svg { width: 14px; height: 14px; }
+.known { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.known li { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.person { display: inline-flex; align-items: center; gap: 8px; padding: 3px 12px 3px 3px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-weight: 600; font-size: 0.86rem; }
+.person .avatar { border-radius: 50%; }
+.table tr.both td:first-child { box-shadow: inset 2px 0 0 var(--accent); }

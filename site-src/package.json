@@ -1,0 +1,19 @@
+{
+  "name": "prism-site",
+  "private": true,
+  "description": "Source for the rebuilt website pages. `npm ci && npm run build` writes ../app/ and the page HTML files at the repo root.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "test": "node --test \"test/*.test.js\"",
+    "cosmetic-ids": "node tools/cosmetic-ids.mjs"
+  },
+  "dependencies": {
+    "preact": "10.27.2",
+    "skinview3d": "3.4.2"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

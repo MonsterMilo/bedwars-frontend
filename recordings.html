@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>
+  // Private page: without a key, go to the unlock page and come back after.
+  try { if (!localStorage.getItem("bedwarsAdminKey")) location.replace("unlock.html?next=" + encodeURIComponent(location.pathname.split("/").pop() + location.search + location.hash)); } catch (e) {}
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Prism Recordings</title>
@@ -480,6 +484,7 @@
   function api(path, opts) {
     opts = opts || {};
     return fetch(API + path, { method: opts.method || 'GET', headers: { 'x-admin-key': KEY } }).then(function (r) {
+      if (r.status === 401) location.replace('unlock.html?bad=1&next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search + location.hash));
       return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || ('The server answered ' + r.status)); return j; });
     });
   }

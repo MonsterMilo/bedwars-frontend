@@ -20,12 +20,27 @@ const ROSTER_LABEL = { milo: "Milo", potat: "Potat", aballs: "ABoi", zoiv: "Zoiv
 async function loadLive() {
   const btn = document.querySelector("#enter");
   const slow = setTimeout(() => { btn.textContent = "Waking up the server…"; }, 3000);
-  let res;
+  // /site/hall: the top 20, worked out on the server (the full tracked list
+  // needs a key). An older backend without it: the full list, with the key.
+  let res, hall = null;
   for (let attempt = 0; attempt < 3; attempt++) {
-    try { res = await fetch(API + "/sweats", { cache: "no-store" }); if (res.ok) break; } catch (e) {}
+    try {
+      res = await fetch(API + "/site/hall", { cache: "no-store" });
+      if (res.ok) { hall = await res.json(); break; }
+      if (res.status === 404) {
+        let key = ""; try { key = localStorage.getItem("bedwarsAdminKey") || ""; } catch (e) {}
+        res = await fetch(API + "/sweats", { cache: "no-store", headers: key ? { "x-admin-key": key } : {} });
+        if (res.ok) break;
+      }
+    } catch (e) {}
     await new Promise(r => setTimeout(r, 4000));
   }
   clearTimeout(slow);
+  if (hall) {
+    window.HOF = hall.top.map(r => ({ ...r, skin: `https://mc-heads.net/skin/${encodeURIComponent(r.uuid || r.name)}` }));
+    window.HOF_META = { total: hall.total, records: hall.records, generated: new Date(hall.at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) };
+    return;
+  }
   if (!res || !res.ok) throw new Error("Couldn't load the sweat list");
   const list = await res.json();
   const day = (r) => String(r.dateAdded || r.createdAt || "").slice(0, 10);

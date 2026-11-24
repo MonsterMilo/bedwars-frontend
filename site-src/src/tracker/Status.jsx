@@ -15,7 +15,7 @@ export function Status() {
     setBusy(true);
     try { setData(await get(`/status${fresh ? '?fresh=1' : ''}`, { maxAge: fresh ? 0 : 60_000 })); } catch { setData(d => d || { overall: 'down', summary: 'Couldn\'t check', sources: [] }); } finally { setBusy(false); }
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); const r = () => load(true); addEventListener('tracker-refresh', r); return () => removeEventListener('tracker-refresh', r); }, []);
   const state = busy && !data ? 'checking' : (data && data.overall) || 'checking';
   return (
     <>

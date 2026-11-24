@@ -101,8 +101,9 @@ export function Denick() {
     loadReqs();
     const vis = () => { if (!document.hidden) loadReqs(); };
     document.addEventListener('visibilitychange', vis);
+    addEventListener('tracker-refresh', loadReqs);
     if (init.denick) run(init.denick, init.denickMode);
-    return () => document.removeEventListener('visibilitychange', vis);
+    return () => { document.removeEventListener('visibilitychange', vis); removeEventListener('tracker-refresh', loadReqs); };
   }, []);
 
   async function run(query = q, m = mode) {

@@ -1,4 +1,4 @@
-// Cheater tags from blacklists (Astrus rollup, then Aurora). Never Urchin:
+// Cheater tags from blacklists (Astrus rollup, Aurora, Xadia). Never Urchin:
 // Urchin is only for players in Milo's live games.
 import { Icon } from '../ui/icons.jsx';
 import { get } from '../lib/api.js';

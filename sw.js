@@ -6,6 +6,9 @@
 // when the network fails (offline). Nothing here ever serves an old page
 // to someone who is online.
 //
+// The page's scripts and styles in app/ have the build's hash in their
+// names, so a given URL never changes: they're kept cache-first.
+//
 // Also kept for offline use: Google Fonts and player skins (network first, so they stay
 // current online). The backend API is never touched here: the page keeps
 // its own saved copy of the sweat list (see saveSweatsForOffline in
@@ -13,11 +16,13 @@
 //
 // Bump VERSION when this file's caching changes; old caches are dropped
 // on activate.
-const VERSION = "v2"; // v2: the tracker moved from index.html to tracker.html (index.html is the Prism home page)
+const VERSION = "v3"; // v3: the rebuilt tracker loads hashed files from app/
 const PREFIX = "bst-sw-";
 const PAGE_CACHE = `${PREFIX}page-${VERSION}`;
 const FONT_CACHE = `${PREFIX}fonts-${VERSION}`;
 const SKIN_CACHE = `${PREFIX}skins-${VERSION}`;
+const APP_CACHE = `${PREFIX}app-${VERSION}`;
+const APP_LIMIT = 80;
 const SKIN_LIMIT = 150;
 
 const SCOPE = new URL(self.registration.scope);
@@ -44,7 +49,7 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
-    const keep = [PAGE_CACHE, FONT_CACHE, SKIN_CACHE];
+    const keep = [PAGE_CACHE, FONT_CACHE, SKIN_CACHE, APP_CACHE];
     const names = await caches.keys();
     await Promise.all(names.filter(n => n.startsWith(PREFIX) && !keep.includes(n)).map(n => caches.delete(n)));
     await self.clients.claim();
@@ -65,6 +70,7 @@ self.addEventListener("fetch", (event) => {
       return;
     }
     if (SHELL.includes(url.href.split("?")[0])) { event.respondWith(networkFirst(req, PAGE_CACHE)); return; }
+    if (url.pathname.startsWith(SCOPE.pathname + "app/") && !url.search) { event.respondWith(cacheFirst(req, APP_CACHE, APP_LIMIT)); return; }
     return;
   }
   // Font stylesheets can change; the font files at a given URL never do.
@@ -114,13 +120,13 @@ async function networkFirst(req, cacheName, limit) {
   }
 }
 
-async function cacheFirst(req, cacheName) {
+async function cacheFirst(req, cacheName, limit) {
   const cached = await caches.match(req, { cacheName });
   if (cached) return cached;
   const res = await fetch(req);
   if (res.ok) {
     const copy = res.clone();
-    caches.open(cacheName).then(cache => cache.put(req, copy)).catch(() => {});
+    caches.open(cacheName).then(async cache => { await cache.put(req, copy); if (limit) trim(cache, limit); }).catch(() => {});
   }
   return res;
 }

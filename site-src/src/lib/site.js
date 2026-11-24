@@ -10,6 +10,9 @@ export const SECTIONS = [
     { href: 'cosmetics.html', label: 'Cosmetics', icon: 'sparkle', desc: 'Every Bed Wars cosmetic, previewed.' },
     { href: 'atlas.html', label: 'Atlas', icon: 'map', desc: 'Every map, from above.' }
   ] },
+  { id: 'prism', title: 'Prism', blurb: 'Get the client', pages: [
+    { href: 'download.html', label: 'Download Prism', icon: 'download', desc: 'The Prism injectable for Lunar Client 1.8.9.' }
+  ] },
   { id: 'private', title: 'Private', blurb: 'Needs a key', locked: true, pages: [
     { href: 'tracker.html', label: 'Tracker', icon: 'list', desc: 'Our tracked players, notes and denicks.' },
     { href: 'recordings.html', label: 'Recordings', icon: 'film', desc: 'Recorded games, clips and the Replay Theater.' }

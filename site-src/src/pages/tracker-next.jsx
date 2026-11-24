@@ -16,9 +16,14 @@ import { Lookup } from '../tracker/Lookup.jsx';
 import { Sweats } from '../tracker/Sweats.jsx';
 import { PlayerModal } from '../tracker/PlayerModal.jsx';
 import { EditModal } from '../tracker/EditModal.jsx';
+import { Denick } from '../tracker/Denick.jsx';
+import { Activity } from '../tracker/Activity.jsx';
+import { Status } from '../tracker/Status.jsx';
+import { useSignal } from '../lib/signal.js';
+import { keyOwner } from '../lib/key.js';
 import { readUrl, writeUrl } from '../tracker/url.js';
 
-const SECTIONS = [['lookup', 'Lookup', 'search'], ['sweats', 'Sweats', 'trophy']];
+const SECTIONS = [['lookup', 'Lookup', 'search'], ['denick', 'Denicking', 'mask'], ['sweats', 'Sweats', 'trophy'], ['activity', 'Activity', 'history']];
 const HIDDEN = 'trackerHiddenSections';
 const SHORTCUTS = [['/', 'Search sweats'], ['K', 'Sweat Lookup'], ['G', 'Grid view'], ['T', 'Table view'], ['L', 'Leaderboard view'], ['?', 'Show this list'], ['Esc', 'Close a popup']];
 
@@ -36,6 +41,8 @@ function Tracker() {
   const [editId, setEditId] = useState(null);
   const [help, setHelp] = useState(false);
   const [hidden, setHidden] = useState(() => readJson(HIDDEN, []));
+  const admin = useSignal(keyOwner) === 'admin';
+  const sections = SECTIONS.filter(([id]) => id !== 'activity' || admin);
 
   useEffect(() => {
     if (!siteKey.value) { lockedOut(); return; }
@@ -78,7 +85,7 @@ function Tracker() {
             <h1>Sweat Tracker</h1>
           </div>
           <nav class="jump" aria-label="Sections">
-            {SECTIONS.map(([id, label, icon]) => (
+            {sections.map(([id, label, icon]) => (
               <span key={id} class="jump-item">
                 <a href={`#${id}`} class="btn small ghost"><Icon name={icon} />{label}</a>
                 <button type="button" class="btn icon small ghost" aria-pressed={!hidden.includes(id)} aria-label={`${hidden.includes(id) ? 'Show' : 'Hide'} ${label}`} title={hidden.includes(id) ? 'Show' : 'Hide'} onClick={() => toggle(id)}><Icon name={hidden.includes(id) ? 'down' : 'check'} /></button>
@@ -89,9 +96,19 @@ function Tracker() {
         </header>
 
         <div class="tracker-grid">
-          {!hidden.includes('lookup') && <Lookup onOpen={open} />}
+          {(!hidden.includes('lookup') || !hidden.includes('denick')) && (
+            <div class="tracker-side">
+              {!hidden.includes('lookup') && <Lookup onOpen={open} />}
+              {!hidden.includes('denick') && <Denick />}
+            </div>
+          )}
           {!hidden.includes('sweats') && <Sweats onOpen={open} onEdit={edit} />}
         </div>
+        {admin && !hidden.includes('activity') && <Activity />}
+        <footer class="tracker-foot">
+          <Status />
+          <span class="faint small">Press <kbd>?</kbd> for shortcuts</span>
+        </footer>
       </div>
 
       <PlayerModal target={player} onClose={close} onEdit={s => { setEditId(s._id); }} />

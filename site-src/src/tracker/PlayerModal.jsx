@@ -18,6 +18,7 @@ import { RosterDots, Flags, TierBadge, Gauge, fixed, whole } from './ui.jsx';
 import { TagList } from './Tags.jsx';
 import { Notes } from './Notes.jsx';
 import { standing, Standing } from './Lookup.jsx';
+import { MatchStats, Clips, Replays } from './Media.jsx';
 
 // Every entry for this player, the opened one first.
 export function entriesFor(all, target) {
@@ -136,6 +137,9 @@ export function PlayerModal({ target, onClose, onEdit }) {
 
           {uuid && <TagList uuid={uuid} />}
           {entries.length > 0 && <Notes entries={entries} />}
+          {uuid && <MatchStats uuid={uuid} />}
+          {uuid && <Clips uuid={uuid} name={name} />}
+          {uuid && <Replays uuid={uuid} name={name} />}
           {!rec && <p class="faint small">Not on the tracked list.</p>}
         </div>
       )}

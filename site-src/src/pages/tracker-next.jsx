@@ -28,8 +28,15 @@ import { toast } from '../lib/toast.js';
 import { play } from '../lib/audio.js';
 import { installFx, bindTitle, flipClose, setChatNames } from '../lib/fx.js';
 import { ROSTER } from '../tracker/model.js';
+import { setupApp } from '../lib/app.js';
+import { PullRefresh, BottomNav, InstallButton, useWhatsNew } from '../tracker/AppBits.jsx';
 
 installFx();
+setupApp();
+// The old tracker's section links (home-screen shortcuts, shared links).
+const OLD_HASH = { sweatLookupSection: 'lookup', defeatedSweatsSection: 'sweats', denickingSection: 'denick', activitySection: 'activity' };
+const oldHash = OLD_HASH[location.hash.slice(1)];
+if (oldHash) history.replaceState(null, '', `${location.pathname}${location.search}#${oldHash}`);
 setChatNames(Object.entries(ROSTER).filter(([k]) => k !== 'key').map(([, r]) => r.label));
 
 const SECTIONS = [['lookup', 'Lookup', 'search'], ['denick', 'Denicking', 'mask'], ['sweats', 'Sweats', 'trophy'], ['activity', 'Activity', 'history']];
@@ -54,6 +61,9 @@ function Tracker() {
   const sections = SECTIONS.filter(([id]) => id !== 'activity' || admin);
   const title = useRef(null);
   useEffect(() => bindTitle(title.current), []);
+  useWhatsNew();
+  const total = useSignal(sweats).length;
+  const refresh = useCallback(() => { window.dispatchEvent(new Event('tracker-refresh')); return load({ quiet: true }); }, []);
 
   useEffect(() => {
     if (!siteKey.value) { lockedOut(); return; }
@@ -126,10 +136,16 @@ function Tracker() {
         </div>
         {admin && !hidden.includes('activity') && <Activity />}
         <footer class="tracker-foot">
-          <Status />
-          <span class="faint small">Press <kbd>?</kbd> for shortcuts</span>
+          <span class="faint small">{total > 0 && `${total.toLocaleString()} tracked ${total === 1 ? 'sweat' : 'sweats'}`}<span class="kbd-hint">{total > 0 && ' · '}Press <kbd>?</kbd> for shortcuts</span></span>
+          <span class="foot-tools">
+            <Status />
+            <InstallButton />
+            <button type="button" class="btn small ghost" onClick={() => { scrollTo({ top: 0, behavior: document.documentElement.dataset.motion === 'reduce' ? 'auto' : 'smooth' }); }}><Icon name="down" class="flip-up" />Back to top</button>
+          </span>
         </footer>
       </div>
+      <BottomNav sections={sections.filter(([id]) => !hidden.includes(id)).map(([id, label, icon]) => [id, label === 'Denicking' ? 'Denick' : label, icon])} />
+      <PullRefresh onRefresh={refresh} />
 
       <PlayerModal target={player} onClose={close} onEdit={s => { setEditId(s._id); }} />
       <EditModal id={editId} onClose={() => setEditId(null)} />

@@ -1,0 +1,36 @@
+/* Download page */
+.dl-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--gap); margin-top: 20px; align-items: start; }
+.dl-main, .dl-side { display: grid; gap: var(--gap); }
+@media (max-width: 860px) { .dl-layout { grid-template-columns: 1fr; } }
+
+.dl-card { display: grid; gap: 18px; }
+.dl-top { display: flex; align-items: center; gap: 16px; }
+.dl-top h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.01em; }
+.dl-top .faint { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 2px; }
+.dl-top .grow { flex: 1; min-width: 0; }
+.dl-logo { flex: none; display: grid; place-items: center; width: 56px; height: 56px; border-radius: var(--r-m); border: 1px solid var(--line-2); background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%), var(--panel-2); }
+.dl-soon .dl-logo { filter: grayscale(0.6) brightness(0.8); }
+
+.dl-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.dl-btn { min-height: 48px; padding: 0 22px; font-size: 1rem; }
+.dl-size { font-weight: 500; opacity: 0.7; font-size: 0.85rem; }
+
+.dl-hash { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 12px; border: 1px solid var(--line); border-radius: var(--r-s); background: var(--panel-2); }
+.dl-hash code { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 0.78rem; color: var(--dim); }
+
+.dl-more summary { cursor: pointer; color: var(--dim); font-weight: 600; font-size: 0.9rem; }
+.dl-more ul { list-style: none; padding: 8px 0 0; margin: 0; display: grid; gap: 6px; }
+.dl-more li { display: flex; gap: 10px; align-items: baseline; }
+
+.dl-notes { border-top: 1px solid var(--line); padding-top: 14px; color: var(--dim); font-size: 0.92rem; display: grid; gap: 8px; }
+.dl-notes h3 { font-size: 0.95rem; color: var(--text); font-weight: 700; }
+.dl-notes ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+
+.dl-steps { list-style: none; counter-reset: step; margin: 0 0 14px; padding: 0; display: grid; gap: 12px; }
+.dl-steps li { counter-increment: step; display: grid; grid-template-columns: 32px 1fr; column-gap: 12px; align-items: center; }
+.dl-steps li::before { content: counter(step); grid-row: span 2; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); color: var(--accent); font-weight: 800; font-size: 0.9rem; }
+.dl-steps b { font-weight: 700; }
+.dl-steps span { font-size: 0.9rem; }
+
+.dl-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--dim); font-size: 0.92rem; }
+.dl-side .link svg { width: 14px; height: 14px; vertical-align: -2px; }

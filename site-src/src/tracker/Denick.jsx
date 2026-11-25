@@ -136,9 +136,9 @@ export function Denick() {
   const nameOf = e => (res && res.mode === 'nick' ? e.username : e.nick);
 
   return (
-    <section class="panel pad lit denick" id="denick" aria-labelledby="denick-h">
+    <div class="panel pad lit denick">
       <div class="denick-head">
-        <h2 class="panel-title" id="denick-h"><Icon name="mask" />Denicking</h2>
+        <Tabs label="Search by" value={mode} onChange={setMode} options={MODES} />
         <span class="grow" />
         {reqs.on && (
           <button type="button" class="btn small ghost" onClick={() => openAsk(res && res.mode === 'nick' ? res.query : '')}>
@@ -146,7 +146,6 @@ export function Denick() {
           </button>
         )}
       </div>
-      <Tabs label="Search by" value={mode} onChange={setMode} options={MODES} />
       <form class="lookup-form denick-form" onSubmit={e => { e.preventDefault(); run(); }} role="search">
         <label class="sr-only" for="dn-q">{mode === 'nick' ? 'Nick' : 'Player'}</label>
         <input id="dn-q" class="input" value={q} onInput={e => setQ(e.currentTarget.value)} placeholder={mode === 'nick' ? 'Nick to unmask' : 'Player name'} maxLength={16} autocomplete="off" spellcheck={false} />
@@ -193,6 +192,6 @@ export function Denick() {
         </>
       )}
       <AskDialog open={ask !== null} onClose={() => { setAsk(null); loadReqs(); }} nick={ask} requests={reqs.requests} reload={loadReqs} />
-    </section>
+    </div>
   );
 }

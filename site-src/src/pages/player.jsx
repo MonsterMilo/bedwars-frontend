@@ -10,7 +10,7 @@ import { Shell } from '../ui/Shell.jsx';
 import { PlayerSearch } from '../ui/PlayerSearch.jsx';
 import { Icon } from '../ui/icons.jsx';
 import { PlayerName, Star, Segments } from '../ui/mc.jsx';
-import { Tabs, Stat, Avatar, Loading, ErrorBox, Empty, SourceNote, copyText, HeadEmblem } from '../ui/common.jsx';
+import { Tabs, Stat, Avatar, Loading, ErrorBox, Empty, ReachNote, copyText, HeadEmblem } from '../ui/common.jsx';
 import { SkinViewer } from '../ui/SkinViewer.jsx';
 import { get, enc } from '../lib/api.js';
 import { useAsync, useParam } from '../lib/useAsync.js';
@@ -112,19 +112,19 @@ function Tags({ uuid }) {
               <span class="chip bad">{t.type.replace(/_/g, ' ')}</span>
               <span class="grow">
                 <span class="tag-reason">{t.reason || 'No reason given'}</span>
-                <span class="faint small">{t.source}{t.at ? ` · ${date(typeof t.at === 'number' && t.at < 1e12 ? t.at * 1000 : t.at)}` : ''}{t.automatic ? ' · automatic' : ''}</span>
+                <span class="faint small">{[t.at && date(typeof t.at === 'number' && t.at < 1e12 ? t.at * 1000 : t.at), t.automatic && 'automatic'].filter(Boolean).join(' · ')}</span>
               </span>
             </li>
           ))}
         </ul>
       )}
-      {data && <SourceNote sources={data.sources} />}
+      {data && <ReachNote res={data} />}
     </section>
   );
 }
 
 // ---------- stats ----------
-// Aurora's session answer -> a flat { hypixelKey: change } map. Its exact
+// The session answer -> a flat { hypixelKey: change } map. Its exact
 // shape varies, so any number (or { change } / { previous, current }) counts.
 function periodBw(raw) {
   if (!raw || typeof raw !== 'object') return null;
@@ -216,7 +216,7 @@ function Stats({ data }) {
       {period !== 'lifetime' && <ErrorBox error={periods.error} onRetry={periods.reload} what="period stats" />}
       {period !== 'lifetime' && periods.data && periods.data.off && <p class="dim">Period stats aren't switched on yet.</p>}
       {(period === 'lifetime' || (periods.data && !periods.data.off && !periods.loading)) && <StatGrid s={s} period={period} />}
-      {period !== 'lifetime' && periods.data && !periods.data.off && <p class="source-note">Changes over the past {period === 'daily' ? '24 hours' : period === 'weekly' ? '7 days' : '28 days'}, from Aurora.</p>}
+      {period !== 'lifetime' && periods.data && !periods.data.off && <p class="source-note">Changes over the past {period === 'daily' ? '24 hours' : period === 'weekly' ? '7 days' : '28 days'}.</p>}
       {period === 'lifetime' && !bw && <Empty>This player has never played Bed Wars.</Empty>}
     </section>
   );
@@ -398,7 +398,7 @@ function History({ data, hist, view, onSkin }) {
           {names.length > SHOW_NAMES && <button type="button" class="btn ghost small show-all" onClick={() => setAll(!all)}>{all ? 'Show fewer' : `Show all ${names.length}`}<Icon name={all ? 'chevron' : 'down'} /></button>}
         </div>
       )}
-      {h && <SourceNote sources={h.sources} />}
+      {h && <ReachNote res={h} />}
     </section>
   );
 }

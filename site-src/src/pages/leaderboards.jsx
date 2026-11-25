@@ -74,7 +74,7 @@ function Leaderboards() {
           <div class="grow">
             <p class="eyebrow"><ItemIcon id="block:gold" />Leaderboards</p>
             <h1>Top Bed Wars players</h1>
-            {data && <p class="faint small lb-src">From {data.source}{boards.some(b => b.period === 'daily') ? ' and Astrus' : ''} · updated {ago(data.at)}</p>}
+            {data && <p class="faint small lb-src">Updated {ago(data.at)}</p>}
           </div>
           <HeadEmblem id="block:gold" />
         </header>

@@ -68,15 +68,20 @@ export function Empty({ children, icon = 'info' }) {
   return <div class="empty"><Icon name={icon} /><p>{children}</p></div>;
 }
 
-export function SourceNote({ sources }) {
-  if (!sources) return null;
-  const rows = Object.entries(sources).filter(([, s]) => s && s !== 'off');
-  if (!rows.length) return null;
-  return (
-    <p class="source-note">
-      {rows.map(([name, s]) => <span key={name} class={`src src-${s}`} title={s === 'ok' ? 'Answered' : s === 'busy' ? 'Busy, skipped' : 'Didn\'t answer'}><span class="dot" />{name}</span>)}
-    </p>
-  );
+// How many lookups answered, without naming them. Works with the older
+// { name: state } map too.
+export function reachOf(res) {
+  if (!res) return null;
+  if (res.reach) return res.reach;
+  if (!res.sources) return null;
+  const r = { ok: 0, busy: 0, failed: 0 };
+  for (const v of Object.values(res.sources)) { const s = String(v); if (s === 'off') continue; if (s === 'busy') r.busy++; else if (/^failed/.test(s)) r.failed++; else r.ok++; }
+  return r;
+}
+export function ReachNote({ res }) {
+  const r = reachOf(res);
+  if (!r || !(r.failed + r.busy)) return null;
+  return <p class="source-note"><span class="src src-failed"><span class="dot" />{r.ok ? 'Some lookups didn\'t answer, so this may be missing a few.' : 'Lookups didn\'t answer. Try again shortly.'}</span></p>;
 }
 
 export function copyText(text, toast) {

@@ -23,7 +23,7 @@ export function TagList({ uuid, compact = false }) {
               <span class="chip bad">{String(t.type || 'tag').replace(/_/g, ' ')}</span>
               <span class="grow">
                 <span class="tag-reason">{t.reason || 'No reason given'}</span>
-                <span class="faint small">{t.source}{t.at ? ` · ${date(typeof t.at === 'number' && t.at < 1e12 ? t.at * 1000 : t.at)}` : ''}</span>
+                {t.at && <span class="faint small">{date(typeof t.at === 'number' && t.at < 1e12 ? t.at * 1000 : t.at)}</span>}
               </span>
             </li>
           ))}

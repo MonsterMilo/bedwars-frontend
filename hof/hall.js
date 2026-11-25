@@ -146,7 +146,7 @@ let DPR = dprFor(quality);
 renderer.setPixelRatio(DPR);
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = 1.12;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -159,7 +159,7 @@ const MAX_ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
 const scene = new THREE.Scene();
 const FOG = new THREE.Color(0x0b0a0a);
 scene.background = new THREE.Color(0x060608);
-scene.fog = new THREE.FogExp2(FOG, 0.0145);
+scene.fog = new THREE.FogExp2(FOG, 0.0125);
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 scene.environmentIntensity = 0.25;
@@ -1411,7 +1411,7 @@ composer.addPass(new ShaderPass({
     bool bad = !(c.r == c.r) || !(c.g == c.g) || !(c.b == c.b) || c.r > 6e4 || c.g > 6e4 || c.b > 6e4;
     gl_FragColor = bad ? vec4(0., 0., 0., 1.) : vec4(clamp(c.rgb, 0., 48.), 1.); }`,
 }));
-const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.62, 0.55, 0.85); composer.addPass(bloom);
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.72, 0.55, 0.84); composer.addPass(bloom);
 const grade = new ShaderPass({
   uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uFade: { value: 0 }, uAberr: { value: 0.0007 } },
   vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
@@ -1440,14 +1440,15 @@ const Sound = {
     const len = Math.floor(ctx.sampleRate * 3.2), ir = ctx.createBuffer(2, len, ctx.sampleRate);
     for (let c = 0; c < 2; c++) { const ch = ir.getChannelData(c); for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2) * (i < 200 ? i / 200 : 1); }
     const conv = ctx.createConvolver(); conv.buffer = ir; this.wet = ctx.createGain(); this.wet.gain.value = 0.55; this.wet.connect(conv); conv.connect(this.master);
-    // drone: detuned low fifths through a slow lowpass
-    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 520; lp.Q.value = 0.7; lp.connect(this.master);
-    const dg = ctx.createGain(); dg.gain.value = 0.05; dg.connect(lp);
-    [55, 55.4, 82.4, 110.2, 164.8].forEach((f, i) => { const o = ctx.createOscillator(); o.type = i < 2 ? "sawtooth" : "sine"; o.frequency.value = f; const g = ctx.createGain(); g.gain.value = i < 2 ? 0.35 : 0.5; o.connect(g); g.connect(dg); o.start(); });
-    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.05; const lg = ctx.createGain(); lg.gain.value = 260; lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
+    // pad: a warm D major chord of soft sines, slowly breathing
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 900; lp.Q.value = 0.5; lp.connect(this.master);
+    const dg = ctx.createGain(); dg.gain.value = 0.045; dg.connect(lp); const pw = ctx.createGain(); pw.gain.value = 0.35; dg.connect(pw); pw.connect(this.wet);
+    [[73.42, 0.6], [110, 0.45], [146.83, 0.4], [185, 0.24], [220, 0.2], [293.66, 0.1]].forEach(([f, v], i) => [-3, 3].forEach(c => { const o = ctx.createOscillator(); o.type = "sine"; o.frequency.value = f; o.detune.value = c + i * 0.7; const g = ctx.createGain(); g.gain.value = v * 0.5; o.connect(g); g.connect(dg); o.start(); }));
+    const sw = ctx.createOscillator(); sw.frequency.value = 0.07; const swg = ctx.createGain(); swg.gain.value = 0.012; sw.connect(swg); swg.connect(dg.gain); sw.start();
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.05; const lg = ctx.createGain(); lg.gain.value = 300; lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
     const buf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate); const ch = buf.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
     const n = ctx.createBufferSource(); n.buffer = buf; n.loop = true; const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 3200; bp.Q.value = 0.8;
-    const ng = ctx.createGain(); ng.gain.value = 0.01; n.connect(bp); bp.connect(ng); ng.connect(this.master); n.start();
+    const ng = ctx.createGain(); ng.gain.value = 0.005; n.connect(bp); bp.connect(ng); ng.connect(this.master); n.start();
     // fire crackle near the braziers
     const fc = ctx.createBufferSource(); fc.buffer = buf; fc.loop = true; const fh = ctx.createBiquadFilter(); fh.type = "highpass"; fh.frequency.value = 1800;
     this.fire = ctx.createGain(); this.fire.gain.value = 0; fc.connect(fh); fh.connect(this.fire); this.fire.connect(this.master); fc.start();
@@ -1461,7 +1462,8 @@ const Sound = {
     const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(big ? 0.8 : 0.36, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + (big ? 2.6 : 1.1)); o.connect(g); this.out(g, 0.6); o.start(t); o.stop(t + 3);
     const n = ctx.createBufferSource(); n.buffer = this.noise; const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.setValueAtTime(big ? 2400 : 1400, t); f.frequency.exponentialRampToValueAtTime(120, t + 0.6);
     const ng = ctx.createGain(); ng.gain.setValueAtTime(big ? 0.3 : 0.14, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.7); n.connect(f); f.connect(ng); this.out(ng, 0.8); n.start(t); n.stop(t + 1);
-    if (big) [523.25, 659.25, 783.99, 1046.5].forEach((fr, i) => { const s = ctx.createOscillator(); s.type = "triangle"; s.frequency.value = fr; const sg = ctx.createGain(); sg.gain.setValueAtTime(0.0001, t + 0.1 + i * 0.09); sg.gain.exponentialRampToValueAtTime(0.045, t + 0.15 + i * 0.09); sg.gain.exponentialRampToValueAtTime(0.0001, t + 3.5); s.connect(sg); this.out(sg, 0.7); s.start(t); s.stop(t + 4); });
+    // a soft D major bell chord rolls in after the hit
+    [587.33, 739.99, 880, 1174.66].concat(big ? [1479.98] : []).forEach((fr, i) => this.bell(fr, t + 0.12 + i * (big ? 0.11 : 0.07), big ? 0.05 : 0.025, big ? 4 : 2.4));
   },
   step(soft) {
     const ctx = this.ctx; if (!ctx) return; const t = ctx.currentTime;
@@ -1472,7 +1474,10 @@ const Sound = {
   },
   land(h) { const ctx = this.ctx; if (!ctx) return; const t = ctx.currentTime; const o = ctx.createOscillator(); o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(38, t + 0.18);
     const g = ctx.createGain(); g.gain.setValueAtTime(Math.min(0.35, 0.12 + h * 0.08), t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25); o.connect(g); this.out(g, 0.6); o.start(t); o.stop(t + 0.3); this.step(false); },
-  tick() { const ctx = this.ctx; if (!ctx) return; const t = ctx.currentTime; const o = ctx.createOscillator(); o.type = "triangle"; o.frequency.value = 880; const g = ctx.createGain(); g.gain.setValueAtTime(0.03, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25); o.connect(g); this.out(g, 0.4); o.start(t); o.stop(t + 0.3); },
+  // a struck bell: sine plus a quiet bright partial, long tail into the hall
+  bell(f, t, v = 0.03, dur = 1.8) { const ctx = this.ctx;
+    [[1, 1], [2.76, 0.18], [4, 0.06]].forEach(([m, a]) => { const o = ctx.createOscillator(); o.type = "sine"; o.frequency.value = f * m; const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v * a, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t + dur / m ** 0.5); o.connect(g); this.out(g, 0.7); o.start(t); o.stop(t + dur + 0.1); }); },
+  tick() { const ctx = this.ctx; if (!ctx) return; const t = ctx.currentTime; this.bell(1174.66, t, 0.035, 1.4); this.bell(587.33, t + 0.05, 0.02, 1.6); },
 };
 
 // ---------- Environment light: capture the finished hall into a cube map so gold and marble reflect the real room ----------

@@ -126,3 +126,12 @@ a.cos:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); 
 .landing-search { max-width: 640px; }
 .people-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; }
 @media (max-width: 520px) { .slot-label { display: none; } .hotbar .slot .item-icon { width: 76%; margin-bottom: 0; } }
+
+/* Bed Wars stats: rows of four in labelled groups. */
+.bw-stats { display: grid; gap: 10px; }
+.stats.stat-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.stat-group { display: flex; align-items: center; gap: 10px; margin: 8px 2px 0; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+.stat-group::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-2), transparent); }
+.stat-row .stat-value { white-space: nowrap; overflow-wrap: normal; }
+@media (max-width: 1100px) and (min-width: 861px) { .stat-row .stat:not(.big) .stat-value { font-size: 1.15rem; } }
+@media (max-width: 640px) { .stats.stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

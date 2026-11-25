@@ -10,7 +10,7 @@ import { keyOwner, keyInfo } from '../lib/key.js';
 import { toast } from '../lib/toast.js';
 import { sweats, loadState, liveIds, load, removeSweat } from './store.js';
 import { ROSTER, indexOf, tierOf, identityKey, notesOf, beatenBy, parseDay, canRemove, canEdit } from './model.js';
-import { DEFAULT_FILTERS, SORTS, process, paginate, activeFilterCount, rivalMap, rivalFor, rivalSummary, roman, rosterCounts, summary, sweatOfTheDay, sotdLeft, downloadCsv, PAGE_SIZE } from './list.js';
+import { DEFAULT_FILTERS, SORTS, process, paginate, activeFilterCount, rivalMap, rivalFor, rosterCounts, summary, sweatOfTheDay, sotdLeft, downloadCsv, PAGE_SIZE } from './list.js';
 import { RosterDot, RosterDots, Flags, TierBadge, fixed, whole } from './ui.jsx';
 import { readUrl, writeUrl } from './url.js';
 import { NumberField, DateField, Check, Select } from '../ui/controls.jsx';
@@ -188,7 +188,6 @@ function Card({ s, count, rival, live, onOpen, onEdit, onRemove, i }) {
         <RosterDots ids={beatenBy(s)} empty="" />
         <span class="pc-date mono">{dayText(s.dateAdded)}</span>
         <Flags s={s} />
-        {rival && <span class="rival-mark" title={`Rival · ${rivalSummary(rival)}`}><Icon name="sword" />{roman(rival.games)}</span>}
         <Actions s={s} onEdit={onEdit} onRemove={onRemove} />
       </div>
     </article>

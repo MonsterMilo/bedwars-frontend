@@ -1,0 +1,32 @@
+/* Each page's own colours ("mood"), set from Shell's bg as html[data-page].
+   Controls keep the accent from Settings; the mood only paints the room:
+   the light field, the page head, the emblem and the panels' top edges.
+   --m1 lead, --m2 second, --m3 the far glow. */
+html[data-page="player"]       { --m1: #9dff6a; --m2: #ffd84a; --m3: #2fd1a0; }
+html[data-page="leaderboards"] { --m1: #ffd24a; --m2: #ff8a3d; --m3: #ff5f9e; }
+html[data-page="nicks"]        { --m1: #b48cff; --m2: #ff5fd2; --m3: #5e7bff; }
+html[data-page="download"]     { --m1: #5ee7ff; --m2: #6a7dff; --m3: #3dffb4; }
+html[data-page="unlock"]       { --m1: #c08bff; --m2: #5ee7ff; --m3: #ff9ad5; }
+
+html[data-page]:not([data-page="none"]):not([data-page="tracker"]) {
+  & .bg-field::before { background:
+      radial-gradient(42% 32% at 16% 6%, color-mix(in srgb, var(--m1) 17%, transparent), transparent 70%),
+      radial-gradient(38% 30% at 84% 2%, color-mix(in srgb, var(--m2) 15%, transparent), transparent 70%),
+      radial-gradient(50% 38% at 55% 105%, color-mix(in srgb, var(--m3) 11%, transparent), transparent 70%); }
+  & .bg-field::after { background:
+      linear-gradient(180deg, color-mix(in srgb, var(--m1) 5%, transparent), transparent 40%),
+      repeating-linear-gradient(115deg, transparent 0 120px, color-mix(in srgb, var(--m1) 3%, transparent) 120px 121px); }
+  & .page-head h1 { background: linear-gradient(100deg, var(--text) 10%, color-mix(in srgb, var(--m1) 70%, var(--text)) 55%, var(--m2) 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: none; filter: drop-shadow(0 6px 26px color-mix(in srgb, var(--m1) 22%, transparent)); }
+  & .page-head .eyebrow { color: var(--m1); }
+  & .page-head::before { background: radial-gradient(closest-side, color-mix(in srgb, var(--m2) 18%, transparent), transparent); }
+  & .page-head::after { background: linear-gradient(90deg, var(--m1), var(--m2) 55%, var(--m3)); opacity: 0.75; }
+  & .he-ring { background: conic-gradient(from 0deg, transparent, color-mix(in srgb, var(--m1) 70%, transparent), transparent 35%, color-mix(in srgb, var(--m2) 65%, transparent), transparent 70%, color-mix(in srgb, var(--m3) 55%, transparent), transparent); }
+  & .he-gem { border-color: color-mix(in srgb, var(--m1) 38%, transparent);
+    background: radial-gradient(90% 80% at 30% 20%, color-mix(in srgb, var(--m1) 26%, transparent), transparent 60%), linear-gradient(150deg, color-mix(in srgb, var(--m2) 16%, var(--panel-2)), color-mix(in srgb, var(--bg) 70%, var(--panel-2)));
+    box-shadow: var(--hi), 0 20px 40px -18px color-mix(in srgb, var(--m2) 80%, transparent), 0 0 56px -10px color-mix(in srgb, var(--m1) 40%, transparent); }
+  & main .panel { border-top-color: color-mix(in srgb, var(--m1) 26%, var(--line)); }
+  & main .panel-title > svg { color: var(--m1); }
+}
+html[data-surface="light"][data-page] .page-head h1 { background: none; color: var(--text); filter: none; }
+html[data-surface="light"][data-page] .bg-field::before { opacity: 0.55; }

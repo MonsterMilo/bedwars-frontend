@@ -29,7 +29,7 @@ export function standing(list, field, live) {
 export function Standing({ st, field }) {
   if (!st) return null;
   return (
-    <div class="standing" title={`Higher than ${st.pct}% of ${st.of} tracked sweats' saved ${field}`}>
+    <div class="standing" title={`Higher than ${st.pct}% of ${st.of} tracked players' saved ${field}`}>
       <span class="standing-bar"><span style={{ width: `${st.pct}%` }} /></span>
       <span>Beats {st.pct}%</span>
     </div>
@@ -161,7 +161,7 @@ export function Lookup({ onOpen }) {
                     </div>
                   ) : (
                     <div class="add-row" ref={addRow}>
-                      <button class="btn primary add-btn" type="button" disabled={saving} onClick={() => add(false)}><Icon name="check" />{saving ? 'Adding…' : 'Add Sweat'}</button>
+                      <button class="btn primary add-btn" type="button" disabled={saving} onClick={() => add(false)}><Icon name="check" />{saving ? 'Adding…' : 'Add Player'}</button>
                       {done && <span class="good small" role="status">Added. <button type="button" data-flip class="link" onClick={() => onOpen(done)}>Open</button></span>}
                     </div>
                   )}
@@ -172,7 +172,7 @@ export function Lookup({ onOpen }) {
         </div>
         <div class="lookup-side">
           {!preview && !busy && !error && (
-            <div class="lookup-idle" aria-hidden="true"><span class="beam b1" /><span class="beam b2" /><span class="beam b3" /><p>Look someone up to see how sweaty they are.</p></div>
+            <div class="lookup-idle" aria-hidden="true"><span class="beam b1" /><span class="beam b2" /><span class="beam b3" /><p>Look someone up to see their stats.</p></div>
           )}
           {busy && !preview && <div class="lookup-skel"><div class="skel" style={{ height: '160px' }} /></div>}
 

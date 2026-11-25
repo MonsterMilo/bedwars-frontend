@@ -36,7 +36,7 @@ function Summary({ list, person, onOpen }) {
   return (
     <div class="ss" aria-label="Summary">
       <div class="ss-tile ss-total">
-        <span class="ss-label">{person ? `Beaten by ${person}` : 'Sweats beaten'}</span>
+        <span class="ss-label">{person ? `Beaten by ${person}` : 'Players beaten'}</span>
         <span class="ss-value">{sm.total.toLocaleString()}</span>
         <span class="faint small">{sm.recent ? <><b class="good">+{sm.recent}</b> in 30 days</> : 'None in 30 days'}</span>
       </div>
@@ -222,12 +222,12 @@ function Ranking({ list, picked, setPicked }) {
         const on = picked.includes(r.key);
         return (
           <button key={r.key} type="button" class={`rank-entry ${on ? 'on' : ''}`} style={{ '--c': ROSTER[r.key].color, '--share': r.n / top }} aria-pressed={on}
-            aria-label={`${ORD(r.place)} place: ${ROSTER[r.key].label}, ${r.n} ${r.n === 1 ? 'sweat' : 'sweats'}`}
+            aria-label={`${ORD(r.place)} place: ${ROSTER[r.key].label}, ${r.n} ${r.n === 1 ? 'player' : 'players'}`}
             onClick={() => { if (!on) setPicked([...picked, r.key]); else if (picked.length > 1) setPicked(picked.filter(p => p !== r.key)); }}>
             <span class="rank-place" data-medal={r.n > 0 && r.place <= 3 ? r.place : undefined}>{r.place}</span>
             <RosterDot id={r.key} size={30} />
             <span class="rank-name">{ROSTER[r.key].label}</span>
-            <span class="rank-count"><b>{r.n}</b> {r.n === 1 ? 'sweat' : 'sweats'}</span>
+            <span class="rank-count"><b>{r.n}</b> {r.n === 1 ? 'player' : 'players'}</span>
             <span class="rank-bar" aria-hidden="true" />
           </button>
         );
@@ -306,7 +306,7 @@ export function Sweats({ onOpen, onEdit }) {
                 ...SORTS.filter(([k]) => !['cheating', 'boosting'].includes(k)).map(([k, label]) => [`${k}:asc`, `${label}: low to high`])]} />
           </div>
         )}
-        <button type="button" class="btn" disabled={!shown.length} onClick={() => { downloadCsv(shown); toast(`Exported ${shown.length} sweat${shown.length === 1 ? '' : 's'}`); }}><Icon name="download" />CSV</button>
+        <button type="button" class="btn" disabled={!shown.length} onClick={() => { downloadCsv(shown); toast(`Exported ${shown.length} player${shown.length === 1 ? '' : 's'}`); }}><Icon name="download" />CSV</button>
       </div>
 
       {ls.state === 'saved' && (
@@ -323,18 +323,18 @@ export function Sweats({ onOpen, onEdit }) {
       {!loading && <Summary list={shown} person={view === 'leaderboard' ? pickedLabel : null} onOpen={onOpen} />}
       <Filters f={f} set={setFilters} count={list.length} total={all.length} onReset={reset} />
 
-      {loading && <><p class="faint small" role="status">{ls.progress ? `Loading sweats… ${ls.progress[0]} of ${ls.progress[1]}` : 'Loading sweats…'}</p><Skeletons /></>}
+      {loading && <><p class="faint small" role="status">{ls.progress ? `Loading players… ${ls.progress[0]} of ${ls.progress[1]}` : 'Loading players…'}</p><Skeletons /></>}
 
       {!loading && view === 'leaderboard' && (
         <>
           <Ranking list={list} picked={people} setPicked={setPicked} />
-          <h3 class="lb-title">{people.length > 1 ? `Beaten by ${pickedLabel} together` : `${pickedLabel}'s sweats`} <span class="faint">({lbList.length})</span></h3>
+          <h3 class="lb-title">{people.length > 1 ? `Beaten by ${pickedLabel} together` : `${pickedLabel}'s players`} <span class="faint">({lbList.length})</span></h3>
           <p class="faint small">Tap more names to see who you beat together.</p>
         </>
       )}
 
       {!loading && !shown.length && all.length > 0 && <Empty icon="search">Nobody matches these filters.</Empty>}
-      {!loading && !all.length && ls.state === 'ready' && <Empty icon="trophy">No sweats yet. Look someone up to add the first.</Empty>}
+      {!loading && !all.length && ls.state === 'ready' && <Empty icon="trophy">No players yet. Look someone up to add the first.</Empty>}
 
       {!loading && shown.length > 0 && (view === 'grid'
         ? <div class="card-grid">{pg.items.map((s, i) => <Card key={s._id} i={i} s={s} count={counts[identityKey(s)] || 1} rival={rivalFor(rivals, s)} live={live.has(s._id)} onOpen={onOpen} onEdit={onEdit} onRemove={setRemoving} />)}</div>
@@ -342,7 +342,7 @@ export function Sweats({ onOpen, onEdit }) {
       {!loading && <Pager page={pg.page} pages={pg.pages} set={setPage} />}
       {!loading && shown.length > PAGE_SIZE && <p class="faint small center">Showing {(pg.page - 1) * PAGE_SIZE + 1}–{Math.min(pg.page * PAGE_SIZE, shown.length)} of {shown.length.toLocaleString()}</p>}
 
-      <Dialog open={!!removing} onClose={() => setRemoving(null)} title="Remove sweat?" class="small-dialog">
+      <Dialog open={!!removing} onClose={() => setRemoving(null)} title="Remove player?" class="small-dialog">
         {removing && (
           <div class="confirm">
             <p>Remove <b>{removing.username}</b> ({dayText(removing.dateAdded)}) from the list?</p>

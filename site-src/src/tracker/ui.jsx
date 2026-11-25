@@ -16,7 +16,22 @@ export function RosterDots({ ids, empty = 'Nobody yet' }) {
 }
 
 // Toggle chips for Beaten By. value = { milo: true, ... }
-export function RosterPicker({ value, onChange, label = 'Beaten by', disabled }) {
+export function RosterPicker({ value, onChange, label = 'Beaten by', disabled, look = 'chips' }) {
+  if (look === 'orbs') {
+    return (
+      <fieldset class="r-picker orbs" disabled={disabled}>
+        <legend class="sr-only">{label}</legend>
+        <div class="r-orbs">
+          {ROSTER_KEYS.map(k => (
+            <button key={k} type="button" class={`r-orb ${value[k] ? 'on' : ''}`} style={{ '--c': ROSTER[k].color }} aria-pressed={!!value[k]} onClick={() => onChange({ ...value, [k]: !value[k] })}>
+              <span class="r-orb-ball" aria-hidden="true">{ROSTER[k].initials}<span class="r-orb-check"><Icon name="check" /></span></span>
+              <span class="r-orb-name">{ROSTER[k].label}</span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
+    );
+  }
   return (
     <fieldset class="r-picker" disabled={disabled}>
       <legend>{label}</legend>

@@ -575,15 +575,15 @@ html[data-motion="reduce"] .t-hero::after { animation: none; }
 .tracker-stack .tsec > .panel::before, .tracker-stack .lookup-body.panel::before { content: ''; position: absolute; left: 24px; right: 24px; top: -1px; height: 1px; background: var(--spectrum); opacity: 0.8; pointer-events: none; }
 
 /* ---- Lookup preview: lit skin stage, threat ring, coloured stat tiles ---- */
-.pv { --tc: var(--t3); display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 16px; animation: rise var(--dur) var(--ease); }
+.pv { --tc: var(--t3); display: grid; grid-template-columns: 186px minmax(0, 1fr); gap: 16px; animation: rise var(--dur) var(--ease); }
 .pv.t1 { --tc: var(--t1); } .pv.t2 { --tc: var(--t2); } .pv.t3 { --tc: var(--t3); } .pv.t4 { --tc: var(--t4); } .pv.t5 { --tc: var(--t5); }
-.pv-stage { --rx: 0deg; --ry: 0deg; --gx: 30%; position: relative; isolation: isolate; overflow: hidden; display: grid; place-items: end center; padding-bottom: 30px; min-height: 330px; max-height: 560px; border-radius: 18px; perspective: 700px;
+.pv-stage { --rx: 0deg; --ry: 0deg; --gx: 30%; position: relative; isolation: isolate; overflow: hidden; display: grid; place-items: end center; align-self: start; height: 400px; padding-bottom: 34px; border-radius: 18px; perspective: 700px;
   background: radial-gradient(120% 60% at 50% 100%, color-mix(in srgb, var(--tc) 22%, transparent), transparent 70%), linear-gradient(180deg, color-mix(in srgb, var(--tc) 8%, #0b0e16), #06080d);
   border: 1px solid color-mix(in srgb, var(--tc) 45%, transparent);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(0,0,0,0.4), 0 18px 50px -20px color-mix(in srgb, var(--tc) 60%, transparent); }
 .pv-aura { position: absolute; z-index: -1; left: 50%; bottom: 40px; width: 150px; height: 260px; translate: -50% 0; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--tc) 55%, transparent), transparent); filter: blur(18px); animation: pv-breathe 4.5s ease-in-out infinite; }
 .pv-rays { position: absolute; z-index: -1; inset: -20%; background: repeating-conic-gradient(from 0deg at 50% 78%, color-mix(in srgb, var(--tc) 10%, transparent) 0 6deg, transparent 6deg 18deg); mask: radial-gradient(closest-side at 50% 78%, #000, transparent 75%); animation: pv-spin 40s linear infinite; }
-.pv-skin { position: relative; width: 112px; height: auto; image-rendering: pixelated; transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 300ms var(--ease);
+.pv-skin { position: relative; width: 126px; height: auto; image-rendering: pixelated; transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 300ms var(--ease);
   filter: drop-shadow(0 0 1px color-mix(in srgb, var(--tc) 90%, #fff)) drop-shadow(0 0 14px color-mix(in srgb, var(--tc) 45%, transparent)) drop-shadow(0 16px 12px rgba(0,0,0,0.6)); }
 .pv-glare { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.09) calc(var(--gx) - 6%), transparent calc(var(--gx) + 10%)); mix-blend-mode: screen; }
 .pv-floor { position: absolute; z-index: -1; bottom: 18px; left: 50%; width: 130px; height: 26px; translate: -50% 0; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--tc) 60%, transparent), transparent); filter: blur(3px); }
@@ -625,8 +625,8 @@ html[data-motion="reduce"] .pv-aura, html[data-motion="reduce"] .pv-rays, html[d
 .pv-stat-sub { font-size: 0.76rem; color: var(--dim); }
 .pv-stat .standing { width: 100%; margin-top: 6px; }
 .pv-stat .standing-bar span { background: linear-gradient(90deg, color-mix(in srgb, var(--sc) 50%, transparent), var(--sc)); }
-@media (max-width: 1100px) and (min-width: 861px) { .pv { grid-template-columns: minmax(0, 1fr); } .pv-stage { min-height: 240px; } .pv-skin { width: 90px; } }
-@media (max-width: 520px) { .pv { grid-template-columns: minmax(0, 1fr); } .pv-stage { min-height: 250px; } .pv-skin { width: 92px; } .pv-tier-name { font-size: 1.3rem; } .pv-stat-value { font-size: 1.35rem; } }
+@media (max-width: 1100px) and (min-width: 861px) { .pv { grid-template-columns: minmax(0, 1fr); } .pv-stage { height: 300px; } .pv-skin { width: 110px; } }
+@media (max-width: 520px) { .pv { grid-template-columns: minmax(0, 1fr); } .pv-stage { height: 300px; } .pv-skin { width: 110px; } .pv-tier-name { font-size: 1.3rem; } .pv-stat-value { font-size: 1.35rem; } }
 
 /* ---- Tags: severity edge, source badge ---- */
 .t-tag-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
@@ -637,3 +637,48 @@ html[data-motion="reduce"] .pv-aura, html[data-motion="reduce"] .pv-rays, html[d
 .t-tag-reason { grid-area: reason; overflow-wrap: anywhere; font-weight: 600; }
 .t-tag-meta { grid-area: meta; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 0.76rem; color: var(--faint); }
 .t-tags.compact .t-tag { padding: 8px 10px 8px 14px; }
+
+/* ---- Add Player form: numbered steps (from the classic tracker) ---- */
+.lookup-main { gap: 10px; }
+.lk-step { display: flex; align-items: center; gap: 10px; margin-top: 6px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); }
+.lk-step::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-2), transparent); }
+.lk-num { font-family: var(--mono); font-size: 0.78rem; color: var(--accent); text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent); }
+.lk-count { order: 3; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.04em; text-transform: none; font-size: 0.72rem; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.lk-step::after { order: 2; }
+.lk-opt { letter-spacing: 0.06em; text-transform: lowercase; font-weight: 600; color: var(--faint); }
+.add-form.steps { gap: 10px; }
+.add-form.steps > .lk-step:first-child { margin-top: 0; }
+.lk-input { position: relative; flex: 1; min-width: 0; display: flex; }
+.lk-input svg { position: absolute; left: 13px; top: 50%; translate: 0 -50%; width: 17px; height: 17px; color: var(--faint); pointer-events: none; }
+.lk-input .input { flex: 1; padding-left: 40px; }
+.lk-input:focus-within svg { color: var(--accent); }
+.lk-recent { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.lk-recent-label { margin-right: 4px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); }
+.lk-recent-chip { display: inline-flex; align-items: center; gap: 7px; padding: 3px 11px 3px 4px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--panel-2); color: var(--dim); font: inherit; font-size: 0.82rem; cursor: pointer; transition: color 160ms, border-color 160ms, transform 160ms var(--ease); }
+.lk-recent-chip img { border-radius: 5px; image-rendering: pixelated; }
+.lk-recent-chip:hover { color: var(--text); border-color: var(--line-3); transform: translateY(-1px); }
+
+/* Roster orbs: a round badge per person with a check when picked */
+.r-orbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); gap: 10px 4px; }
+.r-orb { --c: var(--accent); display: grid; justify-items: center; gap: 5px; padding: 4px 0; border: 0; background: none; color: var(--faint); font: inherit; font-size: 0.74rem; font-weight: 600; cursor: pointer; }
+.r-orb-ball { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; font-size: 0.86rem; font-weight: 800; color: var(--c);
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 22%, transparent), color-mix(in srgb, var(--c) 6%, var(--panel-2)));
+  border: 1.5px solid color-mix(in srgb, var(--c) 45%, transparent); transition: transform 220ms var(--ease), background 220ms, box-shadow 220ms, color 220ms; }
+.r-orb:hover .r-orb-ball { transform: translateY(-2px) scale(1.05); border-color: var(--c); }
+.r-orb:hover { color: var(--text); }
+.r-orb.on { color: var(--text); }
+.r-orb.on .r-orb-ball { color: #05070c; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 60%, #fff), var(--c)); border-color: color-mix(in srgb, var(--c) 70%, #fff);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent), 0 0 22px -2px var(--c); }
+.r-orb-check { position: absolute; right: -3px; bottom: -3px; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--good); color: #05070c; border: 2px solid var(--panel-solid); transform: scale(0); transition: transform 220ms var(--ease); }
+.r-orb-check svg { width: 10px; height: 10px; stroke-width: 3; }
+.r-orb.on .r-orb-check { transform: scale(1); }
+.r-picker.orbs:disabled .r-orb { cursor: not-allowed; opacity: 0.55; }
+
+/* Flags as glowing toggles, and a big add button */
+.add-form.steps .flag-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.add-form.steps .flag-chip { justify-content: center; min-height: 44px; border-radius: 12px; font-weight: 600; }
+.add-form.steps .flag-chip.cheat.on { box-shadow: 0 0 0 1px var(--bad) inset, 0 0 22px -6px var(--bad); }
+.add-form.steps .flag-chip.boost.on { box-shadow: 0 0 0 1px var(--warn) inset, 0 0 22px -6px var(--warn); }
+.lk-signed { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--faint); }
+.add-form.steps .add-row { margin-top: 4px; }
+.add-form.steps .add-btn { flex: 1; min-height: 50px; justify-content: center; font-size: 1rem; font-weight: 700; border-radius: 14px; box-shadow: 0 14px 34px -14px color-mix(in srgb, var(--accent) 80%, transparent); }

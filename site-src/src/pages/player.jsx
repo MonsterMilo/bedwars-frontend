@@ -86,7 +86,6 @@ function ProfileHead({ data, view }) {
             <Icon name="star" />{fav ? 'Favourite' : 'Add favourite'}
           </button>
           <button type="button" class="btn small" onClick={() => copyText(dashed(data.uuid), toast)}><Icon name="copy" />Copy UUID</button>
-          <a class="btn small ghost" href={`nicks.html?player=${enc(data.name)}`}><Icon name="mask" />Find a nick from their game</a>
         </div>
         {!data.live && !siteKey.value && (
           <p class="faint small">Stats may be a few hours old. <button type="button" class="linkish" onClick={() => { keyDialog.value = true; }}>Enter a key</button> for live stats.</p>

@@ -17,7 +17,9 @@ const TAU = Math.PI * 2;
 function palette() {
   const cs = getComputedStyle(document.documentElement);
   const get = (n, f) => cs.getPropertyValue(n).trim() || f;
-  return { a: get('--accent', '#5ee7ff'), b: get('--accent-2', '#a98bff'), c: get('--accent-3', '#ffc46b'), text: get('--text', '#eef1f8'), bg: get('--bg', '#06070b'), light: isLight() };
+  // the page's mood colours (styles/moods.css) when it has them, else the accents
+  const a = get('--accent', '#5ee7ff'), b = get('--accent-2', '#a98bff'), c = get('--accent-3', '#ffc46b');
+  return { a: get('--m1', a), b: get('--m2', b), c: get('--m3', c), text: get('--text', '#eef1f8'), bg: get('--bg', '#06070b'), light: isLight() };
 }
 function seeded(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
 // The page under the pointer is "background" when it isn't a control or a panel.

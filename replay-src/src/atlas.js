@@ -12,6 +12,7 @@ const THREE = global.THREE
 const { gunzipSync } = require('fflate')
 const { BlockRenderer } = require('./renderer')
 const { ReplayCamera } = require('./camera')
+const { Keybinds } = require('./keybinds')
 const { decodeMap, mapFromReplay } = require('./atlas-map')
 
 const BACKEND = 'https://bedwars-backend.onrender.com'
@@ -356,6 +357,9 @@ async function showMap (map, rotationP) {
   const span = Math.max(80, maxX - minX, maxZ - minZ)
 
   const cam = new ReplayCamera(camera, renderer.domElement)
+
+  // WASD/E/Q/Shift come from the viewer's key bindings (keybinds.js, same keys as replays); without them the camera never moved.
+  cam.binds = new Keybinds()
   cam.speed = 18
   cam.center.copy(mid)
   cam.yaw = cam.tYaw = Math.PI / 4

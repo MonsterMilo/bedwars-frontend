@@ -338,6 +338,8 @@
   .hero .kicker, .hero .tally { animation: heroIn .8s var(--ease) .08s both; }
   @keyframes heroIn { from { opacity: 0; transform: translateY(10px); } }
   body[data-view="map"] .page-bg { display: none; }
+  /* The site header belongs on the list, not over the full-screen 3D map (it hid the Map/Fly buttons). */
+  body[data-view="map"] prism-nav { display: none; }
 </style>
 <link rel="stylesheet" href="css/pages.css?v=3">
 <script type="module" src="app/nav.js?v=1"></script><!-- the site header; bump v when site-src is rebuilt with header changes -->
@@ -473,7 +475,7 @@
     new MutationObserver(letters).observe(grid, { childList: true })
   })()
 </script>
-<script src="replay/atlas.js?v=2026-11-25a"></script><!-- bump v with every atlas.js build, so a cached page never runs a newer script -->
+<script src="replay/atlas.js?v=2026-11-25b"></script><!-- bump v with every atlas.js build, so a cached page never runs a newer script -->
 <script src="bg/backgrounds.js?v=1" defer></script>
 <script src="seasonal/northpole.js?v=1"></script>
 </body>

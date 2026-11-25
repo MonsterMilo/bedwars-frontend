@@ -105,7 +105,7 @@ export function apply() {
   html.style.setProperty('--accent-3', acc.c);
   loadFont(p.font);
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = p.surface === 'light' ? '#f4f6fb' : p.surface === 'oled' ? '#000000' : '#06070b';
+  if (meta) meta.content = p.surface === 'light' ? '#f4f6fb' : p.surface === 'oled' ? '#000000' : '#0c0f17';
 }
 
 if (typeof window !== 'undefined' && window.matchMedia) {

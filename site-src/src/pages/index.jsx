@@ -44,7 +44,6 @@ function People() {
   );
 }
 
-const HUES = ['--accent', '--accent-2', '--accent-3'];
 const reduceMotion = () => document.documentElement.dataset.motion === 'reduce';
 
 // Starts the 3D prism once the page has drawn, and keeps its beams on the cards.
@@ -56,7 +55,7 @@ function usePrism(canvas, spot, cards, left_) {
     let scene = null, dead = false;
     const colors = () => {
       const cs = getComputedStyle(document.documentElement);
-      return SECTIONS.map((s, i) => (HUES[i] ? cs.getPropertyValue(HUES[i]).trim() : s.hue));
+      return SECTIONS.map(s => (s.hue.startsWith('var(') ? cs.getPropertyValue(s.hue.slice(4, -1)).trim() : s.hue));
     };
     const background = () => ({ base: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(), light: document.documentElement.dataset.surface === 'light' });
     const layout = () => {
@@ -138,7 +137,7 @@ function Home() {
         </div>
         <div class="hero-cards">
           {SECTIONS.map((s, si) => (
-            <section key={s.id} ref={el => { cards.current[si] = el; }} class={`sec-card panel reveal ${s.locked ? 'locked' : ''}`}
+            <section key={s.id} ref={el => { cards.current[si] = el; }} class={`sec-card panel reveal ${s.locked ? 'locked' : ''} ${s.locked && !unlocked ? 'shut' : ''}`}
               style={{ animationDelay: `${160 + si * 70}ms`, '--hue': s.hue }} aria-labelledby={`sec-${s.id}`}
               onPointerEnter={() => setHot(si, 1)} onPointerLeave={() => setHot(si, 0)} onFocusIn={() => setHot(si, 1)} onFocusOut={() => setHot(si, 0)}>
               <header class="sec-head">
@@ -152,11 +151,11 @@ function Home() {
               <ul class="sec-rows">
                 {s.pages.map(p => (
                   <li key={p.href}>
-                    <a href={p.href} class="sec-row card-link">
+                    <a href={p.href} class={`sec-row card-link ${p.featured ? 'featured' : ''}`}>
                       <span class="tile"><ItemIcon id={p.item} /></span>
                       <span class="sec-text">
                         <strong>{p.label}{s.locked && !unlocked && <Icon name="lock" class="card-lock" label="Needs a key" />}</strong>
-                        <small>{p.desc}</small>
+                        {!(s.locked && !unlocked) && <small>{p.desc}</small>}
                       </span>
                       <Icon name="chevron" class="card-go" />
                     </a>

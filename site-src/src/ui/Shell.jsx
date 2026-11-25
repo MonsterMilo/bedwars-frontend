@@ -11,6 +11,9 @@ import { toasts } from '../lib/toast.js';
 import { useSignal } from '../lib/signal.js';
 import { ItemIcon } from './items.jsx';
 import { startBackdrop } from '../lib/backdrop.js';
+import { season } from '../lib/prefs.js';
+import { previewing } from '../lib/season.js';
+import '../styles/christmas.css';
 
 // The mark: a glass prism, a white beam going in and the spectrum coming out.
 let logoN = 0;
@@ -84,6 +87,15 @@ export function Shell({ children, wide = false, search = true, bg = null }) {
 
   useEffect(() => { checkKey(); }, [key]);
   useEffect(() => { if (bg && bg !== 'none') startBackdrop(bg); }, []);
+  // The holiday look: loaded only while it's on.
+  const holiday = useSignal(season);
+  useEffect(() => {
+    if (holiday !== 'christmas') return;
+    let off = false;
+    const load = import('../lib/christmas.js');
+    load.then(m => { if (!off) m.startChristmas({ previewing: previewing() }); }).catch(() => {});
+    return () => { off = true; load.then(m => m.stopChristmas()).catch(() => {}); };
+  }, [holiday]);
   useEffect(() => {
     const onKey = e => {
       if (e.key === '/' && !/input|textarea|select/i.test(document.activeElement && document.activeElement.tagName) && searchRef.current) {

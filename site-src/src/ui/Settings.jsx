@@ -1,9 +1,10 @@
 // Settings: every look-and-feel choice, applied live and kept per browser.
 import { Dialog } from './Dialog.jsx';
-import { prefs, setPref, resetPrefs, ACCENTS, fxPage } from '../lib/prefs.js';
+import { prefs, setPref, resetPrefs, ACCENTS, fxPage, season, apply } from '../lib/prefs.js';
 import { useSignal } from '../lib/signal.js';
 import { MODES } from '../lib/bedwars.js';
 import { Select, Switch, Range } from './controls.jsx';
+import { availableSeason, SEASONS, overridden, setOverride } from '../lib/season.js';
 
 function Seg({ label, value, options, onChange }) {
   return (
@@ -23,6 +24,8 @@ const ZONES = [['local', 'This device'], ['America/Los_Angeles', 'Pacific'], ['A
 export function Settings({ open, onClose }) {
   const p = useSignal(prefs);
   const fx = useSignal(fxPage);
+  const holiday = useSignal(season);
+  const toggleHoliday = v => { if (overridden()) { setOverride(v); apply(); } else setPref('seasonal', v); };
   const canSound = typeof window !== 'undefined' && !!(window.AudioContext || window.webkitAudioContext);
   return (
     <Dialog open={open} onClose={onClose} title="Settings" side class="settings">
@@ -49,6 +52,7 @@ export function Settings({ open, onClose }) {
             </div>
           </div>
           <Switch checked={p.effects} onChange={v => setPref('effects', v)}>Moving background</Switch>
+          {availableSeason() && <Switch checked={!!holiday} onChange={toggleHoliday}>{SEASONS[availableSeason()].label}</Switch>}
         </section>
 
         {fx && (

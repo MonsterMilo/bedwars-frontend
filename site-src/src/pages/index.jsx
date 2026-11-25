@@ -15,7 +15,8 @@ import { SECTIONS } from '../lib/site.js';
 import { siteKey, keyOwner, keyDialog } from '../lib/key.js';
 import { recent, favourites, playerUrl, clearRecent } from '../lib/players.js';
 import { useSignal } from '../lib/signal.js';
-import { prefs } from '../lib/prefs.js';
+import { prefs, season } from '../lib/prefs.js';
+import { christmasLine } from '../lib/season.js';
 
 // Old tracker links (anything with ?query or #hash) still open the tracker.
 if (location.search || (location.hash && location.hash !== '#')) {
@@ -118,6 +119,7 @@ function Home() {
   const key = useSignal(siteKey);
   const owner = useSignal(keyOwner);
   const unlocked = !!(key && owner);
+  const holiday = useSignal(season);
   const canvas = useRef(null), spot = useRef(null), cards = useRef([]), left = useRef(null);
   const { mode, setHot } = usePrism(canvas, spot, cards, left);
   return (
@@ -125,7 +127,7 @@ function Home() {
       <canvas ref={canvas} class="prism-canvas" aria-hidden="true" />
       <section class="hero wrap wide">
         <div class="hero-left" ref={left}>
-          <p class="kicker reveal"><span aria-hidden="true" />Hypixel Bed Wars toolkit</p>
+          <p class="kicker reveal"><span aria-hidden="true" />Hypixel Bed Wars toolkit{holiday === 'christmas' && <b class="xm-count">{christmasLine()}</b>}</p>
           <h1 class="hero-title reveal">Prism</h1>
           <p class="hero-sub reveal">Look anyone up, find who's behind a nick, and see every cosmetic and map.</p>
           <div class="hero-search reveal"><PlayerSearch big autofocus placeholder="Player name or UUID" /></div>

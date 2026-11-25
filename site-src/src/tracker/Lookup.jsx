@@ -127,15 +127,17 @@ export function Lookup({ onOpen }) {
     <div class="panel pad lit lookup">
       <div class="lookup-body">
         <div class="lookup-main">
+          <Step n="01" title="Player" />
           <form class="lookup-form" onSubmit={look} role="search">
             <label class="sr-only" for="lk-name">Username</label>
-            <input id="lk-name" ref={input} class="input" value={name} onInput={e => typeName(e.currentTarget.value)} placeholder="Username" maxLength={16} autocomplete="off" spellcheck={false} />
+            <span class="lk-input"><Icon name="search" /><input id="lk-name" ref={input} class="input" value={name} onInput={e => typeName(e.currentTarget.value)} placeholder="Username" maxLength={16} autocomplete="off" spellcheck={false} /></span>
             <button class="btn primary" type="submit" disabled={busy}>{busy ? 'Looking…' : 'Preview'}</button>
             {preview && <button class="btn ghost" type="button" onClick={clear}>Clear</button>}
           </form>
           {recent.length > 0 && !preview && (
-            <div class="chips-row" aria-label="Recent lookups">
-              {recent.map(n => <button key={n} type="button" class="chip-btn" onClick={() => { setName(n); look(null, n); }}>{n}</button>)}
+            <div class="lk-recent" aria-label="Recent lookups">
+              <span class="lk-recent-label">Recent</span>
+              {recent.map(n => <button key={n} type="button" class="lk-recent-chip" onClick={() => { setName(n); look(null, n); }}><img src={`https://mc-heads.net/avatar/${enc(n)}/32`} alt="" width="18" height="18" loading="lazy" />{n}</button>)}
             </div>
           )}
           <ErrorBox error={error} />
@@ -143,13 +145,16 @@ export function Lookup({ onOpen }) {
           {preview && (
             <div class="lookup-add">
               {writable ? (
-                <div class="add-form">
-                  <RosterPicker value={beaten} onChange={setBeaten} />
+                <div class="add-form steps">
+                  <Step n="02" title="Beaten by" extra={(() => { const c = ROSTER_KEYS.filter(k => beaten[k]).length; return c ? <span class="lk-count">{c} picked</span> : null; })()} />
+                  <RosterPicker value={beaten} onChange={setBeaten} look="orbs" />
+                  <Step n="03" title="Flags" />
                   <FlagPicker {...flags} onChange={setFlags} />
+                  <Step n="04" title="Note" extra={<span class="lk-opt">optional</span>} />
                   <div class="field note-field">
-                    <label for="lk-note">Note <span class="faint">(optional)</span></label>
+                    <label class="sr-only" for="lk-note">Note</label>
                     <textarea id="lk-note" class="input" rows={2} maxLength={NOTE_MAX} value={note} onInput={e => setNote(e.currentTarget.value)} placeholder="What happened?" />
-                    <div class="note-meta">{owner && <NoteAuthor id={owner} />}<span class={`faint small ${note.length > NOTE_MAX - 20 ? 'warn' : ''}`}>{note.length}/{NOTE_MAX}</span></div>
+                    <div class="note-meta">{owner && <span class="lk-signed">Signed as <NoteAuthor id={owner} /></span>}<span class={`faint small ${note.length > NOTE_MAX - 20 ? 'warn' : ''}`}>{note.length}/{NOTE_MAX}</span></div>
                   </div>
                   {dupe ? (
                     <div class="notice warn-notice" role="alert">
@@ -162,7 +167,7 @@ export function Lookup({ onOpen }) {
                     </div>
                   ) : (
                     <div class="add-row" ref={addRow}>
-                      <button class="btn primary add-btn" type="button" disabled={saving} onClick={() => add(false)}><Icon name="check" />{saving ? 'Adding…' : 'Add Player'}</button>
+                      <button class="btn primary add-btn" type="button" disabled={saving} onClick={() => add(false)}><Icon name="check" />{saving ? 'Adding…' : `Add ${preview.name}`}</button>
                       {done && <span class="good small" role="status">Added. <button type="button" data-flip class="link" onClick={() => onOpen(done)}>Open</button></span>}
                     </div>
                   )}
@@ -191,6 +196,10 @@ const STAT_TILES = [
   ['KDR', 'kdr', 'c-kd', s => `${num(s.kills)} K · ${num(s.deaths)} D`],
   ['BBLR', 'bblr', 'c-bb', s => `${num(s.beds)} B · ${num(s.bedsLost)} BL`]
 ];
+
+function Step({ n, title, extra }) {
+  return <div class="lk-step"><span class="lk-num">{n}</span><span class="lk-title">{title}</span>{extra}</div>;
+}
 
 // The preview: the skin on a lit stage, a threat ring with the tier, four
 // coloured stat tiles and the player's tags.

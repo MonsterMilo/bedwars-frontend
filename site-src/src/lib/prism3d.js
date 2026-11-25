@@ -23,7 +23,7 @@ export function cssColor(c, fallback = '#ffffff') {
   return new THREE.Color(probe.fillStyle);
 }
 
-export function startPrism({ canvas, layout, colors, background, reduce, onReady }) {
+export function startPrism({ canvas, layout, colors, background, reduce, onReady, intro = false, onLand }) {
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }); } catch { return null; }
   const DPR = Math.min(1.75, window.devicePixelRatio || 1);
@@ -255,13 +255,14 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
   // z = 0 plane the beams are drawn in, seen from the camera.
   const gv = new THREE.Vector3();
   function onGlass(x, y) {
-    gv.set(x * 1.04, (y + 0.12) * 1.04 - 0.12, 0).applyMatrix4(prismGroup.matrixWorld);
+    gv.set(x * 1.04, (y + 0.12) * 1.04 - 0.12, 0).applyMatrix4(prism.matrixWorld);
     const c = camera.position, k = c.z / (c.z - gv.z);
     return new THREE.Vector2(c.x + (gv.x - c.x) * k, c.y + (gv.y - c.y) * k);
   }
 
   const t0 = performance.now();
   let shown = false, last = t0, raf = 0, introStart = t0, dead = false;
+  const landAt = [];
   const ease = x => 1 - Math.pow(1 - x, 3);
   function frame(now) {
     raf = 0;
@@ -274,13 +275,21 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
     mouse.x += (mouse.tx - mouse.x) * 0.08; mouse.y += (mouse.ty - mouse.y) * 0.08; mouse.on += (mouse.ton - mouse.on) * 0.04;
     const t = still ? 3 : (now - t0) / 1000, dt = Math.min(0.05, (now - last) / 1000); last = now;
     const it = still ? 9 : (now - introStart) / 1000;
-    const grow = Math.min(1, Math.max(0, it / 0.7)), split = Math.min(1, Math.max(0, (it - 0.8) / 0.8));
+    // The first visit plays it slowly: the glass spins in, the light falls on
+    // it, flashes, and each colour fires at its card in turn (onLand lights
+    // the card). Later visits run the same steps quickly, all at once.
+    const cl = x => Math.min(1, Math.max(0, x));
+    const A = intro ? { pin: 1.1, grow0: 0.8, grow: 0.7, in0: 1.5, inD: 0.3, sp0: 1.8, spD: 0.45, gap: 0.25 } : { pin: 0, grow0: 0, grow: 0.7, in0: 0.55, inD: 0.35, sp0: 0.8, spD: 0.8, gap: 0 };
+    const pin = A.pin ? ease(cl(it / A.pin)) : 1;
+    const grow = cl((it - A.grow0) / A.grow);
+    const flash = intro && it > A.in0 ? Math.exp(-(it - A.in0) * 4) : 0;
+    bloom.strength = 0.55 + 0.9 * flash;
     const px = L.prism.x, py = -L.prism.y, S = L.prism.size;
     bgMat.uniforms.uT.value = t; bgMat.uniforms.uPrism.value.set(px, H - L.prism.y); bgMat.uniforms.uMouse.value.set(mouse.x, -mouse.y); bgMat.uniforms.uOn.value = mouse.on;
     dustMat.uniforms.uT.value = t; dustMat.uniforms.uPar.value.set(-mouse.x, mouse.y);
     dustMat.uniforms.uPtr.value.set(mouse.px - W / 2, -(mouse.py - H / 2));
     // Place the glass first, so the beams meet its faces however it has turned.
-    prismGroup.position.set(px, py, 0); prismGroup.scale.setScalar(S * 0.5);
+    prismGroup.position.set(px, py, 0); prismGroup.scale.setScalar(S * 0.5 * Math.max(0.001, pin)); prism.rotation.y = (1 - pin) * -4;
     if (!spin.drag) {
       prismGroup.rotation.y += dt * spin.vy; spin.vy *= Math.max(0, 1 - dt * 1.6);
       const free = Math.min(1, Math.abs(spin.vy) / 0.5);
@@ -298,12 +307,12 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
     const [inC, outC] = ca.x <= cb.x ? [ca, cb] : [cb, ca];
     const entry = top.clone().lerp(inC, 0.53);
 
-    const inner = Math.min(1, Math.max(0, (it - 0.55) / 0.35));
+    const inner = cl((it - A.in0) / A.inD);
     const iu = inBeam.uniforms;
     iu.uA.value.set(L.source.x, -L.source.y); iu.uB.value.copy(entry);
     iu.uGrow.value = ease(grow); iu.uW0.value = S * 0.06; iu.uW1.value = S * 0.045; iu.uCore.value = Math.max(1.3, S * 0.006); iu.uT.value = t; iu.uSpeed.value = 2.2;
     entrySpot.position.set(entry.x, entry.y, 0); const es = S * 0.42 * (1 + 0.05 * Math.sin(t * 2.2)); entrySpot.scale.set(es, es, 1);
-    entrySpot.material.uniforms.uI.value = grow >= 1 ? 0.55 + 0.15 * Math.sin(t * 3.1) : 0;
+    entrySpot.material.uniforms.uI.value = grow >= 1 ? 0.55 + 0.15 * Math.sin(t * 3.1) + flash * 1.6 : 0;
 
     // Colours leave the glass in the same order as their cards, so no two cross.
     const live = L.targets.map((tg, i) => i).filter(i => i < outBeams.length && L.targets[i]);
@@ -313,6 +322,9 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
       const tg = L.targets[i], sp = landSpots[i], ib = innerBeams[i].uniforms, xs = exitSpots[i];
       if (!tg) { b.uniforms.uI.value = 0; sp.material.uniforms.uI.value = 0; ib.uI.value = 0; xs.material.uniforms.uI.value = 0; return; }
       const h = L.hot[i] || 0;
+      const split = cl((it - A.sp0 - A.gap * rank[i]) / A.spD);
+      if (split >= 1 && landAt[i] === undefined) { landAt[i] = it; if (onLand) onLand(i); }
+      const land = landAt[i] !== undefined && intro ? Math.exp(-(it - landAt[i]) * 4) : 0;
       // Cards below (phones): out through the base. Cards to the side: out the far face.
       const f = live.length > 1 ? rank[i] / (live.length - 1) : 0.5;
       const exit = L.narrow ? inC.clone().lerp(outC, 0.3 + 0.45 * f) : top.clone().lerp(outC, 0.4 + 0.32 * f);
@@ -324,7 +336,7 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
       u.uW0.value = S * 0.03; u.uW1.value = (L.narrow ? 18 : S * 0.13) * (1 + h * 0.5); u.uCore.value = Math.max(1.2, S * 0.0045) * (1 + h * 0.7);
       u.uI.value = 0.75 + h * 0.75; u.uT.value = t; u.uSpeed.value = 2.6 + h * 2.5;
       xs.position.set(exit.x, exit.y, 0); const xz = S * 0.2 * (1 + h * 0.4); xs.scale.set(xz, xz, 1); xs.material.uniforms.uI.value = inner >= 1 ? 0.6 + h * 0.4 : 0;
-      sp.position.set(tg.x, -tg.y, 0); const sz = (L.narrow ? 70 : S * 0.42) * (1 + h * 0.6); sp.scale.set(sz, sz, 1); sp.material.uniforms.uI.value = split >= 1 ? 0.4 + h * 0.5 : 0;
+      sp.position.set(tg.x, -tg.y, 0); const sz = (L.narrow ? 70 : S * 0.42) * (1 + h * 0.6 + land * 0.9); sp.scale.set(sz, sz, 1); sp.material.uniforms.uI.value = split >= 1 ? 0.4 + h * 0.5 + land * 1.4 : 0;
     });
     rimMat.uniforms.uT.value = t;
     composer.render();

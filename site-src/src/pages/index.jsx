@@ -15,7 +15,8 @@ import { SECTIONS } from '../lib/site.js';
 import { siteKey, keyOwner, keyDialog } from '../lib/key.js';
 import { recent, favourites, playerUrl, clearRecent } from '../lib/players.js';
 import { useSignal } from '../lib/signal.js';
-import { prefs, season } from '../lib/prefs.js';
+import { prefs, season, apply } from '../lib/prefs.js';
+import { firstLoad } from '../lib/intro.js';
 import { christmasLine } from '../lib/season.js';
 
 // Old tracker links (anything with ?query or #hash) still open the tracker.
@@ -47,9 +48,16 @@ function People() {
 
 const reduceMotion = () => document.documentElement.dataset.motion === 'reduce';
 
+// First visit in this tab: the cards wait in the dark until their beam lands.
+apply();
+const INTRO = firstLoad();
+if (INTRO) document.documentElement.classList.add('home-intro');
+const endIntro = () => document.documentElement.classList.remove('home-intro');
+
 // Starts the 3D prism once the page has drawn, and keeps its beams on the cards.
 function usePrism(canvas, spot, cards, left_) {
   const [mode, setMode] = useState('loading'); // loading | 3d | flat
+  const [lit, setLit] = useState(() => SECTIONS.map(() => false));
   const hot = useRef(SECTIONS.map(() => 0));
   const hotT = useRef(SECTIONS.map(() => 0));
   useEffect(() => {
@@ -98,21 +106,24 @@ function usePrism(canvas, spot, cards, left_) {
     };
     function start() {
       if (scene || dead) return;
-      if (document.documentElement.dataset.effects === 'off') { setMode('flat'); return; }
+      if (document.documentElement.dataset.effects === 'off') { setMode('flat'); endIntro(); return; }
       import('../lib/prism3d.js').then(m => {
         if (dead || scene || document.documentElement.dataset.effects === 'off') return;
-        scene = m.startPrism({ canvas: canvas.current, layout, colors, background, reduce: reduceMotion, onReady: () => setMode('3d') });
-        if (!scene) setMode('flat');
-      }).catch(() => setMode('flat'));
+        scene = m.startPrism({ canvas: canvas.current, layout, colors, background, reduce: reduceMotion, onReady: () => setMode('3d'), intro: INTRO,
+          onLand: i => setLit(l => (l[i] ? l : l.map((v, j) => v || j === i))) });
+        if (!scene) { setMode('flat'); endIntro(); }
+      }).catch(() => { setMode('flat'); endIntro(); });
     }
     const off = prefs.subscribe(() => requestAnimationFrame(() => {
       if (document.documentElement.dataset.effects === 'off') { if (scene) { scene.stop(); scene = null; canvas.current.classList.remove('on'); } setMode('flat'); return; }
       if (scene) scene.recolor(); else start();
     }));
     const t = setTimeout(start, 60);
-    return () => { dead = true; clearTimeout(t); off(); if (scene) scene.stop(); };
+    // Never leave the cards hidden if the light is slow to arrive.
+    const safe = INTRO ? setTimeout(endIntro, 6000) : 0;
+    return () => { dead = true; clearTimeout(t); clearTimeout(safe); off(); if (scene) scene.stop(); };
   }, []);
-  return { mode, setHot: (i, v) => { hotT.current[i] = v; } };
+  return { mode, lit, setHot: (i, v) => { hotT.current[i] = v; } };
 }
 
 function Home() {
@@ -121,7 +132,7 @@ function Home() {
   const unlocked = !!(key && owner);
   const holiday = useSignal(season);
   const canvas = useRef(null), spot = useRef(null), cards = useRef([]), left = useRef(null);
-  const { mode, setHot } = usePrism(canvas, spot, cards, left);
+  const { mode, lit, setHot } = usePrism(canvas, spot, cards, left);
   return (
     <Shell search={false} bg="none">
       <canvas ref={canvas} class="prism-canvas" aria-hidden="true" />
@@ -139,7 +150,7 @@ function Home() {
         </div>
         <div class="hero-cards">
           {SECTIONS.map((s, si) => (
-            <section key={s.id} ref={el => { cards.current[si] = el; }} class={`sec-card panel reveal ${s.locked ? 'locked' : ''} ${s.locked && !unlocked ? 'shut' : ''}`}
+            <section key={s.id} ref={el => { cards.current[si] = el; }} class={`sec-card panel reveal ${lit[si] ? 'lit' : ''} ${s.locked ? 'locked' : ''} ${s.locked && !unlocked ? 'shut' : ''}`}
               style={{ animationDelay: `${160 + si * 70}ms`, '--hue': s.hue }} aria-labelledby={`sec-${s.id}`}
               onPointerEnter={() => setHot(si, 1)} onPointerLeave={() => setHot(si, 0)} onFocusIn={() => setHot(si, 1)} onFocusOut={() => setHot(si, 0)}>
               <header class="sec-head">
@@ -172,4 +183,4 @@ function Home() {
   );
 }
 
-mount(<Home />);
+mount(<Home />, { intro: false });

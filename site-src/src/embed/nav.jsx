@@ -10,6 +10,7 @@ import { ItemIcon } from '../ui/items.jsx';
 import { SECTIONS, currentPage } from '../lib/site.js';
 import hostCss from './nav-host.css';
 import shellCss from '../styles/shell.css';
+import { startIntro } from '../lib/intro.js';
 
 const hasKey = () => { try { return !!localStorage.getItem('bedwarsAdminKey'); } catch { return false; } };
 
@@ -107,5 +108,4 @@ function mountNav() {
   render(<Header />, root);
 }
 
-if (document.body) mountNav();
-else document.addEventListener('DOMContentLoaded', mountNav);
+if (document.body) { mountNav(); startIntro(); } else document.addEventListener('DOMContentLoaded', () => { mountNav(); startIntro(); });

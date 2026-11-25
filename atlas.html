@@ -6,6 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Prism Atlas</title>
+<script>/* hide the page until the first-load intro (app/nav.js) covers it */try{if(!sessionStorage.getItem('prismIntro:'+location.pathname)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('intro-wait');setTimeout(function(){document.documentElement.classList.remove('intro-wait')},3000)}}catch(e){}</script>
+<style>html.intro-wait body{visibility:hidden}</style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600&display=swap">
 <link rel="icon" href="icons/icon-192.png">
 <script>
@@ -343,7 +345,7 @@
   body[data-view="map"] prism-nav { display: none; }
 </style>
 <link rel="stylesheet" href="css/pages.css?v=3">
-<script type="module" src="app/nav.js?v=1"></script><!-- the site header; bump v when site-src is rebuilt with header changes -->
+<script type="module" src="app/nav.js?v=2"></script><!-- the site header; bump v when site-src is rebuilt with header changes -->
 
 </head>
 <body>

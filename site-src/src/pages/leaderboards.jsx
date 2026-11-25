@@ -62,7 +62,7 @@ function Leaderboards() {
   const hasValues = leaders.some(l => l.value != null);
 
   return (
-    <Shell>
+    <Shell bg="leaderboards">
       <div class="page wrap">
         <header class="page-head">
           <div class="grow">

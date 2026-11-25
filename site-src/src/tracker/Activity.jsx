@@ -9,6 +9,7 @@ import { toast } from '../lib/toast.js';
 import { restoreSweat } from './store.js';
 import { ROSTER_KEYS, personLabel } from './model.js';
 import { RosterDot } from './ui.jsx';
+import { Select } from '../ui/controls.jsx';
 
 const ACTIONS = [['', 'Everything'], ['sweat.add', 'Added'], ['sweat.edit', 'Edited'], ['sweat.delete', 'Deleted'], ['sweat.restore', 'Restored'], ['note.add,note.edit,note.delete', 'Notes'], ['denick.search', 'Denicks']];
 const VERB = { 'sweat.add': 'added', 'sweat.edit': 'edited', 'sweat.delete': 'removed', 'sweat.restore': 'restored', 'note.add': 'noted on', 'note.edit': 'edited a note on', 'note.delete': 'deleted a note on', 'denick.search': 'searched' };
@@ -88,15 +89,8 @@ export function Activity() {
         <button type="button" class="btn small ghost" onClick={() => load()} aria-label="Refresh"><Icon name="refresh" /></button>
       </div>
       <div class="act-filters">
-        <label class="sr-only" for="act-who">Who</label>
-        <select id="act-who" class="input" value={who} onChange={e => setWho(e.currentTarget.value)}>
-          <option value="">Everyone</option>
-          {[...ROSTER_KEYS, 'admin'].map(k => <option key={k} value={k}>{personLabel(k)}</option>)}
-        </select>
-        <label class="sr-only" for="act-what">Change</label>
-        <select id="act-what" class="input" value={action} onChange={e => setAction(e.currentTarget.value)}>
-          {ACTIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
+        <Select label="Who" small value={who} onChange={setWho} options={[['', 'Everyone'], ...[...ROSTER_KEYS, 'admin'].map(k => [k, personLabel(k)])]} />
+        <Select label="Change" small value={action} onChange={setAction} options={ACTIONS} />
       </div>
       <ErrorBox error={state.error} onRetry={() => load()} what="the activity" />
       {!state.loading && !state.error && !entries.length && <p class="faint small">Nothing here yet.</p>}

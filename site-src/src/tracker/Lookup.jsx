@@ -125,77 +125,86 @@ export function Lookup({ onOpen }) {
   return (
     <section class="panel pad lit lookup" id="lookup" aria-labelledby="lookup-h">
       <h2 class="panel-title" id="lookup-h"><Icon name="search" />Sweat Lookup</h2>
-      <form class="lookup-form" onSubmit={look} role="search">
-        <label class="sr-only" for="lk-name">Username</label>
-        <input id="lk-name" ref={input} class="input" value={name} onInput={e => typeName(e.currentTarget.value)} placeholder="Username" maxLength={16} autocomplete="off" spellcheck={false} />
-        <button class="btn primary" type="submit" disabled={busy}>{busy ? 'Looking…' : 'Preview'}</button>
-        {preview && <button class="btn ghost" type="button" onClick={clear}>Clear</button>}
-      </form>
-      {recent.length > 0 && !preview && (
-        <div class="chips-row" aria-label="Recent lookups">
-          {recent.map(n => <button key={n} type="button" class="chip-btn" onClick={() => { setName(n); look(null, n); }}>{n}</button>)}
-        </div>
-      )}
-      <ErrorBox error={error} />
-
-      {!preview && !busy && !error && (
-        <div class="lookup-idle" aria-hidden="true"><span class="beam b1" /><span class="beam b2" /><span class="beam b3" /><p>Look someone up to see how sweaty they are.</p></div>
-      )}
-      {busy && !preview && <div class="lookup-skel"><div class="skel" style={{ height: '160px' }} /></div>}
-
-      {preview && (
-        <div class="preview">
-          <div class="preview-head">
-            <img class="preview-skin" src={`https://mc-heads.net/body/${preview.uuid}/120`} alt="" width="60" height="135" />
-            <div class="preview-id">
-              <div class="preview-name"><Star star={st.star} /> <PlayerName player={preview.player} name={preview.name} /></div>
-              <div class="preview-sub">
-                <TierBadge index={index} />
-                <span class="mono">{Math.round(index).toLocaleString()} index</span>
-                {times > 0 && <button type="button" class="chip accent" onClick={() => onOpen({ uuid: preview.uuid, username: preview.name })}>Tracked ×{times}</button>}
-              </div>
+      <div class="lookup-body">
+        <div class="lookup-main">
+          <form class="lookup-form" onSubmit={look} role="search">
+            <label class="sr-only" for="lk-name">Username</label>
+            <input id="lk-name" ref={input} class="input" value={name} onInput={e => typeName(e.currentTarget.value)} placeholder="Username" maxLength={16} autocomplete="off" spellcheck={false} />
+            <button class="btn primary" type="submit" disabled={busy}>{busy ? 'Looking…' : 'Preview'}</button>
+            {preview && <button class="btn ghost" type="button" onClick={clear}>Clear</button>}
+          </form>
+          {recent.length > 0 && !preview && (
+            <div class="chips-row" aria-label="Recent lookups">
+              {recent.map(n => <button key={n} type="button" class="chip-btn" onClick={() => { setName(n); look(null, n); }}>{n}</button>)}
             </div>
-          </div>
-          <Gauge index={index} />
-          <div class="preview-stats">
-            {[['FKDR', 'fkdr', st.fkdr], ['WLR', 'wlr', st.wlr], ['KDR', 'kdr', st.kdr], ['BBLR', 'bblr', st.bblr]].map(([label, f, v]) => (
-              <div class="pstat" key={f}>
-                <span class="pstat-label">{label}</span>
-                <span class="pstat-value mono">{fixed(v)}</span>
-                <Standing st={standing(list, f, v)} field={label} />
-              </div>
-            ))}
-          </div>
-          <TagList uuid={preview.uuid} compact />
-
-          {writable ? (
-            <div class="add-form">
-              <RosterPicker value={beaten} onChange={setBeaten} />
-              <FlagPicker {...flags} onChange={setFlags} />
-              <div class="field note-field">
-                <label for="lk-note">Note <span class="faint">(optional)</span></label>
-                <textarea id="lk-note" class="input" rows={2} maxLength={NOTE_MAX} value={note} onInput={e => setNote(e.currentTarget.value)} placeholder="What happened?" />
-                <div class="note-meta">{owner && <NoteAuthor id={owner} />}<span class={`faint small ${note.length > NOTE_MAX - 20 ? 'warn' : ''}`}>{note.length}/{NOTE_MAX}</span></div>
-              </div>
-              {dupe ? (
-                <div class="notice warn-notice" role="alert">
-                  <Icon name="alert" />
-                  <span class="grow">{dupe.username} was already added today{dupe.addedBy ? ` by ${personLabel(dupe.addedBy) || dupe.addedBy}` : ''}.</span>
-                  <span class="warn-actions">
-                    <button class="btn small" type="button" onClick={() => setDupe(null)}>Cancel</button>
-                    <button class="btn small primary" type="button" disabled={saving} onClick={() => add(true)}>Add anyway</button>
-                  </span>
+          )}
+          <ErrorBox error={error} />
+          {!preview && <p class="lookup-hint">Preview someone's stats, then mark who beat them, flag them and add them.</p>}
+          {preview && (
+            <div class="lookup-add">
+              {writable ? (
+                <div class="add-form">
+                  <RosterPicker value={beaten} onChange={setBeaten} />
+                  <FlagPicker {...flags} onChange={setFlags} />
+                  <div class="field note-field">
+                    <label for="lk-note">Note <span class="faint">(optional)</span></label>
+                    <textarea id="lk-note" class="input" rows={2} maxLength={NOTE_MAX} value={note} onInput={e => setNote(e.currentTarget.value)} placeholder="What happened?" />
+                    <div class="note-meta">{owner && <NoteAuthor id={owner} />}<span class={`faint small ${note.length > NOTE_MAX - 20 ? 'warn' : ''}`}>{note.length}/{NOTE_MAX}</span></div>
+                  </div>
+                  {dupe ? (
+                    <div class="notice warn-notice" role="alert">
+                      <Icon name="alert" />
+                      <span class="grow">{dupe.username} was already added today{dupe.addedBy ? ` by ${personLabel(dupe.addedBy) || dupe.addedBy}` : ''}.</span>
+                      <span class="warn-actions">
+                        <button class="btn small" type="button" onClick={() => setDupe(null)}>Cancel</button>
+                        <button class="btn small primary" type="button" disabled={saving} onClick={() => add(true)}>Add anyway</button>
+                      </span>
+                    </div>
+                  ) : (
+                    <div class="add-row" ref={addRow}>
+                      <button class="btn primary add-btn" type="button" disabled={saving} onClick={() => add(false)}><Icon name="check" />{saving ? 'Adding…' : 'Add Sweat'}</button>
+                      {done && <span class="good small" role="status">Added. <button type="button" data-flip class="link" onClick={() => onOpen(done)}>Open</button></span>}
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div class="add-row" ref={addRow}>
-                  <button class="btn primary add-btn" type="button" disabled={saving} onClick={() => add(false)}><Icon name="check" />{saving ? 'Adding…' : 'Add Sweat'}</button>
-                  {done && <span class="good small" role="status">Added. <button type="button" data-flip class="link" onClick={() => onOpen(done)}>Open</button></span>}
-                </div>
-              )}
+              ) : <p class="faint small">Checking your key…</p>}
             </div>
-          ) : <p class="faint small">Checking your key…</p>}
+          )}
         </div>
-      )}
+        <div class="lookup-side">
+          {!preview && !busy && !error && (
+            <div class="lookup-idle" aria-hidden="true"><span class="beam b1" /><span class="beam b2" /><span class="beam b3" /><p>Look someone up to see how sweaty they are.</p></div>
+          )}
+          {busy && !preview && <div class="lookup-skel"><div class="skel" style={{ height: '160px' }} /></div>}
+
+          {preview && (
+            <div class="preview">
+              <div class="preview-head">
+                <img class="preview-skin" src={`https://mc-heads.net/body/${preview.uuid}/120`} alt="" width="60" height="135" />
+                <div class="preview-id">
+                  <div class="preview-name"><Star star={st.star} /> <PlayerName player={preview.player} name={preview.name} /></div>
+                  <div class="preview-sub">
+                    <TierBadge index={index} />
+                    <span class="mono">{Math.round(index).toLocaleString()} index</span>
+                    {times > 0 && <button type="button" class="chip accent" onClick={() => onOpen({ uuid: preview.uuid, username: preview.name })}>Tracked ×{times}</button>}
+                  </div>
+                </div>
+              </div>
+              <Gauge index={index} />
+              <div class="preview-stats">
+                {[['FKDR', 'fkdr', st.fkdr], ['WLR', 'wlr', st.wlr], ['KDR', 'kdr', st.kdr], ['BBLR', 'bblr', st.bblr]].map(([label, f, v]) => (
+                  <div class="pstat" key={f}>
+                    <span class="pstat-label">{label}</span>
+                    <span class="pstat-value mono">{fixed(v)}</span>
+                    <Standing st={standing(list, f, v)} field={label} />
+                  </div>
+                ))}
+              </div>
+              <TagList uuid={preview.uuid} compact />
+            </div>
+          )}
+        </div>
+      </div>
     </section>
   );
 }

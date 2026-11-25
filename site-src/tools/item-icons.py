@@ -3,7 +3,7 @@ skins) from the replay viewer's texture atlases.
 
     python3 tools/item-icons.py
 
-Writes src/assets/items.png (one row of 64x64 icons; blocks drawn as 3D
+Writes src/assets/items.webp (one row of 64x64 icons; blocks drawn as 3D
 cubes the way the game's inventory shows them, items as sharp pixels) and
 src/data/item-icons.json ({ id: index }). Run it again only when the icons
 change.
@@ -78,36 +78,51 @@ def shade(img, f):
     return out
 
 
-def cube(top, left, right=None, drop=0):
-    """A block as the inventory draws it: top, left and right faces."""
-    right = right or left
-    S = 4 * CELL           # draw big, then shrink for smooth edges
-    k = S / 32             # 32-unit cube space -> pixels
-    out = Image.new('RGBA', (S, S))
-    big = lambda t: t.resize((16 * 16, 16 * 16), Image.NEAREST)
-    m = 16                 # texels -> big texture pixels
+def box(top, left, right, X=16, Z=16, Y=16, fit=16):
+    """A box as the inventory draws it: top, left and right faces, in the
+    game's 2:1 isometric view. X runs along the left face, Z along the right,
+    Y is the height, all in texels. Textures: top is X wide by Z tall, left is
+    X by Y, right is Z by Y. `fit` is the block size the icon is scaled to,
+    so a low block stays low next to a full one."""
+    import numpy as np
+    from PIL import ImageDraw, ImageChops
+    S = 4 * CELL
+    width = max(X + Z, 2 * fit)
+    k = S * 0.88 / width                       # texels -> pixels
+    h = (X + Z) / 2 + Y                        # screen height in texels
+    ox = S / 2 - (X - Z) / 2 * k               # where the near-top corner's column lands
+    oy = S / 2 - (h / 2 - Y) * k
+    def scr(x, y, z):
+        return (ox + (x - z) * k, oy + ((x + z) / 2 - y) * k)
     faces = [
-        # (texture, shade, inverse affine in cube units, polygon)
-        (top, 1.0, (0.5, 1, -8 - drop, -0.5, 1, 8 - drop), [(16, drop), (32, 8 + drop), (16, 16 + drop), (0, 8 + drop)]),
-        (left, 0.78, (1, 0, 0, -0.5, 1, -8), [(0, 8), (16, 16), (16, 32), (0, 24)]),
-        (right, 0.6, (1, 0, -16, 0.5, 1, -24), [(16, 16), (32, 8), (32, 24), (16, 32)]),
+        # texture, shade, texel (u, v) -> 3D point
+        (top, 1.0, lambda u, v: (u, Y, v)),
+        (left, 0.78, lambda u, v: (u, Y - v, Z)),
+        (right, 0.6, lambda u, v: (X, Y - v, Z - u)),
     ]
-    from PIL import ImageDraw
-    for tex, f, (a, b, c, d, e, g), poly in faces:
-        t = big(shade(tex, f))
-        # output pixel (X, Y) -> cube units (X/k, Y/k) -> texel -> big texture pixel
-        data = (a / k * m, b / k * m, c * m, d / k * m, e / k * m, g * m)
-        face = t.transform((S, S), Image.AFFINE, data, Image.NEAREST)
+    out = Image.new('RGBA', (S, S))
+    for tex, f, at in faces:
+        w, hh = tex.size
+        # forward affine from three corners, then invert for PIL
+        src = np.array([[0, 0, 1], [w, 0, 1], [0, hh, 1]], float)
+        dst = np.array([scr(*at(0, 0)), scr(*at(w, 0)), scr(*at(0, hh))], float)
+        M = np.linalg.solve(src, dst).T            # 2x3: screen = M @ [u, v, 1]
+        F = np.vstack([M, [0, 0, 1]])
+        inv = np.linalg.inv(F)
+        face = shade(tex, f).transform((S, S), Image.AFFINE, tuple(inv[:2].flatten()), Image.NEAREST)
         mask = Image.new('L', (S, S))
-        ImageDraw.Draw(mask).polygon([(x * k, y * k) for x, y in poly], fill=255)
-        from PIL import ImageChops
+        ImageDraw.Draw(mask).polygon([scr(*at(0, 0)), scr(*at(w, 0)), scr(*at(w, hh)), scr(*at(0, hh))], fill=255)
         face.putalpha(ImageChops.multiply(face.getchannel('A'), mask))
         out.alpha_composite(face)
-    pad = int(S * 0.06)
-    out = out.resize((S - 2 * pad, S - 2 * pad), Image.LANCZOS)
-    framed = Image.new('RGBA', (S, S))
-    framed.paste(out, (pad, pad))
-    return framed.resize((CELL, CELL), Image.BOX)
+    return out.resize((CELL, CELL), Image.LANCZOS)
+
+
+def cube(top, left, right=None, drop=0):
+    """A full block, or one `drop` texels short of full (the side textures'
+    empty top rows are cut off so the top sits on the sides)."""
+    right = right or left
+    Y = 16 - drop
+    return box(top, left.crop((0, drop, 16, 16)), right.crop((0, drop, 16, 16)), 16, 16, Y)
 
 
 def block_cube(name, top=None):
@@ -129,9 +144,17 @@ def planks(kind):
 
 
 def bed():
-    """The foot of a bed as a low block (the top 7 rows of its sides are empty)."""
-    top = block('blocks/bed_feet_top').rotate(90)
-    return cube(top, block('blocks/bed_feet_side'), block('blocks/bed_feet_end'), drop=7)
+    """A whole bed, head and foot, the foot end facing you."""
+    top = Image.new('RGBA', (16, 32))
+    top.paste(block('blocks/bed_head_top'), (0, 0))
+    top.paste(block('blocks/bed_feet_top'), (0, 16))
+    top = top.rotate(90, expand=True)          # 32 x 16, head on the left
+    side = Image.new('RGBA', (32, 16))
+    side.paste(block('blocks/bed_head_side'), (0, 0))
+    side.paste(block('blocks/bed_feet_side'), (16, 0))
+    side = side.crop((0, 7, 32, 16))
+    end = block('blocks/bed_feet_end').crop((0, 7, 16, 16))
+    return box(top, side, end, 32, 16, 9)
 
 
 def _center(img):
@@ -263,7 +286,7 @@ ICONS = {
     'block:emerald': lambda: block_cube('block/emerald_block'),
     'block:bookshelf': lambda: cube(block('block/oak_planks'), block('block/bookshelf')),
     'block:crafting': lambda: cube(block('block/crafting_table_top'), block('block/crafting_table_front'), block('block/crafting_table_side')),
-    'block:enchanting': lambda: cube(block('block/enchanting_table_top'), block('block/enchanting_table_side')),
+    'block:enchanting': lambda: cube(block('block/enchanting_table_top'), block('block/enchanting_table_side'), drop=4),
     'block:beacon': lambda: block_cube('block/beacon'),
     'block:end_stone': lambda: block_cube('block/end_stone'),
     'block:red_wool': lambda: block_cube('block/red_wool'),
@@ -293,7 +316,7 @@ for i, (key, make) in enumerate(ICONS.items()):
     assert img.size == (CELL, CELL), (key, img.size)
     sheet.paste(img, (i * CELL, 0))
     index[key] = i
-# 256 colours keeps the sheet small (about a fifth of the size) with no visible change.
-sheet.quantize(256, method=Image.FASTOCTREE, dither=Image.NONE).save(os.path.join(site, 'src', 'assets', 'items.png'), optimize=True)
+# Full colour, lossless WebP: a 256-colour palette shared by every icon blotched the blocks.
+sheet.save(os.path.join(site, 'src', 'assets', 'items.webp'), lossless=True, quality=100, method=6)
 json.dump({'size': CELL, 'count': len(ICONS), 'index': index}, open(os.path.join(site, 'src', 'data', 'item-icons.json'), 'w'), indent=0)
 print(len(ICONS), 'icons')

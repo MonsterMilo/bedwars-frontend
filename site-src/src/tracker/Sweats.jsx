@@ -12,6 +12,7 @@ import { ROSTER, indexOf, identityKey, notesOf, beatenBy, parseDay, canRemove, c
 import { DEFAULT_FILTERS, SORTS, process, paginate, activeFilterCount, rivalMap, rivalFor, rivalSummary, roman, rosterCounts, summary, sweatOfTheDay, sotdLeft, downloadCsv, PAGE_SIZE } from './list.js';
 import { RosterDot, RosterDots, Flags, TierBadge, fixed, whole } from './ui.jsx';
 import { readUrl, writeUrl } from './url.js';
+import { NumberField, DateField, Check, Select } from '../ui/controls.jsx';
 
 const VIEWS = [['grid', 'Grid'], ['table', 'Table'], ['leaderboard', 'Leaderboard']];
 const ORD = n => n + (['th', 'st', 'nd', 'rd'][((n % 100) - 20) % 10] || ['th', 'st', 'nd', 'rd'][n % 100] || 'th');
@@ -52,7 +53,8 @@ function Summary({ list, person, onOpen }) {
 }
 
 // ---------- sweat of the day ----------
-function Sotd({ all, onOpen }) {
+export function Sotd({ onOpen }) {
+  const all = useSignal(sweats);
   const pick = useMemo(() => sweatOfTheDay(all), [all]);
   const [left, setLeft] = useState(sotdLeft());
   useEffect(() => { const t = setInterval(() => setLeft(sotdLeft()), 30_000); return () => clearInterval(t); }, []);
@@ -93,7 +95,7 @@ function Filters({ f, set, count, total, onReset }) {
   const num = (k, label, ph, step) => (
     <div class="field">
       <label for={`f-${k}`}>{label}</label>
-      <input id={`f-${k}`} class="input" type="number" inputMode="decimal" min="0" step={step} placeholder={ph} value={f[k]} onInput={e => set({ [k]: e.currentTarget.value })} />
+      <NumberField id={`f-${k}`} decimals={String(step).includes('.')} step={Number(step)} max={1e9} placeholder={ph} value={f[k]} onChange={v => set({ [k]: v })} />
     </div>
   );
   return (
@@ -116,11 +118,11 @@ function Filters({ f, set, count, total, onReset }) {
           {num('index', 'Index at least', '0', '1000')}
           <div class="field">
             <label for="f-date">Added since</label>
-            <input id="f-date" class="input" type="date" value={f.date} onInput={e => set({ date: e.currentTarget.value })} />
+            <DateField id="f-date" label="Added since" placeholder="Any time" max={Date.now()} value={f.date} onChange={v => set({ date: v })} />
           </div>
           <div class="toggles" role="group" aria-label="Show">
             {[['dupes', 'Hide repeats'], ['cheaters', 'Cheaters only'], ['boosters', 'Boosters only']].map(([k, label]) => (
-              <label key={k} class="switch"><input type="checkbox" checked={f[k]} onChange={e => set({ [k]: e.currentTarget.checked })} /><span>{label}</span></label>
+              <Check key={k} checked={f[k]} onChange={v => set({ [k]: v })}>{label}</Check>
             ))}
           </div>
           <button type="button" class="btn ghost small" disabled={!n && !f.q} onClick={onReset}><Icon name="refresh" />Reset</button>
@@ -297,14 +299,12 @@ export function Sweats({ onOpen, onEdit }) {
         <span class="grow" />
         <Tabs label="View" value={view} onChange={setView} options={VIEWS} />
         {view !== 'table' && (
-          <label class="sort-pick">
-            <span class="sr-only">Sort by</span>
-            <select class="input" value={sort ? `${sort.field}:${sort.asc ? 'asc' : 'desc'}` : ''} onChange={e => { const v = e.currentTarget.value; setSort(v ? { field: v.split(':')[0], asc: v.endsWith('asc') } : null); }}>
-              <option value="">Newest first</option>
-              {SORTS.map(([k, label]) => <option key={k} value={`${k}:desc`}>{label}: high to low</option>)}
-              {SORTS.filter(([k]) => !['cheating', 'boosting'].includes(k)).map(([k, label]) => <option key={`${k}a`} value={`${k}:asc`}>{label}: low to high</option>)}
-            </select>
-          </label>
+          <div class="sort-pick">
+            <Select label="Sort by" small value={sort ? `${sort.field}:${sort.asc ? 'asc' : 'desc'}` : ''}
+              onChange={v => setSort(v ? { field: v.split(':')[0], asc: v.endsWith('asc') } : null)}
+              options={[['', 'Newest first'], ...SORTS.map(([k, label]) => [`${k}:desc`, `${label}: high to low`]),
+                ...SORTS.filter(([k]) => !['cheating', 'boosting'].includes(k)).map(([k, label]) => [`${k}:asc`, `${label}: low to high`])]} />
+          </div>
         )}
         <button type="button" class="btn" disabled={!shown.length} onClick={() => { downloadCsv(shown); toast(`Exported ${shown.length} sweat${shown.length === 1 ? '' : 's'}`); }}><Icon name="download" />CSV</button>
       </div>
@@ -321,7 +321,6 @@ export function Sweats({ onOpen, onEdit }) {
       )}
 
       {!loading && <Summary list={shown} person={view === 'leaderboard' ? pickedLabel : null} onOpen={onOpen} />}
-      {!loading && view !== 'leaderboard' && <Sotd all={all} onOpen={onOpen} />}
       <Filters f={f} set={setFilters} count={list.length} total={all.length} onReset={reset} />
 
       {loading && <><p class="faint small" role="status">{ls.progress ? `Loading sweats… ${ls.progress[0]} of ${ls.progress[1]}` : 'Loading sweats…'}</p><Skeletons /></>}

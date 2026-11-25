@@ -16,7 +16,7 @@ import { siteKey } from '../lib/key.js';
 import { readJson, writeJson } from '../lib/storage.js';
 import { sweats, load, startLive, lockedOut } from '../tracker/store.js';
 import { Lookup } from '../tracker/Lookup.jsx';
-import { Sweats } from '../tracker/Sweats.jsx';
+import { Sweats, Sotd } from '../tracker/Sweats.jsx';
 import { PlayerModal } from '../tracker/PlayerModal.jsx';
 import { EditModal } from '../tracker/EditModal.jsx';
 import { Denick } from '../tracker/Denick.jsx';
@@ -109,7 +109,7 @@ function Tracker() {
   }, []);
 
   return (
-    <Shell>
+    <Shell bg="tracker">
       <div class="page wrap tracker">
         <header class="page-head">
           <div class="grow">
@@ -127,14 +127,11 @@ function Tracker() {
           </nav>
         </header>
 
-        <div class="tracker-grid">
-          {(!hidden.includes('lookup') || !hidden.includes('denick')) && (
-            <div class="tracker-side">
-              {!hidden.includes('lookup') && <Lookup onOpen={open} />}
-              {!hidden.includes('denick') && <Denick />}
-            </div>
-          )}
+        <div class="tracker-stack">
+          {!hidden.includes('sweats') && <Sotd onOpen={open} />}
+          {!hidden.includes('lookup') && <Lookup onOpen={open} />}
           {!hidden.includes('sweats') && <Sweats onOpen={open} onEdit={edit} />}
+          {!hidden.includes('denick') && <Denick />}
         </div>
         {admin && !hidden.includes('activity') && <Activity />}
         <footer class="tracker-foot">

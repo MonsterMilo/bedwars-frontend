@@ -143,7 +143,7 @@ const STEPS = [
 function Download() {
   const { data, error, loading, reload } = useAsync(signal => latestRelease(signal), []);
   return (
-    <Shell>
+    <Shell bg="download">
       <div class="page wrap">
         <header class="page-head">
           <div class="grow">

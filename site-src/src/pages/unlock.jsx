@@ -16,7 +16,7 @@ const page = ALL_PAGES.find(p => next.startsWith(p.href));
 
 function Unlock() {
   return (
-    <Shell>
+    <Shell bg="unlock">
       <div class="wrap">
         <section class="panel lit pad lock-card reveal" aria-labelledby="unlock-h">
           <span class="tile big" style={{ '--hue': '#ff7a8a' }}><ItemIcon id={(page && page.item) || 'ui:book'} /></span>

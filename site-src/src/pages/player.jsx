@@ -39,10 +39,14 @@ function ProfileHead({ data, view }) {
   const star = starInfo(p);
   const g = data.guild;
   const s = data.status;
-  const bw = p.bedwars;
   const lastSeen = p.lastLogout || p.lastLogin;
-  const d = prefs.value.decimals;
-  const overall = bw ? modeStats(bw, '') : null;
+  // Only what the stats below don't already show.
+  const facts = [
+    p.networkExp > 0 && ['ui:xp', 'Network level', networkLevel(p.networkExp).toFixed(1)],
+    p.firstLogin && ['ui:clock', 'First joined', date(p.firstLogin), true],
+    p.karma > 0 && ['ui:totem', 'Karma', num(p.karma)],
+    p.achievementPoints > 0 && ['block:beacon', 'Achievements', num(p.achievementPoints)]
+  ].filter(Boolean);
   return (
     <section class="panel lit head reveal" aria-label="Profile" style={{ '--pc': `var(--mc-${prestigeColor(star.star)})` }}>
       <div class="head-glow" aria-hidden="true" />
@@ -53,6 +57,11 @@ function ProfileHead({ data, view }) {
       <div class="head-main">
         <div class="head-title">
           <h1><PlayerName player={p} name={data.name} /></h1>
+          <div class="row head-actions">
+            <button type="button" class={`btn small icon ${fav ? 'fav-on' : ''}`} aria-pressed={fav ? 'true' : 'false'} onClick={() => toggleFavourite(data.name, data.uuid)}
+              aria-label={fav ? 'Favourite' : 'Add favourite'} title={fav ? 'Favourite' : 'Add favourite'}><Icon name="star" /></button>
+            <button type="button" class="btn small icon" onClick={() => copyText(dashed(data.uuid), toast)} aria-label="Copy UUID" title="Copy UUID"><Icon name="copy" /></button>
+          </div>
         </div>
         <div class="head-chips">
           <span class="chip star-chip"><Star star={star.star} /></span>
@@ -68,26 +77,11 @@ function ProfileHead({ data, view }) {
             <div class="xp-bar"><span style={{ width: `${Math.max(1.5, star.progress * 100)}%` }} /></div>
           </div>
         )}
-        {overall && hasPlayed(overall) && (
-          <ul class="glance" aria-label="Overall Bed Wars">
-            <li><ItemIcon id="ui:sword" /><span><small>FKDR</small><strong class="mono" style={{ color: ratioColor(ratioValue(overall.finals, overall.finalDeaths)) }}>{ratio(overall.finals, overall.finalDeaths, d)}</strong></span></li>
-            <li><ItemIcon id="block:gold" /><span><small>WLR</small><strong class="mono" style={{ color: ratioColor(ratioValue(overall.wins, overall.losses) * 2) }}>{ratio(overall.wins, overall.losses, d)}</strong></span></li>
-            <li><ItemIcon id="ui:totem" /><span><small>Wins</small><strong class="mono">{num(overall.wins)}</strong></span></li>
-            <li><ItemIcon id="ui:bed" /><span><small>Beds</small><strong class="mono">{num(overall.beds)}</strong></span></li>
+        {facts.length > 0 && (
+          <ul class="glance" aria-label="Profile">
+            {facts.map(f => <li key={f[1]}><ItemIcon id={f[0]} /><span><small>{f[1]}</small><strong class={f[3] ? '' : 'mono'}>{f[2]}</strong></span></li>)}
           </ul>
         )}
-        <dl class="facts">
-          {p.networkExp > 0 && <div><dt>Network level</dt><dd class="mono">{networkLevel(p.networkExp).toFixed(1)}</dd></div>}
-          {p.firstLogin && <div><dt>First joined</dt><dd>{date(p.firstLogin)}</dd></div>}
-          {p.karma > 0 && <div><dt>Karma</dt><dd class="mono">{num(p.karma)}</dd></div>}
-          {p.achievementPoints > 0 && <div><dt>Achievement points</dt><dd class="mono">{num(p.achievementPoints)}</dd></div>}
-        </dl>
-        <div class="row head-actions">
-          <button type="button" class={`btn small ${fav ? 'fav-on' : ''}`} aria-pressed={fav ? 'true' : 'false'} onClick={() => toggleFavourite(data.name, data.uuid)}>
-            <Icon name="star" />{fav ? 'Favourite' : 'Add favourite'}
-          </button>
-          <button type="button" class="btn small" onClick={() => copyText(dashed(data.uuid), toast)}><Icon name="copy" />Copy UUID</button>
-        </div>
         {!data.live && !siteKey.value && (
           <p class="faint small">Stats may be a few hours old. <button type="button" class="linkish" onClick={() => { keyDialog.value = true; }}>Enter a key</button> for live stats.</p>
         )}

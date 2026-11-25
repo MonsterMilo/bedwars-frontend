@@ -11,6 +11,7 @@
 // respects reduced motion and the "Click effects" setting.
 import { prefs, fxPage } from './prefs.js';
 import { play, setMood } from './audio.js';
+import { seasonHooks, comboLabels } from './seasonfx.js';
 
 const COLORS = ['#5ee7ff', '#a98bff', '#ffc46b', '#ff7ab6', '#ffffff'];
 const rand = (a, b) => Math.random() * (b - a) + a;
@@ -72,6 +73,7 @@ function fxWord(x, y, text, sub) {
 // A big burst adds a vertical flare. quiet = no word on top.
 export function burst(x, y, big = false, quiet = false) {
   if (!fxOn()) return;
+  if (seasonHooks.burst) { seasonHooks.burst(x, y, big && !quiet); return; }
   ensure();
   if (layer.childElementCount > 260) return; // autoclicking: don't melt the page
   const n = big ? 14 : 7;
@@ -104,7 +106,7 @@ function bumpCombo(x, y) {
   let tier = 0;
   while (tier + 1 < COMBO_TIERS.length && comboCount >= COMBO_TIERS[tier + 1]) tier++;
   if (comboEl) comboEl.remove();
-  comboEl = fxWord(x, y - 40, `x${comboCount}`, COMBO_LABELS[tier]);
+  comboEl = fxWord(x, y - 40, `x${comboCount}`, comboLabels(COMBO_LABELS)[tier]);
   comboEl.style.fontSize = `${Math.min(20 + tier * 5, 42)}px`;
   if (COMBO_TIERS.includes(comboCount)) { burst(x, y, true, true); play('combo', { tier }); }
 }

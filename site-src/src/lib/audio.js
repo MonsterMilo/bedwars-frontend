@@ -5,7 +5,7 @@
 // Browsers won't start audio before the first click or key, so the context
 // is resumed on that first gesture. Settings live in prefs (sound, volume,
 // music) and apply live.
-import { prefs } from './prefs.js';
+import { prefs, season } from './prefs.js';
 
 const AC = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
 export const soundAvailable = !!AC;
@@ -270,15 +270,105 @@ const SOUNDS = {
   }
 };
 
+
+// ---- Christmas ----
+// A music box and celesta, glockenspiel, sleigh bells and church bells,
+// crunching snow and wrapping paper. Used while the Christmas look is on.
+const xmOn = () => season.value === 'christmas';
+// A celesta / music-box tine: a sine with a quiet octave and a faint
+// inharmonic "tine", quick attack, a long soft ring.
+function celesta(t, n, o = {}) {
+  const f = midi(n), g = o.gain != null ? o.gain : 0.08, dur = o.dur || 1.3;
+  tone(t, { f, dur, gain: g, a: 0.002, pan: o.pan, dest: o.dest });
+  tone(t, { f: f * 2, dur: dur * 0.45, gain: g * 0.32, a: 0.002, pan: o.pan, dest: o.dest });
+  tone(t, { f: f * 5.93, dur: dur * 0.12, gain: g * 0.2, a: 0.001, pan: o.pan, dest: o.dest });
+}
+const glock = (t, n, o = {}) => glass(t, midi(n), { ratios: [1, 2.76, 5.4], dur: o.dur || 0.9, gain: o.gain || 0.05, pan: o.pan, dest: o.dest });
+// One shake of sleigh bells: a handful of tiny bright jingles.
+function jingle(t, o = {}) {
+  const g = o.gain || 0.035, n = o.n || 4, spread = o.spread || 0.05;
+  for (let i = 0; i < n; i++) {
+    glass(t + rnd(0, spread), rnd(2900, 4300), { ratios: [1, 1.47, 2.09], dur: rnd(0.12, 0.22), gain: g * rnd(0.6, 1), pan: (o.pan || 0) + rnd(-0.12, 0.12), dest: o.dest });
+  }
+  noise(t, { type: 'highpass', f: 6500, dur: 0.05 + spread, gain: g * 0.5, pan: o.pan, dest: o.dest });
+}
+// A church bell: a low hum, the strike tone with its minor third, long overtones.
+function church(t, n, o = {}) {
+  const f = midi(n), g = o.gain || 0.06, dur = o.dur || 3.2;
+  [[0.5, 1, 1], [1, 0.9, 0.85], [1.19, 0.5, 0.6], [1.5, 0.35, 0.5], [2, 0.4, 0.45], [2.52, 0.18, 0.3]].forEach(([r, k, d]) =>
+    tone(t, { f: f * r, dur: dur * d, gain: g * k, a: 0.002, pan: o.pan, dest: o.dest }));
+}
+// Boots in snow: a soft squeaky crunch.
+function crunch(t, o = {}) {
+  const g = o.gain || 0.06, n = o.n || 5, dur = o.dur || 0.08;
+  for (let i = 0; i < n; i++) noise(t + rnd(0, dur), { type: 'bandpass', f: rnd(1400, 3200), q: rnd(3, 7), dur: rnd(0.01, 0.03), gain: g * rnd(0.5, 1), pan: o.pan });
+  noise(t, { type: 'lowpass', f: 700, dur: dur + 0.03, gain: g * 0.5, pan: o.pan });
+}
+// Wrapping paper torn.
+function rip(t, dur, o = {}) {
+  const g = o.gain || 0.08;
+  noise(t, { type: 'bandpass', f: 2200, f2: 4200, q: 0.8, dur, gain: g, swell: 0.3, pan: o.pan });
+  for (let i = 0; i < Math.round(dur * 40); i++) noise(t + rnd(0, dur), { type: 'bandpass', f: rnd(1800, 5000), q: 2, dur: 0.012, gain: g * rnd(0.4, 1), pan: o.pan });
+}
+// The melody the clicks walk through: Jingle Bells, one note a click.
+const XM_WALK = [76, 76, 76, 76, 76, 76, 76, 79, 72, 74, 76, 77, 77, 77, 77, 77, 76, 76, 76, 76, 74, 74, 76, 74, 79];
+let walk = 0;
+const XM = {
+  xmNote(t, o) { celesta(t, XM_WALK[walk++ % XM_WALK.length], { gain: 0.07, dur: 0.9, pan: o.pan }); },
+  xmRare(t, o) {
+    [72, 76, 79, 84].forEach((n, i) => celesta(t + i * 0.06, n, { gain: 0.06, dur: 1.2, pan: o.pan }));
+    jingle(t + 0.1, { gain: 0.03, pan: o.pan });
+  },
+  xmCombo(t, o) { const tier = o.tier || 0; for (let i = 0; i < 3 + tier; i++) celesta(t + i * 0.05, [72, 76, 79, 84, 88, 91, 96][Math.min(6, i + tier)], { gain: 0.05, dur: 0.8 }); jingle(t, { gain: 0.03 }); },
+  xmTick(t, o) { glock(t, choose([91, 96]), { gain: 0.025, dur: 0.18, pan: o.pan }); },
+  xmToggle(t, o) { celesta(t, o.on === false ? 79 : 84, { gain: 0.05, dur: 0.6 }); celesta(t + 0.07, o.on === false ? 72 : 88, { gain: 0.04, dur: 0.7 }); },
+  xmSuccess(t) {
+    [72, 76, 79, 84, 88].forEach((n, i) => celesta(t + i * 0.07, n, { gain: 0.06, dur: 1.4 }));
+    jingle(t + 0.3, { gain: 0.035, n: 6, spread: 0.12 });
+  },
+  xmChime(t, o) { const root = [84, 79, 76][Math.min(3, Math.max(1, o.place || 1)) - 1]; [0, 4, 7].forEach((iv, i) => glock(t + i * 0.05, root + iv, { gain: 0.04 })); },
+  xmType(t, o) {
+    if (o.kind === 'enter') { celesta(t, 84, { gain: 0.04, dur: 0.5 }); celesta(t + 0.06, 88, { gain: 0.035, dur: 0.6 }); return; }
+    crunch(t, { gain: o.kind === 'back' ? 0.035 : 0.05, n: 3, dur: 0.05 });
+  },
+  xmShake(t, o) { jingle(t, { gain: 0.03 * (o.gain || 1), pan: o.pan, n: 3, spread: 0.04 }); },
+  xmHoho(t, o) {
+    [0, 0.3, 0.6].forEach((k, i) => {
+      const f = (i === 2 ? 104 : 116) * rnd(0.98, 1.02);
+      tone(t + k, { type: 'sawtooth', f, f2: f * 0.86, dur: 0.2, hold: 0.06, gain: 0.08, bp: 620, q: 2.2, a: 0.02, pan: o.pan });
+      tone(t + k, { type: 'sawtooth', f, f2: f * 0.86, dur: 0.16, hold: 0.05, gain: 0.028, bp: 1050, q: 3, a: 0.02, pan: o.pan });
+    });
+  },
+  xmPop(t, o) {
+    noise(t, { type: 'bandpass', f: 2600, q: 0.6, dur: 0.05, gain: 0.18, pan: o.pan });
+    for (let i = 0; i < 4; i++) glass(t + 0.02 + rnd(0, 0.12), rnd(3800, 6200), { gain: 0.03, dur: 0.15, pan: o.pan });
+  },
+  xmRelight(t, o) { glock(t, choose([84, 88, 91]), { gain: 0.03, dur: 0.4, pan: o.pan }); },
+  xmFixed(t) { [72, 76, 79, 84, 88, 91, 96].forEach((n, i) => glock(t + i * 0.07, n, { gain: 0.04, dur: 0.7 })); },
+  xmPresent(t, o) {
+    rip(t, 0.32, { gain: 0.07, pan: o.pan });
+    [79, 84, 88, 91, 96].forEach((n, i) => celesta(t + 0.3 + i * 0.07, n, { gain: 0.06, dur: 1.4, pan: o.pan }));
+    jingle(t + 0.35, { gain: 0.035, n: 6, spread: 0.15, pan: o.pan });
+  },
+  xmSwish(t, o) { noise(t, { type: 'bandpass', f: 900, f2: 3800, q: 1.2, dur: 0.3, gain: 0.05, swell: 0.4, pan: o.pan }); crunch(t, { gain: 0.03, n: 3, pan: o.pan }); },
+  xmBell(t) { church(t, 60, { gain: 0.05 }); church(t + 0.9, 55, { gain: 0.04 }); },
+  xmFlakes(t, o) { glock(t, choose([96, 98, 100, 103]), { gain: 0.02, dur: 0.3, pan: o.pan }); }
+};
+Object.assign(SOUNDS, XM);
+// Which Christmas sound stands in for each everyday one.
+const XM_FOR = { click: 'xmNote', rare: 'xmRare', combo: 'xmCombo', ui: 'xmTick', view: 'xmTick', toggle: 'xmToggle', save: 'xmToggle', success: 'xmSuccess', found: 'xmSuccess', chime: 'xmChime', type: 'xmType', hover: 'xmFlakes' };
+const XM_TRIM = { xmNote: 0, xmRare: 0, xmCombo: -2, xmTick: 0, xmToggle: -3, xmSuccess: -3, xmChime: -4, xmType: 6, xmShake: 2, xmHoho: 0, xmPop: -2, xmRelight: 2, xmFixed: -3, xmPresent: -2, xmSwish: 3, xmBell: -2, xmFlakes: 12 };
+
 // Per-sound trims in dB, measured so each kind of moment sits at the same
 // loudness (from the old tracker).
 const TRIM = { hover: 15, click: 0, rare: 0, combo: -2, ui: -2, toggle: -5, save: -1, delete: 4, slide: 6, page: 2, view: 1, type: 8, flipOpen: 1, flipClose: 7, scan: 0, found: -3, error: 0, success: -3, stunt: -8, chime: -5, arrive: -3, bed: -5, chat: -2 };
 const MUSIC_TRIM = Math.pow(10, -1 / 20);
 
 function schedule(name, t, opts = {}) {
+  if (xmOn() && XM_FOR[name]) name = XM_FOR[name];
   const key = name === 'scanStart' || name === 'scanTick' ? 'scan' : name;
   const prev = curOut;
-  curOut = gainNode(Math.pow(10, ((TRIM[key] || 0) + (opts.trim || 0)) / 20), sfxBus);
+  curOut = gainNode(Math.pow(10, ((TRIM[key] ?? XM_TRIM[key] ?? 0) + (opts.trim || 0)) / 20), sfxBus);
   try { SOUNDS[name](t, opts); } finally { curOut = prev; }
 }
 
@@ -334,6 +424,67 @@ function song(bus, add) {
   };
 }
 
+
+// Christmas music: a soft music box over a warm pad, playing public-domain
+// carols one after another (Jingle Bells, Deck the Halls, We Wish You a
+// Merry Christmas, Silent Night), with a little sleigh bell in Jingle Bells.
+const XM_CHORDS = { C: 'C3 G3 E4', F: 'F2 C3 A3', G: 'G2 D3 B3', G7: 'G2 F3 B3', D: 'D3 A3 F#4', Am: 'A2 E3 C4' };
+const tune = (beat, bells, melody, chords) => ({
+  beat, bells,
+  bars: melody.split('|').map(bar => {
+    let at = 0;
+    const notes = [];
+    bar.trim().split(/\s+/).forEach(tok => { const [n, len] = tok.split(':'); if (n !== '-') notes.push({ at, n: noteNum(n), len: +len }); at += +len; });
+    return { notes, len: at };
+  }),
+  chords: chords.split(' ').map(c => XM_CHORDS[c].split(' ').map(noteNum))
+});
+const XM_TUNES = [
+  tune(0.42, true,
+    'E5:1 E5:1 E5:2|E5:1 E5:1 E5:2|E5:1 G5:1 C5:1.5 D5:.5|E5:4|F5:1 F5:1 F5:1.5 F5:.5|F5:1 E5:1 E5:1 E5:.5 E5:.5|E5:1 D5:1 D5:1 E5:1|D5:2 G5:2|' +
+    'E5:1 E5:1 E5:2|E5:1 E5:1 E5:2|E5:1 G5:1 C5:1.5 D5:.5|E5:4|F5:1 F5:1 F5:1.5 F5:.5|F5:1 E5:1 E5:1 E5:.5 E5:.5|G5:1 G5:1 F5:1 D5:1|C5:4',
+    'C C C C F C G G C C C C F C G7 C'),
+  tune(0.46, false,
+    'G5:1.5 F5:.5 E5:1 D5:1|C5:1 D5:1 E5:1 C5:1|D5:.5 E5:.5 F5:.5 D5:.5 E5:1.5 D5:.5|C5:1 B4:1 C5:2|' +
+    'G5:1.5 F5:.5 E5:1 D5:1|C5:1 D5:1 E5:1 C5:1|D5:.5 E5:.5 F5:.5 D5:.5 E5:1.5 D5:.5|C5:1 B4:1 C5:2|' +
+    'D5:1.5 E5:.5 F5:1 D5:1|E5:1.5 F5:.5 G5:1 D5:1|E5:.5 F#5:.5 G5:1 A5:.5 B5:.5 C6:1|B5:1 A5:1 G5:2|' +
+    'G5:1.5 F5:.5 E5:1 D5:1|C5:1 D5:1 E5:1 C5:1|A5:.5 A5:.5 A5:.5 A5:.5 G5:1.5 F5:.5|E5:1 D5:1 C5:2',
+    'C C G C C C G C G C D G C C F C'),
+  tune(0.44, false,
+    '-:2 G5:1|C6:1 C6:.5 D6:.5 C6:.5 B5:.5|A5:1 A5:1 A5:1|D6:1 D6:.5 E6:.5 D6:.5 C6:.5|B5:1 G5:1 G5:1|E6:1 E6:.5 F6:.5 E6:.5 D6:.5|C6:1 A5:1 G5:.5 G5:.5|A5:1 D6:1 B5:1|C6:3',
+    'C C F D G Am F G C'),
+  tune(0.5, false,
+    'G5:1.5 A5:.5 G5:1|E5:3|G5:1.5 A5:.5 G5:1|E5:3|D6:2 D6:1|B5:3|C6:2 C6:1|G5:3|' +
+    'A5:2 A5:1|C6:1.5 B5:.5 A5:1|G5:1.5 A5:.5 G5:1|E5:3|A5:2 A5:1|C6:1.5 B5:.5 A5:1|G5:1.5 A5:.5 G5:1|E5:3|' +
+    'D6:2 D6:1|F6:1.5 D6:.5 B5:1|C6:3|E6:3|C6:1 G5:1 E5:1|G5:1.5 F5:.5 D5:1|C5:3|-:3',
+    'C C C C G G C C F F C C F F C C G G C C C G7 C C')
+];
+function carols(bus) {
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 1000; lp.Q.value = 0.4;
+  lp.connect(gainNode(1, bus));
+  const echo = ctx.createDelay(1.5); echo.delayTime.value = 0.48;
+  echo.connect(gainNode(0.28, echo));
+  echo.connect(gainNode(0.4, bus));
+  let ti = Math.floor(Math.random() * XM_TUNES.length), bi = 0;
+  return t => {
+    const tn = XM_TUNES[ti];
+    const bar = tn.bars[bi], chord = tn.chords[bi];
+    const beat = tn.beat, len = bar.len * beat;
+    chord.forEach((m, k) => [-4, 4].forEach(dt => tone(t + k * 0.04, { f: midi(m), detune: dt, dur: len * 0.7, hold: len * 0.45, a: 0.5, gain: 0.022, dest: lp })));
+    tone(t, { type: 'triangle', f: midi(chord[0] - 12), dur: len * 0.5, hold: len * 0.3, a: 0.05, gain: 0.04, lp: 280, dest: bus });
+    bar.notes.forEach(ev => {
+      const dur = Math.min(2.2, 0.6 + ev.len * beat);
+      celesta(t + ev.at * beat, ev.n, { gain: 0.04, dur, dest: bus });
+      celesta(t + ev.at * beat, ev.n, { gain: 0.02, dur, dest: echo });
+    });
+    if (tn.bells) for (let b = 1; b < bar.len; b += 2) jingle(t + b * beat, { gain: 0.012, n: 3, spread: 0.03, dest: bus });
+    if (mood.busy) for (let k = 0; k < 4; k++) glock(t + k * beat, chord[k % 3] + 36, { gain: 0.01, dur: 0.3, dest: bus });
+    if (++bi >= tn.bars.length) { bi = 0; ti = (ti + 1) % XM_TUNES.length; return len + beat * 4; }
+    return len;
+  };
+}
+
 let music = null;
 function stopMusic(fade = 1.2) {
   if (!music) return;
@@ -350,7 +501,7 @@ function startMusic() {
   if (!ctx || music || !musicOn()) return;
   const bus = gainNode(0, musicBus);
   const nodes = [];
-  const next = song(bus, n => { n.start(); nodes.push(n); });
+  const next = (xmOn() ? carols : song)(bus, n => { n.start(); nodes.push(n); });
   const t = ctx.currentTime;
   bus.gain.setValueAtTime(0, t);
   bus.gain.linearRampToValueAtTime(MUSIC_TRIM, t + 0.6);
@@ -403,6 +554,8 @@ if (AC) {
     if (p.sound && !ctx) return; // starts on the next click
     if (ctx) applyLevels();
   });
+  // The holiday look changes the music.
+  season.subscribe(() => { if (music) { stopMusic(0.8); setTimeout(() => { if (musicOn()) startMusic(); }, 900); } });
 }
 
 // ---- Public API ----

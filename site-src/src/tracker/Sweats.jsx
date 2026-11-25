@@ -5,6 +5,7 @@ import { Star } from '../ui/mc.jsx';
 import { Tabs, Avatar, Empty } from '../ui/common.jsx';
 import { Dialog } from '../ui/Dialog.jsx';
 import { useSignal } from '../lib/signal.js';
+import { season } from '../lib/prefs.js';
 import { keyOwner, keyInfo } from '../lib/key.js';
 import { toast } from '../lib/toast.js';
 import { sweats, loadState, liveIds, load, removeSweat } from './store.js';
@@ -56,6 +57,7 @@ function Summary({ list, person, onOpen }) {
 export function Sotd({ onOpen }) {
   const all = useSignal(sweats);
   const pick = useMemo(() => sweatOfTheDay(all), [all]);
+  const holiday = useSignal(season);
   const [left, setLeft] = useState(sotdLeft());
   useEffect(() => { const t = setInterval(() => setLeft(sotdLeft()), 30_000); return () => clearInterval(t); }, []);
   if (!pick) return null;
@@ -65,7 +67,7 @@ export function Sotd({ onOpen }) {
     <section class="panel sotd" aria-labelledby="sotd-h">
       <img class="sotd-body" src={`https://mc-heads.net/body/${s.uuid || s.username}/140`} alt="" loading="lazy" />
       <div class="sotd-main">
-        <p class="eyebrow"><Icon name="star" />In the spotlight</p>
+        <p class="eyebrow"><Icon name="star" />{holiday === 'christmas' ? 'Top of the naughty list' : 'In the spotlight'}</p>
         <h2 id="sotd-h" class="sotd-name"><Star star={s.star} /> <button type="button" data-flip class="link" onClick={() => onOpen(s)}>{s.username}</button></h2>
         <div class="sotd-sub">
           <TierBadge index={index} />

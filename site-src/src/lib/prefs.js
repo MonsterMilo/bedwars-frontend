@@ -2,6 +2,7 @@
 // <html> as a data attribute or CSS variable, so the stylesheets do the rest.
 import { readJson, writeJson } from './storage.js';
 import { signal } from './signal.js';
+import { activeSeason } from './season.js';
 
 export const ACCENTS = {
   prism: { label: 'Prism', a: '#5ee7ff', b: '#a98bff', c: '#ffc46b' },
@@ -32,7 +33,13 @@ export const DEFAULTS = {
   fx: true,             // click bursts and easter eggs (tracker)
   sound: true,          // sound effects (tracker)
   volume: 55,           // 0-100
-  music: true           // background music under the sounds
+  music: true,          // background music under the sounds
+  seasonal: true        // holiday looks (Christmas in December)
+};
+
+// A holiday look swaps in its own colours while it's on.
+const SEASON_ACCENTS = {
+  christmas: { a: '#ff6b7d', b: '#4fdc8f', c: '#ffd36e' }
 };
 
 const STORAGE = 'prismSitePrefs';
@@ -52,6 +59,8 @@ function initial() {
 export const prefs = signal(initial());
 // Set by pages that have sounds and click effects, so Settings shows them.
 export const fxPage = signal(false);
+// The holiday look showing now ('christmas' or null).
+export const season = signal(null);
 
 export function setPref(key, value) {
   prefs.value = { ...prefs.value, [key]: value };
@@ -100,12 +109,15 @@ export function apply() {
   let acc = ACCENTS[p.accent];
   if (p.accent === 'custom' && validHex(p.custom)) acc = { a: p.custom, b: mix(p.custom, '#a98bff', 0.55), c: mix(p.custom, '#ffc46b', 0.55) };
   acc = acc || ACCENTS.prism;
+  const s = activeSeason(p.seasonal !== false);
+  if (s) { html.dataset.season = s; acc = SEASON_ACCENTS[s] || acc; } else delete html.dataset.season;
   html.style.setProperty('--accent', acc.a);
   html.style.setProperty('--accent-2', acc.b);
   html.style.setProperty('--accent-3', acc.c);
   loadFont(p.font);
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.content = p.surface === 'light' ? '#f4f6fb' : p.surface === 'oled' ? '#000000' : '#0c0f17';
+  season.value = s;
 }
 
 if (typeof window !== 'undefined' && window.matchMedia) {

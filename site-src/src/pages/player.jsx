@@ -1,5 +1,6 @@
 // Player profile: Bed Wars stats by mode and period, quickbuy, cosmetics,
 // tags, and name and skin history.
+import { tagTime, srcClass } from '../tracker/Tags.jsx';
 import '../styles/base.css';
 import '../styles/shell.css';
 import '../styles/common.css';
@@ -112,7 +113,7 @@ function Tags({ uuid }) {
               <span class="chip bad">{t.type.replace(/_/g, ' ')}</span>
               <span class="grow">
                 <span class="tag-reason">{t.reason || 'No reason given'}</span>
-                <span class="faint small">{[t.at && date(typeof t.at === 'number' && t.at < 1e12 ? t.at * 1000 : t.at), t.automatic && 'automatic'].filter(Boolean).join(' · ')}</span>
+                <span class="faint small tag-meta">{t.source && <span class={`t-src ${srcClass(t.source)}`}>{t.source}</span>}{[tagTime(t.at) && date(tagTime(t.at)), t.automatic && 'automatic'].filter(Boolean).join(' · ')}</span>
               </span>
             </li>
           ))}

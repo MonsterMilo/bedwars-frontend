@@ -85,3 +85,8 @@ html[data-effects="off"] .he-ring, html[data-motion="reduce"] .he-ring { animati
 @media (max-width: 860px) { .head-emblem { width: 96px; right: 0; opacity: 0.5; } }
 @media (max-width: 560px) { .head-emblem { display: none; } }
 .eyebrow .item-icon { width: 20px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+
+/* Tag source badge (Urchin, Aurora, Xadia, ...) */
+.t-src { --s: var(--dim); padding: 1px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--s); background: color-mix(in srgb, var(--s) 13%, transparent); border: 1px solid color-mix(in srgb, var(--s) 35%, transparent); }
+.t-src.src-urchin { --s: #ff6b81; } .t-src.src-aurora { --s: #4be3a8; } .t-src.src-xadia { --s: #b79bff; } .t-src.src-astrus { --s: #7fc8ff; } .t-src.src-antisniper { --s: #ffc46b; }
+.tag-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }

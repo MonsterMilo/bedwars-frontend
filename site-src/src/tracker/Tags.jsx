@@ -1,15 +1,27 @@
-// Cheater tags from blacklists (Astrus rollup, Aurora, Xadia). Never Urchin:
-// Urchin is only for players in Milo's live games.
+// Cheater tags from blacklists, each with where it came from (Urchin only
+// for key holders, Astrus rollup, Aurora, Xadia).
 import { Icon } from '../ui/icons.jsx';
 import { get } from '../lib/api.js';
 import { useAsync } from '../lib/useAsync.js';
 import { date } from '../lib/format.js';
 
+// Seconds, ms or a date string -> ms.
+export function tagTime(at) {
+  if (!at) return null;
+  if (typeof at === 'number') return at < 1e12 ? at * 1000 : at;
+  const n = Number(at);
+  if (Number.isFinite(n)) return n < 1e12 ? n * 1000 : n;
+  const p = Date.parse(at);
+  return Number.isNaN(p) ? null : p;
+}
+const SRC_CLASS = { urchin: 'src-urchin', aurora: 'src-aurora', xadia: 'src-xadia', astrus: 'src-astrus', antisniper: 'src-antisniper' };
+export const srcClass = s => SRC_CLASS[String(s || '').toLowerCase()] || 'src-other';
+
 export function TagList({ uuid, compact = false }) {
   const { data, error, loading, reload } = useAsync(signal => get(`/site/tags/${uuid}`, { signal, maxAge: 5 * 60_000 }), [uuid], { skip: !uuid });
   const tags = (data && data.tags) || [];
   return (
-    <div class={`t-tags ${compact ? 'compact' : ''}`}>
+    <div class={`t-tags ${compact ? 'compact' : ''} ${tags.length ? 'has' : ''}`}>
       <div class="t-tags-head">
         <Icon name="shield" /><span>Tags</span>
         {loading && <span class="faint small">Checking…</span>}
@@ -17,16 +29,21 @@ export function TagList({ uuid, compact = false }) {
         {error && <button type="button" class="link small" onClick={reload}>Unavailable. Retry</button>}
       </div>
       {tags.length > 0 && (
-        <ul class="tags">
-          {tags.map((t, i) => (
-            <li key={i} class="tag-row">
-              <span class="chip bad">{String(t.type || 'tag').replace(/_/g, ' ')}</span>
-              <span class="grow">
-                <span class="tag-reason">{t.reason || 'No reason given'}</span>
-                {t.at && <span class="faint small">{date(typeof t.at === 'number' && t.at < 1e12 ? t.at * 1000 : t.at)}</span>}
-              </span>
-            </li>
-          ))}
+        <ul class="t-tag-list">
+          {tags.map((t, i) => {
+            const ms = tagTime(t.at);
+            return (
+              <li key={i} class="t-tag">
+                <span class="t-tag-type">{String(t.type || 'tag').replace(/_/g, ' ')}</span>
+                <span class="t-tag-reason">{t.reason || 'No reason given'}</span>
+                <span class="t-tag-meta">
+                  {t.source && <span class={`t-src ${srcClass(t.source)}`}>{t.source}</span>}
+                  {ms && <span>{date(ms)}</span>}
+                  {t.automatic && <span>Automatic</span>}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

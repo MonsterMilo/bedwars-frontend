@@ -1,5 +1,6 @@
 // Sweat Lookup: preview a player's live stats, then add them as beaten.
 import { useState, useRef, useMemo } from 'preact/hooks';
+import { num } from '../lib/format.js';
 import { Icon } from '../ui/icons.jsx';
 import { PlayerName, Star } from '../ui/mc.jsx';
 import { ErrorBox } from '../ui/common.jsx';
@@ -9,8 +10,8 @@ import { keyOwner } from '../lib/key.js';
 import { useSignal } from '../lib/signal.js';
 import { toast } from '../lib/toast.js';
 import { sweats, addSweat } from './store.js';
-import { statsFromPlayer, indexOf, canWrite, today, personLabel, ROSTER_KEYS } from './model.js';
-import { RosterPicker, FlagPicker, Gauge, TierBadge, fixed, NoteAuthor } from './ui.jsx';
+import { statsFromPlayer, indexOf, canWrite, today, personLabel, ROSTER_KEYS, TIERS, tierIndex, gaugeOf } from './model.js';
+import { RosterPicker, FlagPicker, fixed, NoteAuthor } from './ui.jsx';
 import { TagList } from './Tags.jsx';
 import { play, scan } from '../lib/audio.js';
 import { successFlourish, technoblade } from '../lib/fx.js';
@@ -176,33 +177,83 @@ export function Lookup({ onOpen }) {
           )}
           {busy && !preview && <div class="lookup-skel"><div class="skel" style={{ height: '160px' }} /></div>}
 
-          {preview && (
-            <div class="preview">
-              <div class="preview-head">
-                <img class="preview-skin" src={`https://mc-heads.net/body/${preview.uuid}/120`} alt="" width="60" height="135" />
-                <div class="preview-id">
-                  <div class="preview-name"><Star star={st.star} /> <PlayerName player={preview.player} name={preview.name} /></div>
-                  <div class="preview-sub">
-                    <TierBadge index={index} />
-                    <span class="mono">{Math.round(index).toLocaleString()} index</span>
-                    {times > 0 && <button type="button" class="chip accent" onClick={() => onOpen({ uuid: preview.uuid, username: preview.name })}>Tracked ×{times}</button>}
-                  </div>
-                </div>
-              </div>
-              <Gauge index={index} />
-              <div class="preview-stats">
-                {[['FKDR', 'fkdr', st.fkdr], ['WLR', 'wlr', st.wlr], ['KDR', 'kdr', st.kdr], ['BBLR', 'bblr', st.bblr]].map(([label, f, v]) => (
-                  <div class="pstat" key={f}>
-                    <span class="pstat-label">{label}</span>
-                    <span class="pstat-value mono">{fixed(v)}</span>
-                    <Standing st={standing(list, f, v)} field={label} />
-                  </div>
-                ))}
-              </div>
-              <TagList uuid={preview.uuid} compact />
-            </div>
-          )}
+          {preview && <PreviewCard preview={preview} index={index} list={list} times={times} onOpen={onOpen} />}
         </div>
+      </div>
+    </div>
+  );
+}
+
+const short = n => (n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : n >= 1e4 ? `${Math.round(n / 1e3)}K` : Math.round(n).toLocaleString());
+const STAT_TILES = [
+  ['FKDR', 'fkdr', 'c-fk', s => `${num(s.finals)} F · ${num(s.finalDeaths)} FD`],
+  ['WLR', 'wlr', 'c-wl', s => `${num(s.wins)} W · ${num(s.losses)} L`],
+  ['KDR', 'kdr', 'c-kd', s => `${num(s.kills)} K · ${num(s.deaths)} D`],
+  ['BBLR', 'bblr', 'c-bb', s => `${num(s.beds)} B · ${num(s.bedsLost)} BL`]
+];
+
+// The preview: the skin on a lit stage, a threat ring with the tier, four
+// coloured stat tiles and the player's tags.
+function PreviewCard({ preview, index, list, times, onOpen }) {
+  const st = preview.stats;
+  const ti = tierIndex(index), t = TIERS[ti];
+  const fill = gaugeOf(index);
+  const tougher = useMemo(() => {
+    const vals = list.map(x => indexOf(x)).filter(v => Number.isFinite(v) && v > 0);
+    return vals.length >= 3 ? Math.round(vals.filter(v => v < index).length / vals.length * 100) : null;
+  }, [list, index]);
+  const stage = useRef(null);
+  function tilt(e) {
+    const el = stage.current; if (!el) return;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty('--rx', `${((e.clientY - r.top) / r.height - 0.5) * -10}deg`);
+    el.style.setProperty('--ry', `${((e.clientX - r.left) / r.width - 0.5) * 16}deg`);
+    el.style.setProperty('--gx', `${(e.clientX - r.left) / r.width * 100}%`);
+  }
+  const untilt = () => { const el = stage.current; if (el) { el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg'); } };
+  const R = 50, C = 2 * Math.PI * R;
+  return (
+    <div class={`pv ${t.key}`}>
+      <div class="pv-stage" ref={stage} onPointerMove={tilt} onPointerLeave={untilt}>
+        <span class="pv-aura" aria-hidden="true" />
+        <span class="pv-rays" aria-hidden="true" />
+        <img class="pv-skin" src={`https://mc-heads.net/body/${preview.uuid}/240`} alt={`${preview.name}'s skin`} width="120" height="288" />
+        <span class="pv-glare" aria-hidden="true" />
+        <span class="pv-floor" aria-hidden="true" />
+      </div>
+      <div class="pv-main">
+        <div class="pv-head">
+          <PlayerName player={preview.player} name={preview.name} class="pv-name" />
+          <span class="pv-star"><Star star={st.star} /></span>
+          {times > 0 && <button type="button" class="chip accent" onClick={() => onOpen({ uuid: preview.uuid, username: preview.name })}>Tracked ×{times}</button>}
+        </div>
+        <div class="pv-threat" role="meter" aria-label="Player index" aria-valuemin={0} aria-valuemax={7} aria-valuenow={Math.log10(Math.max(1, index)).toFixed(2)} aria-valuetext={`${Math.round(index).toLocaleString()} (${t.name})`}>
+          <div class="pv-ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="r-ticks" cx="60" cy="60" r="57" />
+              <circle class="r-track" cx="60" cy="60" r={R} />
+              <circle class="r-fill" cx="60" cy="60" r={R} style={{ strokeDasharray: `${C * fill} ${C}` }} />
+            </svg>
+            <div class="pv-ring-c"><b class="mono">{short(index)}</b><span>Index</span></div>
+          </div>
+          <div class="pv-tier">
+            <span class="pv-kicker">Threat level</span>
+            <span class="pv-tier-name">{t.name}</span>
+            <span class="pv-tier-sub">{tougher != null ? `Tougher than ${tougher}% of tracked players` : `${Math.round(index).toLocaleString()} index`}</span>
+            <span class="pv-segs" aria-hidden="true">{TIERS.map((x, i) => <i key={x.key} class={`${x.key} ${i <= ti ? 'on' : ''}`} />)}</span>
+          </div>
+        </div>
+        <div class="pv-stats">
+          {STAT_TILES.map(([label, f, cls, sub]) => (
+            <div class={`pv-stat ${cls}`} key={f}>
+              <span class="pv-stat-label">{label}</span>
+              <span class="pv-stat-value mono">{fixed(st[f])}</span>
+              <span class="pv-stat-sub">{sub(st)}</span>
+              <Standing st={standing(list, f, st[f])} field={label} />
+            </div>
+          ))}
+        </div>
+        <TagList uuid={preview.uuid} compact />
       </div>
     </div>
   );

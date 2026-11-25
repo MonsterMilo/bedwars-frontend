@@ -533,3 +533,62 @@ html[data-surface="light"] .t-title { filter: brightness(0.82) saturate(1.3); }
   .sotd::after { left: 8px; width: 70px; }
   .sotd-body { width: 60px; align-self: start; margin-top: 18px; }
 }
+
+/* ---------- Player cards: the old tracker's card, brought back and lit ----------
+   A framed bust tinted by the index tier, glowing star and FKDR chips, the
+   index in the corner, one dark stat bar, the latest note and a footer with
+   who beat them, the date and the edit buttons. */
+.pcard { --tc: var(--t1); gap: 12px; padding: 14px 14px 12px; overflow: hidden; isolation: isolate;
+  background: radial-gradient(130% 90% at 0% 0%, color-mix(in srgb, var(--tc) 13%, transparent), transparent 55%), linear-gradient(180deg, color-mix(in srgb, var(--panel-2) 80%, transparent), color-mix(in srgb, var(--bg) 70%, var(--panel))) ;
+  border-color: color-mix(in srgb, var(--tc) 20%, var(--line)); }
+.pcard.t2 { --tc: var(--t2); } .pcard.t3 { --tc: var(--t3); } .pcard.t4 { --tc: var(--t4); } .pcard.t5 { --tc: var(--t5); }
+.pcard::before { content: ''; position: absolute; z-index: 0; left: 16px; right: 16px; top: 0; height: 2px; border-radius: 0 0 2px 2px; background: linear-gradient(90deg, transparent, var(--tc), transparent); opacity: 0.8; box-shadow: 0 0 14px var(--tc); pointer-events: none; }
+.pcard:hover { border-color: color-mix(in srgb, var(--tc) 45%, var(--line)); box-shadow: var(--hi), 0 22px 46px -26px color-mix(in srgb, var(--tc) 75%, transparent); }
+.pcard.t5 { background: radial-gradient(130% 90% at 0% 0%, color-mix(in srgb, var(--t5) 18%, transparent), transparent 55%), radial-gradient(90% 80% at 100% 100%, color-mix(in srgb, var(--t4) 10%, transparent), transparent 60%), linear-gradient(180deg, color-mix(in srgb, var(--panel-2) 80%, transparent), color-mix(in srgb, var(--bg) 70%, var(--panel))); }
+.pcard.is-cheat { border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+.pc-head, .pc-bar, .pc-note, .pc-foot { position: relative; z-index: 1; pointer-events: none; }
+.pc-foot .item-actions, .pc-foot .rival-mark { pointer-events: auto; }
+.pc-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start; }
+.pc-bust { position: relative; display: grid; place-items: end center; width: 66px; height: 66px; border-radius: 16px; overflow: hidden;
+  background: radial-gradient(90% 80% at 50% 20%, color-mix(in srgb, var(--tc) 34%, transparent), transparent 75%), color-mix(in srgb, var(--bg) 80%, #000);
+  border: 1px solid color-mix(in srgb, var(--tc) 38%, var(--line-2)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 18px -10px color-mix(in srgb, var(--tc) 80%, transparent); }
+.pc-bust img { width: 60px; height: 60px; object-fit: contain; object-position: bottom; image-rendering: pixelated; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); transition: transform 300ms var(--ease); }
+.pcard:hover .pc-bust img { transform: translateY(-2px) scale(1.05); }
+.pc-id { display: grid; gap: 6px; justify-items: start; min-width: 0; padding-top: 2px; }
+.pc-name { display: flex; align-items: center; gap: 6px; max-width: 100%; font-weight: 800; font-size: 1.04rem; letter-spacing: -0.01em; }
+.pc-name .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pc-times { flex: none; padding: 1px 7px; border-radius: 999px; font-size: 0.7rem; font-weight: 800; color: var(--tc); background: color-mix(in srgb, var(--tc) 14%, transparent); }
+.pc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pc-chip { --c: var(--accent); display: inline-flex; align-items: baseline; gap: 4px; padding: 3px 9px; border-radius: 9px; font-family: var(--mono); font-size: 0.8rem; font-weight: 700; line-height: 1.3; white-space: nowrap;
+  color: var(--c); background: color-mix(in srgb, var(--c) 13%, transparent); border: 1px solid color-mix(in srgb, var(--c) 38%, transparent); box-shadow: 0 0 16px -7px var(--c); }
+.pc-chip small { font-size: 0.66rem; opacity: 0.8; letter-spacing: 0.06em; }
+.pc-chip.star { --c: var(--line-3); background: rgba(0,0,0,0.35); box-shadow: none; }
+.pc-chip.fk.f0 { --c: #a3abbd; } .pc-chip.fk.f1 { --c: var(--t1); } .pc-chip.fk.f2 { --c: var(--t2); } .pc-chip.fk.f3 { --c: var(--t3); } .pc-chip.fk.f4 { --c: var(--t4); } .pc-chip.fk.f5 { --c: var(--t5); }
+.pc-id .tier { font-size: 0.64rem; padding: 1px 8px; }
+.pc-index { align-self: start; padding: 3px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; color: var(--dim); background: rgba(0,0,0,0.3); border: 1px solid var(--line-2); }
+.pc-bar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--line); box-shadow: inset 0 1px 0 rgba(255,255,255,0.03); }
+.pc-bar span { display: grid; justify-items: center; gap: 2px; padding: 8px 6px; min-width: 0; }
+.pc-bar span + span { border-left: 1px solid var(--line); }
+.pc-bar small { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+.pc-bar b { font-size: 1rem; font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.pc-note { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 8px 10px; border-radius: 10px; font-size: 0.82rem; line-height: 1.35; color: var(--dim); background: color-mix(in srgb, var(--panel-2) 60%, transparent); border: 1px solid var(--line); }
+.pc-note span { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.pc-note svg { width: 14px; height: 14px; flex: none; margin-top: 1px; color: var(--tc); }
+.pc-note.empty { border-style: dashed; background: transparent; color: var(--faint); justify-content: center; }
+.pc-note.empty svg { color: var(--faint); }
+.pc-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 30px; padding-top: 10px; border-top: 1px solid var(--line); }
+.pc-date { font-size: 0.76rem; color: var(--faint); }
+.pc-foot .item-actions { margin-left: auto; opacity: 0.75; }
+.pcard:hover .pc-foot .item-actions { opacity: 1; }
+html[data-surface="light"] .pc-bar, html[data-surface="light"] .pc-index, html[data-surface="light"] .pc-chip.star { background: rgba(20,30,60,0.05); }
+html[data-surface="light"] .pc-bust { background: radial-gradient(90% 80% at 50% 20%, color-mix(in srgb, var(--tc) 30%, transparent), transparent 75%), #e8ecf5; }
+
+/* The page: deeper than the rest of the site, with an aurora behind the title. */
+html:not([data-surface="light"]) body { background: radial-gradient(1100px 520px at 50% -120px, color-mix(in srgb, var(--accent-2) 16%, transparent), transparent 70%), radial-gradient(700px 420px at 12% 0%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 70%), radial-gradient(700px 420px at 88% 4%, color-mix(in srgb, var(--accent-3) 8%, transparent), transparent 70%), #080a11; background-repeat: no-repeat; }
+html[data-surface="oled"] body { background-color: #000; }
+.t-hero::after { content: ''; position: absolute; z-index: -1; left: 50%; top: 40%; width: min(1000px, 120%); height: 220px; transform: translateX(-50%); background: conic-gradient(from 200deg at 50% 50%, transparent, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, var(--accent-2) 20%, transparent), color-mix(in srgb, var(--accent-3) 12%, transparent), transparent 70%); filter: blur(40px); opacity: 0.8; pointer-events: none; animation: t-aurora 14s ease-in-out infinite alternate; }
+@keyframes t-aurora { to { transform: translateX(-50%) scaleX(1.15) rotate(3deg); opacity: 1; } }
+html[data-motion="reduce"] .t-hero::after { animation: none; }
+/* Section panels get a lit top edge in the section's light. */
+.tracker-stack .tsec > .panel, .tracker-stack .lookup-body.panel { border-color: color-mix(in srgb, var(--accent) 16%, var(--line)); }
+.tracker-stack .tsec > .panel::before, .tracker-stack .lookup-body.panel::before { content: ''; position: absolute; left: 24px; right: 24px; top: -1px; height: 1px; background: var(--spectrum); opacity: 0.8; pointer-events: none; }

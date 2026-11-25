@@ -10,7 +10,7 @@ import { Shell } from '../ui/Shell.jsx';
 import { PlayerSearch } from '../ui/PlayerSearch.jsx';
 import { Icon } from '../ui/icons.jsx';
 import { PlayerName, Star, Segments } from '../ui/mc.jsx';
-import { Tabs, Stat, Avatar, Loading, ErrorBox, Empty, SourceNote, copyText, HeadArt } from '../ui/common.jsx';
+import { Tabs, Stat, Avatar, Loading, ErrorBox, Empty, SourceNote, copyText, HeadEmblem } from '../ui/common.jsx';
 import { SkinViewer } from '../ui/SkinViewer.jsx';
 import { get, enc } from '../lib/api.js';
 import { useAsync, useParam } from '../lib/useAsync.js';
@@ -239,7 +239,7 @@ function Quickbuy({ bw }) {
         <ol class="qb inv" aria-label="Quick buy slots">
           {qb.map((it, i) => (
             <li key={i} class={`slot ${it ? '' : 'blank'}`} title={it ? it.name : 'Empty'}>
-              {it ? <><ItemIcon id={it.id} /><span class="sr-only">{it.name}</span></> : <span class="sr-only">Empty</span>}
+              {it ? <><ItemIcon id={it.id} mc /><span class="sr-only">{it.name}</span></> : <span class="sr-only">Empty</span>}
             </li>
           ))}
         </ol>
@@ -252,7 +252,7 @@ function Quickbuy({ bw }) {
               const [icon, label] = (cat && HOTBAR[cat.toUpperCase()]) || [null, cat ? cat.charAt(0) + cat.slice(1).toLowerCase() : null];
               return (
                 <li key={i} class={`slot ${cat ? '' : 'blank'}`} title={label || 'Empty'}>
-                  {icon && <ItemIcon id={icon} />}
+                  {icon && <ItemIcon id={icon} mc />}
                   {label && <span class="slot-label" aria-hidden="true">{label}</span>}
                   <span class="sr-only">{label || 'Empty'}</span>
                 </li>
@@ -438,7 +438,7 @@ function Landing() {
   const list = [...favs, ...rec.filter(r => !favs.some(f => f.name === r.name))].slice(0, 12);
   return (
     <div class="page wrap landing">
-      <header class="page-head"><div class="grow"><p class="eyebrow"><ItemIcon id="ui:nametag" />Player lookup</p><h1>Look up a player</h1><p>Stats by mode and period, quick buy, cosmetics, tags, and past names and skins.</p></div><HeadArt items={['block:diamond', 'ui:sword', 'cat:bed']} /></header>
+      <header class="page-head"><div class="grow"><p class="eyebrow"><ItemIcon id="ui:nametag" />Player lookup</p><h1>Look up a player</h1><p>Stats by mode and period, quick buy, cosmetics, tags, and past names and skins.</p></div><HeadEmblem id="ui:nametag" /></header>
       <div class="landing-search"><PlayerSearch big autofocus placeholder="Player name or UUID" /></div>
       {list.length > 0 && <ul class="people-list">{list.map(p => <li key={p.name}><a class="person" href={playerUrl(p.name)}><Avatar id={p.uuid || p.name} size={22} />{p.name}</a></li>)}</ul>}
     </div>

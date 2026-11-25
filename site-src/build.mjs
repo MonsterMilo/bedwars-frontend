@@ -1,6 +1,7 @@
 // Builds the rebuilt website pages.
 //   src/pages/<page>.jsx  -> ../app/<page>-<hash>.js (+ shared chunks, + .css)
 //   html/<page>.html      -> ../<page>.html with {{js}} / {{css}} filled in
+//   src/embed/nav.jsx     -> ../app/nav.js (the header for the hand-written pages)
 // Every script and stylesheet is a separate file, so the pages run under a
 // Content-Security-Policy with no inline scripts at all.
 import * as esbuild from 'esbuild';
@@ -34,6 +35,22 @@ const options = {
   logLevel: 'info'
 };
 
+// The site header for the hand-written pages: one file with a stable name
+// (app/nav.js), its CSS carried as text for its shadow root.
+const embed = {
+  entryPoints: [join(here, 'src/embed/nav.jsx')],
+  bundle: true,
+  format: 'esm',
+  outfile: join(out, 'nav.js'),
+  minify: true,
+  target: options.target,
+  jsx: 'automatic',
+  jsxImportSource: 'preact',
+  loader: { '.css': 'text' },
+  legalComments: 'none',
+  logLevel: 'warning'
+};
+
 function writeHtml(meta) {
   const byPage = {};
   for (const [file, info] of Object.entries(meta.outputs)) {
@@ -56,11 +73,13 @@ function writeHtml(meta) {
 if (watch) {
   const ctx = await esbuild.context({ ...options, plugins: [{ name: 'html', setup(b) { b.onEnd(r => r.metafile && writeHtml(r.metafile)); } }] });
   await ctx.watch();
+  await esbuild.build(embed);
 } else {
   if (existsSync(out)) rmSync(out, { recursive: true });
   mkdirSync(out, { recursive: true });
   const result = await esbuild.build(options);
   writeHtml(result.metafile);
+  await esbuild.build(embed);
   const sizes = Object.entries(result.metafile.outputs).filter(([, o]) => o.entryPoint).map(([f, o]) => `${basename(f)} ${(o.bytes / 1024).toFixed(1)} KB`);
   console.log(sizes.join('\n'));
 }

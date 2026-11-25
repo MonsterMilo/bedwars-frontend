@@ -154,6 +154,14 @@ html[data-surface="light"] .bg-field::before { opacity: 0.6; }
 
 /* --- Minecraft item icons (one sprite; tools/item-icons.py) --- */
 .item-icon { display: block; width: 100%; aspect-ratio: 1; background-image: url(../assets/items.webp); background-repeat: no-repeat; background-size: calc(var(--n) * 100%) 100%; background-position: calc(var(--i) / (var(--n) - 1) * 100%) 0; }
+/* Prism glyphs (ui/glyphs.jsx): gem-cut, two-tone, with a lit edge. */
+.item-icon.glyph { background: none; overflow: visible; }
+.glyph .g-b { stroke: rgba(255,255,255,0.28); stroke-width: 0.6; stroke-linejoin: round; paint-order: stroke; }
+.glyph .g-hi { fill: rgba(255,255,255,0.3); }
+.glyph .g-w { fill: rgba(255,255,255,0.94); }
+.glyph .g-d { fill: rgba(10,12,24,0.78); }
+.glyph .g-l { fill: none; stroke: rgba(10,12,24,0.5); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+html[data-surface="light"] .glyph .g-b { stroke: rgba(0,0,0,0.18); }
 
 /* An icon on a lit tile: used for page and card icons. --hue tints it. */
 .tile { --hue: var(--accent); position: relative; display: grid; place-items: center; flex: none; width: 52px; height: 52px; border-radius: 15px; isolation: isolate;
@@ -170,7 +178,7 @@ html[data-surface="light"] .bg-field::before { opacity: 0.6; }
 .cos-pic { position: relative; display: grid; place-items: center; flex: none; overflow: hidden; border-radius: 10px; background: radial-gradient(90% 90% at 50% 30%, color-mix(in srgb, var(--rar) 22%, transparent), transparent 70%), color-mix(in srgb, var(--bg) 70%, var(--panel-2)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rar) 45%, transparent); }
 .cos-pic img { width: 100%; height: 100%; object-fit: cover; }
 .cos-pic.icon .item-icon { width: 64%; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
-.cos-pic::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--rar); opacity: 0.85; }
+.cos-pic::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rar) 55%, transparent), inset 0 0 12px -4px color-mix(in srgb, var(--rar) 70%, transparent); pointer-events: none; }
 .rar-none.cos-pic::after { display: none; }
 
 /* Inventory slots, as in game but in the site's dark glass. */

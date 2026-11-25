@@ -7,7 +7,7 @@ import '../styles/download.css';
 import { mount } from '../lib/mount.js';
 import { Shell, Logo } from '../ui/Shell.jsx';
 import { Icon } from '../ui/icons.jsx';
-import { Loading, ErrorBox, copyText, HeadArt } from '../ui/common.jsx';
+import { Loading, ErrorBox, copyText, HeadEmblem } from '../ui/common.jsx';
 import { ItemIcon } from '../ui/items.jsx';
 import { useAsync } from '../lib/useAsync.js';
 import { date, num } from '../lib/format.js';
@@ -151,7 +151,7 @@ function Download() {
             <h1>Prism</h1>
             <p>An open-source plugin platform for Minecraft 1.8.9. It runs inside Lunar Client.</p>
           </div>
-          <HeadArt items={['block:enchanting', 'ui:enchanted_book', 'res:diamond']} />
+          <HeadEmblem id="block:enchanting" />
         </header>
 
         <div class="dl-layout">

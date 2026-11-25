@@ -1,8 +1,8 @@
 // Each page's own moving background, drawn on one canvas fixed behind the
 // page. Every one answers the pointer in its own way:
-//   player        experience orbs drift about and fly to the pointer
+//   player        experience orbs rise in three depths and streak to the pointer
 //   nicks         scrambled name tags; the light round the pointer unscrambles them
-//   leaderboards  a field of block pillars that rise as the pointer passes
+//   leaderboards  a skyline of light bars that rise as the pointer passes
 //   download      the End portal's starfield, swirling round the pointer
 //   tracker       a radar sweep; click the background to ping
 //   unlock        enchanting-table letters flowing to the pointer
@@ -24,37 +24,90 @@ function seeded(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647
 const onBackground = el => !(el && el.closest && el.closest('a, button, input, textarea, select, label, [role="listbox"], [role="dialog"], dialog, .panel, .card, .site-head, .site-foot, table'));
 
 // ---------------------------------------------------------------- player
-// Experience orbs: green-gold glowing balls that bob about. Near the pointer
-// they're pulled in and get collected with the orb sound's little pop ring.
+// Experience orbs in three depths, rising slowly and shifting green to gold
+// as they do in game. Near the pointer they streak in and burst into sparks.
 function orbs() {
-  let list = [], rings = [];
-  const make = (W, H, r) => ({ x: r() * W, y: r() * H, vx: (r() - 0.5) * 12, vy: (r() - 0.5) * 12, s: 5 + r() * 7, ph: r() * TAU, hue: r() });
+  let list = [], sparks = [], rings = [];
+  const make = (W, H, r, z = 0.35 + r() * 0.65) => ({ x: r() * W, y: r() * H, vx: 0, vy: 0, z, s: 3 + z * 6, ph: r() * TAU, tw: r() * TAU, trail: [] });
+  // green 95 .. gold 52, swinging with time like the game's orb tint
+  const hueOf = (o, t) => 74 + Math.sin(t * 0.0012 + o.ph) * 22;
   return {
-    init(W, H) { const r = seeded(7); const n = Math.round(Math.min(46, Math.max(18, W * H / 38000))); list = Array.from({ length: n }, () => make(W, H, r)); },
+    init(W, H) {
+      const r = seeded(7); const n = Math.round(Math.min(64, Math.max(26, W * H / 26000)));
+      list = Array.from({ length: n }, () => make(W, H, r)).sort((a, b) => a.z - b.z);
+    },
     frame(ctx, t, dt, P, W, H, pal) {
+      const L = pal.light;
+      ctx.save();
+      if (!L) ctx.globalCompositeOperation = 'lighter';
       for (const o of list) {
         const dx = P.x - o.x, dy = P.y - o.y, d = Math.hypot(dx, dy);
-        if (P.on && d < 170) { const f = (1 - d / 170) * 520; o.vx += (dx / (d || 1)) * f * dt; o.vy += (dy / (d || 1)) * f * dt; }
-        o.vx += Math.sin(t * 0.0006 + o.ph) * 4 * dt; o.vy += Math.cos(t * 0.0005 + o.ph * 1.3) * 4 * dt;
-        o.vx *= 1 - dt * 1.4; o.vy *= 1 - dt * 1.4;
+        const reach = 120 + o.z * 90;
+        const pulled = P.on && d < reach;
+        if (pulled) { const f = (1 - d / reach) * 900 * o.z; o.vx += (dx / (d || 1)) * f * dt; o.vy += (dy / (d || 1)) * f * dt; }
+        o.vx += Math.sin(t * 0.0005 + o.ph) * 5 * dt; o.vy += (-7 * o.z + Math.cos(t * 0.0004 + o.ph * 1.3) * 4) * dt;
+        o.vx *= 1 - dt * 1.6; o.vy *= 1 - dt * 1.6;
         o.x += o.vx * dt; o.y += o.vy * dt;
-        if (P.on && d < o.s + 6) { rings.push({ x: o.x, y: o.y, t: 0 }); Object.assign(o, make(W, H, Math.random), { x: Math.random() < 0.5 ? -20 : W + 20 }); }
-        if (o.x < -30) o.x = W + 30; if (o.x > W + 30) o.x = -30; if (o.y < -30) o.y = H + 30; if (o.y > H + 30) o.y = -30;
-        const pulse = 0.75 + 0.25 * Math.sin(t * 0.004 + o.ph);
+        const sp = Math.hypot(o.vx, o.vy);
+        o.trail.push(o.x, o.y); if (o.trail.length > 16) o.trail.splice(0, 2);
+        if (!pulled && sp < 40) o.trail.length = Math.min(o.trail.length, 4);
+        if (P.on && d < o.s + 8) {
+          const h = hueOf(o, t);
+          rings.push({ x: o.x, y: o.y, t: 0, h, z: o.z });
+          for (let k = 0; k < 9; k++) { const a = (k / 9) * TAU + Math.random() * 0.5, v = 60 + Math.random() * 110; sparks.push({ x: o.x, y: o.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, t: 0, h }); }
+          Object.assign(o, make(W, H, Math.random, o.z), { y: H + 20 });
+          continue;
+        }
+        if (o.x < -40) o.x = W + 40; if (o.x > W + 40) o.x = -40;
+        if (o.y < -40) { o.y = H + 40; o.trail.length = 0; } if (o.y > H + 40) { o.y = -40; o.trail.length = 0; }
+        const h = hueOf(o, t);
+        const pulse = 0.82 + 0.18 * Math.sin(t * 0.005 + o.ph);
         const r = o.s * pulse;
-        const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, r * 3);
-        const core = `hsla(${70 + o.hue * 40}, 100%, ${pal.light ? 42 : 62}%,`;
-        g.addColorStop(0, `${core} ${pal.light ? 0.55 : 0.6})`); g.addColorStop(0.35, `${core} ${pal.light ? 0.2 : 0.22})`); g.addColorStop(1, `${core} 0)`);
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(o.x, o.y, r * 3, 0, TAU); ctx.fill();
-        // the blocky orb itself, as in game
-        ctx.fillStyle = `hsla(${70 + o.hue * 40}, 95%, ${pal.light ? 40 : 70}%, ${pal.light ? 0.6 : 0.75})`;
-        const q = Math.max(2, Math.round(r * 0.55));
-        ctx.fillRect(Math.round(o.x - q), Math.round(o.y - q), q * 2, q * 2);
-        ctx.fillStyle = `rgba(255,255,230,${pal.light ? 0.5 : 0.7})`;
-        ctx.fillRect(Math.round(o.x - q * 0.5), Math.round(o.y - q * 0.6), q, Math.max(1, q * 0.5));
+        const a = (L ? 0.55 : 0.75) * (0.35 + o.z * 0.65);
+        // streak while flying in
+        if (o.trail.length > 6) {
+          const tx = o.trail[0], ty = o.trail[1];
+          const g = ctx.createLinearGradient(tx, ty, o.x, o.y);
+          g.addColorStop(0, `hsla(${h},100%,60%,0)`); g.addColorStop(1, `hsla(${h},100%,${L ? 45 : 65}%,${a * 0.7})`);
+          ctx.strokeStyle = g; ctx.lineWidth = r * 1.1; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(tx, ty);
+          for (let k = 2; k < o.trail.length; k += 2) ctx.lineTo(o.trail[k], o.trail[k + 1]);
+          ctx.stroke();
+        }
+        // bloom
+        const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, r * 4.2);
+        g.addColorStop(0, `hsla(${h},100%,${L ? 45 : 62}%,${a * 0.55})`); g.addColorStop(0.3, `hsla(${h},100%,${L ? 45 : 58}%,${a * 0.16})`); g.addColorStop(1, `hsla(${h},100%,50%,0)`);
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(o.x, o.y, r * 4.2, 0, TAU); ctx.fill();
+        if (o.z < 0.5) continue; // far orbs are only a glow
+        // the orb: a lit bead with a hot centre
+        const c = ctx.createRadialGradient(o.x - r * 0.3, o.y - r * 0.35, 0, o.x, o.y, r);
+        c.addColorStop(0, `hsla(${h + 10},100%,${L ? 70 : 92}%,${a})`); c.addColorStop(0.45, `hsla(${h},100%,${L ? 48 : 64}%,${a})`); c.addColorStop(1, `hsla(${h - 18},95%,${L ? 32 : 42}%,${a * 0.9})`);
+        ctx.fillStyle = c; ctx.beginPath(); ctx.arc(o.x, o.y, r, 0, TAU); ctx.fill();
+        // twinkle on the near ones
+        if (o.z > 0.78) {
+          const tw = Math.max(0, Math.sin(t * 0.0021 + o.tw)) ** 6;
+          if (tw > 0.02) {
+            const k = r * (1.4 + tw * 1.8);
+            ctx.fillStyle = `hsla(${h + 20},100%,${L ? 60 : 92}%,${tw * a})`;
+            ctx.beginPath(); ctx.moveTo(o.x, o.y - k); ctx.lineTo(o.x + k * 0.16, o.y - k * 0.16); ctx.lineTo(o.x + k, o.y); ctx.lineTo(o.x + k * 0.16, o.y + k * 0.16);
+            ctx.lineTo(o.x, o.y + k); ctx.lineTo(o.x - k * 0.16, o.y + k * 0.16); ctx.lineTo(o.x - k, o.y); ctx.lineTo(o.x - k * 0.16, o.y - k * 0.16); ctx.closePath(); ctx.fill();
+          }
+        }
       }
-      rings = rings.filter(g => (g.t += dt) < 0.5);
-      for (const g of rings) { ctx.strokeStyle = `rgba(190,255,120,${(1 - g.t / 0.5) * 0.6})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(g.x, g.y, 6 + g.t * 60, 0, TAU); ctx.stroke(); }
+      sparks = sparks.filter(p => (p.t += dt) < 0.7);
+      for (const p of sparks) {
+        p.vy += 160 * dt; p.vx *= 1 - dt * 2; p.x += p.vx * dt; p.y += p.vy * dt;
+        const f = 1 - p.t / 0.7;
+        ctx.fillStyle = `hsla(${p.h},100%,${L ? 45 : 72}%,${f * 0.9})`;
+        const q = 1 + f * 2; ctx.fillRect(p.x - q / 2, p.y - q / 2, q, q);
+      }
+      rings = rings.filter(g => (g.t += dt) < 0.55);
+      for (const g of rings) {
+        const f = 1 - g.t / 0.55;
+        ctx.strokeStyle = `hsla(${g.h},100%,${L ? 42 : 70}%,${f * 0.7})`; ctx.lineWidth = 1.5 + f * 1.5;
+        ctx.beginPath(); ctx.arc(g.x, g.y, 6 + (1 - f * f) * 42, 0, TAU); ctx.stroke();
+      }
+      ctx.restore();
     }
   };
 }
@@ -113,49 +166,60 @@ function nametags() {
 }
 
 // ---------------------------------------------------------------- leaderboards
-// An isometric field of pillars along the bottom, like a chart of blocks.
-// They breathe slowly, and rise in a wave where the pointer passes.
-const STAR_HUES = ['#b8b8b8', '#ffffff', '#ffaa00', '#55ffff', '#4fd65a', '#3fcfcf', '#ff5555', '#ff55ff', '#8080ff', '#d65bd6'];
+// A skyline of light bars along the bottom, like a chart glowing in the dark.
+// They breathe slowly, rise in a wave where the pointer passes, and sparks
+// drift up off the tallest.
 function pillars() {
-  let cols = [], cell = 26;
+  let bars = [], sparks = [], gap = 16;
   return {
-    init(W, H) {
-      cell = W < 700 ? 18 : 26;
-      const r = seeded(5); cols = [];
-      const nx = Math.ceil(W / cell) + 4, rows = 7;
-      for (let j = 0; j < rows; j++) for (let i = -2; i < nx; i++) cols.push({ i, j, base: 0.2 + r() * 0.8, ph: r() * TAU, lift: 0, hue: STAR_HUES[Math.floor(r() * STAR_HUES.length)] });
+    init(W) {
+      gap = W < 700 ? 12 : 16;
+      const r = seeded(5); const n = Math.ceil(W / gap) + 1;
+      bars = Array.from({ length: n }, (_, i) => ({ x: i * gap + gap / 2, base: 0.15 + r() ** 1.6 * 0.85, ph: r() * TAU, lift: 0, mix: i / n }));
+      sparks = [];
     },
     frame(ctx, t, dt, P, W, H, pal) {
-      const ox = 0, oy = H + 8;
-      // back rows first so nearer pillars cover them
-      for (const c of cols) {
-        const x = ox + c.i * cell + (c.j % 2 ? cell / 2 : 0), yb = oy - c.j * cell * 0.42;
-        const d = P.on ? Math.hypot(P.x - x, (P.y - yb) * 0.6) : 1e9;
-        c.lift += ((d < 180 ? (1 - d / 180) : 0) - c.lift) * Math.min(1, dt * 4);
-        const h = (c.base * (0.55 + 0.45 * Math.sin(t * 0.0006 + c.ph)) * 3.2 + c.lift * 7) * cell * (0.5 + c.j * 0.12);
-        const top = yb - h, w = cell * 0.5, sk = cell * 0.25;
-        const alpha = (pal.light ? 0.1 : 0.08) + c.lift * 0.25 + c.j * 0.01;
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = c.hue; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x + w, top + sk); ctx.lineTo(x, top + sk * 2); ctx.lineTo(x - w, top + sk); ctx.closePath(); ctx.fill();
-        ctx.globalAlpha = alpha * 0.7; ctx.fillStyle = c.hue;
-        ctx.beginPath(); ctx.moveTo(x - w, top + sk); ctx.lineTo(x, top + sk * 2); ctx.lineTo(x, yb + sk * 2); ctx.lineTo(x - w, yb + sk); ctx.closePath(); ctx.fill();
-        ctx.globalAlpha = alpha * 0.45;
-        ctx.beginPath(); ctx.moveTo(x + w, top + sk); ctx.lineTo(x, top + sk * 2); ctx.lineTo(x, yb + sk * 2); ctx.lineTo(x + w, yb + sk); ctx.closePath(); ctx.fill();
+      const L = pal.light, maxH = Math.min(320, H * 0.38), bw = gap * 0.42;
+      ctx.save();
+      if (!L) ctx.globalCompositeOperation = 'lighter';
+      // floor glow
+      const fg = ctx.createLinearGradient(0, H - 90, 0, H);
+      fg.addColorStop(0, 'rgba(0,0,0,0)'); fg.addColorStop(1, L ? 'rgba(120,110,255,0.10)' : 'rgba(120,110,255,0.14)');
+      ctx.fillStyle = fg; ctx.fillRect(0, H - 90, W, 90);
+      for (const b of bars) {
+        const d = P.on ? Math.abs(P.x - b.x) + Math.max(0, H - maxH * 1.6 - P.y) * 0.5 : 1e9;
+        b.lift += ((d < 160 ? (1 - d / 160) : 0) - b.lift) * Math.min(1, dt * 5);
+        const h = (b.base * (0.62 + 0.38 * Math.sin(t * 0.0007 + b.ph)) + b.lift * 0.55) * maxH;
+        const col = b.mix < 0.5 ? mixHex(pal.a, pal.b, b.mix * 2) : mixHex(pal.b, pal.c, (b.mix - 0.5) * 2);
+        const a = (L ? 0.2 : 0.16) + b.lift * 0.4;
+        const g = ctx.createLinearGradient(0, H - h, 0, H);
+        g.addColorStop(0, hexA(col, a * 1.6)); g.addColorStop(0.25, hexA(col, a)); g.addColorStop(1, hexA(col, a * 0.15));
+        ctx.fillStyle = g;
+        roundTop(ctx, b.x - bw / 2, H - h, bw, h, bw / 2);
+        // the lit cap
+        ctx.fillStyle = hexA(col, Math.min(1, a * 3.2));
+        ctx.fillRect(b.x - bw / 2, H - h, bw, 2);
+        if (b.lift > 0.6 && Math.random() < dt * 6) sparks.push({ x: b.x + (Math.random() - 0.5) * bw, y: H - h, v: 30 + Math.random() * 50, t: 0, col });
       }
-      ctx.globalAlpha = 1;
-      // a few stars climbing out of the field
-      for (let k = 0; k < 14; k++) {
-        const x = ((k * 197.3 + t * 0.012 * (k % 3 + 1)) % (W + 40)) - 20;
-        const y = H - ((t * 0.02 * (1 + (k % 4) * 0.3) + k * 83) % (H * 0.8));
-        ctx.globalAlpha = (pal.light ? 0.25 : 0.35) * (y / H);
-        ctx.fillStyle = STAR_HUES[k % STAR_HUES.length];
-        ctx.font = `700 ${10 + (k % 3) * 3}px ui-monospace, monospace`;
-        ctx.fillText('✫', x, y);
+      sparks = sparks.filter(s => (s.t += dt) < 1.4);
+      for (const s of sparks) {
+        s.y -= s.v * dt; const f = 1 - s.t / 1.4;
+        ctx.fillStyle = hexA(s.col, f * 0.9); ctx.fillRect(s.x - 1, s.y - 1, 2, 2);
       }
-      ctx.globalAlpha = 1;
+      ctx.restore();
     }
   };
 }
+function roundTop(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x, y + h); ctx.lineTo(x, y + r); ctx.arc(x + r, y + r, r, Math.PI, 0); ctx.lineTo(x + w, y + h); ctx.closePath(); ctx.fill();
+}
+function hexRgb(h) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(h).trim());
+  if (!m) return [150, 150, 255];
+  const n = parseInt(m[1], 16); return [n >> 16, (n >> 8) & 255, n & 255];
+}
+function mixHex(a, b, k) { const x = hexRgb(a), y = hexRgb(b); return x.map((v, i) => Math.round(v + (y[i] - v) * k)); }
+function hexA(rgb, a) { return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${Math.max(0, Math.min(1, a))})`; }
 
 // ---------------------------------------------------------------- download
 // The End portal: layers of teal and green specks drifting at different

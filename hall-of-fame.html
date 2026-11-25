@@ -95,6 +95,14 @@ body.np #gate .eyebrow::after { content: ""; display: block; width: 224px; heigh
 .hud { position: fixed; z-index: 20; opacity: 0; transition: opacity 1.2s ease .3s; pointer-events: none; }
 body.free .hud { opacity: 1; }
 body.free .hud > * { pointer-events: auto; }
+#homeLink { position: fixed; z-index: 46; top: calc(16px + env(safe-area-inset-top, 0px)); left: max(18px, env(safe-area-inset-left, 0px)); display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--stat); font-weight: 600; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--ivory); text-decoration: none;
+  background: rgba(12,14,20,.62); border: 1px solid rgba(226,184,102,.45); padding: 8px 14px 7px 10px; backdrop-filter: blur(6px); transition: border-color .2s, color .2s; }
+#homeLink:hover { border-color: var(--gold); color: #fff; }
+#homeLink:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+#homeLink svg { width: 16px; height: 16px; transition: transform .3s; }
+#homeLink:hover svg { transform: translateX(-3px); }
+#brand { top: calc(64px + env(safe-area-inset-top, 0px)) !important; }
 #brand { top: calc(18px + env(safe-area-inset-top, 0px)); left: max(18px, env(safe-area-inset-left, 0px)); }
 /* a soft dark scrim behind the title, so lit garlands and banners behind it don't cut through the letters */
 #brand::before { content: ""; position: absolute; z-index: -1; inset: -26px -56px -30px -40px; pointer-events: none;
@@ -284,6 +292,7 @@ body.shot *, body.shot { transition: none !important; }
 </section>
 <div id="introTitle"><div><div class="eyebrow">The best players we've beaten</div><div class="title">Hall of Fame</div></div></div>
 
+<a id="homeLink" href="index.html" aria-label="Back to Prism home"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Home</a>
 <div class="hud" id="brand"><div class="t">HALL OF FAME</div><div class="s" id="brandSub"></div></div>
 <div class="hud" id="tools">
   <a class="tbtn" id="homeBtn" href="tracker.html" hidden>Tracker</a>

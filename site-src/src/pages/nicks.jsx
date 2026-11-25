@@ -10,7 +10,7 @@ import { mount } from '../lib/mount.js';
 import { Shell } from '../ui/Shell.jsx';
 import { Icon } from '../ui/icons.jsx';
 import { Star } from '../ui/mc.jsx';
-import { Avatar, ErrorBox, Empty, SourceNote, HeadArt } from '../ui/common.jsx';
+import { Avatar, ErrorBox, Empty, SourceNote, HeadEmblem } from '../ui/common.jsx';
 import { post } from '../lib/api.js';
 import { num, date, ago, duration } from '../lib/format.js';
 import { siteKey, keyOwner } from '../lib/key.js';
@@ -95,8 +95,7 @@ function PickedList({ picked, onPick }) {
 // TrickAPI searches (who was online then with those cosmetics).
 const HOW = [
   { id: 'none', title: 'Skip', text: 'Search without the game. Expect more names.' },
-  { id: 'time', title: 'Enter the time', text: 'When the game started (within a few minutes) and the mode.' },
-  { id: 'replay', title: 'Paste a replay ID', text: 'The ID of that game\'s Hypixel replay. Works when Bedlify recorded it.' }
+  { id: 'time', title: 'Enter the time', text: 'When the game started (within a few minutes) and the mode.' }
 ];
 
 function GamePicker({ how, setHow, game, setGame }) {
@@ -113,13 +112,6 @@ function GamePicker({ how, setHow, game, setGame }) {
           );
         })}
       </div>
-      {how === 'replay' && (
-        <label class="field">
-          <span>Replay ID or link</span>
-          <input class="input" value={game.replayId || ''} onInput={e => setGame({ replayId: e.currentTarget.value.trim() })} placeholder="3f2c9a1e-7b4d-4c1a-9e2f-…" spellcheck={false} autocomplete="off" maxLength={200} />
-          <small>We look up when it was played and the mode in Bedlify's recorded games.</small>
-        </label>
-      )}
       {how === 'time' && (
         <div class="stack">
           <div class="field">
@@ -235,7 +227,6 @@ function NickFinder() {
     if (nick.trim()) body.nick = nick.trim();
     if (finals !== '') body.finals = Number(finals);
     if (beds !== '') body.beds = Number(beds);
-    if (how === 'replay' && game.replayId) body.game = { replayId: game.replayId };
     if (how === 'time' && game.at) body.game = { at: game.at, end: game.end || undefined, mode: game.mode || undefined };
     setError(null);
     setRes(null);
@@ -256,7 +247,7 @@ function NickFinder() {
             <h1>Who's behind the nick?</h1>
             <p>Someone in your game is nicked. Tell us what you saw them use, and we'll list the real players who match.</p>
           </div>
-          <HeadArt items={['ui:nametag', 'ui:eye', 'block:obsidian']} />
+          <HeadEmblem id="ui:eye" />
         </header>
         <ol class="how-steps" aria-label="How it works">
           <li><span class="step-n">1</span><div><strong>Pick their cosmetics</strong><p>Kill effect, bed destroy, trail, glyph... Every one you add narrows it down.</p></div></li>

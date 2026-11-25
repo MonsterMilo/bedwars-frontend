@@ -7,6 +7,9 @@
 html { scrollbar-color: color-mix(in srgb, var(--text) 20%, transparent) transparent; }
 
 /* ---------- top bar ---------- */
+/* The site header (app/nav.js) leads home, so the plain "Prism" back link goes. */
+.back[href="./"] { display: none; }
+.top:not(:has(.back:not([href="./"]))) { justify-content: flex-end; }
 .back { transition: color .2s, background .2s; }
 .back svg { transition: transform .35s var(--ease); }
 .back:hover svg { transform: translateX(-3px); }

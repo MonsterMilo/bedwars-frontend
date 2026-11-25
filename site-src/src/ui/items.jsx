@@ -1,10 +1,14 @@
-// Minecraft item icons (one sprite, built by tools/item-icons.py) and the
-// picture for a cosmetic: its library preview, or an icon for its kind.
+// Icons: our own glyphs, or Minecraft items (one sprite, built by
+// tools/item-icons.py) for Quick Buy and wood skins. And the picture for a
+// cosmetic: its library preview, or an icon for its kind.
 import itemIcons from '../data/item-icons.json';
+import { Glyph, hasGlyph } from './glyphs.jsx';
 
-export const hasIcon = id => itemIcons.index[id] !== undefined;
+export const hasIcon = id => hasGlyph(id) || itemIcons.index[id] !== undefined;
 
-export function ItemIcon({ id, class: cls = '' }) {
+// Our own glyph when there is one; mc forces the Minecraft item (Quick Buy).
+export function ItemIcon({ id, class: cls = '', mc = false }) {
+  if (!mc && hasGlyph(id)) return <Glyph id={id} class={cls} />;
   const i = itemIcons.index[id];
   if (i === undefined) return null;
   return <span class={`item-icon ${cls}`} aria-hidden="true" style={{ '--i': i, '--n': itemIcons.count }} />;
@@ -25,7 +29,7 @@ export function CosmeticThumb({ item, cat, size = 44, class: cls = '' }) {
     return <span class={`cos-pic rar-${rar} ${cls}`} style={style}><img src={`cosmetics/thumbs/${item.lib}.webp`} alt="" loading="lazy" width={size} height={size} /></span>;
   }
   const icon = woodIcon(item) || (hasIcon(`cat:${cat}`) ? `cat:${cat}` : null);
-  return <span class={`cos-pic icon rar-${rar} ${cls}`} style={style}>{icon && <ItemIcon id={icon} />}</span>;
+  return <span class={`cos-pic icon rar-${rar} ${cls}`} style={style}>{icon && <ItemIcon id={icon} mc={icon.startsWith('wood:')} />}</span>;
 }
 
 // A kill message's first line, with example names in.

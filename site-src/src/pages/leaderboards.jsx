@@ -9,7 +9,7 @@ import { mount } from '../lib/mount.js';
 import { Shell } from '../ui/Shell.jsx';
 import { Icon } from '../ui/icons.jsx';
 import { PlayerName, Star } from '../ui/mc.jsx';
-import { Tabs, Avatar, Loading, ErrorBox, Empty, HeadArt } from '../ui/common.jsx';
+import { Tabs, Avatar, Loading, ErrorBox, Empty, HeadEmblem } from '../ui/common.jsx';
 import { ItemIcon } from '../ui/items.jsx';
 import { get } from '../lib/api.js';
 import { useAsync, useParam } from '../lib/useAsync.js';
@@ -18,10 +18,9 @@ import { prefs } from '../lib/prefs.js';
 import { useSignal } from '../lib/signal.js';
 import { playerUrl } from '../lib/players.js';
 
+// Periods with no board (Day until Astrus has one) are left out.
 const PERIODS = [['lifetime', 'Lifetime'], ['monthly', 'Month'], ['weekly', 'Week'], ['daily', 'Day']];
 const STAT_ORDER = ['level', 'wins', 'finals'];
-
-const PODIUM = { 1: 'block:gold', 2: 'block:diamond', 3: 'block:emerald' };
 
 function Podium({ leaders }) {
   const top = leaders.slice(0, 3);
@@ -34,7 +33,7 @@ function Podium({ leaders }) {
           <a href={playerUrl(l.uuid)} class="place-link">
             <span class="place-rank">{l.rank}</span>
             <img class="place-body" src={`https://mc-heads.net/body/${l.uuid}/${l.rank === 1 ? 150 : 120}`} alt="" loading="lazy" />
-            <span class="place-block" aria-hidden="true"><ItemIcon id={PODIUM[l.rank]} /></span>
+            <span class="place-stand" aria-hidden="true" />
             <span class="place-name">{l.star != null && <Star star={l.star} />}{l.rankInfo ? <PlayerName player={l.rankInfo} name={l.name || '?'} rank={false} /> : <span class="mono">{l.name || 'Unknown'}</span>}</span>
             {l.value != null && <span class="place-value mono">{num(l.value)}</span>}
           </a>
@@ -51,7 +50,7 @@ function Leaderboards() {
   const [q, setQ] = useState('');
   const { data, error, loading, reload } = useAsync(signal => get('/site/leaderboards', { signal, maxAge: 5 * 60_000 }), []);
   const boards = (data && data.boards) || [];
-  const periods = PERIODS.map(([id, label]) => [id, label, !boards.some(b => b.period === id)]).filter(x => !x[2] || x[0] !== 'monthly');
+  const periods = PERIODS.map(([id, label]) => [id, label, !boards.some(b => b.period === id)]).filter(x => !x[2]);
   const stats = [...new Set(boards.filter(b => b.period === period).map(b => b.stat))].sort((a, b) => STAT_ORDER.indexOf(a) - STAT_ORDER.indexOf(b));
   const board = boards.find(b => b.period === period && b.stat === stat) || boards.find(b => b.period === period);
   const leaders = board ? board.leaders : [];
@@ -70,7 +69,7 @@ function Leaderboards() {
             <h1>Top Bed Wars players</h1>
             {data && <p class="faint small lb-src">From {data.source}{boards.some(b => b.period === 'daily') ? ' and Astrus' : ''} · updated {ago(data.at)}</p>}
           </div>
-          <HeadArt items={['block:gold', 'ui:totem', 'res:gold']} />
+          <HeadEmblem id="block:gold" />
         </header>
 
         {loading && !data && <div class="panel pad"><Loading lines={8} label="Loading leaderboards" /></div>}
@@ -110,6 +109,7 @@ function Leaderboards() {
                   </table>
                 </div>
                 {!shown.length && <Empty>No one on this board matches.</Empty>}
+                {!hasValues && shown.length > 0 && <p class="faint small lb-note">Hypixel only shares the order for weekly boards, not the numbers.</p>}
               </section>
             )}
           </>

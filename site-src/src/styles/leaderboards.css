@@ -13,17 +13,20 @@
 .place-body { position: relative; z-index: 1; image-rendering: pixelated; height: 120px; margin-bottom: -14px; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.5)); }
 .p1 .place-body { height: 150px; }
 .p1 .place-link { padding-top: 30px; }
-.place-block { width: 76px; filter: drop-shadow(0 12px 14px rgba(0,0,0,0.5)); }
-.p1 .place-block { width: 92px; }
+.place-stand { position: relative; width: 112px; height: 26px; margin-top: -6px; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--m) 70%, transparent), color-mix(in srgb, var(--m) 18%, transparent) 60%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--m) 50%, transparent), 0 0 30px -4px var(--m); }
+.place-stand::before { content: ''; position: absolute; left: 50%; bottom: 50%; width: 70%; height: 140px; transform: translateX(-50%); background: linear-gradient(0deg, color-mix(in srgb, var(--m) 30%, transparent), transparent); clip-path: polygon(10% 100%, 90% 100%, 100% 0, 0 0); opacity: 0.6; z-index: -1; pointer-events: none; }
+.p1 .place-stand { width: 136px; height: 30px; }
 .place-rank { position: absolute; top: 12px; left: 12px; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; font-weight: 800; font-size: 0.92rem; color: #10131c; background: var(--m); box-shadow: 0 0 16px -2px var(--m); }
 .place-name { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; font-size: 0.88rem; max-width: 100%; }
 .place-name .mc { overflow: hidden; text-overflow: ellipsis; }
 .place-value { font-size: 1.2rem; font-weight: 800; color: var(--m); text-shadow: 0 0 18px color-mix(in srgb, var(--m) 40%, transparent); }
 html[data-surface="light"] .place-value { color: var(--text); }
-@media (max-width: 560px) { .place-body { height: 80px; } .p1 .place-body { height: 100px; } .place-block { width: 52px; } .p1 .place-block { width: 62px; } .place-name .star { display: none; } }
+@media (max-width: 560px) { .place-body { height: 80px; } .p1 .place-body { height: 100px; } .place-stand { width: 84px; height: 20px; } .p1 .place-stand { width: 100px; } .place-name .star { display: none; } }
 
 .lb .rank { width: 56px; color: var(--faint); font-weight: 700; }
 .medal { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; font-size: 0.82rem; font-weight: 800; color: #10131c; }
 .medal.m1 { background: #ffcf4a; box-shadow: 0 0 14px -3px #ffcf4a; } .medal.m2 { background: #5ee7e0; box-shadow: 0 0 14px -3px #5ee7e0; } .medal.m3 { background: #4be38a; box-shadow: 0 0 14px -3px #4be38a; }
 .lb tr.top td { background: color-mix(in srgb, var(--accent-3) 3%, transparent); }
 .lb .mc { font-size: 0.9rem; }
+
+.lb-note { margin-top: 12px; text-align: center; }

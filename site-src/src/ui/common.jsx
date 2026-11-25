@@ -84,12 +84,11 @@ export function copyText(text, toast) {
   if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {});
 }
 
-// Floating blocks and items on the right of a page head (decoration only).
-// items: up to 3 icon ids, biggest first.
-export function HeadArt({ items }) {
+// A page's glyph on a lit gem tile, at the right of its head (decoration only).
+export function HeadEmblem({ id }) {
   return (
-    <div class="head-art" aria-hidden="true">
-      {items.slice(0, 3).map((id, i) => <span key={id} class={`art-${i}`}><ItemIcon id={id} /></span>)}
+    <div class="head-emblem" aria-hidden="true">
+      <span class="he-ring" /><span class="he-gem"><ItemIcon id={id} /></span>
     </div>
   );
 }

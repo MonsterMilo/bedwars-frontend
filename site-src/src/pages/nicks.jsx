@@ -11,9 +11,9 @@ import { Shell } from '../ui/Shell.jsx';
 import { Icon } from '../ui/icons.jsx';
 import { Star } from '../ui/mc.jsx';
 import { Avatar, ErrorBox, Empty, SourceNote, HeadArt } from '../ui/common.jsx';
-import { get, post, enc, ApiError } from '../lib/api.js';
+import { post } from '../lib/api.js';
 import { num, date, ago, duration } from '../lib/format.js';
-import { siteKey, keyOwner, keyDialog } from '../lib/key.js';
+import { siteKey, keyOwner } from '../lib/key.js';
 import { useSignal } from '../lib/signal.js';
 import { playerUrl } from '../lib/players.js';
 import COSMETICS from '../data/cosmetics.json';
@@ -91,56 +91,15 @@ function PickedList({ picked, onPick }) {
 }
 
 // ---------- game ----------
-function RecentGames({ value, onChange }) {
-  const [who, setWho] = useState(params.get('player') || '');
-  const [state, setState] = useState({ loading: false, error: null, data: null });
-  async function load(e) {
-    if (e) e.preventDefault();
-    if (!NAME.test(who.trim())) { setState({ loading: false, error: new ApiError('Enter a valid player name', 400), data: null }); return; }
-    setState({ loading: true, error: null, data: null });
-    try { setState({ loading: false, error: null, data: await get(`/site/recent-games/${enc(who.trim())}`, { maxAge: 60_000 }) }); }
-    catch (err) { setState({ loading: false, error: err, data: null }); }
-  }
-  useEffect(() => { if (who) load(); }, []);
-  const games = (state.data && state.data.games) || [];
-  return (
-    <div class="stack">
-      <div class="input-row">
-        <input class="input" value={who} onInput={e => setWho(e.currentTarget.value)} placeholder="Your name, or a teammate's" aria-label="A player who was in the game" maxLength={16} spellcheck={false} autocomplete="off"
-          onKeyDown={e => { if (e.key === 'Enter') load(e); }} />
-        <button type="button" class="btn" onClick={load} disabled={state.loading}>{state.loading ? 'Loading…' : 'Load games'}</button>
-      </div>
-      <ErrorBox error={state.error} what="recent games" />
-      {state.data && !games.length && <p class="faint small">No recent Bed Wars games. Hypixel hides them if the player turned that off.</p>}
-      {games.length > 0 && (
-        <ul class="games" role="radiogroup" aria-label="Pick the game">
-          {games.map((g, i) => {
-            const on = value && value.at === g.start;
-            return (
-              <li key={i}>
-                <button type="button" role="radio" aria-checked={on ? 'true' : 'false'} class={`game ${on ? 'on' : ''}`} onClick={() => onChange({ at: g.start, end: g.end, mode: g.mode })}>
-                  <strong>{MODE_LABELS[g.mode] || 'Bed Wars'}{g.map ? ` · ${g.map}` : ''}</strong>
-                  <span class="faint small">{date(g.start, { time: true })} · {ago(g.start)}{g.end ? ` · ${duration(g.end - g.start)}` : ' · not finished'}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
-  );
-}
-
 // The ways to say which game it was. Each one ends up as a time window that
 // TrickAPI searches (who was online then with those cosmetics).
 const HOW = [
   { id: 'none', title: 'Skip', text: 'Search without the game. Expect more names.' },
-  { id: 'recent', title: 'Pick from recent games', text: 'Type someone who was in that game (you, or a teammate). Pick the game from their Hypixel history.', key: true },
   { id: 'time', title: 'Enter the time', text: 'When the game started (within a few minutes) and the mode.' },
   { id: 'replay', title: 'Paste a replay ID', text: 'The ID of that game\'s Hypixel replay. Works when Bedlify recorded it.' }
 ];
 
-function GamePicker({ how, setHow, game, setGame, unlocked }) {
+function GamePicker({ how, setHow, game, setGame }) {
   return (
     <div class="stack">
       <div class="how-list" role="radiogroup" aria-label="How to find the game">
@@ -149,7 +108,7 @@ function GamePicker({ how, setHow, game, setGame, unlocked }) {
           return (
             <button key={h.id} type="button" role="radio" aria-checked={on ? 'true' : 'false'} class={`how ${on ? 'on' : ''}`} onClick={() => { if (!on) { setHow(h.id); setGame({}); } }}>
               <span class="how-dot" aria-hidden="true" />
-              <span class="how-text"><strong>{h.title}{h.key && !unlocked && <Icon name="lock" class="how-lock" label="Needs a key" />}</strong><small>{h.text}</small></span>
+              <span class="how-text"><strong>{h.title}</strong><small>{h.text}</small></span>
             </button>
           );
         })}
@@ -161,9 +120,6 @@ function GamePicker({ how, setHow, game, setGame, unlocked }) {
           <small>We look up when it was played and the mode in Bedlify's recorded games.</small>
         </label>
       )}
-      {how === 'recent' && (unlocked
-        ? <RecentGames value={game} onChange={setGame} />
-        : <p class="notice"><Icon name="lock" /><span>Recent games use our Hypixel key, so they need a key. <button type="button" class="linkish" onClick={() => { keyDialog.value = true; }}>Enter key</button> or enter the time instead.</span></p>)}
       {how === 'time' && (
         <div class="stack">
           <div class="field">
@@ -260,7 +216,7 @@ function NickFinder() {
   const [finals, setFinals] = useState('');
   const [beds, setBeds] = useState('');
   const [picked, setPicked] = useState({});
-  const [how, setHow] = useState(params.get('player') ? 'recent' : 'none');
+  const [how, setHow] = useState('none');
   const [game, setGame] = useState({});
   const [res, setRes] = useState(null);
   const [error, setError] = useState(null);
@@ -280,7 +236,7 @@ function NickFinder() {
     if (finals !== '') body.finals = Number(finals);
     if (beds !== '') body.beds = Number(beds);
     if (how === 'replay' && game.replayId) body.game = { replayId: game.replayId };
-    if ((how === 'recent' || how === 'time') && game.at) body.game = { at: game.at, end: game.end || undefined, mode: game.mode || undefined };
+    if (how === 'time' && game.at) body.game = { at: game.at, end: game.end || undefined, mode: game.mode || undefined };
     setError(null);
     setRes(null);
     setBusySince(Date.now());
@@ -331,7 +287,7 @@ function NickFinder() {
             </section>
             <section class="panel pad" aria-labelledby="game-h">
               <h2 class="panel-title" id="game-h"><span class="step-n small">3</span>Which game<span class="grow" /><span class="opt-tag">Optional</span></h2>
-              <GamePicker how={how} setHow={setHow} game={game} setGame={setGame} unlocked={unlocked} />
+              <GamePicker how={how} setHow={setHow} game={game} setGame={setGame} />
             </section>
             <div class="row nick-go">
               <button class="btn primary grow" type="submit" disabled={!canSearch}><Icon name="search" />{busySince ? 'Searching…' : 'Find'}</button>

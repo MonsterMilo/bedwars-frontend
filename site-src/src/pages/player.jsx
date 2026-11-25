@@ -129,8 +129,9 @@ function Tags({ uuid }) {
 // shape varies, so any number (or { change } / { previous, current }) counts.
 function periodBw(raw) {
   if (!raw || typeof raw !== 'object') return null;
-  const src = raw.changes || raw.stats || raw.bedwars || raw.difference || raw.diff || raw;
+  const src = raw.delta || raw.changes || raw.stats || raw.bedwars || raw.difference || raw.diff || raw;
   const out = {};
+  const skip = new Set(['start', 'end', 'success', 'uuid']);
   const pick = v => {
     if (typeof v === 'number') return v;
     if (!v || typeof v !== 'object') return null;
@@ -141,10 +142,24 @@ function periodBw(raw) {
     return null;
   };
   for (const [k, v] of Object.entries(src)) {
+    if (skip.has(k)) continue;
     const n = pick(v);
     if (n !== null) out[k] = n;
   }
   return Object.keys(out).length ? out : null;
+}
+
+// What window the numbers cover. Tracking for a player starts the first
+// time they're looked up, so a new player's window can be shorter.
+const PERIOD_MS = { daily: 864e5, weekly: 7 * 864e5, monthly: 28 * 864e5 };
+function PeriodNote({ period, raw }) {
+  const start = raw && Number(raw.start), end = raw && Number(raw.end);
+  const label = period === 'daily' ? '24 hours' : period === 'weekly' ? '7 days' : '28 days';
+  if (Number.isFinite(start) && Number.isFinite(end)) {
+    if (end - start < 60_000) return <p class="source-note">Tracking for this player just started. Changes show after their next games.</p>;
+    if (Math.abs(end - start - PERIOD_MS[period]) > PERIOD_MS[period] * 0.1) return <p class="source-note">Changes since {date(start, { time: true })}.</p>;
+  }
+  return <p class="source-note">Changes over the past {label}.</p>;
 }
 
 // Four to a row, in labelled groups, so no stat is ever left alone on a row.
@@ -204,7 +219,9 @@ function Stats({ data }) {
   const periods = useAsync(signal => get(`/site/periods/${data.uuid}?period=${period}`, { signal, maxAge: 10 * 60_000 }), [data.uuid, period], { skip: period === 'lifetime' });
   const source = period === 'lifetime' ? bw : periodBw(periods.data && periods.data.data);
   const m = MODES.find(x => x.id === mode) || MODES[0];
-  const s = source ? modeStats(source, m.prefix) : null;
+  let s = source ? modeStats(source, m.prefix) : null;
+  // A change list leaves out what didn't change: that's 0, not unknown.
+  if (s && period !== 'lifetime' && (s.games || s.wins || s.losses)) s = Object.fromEntries(Object.entries(s).map(([k, v]) => [k, v === null && k !== 'winstreak' && k !== 'items' && !['iron', 'gold', 'diamonds', 'emeralds'].includes(k) ? 0 : v]));
   const modeOptions = MODES.map(x => [x.id, x.label, period === 'lifetime' && bw && !hasPlayed(modeStats(bw, x.prefix))]);
   return (
     <section class="panel pad reveal" aria-labelledby="stats-h">
@@ -217,7 +234,7 @@ function Stats({ data }) {
       {period !== 'lifetime' && <ErrorBox error={periods.error} onRetry={periods.reload} what="period stats" />}
       {period !== 'lifetime' && periods.data && periods.data.off && <p class="dim">Period stats aren't switched on yet.</p>}
       {(period === 'lifetime' || (periods.data && !periods.data.off && !periods.loading)) && <StatGrid s={s} period={period} />}
-      {period !== 'lifetime' && periods.data && !periods.data.off && <p class="source-note">Changes over the past {period === 'daily' ? '24 hours' : period === 'weekly' ? '7 days' : '28 days'}.</p>}
+      {period !== 'lifetime' && periods.data && !periods.data.off && <PeriodNote period={period} raw={periods.data.data} />}
       {period === 'lifetime' && !bw && <Empty>This player has never played Bed Wars.</Empty>}
     </section>
   );

@@ -147,6 +147,8 @@ html[data-surface="light"] .bg-field::before { opacity: 0.6; }
 
 /* reveal on load */
 .reveal { animation: reveal 520ms var(--ease) both; }
+/* held while the first-load intro plays (lib/intro.js) */
+html.intro-hold .reveal { animation-play-state: paused; }
 @keyframes reveal { from { opacity: 0; transform: translateY(10px); } }
 
 /* --- the drifting-blocks backdrop (lib/backdrop.js) --- */

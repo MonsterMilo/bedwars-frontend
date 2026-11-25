@@ -91,3 +91,11 @@ html[data-surface="light"] .sec-row.featured strong { color: var(--text); }
   .sec-row { padding: 9px 8px; gap: 12px; }
   .sec-head .faint { display: none; }
 }
+
+/* First visit: each card waits until its beam lands, then lights up in its colour. */
+html.home-intro .sec-card:not(.lit) { opacity: 0; animation: none; }
+html.home-intro .sec-card.lit { animation: card-lit 900ms var(--ease) both; }
+@keyframes card-lit {
+  from { opacity: 0; transform: translateX(-16px) scale(0.97); box-shadow: 0 0 0 1px var(--hue), 0 0 70px color-mix(in srgb, var(--hue) 60%, transparent); }
+  35% { opacity: 1; box-shadow: 0 0 0 1px var(--hue), 0 0 50px color-mix(in srgb, var(--hue) 40%, transparent); }
+}

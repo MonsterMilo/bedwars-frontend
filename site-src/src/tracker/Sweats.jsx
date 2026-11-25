@@ -9,7 +9,7 @@ import { season } from '../lib/prefs.js';
 import { keyOwner, keyInfo } from '../lib/key.js';
 import { toast } from '../lib/toast.js';
 import { sweats, loadState, liveIds, load, removeSweat } from './store.js';
-import { ROSTER, indexOf, identityKey, notesOf, beatenBy, parseDay, canRemove, canEdit } from './model.js';
+import { ROSTER, indexOf, tierOf, identityKey, notesOf, beatenBy, parseDay, canRemove, canEdit } from './model.js';
 import { DEFAULT_FILTERS, SORTS, process, paginate, activeFilterCount, rivalMap, rivalFor, rivalSummary, roman, rosterCounts, summary, sweatOfTheDay, sotdLeft, downloadCsv, PAGE_SIZE } from './list.js';
 import { RosterDot, RosterDots, Flags, TierBadge, fixed, whole } from './ui.jsx';
 import { readUrl, writeUrl } from './url.js';
@@ -146,32 +146,51 @@ function Actions({ s, onEdit, onRemove }) {
   );
 }
 
+// FKDR colour steps for the chip: grey, blue, green, gold, orange, pink.
+const FK_STEPS = [1, 3, 6, 10, 20];
+const fkStep = v => FK_STEPS.filter(x => (Number(v) || 0) >= x).length;
+const shortIndex = v => (v >= 1e6 ? `${(v / 1e6).toFixed(v >= 1e7 ? 0 : 1)}M` : v >= 1e4 ? `${Math.round(v / 1e3)}K` : Math.round(v || 0).toLocaleString());
+const bustOf = s => (s.uuid ? `https://visage.surgeplay.com/bust/160/${String(s.uuid).replace(/-/g, '')}` : `https://mc-heads.net/head/${encodeURIComponent(s.username || 'MHF_Steve')}/120`);
+function Bust({ s }) {
+  const [src, setSrc] = useState(bustOf(s));
+  return <span class="pc-bust"><img src={src} alt="" loading="lazy" decoding="async" onError={() => setSrc(`https://mc-heads.net/head/${encodeURIComponent(s.uuid || s.username || 'MHF_Steve')}/120`)} /></span>;
+}
+
 function Card({ s, count, rival, live, onOpen, onEdit, onRemove, i }) {
   const index = indexOf(s);
+  const t = tierOf(index);
   const notes = notesOf(s);
   const last = notes[notes.length - 1];
   return (
-    <article class={`card sweat-card ${s.cheating ? 'is-cheat' : ''} ${live ? 'is-live' : ''} ${rival ? 'is-rival' : ''}`} style={{ '--i': Math.min(i, 20) }}>
+    <article class={`card pcard sweat-card ${t.key} ${s.cheating ? 'is-cheat' : ''} ${live ? 'is-live' : ''} ${rival ? 'is-rival' : ''}`} style={{ '--i': Math.min(i, 20) }}>
       <button type="button" data-flip class="card-hit" onClick={() => onOpen(s)} aria-label={`${s.username}, ${Math.floor(Number(s.star) || 0)} stars. View their stats`} />
-      <div class="card-top">
-        <Avatar id={s.uuid || s.username} size={40} />
-        <div class="card-id">
-          <div class="card-name"><Star star={s.star} /> <span class="nm">{s.username}</span>{count > 1 && <span class="chip small-chip" title={`Beaten ${count} times`}>×{count}</span>}</div>
-          <div class="card-meta"><TierBadge index={index} /><span class="faint small">{dayText(s.dateAdded)}</span></div>
+      <div class="pc-head">
+        <Bust s={s} />
+        <div class="pc-id">
+          <div class="pc-name"><span class="nm">{s.username}</span>{count > 1 && <span class="pc-times" title={`Beaten ${count} times`}>×{count}</span>}</div>
+          <div class="pc-chips">
+            <span class="pc-chip star"><Star star={s.star} /></span>
+            <span class={`pc-chip fk f${fkStep(s.fkdr)}`}>{fixed(s.fkdr)} <small>FKDR</small></span>
+          </div>
+          <TierBadge index={index} />
         </div>
-        <Actions s={s} onEdit={onEdit} onRemove={onRemove} />
+        <span class="pc-index mono" title={`Index ${whole(index)}`}>{shortIndex(index)}</span>
       </div>
-      <div class="card-stats">
-        <span><small>FKDR</small><b class="mono">{fixed(s.fkdr)}</b></span>
+      <div class="pc-bar">
         <span><small>WLR</small><b class="mono">{fixed(s.wlr)}</b></span>
-        <span><small>Index</small><b class="mono">{whole(index)}</b></span>
+        <span><small>BBLR</small><b class="mono">{s.bblr != null ? fixed(s.bblr) : '—'}</b></span>
+        <span><small>Finals</small><b class="mono">{s.finals != null ? whole(s.finals) : '—'}</b></span>
       </div>
-      <div class="card-foot">
+      {last
+        ? <p class="pc-note" title={last.text}><Icon name="list" /><span>{last.text}{notes.length > 1 && <span class="faint"> +{notes.length - 1}</span>}</span></p>
+        : <p class="pc-note empty"><Icon name="list" /><span>No notes</span></p>}
+      <div class="pc-foot">
         <RosterDots ids={beatenBy(s)} empty="" />
+        <span class="pc-date mono">{dayText(s.dateAdded)}</span>
         <Flags s={s} />
         {rival && <span class="rival-mark" title={`Rival · ${rivalSummary(rival)}`}><Icon name="sword" />{roman(rival.games)}</span>}
+        <Actions s={s} onEdit={onEdit} onRemove={onRemove} />
       </div>
-      {last && <p class="card-note" title={last.text}><Icon name="list" />{last.text}{notes.length > 1 && <span class="faint"> +{notes.length - 1}</span>}</p>}
     </article>
   );
 }

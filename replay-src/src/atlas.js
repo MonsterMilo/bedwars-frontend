@@ -281,6 +281,16 @@ async function showList () {
   window.__atlas = { ready: true, maps }
 }
 
+// Shared world saves the backend builds maps from (source ids "import:<from>:<map>").
+const CREDITS = { tracklify: { name: 'Tracklify', url: 'https://tracklify.xyz/maps' } }
+function creditOf (h) {
+  for (const s of h.sources || []) {
+    const m = /^import:([a-z0-9-]+):/.exec(String(s.id || ''))
+    if (m && s.used && CREDITS[m[1]]) return CREDITS[m[1]]
+  }
+  return null
+}
+
 // --- One map in 3D ---
 async function showMap (map, rotationP) {
   document.body.dataset.view = 'map'
@@ -296,6 +306,13 @@ async function showMap (map, rotationP) {
   if (h.local) bits.push('from a replay file')
   if (!bits.length) bits.push('Prism Atlas')
   $('atMapSub').textContent = bits.join(' · ')
+  // Built from a world save someone shared: say whose (Milo 2026-11-25).
+  const credit = creditOf(h)
+  if (credit) {
+    const a = document.createElement('a')
+    a.href = credit.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = credit.name
+    $('atMapSub').append(' · Map from ', a)
+  }
   $('atMapWarn').hidden = !(h.stats && !h.stats.complete)
   document.title = h.name + ' · Prism Atlas'
 

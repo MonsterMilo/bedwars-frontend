@@ -158,44 +158,49 @@ function Results({ res, busySince }) {
       {game && <p class="chip accent game-chip"><Icon name="film" />{game.mode ? `${MODE_LABELS[game.mode] || game.mode} · ` : ''}{date(Date.parse(game.playedAt), { time: true })}{game.durationMs ? ` · ${duration(game.durationMs)}` : ''}</p>}
       {gameNote && <p class="notice"><Icon name="info" /><span>{gameNote}</span></p>}
 
-      {known.length > 0 && (
-        <>
-          <h3 class="sub-title">Already denicked</h3>
-          <ul class="known">
+      <div class="res-sec known-sec">
+        <div class="res-head"><span class="res-ico good"><Icon name="check" /></span><h3>Already denicked</h3><span class="res-count">{known.length}</span></div>
+        {known.length ? (
+          <ul class="known-list">
             {known.map((k, i) => (
               <li key={i}>
-                <a class="person" href={playerUrl(k.player)}><Avatar id={k.player} size={20} />{k.player}</a>
-                <span class="faint small">as {k.nick}{k.at ? ` · ${ago(k.at)}` : ''}</span>
+                <a class="known-card" href={playerUrl(k.player)}>
+                  <Avatar id={k.player} size={36} />
+                  <span class="known-who"><b>{k.player}</b><span class="faint small">as <span class="mono known-nick">{k.nick}</span></span></span>
+                  {k.at && <span class="known-when faint small">{ago(k.at)}</span>}
+                  <Icon name="chevron" class="known-go" />
+                </a>
               </li>
             ))}
           </ul>
-        </>
-      )}
+        ) : <p class="res-none">No denick on record for this nick.</p>}
+      </div>
 
-      <h3 class="sub-title">Possible players</h3>
-      {candidates.length ? (
-        <div class="table-wrap">
-          <table class="table">
-            <thead><tr><th>Player</th><th class="num">Star</th><th class="num">Finals</th><th class="num">Beds</th><th class="num">Match</th></tr></thead>
-            <tbody>
-              {candidates.slice(0, 100).map(c => (
-                <tr key={c.name} class={hits(c) > 1 ? 'both' : ''} title={hits(c) > 1 ? 'Found by more than one search' : undefined}>
-                  <td><span class="player-cell"><a href={playerUrl(c.uuid || c.name)}><Avatar id={c.uuid || c.name} size={22} /><span class="mono">{c.name}</span></a></span></td>
-                  <td class="num">{c.star != null ? <Star star={c.star} /> : '—'}</td>
-                  <td class="num">{num(c.finals)}</td>
-                  <td class="num">{num(c.beds)}</td>
-                  <td class="num">{c.match != null ? `${Math.round(c.match)}%` : '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : res.searchOff
-        ? <p class="notice"><Icon name="alert" /><span>Searching by cosmetics and numbers is off right now. Only known denicks show.</span></p>
-        : noSource
-        ? <p class="notice"><Icon name="alert" /><span>No search source answered. Try again in a minute.</span></p>
-        : searched ? <Empty icon="mask">No one matched. Try fewer cosmetics, or add the game.</Empty>
-          : <Empty icon="mask">{known.length ? 'Add cosmetics or numbers to search for more.' : 'No denick known for this nick yet. Add cosmetics or numbers to search.'}</Empty>}
+      <div class="res-sec">
+        <div class="res-head"><span class="res-ico"><Icon name="users" /></span><h3>Possible players</h3>{candidates.length > 0 && <span class="res-count">{Math.min(candidates.length, 100)}</span>}</div>
+        {candidates.length ? (
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>Player</th><th class="num">Star</th><th class="num">Finals</th><th class="num">Beds</th><th class="num">Match</th></tr></thead>
+              <tbody>
+                {candidates.slice(0, 100).map(c => (
+                  <tr key={c.name} class={hits(c) > 1 ? 'both' : ''} title={hits(c) > 1 ? 'Found by more than one search' : undefined}>
+                    <td><span class="player-cell"><a href={playerUrl(c.uuid || c.name)}><Avatar id={c.uuid || c.name} size={22} /><span class="mono">{c.name}</span></a></span></td>
+                    <td class="num">{c.star != null ? <Star star={c.star} /> : '—'}</td>
+                    <td class="num">{num(c.finals)}</td>
+                    <td class="num">{num(c.beds)}</td>
+                    <td class="num">{c.match != null ? `${Math.round(c.match)}%` : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : res.searchOff
+          ? <p class="notice"><Icon name="alert" /><span>Searching by cosmetics and numbers is off right now. Only known denicks show.</span></p>
+          : noSource
+            ? <p class="notice"><Icon name="alert" /><span>No search source answered. Try again in a minute.</span></p>
+            : <p class="res-none"><Icon name="mask" />{searched ? 'No one matched. Try fewer cosmetics, or add the game.' : 'Add cosmetics or numbers to search.'}</p>}
+      </div>
       <ReachNote res={res} />
     </section>
   );

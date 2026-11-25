@@ -253,6 +253,7 @@
   .at-maptitle { margin: 0; font: 700 1.05em/1.2 var(--font-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   html[data-theme="casefiles"] .at-maptitle { font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; }
   .at-mapsub { color: var(--dim); font-size: 0.82em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .at-mapsub a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
   .at-spacer { flex: 1; }
   .at-modes { display: flex; padding: 4px; gap: 2px; border-radius: var(--r-m); }
   .at-mode { border: 0; background: transparent; color: var(--dim); padding: 7px 12px; border-radius: var(--r-s); font-weight: 600; display: flex; align-items: center; gap: 6px; }
@@ -449,8 +450,12 @@
     // Keep "8 teams" together (and the dot with the word before it) when the map subtitle wraps.
     var sub = document.getElementById('atMapSub')
     function tidySub () {
-      var t = sub.textContent, n = t.replace(/(\d+) (teams)/g, '$1\u00a0$2').replace(/ \u00b7 /g, '\u00a0\u00b7 ')
-      if (n !== t) sub.textContent = n
+      // Text only, so a credit link in the subtitle stays a link.
+      sub.childNodes.forEach(function (node) {
+        if (node.nodeType !== 3) return
+        var t = node.data, n = t.replace(/(\d+) (teams)/g, '$1\u00a0$2').replace(/ \u00b7 /g, '\u00a0\u00b7 ')
+        if (n !== t) node.data = n
+      })
     }
     new MutationObserver(tidySub).observe(sub, { childList: true, characterData: true, subtree: true })
     // Locked cards: give each thumb its map's first letter (drawn faintly behind the lock).
@@ -466,7 +471,7 @@
     new MutationObserver(letters).observe(grid, { childList: true })
   })()
 </script>
-<script src="replay/atlas.js?v=2026-11-19a"></script><!-- bump v with every atlas.js build, so a cached page never runs a newer script -->
+<script src="replay/atlas.js?v=2026-11-25a"></script><!-- bump v with every atlas.js build, so a cached page never runs a newer script -->
 <script src="bg/backgrounds.js?v=1" defer></script>
 <script src="seasonal/northpole.js?v=1"></script>
 </body>

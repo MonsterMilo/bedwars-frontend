@@ -123,8 +123,7 @@ export function Lookup({ onOpen }) {
   const writable = canWrite();
 
   return (
-    <section class="panel pad lit lookup" id="lookup" aria-labelledby="lookup-h">
-      <h2 class="panel-title" id="lookup-h"><Icon name="search" />Sweat Lookup</h2>
+    <div class="panel pad lit lookup">
       <div class="lookup-body">
         <div class="lookup-main">
           <form class="lookup-form" onSubmit={look} role="search">
@@ -205,6 +204,6 @@ export function Lookup({ onOpen }) {
           )}
         </div>
       </div>
-    </section>
+    </div>
   );
 }

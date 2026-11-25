@@ -38,8 +38,8 @@ function Delta({ live, logged, d = 0, suffix = '', when }) {
   const delta = Math.round((l - g) * f) / f;
   const tone = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
   return (
-    <span class={`delta ${tone}`} title={`${g.toFixed(d)}${suffix} when logged${when ? ` on ${when}` : ''}`}>
-      {delta === 0 ? 'No change' : `${delta > 0 ? '+' : '−'}${Math.abs(delta).toFixed(d)}${suffix}`} since win
+    <span class={`delta ${tone}`} title={`${g.toFixed(d)}${suffix} when we beat them${when ? ` on ${when}` : ''}`}>
+      {delta === 0 ? 'No change' : `${delta > 0 ? '▲' : '▼'} ${Math.abs(delta).toFixed(d)}${suffix}`}
     </span>
   );
 }
@@ -63,8 +63,8 @@ function LiveStats({ uuid, rec, all }) {
       </div>
     );
   }
-  const tile = (label, value, field, live, delta) => (
-    <div class="mstat">
+  const tile = (label, value, field, live, delta, c) => (
+    <div class="mstat" style={{ '--c': c }}>
       <span class="mstat-label">{label}</span>
       <span class="mstat-value">{value}</span>
       {delta}
@@ -75,11 +75,11 @@ function LiveStats({ uuid, rec, all }) {
     <>
       {data.currentName && data.originalName && data.currentName !== data.originalName && <p class="faint small">Now called <b>{data.currentName}</b> (was {data.originalName}).</p>}
       <div class="mstats">
-        {tile('Star', <Star star={data.star} />, 'star', data.star, rec && <Delta live={data.star} logged={rec.star} suffix="★" when={when} />)}
-        {tile('FKDR', <span class="mono">{fixed(data.fkdr)}</span>, 'fkdr', data.fkdr, rec && <Delta live={data.fkdr} logged={rec.fkdr} d={2} when={when} />)}
-        {tile('WLR', <span class="mono">{fixed(data.wlr)}</span>, 'wlr', data.wlr, rec && <Delta live={data.wlr} logged={rec.wlr} d={2} when={when} />)}
-        {tile('Finals', <span class="mono">{whole(data.finals)}</span>, 'finals', data.finals)}
-        {tile('Wins', <span class="mono">{whole(data.wins)}</span>)}
+        {tile('Star', <Star star={data.star} />, 'star', data.star, rec && <Delta live={data.star} logged={rec.star} suffix="★" when={when} />, 'var(--accent-3)')}
+        {tile('FKDR', <span class="mono">{fixed(data.fkdr)}</span>, 'fkdr', data.fkdr, rec && <Delta live={data.fkdr} logged={rec.fkdr} d={2} when={when} />, 'var(--accent)')}
+        {tile('WLR', <span class="mono">{fixed(data.wlr)}</span>, 'wlr', data.wlr, rec && <Delta live={data.wlr} logged={rec.wlr} d={2} when={when} />, 'var(--accent-2)')}
+        {tile('Finals', <span class="mono">{whole(data.finals)}</span>, 'finals', data.finals, null, '#ff7a8a')}
+        {tile('Wins', <span class="mono">{whole(data.wins)}</span>, null, null, null, '#5be39a')}
       </div>
     </>
   );
@@ -112,31 +112,35 @@ export function PlayerModal({ target, onClose, onEdit }) {
     <Dialog open={open} onClose={onClose} title={name || 'Player'} class="player-dialog" labelledBy="pm-title">
       {open && (
         <div class="pm">
-          <div class="pm-hero">
-            <img class={`pm-skin ${shown ? 'on' : ''}`} src={`https://mc-heads.net/body/${uuid || name}/180`} alt="" onLoad={() => setShown(true)} />
-            <div class="pm-id">
-              <div class="pm-name">{rec && <Star star={rec.star} />} <span>{name}</span></div>
-              <div class="pm-actions">
-                <a class="btn small" href={playerUrl(name)}><Icon name="user" />Full profile</a>
-                <button type="button" class="btn small" onClick={copyLink}><Icon name="link" />Copy link</button>
-                {rec && canEdit(rec) && <button type="button" class="btn small" onClick={() => onEdit(rec)}><Icon name="settings" />Edit</button>}
+          <div class="pm-top">
+            <div class="pm-stage" aria-hidden="true">
+              <img class={`pm-skin ${shown ? 'on' : ''}`} src={`https://mc-heads.net/body/${uuid || name}/220`} alt="" onLoad={() => setShown(true)} />
+            </div>
+            <div class="pm-main">
+              <div class="pm-id">
+                <div class="pm-name">{rec && <Star star={rec.star} />} <span>{name}</span></div>
+                <div class="pm-actions">
+                  <a class="btn small" href={playerUrl(name)}><Icon name="user" />Full profile</a>
+                  <button type="button" class="btn small" onClick={copyLink}><Icon name="link" />Copy link</button>
+                  {rec && canEdit(rec) && <button type="button" class="btn small" onClick={() => onEdit(rec)}><Icon name="settings" />Edit</button>}
+                </div>
               </div>
+
+              {needUuid && mojang.loading ? <Loading lines={3} /> : <LiveStats uuid={uuid} rec={rec} all={all} />}
+
+              {rec && (
+                <section class="pm-record" aria-label="Our record">
+                  <div class="rec-item"><span class="rec-label">Beaten</span><b>{parseDay(rec.dateAdded) ? parseDay(rec.dateAdded).toLocaleDateString() : 'Unknown'}</b></div>
+                  <div class="rec-item"><span class="rec-label">Index</span><span class="rec-line"><b class="mono">{whole(indexOf(rec))}</b><TierBadge index={indexOf(rec)} /></span></div>
+                  <div class="rec-item"><span class="rec-label">Beaten by</span><RosterDots ids={allBy} /></div>
+                  {entries.length > 1 && <div class="rec-item"><span class="rec-label">Times</span><b>{entries.length}</b></div>}
+                  {rival && <div class="rec-item rec-rival"><Icon name="sword" /><span>Rival · {rivalSummary(rival)}</span></div>}
+                  <Flags s={{ cheating: entries.some(e => e.cheating), boosting: entries.some(e => e.boosting) }} />
+                  <div class="rec-gauge"><Gauge index={indexOf(rec)} /></div>
+                </section>
+              )}
             </div>
           </div>
-
-          {needUuid && mojang.loading ? <Loading lines={3} /> : <LiveStats uuid={uuid} rec={rec} all={all} />}
-
-          {rec && (
-            <section class="pm-record" aria-label="Our record">
-              <div class="rec-item"><span class="faint small">Logged</span><b>{parseDay(rec.dateAdded) ? parseDay(rec.dateAdded).toLocaleDateString() : 'Unknown'}</b></div>
-              <div class="rec-item"><span class="faint small">Index</span><b class="mono">{whole(indexOf(rec))}</b> <TierBadge index={indexOf(rec)} /></div>
-              <div class="rec-item"><span class="faint small">Beaten by</span><RosterDots ids={allBy} /></div>
-              {entries.length > 1 && <div class="rec-item"><span class="faint small">Times</span><b>{entries.length}</b></div>}
-              {rival && <div class="rec-item rec-rival"><Icon name="sword" /><span>Rival · {rivalSummary(rival)}</span></div>}
-              <Flags s={{ cheating: entries.some(e => e.cheating), boosting: entries.some(e => e.boosting) }} />
-              <div class="rec-gauge"><Gauge index={indexOf(rec)} /></div>
-            </section>
-          )}
 
           {uuid && <TagList uuid={uuid} />}
           {entries.length > 0 && <Notes entries={entries} />}

@@ -31,7 +31,7 @@ import { play } from '../lib/audio.js';
 import { installFx, bindTitle, flipClose, setChatNames } from '../lib/fx.js';
 import { ROSTER } from '../tracker/model.js';
 import { setupApp } from '../lib/app.js';
-import { PullRefresh, BottomNav, InstallButton, useWhatsNew } from '../tracker/AppBits.jsx';
+import { PullRefresh, BottomNav, InstallButton, useWhatsNew, useCurrentSection } from '../tracker/AppBits.jsx';
 
 installFx();
 setupApp();
@@ -41,7 +41,30 @@ const oldHash = OLD_HASH[location.hash.slice(1)];
 if (oldHash) history.replaceState(null, '', `${location.pathname}${location.search}#${oldHash}`);
 setChatNames(Object.entries(ROSTER).filter(([k]) => k !== 'key').map(([, r]) => r.label));
 
-const SECTIONS = [['lookup', 'Lookup', 'search'], ['denick', 'Denicking', 'mask'], ['sweats', 'Sweats', 'trophy'], ['activity', 'Activity', 'history']];
+const SECTIONS = [['lookup', 'Sweat Lookup', 'search'], ['sweats', 'Defeated Sweats', 'trophy'], ['denick', 'Denicking', 'mask'], ['activity', 'Activity', 'history']];
+const SECTION_TEXT = {
+  lookup: { kicker: 'Lookup', title: 'Sweat Lookup', sub: 'Look a player up and log the win.', icon: 'search' },
+  sweats: { kicker: 'Defeated', title: 'Defeated Sweats', sub: 'Everyone we\'ve beaten.', icon: 'trophy' },
+  denick: { kicker: 'Unmask', title: 'Denicking', sub: 'Who\'s behind a nick, or every nick a player used.', icon: 'mask' },
+  activity: { kicker: 'Log', title: 'Activity', sub: 'Every add, edit and removal.', icon: 'history' }
+};
+
+// The section tabs: sticky under the header, the one you're reading lit.
+function SectionBar({ sections }) {
+  const [current] = useCurrentSection(sections.map(s => s[0]));
+  if (sections.length < 2) return null;
+  return (
+    <nav class="tbar" aria-label="Sections">
+      <div class="tbar-inner">
+        {sections.map(([id, label, icon]) => (
+          <a key={id} href={`#${id}`} class={current === id ? 'on' : ''} aria-current={current === id ? 'true' : undefined} data-quiet onClick={() => play('view')}>
+            <Icon name={icon} />{label}
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+}
 const HIDDEN = 'trackerHiddenSections';
 const SHORTCUTS = [['/', 'Search sweats'], ['K', 'Sweat Lookup'], ['G', 'Grid view'], ['T', 'Table view'], ['L', 'Leaderboard view'], ['M', 'Sound on or off'], ['?', 'Show this list'], ['Esc', 'Close a popup']];
 
@@ -111,31 +134,39 @@ function Tracker() {
   return (
     <Shell bg="tracker">
       <div class="page wrap tracker">
-        <header class="page-head">
-          <div class="grow">
-            <p class="eyebrow"><ItemIcon id="ui:book" />Tracker</p>
-            <h1 ref={title} data-title-stunt>Sweat Tracker</h1>
-          </div>
-          <nav class="jump" aria-label="Sections">
-            {sections.map(([id, label, icon]) => (
-              <span key={id} class="jump-item">
-                <a href={`#${id}`} class="btn small ghost"><Icon name={icon} />{label}</a>
-                <button type="button" data-quiet class="btn icon small ghost" aria-pressed={!hidden.includes(id)} aria-label={`${hidden.includes(id) ? 'Show' : 'Hide'} ${label}`} title={hidden.includes(id) ? 'Show' : 'Hide'} onClick={() => toggle(id)}><Icon name={hidden.includes(id) ? 'down' : 'check'} /></button>
-              </span>
-            ))}
-            <button type="button" class="btn icon small ghost" aria-label="Keyboard shortcuts" title="Shortcuts (?)" onClick={() => setHelp(true)}><Icon name="info" /></button>
-          </nav>
+        <header class="t-hero">
+          <p class="t-kicker"><span aria-hidden="true" />Prism · Sweat Tracker<span aria-hidden="true" /></p>
+          <h1 ref={title} class="t-title" data-title-stunt>Sweat Tracker</h1>
+          <p class="t-sub">{total > 0 ? `${total.toLocaleString()} sweats beaten so far` : 'Every sweat we beat, in one place'} · <button type="button" class="linkish" onClick={() => setHelp(true)}>Shortcuts</button></p>
         </header>
 
+        {!hidden.includes('sweats') && <Sotd onOpen={open} />}
+        <SectionBar sections={sections} />
+
         <div class="tracker-stack">
-          {!hidden.includes('sweats') && <Sotd onOpen={open} />}
-          {!hidden.includes('lookup') && <Lookup onOpen={open} />}
-          {!hidden.includes('sweats') && <Sweats onOpen={open} onEdit={edit} />}
-          {!hidden.includes('denick') && <Denick />}
+          {sections.map(([id], i) => {
+            const meta = SECTION_TEXT[id];
+            const off = hidden.includes(id);
+            const body = id === 'lookup' ? <Lookup onOpen={open} /> : id === 'sweats' ? <Sweats onOpen={open} onEdit={edit} /> : id === 'denick' ? <Denick /> : <Activity />;
+            return (
+              <section key={id} id={id} class={`tsec ${off ? 'off' : ''}`} aria-labelledby={`${id}-h`}>
+                <header class="tsec-head">
+                  <span class="tsec-icon" aria-hidden="true"><Icon name={meta.icon} /></span>
+                  <div class="tsec-text">
+                    <p class="tsec-kicker">{String(i + 1).padStart(2, '0')} / {meta.kicker}</p>
+                    <h2 id={`${id}-h`}>{meta.title}</h2>
+                    <p class="tsec-sub">{meta.sub}</p>
+                  </div>
+                  <span class="tsec-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  <button type="button" class="btn small ghost tsec-toggle" aria-expanded={!off} onClick={() => toggle(id)}>{off ? 'Show' : 'Hide'}<Icon name="down" class={off ? '' : 'flip-up'} /></button>
+                </header>
+                {!off && body}
+              </section>
+            );
+          })}
         </div>
-        {admin && !hidden.includes('activity') && <Activity />}
         <footer class="tracker-foot">
-          <span class="faint small">{total > 0 && `${total.toLocaleString()} tracked ${total === 1 ? 'sweat' : 'sweats'}`}<span class="kbd-hint">{total > 0 && ' · '}Press <kbd>?</kbd> for shortcuts</span></span>
+          <span class="faint small"><span class="kbd-hint">Press <kbd>?</kbd> for shortcuts</span></span>
           <span class="foot-tools">
             <Status />
             <InstallButton />
@@ -143,7 +174,7 @@ function Tracker() {
           </span>
         </footer>
       </div>
-      <BottomNav sections={sections.filter(([id]) => !hidden.includes(id)).map(([id, label, icon]) => [id, label === 'Denicking' ? 'Denick' : label, icon])} />
+      <BottomNav sections={sections.filter(([id]) => !hidden.includes(id)).map(([id, label, icon]) => [id, label === 'Denicking' ? 'Denick' : label === 'Sweat Lookup' ? 'Lookup' : label === 'Defeated Sweats' ? 'Sweats' : label, icon])} />
       <PullRefresh onRefresh={refresh} />
 
       <PlayerModal target={player} onClose={close} onEdit={s => { setEditId(s._id); }} />

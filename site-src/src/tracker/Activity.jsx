@@ -82,9 +82,8 @@ export function Activity() {
   useEffect(() => { load(); }, [who, action]);
 
   return (
-    <section class="panel pad activity" id="activity" aria-labelledby="act-h">
+    <div class="panel pad activity">
       <div class="denick-head">
-        <h2 class="panel-title" id="act-h"><Icon name="history" />Activity</h2>
         <span class="grow" />
         <button type="button" class="btn small ghost" onClick={() => load()} aria-label="Refresh"><Icon name="refresh" /></button>
       </div>
@@ -97,6 +96,6 @@ export function Activity() {
       <ul class="act-list">{entries.map(e => <Row key={e._id} e={e} onRestored={id => setEntries(entries.map(x => (x._id === id ? { ...x, restorable: false } : x)))} />)}</ul>
       {state.loading && <div class="denick-skel">{[1, 2, 3].map(i => <div key={i} class="skel" style={{ height: '44px' }} />)}</div>}
       {next && !state.loading && <button type="button" class="btn small center-btn" onClick={() => load(next)}>Show more</button>}
-    </section>
+    </div>
   );
 }

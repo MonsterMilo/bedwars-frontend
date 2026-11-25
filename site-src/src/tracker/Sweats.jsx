@@ -293,10 +293,8 @@ export function Sweats({ onOpen, onEdit }) {
 
   const loading = ls.state === 'loading' && !all.length;
   return (
-    <section class="sweats" id="sweats" aria-labelledby="sweats-h" ref={top}>
+    <div class="sweats" ref={top}>
       <div class="section-bar">
-        <h2 id="sweats-h"><Icon name="trophy" />Defeated Sweats</h2>
-        <span class="grow" />
         <Tabs label="View" value={view} onChange={setView} options={VIEWS} />
         {view !== 'table' && (
           <div class="sort-pick">
@@ -353,6 +351,6 @@ export function Sweats({ onOpen, onEdit }) {
           </div>
         )}
       </Dialog>
-    </section>
+    </div>
   );
 }

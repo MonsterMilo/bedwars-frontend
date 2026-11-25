@@ -65,11 +65,12 @@ export function PullRefresh({ onRefresh }) {
 
 // ---- Phone section bar ----
 // Jumps between sections, lighting the one you're in.
-export function BottomNav({ sections }) {
-  const [current, setCurrent] = useState(sections[0] && sections[0][0]);
-  const ids = sections.map(s => s[0]).join(',');
+// Which section is on screen, for the tabs.
+export function useCurrentSection(list) {
+  const [current, setCurrent] = useState(list[0]);
+  const ids = list.join(',');
   useEffect(() => {
-    const els = sections.map(([id]) => document.getElementById(id)).filter(Boolean);
+    const els = list.map(id => document.getElementById(id)).filter(Boolean);
     if (!els.length || !('IntersectionObserver' in window)) return undefined;
     const seen = new Map();
     const io = new IntersectionObserver(entries => {
@@ -81,6 +82,11 @@ export function BottomNav({ sections }) {
     els.forEach(el => io.observe(el));
     return () => io.disconnect();
   }, [ids]);
+  return [current, setCurrent];
+}
+
+export function BottomNav({ sections }) {
+  const [current, setCurrent] = useCurrentSection(sections.map(s => s[0]));
   if (sections.length < 2) return null;
   return (
     <nav class="bottom-nav" aria-label="Sections">

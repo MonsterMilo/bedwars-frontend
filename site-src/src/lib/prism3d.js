@@ -58,21 +58,25 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
   const bgMat = new THREE.ShaderMaterial({
     depthWrite: false,
     uniforms: {
-      uRes: { value: new THREE.Vector2(1, 1) }, uPrism: { value: new THREE.Vector2() }, uT: { value: 0 }, uMouse: { value: new THREE.Vector2() },
+      uRes: { value: new THREE.Vector2(1, 1) }, uPrism: { value: new THREE.Vector2() }, uT: { value: 0 }, uMouse: { value: new THREE.Vector2() }, uOn: { value: 0 },
       uBase: { value: new THREE.Color(0x06070b) }, uA: { value: new THREE.Color() }, uB: { value: new THREE.Color() }, uC: { value: new THREE.Color() }, uLight: { value: 0 }
     },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.9999, 1.0); }',
-    fragmentShader: `uniform vec2 uRes, uPrism, uMouse; uniform float uT, uLight; uniform vec3 uBase, uA, uB, uC; varying vec2 vUv;
+    fragmentShader: `uniform vec2 uRes, uPrism, uMouse; uniform float uT, uLight, uOn; uniform vec3 uBase, uA, uB, uC; varying vec2 vUv;
       float blob(vec2 p, vec2 c, float r){ float d = length(p - c) / r; return exp(-d * d); }
       void main(){
         vec2 p = vUv * uRes;
         vec3 col = uBase;
         float k = mix(1.0, 0.45, uLight);
         col += vec3(0.07, 0.12, 0.24) * 0.55 * k * blob(p, uPrism, uRes.y * 0.7);
-        col += uA * 0.07 * k * blob(p, vec2(uRes.x * (0.62 + 0.03 * sin(uT * 0.07)), uRes.y * 0.78), uRes.y * 0.55);
-        col += uB * 0.08 * k * blob(p, vec2(uRes.x * (0.82 + 0.03 * cos(uT * 0.05)), uRes.y * 0.35), uRes.y * 0.6);
-        col += uC * 0.04 * k * blob(p, vec2(uRes.x * (0.2 + 0.03 * sin(uT * 0.04)), uRes.y * 0.1), uRes.y * 0.5);
-        col += vec3(0.5, 0.6, 0.9) * 0.05 * k * blob(p, (uMouse * 0.5 + 0.5) * uRes, uRes.y * 0.35);
+        vec2 lean = uMouse * uRes * 0.06 * uOn;
+        col += uA * 0.08 * k * blob(p, vec2(uRes.x * (0.62 + 0.03 * sin(uT * 0.07)), uRes.y * 0.78) + lean, uRes.y * 0.55);
+        col += uB * 0.09 * k * blob(p, vec2(uRes.x * (0.82 + 0.03 * cos(uT * 0.05)), uRes.y * 0.35) + lean * 0.7, uRes.y * 0.6);
+        col += uC * 0.05 * k * blob(p, vec2(uRes.x * (0.2 + 0.03 * sin(uT * 0.04)), uRes.y * 0.1) + lean * 1.3, uRes.y * 0.5);
+        vec2 m = (uMouse * 0.5 + 0.5) * uRes;
+        vec3 tint = mix(mix(uC, uA, smoothstep(0.1, 0.6, vUv.x)), uB, smoothstep(0.55, 0.95, vUv.x));
+        float ring = exp(-pow((length(p - m) - uRes.y * 0.16 - 6.0 * sin(uT * 1.3)) / (uRes.y * 0.05), 2.0));
+        col += (tint * 0.2 * blob(p, m, uRes.y * 0.3) + vec3(0.6, 0.7, 1.0) * 0.05 * blob(p, m, uRes.y * 0.09) + tint * 0.05 * ring) * k * uOn;
         float v = smoothstep(1.25, 0.25, length((vUv - 0.5) * vec2(uRes.x / uRes.y, 1.0)));
         col *= mix(mix(0.55, 0.96, uLight), 1.0, v);
         gl_FragColor = vec4(pow(col, vec3(2.2)), 1.0);
@@ -95,13 +99,13 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
         p.x = mod(p.x + uSpan.x * depth * 0.62, uSpan.x * depth * 1.24) - uSpan.x * depth * 0.62;
         p.y += cos(uT * 0.05 + aSeed * 23.0) * 22.0;
         p.xy += uPar * (1.0 - 1.0 / depth) * 40.0;
-        vec2 proj = p.xy / depth; vec2 d = proj - uPtr; float near = exp(-dot(d, d) / 9000.0);
-        p.xy += normalize(d + 0.001) * near * 26.0 * depth;
+        vec2 proj = p.xy / depth; vec2 d = proj - uPtr; float near = exp(-dot(d, d) / 24000.0);
+        p.xy += normalize(d + 0.001) * near * 52.0 * depth;
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
         gl_Position = projectionMatrix * mv;
-        gl_PointSize = (1.0 + aSeed * 1.6) * uPx * (1.0 + near * 0.8) * clamp(uCamZ / -mv.z, 0.6, 1.6);
+        gl_PointSize = (1.0 + aSeed * 1.6) * uPx * (1.0 + near * 1.5) * clamp(uCamZ / -mv.z, 0.6, 1.6);
         float tw = 0.65 + 0.35 * sin(uT * (0.6 + aSeed * 1.4) + aSeed * 60.0);
-        vA = (0.10 + 0.22 * fract(aSeed * 7.31)) * tw + near * 0.45;
+        vA = (0.12 + 0.24 * fract(aSeed * 7.31)) * tw + near * 0.95;
       }`,
     fragmentShader: 'uniform vec3 uTint; varying float vA; void main(){ vec2 c = gl_PointCoord - 0.5; float r = length(c); if (r > 0.5) discard; gl_FragColor = vec4(uTint * vA * smoothstep(0.5, 0.0, r), 1.0); }'
   });
@@ -123,29 +127,31 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
       vec3 hot = mix(uColor, vec3(1.0), 0.3);
       vec3 c = uColor * halo * 0.16 * uI + hot * core * (0.75 + pulse * 1.4) * uI;
       gl_FragColor = vec4(c * fade, 1.0); }`;
-  function makeBeam(color, fadeStart) {
+  function makeBeam(color, fadeStart, order = 5) {
     const m = new THREE.ShaderMaterial({
-      vertexShader: beamVS, fragmentShader: beamFS, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
+      vertexShader: beamVS, fragmentShader: beamFS, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
       uniforms: { uA: { value: new THREE.Vector2() }, uB: { value: new THREE.Vector2() }, uW0: { value: 6 }, uW1: { value: 30 }, uGrow: { value: 0 }, uColor: { value: color.clone() }, uI: { value: 1 }, uT: { value: 0 }, uCore: { value: 1.4 }, uSpeed: { value: 3 }, uFade: { value: fadeStart ? 1 : 0 } }
     });
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 48, 1), m); mesh.frustumCulled = false; mesh.renderOrder = 1; scene.add(mesh);
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 48, 1), m); mesh.frustumCulled = false; mesh.renderOrder = order; scene.add(mesh);
     return m;
   }
   const spotMat = color => new THREE.ShaderMaterial({
-    depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
+    transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
     uniforms: { uColor: { value: color.clone() }, uI: { value: 1 } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: 'uniform vec3 uColor; uniform float uI; varying vec2 vUv; void main(){ float d = length(vUv - 0.5) * 2.0; float g = exp(-d * d * 9.0) * 0.35 + exp(-d * d * 80.0) * 0.8; gl_FragColor = vec4(uColor * g * uI, 1.0); }'
   });
-  const mkSpot = color => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), spotMat(color)); m.frustumCulled = false; m.renderOrder = 2; scene.add(m); return m; };
+  const mkSpot = color => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), spotMat(color)); m.frustumCulled = false; m.renderOrder = 7; scene.add(m); return m; };
 
+  // White light hits the left face, splits into a fan inside the glass, and
+  // each colour leaves the right face on its way to its card.
   const inBeam = makeBeam(new THREE.Color(1, 1, 1), false);
-  const splitSpot = mkSpot(new THREE.Color(1, 1, 1));
-  let outBeams = [], landSpots = [];
+  const entrySpot = mkSpot(new THREE.Color(1, 1, 1));
+  let outBeams = [], landSpots = [], innerBeams = [], exitSpots = [];
   function setColors() {
     const list = colors();
-    while (outBeams.length < list.length) { outBeams.push(makeBeam(new THREE.Color(), true)); landSpots.push(mkSpot(new THREE.Color())); }
-    list.forEach((c, i) => { const col = cssColor(c); outBeams[i].uniforms.uColor.value.copy(col); landSpots[i].material.uniforms.uColor.value.copy(col); });
+    while (outBeams.length < list.length) { outBeams.push(makeBeam(new THREE.Color(), true)); landSpots.push(mkSpot(new THREE.Color())); innerBeams.push(makeBeam(new THREE.Color(), false, 6)); exitSpots.push(mkSpot(new THREE.Color())); }
+    list.forEach((c, i) => { const col = cssColor(c); [outBeams[i].uniforms, landSpots[i].material.uniforms, innerBeams[i].uniforms, exitSpots[i].material.uniforms].forEach(u => u.uColor.value.copy(col)); });
     const bg = background();
     bgMat.uniforms.uBase.value.copy(cssColor(bg.base, '#06070b'));
     bgMat.uniforms.uA.value.copy(cssColor(list[0]));
@@ -214,9 +220,9 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
     bgMat.uniforms.uRes.value.set(W, H);
   }
 
-  const mouse = { x: 0, y: 0, tx: 0, ty: 0, px: -9999, py: -9999 };
-  const onMove = e => { mouse.tx = (e.clientX / innerWidth) * 2 - 1; mouse.ty = (e.clientY / innerHeight) * 2 - 1; mouse.px = e.clientX; mouse.py = e.clientY; };
-  const onLeave = () => { mouse.tx = 0; mouse.ty = 0; mouse.px = mouse.py = -9999; };
+  const mouse = { x: 0, y: 0, tx: 0, ty: 0, px: -9999, py: -9999, on: 0, ton: 0 };
+  const onMove = e => { mouse.tx = (e.clientX / innerWidth) * 2 - 1; mouse.ty = (e.clientY / innerHeight) * 2 - 1; mouse.px = e.clientX; mouse.py = e.clientY; mouse.ton = 1; };
+  const onLeave = () => { mouse.ton = 0; mouse.px = mouse.py = -9999; };
   addEventListener('pointermove', onMove, { passive: true });
   document.addEventListener('pointerleave', onLeave);
 
@@ -245,6 +251,15 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
   addEventListener('pointermove', onDrag, { passive: true });
   addEventListener('pointerup', endDrag); addEventListener('pointercancel', endDrag);
 
+  // A point on the glass (prism-local, mid-depth) -> where it sits on the
+  // z = 0 plane the beams are drawn in, seen from the camera.
+  const gv = new THREE.Vector3();
+  function onGlass(x, y) {
+    gv.set(x * 1.04, (y + 0.12) * 1.04 - 0.12, 0).applyMatrix4(prismGroup.matrixWorld);
+    const c = camera.position, k = c.z / (c.z - gv.z);
+    return new THREE.Vector2(c.x + (gv.x - c.x) * k, c.y + (gv.y - c.y) * k);
+  }
+
   const t0 = performance.now();
   let shown = false, last = t0, raf = 0, introStart = t0, dead = false;
   const ease = x => 1 - Math.pow(1 - x, 3);
@@ -256,28 +271,15 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
     const still = reduce();
     const L = layout();
     spin.L = L;
-    mouse.x += (mouse.tx - mouse.x) * 0.05; mouse.y += (mouse.ty - mouse.y) * 0.05;
+    mouse.x += (mouse.tx - mouse.x) * 0.08; mouse.y += (mouse.ty - mouse.y) * 0.08; mouse.on += (mouse.ton - mouse.on) * 0.04;
     const t = still ? 3 : (now - t0) / 1000, dt = Math.min(0.05, (now - last) / 1000); last = now;
     const it = still ? 9 : (now - introStart) / 1000;
-    const grow = Math.min(1, Math.max(0, it / 0.7)), split = Math.min(1, Math.max(0, (it - 0.6) / 0.8));
+    const grow = Math.min(1, Math.max(0, it / 0.7)), split = Math.min(1, Math.max(0, (it - 0.8) / 0.8));
     const px = L.prism.x, py = -L.prism.y, S = L.prism.size;
-    bgMat.uniforms.uT.value = t; bgMat.uniforms.uPrism.value.set(px, H - L.prism.y); bgMat.uniforms.uMouse.value.set(mouse.x, -mouse.y);
+    bgMat.uniforms.uT.value = t; bgMat.uniforms.uPrism.value.set(px, H - L.prism.y); bgMat.uniforms.uMouse.value.set(mouse.x, -mouse.y); bgMat.uniforms.uOn.value = mouse.on;
     dustMat.uniforms.uT.value = t; dustMat.uniforms.uPar.value.set(-mouse.x, mouse.y);
     dustMat.uniforms.uPtr.value.set(mouse.px - W / 2, -(mouse.py - H / 2));
-    const iu = inBeam.uniforms;
-    iu.uA.value.set(L.source.x, -L.source.y); iu.uB.value.set(px, py);
-    iu.uGrow.value = ease(grow); iu.uW0.value = S * 0.06; iu.uW1.value = S * 0.05; iu.uCore.value = Math.max(1.3, S * 0.006); iu.uT.value = t; iu.uSpeed.value = 2.2;
-    outBeams.forEach((b, i) => {
-      const tg = L.targets[i], sp = landSpots[i];
-      if (!tg) { b.uniforms.uI.value = 0; sp.material.uniforms.uI.value = 0; return; }
-      const u = b.uniforms, h = L.hot[i] || 0;
-      u.uA.value.set(px, py); u.uB.value.set(tg.x, -tg.y); u.uGrow.value = ease(split);
-      u.uW0.value = S * 0.03; u.uW1.value = (L.narrow ? 18 : S * 0.13) * (1 + h * 0.5); u.uCore.value = Math.max(1.2, S * 0.0045) * (1 + h * 0.7);
-      u.uI.value = 0.75 + h * 0.75; u.uT.value = t; u.uSpeed.value = 2.6 + h * 2.5;
-      sp.position.set(tg.x, -tg.y, 0); const sz = (L.narrow ? 70 : S * 0.42) * (1 + h * 0.6); sp.scale.set(sz, sz, 1); sp.material.uniforms.uI.value = split >= 1 ? 0.4 + h * 0.5 : 0;
-    });
-    splitSpot.position.set(px, py, 0); const ss = S * 0.55 * (1 + 0.06 * Math.sin(t * 2.2)); splitSpot.scale.set(ss, ss, 1);
-    splitSpot.material.uniforms.uI.value = 0.2 + 0.4 * ease(grow) * (0.85 + 0.15 * Math.sin(t * 3.1));
+    // Place the glass first, so the beams meet its faces however it has turned.
     prismGroup.position.set(px, py, 0); prismGroup.scale.setScalar(S * 0.5);
     if (!spin.drag) {
       prismGroup.rotation.y += dt * spin.vy; spin.vy *= Math.max(0, 1 - dt * 1.6);
@@ -291,6 +293,39 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
       spin.tiltX += (0.12 - spin.tiltX) * Math.min(1, dt * 0.8);
     }
     prismGroup.rotation.x = spin.tiltX + (still ? 0 : Math.sin(t * 0.45) * 0.05);
+    prismGroup.updateMatrixWorld(true);
+    const top = onGlass(0, 0.88), ca = onGlass(-0.866, -0.62), cb = onGlass(0.866, -0.62);
+    const [inC, outC] = ca.x <= cb.x ? [ca, cb] : [cb, ca];
+    const entry = top.clone().lerp(inC, 0.53);
+
+    const inner = Math.min(1, Math.max(0, (it - 0.55) / 0.35));
+    const iu = inBeam.uniforms;
+    iu.uA.value.set(L.source.x, -L.source.y); iu.uB.value.copy(entry);
+    iu.uGrow.value = ease(grow); iu.uW0.value = S * 0.06; iu.uW1.value = S * 0.045; iu.uCore.value = Math.max(1.3, S * 0.006); iu.uT.value = t; iu.uSpeed.value = 2.2;
+    entrySpot.position.set(entry.x, entry.y, 0); const es = S * 0.42 * (1 + 0.05 * Math.sin(t * 2.2)); entrySpot.scale.set(es, es, 1);
+    entrySpot.material.uniforms.uI.value = grow >= 1 ? 0.55 + 0.15 * Math.sin(t * 3.1) : 0;
+
+    // Colours leave the glass in the same order as their cards, so no two cross.
+    const live = L.targets.map((tg, i) => i).filter(i => i < outBeams.length && L.targets[i]);
+    live.sort((a, b) => (L.narrow ? L.targets[a].x - L.targets[b].x : L.targets[a].y - L.targets[b].y));
+    const rank = []; live.forEach((i, r) => { rank[i] = r; });
+    outBeams.forEach((b, i) => {
+      const tg = L.targets[i], sp = landSpots[i], ib = innerBeams[i].uniforms, xs = exitSpots[i];
+      if (!tg) { b.uniforms.uI.value = 0; sp.material.uniforms.uI.value = 0; ib.uI.value = 0; xs.material.uniforms.uI.value = 0; return; }
+      const h = L.hot[i] || 0;
+      // Cards below (phones): out through the base. Cards to the side: out the far face.
+      const f = live.length > 1 ? rank[i] / (live.length - 1) : 0.5;
+      const exit = L.narrow ? inC.clone().lerp(outC, 0.3 + 0.45 * f) : top.clone().lerp(outC, 0.4 + 0.32 * f);
+      ib.uA.value.copy(entry); ib.uB.value.copy(exit); ib.uGrow.value = ease(inner);
+      ib.uW0.value = S * 0.025; ib.uW1.value = S * 0.05; ib.uCore.value = Math.max(1, S * 0.004) * (1 + h * 0.5);
+      ib.uI.value = 0.6 + h * 0.5; ib.uT.value = t; ib.uSpeed.value = 2.4;
+      const u = b.uniforms;
+      u.uA.value.copy(exit); u.uB.value.set(tg.x, -tg.y); u.uGrow.value = ease(split);
+      u.uW0.value = S * 0.03; u.uW1.value = (L.narrow ? 18 : S * 0.13) * (1 + h * 0.5); u.uCore.value = Math.max(1.2, S * 0.0045) * (1 + h * 0.7);
+      u.uI.value = 0.75 + h * 0.75; u.uT.value = t; u.uSpeed.value = 2.6 + h * 2.5;
+      xs.position.set(exit.x, exit.y, 0); const xz = S * 0.2 * (1 + h * 0.4); xs.scale.set(xz, xz, 1); xs.material.uniforms.uI.value = inner >= 1 ? 0.6 + h * 0.4 : 0;
+      sp.position.set(tg.x, -tg.y, 0); const sz = (L.narrow ? 70 : S * 0.42) * (1 + h * 0.6); sp.scale.set(sz, sz, 1); sp.material.uniforms.uI.value = split >= 1 ? 0.4 + h * 0.5 : 0;
+    });
     rimMat.uniforms.uT.value = t;
     composer.render();
     if (!shown) { shown = true; introStart = performance.now(); canvas.classList.add('on'); if (onReady) onReady(); }

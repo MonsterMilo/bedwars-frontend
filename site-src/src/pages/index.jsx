@@ -48,7 +48,7 @@ const HUES = ['--accent', '--accent-2', '--accent-3'];
 const reduceMotion = () => document.documentElement.dataset.motion === 'reduce';
 
 // Starts the 3D prism once the page has drawn, and keeps its beams on the cards.
-function usePrism(canvas, spot, cards) {
+function usePrism(canvas, spot, cards, left_) {
   const [mode, setMode] = useState('loading'); // loading | 3d | flat
   const hot = useRef(SECTIONS.map(() => 0));
   const hotT = useRef(SECTIONS.map(() => 0));
@@ -62,18 +62,39 @@ function usePrism(canvas, spot, cards) {
     const layout = () => {
       const sp = spot.current.getBoundingClientRect();
       const narrow = innerWidth <= 980;
-      const size = Math.max(90, Math.min(sp.height * 0.92, sp.width * 0.62, 340));
-      const x = narrow ? sp.left + sp.width / 2 : sp.left + Math.min(sp.width * 0.42, size * 1.05);
-      const y = sp.top + sp.height * 0.5;
       const els = cards.current.filter(Boolean);
       const first = els[0] && els[0].getBoundingClientRect();
+      let size, x, y, source;
+      if (narrow) {
+        size = Math.max(90, Math.min(sp.height * 0.9, sp.width * 0.5, 230));
+        x = sp.left + sp.width / 2; y = sp.top + sp.height * 0.5;
+        source = { x: -40, y: y - size * 0.5 };
+      } else {
+        // Middle column: the prism sits level with the middle of the cards,
+        // and the white light comes in from the left, under the text.
+        const last = els[els.length - 1] && els[els.length - 1].getBoundingClientRect();
+        size = Math.max(110, Math.min(sp.width * 0.86, 250));
+        x = sp.left + sp.width / 2;
+        y = first && last ? (first.top + last.bottom) / 2 : sp.top + sp.height / 2;
+        // The light falls from the top left and passes just above each line
+        // of text, so it never runs through the title or the search.
+        const ex = x - size * 0.22, ey = y - size * 0.04;
+        let m = 0.18;
+        for (const el of left_.current.children) {
+          const r = el.getBoundingClientRect();
+          if (!r.height || r.right >= ex - 8) continue;
+          m = Math.max(m, (ey - (r.top - 18)) / (ex - r.right));
+        }
+        m = Math.min(m, 1.4);
+        source = { x: -60, y: ey - m * (ex + 60) };
+      }
       const targets = els.map((el, i) => {
         const r = el.getBoundingClientRect();
         if (narrow) return { x: first.left + first.width * ((i + 0.8) / (els.length + 0.6)), y: first.top + 1 };
-        return { x: r.left + 12, y: r.top + 34 };
+        return { x: r.left + 2, y: r.top + 28 };
       });
       for (let i = 0; i < hot.current.length; i++) hot.current[i] += (hotT.current[i] - hot.current[i]) * 0.1;
-      return { prism: { x, y, size }, targets, hot: hot.current, narrow, source: narrow ? { x: -40, y: y - size * 0.5 } : { x: -60, y: y - size * 0.32 } };
+      return { prism: { x, y, size }, targets, hot: hot.current, narrow, source };
     };
     function start() {
       if (scene || dead) return;
@@ -98,22 +119,22 @@ function Home() {
   const key = useSignal(siteKey);
   const owner = useSignal(keyOwner);
   const unlocked = !!(key && owner);
-  const canvas = useRef(null), spot = useRef(null), cards = useRef([]);
-  const { mode, setHot } = usePrism(canvas, spot, cards);
+  const canvas = useRef(null), spot = useRef(null), cards = useRef([]), left = useRef(null);
+  const { mode, setHot } = usePrism(canvas, spot, cards, left);
   return (
     <Shell search={false} bg="none">
       <canvas ref={canvas} class="prism-canvas" aria-hidden="true" />
-      <section class="hero wrap">
-        <div class="hero-left">
+      <section class="hero wrap wide">
+        <div class="hero-left" ref={left}>
           <p class="kicker reveal"><span aria-hidden="true" />Hypixel Bed Wars toolkit</p>
           <h1 class="hero-title reveal">Prism</h1>
           <p class="hero-sub reveal">Look anyone up, find who's behind a nick, and see every cosmetic and map.</p>
           <div class="hero-search reveal"><PlayerSearch big autofocus placeholder="Player name or UUID" /></div>
           <People />
-          <div class={`prism-spot ${mode}`} ref={spot} aria-hidden="true">
-            {mode === 'flat' && <span class="prism-flat"><Logo size={150} /></span>}
-            {mode === '3d' && <span class="spin-hint">Drag to spin</span>}
-          </div>
+        </div>
+        <div class={`prism-spot ${mode}`} ref={spot} aria-hidden="true">
+          {mode === 'flat' && <span class="prism-flat"><Logo size={130} /></span>}
+          {mode === '3d' && <span class="spin-hint">Drag to spin</span>}
         </div>
         <div class="hero-cards">
           {SECTIONS.map((s, si) => (

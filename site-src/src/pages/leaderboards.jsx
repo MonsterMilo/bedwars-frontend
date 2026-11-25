@@ -22,6 +22,7 @@ import { playerUrl } from '../lib/players.js';
 const PERIODS = [['lifetime', 'Lifetime'], ['monthly', 'Month'], ['weekly', 'Week'], ['daily', 'Day']];
 const STAT_ORDER = ['level', 'wins', 'finals'];
 
+// The top three on stepped pedestals (gold, silver, bronze), lit from above.
 function Podium({ leaders }) {
   const top = leaders.slice(0, 3);
   if (top.length < 3) return null;
@@ -31,11 +32,17 @@ function Podium({ leaders }) {
       {order.map(l => (
         <li key={l.uuid} class={`place p${l.rank}`}>
           <a href={playerUrl(l.uuid)} class="place-link">
-            <span class="place-rank">{l.rank}</span>
+            <span class="place-beam" aria-hidden="true" />
+            {l.rank === 1 && <span class="place-crown" aria-hidden="true"><ItemIcon id="ui:totem" /></span>}
             <img class="place-body" src={`https://mc-heads.net/body/${l.uuid}/${l.rank === 1 ? 150 : 120}`} alt="" loading="lazy" />
-            <span class="place-stand" aria-hidden="true" />
-            <span class="place-name">{l.star != null && <Star star={l.star} />}{l.rankInfo ? <PlayerName player={l.rankInfo} name={l.name || '?'} rank={false} /> : <span class="mono">{l.name || 'Unknown'}</span>}</span>
-            {l.value != null && <span class="place-value mono">{num(l.value)}</span>}
+            <span class="ped">
+              <span class="ped-top" aria-hidden="true" />
+              <span class="ped-front">
+                <span class="ped-rank" aria-label={`Rank ${l.rank}`}>{l.rank}</span>
+                <span class="place-name">{l.star != null && <Star star={l.star} />}{l.rankInfo ? <PlayerName player={l.rankInfo} name={l.name || '?'} rank={false} /> : <span class="mono">{l.name || 'Unknown'}</span>}</span>
+                {l.value != null && <span class="place-value mono">{num(l.value)}</span>}
+              </span>
+            </span>
           </a>
         </li>
       ))}

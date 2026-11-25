@@ -146,25 +146,51 @@ function periodBw(raw) {
   return Object.keys(out).length ? out : null;
 }
 
+// Four to a row, in labelled groups, so no stat is ever left alone on a row.
+const per = (v, games) => (games ? ((v || 0) / games).toFixed(2) : '—');
+const big = v => (v >= 1e6 ? `${(v / 1e6).toFixed(v >= 1e8 ? 0 : 2)}M` : num(v));
 function StatGrid({ s, period }) {
   const d = prefs.value.decimals;
   if (!s || !hasPlayed(s)) return <Empty icon="info">{period === 'lifetime' ? 'No games in this mode.' : 'No games recorded in this period.'}</Empty>;
   const games = s.games ?? ((s.wins || 0) + (s.losses || 0));
+  const res = [s.iron, s.gold, s.diamonds, s.emeralds].some(v => v !== null && v !== undefined);
   return (
-    <div class="stats">
-      <Stat big label="FKDR" icon="ui:sword" color={ratioColor(ratioValue(s.finals, s.finalDeaths))} value={ratio(s.finals, s.finalDeaths, d)} sub={`${num(s.finals)} finals · ${num(s.finalDeaths)} deaths`} />
-      <Stat big label="WLR" icon="block:gold" color={ratioColor(ratioValue(s.wins, s.losses) * 2)} value={ratio(s.wins, s.losses, d)} sub={`${num(s.wins)} wins · ${num(s.losses)} losses`} />
-      <Stat big label="BBLR" icon="ui:bed" value={ratio(s.beds, s.bedsLost, d)} sub={`${num(s.beds)} broken · ${num(s.bedsLost)} lost`} />
-      <Stat big label="KDR" icon="ui:iron_sword" value={ratio(s.kills, s.deaths, d)} sub={`${num(s.kills)} kills · ${num(s.deaths)} deaths`} />
-      <Stat label="Win rate" icon="ui:star" value={pct(s.wins, (s.wins || 0) + (s.losses || 0))} />
-      <Stat label="Games" icon="ui:clock" value={num(games)} />
-      {period === 'lifetime' && <Stat label="Winstreak" icon="ui:fireball" value={s.winstreak === null || s.winstreak === undefined ? 'Hidden' : num(s.winstreak)} />}
-      <Stat label="Finals per game" icon="ui:sword" value={games ? ((s.finals || 0) / games).toFixed(2) : '—'} />
-      <Stat label="Beds per game" icon="ui:bed" value={games ? ((s.beds || 0) / games).toFixed(2) : '—'} />
-      {s.iron !== null && <Stat label="Iron" icon="res:iron" value={num(s.iron)} />}
-      {s.gold !== null && <Stat label="Gold" icon="res:gold" value={num(s.gold)} />}
-      {s.diamonds !== null && <Stat label="Diamonds" icon="res:diamond" value={num(s.diamonds)} />}
-      {s.emeralds !== null && <Stat label="Emeralds" icon="res:emerald" value={num(s.emeralds)} />}
+    <div class="bw-stats">
+      <div class="stats stat-row">
+        <Stat big label="FKDR" icon="ui:sword" color={ratioColor(ratioValue(s.finals, s.finalDeaths))} value={ratio(s.finals, s.finalDeaths, d)} sub={`${num(s.finals)} finals · ${num(s.finalDeaths)} deaths`} />
+        <Stat big label="WLR" icon="block:gold" color={ratioColor(ratioValue(s.wins, s.losses) * 2)} value={ratio(s.wins, s.losses, d)} sub={`${num(s.wins)} wins · ${num(s.losses)} losses`} />
+        <Stat big label="BBLR" icon="ui:bed" value={ratio(s.beds, s.bedsLost, d)} sub={`${num(s.beds)} broken · ${num(s.bedsLost)} lost`} />
+        <Stat big label="KDR" icon="ui:iron_sword" value={ratio(s.kills, s.deaths, d)} sub={`${num(s.kills)} kills · ${num(s.deaths)} deaths`} />
+      </div>
+      <h3 class="stat-group">Games</h3>
+      <div class="stats stat-row">
+        <Stat label="Games" icon="ui:clock" value={num(games)} />
+        <Stat label="Win rate" icon="ui:star" value={pct(s.wins, (s.wins || 0) + (s.losses || 0))} />
+        {period === 'lifetime'
+          ? <Stat label="Winstreak" icon="ui:fireball" value={s.winstreak === null || s.winstreak === undefined ? 'Hidden' : num(s.winstreak)} />
+          : <Stat label="Wins" icon="ui:totem" value={num(s.wins)} />}
+        {s.items !== null && s.items !== undefined
+          ? <Stat label="Items bought" icon="cat:shop" value={big(s.items)} />
+          : <Stat label="Losses" icon="cat:final" value={num(s.losses)} />}
+      </div>
+      <h3 class="stat-group">Per game</h3>
+      <div class="stats stat-row">
+        <Stat label="Finals" icon="ui:sword" value={per(s.finals, games)} />
+        <Stat label="Beds" icon="ui:bed" value={per(s.beds, games)} />
+        <Stat label="Kills" icon="ui:iron_sword" value={per(s.kills, games)} />
+        <Stat label="Final deaths" icon="cat:final" value={per(s.finalDeaths, games)} />
+      </div>
+      {res && (
+        <>
+          <h3 class="stat-group">Resources collected</h3>
+          <div class="stats stat-row">
+            <Stat label="Iron" icon="res:iron" value={big(s.iron)} />
+            <Stat label="Gold" icon="res:gold" value={big(s.gold)} />
+            <Stat label="Diamonds" icon="res:diamond" value={big(s.diamonds)} />
+            <Stat label="Emeralds" icon="res:emerald" value={big(s.emeralds)} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

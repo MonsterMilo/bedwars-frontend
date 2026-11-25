@@ -52,7 +52,9 @@ function orbs() {
         o.x += o.vx * dt; o.y += o.vy * dt;
         const sp = Math.hypot(o.vx, o.vy);
         o.trail.push(o.x, o.y); if (o.trail.length > 16) o.trail.splice(0, 2);
-        if (!pulled && sp < 40) o.trail.length = Math.min(o.trail.length, 4);
+        // keep only the newest points when idle (dropping the oldest), so a
+        // streak never starts from somewhere the orb was long ago
+        if (!pulled && sp < 40 && o.trail.length > 4) o.trail.splice(0, o.trail.length - 4);
         if (P.on && d < o.s + 8) {
           const h = hueOf(o, t);
           rings.push({ x: o.x, y: o.y, t: 0, h, z: o.z });
@@ -60,13 +62,14 @@ function orbs() {
           Object.assign(o, make(W, H, Math.random, o.z), { y: H + 20 });
           continue;
         }
-        if (o.x < -40) o.x = W + 40; if (o.x > W + 40) o.x = -40;
+        if (o.x < -40) { o.x = W + 40; o.trail.length = 0; } if (o.x > W + 40) { o.x = -40; o.trail.length = 0; }
         if (o.y < -40) { o.y = H + 40; o.trail.length = 0; } if (o.y > H + 40) { o.y = -40; o.trail.length = 0; }
         const h = hueOf(o, t);
         const pulse = 0.82 + 0.18 * Math.sin(t * 0.005 + o.ph);
         const r = o.s * pulse;
         const a = (L ? 0.55 : 0.75) * (0.35 + o.z * 0.65);
         // streak while flying in
+        if (o.trail.length > 6 && Math.hypot(o.x - o.trail[0], o.y - o.trail[1]) > 200) o.trail.splice(0, o.trail.length - 2);
         if (o.trail.length > 6) {
           const tx = o.trail[0], ty = o.trail[1];
           const g = ctx.createLinearGradient(tx, ty, o.x, o.y);

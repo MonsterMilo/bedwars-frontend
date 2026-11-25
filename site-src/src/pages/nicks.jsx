@@ -1,5 +1,5 @@
 // Nick Finder: describe what you saw (cosmetics, numbers, the game) and
-// Aurora and TrickAPI list who it could be. A typed nick also checks the
+// Cosmetic searches list who it could be. A typed nick also checks the
 // denicks we already know.
 import '../styles/base.css';
 import '../styles/shell.css';
@@ -10,7 +10,7 @@ import { mount } from '../lib/mount.js';
 import { Shell } from '../ui/Shell.jsx';
 import { Icon } from '../ui/icons.jsx';
 import { Star } from '../ui/mc.jsx';
-import { Avatar, ErrorBox, Empty, SourceNote, HeadEmblem } from '../ui/common.jsx';
+import { Avatar, ErrorBox, Empty, ReachNote, reachOf, HeadEmblem } from '../ui/common.jsx';
 import { post } from '../lib/api.js';
 import { num, date, ago, duration } from '../lib/format.js';
 import { siteKey, keyOwner } from '../lib/key.js';
@@ -92,7 +92,7 @@ function PickedList({ picked, onPick }) {
 
 // ---------- game ----------
 // The ways to say which game it was. Each one ends up as a time window that
-// TrickAPI searches (who was online then with those cosmetics).
+// Cosmetic searches (who was online then with those cosmetics).
 const HOW = [
   { id: 'none', title: 'Skip', text: 'Search without the game. Expect more names.' },
   { id: 'time', title: 'Enter the time', text: 'When the game started (within a few minutes) and the mode.' }
@@ -147,10 +147,11 @@ function Results({ res, busySince }) {
     );
   }
   if (!res) return null;
-  const { game, gameNote, candidates = [], known = [], sources } = res;
-  const states = Object.values(sources || {});
-  const searched = states.length > 0;
-  const noSource = searched && !candidates.length && states.every(v => v !== 'ok');
+  const { game, gameNote, candidates = [], known = [] } = res;
+  const reach = reachOf(res);
+  const searched = !!reach && reach.ok + reach.busy + reach.failed > 0;
+  const noSource = searched && !candidates.length && reach.ok === 0;
+  const hits = c => (c.hits != null ? c.hits : (c.from || []).length);
   return (
     <section class="panel pad results reveal" aria-live="polite" aria-labelledby="res-h">
       <h2 class="panel-title" id="res-h"><Icon name="search" />Results</h2>
@@ -164,7 +165,7 @@ function Results({ res, busySince }) {
             {known.map((k, i) => (
               <li key={i}>
                 <a class="person" href={playerUrl(k.player)}><Avatar id={k.player} size={20} />{k.player}</a>
-                <span class="faint small">as {k.nick} · {k.source}{k.at ? ` · ${ago(k.at)}` : ''}</span>
+                <span class="faint small">as {k.nick}{k.at ? ` · ${ago(k.at)}` : ''}</span>
               </li>
             ))}
           </ul>
@@ -175,16 +176,15 @@ function Results({ res, busySince }) {
       {candidates.length ? (
         <div class="table-wrap">
           <table class="table">
-            <thead><tr><th>Player</th><th class="num">Star</th><th class="num">Finals</th><th class="num">Beds</th><th class="num">Match</th><th>Found by</th></tr></thead>
+            <thead><tr><th>Player</th><th class="num">Star</th><th class="num">Finals</th><th class="num">Beds</th><th class="num">Match</th></tr></thead>
             <tbody>
               {candidates.slice(0, 100).map(c => (
-                <tr key={c.name} class={c.from.length > 1 ? 'both' : ''}>
+                <tr key={c.name} class={hits(c) > 1 ? 'both' : ''} title={hits(c) > 1 ? 'Found by more than one search' : undefined}>
                   <td><span class="player-cell"><a href={playerUrl(c.uuid || c.name)}><Avatar id={c.uuid || c.name} size={22} /><span class="mono">{c.name}</span></a></span></td>
                   <td class="num">{c.star != null ? <Star star={c.star} /> : '—'}</td>
                   <td class="num">{num(c.finals)}</td>
                   <td class="num">{num(c.beds)}</td>
                   <td class="num">{c.match != null ? `${Math.round(c.match)}%` : '—'}</td>
-                  <td><span class="row">{c.from.map(f => <span key={f} class="chip">{f}</span>)}</span></td>
                 </tr>
               ))}
             </tbody>
@@ -194,7 +194,7 @@ function Results({ res, busySince }) {
         ? <p class="notice"><Icon name="alert" /><span>No search source answered. Try again in a minute.</span></p>
         : searched ? <Empty icon="mask">No one matched. Try fewer cosmetics, or add the game.</Empty>
           : <Empty icon="mask">{known.length ? 'Add cosmetics or numbers to search for more.' : 'No denick known for this nick yet. Add cosmetics or numbers to search.'}</Empty>}
-      <SourceNote sources={sources} />
+      <ReachNote res={res} />
     </section>
   );
 }

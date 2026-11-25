@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://mc-heads.net https://textures.minecraft.net https://visage.surgeplay.com; connect-src 'self' https://bedwars-backend.onrender.com https://jaayminecraft.github.io; media-src 'self' data: blob: https://resources.download.minecraft.net; worker-src 'self' blob:; object-src 'none'; frame-src 'self'; base-uri 'self'; form-action 'self'">
 <script>
   // Private page: without a key, go to the unlock page and come back after.
   try { if (!localStorage.getItem("bedwarsAdminKey")) location.replace("unlock.html?next=" + encodeURIComponent(location.pathname.split("/").pop() + location.search + location.hash)); } catch (e) {}

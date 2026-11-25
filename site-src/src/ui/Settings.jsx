@@ -3,6 +3,7 @@ import { Dialog } from './Dialog.jsx';
 import { prefs, setPref, resetPrefs, ACCENTS, fxPage } from '../lib/prefs.js';
 import { useSignal } from '../lib/signal.js';
 import { MODES } from '../lib/bedwars.js';
+import { Select, Switch, Range } from './controls.jsx';
 
 function Seg({ label, value, options, onChange }) {
   return (
@@ -38,65 +39,63 @@ export function Settings({ open, onClose }) {
                   <span class="swatch-label">{a.label}</span>
                 </button>
               ))}
-              <label class={`swatch ${p.accent === 'custom' ? 'on' : ''}`} title="Custom colour">
-                <input type="color" value={p.custom} aria-label="Custom accent colour"
-                  onInput={e => { setPref('custom', e.currentTarget.value); setPref('accent', 'custom'); }} />
+              <label class={`swatch custom ${p.accent === 'custom' ? 'on' : ''}`} title="Custom colour">
+                <span class="swatch-fill custom-fill" style={{ '--c': p.custom }}>
+                  <input type="color" value={p.custom} aria-label="Custom accent colour"
+                    onInput={e => { setPref('custom', e.currentTarget.value); setPref('accent', 'custom'); }} />
+                </span>
                 <span class="swatch-label">Custom</span>
               </label>
             </div>
           </div>
-          <label class="check"><input type="checkbox" checked={p.effects} onChange={e => setPref('effects', e.currentTarget.checked)} /> Light effects behind the page</label>
+          <Switch checked={p.effects} onChange={v => setPref('effects', v)}>Moving background</Switch>
         </section>
 
         {fx && (
           <section class="settings-group" aria-labelledby="sg-sound">
             <h3 id="sg-sound">Sound and effects</h3>
-            {canSound && <label class="check"><input type="checkbox" checked={p.sound} onChange={e => setPref('sound', e.currentTarget.checked)} /> Sounds</label>}
+            {canSound && <Switch checked={p.sound} onChange={v => setPref('sound', v)}>Sounds</Switch>}
             {canSound && (
-              <label class="field">
-                <span>Volume <output class="mono">{p.volume}%</output></span>
-                <input type="range" min="0" max="100" step="5" value={p.volume} disabled={!p.sound} onInput={e => setPref('volume', Number(e.currentTarget.value))} />
-              </label>
+              <div class="field">
+                <span id="vol-l">Volume <output class="mono">{p.volume}%</output></span>
+                <Range label="Volume" min={0} max={100} step={5} value={p.volume} disabled={!p.sound} onChange={v => setPref('volume', v)} />
+              </div>
             )}
-            {canSound && <label class="check"><input type="checkbox" checked={p.music} disabled={!p.sound} onChange={e => setPref('music', e.currentTarget.checked)} /> Music</label>}
-            <label class="check"><input type="checkbox" checked={p.fx} onChange={e => setPref('fx', e.currentTarget.checked)} /> Click effects and easter eggs</label>
+            {canSound && <Switch checked={p.music} disabled={!p.sound} onChange={v => setPref('music', v)}>Music</Switch>}
+            <Switch checked={p.fx} onChange={v => setPref('fx', v)}>Click effects and easter eggs</Switch>
           </section>
         )}
 
         <section class="settings-group" aria-labelledby="sg-read">
           <h3 id="sg-read">Reading</h3>
-          <label class="field">
+          <div class="field">
             <span>Text size <output class="mono">{p.textScale}%</output></span>
-            <input type="range" min="85" max="140" step="5" value={p.textScale} onInput={e => setPref('textScale', Number(e.currentTarget.value))} />
-          </label>
+            <Range label="Text size" min={85} max={140} step={5} value={p.textScale} onChange={v => setPref('textScale', v)} />
+          </div>
           <Seg label="Font" value={p.font} options={[['manrope', 'Manrope'], ['system', 'System'], ['hyperlegible', 'Hyperlegible']]} onChange={v => setPref('font', v)} />
           <Seg label="Spacing" value={p.density} options={[['comfy', 'Roomy'], ['compact', 'Compact']]} onChange={v => setPref('density', v)} />
           <Seg label="Contrast" value={p.contrast} options={[['normal', 'Normal'], ['high', 'High']]} onChange={v => setPref('contrast', v)} />
           <Seg label="Motion" value={p.motion} options={[['system', 'Match device'], ['reduce', 'Less'], ['full', 'Full']]} onChange={v => setPref('motion', v)} />
-          <label class="check"><input type="checkbox" checked={p.underline} onChange={e => setPref('underline', e.currentTarget.checked)} /> Underline links</label>
+          <Switch checked={p.underline} onChange={v => setPref('underline', v)}>Underline links</Switch>
         </section>
 
         <section class="settings-group" aria-labelledby="sg-num">
           <h3 id="sg-num">Numbers and time</h3>
           <Seg label="Big numbers" value={p.numbers} options={[['full', '12,345'], ['short', '12.3k']]} onChange={v => setPref('numbers', v)} />
           <Seg label="Ratio decimals" value={String(p.decimals)} options={[['1', '1.2'], ['2', '1.23'], ['3', '1.234']]} onChange={v => setPref('decimals', Number(v))} />
-          <label class="field">
+          <div class="field">
             <span>Time zone</span>
-            <select class="select" value={p.timeZone} onChange={e => setPref('timeZone', e.currentTarget.value)}>
-              {ZONES.map(([v, t]) => <option key={v} value={v}>{t}</option>)}
-            </select>
-          </label>
+            <Select label="Time zone" value={p.timeZone} options={ZONES} onChange={v => setPref('timeZone', v)} />
+          </div>
           <Seg label="Clock" value={p.hour12 ? '12' : '24'} options={[['12', '1:30 PM'], ['24', '13:30']]} onChange={v => setPref('hour12', v === '12')} />
         </section>
 
         <section class="settings-group" aria-labelledby="sg-def">
           <h3 id="sg-def">Defaults</h3>
-          <label class="field">
+          <div class="field">
             <span>Mode shown first on profiles</span>
-            <select class="select" value={p.mode} onChange={e => setPref('mode', e.currentTarget.value)}>
-              {MODES.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
-            </select>
-          </label>
+            <Select label="Mode shown first" value={p.mode} options={MODES.map(m => [m.id, m.label])} onChange={v => setPref('mode', v)} />
+          </div>
           <Seg label="Leaderboard period" value={p.lbPeriod} options={[['lifetime', 'Lifetime'], ['weekly', 'Weekly'], ['daily', 'Daily']]} onChange={v => setPref('lbPeriod', v)} />
         </section>
         <button class="btn" type="button" onClick={resetPrefs}>Reset all settings</button>

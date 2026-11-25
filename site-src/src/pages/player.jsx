@@ -449,7 +449,7 @@ function Landing() {
 function PlayerPage() {
   const [name, setName] = useParam('name', '');
   const clean = String(name || '').trim();
-  return <Shell>{clean ? <Profile key={clean.toLowerCase()} name={clean} setName={setName} /> : <Landing />}</Shell>;
+  return <Shell bg="player">{clean ? <Profile key={clean.toLowerCase()} name={clean} setName={setName} /> : <Landing />}</Shell>;
 }
 
 // Also accept player.html#Name and player.html?Name

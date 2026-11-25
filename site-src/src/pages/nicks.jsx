@@ -10,7 +10,7 @@ import { mount } from '../lib/mount.js';
 import { Shell } from '../ui/Shell.jsx';
 import { Icon } from '../ui/icons.jsx';
 import { Star } from '../ui/mc.jsx';
-import { Tabs, Avatar, ErrorBox, Empty, SourceNote, HeadArt } from '../ui/common.jsx';
+import { Avatar, ErrorBox, Empty, SourceNote, HeadArt } from '../ui/common.jsx';
 import { get, post, enc, ApiError } from '../lib/api.js';
 import { num, date, ago, duration } from '../lib/format.js';
 import { siteKey, keyOwner, keyDialog } from '../lib/key.js';
@@ -18,6 +18,7 @@ import { useSignal } from '../lib/signal.js';
 import { playerUrl } from '../lib/players.js';
 import COSMETICS from '../data/cosmetics.json';
 import { CosmeticThumb, ItemIcon, killLine } from '../ui/items.jsx';
+import { Select, NumberField, DateTimeField } from '../ui/controls.jsx';
 
 const NAME = /^[A-Za-z0-9_]{1,16}$/;
 const CATS = Object.entries(COSMETICS).filter(([cat]) => cat !== 'spray');
@@ -74,7 +75,7 @@ function CosmeticPicker({ picked, onPick }) {
 
 function PickedList({ picked, onPick }) {
   const rows = CATS.filter(([, g]) => picked[g.field]).map(([cat, g]) => ({ cat, g, it: g.items.find(i => i.id === picked[g.field]) }));
-  if (!rows.length) return <p class="faint small">No cosmetics picked yet.</p>;
+  if (!rows.length) return <p class="faint small picked-empty">None yet. Pick them on the left.</p>;
   return (
     <ul class="picked">
       {rows.map(({ cat, g, it }) => (
@@ -105,7 +106,7 @@ function RecentGames({ value, onChange }) {
   return (
     <div class="stack">
       <div class="input-row">
-        <input class="input" value={who} onInput={e => setWho(e.currentTarget.value)} placeholder="A player who was in the game" aria-label="Player in the game" maxLength={16} spellcheck={false} autocomplete="off"
+        <input class="input" value={who} onInput={e => setWho(e.currentTarget.value)} placeholder="Your name, or a teammate's" aria-label="A player who was in the game" maxLength={16} spellcheck={false} autocomplete="off"
           onKeyDown={e => { if (e.key === 'Enter') load(e); }} />
         <button type="button" class="btn" onClick={load} disabled={state.loading}>{state.loading ? 'Loading…' : 'Load games'}</button>
       </div>
@@ -130,38 +131,51 @@ function RecentGames({ value, onChange }) {
   );
 }
 
-const localInput = ms => { const d = new Date(ms - new Date(ms).getTimezoneOffset() * 60000); return d.toISOString().slice(0, 16); };
+// The ways to say which game it was. Each one ends up as a time window that
+// TrickAPI searches (who was online then with those cosmetics).
+const HOW = [
+  { id: 'none', title: 'Skip', text: 'Search without the game. Expect more names.' },
+  { id: 'recent', title: 'Pick from recent games', text: 'Type someone who was in that game (you, or a teammate). Pick the game from their Hypixel history.', key: true },
+  { id: 'time', title: 'Enter the time', text: 'When the game started (within a few minutes) and the mode.' },
+  { id: 'replay', title: 'Paste a replay ID', text: 'The ID of that game\'s Hypixel replay. Works when Bedlify recorded it.' }
+];
 
 function GamePicker({ how, setHow, game, setGame, unlocked }) {
   return (
     <div class="stack">
-      <Tabs label="How to find the game" value={how} onChange={v => { setHow(v); setGame({}); }}
-        options={[['none', 'Skip'], ['replay', 'Replay ID'], ['recent', 'Recent games'], ['time', 'Time']]} />
-      {how === 'none' && <p class="faint small">Without a game, only Aurora searches{unlocked ? ' and TrickAPI checks everyone it has seen' : ''}. Adding the game finds more.</p>}
+      <div class="how-list" role="radiogroup" aria-label="How to find the game">
+        {HOW.map(h => {
+          const on = how === h.id;
+          return (
+            <button key={h.id} type="button" role="radio" aria-checked={on ? 'true' : 'false'} class={`how ${on ? 'on' : ''}`} onClick={() => { if (!on) { setHow(h.id); setGame({}); } }}>
+              <span class="how-dot" aria-hidden="true" />
+              <span class="how-text"><strong>{h.title}{h.key && !unlocked && <Icon name="lock" class="how-lock" label="Needs a key" />}</strong><small>{h.text}</small></span>
+            </button>
+          );
+        })}
+      </div>
       {how === 'replay' && (
         <label class="field">
           <span>Replay ID or link</span>
-          <input class="input mono" value={game.replayId || ''} onInput={e => setGame({ replayId: e.currentTarget.value.trim() })} placeholder="e.g. 3f2c9a1e-…" spellcheck={false} autocomplete="off" maxLength={200} />
-          <small>Its time and mode come from Bedlify's recorded games.</small>
+          <input class="input" value={game.replayId || ''} onInput={e => setGame({ replayId: e.currentTarget.value.trim() })} placeholder="3f2c9a1e-7b4d-4c1a-9e2f-…" spellcheck={false} autocomplete="off" maxLength={200} />
+          <small>We look up when it was played and the mode in Bedlify's recorded games.</small>
         </label>
       )}
       {how === 'recent' && (unlocked
         ? <RecentGames value={game} onChange={setGame} />
-        : <p class="notice"><Icon name="lock" /><span>Recent games need a key. <button type="button" class="linkish" onClick={() => { keyDialog.value = true; }}>Enter key</button> or use the time instead.</span></p>)}
+        : <p class="notice"><Icon name="lock" /><span>Recent games use our Hypixel key, so they need a key. <button type="button" class="linkish" onClick={() => { keyDialog.value = true; }}>Enter key</button> or enter the time instead.</span></p>)}
       {how === 'time' && (
-        <div class="grid-2">
-          <label class="field">
-            <span>When the game started</span>
-            <input class="input" type="datetime-local" max={localInput(Date.now())} value={game.at ? localInput(game.at) : ''} onInput={e => setGame({ ...game, at: e.currentTarget.value ? new Date(e.currentTarget.value).getTime() : null })} />
-            <small>Your device's time. Within a few minutes is fine.</small>
-          </label>
-          <label class="field">
+        <div class="stack">
+          <div class="field">
+            <span>When it started</span>
+            <DateTimeField label="When the game started" max={Date.now() + 5 * 60000} min={Date.now() - 365 * 86400000} value={game.at || null} onChange={v => setGame({ ...game, at: v })} />
+            <small>Your device's time.</small>
+          </div>
+          <div class="field">
             <span>Mode</span>
-            <select class="select" value={game.mode || ''} onChange={e => setGame({ ...game, mode: e.currentTarget.value || null })}>
-              <option value="">Any</option>
-              {['1s', '2s', '3s', '4s', '4v4'].map(m => <option key={m} value={m}>{MODE_LABELS[m]}</option>)}
-            </select>
-          </label>
+            <Select label="Mode" value={game.mode || ''} onChange={v => setGame({ ...game, mode: v || null })}
+              options={[['', 'Any mode'], ...['1s', '2s', '3s', '4s', '4v4'].map(m => [m, MODE_LABELS[m]])]} />
+          </div>
         </div>
       )}
     </div>
@@ -180,7 +194,7 @@ function Results({ res, busySince }) {
     const s = Math.floor((Date.now() - busySince) / 1000);
     return (
       <section class="panel pad results" aria-live="polite" aria-busy="true">
-        <div class="searching"><span class="spinner" aria-hidden="true" /><div><strong>Searching…</strong><p class="faint small">{s}s. TrickAPI can take up to 40 seconds when it's busy.</p></div></div>
+        <div class="searching"><span class="spinner" aria-hidden="true" /><div><strong>Searching…</strong><p class="faint small">{s}s. This can take up to 40 seconds.</p></div></div>
       </section>
     );
   }
@@ -278,46 +292,52 @@ function NickFinder() {
   function clear() { setNick(''); setFinals(''); setBeds(''); setPicked({}); setGame({}); setHow('none'); setRes(null); setError(null); }
 
   return (
-    <Shell>
+    <Shell bg="nicks">
       <div class="page wrap">
         <header class="page-head">
           <div class="grow">
             <p class="eyebrow"><ItemIcon id="ui:eye" />Nick Finder</p>
             <h1>Who's behind the nick?</h1>
-            <p>Pick what you saw them use. Adding the game narrows it down a lot.</p>
+            <p>Someone in your game is nicked. Tell us what you saw them use, and we'll list the real players who match.</p>
           </div>
           <HeadArt items={['ui:nametag', 'ui:eye', 'block:obsidian']} />
         </header>
+        <ol class="how-steps" aria-label="How it works">
+          <li><span class="step-n">1</span><div><strong>Pick their cosmetics</strong><p>Kill effect, bed destroy, trail, glyph... Every one you add narrows it down.</p></div></li>
+          <li><span class="step-n">2</span><div><strong>Add what you know</strong><p>The nick they're using, plus their final kills and beds if you saw them.</p></div></li>
+          <li><span class="step-n">3</span><div><strong>Say which game</strong><p>Optional, but it helps most: we then only check players who were online then.</p></div></li>
+        </ol>
 
         <form class="nick-form" onSubmit={submit} noValidate>
           <div class="nick-main">
             <section class="panel pad" aria-labelledby="cos-h">
-              <h2 class="panel-title" id="cos-h"><Icon name="palette" />Cosmetics they used</h2>
+              <h2 class="panel-title" id="cos-h"><span class="step-n small">1</span>Cosmetics they used</h2>
               <CosmeticPicker picked={picked} onPick={onPick} />
             </section>
           </div>
           <aside class="nick-side">
             <section class="panel pad stack" aria-labelledby="who-h">
-              <h2 class="panel-title" id="who-h"><Icon name="user" />What you know</h2>
+              <h2 class="panel-title" id="who-h"><span class="step-n small">2</span>What you know</h2>
               <label class="field">
                 <span>Nick</span>
-                <input class="input mono" value={nick} onInput={e => setNick(e.currentTarget.value)} placeholder="Optional" maxLength={16} spellcheck={false} autocomplete="off" aria-invalid={nickOk ? undefined : 'true'} />
+                <input class="input" value={nick} onInput={e => setNick(e.currentTarget.value)} placeholder="The name they're using" maxLength={16} spellcheck={false} autocomplete="off" aria-invalid={nickOk ? undefined : 'true'} />
                 {!nickOk && <small class="bad-text">1 to 16 letters, numbers or _</small>}
               </label>
               <div class="grid-2">
-                <label class="field"><span>Final kills</span><input class="input mono" type="number" min="0" inputMode="numeric" value={finals} onInput={e => setFinals(e.currentTarget.value)} placeholder="Optional" /></label>
-                <label class="field"><span>Beds broken</span><input class="input mono" type="number" min="0" inputMode="numeric" value={beds} onInput={e => setBeds(e.currentTarget.value)} placeholder="Optional" /></label>
+                <div class="field"><span>Final kills</span><NumberField label="Final kills" value={finals} onChange={setFinals} placeholder="—" /></div>
+                <div class="field"><span>Beds broken</span><NumberField label="Beds broken" value={beds} onChange={setBeds} placeholder="—" /></div>
               </div>
-              <div class="field"><span>Picked cosmetics</span><PickedList picked={picked} onPick={onPick} /></div>
+              <div class="field"><span>Picked cosmetics{count > 0 && <b class="count-pill">{count}</b>}</span><PickedList picked={picked} onPick={onPick} /></div>
             </section>
             <section class="panel pad" aria-labelledby="game-h">
-              <h2 class="panel-title" id="game-h"><Icon name="film" />The game</h2>
+              <h2 class="panel-title" id="game-h"><span class="step-n small">3</span>Which game<span class="grow" /><span class="opt-tag">Optional</span></h2>
               <GamePicker how={how} setHow={setHow} game={game} setGame={setGame} unlocked={unlocked} />
             </section>
             <div class="row nick-go">
               <button class="btn primary grow" type="submit" disabled={!canSearch}><Icon name="search" />{busySince ? 'Searching…' : 'Find'}</button>
               <button class="btn" type="button" onClick={clear}>Clear</button>
             </div>
+            {!canSearch && !busySince && <p class="faint small">Pick a cosmetic, or type the nick or numbers, to search.</p>}
             {!unlocked && <p class="faint small">Without a key you get 4 searches a minute.</p>}
           </aside>
         </form>

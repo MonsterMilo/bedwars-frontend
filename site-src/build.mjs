@@ -28,7 +28,7 @@ const options = {
   target: ['es2020', 'chrome100', 'firefox100', 'safari15'],
   jsx: 'automatic',
   jsxImportSource: 'preact',
-  loader: { '.png': 'file', '.svg': 'file', '.woff2': 'file' },
+  loader: { '.png': 'file', '.webp': 'file', '.svg': 'file', '.woff2': 'file' },
   metafile: true,
   legalComments: 'none',
   logLevel: 'info'

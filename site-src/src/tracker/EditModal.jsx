@@ -10,6 +10,7 @@ import { sweats, updateSweat } from './store.js';
 import { ROSTER_KEYS, canEdit, indexOf } from './model.js';
 import { RosterPicker, FlagPicker, TierBadge, whole } from './ui.jsx';
 import { Notes } from './Notes.jsx';
+import { NumberField } from '../ui/controls.jsx';
 
 const FIELDS = [['star', 'Stars', 1], ['fkdr', 'FKDR', 0.01], ['wlr', 'WLR', 0.01], ['bblr', 'BBLR', 0.01], ['kdr', 'KDR', 0.01]];
 
@@ -51,7 +52,7 @@ export function EditModal({ id, onClose }) {
             {FIELDS.map(([k, label, step]) => (
               <div class="field" key={k}>
                 <label for={`ed-${k}`}>{label}</label>
-                <input id={`ed-${k}`} class="input mono" type="number" min="0" step={step} value={form[k]} onInput={e => setForm({ ...form, [k]: e.currentTarget.value })} />
+                <NumberField id={`ed-${k}`} decimals={String(step).includes('.')} step={Number(step) || 1} max={1e9} value={form[k]} onChange={v => setForm({ ...form, [k]: v })} />
               </div>
             ))}
             <div class="edit-index"><span class="faint small">Index</span><b class="mono">{whole(preview)}</b><TierBadge index={preview} /></div>

@@ -156,9 +156,9 @@ async function poll() {
     const quiet = Date.now() - localWriteAt < 20_000;
     if (fresh.length && !quiet) {
       play('arrive');
-      toast(fresh.length === 1 ? `New sweat: ${brief(fresh[0])}` : `${fresh.length} new sweats: ${fresh.slice(0, 3).map(brief).join(', ')}${fresh.length > 3 ? '…' : ''}`, 6000);
+      toast(fresh.length === 1 ? `New player: ${brief(fresh[0])}` : `${fresh.length} new players: ${fresh.slice(0, 3).map(brief).join(', ')}${fresh.length > 3 ? '…' : ''}`, 6000);
     } else if (edits.length && !quiet) {
-      toast(edits.length === 1 ? editBrief(edits[0].before, edits[0].after) : `${edits.length} sweats were just updated`, 5000);
+      toast(edits.length === 1 ? editBrief(edits[0].before, edits[0].after) : `${edits.length} players were just updated`, 5000);
     }
     flash(new Set([...fresh, ...edits.map(e => e.after)].map(s => s._id)));
   } catch { /* try again next time */ } finally { busy = false; }

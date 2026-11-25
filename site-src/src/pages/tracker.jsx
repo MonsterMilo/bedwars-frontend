@@ -41,10 +41,10 @@ const oldHash = OLD_HASH[location.hash.slice(1)];
 if (oldHash) history.replaceState(null, '', `${location.pathname}${location.search}#${oldHash}`);
 setChatNames(Object.entries(ROSTER).filter(([k]) => k !== 'key').map(([, r]) => r.label));
 
-const SECTIONS = [['lookup', 'Sweat Lookup', 'search'], ['sweats', 'Defeated Sweats', 'trophy'], ['denick', 'Denicking', 'mask'], ['activity', 'Activity', 'history']];
+const SECTIONS = [['lookup', 'Player Lookup', 'search'], ['sweats', 'Defeated Players', 'trophy'], ['denick', 'Denicking', 'mask'], ['activity', 'Activity', 'history']];
 const SECTION_TEXT = {
-  lookup: { kicker: 'Lookup', title: 'Sweat Lookup', sub: 'Look a player up and log the win.', icon: 'search' },
-  sweats: { kicker: 'Defeated', title: 'Defeated Sweats', sub: 'Everyone we\'ve beaten.', icon: 'trophy' },
+  lookup: { kicker: 'Lookup', title: 'Player Lookup', sub: 'Look a player up and log the win.', icon: 'search' },
+  sweats: { kicker: 'Defeated', title: 'Defeated Players', sub: 'Everyone we\'ve beaten.', icon: 'trophy' },
   denick: { kicker: 'Unmask', title: 'Denicking', sub: 'Who\'s behind a nick, or every nick a player used.', icon: 'mask' },
   activity: { kicker: 'Log', title: 'Activity', sub: 'Every add, edit and removal.', icon: 'history' }
 };
@@ -66,7 +66,7 @@ function SectionBar({ sections }) {
   );
 }
 const HIDDEN = 'trackerHiddenSections';
-const SHORTCUTS = [['/', 'Search sweats'], ['K', 'Sweat Lookup'], ['G', 'Grid view'], ['T', 'Table view'], ['L', 'Leaderboard view'], ['M', 'Sound on or off'], ['?', 'Show this list'], ['Esc', 'Close a popup']];
+const SHORTCUTS = [['/', 'Search players'], ['K', 'Player Lookup'], ['G', 'Grid view'], ['T', 'Table view'], ['L', 'Leaderboard view'], ['M', 'Sound on or off'], ['?', 'Show this list'], ['Esc', 'Close a popup']];
 
 function typing(e) {
   const t = e.target;
@@ -135,9 +135,9 @@ function Tracker() {
     <Shell bg="tracker">
       <div class="page wrap tracker">
         <header class="t-hero">
-          <p class="t-kicker"><span aria-hidden="true" />Prism · Sweat Tracker<span aria-hidden="true" /></p>
-          <h1 ref={title} class="t-title" data-title-stunt>Sweat Tracker</h1>
-          <p class="t-sub">{total > 0 ? `${total.toLocaleString()} sweats beaten so far` : 'Every sweat we beat, in one place'} · <button type="button" class="linkish" onClick={() => setHelp(true)}>Shortcuts</button></p>
+          <p class="t-kicker"><span aria-hidden="true" />Prism · Player Tracker<span aria-hidden="true" /></p>
+          <h1 ref={title} class="t-title" data-title-stunt>Player Tracker</h1>
+          <p class="t-sub">{total > 0 ? `${total.toLocaleString()} players beaten so far` : 'Every player we beat, in one place'} · <button type="button" class="linkish" onClick={() => setHelp(true)}>Shortcuts</button></p>
         </header>
 
         {!hidden.includes('sweats') && <Sotd onOpen={open} />}
@@ -174,7 +174,7 @@ function Tracker() {
           </span>
         </footer>
       </div>
-      <BottomNav sections={sections.filter(([id]) => !hidden.includes(id)).map(([id, label, icon]) => [id, label === 'Denicking' ? 'Denick' : label === 'Sweat Lookup' ? 'Lookup' : label === 'Defeated Sweats' ? 'Sweats' : label, icon])} />
+      <BottomNav sections={sections.filter(([id]) => !hidden.includes(id)).map(([id, label, icon]) => [id, label === 'Denicking' ? 'Denick' : label === 'Player Lookup' ? 'Lookup' : label === 'Defeated Players' ? 'Players' : label, icon])} />
       <PullRefresh onRefresh={refresh} />
 
       <PlayerModal target={player} onClose={close} onEdit={s => { setEditId(s._id); }} />

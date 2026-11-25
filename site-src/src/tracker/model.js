@@ -24,7 +24,7 @@ export const beatenBy = s => ROSTER_KEYS.filter(k => s && s[k]);
 export const TIERS = [
   { max: 5e3, name: 'Casual', key: 't1' },
   { max: 5e4, name: 'Tryhard', key: 't2' },
-  { max: 5e5, name: 'Sweat', key: 't3' },
+  { max: 5e5, name: 'Pro', key: 't3' },
   { max: 5e6, name: 'Demon', key: 't4' },
   { max: Infinity, name: 'Final Boss', key: 't5' }
 ];

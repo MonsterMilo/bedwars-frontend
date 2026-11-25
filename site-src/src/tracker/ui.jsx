@@ -59,7 +59,7 @@ export function Gauge({ index }) {
   const fill = gaugeOf(index);
   const t = tierOf(index);
   return (
-    <div class={`gauge ${t.key}`} role="meter" aria-label="Sweat index" aria-valuemin={0} aria-valuemax={7} aria-valuenow={Math.log10(Math.max(1, index)).toFixed(2)} aria-valuetext={`${Math.round(index).toLocaleString()} (${t.name})`}>
+    <div class={`gauge ${t.key}`} role="meter" aria-label="Player index" aria-valuemin={0} aria-valuemax={7} aria-valuenow={Math.log10(Math.max(1, index)).toFixed(2)} aria-valuetext={`${Math.round(index).toLocaleString()} (${t.name})`}>
       <div class="gauge-track"><span class="gauge-fill" style={{ width: `${fill * 100}%`, '--f': fill }} /></div>
       <div class="gauge-marks" aria-hidden="true">
         {TIERS.slice(0, -1).map(x => <span key={x.key} style={{ left: `${Math.log10(x.max) / 7 * 100}%` }} />)}

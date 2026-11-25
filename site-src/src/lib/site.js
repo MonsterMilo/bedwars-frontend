@@ -13,7 +13,7 @@ export const SECTIONS = [
   { id: 'private', hue: 'var(--accent-3)', title: 'Private', blurb: 'Needs a key', locked: true, pages: [
     { href: 'tracker.html', item: 'ui:book', label: 'Tracker', icon: 'list', desc: 'Our tracked players, notes and denicks.' },
     { href: 'recordings.html', item: 'block:jukebox', label: 'Recordings', icon: 'film', desc: 'Recorded games, clips and the Replay Theater.' },
-    { href: 'hall-of-fame.html', item: 'ui:totem', label: 'Hall of Fame', icon: 'crown', desc: 'The 20 biggest sweats we beat, in 3D.' }
+    { href: 'hall-of-fame.html', item: 'ui:totem', label: 'Hall of Fame', icon: 'crown', desc: 'The 20 best players we beat, in 3D.' }
   ] }
 ];
 export const ALL_PAGES = SECTIONS.flatMap(s => s.pages.map(p => ({ ...p, section: s.id, locked: !!s.locked })));

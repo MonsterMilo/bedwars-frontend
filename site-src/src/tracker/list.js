@@ -193,7 +193,7 @@ export function downloadCsv(list) {
   const blob = new Blob([`﻿${toCsv(list)}`], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `bedwars-sweats-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `bedwars-players-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }

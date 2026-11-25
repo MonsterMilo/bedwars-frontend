@@ -99,7 +99,7 @@ const ease = (t) => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
 
 // Same index tiers as the tracker's sweat meter.
-const TIERS = [{ min: 5e6, name: "Final Boss" }, { min: 5e5, name: "Demon" }, { min: 5e4, name: "Sweat" }, { min: 5e3, name: "Tryhard" }, { min: -1, name: "Casual" }];
+const TIERS = [{ min: 5e6, name: "Final Boss" }, { min: 5e5, name: "Demon" }, { min: 5e4, name: "Pro" }, { min: 5e3, name: "Tryhard" }, { min: -1, name: "Casual" }];
 const tierOf = (i) => TIERS.find(t => i >= t.min).name;
 
 // ---------- Prestige tag (same ladder as the site) ----------
@@ -398,7 +398,7 @@ function drawDedication(g, w, h, H) {
   bronzeBg(g, w, h, H); panelFrame(g, w, h, H);
   g.textAlign = "center"; g.fillStyle = C(H, "#e2b866"); g.font = `700 56px Cinzel, Georgia, serif`; g.fillText("THE HALL", w / 2, 128);
   g.fillStyle = C(H, "#fbf4e4"); g.font = `600 42px 'Barlow Condensed', sans-serif`;
-  [`${fmtNum(META.total)} sweats beaten`, `${fmtNum(META.records)} games logged`, `Ranked by index:`, `FKDR² × stars`].forEach((t, i) => g.fillText(t, w / 2, 222 + i * 68));
+  [`${fmtNum(META.total)} players beaten`, `${fmtNum(META.records)} games logged`, `Ranked by index:`, `FKDR² × stars`].forEach((t, i) => g.fillText(t, w / 2, 222 + i * 68));
 }
 function drawBanner(d) {
   return (g, w, h, H) => {
@@ -1691,7 +1691,7 @@ const card = $("#card"); let cardEx = null, cardHideT = 0;
 function cardHtml(ex) {
   if (!ex.d) {
     return `<div class="c-body"><div class="c-top"><span class="c-rank">THE HALL</span></div><div class="c-name">Prism Hall of Fame</div>
-      <div class="c-index"><b>${fmtNum(META.total)}</b><span>sweats beaten so far</span></div>
+      <div class="c-index"><b>${fmtNum(META.total)}</b><span>players beaten so far</span></div>
       <div class="c-meta">Ranked by <b>FKDR² × stars</b>. Cheaters in red. Top 3 under the prism.</div></div>`;
   }
   const d = ex.d;
@@ -1985,9 +1985,9 @@ async function buildHall() {
   setupReflection();
   captureEnvironment();
 }
-if (META.total > 0) $("#gateSub").innerHTML = `${META.total > 20 ? "The <b>20 biggest sweats</b>" : `All <b>${fmtNum(META.total)} ${META.total === 1 ? "sweat" : "sweats"}</b>`} we've beaten, ranked by index. Walk the hall freely and meet them.`;
+if (META.total > 0) $("#gateSub").innerHTML = `${META.total > 20 ? "The <b>20 best players</b>" : `All <b>${fmtNum(META.total)} ${META.total === 1 ? "player" : "players"}</b>`} we've beaten, ranked by index. Walk the hall freely and meet them.`;
 if (NP) document.body.classList.add("np");
-$("#brandSub").textContent = `${META.total > 20 ? `Top 20 of ${fmtNum(META.total)}` : `All ${fmtNum(META.total)}`} sweats · ranked by FKDR² × stars`;
+$("#brandSub").textContent = `${META.total > 20 ? `Top 20 of ${fmtNum(META.total)}` : `All ${fmtNum(META.total)}`} players · ranked by FKDR² × stars`;
 $("#qualityBtn").textContent = QUALITY[quality].label;
 if (TOUCH) document.body.classList.add("touch");
 renderer.shadowMap.autoUpdate = false;

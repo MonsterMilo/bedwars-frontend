@@ -86,6 +86,30 @@ body.np #gate .eyebrow::after { content: ""; display: block; width: 224px; heigh
   animation: np-twinkle 2.6s ease-in-out infinite alternate; }
 @keyframes np-twinkle { from { filter: brightness(.8); } to { filter: brightness(1.25); } }
 
+/* Gate polish: gold dust rising, a slow glow behind the title, a sheen across it and the button, and a crest above.
+   Not with the North Pole look, which has its own snow on these layers. */
+body:not(.np) #gate::before, body:not(.np) #gate::after { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+#gate > div { position: relative; z-index: 1; }
+body:not(.np) #gate::before { background-image:
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='311' height='277'><g fill='%23f3cf86'><circle cx='31' cy='42' r='1' fill-opacity='.8'/><circle cx='122' cy='211' r='.8' fill-opacity='.6'/><circle cx='201' cy='77' r='1.2' fill-opacity='.7'/><circle cx='270' cy='160' r='.7' fill-opacity='.5'/><circle cx='88' cy='130' r='.9' fill-opacity='.65'/><circle cx='240' cy='255' r='1' fill-opacity='.55'/><circle cx='160' cy='12' r='.7' fill-opacity='.6'/></g></svg>"),
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='487' height='433'><g fill='%23ffe0a0'><circle cx='60' cy='300' r='1.7' fill-opacity='.45'/><circle cx='310' cy='70' r='1.5' fill-opacity='.5'/><circle cx='420' cy='380' r='1.9' fill-opacity='.35'/><circle cx='190' cy='190' r='1.4' fill-opacity='.4'/></g></svg>");
+  background-size: 311px 277px, 487px 433px; opacity: .7; animation: hof-dust 40s linear infinite; }
+body:not(.np) #gate::after { background: radial-gradient(38% 30% at 50% 44%, rgba(226,184,102,.16), transparent 70%); animation: hof-breathe 7s ease-in-out infinite; }
+@keyframes hof-dust { from { background-position: 0 0, 90px 40px; } to { background-position: 60px -554px, -40px -826px; } }
+@keyframes hof-breathe { 50% { opacity: .55; transform: scale(1.06); } }
+.crest { display: block; width: 74px; height: 46px; margin: 0 auto 14px; color: var(--gold); filter: drop-shadow(0 0 14px rgba(226,184,102,.45)); }
+.eyebrow.ruled { display: inline-flex; align-items: center; gap: 16px; }
+.eyebrow.ruled::before, .eyebrow.ruled::after { content: ""; width: 56px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+.eyebrow.ruled::after { transform: scaleX(-1); }
+#gate .title { position: relative; background: linear-gradient(100deg, transparent 40%, rgba(255,250,235,.9) 50%, transparent 60%) -200% 0 / 250% 100% no-repeat, linear-gradient(180deg, #fff3d6 0%, var(--gold) 55%, #7a5a26 100%);
+  -webkit-background-clip: text; background-clip: text; animation: hof-sheen 7s ease-in-out 1.5s infinite; }
+@keyframes hof-sheen { 0%, 60% { background-position: -200% 0, 0 0; } 100% { background-position: 250% 0, 0 0; } }
+#enter { position: relative; overflow: hidden; }
+#enter::after { content: ""; position: absolute; top: 0; bottom: 0; left: -40%; width: 30%; transform: skewX(-20deg); background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); animation: hof-btn 4.5s ease-in-out infinite; }
+#enter[disabled]::after { display: none; }
+@keyframes hof-btn { 0%, 65% { left: -40%; } 100% { left: 130%; } }
+@media (prefers-reduced-motion: reduce) { body #gate::before, body #gate::after, #gate .title, #enter::after { animation: none !important; } }
+
 /* Intro title that plays over the fly-in */
 #introTitle { position: fixed; inset: 0; z-index: 35; display: grid; place-items: center; pointer-events: none; text-align: center; opacity: 0; transition: opacity 1.4s ease; }
 #introTitle.on { opacity: 1; }
@@ -283,7 +307,8 @@ body.shot *, body.shot { transition: none !important; }
 
 <section id="gate" aria-label="Start">
   <div>
-    <div class="eyebrow">Prism · Bedwars Tracker</div>
+    <svg class="crest" viewBox="0 0 74 46" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M30 40c-10-2-18-10-20-22M44 40c10-2 18-10 20-22"/><path d="M14 30l-5 1M12 24l-5-1M12 18l-4-3M45 40h-16"/><path d="M60 30l5 1M62 24l5-1M62 18l4-3"/></g><path d="M25 31l-3-17 8 7 7-12 7 12 8-7-3 17Z" fill="currentColor" fill-opacity=".9"/><circle cx="37" cy="24" r="2.2" fill="#120e06"/></svg>
+    <div class="eyebrow ruled">Prism · Bedwars Tracker</div>
     <h1 class="title">Hall of Fame</h1>
     <p class="sub" id="gateSub">The <b>20 best players</b> we've beaten, ranked by index. Walk the hall freely and meet them.</p>
     <button id="enter" type="button" disabled>Loading the hall…</button>
@@ -332,7 +357,7 @@ body.shot *, body.shot { transition: none !important; }
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
 } }
 </script>
-<script type="module" src="hof/hall.js?v=2026-11-25a"></script><!-- bump v with every hof/hall.js change, so a cached page never runs a newer or older script -->
+<script type="module" src="hof/hall.js?v=2026-11-25b"></script><!-- bump v with every hof/hall.js change, so a cached page never runs a newer or older script -->
 
 </body>
 </html>

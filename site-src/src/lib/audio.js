@@ -1,6 +1,6 @@
 // Prism sounds: every sound is synthesized with the Web Audio API (no files
-// to load). Glass beads and crystal runs in D major pentatonic, plus a slow
-// airy song underneath. Ported from the old tracker's Prism set.
+// to load). Soft wooden mallets in D major pentatonic, a small room reverb
+// round everything, and a slow lo-fi electric piano song underneath.
 //
 // Browsers won't start audio before the first click or key, so the context
 // is resumed on that first gesture. Settings live in prefs (sound, volume,
@@ -17,7 +17,7 @@ const musicLevel = () => MUSIC_LEVEL * musicQuiet;
 // What the page is doing: depth is how far down you've scrolled (0-1),
 // busy is true while a lookup runs. The music reads both.
 const mood = { depth: 0, busy: false };
-let ctx = null, master = null, sfxBus = null, musicBus = null, noiseBuf = null, airBuf = null;
+let ctx = null, master = null, sfxBus = null, musicBus = null, noiseBuf = null;
 let curOut = null;
 let voices = 0;
 
@@ -36,6 +36,23 @@ function makeNoise(c, secs = 2) {
   return buf;
 }
 
+// Stereo room impulse: noise that decays and darkens, with a soft onset.
+function roomIR(c, secs) {
+  const len = Math.floor(c.sampleRate * secs);
+  const buf = c.createBuffer(2, len, c.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = buf.getChannelData(ch);
+    let lp = 0;
+    for (let i = 0; i < len; i++) {
+      const k = i / len;
+      const cut = 0.5 - k * 0.42; // darker as it fades
+      lp += (Math.random() * 2 - 1 - lp) * cut;
+      d[i] = lp * Math.pow(1 - k, 2.6) * (i < 400 ? i / 400 : 1);
+    }
+  }
+  return buf;
+}
+
 function init() {
   if (ctx || !AC) return !!ctx;
   try { ctx = new AC({ latencyHint: 'interactive' }); } catch { return false; }
@@ -50,8 +67,14 @@ function init() {
   sfxBus = ctx.createGain();
   musicBus = ctx.createGain(); musicBus.gain.value = 0;
   sfxBus.connect(master); musicBus.connect(master); master.connect(comp); comp.connect(lim); lim.connect(ctx.destination);
+  // A small warm room round everything: sounds feel placed, not stuck on.
+  const conv = ctx.createConvolver();
+  conv.buffer = roomIR(ctx, 2.2);
+  const wet = gainNode(1, master);
+  conv.connect(wet);
+  sfxBus.connect(gainNode(0.2, conv));
+  musicBus.connect(gainNode(0.38, conv));
   noiseBuf = makeNoise(ctx);
-  airBuf = makeNoise(ctx, 10);
   return true;
 }
 
@@ -152,8 +175,18 @@ function glass(t, f, o = {}) {
     a: o.a || 0.002, pan: o.pan, dest: o.dest
   }));
 }
+// A soft wooden mallet (kalimba / marimba): a round sine, a little warm
+// body, a faint upper ring and a tiny felt click. Played an octave under
+// the note asked for, so the set sits low and gentle.
+function mallet(t, f, o = {}) {
+  const fr = f * 0.5, g = (o.gain || 0.06) * 1.25, dur = (o.dur || 0.6) * 1.1;
+  tone(t, { f: fr, dur, gain: g, a: 0.003, pan: o.pan, dest: o.dest });
+  tone(t, { type: 'triangle', f: fr, dur: dur * 0.5, gain: g * 0.32, a: 0.002, lp: fr * 3, q: 0.5, pan: o.pan, dest: o.dest });
+  tone(t, { f: fr * 4, dur: dur * 0.18, gain: g * 0.1, a: 0.001, pan: o.pan, dest: o.dest });
+  noise(t, { type: 'lowpass', f: 2600, dur: 0.014, gain: g * 0.22, pan: o.pan, dest: o.dest });
+}
 // Air rubbing past glass, for movement.
-const airSweep = (t, from, to, o = {}) => noise(t, { type: 'bandpass', f: from, f2: to, q: 1.4, dur: o.dur || 0.25, gain: o.gain || 0.04, swell: 0.5, pan: o.pan });
+const airSweep = (t, from, to, o = {}) => noise(t, { type: 'bandpass', f: from * 0.7, f2: to * 0.7, q: 0.9, dur: o.dur || 0.25, gain: (o.gain || 0.04) * 0.8, swell: 0.5, pan: o.pan });
 function thud(t, o = {}) {
   tone(t, { f: o.f || 130, f2: o.f2 || 45, dur: o.dur || 0.22, gain: o.gain || 0.5, a: 0.002, pan: o.pan });
   noise(t, { type: 'lowpass', f: o.nf || 900, dur: o.ndur || 0.08, gain: (o.gain || 0.5) * 0.5, pan: o.pan });
@@ -173,52 +206,52 @@ function shaper() {
 const SCALE = [74, 76, 78, 81, 83, 86, 88, 90, 93, 95];
 
 const SOUNDS = {
-  // A glass bead, walking up the scale on repeated clicks.
-  click(t, o) { glass(t, midi(SCALE[(o.step != null ? o.step : Math.floor(rnd(0, 6))) % 6]), { gain: 0.07, dur: 0.45, pan: o.pan }); },
-  // A crystal run with a shimmer on top.
+  // A mallet note, walking up the scale on repeated clicks.
+  click(t, o) { mallet(t, midi(SCALE[(o.step != null ? o.step : Math.floor(rnd(0, 6))) % 6]), { gain: 0.07, dur: 0.45, pan: o.pan }); },
+  // A quick run with a soft shimmer on top.
   rare(t, o) {
-    [0, 2, 4, 7].forEach((k, i) => glass(t + i * 0.055, midi(SCALE[k]), { gain: 0.06, dur: 0.9, pan: o.pan }));
+    [0, 2, 4, 7].forEach((k, i) => mallet(t + i * 0.055, midi(SCALE[k]), { gain: 0.06, dur: 0.9, pan: o.pan }));
     noise(t + 0.1, { type: 'highpass', f: 7000, dur: 0.5, gain: 0.025, swell: 0.3, pan: o.pan });
   },
-  combo(t, o) { const tier = o.tier || 0; for (let i = 0; i < 3 + tier; i++) glass(t + i * 0.05, midi(SCALE[Math.min(9, i + tier)]), { gain: 0.05, dur: 0.6 }); },
-  ui(t) { glass(t, midi(98), { gain: 0.03, dur: 0.12, ratios: [1, 2.32] }); },
-  toggle(t, o) { glass(t, midi(o.on ? 86 : 81), { gain: 0.045, dur: 0.25 }); if (o.on) glass(t + 0.05, midi(90), { gain: 0.03, dur: 0.3 }); },
-  save(t) { [81, 88].forEach((n, i) => glass(t + i * 0.08, midi(n), { gain: 0.05, dur: 0.6 })); },
-  delete(t) { glass(t, midi(69), { gain: 0.05, dur: 0.4 }); airSweep(t, 3000, 500, { dur: 0.3, gain: 0.04 }); },
+  combo(t, o) { const tier = o.tier || 0; for (let i = 0; i < 3 + tier; i++) mallet(t + i * 0.05, midi(SCALE[Math.min(9, i + tier)]), { gain: 0.05, dur: 0.6 }); },
+  ui(t) { mallet(t, midi(98), { gain: 0.03, dur: 0.12, ratios: [1, 2.32] }); },
+  toggle(t, o) { mallet(t, midi(o.on ? 86 : 81), { gain: 0.045, dur: 0.25 }); if (o.on) mallet(t + 0.05, midi(90), { gain: 0.03, dur: 0.3 }); },
+  save(t) { [81, 88].forEach((n, i) => mallet(t + i * 0.08, midi(n), { gain: 0.05, dur: 0.6 })); },
+  delete(t) { mallet(t, midi(69), { gain: 0.05, dur: 0.4 }); airSweep(t, 3000, 500, { dur: 0.3, gain: 0.04 }); },
   slide(t, o) { airSweep(t, o.open ? 600 : 3200, o.open ? 3200 : 600, { dur: 0.22, gain: 0.08 }); },
-  page(t, o) { airSweep(t, o.next ? 1200 : 2600, o.next ? 2600 : 1200, { dur: 0.14, gain: 0.03 }); glass(t + 0.06, midi(o.next ? 88 : 83), { gain: 0.025, dur: 0.2 }); },
-  view(t) { glass(t, midi(86), { gain: 0.035, dur: 0.25 }); },
+  page(t, o) { airSweep(t, o.next ? 1200 : 2600, o.next ? 2600 : 1200, { dur: 0.14, gain: 0.03 }); mallet(t + 0.06, midi(o.next ? 88 : 83), { gain: 0.025, dur: 0.2 }); },
+  view(t) { mallet(t, midi(86), { gain: 0.035, dur: 0.25 }); },
   type(t, o) {
-    if (o.kind === 'enter') { [86, 93].forEach((n, i) => glass(t + i * 0.05, midi(n), { gain: 0.035, dur: 0.3 })); return; }
-    glass(t, o.kind === 'back' ? midi(79) : rnd(2400, 3200), { gain: 0.018, dur: 0.06, ratios: [1, 2.32] });
+    if (o.kind === 'enter') { [86, 93].forEach((n, i) => mallet(t + i * 0.05, midi(n), { gain: 0.035, dur: 0.3 })); return; }
+    mallet(t, o.kind === 'back' ? midi(79) : rnd(2400, 3200), { gain: 0.018, dur: 0.06, ratios: [1, 2.32] });
   },
-  flipOpen(t, o) { const d = (o.duration || 600) / 1000; airSweep(t, 500, 4000, { dur: d * 0.6, gain: 0.05 }); glass(t + d * 0.7, midi(88), { gain: 0.05, dur: 0.7 }); },
+  flipOpen(t, o) { const d = (o.duration || 600) / 1000; airSweep(t, 500, 4000, { dur: d * 0.6, gain: 0.05 }); mallet(t + d * 0.7, midi(88), { gain: 0.05, dur: 0.7 }); },
   flipClose(t) { airSweep(t, 3500, 600, { dur: 0.18, gain: 0.12 }); },
-  scanStart(t) { [81, 86].forEach((n, i) => glass(t + i * 0.08, midi(n), { gain: 0.04, dur: 0.3 })); },
-  scanTick(t) { glass(t, midi(choose([93, 95, 98])), { gain: 0.022, dur: 0.18, ratios: [1, 2.32] }); },
-  found(t) { [74, 78, 81, 86].forEach((n, i) => glass(t + i * 0.07, midi(n), { gain: 0.06, dur: 0.8 })); },
-  error(t) { glass(t, midi(62), { gain: 0.06, dur: 0.5 }); glass(t + 0.12, midi(61), { gain: 0.05, dur: 0.6 }); },
+  scanStart(t) { [81, 86].forEach((n, i) => mallet(t + i * 0.08, midi(n), { gain: 0.04, dur: 0.3 })); },
+  scanTick(t) { mallet(t, midi(choose([93, 95, 98])), { gain: 0.022, dur: 0.18, ratios: [1, 2.32] }); },
+  found(t) { [74, 78, 81, 86].forEach((n, i) => mallet(t + i * 0.07, midi(n), { gain: 0.06, dur: 0.8 })); },
+  error(t) { mallet(t, midi(62), { gain: 0.06, dur: 0.5 }); mallet(t + 0.12, midi(61), { gain: 0.05, dur: 0.6 }); },
   success(t) {
-    [74, 81, 86, 90, 93].forEach((n, i) => glass(t + i * 0.06, midi(n), { gain: 0.06, dur: 1.1 }));
+    [74, 81, 86, 90, 93].forEach((n, i) => mallet(t + i * 0.06, midi(n), { gain: 0.06, dur: 1.1 }));
     noise(t + 0.25, { type: 'highpass', f: 6500, dur: 0.6, gain: 0.03, swell: 0.3 });
   },
   // The title splitting apart and snapping back.
   stunt(t) {
-    for (let i = 0; i < 10; i++) glass(t + i * 0.09, midi(SCALE[i]), { gain: 0.035, dur: 0.5, pan: i % 2 ? 0.4 : -0.4 });
-    [62, 74, 78, 81, 86].forEach(n => glass(t + 1.15, midi(n), { gain: 0.06, dur: 1.8 }));
+    for (let i = 0; i < 10; i++) mallet(t + i * 0.09, midi(SCALE[i]), { gain: 0.035, dur: 0.5, pan: i % 2 ? 0.4 : -0.4 });
+    [62, 74, 78, 81, 86].forEach(n => mallet(t + 1.15, midi(n), { gain: 0.06, dur: 1.8 }));
   },
   // Passing over a card: the faintest tick.
-  hover(t) { glass(t, rnd(2600, 3000), { gain: 0.012, dur: 0.08, ratios: [1, 2.32] }); },
+  hover(t) { mallet(t, rnd(2600, 3000), { gain: 0.012, dur: 0.08, ratios: [1, 2.32] }); },
   // Podium places 1-3, brightest for first.
   chime(t, o) {
     const place = Math.min(3, Math.max(1, o.place || 1));
     const root = [86, 81, 78][place - 1];
-    [0, 4, 7, 12].slice(0, 5 - place).forEach((iv, i) => glass(t + i * 0.05, midi(root + iv), { gain: 0.05, dur: 0.8 }));
+    [0, 4, 7, 12].slice(0, 5 - place).forEach((iv, i) => mallet(t + i * 0.05, midi(root + iv), { gain: 0.05, dur: 0.8 }));
   },
   // Someone else's sweat arriving live.
   arrive(t) {
     airSweep(t, 500, 5000, { dur: 0.5, gain: 0.04 });
-    [78, 81, 86, 90].forEach((n, i) => glass(t + 0.35 + i * 0.09, midi(n), { gain: 0.045, dur: 0.9 }));
+    [78, 81, 86, 90].forEach((n, i) => mallet(t + 0.35 + i * 0.09, midi(n), { gain: 0.045, dur: 0.9 }));
   },
   // A Minecraft note-block pling, for chat toasts.
   chat(t) {
@@ -389,37 +422,66 @@ const parseBars = src => src.split('|').map(bar => {
   }).filter(Boolean);
 });
 
-// Slow and airy, like light moving in a quiet room: a soft pad of warm
-// sines, a glass melody with a long echo, a faint shimmer of air. D major
-// with a Lydian lift on the IV. Deeper down the page the pad opens up; a
-// lookup adds a quick glass arpeggio.
-function song(bus, add) {
+// A slow lo-fi song: a warm electric piano on lush seventh and ninth
+// chords, a round sub bass, soft brushed hats with a lazy swing, and a few
+// mallet notes drifting through an echo. D major, about 70 bpm. Deeper
+// down the page the piano opens up; a lookup adds a quiet mallet arpeggio.
+function rhodes(t, n, o) {
+  const f = midi(n), dur = o.dur, g = o.gain;
+  const car = ctx.createOscillator(); car.frequency.value = f; car.detune.value = o.detune || 0;
+  const mod = ctx.createOscillator(); mod.frequency.value = f;
+  const depth = ctx.createGain();
+  depth.gain.setValueAtTime(f * 1.4, t); depth.gain.exponentialRampToValueAtTime(f * 0.12, t + 0.6);
+  mod.connect(depth); depth.connect(car.frequency);
+  const amp = gainNode(0, o.dest);
+  amp.gain.setValueAtTime(0.0001, t);
+  amp.gain.linearRampToValueAtTime(g, t + 0.006);
+  amp.gain.exponentialRampToValueAtTime(g * 0.35, t + 0.5);
+  amp.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  car.connect(amp);
+  car.start(t); mod.start(t);
+  track(car, t + dur + 0.05); track(mod, t + dur + 0.05);
+}
+function song(bus) {
   const lp = ctx.createBiquadFilter();
-  lp.type = 'lowpass'; lp.frequency.value = 1200; lp.Q.value = 0.4;
-  lp.connect(gainNode(1, bus));
-  const air = ctx.createBufferSource(); air.buffer = airBuf; air.loop = true; air.playbackRate.value = 0.6;
-  const airBp = ctx.createBiquadFilter(); airBp.type = 'bandpass'; airBp.frequency.value = 5200; airBp.Q.value = 0.6;
-  air.connect(airBp); airBp.connect(gainNode(0.006, bus)); add(air);
-  const echo = ctx.createDelay(1.5); echo.delayTime.value = 0.62;
-  echo.connect(gainNode(0.32, echo));
-  echo.connect(gainNode(0.5, bus));
-  const beat = 0.8;
-  const chords = 'D3 A3 F#4|B2 F#3 D4|G2 D3 B3|A2 E3 C#4|D3 A3 F#4|F#2 C#3 A3|G2 D3 B3|A2 E3 G3'.split('|').map(c => c.trim().split(/\s+/).map(noteNum));
-  const bars = parseBars('F#5:2 A5:1 E5:1|D5:3 -:1|B4:1.5 D5:.5 G5:2|E5:3 -:1|A5:2 F#5:1 D5:1|C#5:3 -:1|D5:1 E5:1 B5:2|A5:3 -:1');
+  lp.type = 'lowpass'; lp.frequency.value = 1500; lp.Q.value = 0.3;
+  // a slow tremolo on the piano, like an old amp
+  const trem = gainNode(1, gainNode(1, bus));
+  lp.connect(trem);
+  const lfo = ctx.createOscillator(); lfo.frequency.value = 4.2;
+  lfo.connect(gainNode(0.12, trem.gain)); lfo.start();
+  const echo = ctx.createDelay(1.5); echo.delayTime.value = 0.64;
+  const fb = ctx.createBiquadFilter(); fb.type = 'lowpass'; fb.frequency.value = 2200;
+  echo.connect(fb); fb.connect(gainNode(0.34, echo));
+  echo.connect(gainNode(0.45, bus));
+  const beat = 0.86;
+  // [bass, piano voicing] for Dmaj9, Bm9, Gmaj9, A9sus4
+  const chords = [['D2', 'F#3 A3 C#4 E4'], ['B1', 'D3 F#3 A3 C#4'], ['G1', 'B2 D3 F#3 A3'], ['A1', 'G3 B3 D4 E4']]
+    .map(([b, v]) => ({ bass: noteNum(b), notes: v.split(' ').map(noteNum) }));
+  const PENTA = [74, 76, 78, 81, 83, 86, 88];
+  const phrases = [[[0.5, 3], [1.5, 2], [3, 4]], [[0, 5], [2, 4]], [[1, 2], [1.5, 3], [2.5, 1]], [[0.5, 4], [3.5, 6]]];
   let n = 0;
   return t => {
-    const i = n++ % bars.length;
-    const chord = chords[i];
-    const bar = beat * 4;
-    lp.frequency.setTargetAtTime(1200 + mood.depth * 1400, t, 2);
-    chord.forEach((m, k) => [-5, 5].forEach(dt => tone(t + k * 0.05, { f: midi(m), detune: dt, dur: bar * 0.6, hold: bar * 0.5, a: 0.9, gain: 0.03, dest: lp })));
-    tone(t, { type: 'triangle', f: midi(chord[0] - 12), dur: bar * 0.5, hold: bar * 0.4, a: 0.3, gain: 0.05, lp: 300, dest: bus });
-    bars[i].forEach(ev => {
-      const dur = Math.min(2.4, ev.len * beat * 1.4);
-      glass(t + ev.at * beat, midi(ev.n), { gain: 0.035, dur, dest: echo });
-      glass(t + ev.at * beat, midi(ev.n), { gain: 0.03, dur, dest: bus });
+    const i = n % 4, ch = chords[i], bar = beat * 4;
+    n++;
+    lp.frequency.setTargetAtTime(1500 + mood.depth * 1800, t, 2);
+    // piano: the chord on 1, a softer push on the "and" of 3
+    [[0, 0.03, bar + 0.6], [2.5, 0.018, beat * 1.6]].forEach(([at, g, dur]) =>
+      ch.notes.forEach((m, k) => rhodes(t + at * beat + k * 0.012, m, { gain: g, dur, detune: k % 2 ? 4 : -4, dest: lp })));
+    // sub bass
+    [[0, 2.2], [2.5, 1.3]].forEach(([at, len]) => tone(t + at * beat, { f: midi(ch.bass), dur: len * beat, hold: len * beat * 0.4, a: 0.02, gain: 0.09, lp: 220, dest: bus }));
+    // brushed hats on the eighths, the off-beats late and quiet
+    for (let k = 0; k < 8; k++) {
+      const off = k % 2 ? beat * 0.12 : 0;
+      noise(t + k * beat / 2 + off, { type: 'highpass', f: 7000, dur: k % 2 ? 0.03 : 0.045, gain: k % 2 ? 0.006 : 0.01, dest: bus });
+    }
+    // a few mallet notes through the echo
+    phrases[(n >> 2) % 4 === 3 ? 3 : i].forEach(([at, idx]) => {
+      const note = PENTA[idx];
+      mallet(t + at * beat, midi(note), { gain: 0.03, dur: 1.4, dest: echo });
+      mallet(t + at * beat, midi(note), { gain: 0.026, dur: 1.2, dest: bus });
     });
-    if (mood.busy) for (let k = 0; k < 8; k++) glass(t + k * beat / 2, midi(chord[k % 3] + 24), { gain: 0.012, dur: 0.3, dest: bus });
+    if (mood.busy) for (let k = 0; k < 8; k++) mallet(t + k * beat / 2, midi(ch.notes[k % 4] + 24), { gain: 0.012, dur: 0.35, dest: bus });
     return bar;
   };
 }
@@ -501,7 +563,7 @@ function startMusic() {
   if (!ctx || music || !musicOn()) return;
   const bus = gainNode(0, musicBus);
   const nodes = [];
-  const next = (xmOn() ? carols : song)(bus, n => { n.start(); nodes.push(n); });
+  const next = (xmOn() ? carols : song)(bus);
   const t = ctx.currentTime;
   bus.gain.setValueAtTime(0, t);
   bus.gain.linearRampToValueAtTime(MUSIC_TRIM, t + 0.6);

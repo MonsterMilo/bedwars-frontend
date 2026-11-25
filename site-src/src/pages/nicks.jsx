@@ -190,7 +190,9 @@ function Results({ res, busySince }) {
             </tbody>
           </table>
         </div>
-      ) : noSource
+      ) : res.searchOff
+        ? <p class="notice"><Icon name="alert" /><span>Searching by cosmetics and numbers is off right now. Only known denicks show.</span></p>
+        : noSource
         ? <p class="notice"><Icon name="alert" /><span>No search source answered. Try again in a minute.</span></p>
         : searched ? <Empty icon="mask">No one matched. Try fewer cosmetics, or add the game.</Empty>
           : <Empty icon="mask">{known.length ? 'Add cosmetics or numbers to search for more.' : 'No denick known for this nick yet. Add cosmetics or numbers to search.'}</Empty>}

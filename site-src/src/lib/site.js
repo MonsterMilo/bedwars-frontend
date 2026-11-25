@@ -7,12 +7,10 @@ export const SECTIONS = [
   { id: 'tools', hue: 'var(--accent-2)', title: 'Tools', blurb: 'Work things out', pages: [
     { href: 'nicks.html', item: 'ui:eye', label: 'Nick Finder', icon: 'mask', desc: 'Find who is behind a nick.' },
     { href: 'cosmetics.html', item: 'ui:rocket', label: 'Cosmetics', icon: 'sparkle', desc: 'Every Bed Wars cosmetic, previewed.' },
-    { href: 'atlas.html', item: 'ui:map', label: 'Atlas', icon: 'map', desc: 'Every map, from above.' }
+    { href: 'atlas.html', item: 'ui:map', label: 'Atlas', icon: 'map', desc: 'Every map, from above.' },
+    { href: 'download.html', item: 'block:enchanting', label: 'Download Prism', icon: 'download', desc: 'Our plugin client for Lunar 1.8.9.', featured: true }
   ] },
-  { id: 'prism', hue: 'var(--accent-3)', title: 'Prism', blurb: 'Get the client', pages: [
-    { href: 'download.html', item: 'block:enchanting', label: 'Download Prism', icon: 'download', desc: 'The Prism injectable for Lunar Client 1.8.9.' }
-  ] },
-  { id: 'private', hue: '#ff7a8a', title: 'Private', blurb: 'Needs a key', locked: true, pages: [
+  { id: 'private', hue: 'var(--accent-3)', title: 'Private', blurb: 'Needs a key', locked: true, pages: [
     { href: 'tracker.html', item: 'ui:book', label: 'Tracker', icon: 'list', desc: 'Our tracked players, notes and denicks.' },
     { href: 'recordings.html', item: 'block:jukebox', label: 'Recordings', icon: 'film', desc: 'Recorded games, clips and the Replay Theater.' },
     { href: 'hall-of-fame.html', item: 'ui:totem', label: 'Hall of Fame', icon: 'crown', desc: 'The 20 biggest sweats we beat, in 3D.' }

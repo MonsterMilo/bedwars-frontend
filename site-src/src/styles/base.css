@@ -5,10 +5,10 @@
    ========================================================================== */
 :root {
   --accent: #5ee7ff; --accent-2: #a98bff; --accent-3: #ffc46b;
-  --bg: #06070b; --bg-2: #0a0c12;
-  --panel: rgba(17,19,28,0.72); --panel-solid: #10121a; --panel-2: rgba(24,27,39,0.82); --panel-hover: rgba(30,34,48,0.9);
-  --line: rgba(255,255,255,0.075); --line-2: rgba(255,255,255,0.13); --line-3: rgba(255,255,255,0.22);
-  --text: #eef1f8; --dim: #a0a7ba; --faint: #737a8e;
+  --bg: #0c0f17; --bg-2: #11141e;
+  --panel: rgba(24,28,40,0.74); --panel-solid: #161a26; --panel-2: rgba(32,37,52,0.84); --panel-hover: rgba(40,46,64,0.92);
+  --line: rgba(255,255,255,0.085); --line-2: rgba(255,255,255,0.145); --line-3: rgba(255,255,255,0.24);
+  --text: #f0f3fa; --dim: #a9b0c3; --faint: #7d8498;
   --good: #4be3a8; --bad: #ff6b81; --warn: #ffc46b;
   --hi: inset 0 1px 0 rgba(255,255,255,0.055);
   --shadow: 0 24px 60px -30px rgba(0,0,0,0.9);
@@ -27,7 +27,7 @@
   --mc-8: #6e6e6e; --mc-9: #6d7bff; --mc-a: #62f26e; --mc-b: #5ef3f3; --mc-c: #ff5f5f; --mc-d: #ff6bf0; --mc-e: #ffff6b; --mc-f: #ffffff;
   color-scheme: dark;
 }
-html[data-surface="oled"] { --bg: #000; --bg-2: #000; --panel: rgba(12,13,18,0.9); --panel-solid: #0b0c10; --panel-2: rgba(18,20,28,0.95); }
+html[data-surface="oled"] { --bg: #000; --bg-2: #000; --panel: rgba(12,13,18,0.9); --panel-solid: #0b0c10; --panel-2: rgba(18,20,28,0.95); --panel-hover: rgba(26,29,40,0.95); --line: rgba(255,255,255,0.075); --line-2: rgba(255,255,255,0.13); --faint: #737a8e; --dim: #a0a7ba; }
 html[data-surface="light"] {
   --bg: #f3f5fa; --bg-2: #e9edf6; --panel: rgba(255,255,255,0.82); --panel-solid: #fff; --panel-2: rgba(246,248,252,0.95); --panel-hover: #fff;
   --line: rgba(20,30,60,0.09); --line-2: rgba(20,30,60,0.15); --line-3: rgba(20,30,60,0.26);

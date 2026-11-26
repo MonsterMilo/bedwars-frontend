@@ -5,7 +5,7 @@
 // beams can land exactly on the cards.
 //
 // layout() is called every frame and returns, in viewport pixels:
-//   { prism: { x, y, size }, source: { x, y }, targets: [{ x, y }], hot: [0..1] }  (cards below the glass)
+//   { prism: { x, y, size }, targets: [{ x, y }], hot: [0..1] }  (cards below the glass)
 // colors() returns the beam colours as CSS colours, one per target.
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -23,6 +23,7 @@ export function cssColor(c, fallback = '#ffffff') {
   return new THREE.Color(probe.fillStyle);
 }
 
+// Preview: ?beams=down (light straight down) or ?beams=flip (prism point-down, light straight down).
 export function startPrism({ canvas, layout, colors, background, reduce, onReady, intro = false, onLand, backdrop = () => null }) {
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }); } catch { return null; }
@@ -345,19 +346,32 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
     prismGroup.updateMatrixWorld(true);
     const top = onGlass(0, 0.88), ca = onGlass(-0.866, -0.62), cb = onGlass(0.866, -0.62);
     const [inC, outC] = ca.x <= cb.x ? [ca, cb] : [cb, ca];
-    const entry = top.clone().lerp(inC, 0.53);
+    // White light enters the right face; the colours leave through the flat base.
+    const entry = top.clone().lerp(outC, 0.5);
+    const exitAt = f => inC.clone().lerp(outC, 0.2 + 0.42 * f);
+    const live = L.targets.map((tg, i) => i).filter(i => i < outBeams.length && L.targets[i]);
+    live.sort((a, b) => L.targets[a].x - L.targets[b].x);
+    const rank = []; live.forEach((i, r) => { rank[i] = r; });
 
     const inner = cl((it - A.in0) / A.inD);
     const iu = inBeam.uniforms;
-    iu.uA.value.set(L.source.x, -L.source.y); iu.uB.value.copy(entry);
+    // The light comes from the top right; on wide screens it leans towards the middle colour's path.
+    const trav = new THREE.Vector2(-1, -0.55).normalize();
+    const mid = live.length ? L.targets[live[live.length >> 1]] : null;
+    if (mid && W > 980) {
+      const m0 = exitAt(0.5), dm = new THREE.Vector2(mid.x - m0.x, -mid.y - m0.y);
+      if (dm.lengthSq() > 1) trav.lerp(dm.normalize(), 0.6).normalize();
+    }
+    if (trav.y > -0.15) { trav.y = -0.15; trav.normalize(); }
+    const kx = trav.x < -0.01 ? (W + 60 - entry.x) / -trav.x : Infinity, ky = (80 - entry.y) / -trav.y;
+    const k = Math.min(kx, ky);
+    iu.uA.value.set(entry.x - trav.x * k, entry.y - trav.y * k);
+    iu.uB.value.copy(entry);
     iu.uGrow.value = ease(grow); iu.uW0.value = S * 0.06; iu.uW1.value = S * 0.045; iu.uCore.value = Math.max(1.3, S * 0.006); iu.uT.value = t; iu.uSpeed.value = 2.2;
     entrySpot.position.set(entry.x, entry.y, 0); const es = S * 0.42 * (1 + 0.05 * Math.sin(t * 2.2)); entrySpot.scale.set(es, es, 1);
     entrySpot.material.uniforms.uI.value = grow >= 1 ? 0.55 + 0.15 * Math.sin(t * 3.1) + flash * 1.6 : 0;
 
     // Colours leave the glass in the same order as their cards, so no two cross.
-    const live = L.targets.map((tg, i) => i).filter(i => i < outBeams.length && L.targets[i]);
-    live.sort((a, b) => L.targets[a].x - L.targets[b].x);
-    const rank = []; live.forEach((i, r) => { rank[i] = r; });
     outBeams.forEach((b, i) => {
       const tg = L.targets[i], sp = landSpots[i], ib = innerBeams[i].uniforms, xs = exitSpots[i];
       if (!tg) { b.uniforms.uI.value = 0; sp.material.uniforms.uI.value = 0; ib.uI.value = 0; xs.material.uniforms.uI.value = 0; return; }
@@ -367,7 +381,7 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
       const land = landAt[i] !== undefined && intro ? Math.exp(-(it - landAt[i]) * 4) : 0;
       // The cards sit below the glass, so every colour leaves through its base.
       const f = live.length > 1 ? rank[i] / (live.length - 1) : 0.5;
-      const exit = inC.clone().lerp(outC, 0.3 + 0.45 * f);
+      const exit = exitAt(f);
       ib.uA.value.copy(entry); ib.uB.value.copy(exit); ib.uGrow.value = ease(inner);
       ib.uW0.value = S * 0.025; ib.uW1.value = S * 0.05; ib.uCore.value = Math.max(1, S * 0.004) * (1 + h * 0.5);
       ib.uI.value = 0.6 + h * 0.5; ib.uT.value = t; ib.uSpeed.value = 2.4;

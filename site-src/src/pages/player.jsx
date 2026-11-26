@@ -69,7 +69,7 @@ function ProfileHead({ data, view }) {
           {s && s.online && <span class="chip good"><span class="dot pulse" />Online{s.gameType ? ` · ${s.gameType === 'BEDWARS' ? 'Bed Wars' : s.gameType.toLowerCase().replace(/_/g, ' ')}` : ''}{s.map ? ` · ${s.map}` : ''}</span>}
           {s && !s.online && <span class="chip"><span class="dot" />Offline</span>}
           {!s && lastSeen && <span class="chip">Seen {ago(lastSeen)}</span>}
-          {g && <span class="chip" title={`${g.members} members`}>{g.tag ? <Segments segs={[{ text: `[${g.tag}]`, c: COLOR_NAMES[g.tagColor] || '7' }]} /> : <Icon name="shield" />} {g.name}{g.rank ? ` · ${g.rank}` : ''}</span>}
+          {g && <a class="chip chip-link" href={`guild.html?name=${enc(g.name)}`} title={`${g.members} members. Open the guild`}>{g.tag ? <Segments segs={[{ text: `[${g.tag}]`, c: COLOR_NAMES[g.tagColor] || '7' }]} /> : <Icon name="shield" />} {g.name}{g.rank ? ` · ${g.rank}` : ''}</a>}
           <span class={`chip ${data.live ? 'accent' : ''}`} title={data.live ? 'Fresh from Hypixel' : 'A saved copy. A key makes lookups live.'}>{data.live ? 'Live' : 'Saved copy'}</span>
         </div>
         {star.progress !== null && (

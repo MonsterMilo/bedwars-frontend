@@ -2,7 +2,8 @@
 export const SECTIONS = [
   { id: 'stats', hue: 'var(--accent)', title: 'Stats', blurb: 'Look players up', pages: [
     { href: 'player.html', item: 'ui:nametag', label: 'Player lookup', icon: 'user', desc: 'Bed Wars stats, name history, skins and tags.' },
-    { href: 'leaderboards.html', item: 'block:gold', label: 'Leaderboards', icon: 'trophy', desc: 'Top players for lifetime, weekly and daily.' }
+    { href: 'leaderboards.html', item: 'block:gold', label: 'Leaderboards', icon: 'trophy', desc: 'Top players for lifetime, weekly and daily.' },
+    { href: 'guild.html', item: 'ui:helmet', label: 'Guilds', icon: 'users', desc: 'Guild members ranked by stars, FKDR or guild XP.' }
   ] },
   { id: 'tools', hue: 'var(--accent-2)', title: 'Tools', blurb: 'Work things out', pages: [
     { href: 'nicks.html', item: 'ui:eye', label: 'Nick Finder', icon: 'mask', desc: 'Find who is behind a nick.' },

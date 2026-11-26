@@ -1,0 +1,40 @@
+/* Guild page: search, the guild's header, then its members. */
+.gd-search { display: grid; gap: 12px; }
+.gd-search .seg { justify-self: start; }
+.gd-search-box { position: relative; display: flex; gap: 8px; }
+.gd-search-box > svg { position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
+.gd-search-box .input { flex: 1; min-height: 46px; padding-left: 42px; }
+.gd-recent { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 16px; }
+.gd-recent .chip:hover { color: var(--text); border-color: var(--line-3); }
+.gd-top { margin-bottom: 12px; }
+.gd-needs { display: grid; justify-items: center; gap: 12px; }
+
+.gd-head { display: grid; gap: 14px; margin-bottom: 16px; }
+.gd-title { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.gd-title h1 { font-size: clamp(1.6rem, 3.2vw, 2.3rem); font-weight: 800; letter-spacing: -0.02em; }
+.gd-title h1 .mc { margin-right: 4px; }
+.gd-desc { color: var(--dim); max-width: 70ch; overflow-wrap: anywhere; }
+.gd-level { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; font-size: 0.9rem; }
+.gd-stats.stat-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.gd-stats .stat-value { white-space: nowrap; }
+.gd-gm { width: 14px; height: 14px; color: var(--mc-6); flex: none; }
+.show-s { display: none; }
+.gd-games { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.gd-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 8px; }
+.gd-tools h2 { font-size: 1.15rem; margin-right: auto; }
+.gd-find { width: auto; flex: 0 1 220px; min-width: 160px; min-height: 40px; }
+.gd-note { margin: 4px 0 8px; }
+.gd-rank { color: var(--dim); white-space: nowrap; font-size: 0.86rem; }
+.gd-rank.gm { color: var(--mc-6); font-weight: 700; }
+.gd-rank svg { width: 14px; height: 14px; margin-right: 5px; vertical-align: -2px; }
+@media (max-width: 720px) {
+  .gd-table .hide-s { display: none; }
+  .gd-table .show-s { display: inline-block; }
+  .gd-table { font-size: 0.86rem; }
+  .gd-table td, .gd-table th { padding-inline: 6px; }
+  .gd-stats.stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gd-tools h2 { width: 100%; }
+  .gd-find { flex: 1 1 100%; }
+}
+@media (max-width: 480px) { .gd-search-box { flex-wrap: wrap; } .gd-search-box .btn { width: 100%; } }

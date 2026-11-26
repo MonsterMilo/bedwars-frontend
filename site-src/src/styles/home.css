@@ -5,7 +5,7 @@
 .prism-canvas.on { opacity: 1; }
 html[data-effects="off"] .prism-canvas { display: none; }
 
-.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto; gap: 0 clamp(24px, 3vw, 48px); align-items: center; align-content: center; min-height: calc(100svh - 64px); padding-block: clamp(20px, 4vh, 48px); }
+.hero { display: grid; grid-template-columns: minmax(0, 520px) minmax(0, 1fr); grid-template-rows: auto auto; gap: 0 clamp(24px, 3vw, 48px); align-items: center; align-content: center; min-height: calc(100svh - 64px); padding-block: clamp(20px, 4vh, 48px); }
 .hero-left { display: flex; flex-direction: column; min-width: 0; }
 .kicker { display: inline-flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 0.74rem; font-weight: 700; letter-spacing: 0.32em; text-transform: uppercase; color: var(--dim); }
 .kicker span { width: 28px; height: 1px; background: var(--dim); opacity: 0.6; }

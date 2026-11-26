@@ -82,7 +82,7 @@ function usePrism(canvas, spot, cards, left) {
         // Desktop: the prism top right, the cards in a row below. The white
         // light comes in from the right and the colours fan down out of the
         // base into the top of each card.
-        size = Math.max(120, Math.min(sp.height * 0.8, sp.width * 0.5, 240));
+        size = Math.max(120, Math.min(sp.height * 0.85, sp.width * 0.42, 280));
         x = sp.left + sp.width / 2; y = sp.top + sp.height * 0.48;
         // Keep every beam off the words: slide its landing point along the
         // card's top edge until the line from the glass misses the text.

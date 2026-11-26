@@ -12,6 +12,8 @@ import { toasts } from '../lib/toast.js';
 import { useSignal } from '../lib/signal.js';
 import { ItemIcon } from './items.jsx';
 import { startBackdrop } from '../lib/backdrop.js';
+import { installFx } from '../lib/fx.js';
+import '../styles/fx.css';
 import { season } from '../lib/prefs.js';
 import { previewing } from '../lib/season.js';
 import '../styles/christmas.css';
@@ -63,7 +65,8 @@ export function Shell({ children, wide = false, search = true, bg = null }) {
   const searchRef = useRef(null);
 
   useEffect(() => { checkKey(); }, [key]);
-  useEffect(() => { installPaletteKey(); }, []);
+  // Sounds, click effects and easter eggs on every page (Settings > Sound and effects; M mutes).
+  useEffect(() => { installPaletteKey(); installFx(); }, []);
   useEffect(() => { document.documentElement.dataset.page = bg || 'none'; if (bg && bg !== 'none') startBackdrop(bg); }, []);
   // The holiday look: loaded only while it's on.
   const holiday = useSignal(season);

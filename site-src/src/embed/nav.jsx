@@ -12,6 +12,8 @@ import hostCss from './nav-host.css';
 import shellCss from '../styles/shell.css';
 import { startIntro } from '../lib/intro.js';
 import { Palette, PaletteButton, installPaletteKey } from '../ui/Palette.jsx';
+import { installFx } from '../lib/fx.js';
+import fxCss from '../styles/fx.css';
 
 const hasKey = () => { try { return !!localStorage.getItem('bedwarsAdminKey'); } catch { return false; } };
 
@@ -114,4 +116,11 @@ function mountNav() {
   render(<Header />, root);
 }
 
-if (document.body) { mountNav(); startIntro(); } else document.addEventListener('DOMContentLoaded', () => { mountNav(); startIntro(); });
+// Sounds and click effects like the rest of the site; their look goes in the page itself.
+function startFx() {
+  const st = document.createElement('style');
+  st.textContent = fxCss;
+  document.head.appendChild(st);
+  installFx();
+}
+if (document.body) { mountNav(); startIntro(); startFx(); } else document.addEventListener('DOMContentLoaded', () => { mountNav(); startIntro(); startFx(); });

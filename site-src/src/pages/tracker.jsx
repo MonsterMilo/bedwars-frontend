@@ -124,7 +124,6 @@ function Tracker() {
       else if (k === 'g' || k === 'G') clickTab('Grid');
       else if (k === 't' || k === 'T') clickTab('Table');
       else if (k === 'l' || k === 'L') clickTab('Leaderboard');
-      else if (k === 'm' || k === 'M') { const on = !prefs.value.sound; setPref('sound', on); toast(on ? 'Sound on' : 'Sound off'); }
       else if (k === '?') setHelp(h => !h);
     };
     document.addEventListener('keydown', onKey);

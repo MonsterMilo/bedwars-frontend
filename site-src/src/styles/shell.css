@@ -90,3 +90,32 @@ main { display: block; min-height: calc(100vh - 160px); outline: none; overflow-
 .custom-fill::after { content: ''; position: absolute; inset: 5px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 2px var(--panel-solid); }
 .custom-fill input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
 .swatch:focus-within { box-shadow: var(--focus); }
+
+/* --- jump menu (ui/Palette.jsx), also used in app/nav.js's shadow root --- */
+.pal-scrim { position: fixed; inset: 0; z-index: 200; display: grid; justify-items: center; align-items: start; padding: min(14vh, 120px) 16px 16px; background: rgba(4, 6, 12, 0.55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); animation: pal-fade 160ms ease both; }
+.pal { width: min(640px, 100%); max-height: min(70vh, 620px); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; border-radius: 18px; overflow: hidden; background: color-mix(in srgb, var(--panel-solid, #161a26) 94%, transparent); border: 1px solid var(--line-2); box-shadow: 0 40px 90px -30px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.03), var(--hi); animation: pal-pop 200ms var(--ease) both; position: relative; }
+.pal::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--spectrum); opacity: 0.6; }
+.pal svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.pal-search { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); color: var(--faint); }
+.pal-search input { flex: 1; min-width: 0; border: 0; outline: none; background: none; color: var(--text); font: inherit; font-size: 1.05rem; }
+.pal-search input::placeholder { color: var(--faint); }
+.pal-search input:focus, .pal-search input:focus-visible { outline: none; box-shadow: none; }
+.pal kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 6px; border: 1px solid var(--line-2); background: color-mix(in srgb, var(--bg) 50%, transparent); color: var(--dim); font: 600 0.7rem/1 ui-monospace, Menlo, monospace; }
+.pal-list { overflow-y: auto; padding: 6px 8px 10px; overscroll-behavior: contain; }
+.pal-title { margin: 10px 10px 4px; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
+.pal-item { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 12px; color: var(--text); text-decoration: none; scroll-margin: 8px; }
+.pal-item.on { background: color-mix(in srgb, var(--accent) 11%, var(--panel-2)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent); }
+.pal-ico { --hue: var(--accent); display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 10px; color: var(--hue); background: color-mix(in srgb, var(--hue) 12%, transparent); border: 1px solid color-mix(in srgb, var(--hue) 22%, transparent); overflow: hidden; }
+.pal-ico img { width: 26px; height: 26px; border-radius: 6px; object-fit: cover; image-rendering: pixelated; }
+.pal-text { display: grid; min-width: 0; flex: 1; }
+.pal-text strong { font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pal-text small { color: var(--faint); font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pal-lock { color: var(--faint); width: 15px !important; height: 15px !important; }
+.pal-go { color: var(--faint); opacity: 0; transition: opacity 120ms; }
+.pal-item.on .pal-go { opacity: 1; color: var(--accent); }
+.pal-none { margin: 18px 12px; color: var(--faint); text-align: center; font-size: 0.92rem; }
+.pal-foot { display: flex; gap: 16px; justify-content: flex-end; padding: 10px 16px; border-top: 1px solid var(--line); color: var(--faint); font-size: 0.78rem; }
+.pal-foot span { display: inline-flex; align-items: center; gap: 4px; }
+@keyframes pal-fade { from { opacity: 0; } }
+@keyframes pal-pop { from { opacity: 0; transform: translateY(-8px) scale(0.98); } }
+@media (max-width: 560px) { .pal-foot { display: none; } .pal-scrim { padding-top: 10vh; } }

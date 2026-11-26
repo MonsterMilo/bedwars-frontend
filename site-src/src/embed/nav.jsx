@@ -11,6 +11,7 @@ import { SECTIONS, currentPage } from '../lib/site.js';
 import hostCss from './nav-host.css';
 import shellCss from '../styles/shell.css';
 import { startIntro } from '../lib/intro.js';
+import { Palette, PaletteButton, installPaletteKey } from '../ui/Palette.jsx';
 
 const hasKey = () => { try { return !!localStorage.getItem('bedwarsAdminKey'); } catch { return false; } };
 
@@ -60,10 +61,12 @@ function Search() {
 }
 
 function Header() {
+  useEffect(() => { installPaletteKey(); }, []);
   const page = currentPage();
   const unlocked = hasKey();
   const [menu, setMenu] = useState(false);
   return (
+    <>
     <header class="site-head">
       <div class="wrap head-row">
         <a class="brand" href="index.html" aria-label="Prism home"><Logo /><span>Prism</span></a>
@@ -72,6 +75,7 @@ function Header() {
         </nav>
         <div class="head-tools">
           <Search />
+          <PaletteButton class="btn icon-btn" iconClass="icon" />
           <a class="btn icon-btn" href="index.html" aria-label="Home" title="Home"><Icon name="home" class="icon" /></a>
           <button type="button" class="btn icon-btn menu-btn" onClick={() => setMenu(!menu)} aria-expanded={menu ? 'true' : 'false'} aria-label="Menu"><Icon name={menu ? 'close' : 'menu'} class="icon" /></button>
         </div>
@@ -87,6 +91,8 @@ function Header() {
         </nav>
       )}
     </header>
+    <Palette unlocked={unlocked} />
+    </>
   );
 }
 

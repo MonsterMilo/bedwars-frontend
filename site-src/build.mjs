@@ -70,6 +70,15 @@ function writeHtml(meta) {
   }
 }
 
+// A small name list of the library's cosmetics for the jump menu (Ctrl K),
+// fetched only when the menu opens.
+function writeCosmeticIndex() {
+  const lib = JSON.parse(readFileSync(join(here, 'src/data/cosmetics.json'), 'utf8'));
+  const rows = [];
+  for (const cat of Object.values(lib)) for (const it of cat.items || []) if (it.lib) rows.push([it.name, it.lib, cat.label, it.thumb ? 1 : 0]);
+  writeFileSync(join(out, 'cosmetic-index.json'), JSON.stringify(rows));
+}
+
 if (watch) {
   const ctx = await esbuild.context({ ...options, plugins: [{ name: 'html', setup(b) { b.onEnd(r => r.metafile && writeHtml(r.metafile)); } }] });
   await ctx.watch();
@@ -79,6 +88,7 @@ if (watch) {
   mkdirSync(out, { recursive: true });
   const result = await esbuild.build(options);
   writeHtml(result.metafile);
+  writeCosmeticIndex();
   await esbuild.build(embed);
   const sizes = Object.entries(result.metafile.outputs).filter(([, o]) => o.entryPoint).map(([f, o]) => `${basename(f)} ${(o.bytes / 1024).toFixed(1)} KB`);
   console.log(sizes.join('\n'));

@@ -110,6 +110,7 @@ function usePrism(canvas, spot, cards, left_) {
       import('../lib/prism3d.js').then(m => {
         if (dead || scene || document.documentElement.dataset.effects === 'off') return;
         scene = m.startPrism({ canvas: canvas.current, layout, colors, background, reduce: reduceMotion, onReady: () => setMode('3d'), intro: INTRO,
+          backdrop: () => document.getElementById('backdrop'),
           onLand: i => setLit(l => (l[i] ? l : l.map((v, j) => v || j === i))) });
         if (!scene) { setMode('flat'); endIntro(); }
       }).catch(() => { setMode('flat'); endIntro(); });
@@ -163,7 +164,8 @@ function Home() {
               </header>
               <ul class="sec-rows">
                 {s.pages.map(p => (
-                  <li key={p.href}>
+                  <li key={p.href} class={p.also ? 'has-also' : ''}>
+                    {p.also && <a class="sec-also" href={p.also.href}><Icon name={p.also.icon} />{p.also.label}</a>}
                     <a href={p.href} class={`sec-row card-link ${p.featured ? 'featured' : ''}`}>
                       <span class="tile"><ItemIcon id={p.item} /></span>
                       <span class="sec-text">

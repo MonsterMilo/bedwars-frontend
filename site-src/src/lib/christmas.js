@@ -351,7 +351,8 @@ const api = { gust() {}, puff() {}, blizzard() {} };
 
 // ---------- String lights under the header ----------
 function lights() {
-  const head = document.querySelector('.site-head');
+  // Older pages draw the header inside <prism-nav>'s shadow root.
+  const head = document.querySelector('.site-head') || document.querySelector('prism-nav')?.shadowRoot?.querySelector('.site-head');
   if (!head) return () => {};
   const box = node('div', 'xm-lights', head);
   box.setAttribute('aria-hidden', 'true');
@@ -610,12 +611,15 @@ function present(previewing) {
   if (!previewing && !(d.getMonth() === 11 && d.getDate() === 25) && PAGES[h % PAGES.length] !== page) return () => {};
   let el = null, timer = 0;
   function hide() {
-    const spots = [...document.querySelectorAll('main .panel')].filter(p => p.offsetWidth > 200 && p.offsetHeight > 80 && !p.closest('dialog'));
-    if (!spots.length) { timer = setTimeout(hide, 2000); return; }
+    const all = [...document.querySelectorAll('main .panel')].filter(p => p.offsetWidth > 200 && p.offsetHeight > 80 && !p.closest('dialog'));
+    if (!all.length) { timer = setTimeout(hide, 2000); return; }
+    // It sits on top of a panel, so pick one that doesn't clip what sticks out.
+    const open = all.filter(p => getComputedStyle(p).overflow === 'visible');
+    const spots = open.length ? open : all;
     const host = spots[h % spots.length];
     el = document.createElement('button');
     el.type = 'button';
-    el.className = `xm-present ${['r', 'g', 'b'][h % 3]}`;
+    el.className = `xm-present ${['r', 'g', 'b'][h % 3]}${open.length ? '' : ' inside'}`;
     el.setAttribute('aria-label', 'A present! Open it');
     el.title = 'A present!';
     host.appendChild(el);

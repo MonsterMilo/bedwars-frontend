@@ -26,7 +26,7 @@ export function installPaletteKey() {
 
 let cosmetics = null;
 const loadCosmetics = () => cosmetics || (cosmetics = fetch('app/cosmetic-index.json').then(r => (r.ok ? r.json() : [])).catch(() => []));
-const PAGES = SECTIONS.flatMap(s => s.pages.map(p => ({ ...p, hue: s.hue, locked: !!s.locked, group: s.title })));
+const PAGES = SECTIONS.flatMap(s => s.pages.flatMap(p => [p, ...(p.also ? [p.also] : [])]).map(p => ({ ...p, hue: s.hue, locked: !!s.locked, group: s.title })));
 const NAME = /^[A-Za-z0-9_]{1,16}$/;
 
 // Starts-with beats contains; nothing matched -> -1.

@@ -133,3 +133,14 @@ a.cos:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); 
 .stat-row .stat-value { white-space: nowrap; overflow-wrap: normal; }
 @media (max-width: 1100px) and (min-width: 861px) { .stat-row .stat:not(.big) .stat-value { font-size: 1.15rem; } }
 @media (max-width: 640px) { .stats.stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* goals */
+.goals { display: grid; gap: 14px; }
+.goal-tabs { justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.goal-inputs { display: flex; flex-wrap: wrap; gap: 12px 20px; }
+.goal-input { display: grid; gap: 6px; width: min(220px, 100%); }
+.goal-input label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
+.goal-done { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--good, #6ee07a); font-weight: 600; }
+.goal-done svg { width: 18px; height: 18px; }
+.goal-bar { height: 8px; }
+@media (max-width: 560px) { .goal-row.stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

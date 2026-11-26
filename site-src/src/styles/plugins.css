@@ -1,0 +1,28 @@
+/* Plugins: browse, submit, and Milo's review. */
+.plug-tabs { margin-bottom: 16px; width: fit-content; max-width: 100%; }
+.plug-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
+.plug-search { width: auto; flex: 1; min-width: 180px; max-width: 280px; margin-left: auto; min-height: 42px; }
+.plug-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.plug { display: grid; align-content: start; gap: 10px; padding: 18px; border-radius: var(--r-m); border: 1px solid var(--line); background: var(--panel); box-shadow: var(--hi), var(--shadow); backdrop-filter: blur(14px) saturate(1.2); -webkit-backdrop-filter: blur(14px) saturate(1.2); transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.plug:hover { border-color: var(--line-3); }
+.plug-top { display: flex; align-items: center; gap: 12px; }
+.plug-ico { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 12px; color: var(--accent-2); background: color-mix(in srgb, var(--accent-2) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent-2) 30%, transparent); }
+.plug-ico svg { width: 20px; height: 20px; }
+.plug-title { flex: 1; min-width: 0; }
+.plug-title h3 { font-size: 1.05rem; overflow-wrap: anywhere; }
+.plug-desc { color: var(--dim); font-size: 0.92rem; overflow-wrap: anywhere; }
+.plug-link { justify-self: start; }
+.plug-empty, .plug-done { display: grid; justify-items: center; gap: 12px; text-align: center; }
+.plug-done > svg { width: 40px; height: 40px; color: var(--good); }
+.plug-form { display: grid; gap: 16px; max-width: 760px; }
+.plug-form > .btn { justify-self: start; }
+.plug-rules { margin: 0; }
+.plug-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.plug-fields .wide { grid-column: 1 / -1; }
+.plug-fields textarea.input { padding: 10px 14px; resize: vertical; min-height: 84px; }
+.plug-fields em { font-style: normal; font-weight: 400; }
+.plug-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.plug-review { display: grid; gap: 8px; }
+.plug-undo { margin-left: 8px; }
+.linkish { padding: 0; border: 0; background: none; color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 640px) { .plug-fields { grid-template-columns: 1fr; } .plug-search { max-width: none; margin-left: 0; } }

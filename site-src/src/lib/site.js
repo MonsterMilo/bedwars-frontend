@@ -9,6 +9,7 @@ export const SECTIONS = [
     { href: 'nicks.html', item: 'ui:eye', label: 'Nick Finder', icon: 'mask', desc: 'Find who is behind a nick.' },
     { href: 'cosmetics.html', item: 'ui:rocket', label: 'Cosmetics', icon: 'sparkle', desc: 'Every Bed Wars cosmetic, previewed.' },
     { href: 'atlas.html', item: 'ui:map', label: 'Atlas', icon: 'map', desc: 'Every map, from above.' },
+    { href: 'plugins.html', item: 'block:crafting', label: 'Plugins', icon: 'code', desc: 'Plugins for Prism, each one reviewed.' },
     { href: 'download.html', item: 'block:enchanting', label: 'Download Prism', icon: 'download', desc: 'Our plugin client for Lunar 1.8.9.', featured: true }
   ] },
   { id: 'private', hue: 'var(--accent-3)', title: 'Private', blurb: 'Needs a key', locked: true, pages: [

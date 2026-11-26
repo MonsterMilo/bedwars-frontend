@@ -30,10 +30,10 @@ export const DEFAULTS = {
   hour12: true,
   mode: 'overall',      // default Bed Wars mode tab
   lbPeriod: 'lifetime', // default leaderboard period
-  fx: true,             // click bursts and easter eggs (tracker)
-  sound: true,          // sound effects (tracker)
+  fx: true,             // click bursts and easter eggs (every page)
+  sound: true,          // sound effects (every page)
   volume: 55,           // 0-100
-  music: true,          // background music under the sounds
+  music: false,         // background music: off until a visitor turns it on (Milo 11-25)
   seasonal: true        // holiday looks (Christmas in December)
 };
 

@@ -9,7 +9,7 @@
 //  - Buttons, pages, toggles and typing get their glass sounds.
 // Everything is decoration drawn into one click-through layer. It all
 // respects reduced motion and the "Click effects" setting.
-import { prefs, fxPage } from './prefs.js';
+import { prefs, fxPage, setPref } from './prefs.js';
 import { play, setMood } from './audio.js';
 import { seasonHooks, comboLabels } from './seasonfx.js';
 
@@ -417,6 +417,8 @@ export function installFx() {
     }
     if (typingIn(el) || document.querySelector('dialog[open]')) return;
     const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    // M mutes and unmutes, on every page.
+    if (key === 'm') { const on = !prefs.value.sound; setPref('sound', on); eggToast(['Sound ', [on ? 'on' : 'off']], 1600); }
     konami = key === KONAMI[konami] ? konami + 1 : key === KONAMI[0] ? 1 : 0;
     if (konami === KONAMI.length) { konami = 0; bedDestroyed(); return; }
     if (key.length !== 1) return;

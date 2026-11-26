@@ -99,7 +99,9 @@ function usePrism(canvas, spot, cards, left_) {
       const targets = els.map((el, i) => {
         const r = el.getBoundingClientRect();
         if (narrow) return { x: first.left + first.width * ((i + 0.8) / (els.length + 0.6)), y: first.top + 1 };
-        return { x: r.left + 2, y: r.top + 28 };
+        // Each beam lands on the card's left edge as close to level with the
+        // prism as it can, so the colours leave at gentle angles.
+        return { x: r.left + 2, y: Math.max(r.top + 30, Math.min(r.bottom - 30, y)) };
       });
       for (let i = 0; i < hot.current.length; i++) hot.current[i] += (hotT.current[i] - hot.current[i]) * 0.1;
       return { prism: { x, y, size }, targets, hot: hot.current, narrow, source };
@@ -164,8 +166,7 @@ function Home() {
               </header>
               <ul class="sec-rows">
                 {s.pages.map(p => (
-                  <li key={p.href} class={p.also ? 'has-also' : ''}>
-                    {p.also && <a class="sec-also" href={p.also.href}><Icon name={p.also.icon} />{p.also.label}</a>}
+                  <li key={p.href}>
                     <a href={p.href} class={`sec-row card-link ${p.featured ? 'featured' : ''}`}>
                       <span class="tile"><ItemIcon id={p.item} /></span>
                       <span class="sec-text">

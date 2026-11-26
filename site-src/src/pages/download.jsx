@@ -1,4 +1,4 @@
-// Download: the public Prism injectable. Reads the newest build straight from
+// Prism: the public injectable, its download and its plugins. Reads the newest build straight from
 // GitHub releases, so publishing a release there is all it takes to go live.
 import '../styles/base.css';
 import '../styles/shell.css';
@@ -10,6 +10,7 @@ import { Icon } from '../ui/icons.jsx';
 import { Loading, ErrorBox, copyText, HeadEmblem } from '../ui/common.jsx';
 import { ItemIcon } from '../ui/items.jsx';
 import { useAsync } from '../lib/useAsync.js';
+import { get } from '../lib/api.js';
 import { date, num } from '../lib/format.js';
 import { toast } from '../lib/toast.js';
 
@@ -133,6 +134,35 @@ function ComingSoon() {
   );
 }
 
+// Plugins: what's listed so far and the way to the plugins page.
+function PluginsBlock() {
+  const { data } = useAsync(signal => get('/site/plugins', { signal, maxAge: 60_000 }).catch(() => null), []);
+  const list = (data && data.plugins) || [];
+  return (
+    <section class="panel pad dl-plug" aria-labelledby="dl-plug">
+      <div class="dl-plug-head">
+        <span class="dl-plug-ico" aria-hidden="true"><Icon name="code" /></span>
+        <div class="grow">
+          <h2 id="dl-plug">Plugins</h2>
+          <p class="faint">Add features to Prism. Every release is reviewed before it's listed.</p>
+        </div>
+        {list.length > 0 && <span class="chip">{list.length} listed</span>}
+      </div>
+      {list.length > 0 ? (
+        <ul class="dl-plug-list">
+          {list.slice(0, 3).map(p => (
+            <li key={p.id}><a href="plugins.html"><b>{p.name}</b><span class="faint small">by {p.author} · {p.category}</span></a></li>
+          ))}
+        </ul>
+      ) : <p class="dl-plug-empty faint small">None listed yet. Made one? Send it in.</p>}
+      <div class="dl-actions">
+        <a class="btn primary" href="plugins.html"><Icon name="code" />Browse plugins</a>
+        <a class="btn" href="plugins.html?tab=submit"><Icon name="plus" />Submit a plugin</a>
+      </div>
+    </section>
+  );
+}
+
 const STEPS = [
   ['Start Lunar Client', 'Launch Minecraft 1.8.9.'],
   ['Run Prism.exe', 'It loads into the game by itself, or press Inject.'],
@@ -147,9 +177,9 @@ function Download() {
       <div class="page wrap">
         <header class="page-head">
           <div class="grow">
-            <p class="eyebrow"><ItemIcon id="block:enchanting" />Download</p>
+            <p class="eyebrow"><ItemIcon id="block:enchanting" />Injectable</p>
             <h1>Prism</h1>
-            <p>An open-source plugin platform for Minecraft 1.8.9. It runs inside Lunar Client.</p>
+            <p>Our open-source injectable for Minecraft 1.8.9. It runs inside Lunar Client and loads plugins.</p>
           </div>
           <HeadEmblem id="block:enchanting" />
         </header>
@@ -164,6 +194,8 @@ function Download() {
               </>
             )}
             {!loading && !error && (data ? <Release rel={data} /> : <ComingSoon />)}
+
+            <PluginsBlock />
 
             <section class="panel pad" aria-labelledby="dl-how">
               <h2 class="panel-title" id="dl-how"><Icon name="list" />How to use it</h2>
@@ -194,7 +226,6 @@ function Download() {
               <h2 class="panel-title" id="dl-dev"><Icon name="code" />Make plugins</h2>
               <p class="faint small">Build against <code class="mono">prism-api.jar</code> (Java 8).</p>
               <a class="link small" href={`${REPO_URL}#writing-a-plugin`} target="_blank" rel="noopener noreferrer">Plugin guide <Icon name="external" size={14} /></a>
-              <a class="btn small dl-plugins" href="plugins.html"><Icon name="code" />Browse and submit plugins</a>
             </section>
           </aside>
         </div>

@@ -9,7 +9,7 @@ export const SECTIONS = [
     { href: 'nicks.html', item: 'ui:eye', label: 'Nick Finder', icon: 'mask', desc: 'Find who is behind a nick.' },
     { href: 'cosmetics.html', item: 'ui:rocket', label: 'Cosmetics', icon: 'sparkle', desc: 'Every Bed Wars cosmetic, previewed.' },
     { href: 'atlas.html', item: 'ui:map', label: 'Atlas', icon: 'map', desc: 'Every map, from above.' },
-    { href: 'download.html', item: 'block:enchanting', label: 'Download Prism', icon: 'download', desc: 'Our plugin client for Lunar 1.8.9.', featured: true,
+    { href: 'download.html', item: 'block:enchanting', label: 'Prism', icon: 'download', desc: 'Our injectable for Lunar 1.8.9. Download it and get plugins.', featured: true,
       also: { href: 'plugins.html', item: 'block:crafting', label: 'Plugins', icon: 'code', desc: 'Plugins for Prism, each one reviewed.' } }
   ] },
   { id: 'private', hue: 'var(--accent-3)', title: 'Private', blurb: 'Needs a key', locked: true, pages: [
@@ -18,7 +18,8 @@ export const SECTIONS = [
     { href: 'hall-of-fame.html', item: 'ui:totem', label: 'Hall of Fame', icon: 'crown', desc: 'The 20 best players we beat, in 3D.' }
   ] }
 ];
-// Pages listed inside another page's row (Plugins sits with Download Prism).
+// `also`: pages reached from inside another page (Plugins, from the Prism page).
+// They show in Ctrl K and the footer, not as their own home row.
 export const ALL_PAGES = SECTIONS.flatMap(s => s.pages.flatMap(p => [p, ...(p.also ? [p.also] : [])]).map(p => ({ ...p, section: s.id, locked: !!s.locked })));
 export function currentPage() {
   const file = location.pathname.split('/').pop() || 'index.html';

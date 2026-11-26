@@ -99,13 +99,3 @@ html.home-intro .sec-card.lit { animation: card-lit 900ms var(--ease) both; }
   from { opacity: 0; transform: translateX(-16px) scale(0.97); box-shadow: 0 0 0 1px var(--hue), 0 0 70px color-mix(in srgb, var(--hue) 60%, transparent); }
   35% { opacity: 1; box-shadow: 0 0 0 1px var(--hue), 0 0 50px color-mix(in srgb, var(--hue) 40%, transparent); }
 }
-
-/* A second page inside a row (Plugins in the Download Prism row). */
-.sec-rows li.has-also { position: relative; }
-.sec-rows li.has-also .sec-row { padding-bottom: 38px; }
-.sec-also { position: absolute; z-index: 1; left: 60px; bottom: 9px; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 0.76rem; font-weight: 700;
-  color: var(--dim); background: var(--panel-2); border: 1px solid var(--line-2); transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease); }
-.sec-also svg { width: 13px; height: 13px; }
-.sec-also:hover, .sec-also:focus-visible { color: var(--text); border-color: color-mix(in srgb, var(--accent-3) 50%, transparent); }
-@media (min-width: 981px) and (max-height: 780px) { .sec-also { left: 56px; bottom: 7px; } .sec-rows li.has-also .sec-row { padding-bottom: 34px; } }
-@media (max-width: 520px) { .sec-also { left: 58px; } }

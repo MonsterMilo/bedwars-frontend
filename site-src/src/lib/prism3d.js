@@ -45,7 +45,10 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), map: soft, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     m.position.set(...pos); m.lookAt(0, 0, 0); studio.add(m);
   };
-  strip(6, 1.2, 0xffffff, 2.2, [0, 4, 2.5]);
+  strip(6, 1.2, 0xffffff, 2.6, [0, 4, 2.5]);
+  strip(1.6, 1.6, 0xffffff, 3.2, [-3, 3.2, 3.5]);   // key light, where the white beam comes from
+  strip(0.5, 5, 0xffffff, 1.8, [3.2, 1.5, 3.5]);    // a thin strip for a sharp edge glint
+  strip(5, 0.6, 0xa98bff, 1.2, [0, -3.5, -3]);       // cool violet bounce behind
   strip(0.9, 6, 0xffffff, 1.2, [4.5, 0, 1.5]);
   strip(1.2, 5, 0xbfeeff, 1.0, [-4.5, 0.5, 0.5]);
   strip(4, 1.2, 0xdccbff, 1.0, [0, -4, 1.5]);
@@ -119,10 +122,17 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
   const dust = new THREE.Points(dgeo, dustMat); dust.frustumCulled = false; scene.add(dust);
 
   // Beams: a hot core and a soft halo, with pulses running along them.
-  const beamVS = `uniform vec2 uA, uB; uniform float uW0, uW1, uGrow; varying vec2 vUv; varying float vW, vLen;
-    void main(){ vUv = uv; vec2 d = uB - uA; float L = max(length(d), 0.001); vec2 dir = d / L; vec2 n = vec2(-dir.y, dir.x);
-      float a = uv.x * uGrow; vW = mix(uW0, uW1, a); vLen = L;
-      vec2 p = uA + d * a + n * (uv.y - 0.5) * vW;
+  // A beam from uA to uB. With uCurve on it leaves along its fan direction and
+  // eases nearly level into the card, a soft S instead of a sharp diagonal.
+  const beamVS = `uniform vec2 uA, uB; uniform float uW0, uW1, uGrow, uCurve; varying vec2 vUv; varying float vW, vLen;
+    void main(){ vUv = uv; vec2 d = uB - uA; float L = max(length(d), 0.001);
+      vec2 out0 = normalize(vec2(d.x, d.y * 0.8)), in1 = normalize(vec2(d.x, d.y * 0.25));
+      vec2 p1 = mix(uA + d / 3.0, uA + out0 * L * 0.38, uCurve), p2 = mix(uB - d / 3.0, uB - in1 * L * 0.4, uCurve);
+      float a = uv.x * uGrow, b = 1.0 - a; vW = mix(uW0, uW1, a); vLen = L * (1.0 + 0.08 * uCurve);
+      vec2 c = b * b * b * uA + 3.0 * b * b * a * p1 + 3.0 * b * a * a * p2 + a * a * a * uB;
+      vec2 tg = 3.0 * b * b * (p1 - uA) + 6.0 * b * a * (p2 - p1) + 3.0 * a * a * (uB - p2);
+      vec2 dir = normalize(tg + d * 0.0001); vec2 n = vec2(-dir.y, dir.x);
+      vec2 p = c + n * (uv.y - 0.5) * vW;
       gl_Position = projectionMatrix * viewMatrix * vec4(p, 0.0, 1.0); }`;
   const beamFS = `uniform vec3 uColor; uniform float uI, uT, uCore, uSpeed, uFade; varying vec2 vUv; varying float vW, vLen;
     void main(){ float dpx = abs(vUv.y - 0.5) * vW;
@@ -137,7 +147,7 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
   function makeBeam(color, fadeStart, order = 5) {
     const m = new THREE.ShaderMaterial({
       vertexShader: beamVS, fragmentShader: beamFS, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
-      uniforms: { uA: { value: new THREE.Vector2() }, uB: { value: new THREE.Vector2() }, uW0: { value: 6 }, uW1: { value: 30 }, uGrow: { value: 0 }, uColor: { value: color.clone() }, uI: { value: 1 }, uT: { value: 0 }, uCore: { value: 1.4 }, uSpeed: { value: 3 }, uFade: { value: fadeStart ? 1 : 0 } }
+      uniforms: { uA: { value: new THREE.Vector2() }, uB: { value: new THREE.Vector2() }, uW0: { value: 6 }, uW1: { value: 30 }, uGrow: { value: 0 }, uColor: { value: color.clone() }, uI: { value: 1 }, uT: { value: 0 }, uCore: { value: 1.4 }, uSpeed: { value: 3 }, uFade: { value: fadeStart ? 1 : 0 }, uCurve: { value: 0 } }
     });
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 48, 1), m); mesh.frustumCulled = false; mesh.renderOrder = order; scene.add(mesh);
     return m;
@@ -185,23 +195,35 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
   const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.045, bevelSize: 0.04, bevelSegments: 8, curveSegments: 16 });
   geo.translate(0, -0.12, -depth / 2); geo.computeVertexNormals();
   const glass = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff, metalness: 0, roughness: 0.04, transmission: 1, thickness: 1.25, ior: 1.52, dispersion: 2.5,
-    attenuationColor: new THREE.Color(0xcfe6ff), attenuationDistance: 600,
-    clearcoat: 0.5, clearcoatRoughness: 0.05, specularIntensity: 1, specularColor: new THREE.Color(0xffffff), envMapIntensity: 0.7,
-    iridescence: 0.1, iridescenceIOR: 1.3, iridescenceThicknessRange: [250, 420]
+    color: 0xffffff, metalness: 0, roughness: 0.02, transmission: 1, thickness: 1.6, ior: 1.55, dispersion: 3.5,
+    attenuationColor: new THREE.Color(0xb9dcff), attenuationDistance: 140,
+    clearcoat: 1, clearcoatRoughness: 0.03, specularIntensity: 1, specularColor: new THREE.Color(0xffffff), envMapIntensity: 1.5,
+    iridescence: 0.25, iridescenceIOR: 1.3, iridescenceThicknessRange: [250, 420]
   });
   const prism = new THREE.Mesh(geo, glass); prism.renderOrder = 3;
   // A faint fresnel rim so the edges always catch light, and a cool glow on
   // the triangle faces so the glass reads as a solid block.
   const rimMat = new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    // Both sides, no depth test: the far edges show faintly through the glass, so it reads as a solid block.
+    transparent: true, depthWrite: false, depthTest: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
     uniforms: { uT: { value: 0 } },
     vertexShader: 'varying vec3 vN, vV, vP; varying float vFace; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position; vFace = abs(normal.z); gl_Position = projectionMatrix * mv; }',
     fragmentShader: `uniform float uT; varying vec3 vN, vV, vP; varying float vFace; void main(){ float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 3.0);
       float h = fract(vP.x * 0.3 + vP.y * 0.22 + uT * 0.04); vec3 c = mix(vec3(0.0, 0.85, 1.0), vec3(0.66, 0.33, 0.97), smoothstep(0.0, 0.5, h)); c = mix(c, vec3(1.0, 0.72, 0.3), smoothstep(0.5, 1.0, h));
-      vec3 body = vec3(0.55, 0.72, 1.0) * (0.012 + 0.03 * smoothstep(-0.9, 0.95, vP.y)) * smoothstep(0.6, 1.0, vFace);
+      // The glass body: brighter toward the top where the light enters, with a slow caustic shimmer.
+      float sh = 0.5 + 0.5 * sin(vP.x * 7.0 + vP.y * 5.0 + uT * 0.6) * sin(vP.y * 9.0 - uT * 0.45);
+      vec3 body = vec3(0.55, 0.72, 1.0) * (0.02 + 0.05 * smoothstep(-0.9, 0.95, vP.y) + 0.018 * sh) * smoothstep(0.6, 1.0, vFace);
       c = mix(c, vec3(0.8, 0.88, 1.0), 0.6 * (1.0 - vFace));
-      gl_FragColor = vec4(c * f * 0.3 + body, 1.0); }`
+      // A bright line along the bevels, so every edge reads crisp.
+      float bevel = smoothstep(0.12, 0.4, vFace) * (1.0 - smoothstep(0.6, 0.92, vFace));
+      vec3 L = normalize(vec3(-0.5, 0.75, 0.45));
+      float lit = 0.35 + 0.65 * max(0.0, dot(normalize(vN), L));
+      vec3 edge = vec3(0.85, 0.92, 1.0) * bevel * 0.32 * lit;
+      if (!gl_FrontFacing) { gl_FragColor = vec4(edge * 0.5 + c * f * 0.06, 1.0); return; }
+      // A soft polished sheen sweeping across the front face.
+      float d = vP.x * 0.55 + vP.y * 0.85;
+      float sheen = exp(-pow((d - 0.35 - 0.12 * sin(uT * 0.25)) / 0.16, 2.0)) * 0.05 + exp(-pow((d - 0.75) / 0.05, 2.0)) * 0.035;
+      gl_FragColor = vec4(c * f * 0.34 + body + edge + vec3(0.9, 0.95, 1.0) * sheen * smoothstep(0.8, 1.0, vFace), 1.0); }`
   });
   const rim = new THREE.Mesh(geo, rimMat); rim.renderOrder = 4; prism.add(rim);
   const prismGroup = new THREE.Group(); prismGroup.add(prism); scene.add(prismGroup);
@@ -254,7 +276,7 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
   // Drag to spin: press on the prism and drag; let go and it keeps turning,
   // then eases back to its slow sway either side of face-on.
   const SWAY = 0.34;
-  const spin = { drag: false, id: null, lx: 0, ly: 0, vy: 0, vx: 0, tiltX: 0.12, L: null };
+  const spin = { drag: false, id: null, lx: 0, ly: 0, vy: 0, vx: 0, tiltX: 0.18, L: null };
   const nearPrism = e => { const L = spin.L; if (!L) return false; return Math.hypot(e.clientX - L.prism.x, e.clientY - L.prism.y) < L.prism.size * 0.6; };
   const interactive = e => e.target.closest && e.target.closest('a, button, input, textarea, select, label, [role="listbox"], .panel, .psearch');
   const onDown = e => {
@@ -324,7 +346,7 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
       if (!shown) prismGroup.rotation.y = target;
       prismGroup.rotation.y += (target - prismGroup.rotation.y) * Math.min(1, dt * 1.2) * (1 - free);
       spin.tiltX += dt * spin.vx; spin.vx *= Math.max(0, 1 - dt * 3);
-      spin.tiltX += (0.12 - spin.tiltX) * Math.min(1, dt * 0.8);
+      spin.tiltX += (0.18 - spin.tiltX) * Math.min(1, dt * 0.8);
     }
     prismGroup.rotation.x = spin.tiltX + (still ? 0 : Math.sin(t * 0.45) * 0.05);
     prismGroup.updateMatrixWorld(true);
@@ -357,7 +379,7 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
       ib.uW0.value = S * 0.025; ib.uW1.value = S * 0.05; ib.uCore.value = Math.max(1, S * 0.004) * (1 + h * 0.5);
       ib.uI.value = 0.6 + h * 0.5; ib.uT.value = t; ib.uSpeed.value = 2.4;
       const u = b.uniforms;
-      u.uA.value.copy(exit); u.uB.value.set(tg.x, -tg.y); u.uGrow.value = ease(split);
+      u.uA.value.copy(exit); u.uB.value.set(tg.x, -tg.y); u.uGrow.value = ease(split); u.uCurve.value = L.narrow ? 0 : 1;
       u.uW0.value = S * 0.03; u.uW1.value = (L.narrow ? 18 : S * 0.13) * (1 + h * 0.5); u.uCore.value = Math.max(1.2, S * 0.0045) * (1 + h * 0.7);
       u.uI.value = 0.75 + h * 0.75; u.uT.value = t; u.uSpeed.value = 2.6 + h * 2.5;
       xs.position.set(exit.x, exit.y, 0); const xz = S * 0.2 * (1 + h * 0.4); xs.scale.set(xz, xz, 1); xs.material.uniforms.uI.value = inner >= 1 ? 0.6 + h * 0.4 : 0;

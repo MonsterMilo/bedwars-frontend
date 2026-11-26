@@ -378,12 +378,13 @@ function winter() {
     }
   }
   function hillLayer(W, H, i, light) {
-    const pad = 40, w = W + pad * 2, top = H * (0.7 + i * 0.075), h = H - top + 24;
+    // room: headroom above the ridge so the tallest pines never lose their tips.
+    const pad = 40, room = 110, w = W + pad * 2, top = H * (0.7 + i * 0.075) - room, h = H - top + 24;
     const [cv, c] = canvas(w, h, dprOf());
     const r = seeded(9001 + i * 77);
     const ph = [r() * TAU, r() * TAU, r() * TAU];
     const amp = [22 - i * 5, 9, 3];
-    const ridge = x => 34 + amp[0] * Math.sin(x / (W * 0.23) + ph[0]) + amp[1] * Math.sin(x / (W * 0.07) + ph[1]) + amp[2] * Math.sin(x / 41 + ph[2]);
+    const ridge = x => room + 34 + amp[0] * Math.sin(x / (W * 0.23) + ph[0]) + amp[1] * Math.sin(x / (W * 0.07) + ph[1]) + amp[2] * Math.sin(x / 41 + ph[2]);
     const tone = light
       ? [['#e3eaf6', '#d0dbed'], ['#edf2f9', '#d9e2f0'], ['#fafcfe', '#e4eaf4']][i]
       : [['#18233c', '#121a2c'], ['#223152', '#161f37'], ['#3d5076', '#1f2b47']][i];

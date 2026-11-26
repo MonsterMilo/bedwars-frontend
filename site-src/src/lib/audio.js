@@ -365,12 +365,31 @@ const XM = {
     crunch(t, { gain: o.kind === 'back' ? 0.035 : 0.05, n: 3, dur: 0.05 });
   },
   xmShake(t, o) { jingle(t, { gain: 0.03 * (o.gain || 1), pan: o.pan, n: 3, spread: 0.04 }); },
+  // A deep, round "Ho ho ho": a breathy h, then an "o" voiced through its formants.
   xmHoho(t, o) {
-    [0, 0.3, 0.6].forEach((k, i) => {
-      const f = (i === 2 ? 104 : 116) * rnd(0.98, 1.02);
-      tone(t + k, { type: 'sawtooth', f, f2: f * 0.86, dur: 0.2, hold: 0.06, gain: 0.08, bp: 620, q: 2.2, a: 0.02, pan: o.pan });
-      tone(t + k, { type: 'sawtooth', f, f2: f * 0.86, dur: 0.16, hold: 0.05, gain: 0.028, bp: 1050, q: 3, a: 0.02, pan: o.pan });
+    [0, 0.32, 0.64].forEach((k, i) => {
+      const f = (i === 2 ? 98 : 110) * rnd(0.98, 1.02), d = i === 2 ? 0.34 : 0.22;
+      noise(t + k, { type: 'bandpass', f: 1100, q: 0.8, dur: 0.07, gain: 0.03, pan: o.pan });
+      tone(t + k + 0.04, { type: 'sawtooth', f, f2: f * 0.84, dur: d, hold: d * 0.4, gain: 0.07, bp: 480, q: 2.4, a: 0.025, pan: o.pan });
+      tone(t + k + 0.04, { type: 'sawtooth', f, f2: f * 0.84, dur: d * 0.85, hold: d * 0.3, gain: 0.035, bp: 820, q: 3, a: 0.025, pan: o.pan });
+      tone(t + k + 0.04, { type: 'sine', f: f / 2, f2: f * 0.42, dur: d, hold: d * 0.4, gain: 0.05, a: 0.03, pan: o.pan });
     });
+    jingle(t + 0.95, { gain: 0.025, n: 5, spread: 0.1, pan: o.pan });
+  },
+  // One gallop of sleigh bells: da-da-DUM, a cluster of tiny crotal bells on each beat.
+  xmGallop(t, o) {
+    const g = 0.034 * (o.gain || 1), up = o.up || 1;
+    [[0, 0.65], [0.13, 0.8], [0.25, 1]].forEach(([k, acc]) => {
+      for (let i = 0; i < 5; i++) {
+        glass(t + k + rnd(0, 0.035), rnd(2700, 4100) * up, { ratios: [1, 1.52, 2.21, 3.07], dur: rnd(0.1, 0.2), gain: g * acc * rnd(0.55, 1), pan: (o.pan || 0) + rnd(-0.08, 0.08) });
+      }
+      noise(t + k, { type: 'highpass', f: 7000, dur: 0.06, gain: g * acc * 0.45, pan: o.pan });
+    });
+  },
+  // Santa arrives: a rush of wind and a twinkling rise.
+  xmArrive(t, o) {
+    noise(t, { type: 'bandpass', f: 320, f2: 1400, fDur: 1.6, q: 1.2, dur: 2.2, swell: 0.45, gain: 0.05, pan: o.pan });
+    [84, 88, 91, 96, 100, 103].forEach((n, i) => celesta(t + 0.25 + i * 0.075, n, { gain: 0.028 - i * 0.002, dur: 1.1, pan: o.pan }));
   },
   xmPop(t, o) {
     noise(t, { type: 'bandpass', f: 2600, q: 0.6, dur: 0.05, gain: 0.18, pan: o.pan });
@@ -390,7 +409,7 @@ const XM = {
 Object.assign(SOUNDS, XM);
 // Which Christmas sound stands in for each everyday one.
 const XM_FOR = { click: 'xmNote', rare: 'xmRare', combo: 'xmCombo', ui: 'xmTick', view: 'xmTick', toggle: 'xmToggle', save: 'xmToggle', success: 'xmSuccess', found: 'xmSuccess', chime: 'xmChime', type: 'xmType', hover: 'xmFlakes' };
-const XM_TRIM = { xmNote: 0, xmRare: 0, xmCombo: -2, xmTick: 0, xmToggle: -3, xmSuccess: -3, xmChime: -4, xmType: 6, xmShake: 2, xmHoho: 0, xmPop: -2, xmRelight: 2, xmFixed: -3, xmPresent: -2, xmSwish: 3, xmBell: -2, xmFlakes: 12 };
+const XM_TRIM = { xmNote: 0, xmRare: 0, xmCombo: -2, xmTick: 0, xmToggle: -3, xmSuccess: -3, xmChime: -4, xmType: 6, xmShake: 2, xmHoho: 0, xmGallop: 1, xmArrive: -1, xmPop: -2, xmRelight: 2, xmFixed: -3, xmPresent: -2, xmSwish: 3, xmBell: -2, xmFlakes: 12 };
 
 // Per-sound trims in dB, measured so each kind of moment sits at the same
 // loudness (from the old tracker).

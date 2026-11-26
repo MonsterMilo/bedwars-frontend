@@ -504,29 +504,71 @@ function bodyHats() {
 
 // ---------- Santa's sleigh ----------
 function sleighSvg() {
-  const o = ['<svg class="xm-sleigh-svg" viewBox="0 0 380 100">'];
-  [18, 78, 138, 198].forEach((x, k) => {
+  const GOLD = '#e8c15a';
+  const o = ['<svg class="xm-sleigh-svg" viewBox="0 0 440 124">',
+    '<defs>',
+    '<linearGradient id="xmsFur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a26a3e"/><stop offset="1" stop-color="#6a3e21"/></linearGradient>',
+    '<linearGradient id="xmsRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ea4148"/><stop offset=".55" stop-color="#c4262e"/><stop offset="1" stop-color="#8e1319"/></linearGradient>',
+    '<linearGradient id="xmsCoat" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8434a"/><stop offset="1" stop-color="#a51b22"/></linearGradient>',
+    '<linearGradient id="xmsSack" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a87444"/><stop offset="1" stop-color="#6a4222"/></linearGradient>',
+    '<linearGradient id="xmsGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#c39431"/></linearGradient>',
+    '<radialGradient id="xmsGlow"><stop offset="0" stop-color="#ff6a6a" stop-opacity=".95"/><stop offset=".4" stop-color="#ff3b3b" stop-opacity=".35"/><stop offset="1" stop-color="#ff3b3b" stop-opacity="0"/></radialGradient>',
+    '<radialGradient id="xmsLamp"><stop offset="0" stop-color="#fff2b8" stop-opacity=".95"/><stop offset="1" stop-color="#ffcf5a" stop-opacity="0"/></radialGradient>',
+    '</defs>'];
+  // A leg that swings from the hip: thigh, shin, a dark hoof.
+  const leg = (hx, hy, cls, col) => `<g class="xm-leg ${cls}"><path d="M${hx} ${hy} L${hx - 2} ${hy + 9} L${hx + 1} ${hy + 17}" stroke="${col}" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M${hx} ${hy + 16.5} l2.4 1.4" stroke="#24150c" stroke-width="3.4" stroke-linecap="round"/></g>`;
+  // Four reindeer, Rudolph in front. Reins run back to Santa's hands.
+  const X = [14, 80, 146, 212];
+  o.push(`<path d="M${X[0] + 12} 47 ${X.slice(1).map(x => `Q${x - 22} 54 ${x + 12} 47`).join(' ')} Q${X[3] + 50} 52 302 56" stroke="#7a5a32" stroke-width="1.3" fill="none" opacity=".9"/>`);
+  X.forEach((x, k) => {
     o.push(`<g class="xm-deer d${k}">`
-      + `<path d="M${x + 6} 46 C${x + 10} 38 ${x + 36} 38 ${x + 44} 46 C${x + 46} 54 ${x + 40} 58 ${x + 26} 58 C${x + 14} 58 ${x + 6} 54 ${x + 6} 46 Z" fill="#7a4a2a"/>`
-      + `<path d="M${x + 10} 54 l-8 12 M${x + 16} 56 l-4 13 M${x + 36} 56 l8 11 M${x + 40} 54 l12 8" stroke="#5a341c" stroke-width="3" stroke-linecap="round"/>`
-      + `<path d="M${x + 8} 46 C${x + 2} 38 ${x} 32 ${x + 2} 28 L${x + 8} 30 C${x + 10} 36 ${x + 12} 40 ${x + 14} 44 Z" fill="#7a4a2a"/>`
-      + `<ellipse cx="${x}" cy="29" rx="7" ry="5" fill="#8a5632"/><circle cx="${x - 6}" cy="30" r="2.4" fill="${k === 0 ? '#ff4040' : '#2a1a14'}" class="${k === 0 ? 'xm-nose' : ''}"/>`
-      + `<path d="M${x + 2} 25 l-4 -9 l-4 -2 M${x - 2} 18 l3 -4 M${x + 4} 25 l2 -10 l4 -3 M${x + 6} 17 l-3 -4" stroke="#cdb08a" stroke-width="1.8" fill="none" stroke-linecap="round"/>`
-      + `<path d="M${x + 30} 48 h-4" stroke="#e8c15a" stroke-width="5" stroke-linecap="round"/></g>`);
+      // far legs first, darker
+      + leg(x + 20, 58, 'lf far', '#3e2414') + leg(x + 47, 57, 'lb far', '#3e2414')
+      + `<path d="M${x + 10} 50 C${x + 12} 41 ${x + 30} 39 ${x + 44} 42 C${x + 55} 44 ${x + 57} 54 ${x + 50} 60 C${x + 44} 65 ${x + 22} 66 ${x + 14} 62 C${x + 8} 59 ${x + 8} 54 ${x + 10} 50 Z" fill="url(#xmsFur)"/>`
+      + `<path d="M${x + 16} 61 C${x + 24} 65.5 ${x + 40} 64.5 ${x + 48} 59 C${x + 40} 62 ${x + 26} 62.5 ${x + 16} 61 Z" fill="#d6ad7c" opacity=".75"/>`
+      + `<path d="M${x + 22} 43 C${x + 30} 41 ${x + 40} 41.5 ${x + 48} 45" stroke="#c48a55" stroke-width="1.2" fill="none" opacity=".6"/>`
+      + `<path d="M${x + 52} 46 c4 -3.5 7.5 -1.5 6.5 2 c-2 2.2 -4.6 2 -6.5 0 Z" fill="#f3eadc"/>`
+      + leg(x + 14, 58, 'lf', '#5a341c') + leg(x + 42, 57, 'lb', '#5a341c')
+      // neck, chest ruff, head
+      + `<path d="M${x + 16} 51 C${x + 10} 45 ${x + 6} 37 ${x + 4} 30 L${x + 14} 27 C${x + 16} 34 ${x + 20} 40 ${x + 25} 46 Z" fill="url(#xmsFur)"/>`
+      + `<path d="M${x + 8} 38 c-3 5 -1.5 10 3.5 13 c1.5 -4 1.5 -9 -.5 -13 Z" fill="#e2c49a" opacity=".85"/>`
+      + `<path d="M${x + 2} 22 C${x + 8} 20 ${x + 14} 23 ${x + 15} 28 C${x + 14} 32 ${x + 8} 33 ${x + 2} 32 C${x - 4} 33 ${x - 9} 31 ${x - 10} 28 C${x - 9} 25 ${x - 4} 22 ${x + 2} 22 Z" fill="#91593a"/>`
+      + `<path d="M${x - 8} 29.5 C${x - 4} 31.5 ${x + 2} 31.5 ${x + 6} 30" stroke="#6a3e21" stroke-width="1" fill="none"/>`
+      + `<path d="M${x + 9} 23.5 l7.5 -4.5 l-2.6 6.4 Z" fill="#6f4224"/><path d="M${x + 10.5} 23.4 l4.2 -2.4 l-1.3 3.3 Z" fill="#d9a77c"/>`
+      + `<circle cx="${x + 1}" cy="25.8" r="1.4" fill="#1a0f08"/><circle cx="${x + 1.5}" cy="25.3" r=".45" fill="#fff"/>`
+      + `<path d="M${x + 6} 22 C${x + 6} 14 ${x + 10} 8 ${x + 16} 4 M${x + 8} 13 l6.5 -2 M${x + 10.5} 8.5 l-1 -6 M${x + 3} 22 C${x + 1} 14 ${x - 2} 9 ${x - 6} 6 M${x + 1} 15 l-5.5 -1 M${x - 1} 11 l1 -6" stroke="#dcc39c" stroke-width="2" fill="none" stroke-linecap="round"/>`
+      + (k === 0 ? `<circle cx="${x - 10}" cy="28.5" r="9" fill="url(#xmsGlow)" class="xm-glow"/><circle cx="${x - 10}" cy="28.5" r="2.8" fill="#ff3b3b" class="xm-nose"/>` : `<circle cx="${x - 10}" cy="28.3" r="2.3" fill="#2a1a14"/>`)
+      // harness: collar and belly band with little gold bells
+      + `<path d="M${x + 7} 41 C${x + 12} 46 ${x + 18} 48 ${x + 24} 47" stroke="#b0222a" stroke-width="3.6" fill="none" stroke-linecap="round"/>`
+      + `<path d="M${x + 30} 41.5 C${x + 28.5} 50 ${x + 29} 58 ${x + 31} 64.5" stroke="#b0222a" stroke-width="3.2" fill="none"/>`
+      + [[x + 10, 44.5], [x + 15, 47], [x + 20, 48], [x + 29.6, 50], [x + 30, 57]].map(([bx, by]) => `<circle cx="${bx}" cy="${by}" r="1.9" fill="url(#xmsGold)"/>`).join('')
+      + '</g>');
   });
-  o.push('<path d="M60 47 L262 54 M120 48 L262 56 M180 49 L262 58" stroke="#c9a46a" stroke-width="1.2" opacity=".85"/>');
-  o.push('<g class="xm-sled"><path d="M252 82 C264 92 352 92 368 80" stroke="#e8c15a" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
-    + '<path d="M270 74 v10 M340 74 v10" stroke="#e8c15a" stroke-width="2.4"/>'
-    + '<path d="M256 50 C256 40 262 34 270 36 L274 52 L350 52 C356 40 366 34 372 36 C376 50 370 74 350 76 L276 76 C262 76 256 64 256 50 Z" fill="#c4262e"/>'
-    + '<path d="M262 64 C290 70 330 70 368 60" stroke="#e8c15a" stroke-width="2.2" fill="none"/>'
-    + '<path d="M292 52 C292 36 300 30 310 30 C320 30 326 38 326 52 Z" fill="#d42f35"/>'
-    + '<circle cx="310" cy="24" r="8" fill="#f2c9a8"/><path d="M301 26 C302 38 318 38 319 26 C316 31 304 31 301 26 Z" fill="#f4f8ff"/>'
-    + '<path d="M301 21 C302 10 316 8 322 14 L330 22 L319 19 Z" fill="#d42f35"/><circle cx="331" cy="23" r="3.2" fill="#f4f8ff"/>'
-    + '<path d="M300 21 h20" stroke="#f4f8ff" stroke-width="3.4" stroke-linecap="round"/>'
-    + '<path d="M296 44 l-26 4" stroke="#d42f35" stroke-width="5" stroke-linecap="round"/>'
-    + '<path d="M330 50 C326 34 336 22 348 24 C362 26 364 40 358 52 Z" fill="#8a5a32"/>'
-    + '<rect x="336" y="16" width="12" height="10" fill="#2e64b5"/><rect x="341" y="16" width="2.4" height="10" fill="#f2cf6e"/>'
-    + '<rect x="348" y="20" width="9" height="8" fill="#1f6b45"/></g></svg>');
+  // The sleigh: runners with a curl, red body, gold scrollwork, a lamp.
+  o.push('<g class="xm-sled">'
+    + `<path d="M262 96 C256 100 258 108 270 108 L410 108 C420 108 426 104 428 98 M262 96 C266 90 274 92 271 98 C269 101 265 100 266 97" stroke="url(#xmsGold)" stroke-width="3.4" fill="none" stroke-linecap="round"/>`
+    + `<path d="M292 90 v18 M334 92 v16 M384 92 v16" stroke="#c99a35" stroke-width="2.6"/>`
+    + '<circle cx="279" cy="44" r="13" fill="url(#xmsLamp)" class="xm-lamp"/><path d="M279 34 v4" stroke="#3a2a1a" stroke-width="1.2"/><rect x="276" y="38" width="6" height="8" rx="1.5" fill="#ffe7a0" stroke="#b88a2a" stroke-width="1"/>'
+    // seat back + sack of presents behind Santa
+    + '<path d="M372 34 C376 22 392 20 398 30 C384 26 378 28 376 36 Z" fill="#3a6fc4"/><path d="M384 21 v12" stroke="#ffd24e" stroke-width="2"/>'
+    + '<rect x="398" y="20" width="12" height="12" rx="1" fill="#1f8a4f"/><path d="M404 20 v12 M398 26 h12" stroke="#ffd24e" stroke-width="1.8"/><path d="M404 20 c-4 -4 -6 0 0 0 c4 -4 6 0 0 0" stroke="#ffd24e" stroke-width="1.4" fill="none"/>'
+    + '<path d="M366 62 C360 46 368 30 386 30 C404 30 414 44 408 62 Z" fill="url(#xmsSack)"/><path d="M376 33 C382 37 392 37 398 33" stroke="#4a2c14" stroke-width="2" fill="none"/><path d="M378 44 C384 50 392 52 400 50" stroke="#5a3a1c" stroke-width="1" fill="none" opacity=".6"/>'
+    // Santa
+    + '<path d="M318 62 C316 46 326 36 340 36 C354 36 362 46 362 62 Z" fill="url(#xmsCoat)"/>'
+    + '<path d="M338 38 v24" stroke="#f4f8ff" stroke-width="3.6"/><rect x="320" y="53" width="41" height="5" fill="#1d1414"/><rect x="335" y="52" width="8" height="7" rx="1" fill="none" stroke="#ffd24e" stroke-width="1.6"/>'
+    + '<path d="M328 45 C318 47 308 51 300 54" stroke="url(#xmsCoat)" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M305 51.5 l1.6 5" stroke="#f4f8ff" stroke-width="3.4" stroke-linecap="round"/><circle cx="299" cy="55" r="3.6" fill="#1d1414"/>'
+    + '<circle cx="340" cy="28" r="8.2" fill="#f6cfae"/><circle cx="334.6" cy="30" r="2.4" fill="#f08d80" opacity=".7"/><circle cx="335.8" cy="25.8" r="1.1" fill="#2a1a14"/><circle cx="332.6" cy="28.6" r="2.1" fill="#eaa088"/>'
+    + '<path d="M331 29 C329 41 337 48 344 46 C351 44 351 34 349 28 C345 32 337 33 331 29 Z" fill="#f4f8ff"/><path d="M341 34 c2 4 4 8 3 12" stroke="#d6e2f2" stroke-width="1" fill="none"/>'
+    + '<path d="M329.5 30.5 c3 -3 7.5 -2.4 9.5 0 c-3.4 1.6 -6.6 2 -9.5 0 Z" fill="#fff"/>'
+    + '<path d="M331 22 C333 11 348 8 356 14 C361 18 365 23 368 29 L352 20 Z" fill="#d42f35"/><circle cx="368.6" cy="29.4" r="3.6" fill="#fff"/><path d="M330 22.5 h21" stroke="#f4f8ff" stroke-width="4.6" stroke-linecap="round"/>'
+    // sleigh body in front of Santa's legs
+    + '<path d="M270 60 C266 48 270 38 282 40 C290 42 291 52 286 58 L300 62 L404 62 C408 48 418 40 428 42 C434 56 430 88 404 92 L296 92 C280 92 272 78 270 60 Z" fill="url(#xmsRed)"/>'
+    + '<path d="M284 42 C288 46 288 52 286 58 L300 62 L404 62 C408 50 416 44 426 44" stroke="rgba(255,255,255,.35)" stroke-width="1.4" fill="none"/>'
+    + '<path d="M278 78 C306 88 372 88 426 72" stroke="url(#xmsGold)" stroke-width="2.4" fill="none"/>'
+    + '<path d="M304 74 c5 -7 15 -3 11 4 c-3 4 -8 2 -6 -1.5 M394 72 c-5 -7 -15 -3 -11 4 c3 4 8 2 6 -1.5" stroke="url(#xmsGold)" stroke-width="1.7" fill="none" stroke-linecap="round"/>'
+    + '<circle cx="349" cy="76" r="3.4" fill="url(#xmsGold)"/><circle cx="330" cy="77" r="1.6" fill="#ffe08a"/><circle cx="368" cy="77" r="1.6" fill="#ffe08a"/>'
+    + '<path d="M276 52 C272 48 274 42 280 43" stroke="url(#xmsGold)" stroke-width="1.6" fill="none"/>'
+    + '</g></svg>');
   return o.join('');
 }
 function sleigh() {
@@ -535,7 +577,7 @@ function sleigh() {
     if (calm() || document.hidden || live || document.querySelector('dialog[open]')) return;
     const W = innerWidth, H = innerHeight;
     const near = opts.near || rnd(0.55, 1);
-    const sw = (W < 620 ? 180 : 290) * near;
+    const sw = (W < 620 ? 220 : 360) * near;
     const rtl = opts.rtl != null ? opts.rtl : Math.random() < 0.65;
     const el = node('div', 'xm-sleigh', document.body);
     el.style.width = `${sw}px`;
@@ -554,19 +596,29 @@ function sleigh() {
       { translate: `${to}px ${y0 - lift * 0.8}px` }
     ], { duration: dur, easing: 'linear' });
     live = el;
-    // Bells while it's on screen, panned with it, and sparkles off the runners.
+    // Bells in time with the gallop, panned with it, louder mid-screen and a
+    // touch higher while it's coming closer; sparkles off the runners.
+    play('xmArrive', { x: rtl ? W : 0 });
+    const ring = () => {
+      if (!el.isConnected) return;
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const mid = 1 - Math.min(1, Math.abs(cx - W / 2) / (W / 2 + r.width / 2));
+      const coming = rtl ? cx > W / 2 : cx < W / 2;
+      if (mid > 0) play('xmGallop', { x: Math.max(0, Math.min(W, cx)), gain: near * (0.3 + 0.7 * mid), up: coming ? 1.03 : 0.97 });
+    };
+    ring();
+    const bells = setInterval(() => { if (!el.isConnected) clearInterval(bells); else ring(); }, 500);
     const tick = setInterval(() => {
       if (!el.isConnected) { clearInterval(tick); return; }
       const r = el.getBoundingClientRect();
-      const cx = r.left + r.width / 2;
-      if (cx > -100 && cx < W + 100) play('xmShake', { x: Math.max(0, Math.min(W, cx)), gain: near });
       const sx = rtl ? r.right - r.width * 0.06 : r.left + r.width * 0.06;
       for (let k = 0; k < 2; k++) {
         const s = fxEl('xm-sparkle', sx + rnd(-6, 6), r.top + r.height * rnd(0.6, 0.9));
         fxPlay(s, [{ transform: 'scale(1)', opacity: 1 }, { transform: `translate(${rnd(-10, 10)}px, ${rnd(10, 40)}px) scale(0.2)`, opacity: 0 }], { duration: rnd(700, 1300), easing: 'ease-out' });
       }
     }, 140);
-    anim.onfinish = anim.oncancel = () => { clearInterval(tick); el.remove(); if (live === el) live = null; };
+    anim.onfinish = anim.oncancel = () => { clearInterval(tick); clearInterval(bells); el.remove(); if (live === el) live = null; };
     el.addEventListener('click', e => {
       e.stopPropagation();
       if (el.dataset.ho) return;

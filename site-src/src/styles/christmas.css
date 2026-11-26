@@ -61,6 +61,16 @@ html[data-surface="light"] .xm-word { color: #141824; }
 .xm-nose { animation: xm-nose 1.2s ease-in-out infinite; }
 @keyframes xm-gallop { 50% { transform: translateY(-3px); } }
 @keyframes xm-nose { 50% { fill: #ff9a9a; } }
+/* Legs gallop from the hip; front and back pairs swing opposite ways. */
+.xm-leg { transform-box: fill-box; transform-origin: 50% 0; animation: xm-legf 0.5s ease-in-out infinite; }
+.xm-leg.lb { animation-name: xm-legb; }
+.xm-leg.far { animation-delay: -0.12s; }
+@keyframes xm-legf { 0%, 100% { transform: rotate(28deg); } 50% { transform: rotate(-22deg); } }
+@keyframes xm-legb { 0%, 100% { transform: rotate(-26deg); } 50% { transform: rotate(24deg); } }
+.xm-glow { animation: xm-glow 1.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes xm-glow { 50% { opacity: 0.55; transform: scale(0.8); } }
+.xm-lamp { animation: xm-glow 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+html[data-motion="reduce"] .xm-leg, html[data-motion="reduce"] .xm-glow, html[data-motion="reduce"] .xm-lamp { animation: none; }
 
 /* Today's hidden present, sitting on the snow on top of a panel. */
 .xm-present { --c: #c4262e; position: absolute; z-index: 3; right: 26px; top: -19px; width: 28px; height: 22px; padding: 0; border: 0; border-radius: 3px 3px 0 0; cursor: pointer;

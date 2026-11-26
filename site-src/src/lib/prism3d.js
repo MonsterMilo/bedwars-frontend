@@ -70,8 +70,6 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
         if (uWin > 0.5) {
           // The Christmas night from the page backdrop, so the glass refracts the snow.
           vec3 w = texture2D(uTex, vUv).rgb;
-          vec2 mw = (uMouse * 0.5 + 0.5) * uRes;
-          w += vec3(0.55, 0.7, 1.0) * 0.06 * blob(p, mw, uRes.y * 0.25) * uOn;
           gl_FragColor = vec4(pow(w, vec3(2.2)) * 1.12, 1.0);
           return;
         }
@@ -213,7 +211,9 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
   let winTex = null, winW = 0, winH = 0;
   function winterFrame() {
     const cv = document.documentElement.dataset.season === 'christmas' ? backdrop() : null;
-    if (!cv || cv.hidden || !cv.width) { bgMat.uniforms.uWin.value = 0; return; }
+    // The snow replaces the drifting dust too.
+    dust.visible = !cv || cv.hidden || !cv.width;
+    if (dust.visible) { bgMat.uniforms.uWin.value = 0; return; }
     if (!winTex || cv.width !== winW || cv.height !== winH) {
       if (winTex) winTex.dispose();
       winTex = new THREE.CanvasTexture(cv);

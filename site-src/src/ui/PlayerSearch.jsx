@@ -4,12 +4,14 @@ import { useState, useRef, useId } from 'preact/hooks';
 import { Icon } from './icons.jsx';
 import { recent, favourites, playerUrl } from '../lib/players.js';
 import { useSignal } from '../lib/signal.js';
+import { tracked, loadTracked, matchTracked } from '../lib/tracked.js';
 
 const VALID = /^[A-Za-z0-9_]{1,16}$|^[0-9a-fA-F-]{32,36}$/;
 
 export function PlayerSearch({ big = false, autofocus = false, placeholder = 'Search a player', inputRef, onGo, value: initial = '' }) {
   const rec = useSignal(recent);
   const favs = useSignal(favourites);
+  const trk = useSignal(tracked);
   const [value, setValue] = useState(initial);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
@@ -23,6 +25,8 @@ export function PlayerSearch({ big = false, autofocus = false, placeholder = 'Se
   const options = [...favs.map(p => ({ ...p, fav: true })), ...rec]
     .filter(p => { const k = p.name.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return !q || k.includes(q); })
     .slice(0, 8);
+  // With a key, tracked players fill the rest.
+  options.push(...matchTracked(trk, q, Math.max(0, 8 - options.length), seen).map(p => ({ ...p, tracked: true })));
 
   function go(name) {
     const n = String(name || '').trim();
@@ -49,7 +53,7 @@ export function PlayerSearch({ big = false, autofocus = false, placeholder = 'Se
           aria-invalid={error ? 'true' : undefined} aria-describedby={error ? `${id}-err` : undefined}
           autocomplete="off" autocapitalize="off" spellcheck={false} maxLength={36}
           onInput={e => { setValue(e.currentTarget.value); setOpen(true); setActive(-1); setError(''); }}
-          onPointerDown={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 120)} onKeyDown={onKey} />
+          onPointerDown={() => setOpen(true)} onFocus={loadTracked} onBlur={() => setTimeout(() => setOpen(false), 120)} onKeyDown={onKey} />
         {big ? <button class="btn primary" type="submit">Search</button> : <kbd class="psearch-kbd" aria-hidden="true">/</kbd>}
       </div>
       {error && <p id={`${id}-err`} class="psearch-err" role="alert">{error}</p>}
@@ -60,7 +64,7 @@ export function PlayerSearch({ big = false, autofocus = false, placeholder = 'Se
               onMouseDown={e => { e.preventDefault(); go(p.name); }} onMouseEnter={() => setActive(i)}>
               <img src={`https://mc-heads.net/avatar/${encodeURIComponent(p.uuid || p.name)}/32`} alt="" width="22" height="22" loading="lazy" />
               <span>{p.name}</span>
-              {p.fav ? <Icon name="star" class="fav-icon" label="Favourite" /> : <span class="faint small">Recent</span>}
+              {p.fav ? <Icon name="star" class="fav-icon" label="Favourite" /> : <span class="faint small">{p.tracked ? 'Tracked' : 'Recent'}</span>}
             </li>
           ))}
         </ul>

@@ -7,6 +7,7 @@ import { Avatar } from './common.jsx';
 import { signal, useSignal } from '../lib/signal.js';
 import { SECTIONS } from '../lib/site.js';
 import { recent, favourites, playerUrl } from '../lib/players.js';
+import { tracked, loadTracked, matchTracked } from '../lib/tracked.js';
 
 export const paletteOpen = signal(false);
 export const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || '');
@@ -40,6 +41,7 @@ export function Palette({ unlocked = false }) {
   const open = useSignal(paletteOpen);
   const rec = useSignal(recent);
   const favs = useSignal(favourites);
+  const trk = useSignal(tracked);
   const [q, setQ] = useState('');
   const [active, setActive] = useState(0);
   const [cos, setCos] = useState([]);
@@ -50,6 +52,7 @@ export function Palette({ unlocked = false }) {
     setQ(''); setActive(0);
     back.current = document.activeElement;
     loadCosmetics().then(setCos);
+    loadTracked();
     requestAnimationFrame(() => input.current && input.current.focus());
     return () => { if (back.current && back.current.focus) back.current.focus(); };
   }, [open]);
@@ -65,6 +68,9 @@ export function Palette({ unlocked = false }) {
   if (pages.length) groups.push({ title: 'Pages', items: pages.map(({ p }) => ({ key: p.href, href: p.href, label: p.label, sub: p.desc, icon: p.icon || 'chevron', hue: p.hue, locked: p.locked && !unlocked })) });
   const people = players.map(p => ({ p, s: query ? score(p.name, query) : 0 })).filter(x => x.s >= 0).sort((a, b) => b.s - a.s).slice(0, query ? 6 : 5);
   if (people.length) groups.push({ title: 'Players', items: people.map(({ p }) => ({ key: `p:${p.name}`, href: playerUrl(p.name), label: p.name, sub: p.fav ? 'Favourite' : 'Recent', avatar: p.uuid || p.name })) });
+  // With a key: tracked players open in the Tracker.
+  const tr = matchTracked(trk, query, 5);
+  if (tr.length) groups.push({ title: 'Tracked', items: tr.map(p => ({ key: `t:${p.name}`, href: `tracker.html?player=${encodeURIComponent(p.name)}#sweats`, label: p.name, sub: 'Open in Tracker', avatar: p.uuid || p.name })) });
   if (query.length >= 2) {
     const found = cos.map(c => ({ c, s: score(c[0], query) })).filter(x => x.s >= 0).sort((a, b) => b.s - a.s).slice(0, 6);
     if (found.length) groups.push({ title: 'Cosmetics', items: found.map(({ c }) => ({ key: `c:${c[1]}`, href: `cosmetics.html#${c[1]}`, label: c[0], sub: c[2], thumb: c[3] ? c[1] : null, icon: 'sparkle' })) });

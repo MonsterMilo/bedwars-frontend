@@ -5,7 +5,7 @@
 // beams can land exactly on the cards.
 //
 // layout() is called every frame and returns, in viewport pixels:
-//   { prism: { x, y, size }, source: { x, y }, targets: [{ x, y }], hot: [0..1], narrow }
+//   { prism: { x, y, size }, source: { x, y }, targets: [{ x, y }], hot: [0..1] }  (cards below the glass)
 // colors() returns the beam colours as CSS colours, one per target.
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -122,17 +122,10 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
   const dust = new THREE.Points(dgeo, dustMat); dust.frustumCulled = false; scene.add(dust);
 
   // Beams: a hot core and a soft halo, with pulses running along them.
-  // A beam from uA to uB. With uCurve on it leaves along its fan direction and
-  // eases nearly level into the card, a soft S instead of a sharp diagonal.
-  const beamVS = `uniform vec2 uA, uB; uniform float uW0, uW1, uGrow, uCurve; varying vec2 vUv; varying float vW, vLen;
-    void main(){ vUv = uv; vec2 d = uB - uA; float L = max(length(d), 0.001);
-      vec2 out0 = normalize(vec2(d.x, d.y * 0.8)), in1 = normalize(vec2(d.x, d.y * 0.25));
-      vec2 p1 = mix(uA + d / 3.0, uA + out0 * L * 0.38, uCurve), p2 = mix(uB - d / 3.0, uB - in1 * L * 0.4, uCurve);
-      float a = uv.x * uGrow, b = 1.0 - a; vW = mix(uW0, uW1, a); vLen = L * (1.0 + 0.08 * uCurve);
-      vec2 c = b * b * b * uA + 3.0 * b * b * a * p1 + 3.0 * b * a * a * p2 + a * a * a * uB;
-      vec2 tg = 3.0 * b * b * (p1 - uA) + 6.0 * b * a * (p2 - p1) + 3.0 * a * a * (uB - p2);
-      vec2 dir = normalize(tg + d * 0.0001); vec2 n = vec2(-dir.y, dir.x);
-      vec2 p = c + n * (uv.y - 0.5) * vW;
+  const beamVS = `uniform vec2 uA, uB; uniform float uW0, uW1, uGrow; varying vec2 vUv; varying float vW, vLen;
+    void main(){ vUv = uv; vec2 d = uB - uA; float L = max(length(d), 0.001); vec2 dir = d / L; vec2 n = vec2(-dir.y, dir.x);
+      float a = uv.x * uGrow; vW = mix(uW0, uW1, a); vLen = L;
+      vec2 p = uA + d * a + n * (uv.y - 0.5) * vW;
       gl_Position = projectionMatrix * viewMatrix * vec4(p, 0.0, 1.0); }`;
   const beamFS = `uniform vec3 uColor; uniform float uI, uT, uCore, uSpeed, uFade; varying vec2 vUv; varying float vW, vLen;
     void main(){ float dpx = abs(vUv.y - 0.5) * vW;
@@ -147,7 +140,7 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
   function makeBeam(color, fadeStart, order = 5) {
     const m = new THREE.ShaderMaterial({
       vertexShader: beamVS, fragmentShader: beamFS, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
-      uniforms: { uA: { value: new THREE.Vector2() }, uB: { value: new THREE.Vector2() }, uW0: { value: 6 }, uW1: { value: 30 }, uGrow: { value: 0 }, uColor: { value: color.clone() }, uI: { value: 1 }, uT: { value: 0 }, uCore: { value: 1.4 }, uSpeed: { value: 3 }, uFade: { value: fadeStart ? 1 : 0 }, uCurve: { value: 0 } }
+      uniforms: { uA: { value: new THREE.Vector2() }, uB: { value: new THREE.Vector2() }, uW0: { value: 6 }, uW1: { value: 30 }, uGrow: { value: 0 }, uColor: { value: color.clone() }, uI: { value: 1 }, uT: { value: 0 }, uCore: { value: 1.4 }, uSpeed: { value: 3 }, uFade: { value: fadeStart ? 1 : 0 } }
     });
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 48, 1), m); mesh.frustumCulled = false; mesh.renderOrder = order; scene.add(mesh);
     return m;
@@ -363,7 +356,7 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
 
     // Colours leave the glass in the same order as their cards, so no two cross.
     const live = L.targets.map((tg, i) => i).filter(i => i < outBeams.length && L.targets[i]);
-    live.sort((a, b) => (L.narrow ? L.targets[a].x - L.targets[b].x : L.targets[a].y - L.targets[b].y));
+    live.sort((a, b) => L.targets[a].x - L.targets[b].x);
     const rank = []; live.forEach((i, r) => { rank[i] = r; });
     outBeams.forEach((b, i) => {
       const tg = L.targets[i], sp = landSpots[i], ib = innerBeams[i].uniforms, xs = exitSpots[i];
@@ -372,18 +365,18 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
       const split = cl((it - A.sp0 - A.gap * rank[i]) / A.spD);
       if (split >= 1 && landAt[i] === undefined) { landAt[i] = it; if (onLand) onLand(i); }
       const land = landAt[i] !== undefined && intro ? Math.exp(-(it - landAt[i]) * 4) : 0;
-      // Cards below (phones): out through the base. Cards to the side: out the far face.
+      // The cards sit below the glass, so every colour leaves through its base.
       const f = live.length > 1 ? rank[i] / (live.length - 1) : 0.5;
-      const exit = L.narrow ? inC.clone().lerp(outC, 0.3 + 0.45 * f) : top.clone().lerp(outC, 0.4 + 0.32 * f);
+      const exit = inC.clone().lerp(outC, 0.3 + 0.45 * f);
       ib.uA.value.copy(entry); ib.uB.value.copy(exit); ib.uGrow.value = ease(inner);
       ib.uW0.value = S * 0.025; ib.uW1.value = S * 0.05; ib.uCore.value = Math.max(1, S * 0.004) * (1 + h * 0.5);
       ib.uI.value = 0.6 + h * 0.5; ib.uT.value = t; ib.uSpeed.value = 2.4;
       const u = b.uniforms;
-      u.uA.value.copy(exit); u.uB.value.set(tg.x, -tg.y); u.uGrow.value = ease(split); u.uCurve.value = L.narrow ? 0 : 1;
-      u.uW0.value = S * 0.03; u.uW1.value = (L.narrow ? 18 : S * 0.13) * (1 + h * 0.5); u.uCore.value = Math.max(1.2, S * 0.0045) * (1 + h * 0.7);
+      u.uA.value.copy(exit); u.uB.value.set(tg.x, -tg.y); u.uGrow.value = ease(split);
+      u.uW0.value = S * 0.03; u.uW1.value = Math.max(18, S * 0.09) * (1 + h * 0.5); u.uCore.value = Math.max(1.2, S * 0.0045) * (1 + h * 0.7);
       u.uI.value = 0.75 + h * 0.75; u.uT.value = t; u.uSpeed.value = 2.6 + h * 2.5;
       xs.position.set(exit.x, exit.y, 0); const xz = S * 0.2 * (1 + h * 0.4); xs.scale.set(xz, xz, 1); xs.material.uniforms.uI.value = inner >= 1 ? 0.6 + h * 0.4 : 0;
-      sp.position.set(tg.x, -tg.y, 0); const sz = (L.narrow ? 70 : S * 0.42) * (1 + h * 0.6 + land * 0.9); sp.scale.set(sz, sz, 1); sp.material.uniforms.uI.value = split >= 1 ? 0.4 + h * 0.5 + land * 1.4 : 0;
+      sp.position.set(tg.x, -tg.y, 0); const sz = Math.max(70, S * 0.4) * (1 + h * 0.6 + land * 0.9); sp.scale.set(sz, sz, 1); sp.material.uniforms.uI.value = split >= 1 ? 0.4 + h * 0.5 + land * 1.4 : 0;
     });
     rimMat.uniforms.uT.value = t;
     winterFrame();

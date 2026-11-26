@@ -55,7 +55,7 @@ if (INTRO) document.documentElement.classList.add('home-intro');
 const endIntro = () => document.documentElement.classList.remove('home-intro');
 
 // Starts the 3D prism once the page has drawn, and keeps its beams on the cards.
-function usePrism(canvas, spot, cards, left_) {
+function usePrism(canvas, spot, cards, left) {
   const [mode, setMode] = useState('loading'); // loading | 3d | flat
   const [lit, setLit] = useState(() => SECTIONS.map(() => false));
   const hot = useRef(SECTIONS.map(() => 0));
@@ -72,39 +72,40 @@ function usePrism(canvas, spot, cards, left_) {
       const narrow = innerWidth <= 980;
       const els = cards.current.filter(Boolean);
       const first = els[0] && els[0].getBoundingClientRect();
-      let size, x, y, source;
+      let size, x, y, source, targets;
       if (narrow) {
+        // Phones: the prism between the words and the stacked cards, beams into the first card's top.
         size = Math.max(90, Math.min(sp.height * 0.9, sp.width * 0.5, 230));
         x = sp.left + sp.width / 2; y = sp.top + sp.height * 0.5;
         source = { x: -40, y: y - size * 0.5 };
+        targets = els.map((el, i) => ({ x: first.left + first.width * ((i + 0.8) / (els.length + 0.6)), y: first.top + 1 }));
       } else {
-        // Middle column: the prism sits level with the middle of the cards,
-        // and the white light comes in from the left, under the text.
-        const last = els[els.length - 1] && els[els.length - 1].getBoundingClientRect();
-        size = Math.max(110, Math.min(sp.width * 0.86, 250));
-        x = sp.left + sp.width / 2;
-        y = first && last ? (first.top + last.bottom) / 2 : sp.top + sp.height / 2;
-        // The light falls from the top left and passes just above each line
-        // of text, so it never runs through the title or the search.
-        const ex = x - size * 0.22, ey = y - size * 0.04;
-        let m = 0.18;
-        for (const el of left_.current.children) {
+        // Desktop: the prism top right, the cards in a row below. The white
+        // light falls from above the words and the colours fan down into the
+        // top of each card, nearer its middle the closer it is.
+        size = Math.max(120, Math.min(sp.height * 0.8, sp.width * 0.5, 240));
+        x = sp.left + sp.width / 2; y = sp.top + sp.height * 0.48;
+        source = { x: x - size * 2.2, y: -80 };
+        // Keep every beam off the words: slide its landing point along the
+        // card's top edge until the line from the glass misses the text.
+        const words = [...left.current.querySelectorAll('.kicker, .hero-title, .hero-sub, .hero-search, .people-row h2, .people-row li')].map(el => el.getBoundingClientRect()).filter(r => r.height);
+        const bx = x, by = y + size * 0.3;
+        const hits = (tx, ty) => {
+          for (let k = 1; k < 24; k++) {
+            const px = bx + (tx - bx) * (k / 24), py = by + (ty - by) * (k / 24);
+            if (words.some(r => px > r.left - 12 && px < r.right + 12 && py > r.top - 10 && py < r.bottom + 10)) return true;
+          }
+          return false;
+        };
+        targets = els.map((el, i) => {
           const r = el.getBoundingClientRect();
-          if (!r.height || r.right >= ex - 8) continue;
-          m = Math.max(m, (ey - (r.top - 18)) / (ex - r.right));
-        }
-        m = Math.min(m, 1.4);
-        source = { x: -60, y: ey - m * (ex + 60) };
+          let f = 0.7 - 0.4 * (i / Math.max(1, els.length - 1));
+          while (f < 0.94 && hits(r.left + r.width * f, r.top)) f += 0.04;
+          return { x: r.left + r.width * Math.min(f, 0.94), y: r.top + 1 };
+        });
       }
-      const targets = els.map((el, i) => {
-        const r = el.getBoundingClientRect();
-        if (narrow) return { x: first.left + first.width * ((i + 0.8) / (els.length + 0.6)), y: first.top + 1 };
-        // Each beam lands on the card's left edge as close to level with the
-        // prism as it can, so the colours leave at gentle angles.
-        return { x: r.left + 2, y: Math.max(r.top + 30, Math.min(r.bottom - 30, y)) };
-      });
       for (let i = 0; i < hot.current.length; i++) hot.current[i] += (hotT.current[i] - hot.current[i]) * 0.1;
-      return { prism: { x, y, size }, targets, hot: hot.current, narrow, source };
+      return { prism: { x, y, size }, targets, hot: hot.current, source };
     };
     function start() {
       if (scene || dead) return;

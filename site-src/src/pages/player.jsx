@@ -11,11 +11,12 @@ import { Shell } from '../ui/Shell.jsx';
 import { PlayerSearch } from '../ui/PlayerSearch.jsx';
 import { Icon } from '../ui/icons.jsx';
 import { PlayerName, Star, Segments } from '../ui/mc.jsx';
+import { NumberField } from '../ui/controls.jsx';
 import { Tabs, Stat, Avatar, Loading, ErrorBox, Empty, ReachNote, copyText, HeadEmblem } from '../ui/common.jsx';
 import { SkinViewer } from '../ui/SkinViewer.jsx';
 import { get, enc } from '../lib/api.js';
 import { useAsync, useParam } from '../lib/useAsync.js';
-import { MODES, DREAMS, modeStats, hasPlayed, starInfo, quickbuy, hotbar, COSMETIC_FIELDS, cosmeticName } from '../lib/bedwars.js';
+import { MODES, DREAMS, modeStats, hasPlayed, starInfo, xpAtStar, quickbuy, hotbar, COSMETIC_FIELDS, cosmeticName } from '../lib/bedwars.js';
 import { num, ratio, ratioValue, pct, date, ago, span } from '../lib/format.js';
 import { prefs } from '../lib/prefs.js';
 import { useSignal } from '../lib/signal.js';
@@ -86,6 +87,96 @@ function ProfileHead({ data, view }) {
           <p class="faint small">Stats may be a few hours old. <button type="button" class="linkish" onClick={() => { keyDialog.value = true; }}>Enter a key</button> for live stats.</p>
         )}
       </div>
+    </section>
+  );
+}
+
+// ---------- goals ----------
+// How far a player is from a star or FKDR they pick. Uses lifetime averages
+// (recent games are hidden for most players), or this month's pace when the
+// month's numbers are there.
+function Goals({ data }) {
+  const bw = data.player && data.player.bedwars;
+  const [tab, setTab] = useState('star');
+  const [pace, setPace] = useState('lifetime');
+  const month = useAsync(signal => get(`/site/periods/${data.uuid}?period=monthly`, { signal, maxAge: 10 * 60_000 }), [data.uuid], { skip: pace !== 'month' });
+  const life = modeStats(bw, '');
+  // The free copy of a profile has no XP; the start of their star is close enough.
+  const exact = typeof bw.Experience === 'number';
+  const lvl = starInfo(data.player).star;
+  const xp = exact ? bw.Experience : lvl > 0 ? xpAtStar(lvl) : null;
+  const mbw = pace === 'month' && month.data && !month.data.off ? periodBw(month.data.data) : null;
+  const ms = mbw ? modeStats(mbw, '') : null;
+  const monthGames = ms ? (ms.games ?? ((ms.wins || 0) + (ms.losses || 0))) : 0;
+  const useMonth = pace === 'month' && monthGames > 0;
+  const src = useMonth ? ms : life;
+  const games = useMonth ? monthGames : (life.games ?? ((life.wins || 0) + (life.losses || 0)));
+  const lifeGames = life.games ?? ((life.wins || 0) + (life.losses || 0));
+  const xpPer = useMonth && typeof mbw.Experience === 'number' && mbw.Experience > 0 ? mbw.Experience / monthGames : lifeGames ? (xp || 0) / lifeGames : 0;
+  const finPer = games ? (src.finals || 0) / games : 0;
+  const star = lvl;
+  const F = life.finals || 0, FD = life.finalDeaths || 0, fkdr = FD ? F / FD : F;
+  const [targetStar, setTargetStar] = useState(String((Math.floor(star / 100) + 1) * 100));
+  const [targetFk, setTargetFk] = useState(String(Math.floor(fkdr) + 1));
+  const [playAt, setPlayAt] = useState(String(Math.max(Math.floor(fkdr) + 2, Math.ceil(fkdr * 1.5))));
+  if (!hasPlayed(life) || xp === null) return null;
+  const approxNote = !exact && tab === 'star' ? 'XP is estimated from their star. A key gives exact XP.' : null;
+  const monthNote = pace === 'month' && (month.loading ? 'Loading this month…' : !useMonth ? 'No games this month, so lifetime averages are used.' : `This month: ${num(monthGames)} games.`);
+
+  let body;
+  if (tab === 'star') {
+    const T = Math.floor(Number(targetStar) || 0);
+    const need = Math.max(0, xpAtStar(T) - xp);
+    const g = xpPer > 0 ? Math.ceil(need / xpPer) : null;
+    const from = xpAtStar(star), prog = T > star ? Math.min(1, (xp - from) / Math.max(1, xpAtStar(T) - from)) : 1;
+    body = (
+      <>
+        <div class="goal-input"><label for="g-star">Target star</label><NumberField id="g-star" value={targetStar} onChange={setTargetStar} min={1} max={5000} step={T % 100 === 0 ? 100 : 1} /></div>
+        {T <= star ? <p class="goal-done"><Icon name="check" />Already past {num(T)}★.</p> : (
+          <>
+            <div class="stats stat-row goal-row">
+              <Stat label="XP to go" icon="ui:xp" value={num(need)} />
+              <Stat label="Stars to go" icon="ui:star" value={num(T - star)} />
+              <Stat label="XP per game" icon="ui:clock" value={num(Math.round(xpPer))} sub={useMonth && typeof mbw.Experience === 'number' && mbw.Experience > 0 ? 'this month' : 'lifetime'} />
+              <Stat label="Games to go" icon="ui:sword" value={g === null ? '—' : `≈ ${num(g)}`} />
+            </div>
+            <div class="xp-bar goal-bar" aria-hidden="true"><span style={{ width: `${Math.max(1.5, prog * 100)}%` }} /></div>
+          </>
+        )}
+      </>
+    );
+  } else {
+    const T = Number(targetFk) || 0, X = Number(playAt) || 0;
+    const done = T > 0 && fkdr >= T;
+    const deficit = T * FD - F;
+    const noDeath = Math.max(0, Math.ceil(deficit));
+    const g = X > T && finPer > 0 ? Math.ceil(deficit / (finPer * (1 - T / X))) : null;
+    body = (
+      <>
+        <div class="goal-inputs">
+          <div class="goal-input"><label for="g-fk">Target FKDR</label><NumberField id="g-fk" value={targetFk} onChange={setTargetFk} min={0.1} max={1000} step={0.5} decimals /></div>
+          <div class="goal-input"><label for="g-at">If you play at</label><NumberField id="g-at" value={playAt} onChange={setPlayAt} min={0.1} max={1000} step={0.5} decimals /></div>
+        </div>
+        {done ? <p class="goal-done"><Icon name="check" />Already at {ratio(F, FD)} FKDR.</p> : (
+          <div class="stats stat-row goal-row">
+            <Stat label="Now" icon="ui:sword" value={ratio(F, FD)} sub={`${num(F)} finals · ${num(FD)} deaths`} />
+            <Stat label="Finals, no deaths" icon="ui:iron_sword" value={num(noDeath)} />
+            <Stat label="Finals per game" icon="ui:clock" value={finPer.toFixed(2)} sub={useMonth ? 'this month' : 'lifetime'} />
+            <Stat label={`Games at ${X || '?'} FKDR`} icon="ui:star" value={g === null ? 'Never' : `≈ ${num(g)}`} sub={g === null ? `${X || '?'} is not above ${T}` : `≈ ${num(Math.ceil(g * finPer))} finals`} />
+          </div>
+        )}
+      </>
+    );
+  }
+  return (
+    <section class="panel pad reveal goals" aria-labelledby="goals-h">
+      <h2 class="panel-title" id="goals-h"><Icon name="target" />Goals</h2>
+      <div class="row goal-tabs">
+        <Tabs label="Goal" value={tab} onChange={setTab} options={[['star', 'Stars'], ['fkdr', 'FKDR']]} />
+        <Tabs label="Pace" value={pace} onChange={setPace} options={[['lifetime', 'Lifetime pace'], ['month', 'This month']]} />
+      </div>
+      {body}
+      {(monthNote || approxNote) && <p class="source-note">{[monthNote, approxNote].filter(Boolean).join(' ')}</p>}
     </section>
   );
 }
@@ -457,6 +548,7 @@ function Profile({ name, setName }) {
       <div class="player-grid">
         <div class="col">
           <Stats data={data} />
+          {bw && <Goals data={data} />}
           {bw && <Dreams bw={bw} />}
         </div>
         <div class="col">

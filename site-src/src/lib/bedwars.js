@@ -55,6 +55,13 @@ export function starFromXp(xp) {
   }
   return { star: level, into: 0, need: EASY[0], progress: 0 };
 }
+// Total Bed Wars XP at the start of a star.
+export function xpAtStar(star) {
+  const n = Math.max(0, Math.floor(Number(star) || 0));
+  let xp = Math.floor(n / 100) * PRESTIGE_XP;
+  for (let i = 0; i < n % 100; i++) xp += i < 4 ? EASY[i] : 5000;
+  return xp;
+}
 export function starInfo(player) {
   const xp = player && player.bedwars && player.bedwars.Experience;
   if (typeof xp === 'number') return starFromXp(xp);

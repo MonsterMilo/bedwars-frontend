@@ -62,11 +62,12 @@ html[data-surface="light"] .xm-word { color: #141824; }
 @keyframes xm-gallop { 50% { transform: translateY(-3px); } }
 @keyframes xm-nose { 50% { fill: #ff9a9a; } }
 
-/* Today's hidden present, peeking out of a panel's corner. */
-.xm-present { --c: #c4262e; position: absolute; z-index: 3; right: 22px; bottom: -3px; width: 28px; height: 22px; padding: 0; border: 0; border-radius: 3px 3px 0 0; cursor: pointer;
+/* Today's hidden present, sitting on the snow on top of a panel. */
+.xm-present { --c: #c4262e; position: absolute; z-index: 3; right: 26px; top: -19px; width: 28px; height: 22px; padding: 0; border: 0; border-radius: 3px 3px 0 0; cursor: pointer;
   background: linear-gradient(90deg, transparent 42%, #ffd24e 42% 58%, transparent 58%), linear-gradient(transparent 22%, rgba(0,0,0,0.18) 22% 28%, transparent 28%), var(--c);
   box-shadow: 0 -2px 10px rgba(255,210,110,0.35); transform-origin: 50% 100%; animation: xm-wiggle 4s ease-in-out 2s infinite; }
 .xm-present::before { content: ''; position: absolute; left: 50%; top: -11px; width: 26px; height: 14px; margin-left: -13px; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 80 44%22%3E%3Cpath d=%22M37 26 L22 44 L28 44 L31 39 L35 43 L40 28 Z M43 26 L58 44 L52 44 L49 39 L45 43 L40 28 Z%22 fill=%22%23c98a1c%22/%3E%3Cpath d=%22M40 22 C30 6 10 -2 6 8 C2 18 22 28 40 25 Z%22 fill=%22%23ffd24e%22/%3E%3Cpath d=%22M40 22 C50 6 70 -2 74 8 C78 18 58 28 40 25 Z%22 fill=%22%23ffd24e%22/%3E%3Cpath d=%22M38 21 C30 12 16 6 12 10 C18 9 28 14 36 23 Z M42 21 C50 12 64 6 68 10 C62 9 52 14 44 23 Z%22 fill=%22%23000%22 opacity=%22.2%22/%3E%3Cellipse cx=%2240%22 cy=%2223.5%22 rx=%226.5%22 ry=%225.5%22 fill=%22%23e2a93a%22/%3E%3C/svg%3E") center / contain no-repeat; }
+.xm-present.inside { top: auto; bottom: -8px; right: 8px; }
 .xm-present.g { --c: #1f8a4f; } .xm-present.b { --c: #2e64b5; }
 .xm-present:hover, .xm-present:focus-visible { animation: none; transform: translateY(-3px) rotate(-4deg); }
 .xm-present.open { animation: none; transform: translateY(-14px) scale(1.4); opacity: 0; transition: transform 500ms var(--ease), opacity 500ms var(--ease); }
@@ -92,9 +93,6 @@ html[data-season="christmas"] .p1 .place-link::after { content: ''; position: ab
 @keyframes xm-glow { 50% { transform: scale(1.12) rotate(8deg); filter: brightness(1.15); } }
 html[data-motion="reduce"] .p1 .place-link::after { animation: none; }
 
-/* Footer: a ridge of snow along the top. */
-html[data-season="christmas"] .site-foot { position: relative; }
-html[data-season="christmas"] .site-foot::before { content: ''; position: absolute; left: 0; right: 0; top: -15px; height: 16px; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 220 16%22 preserveAspectRatio=%22none%22%3E%3Cpath d=%22M0 16 V9 Q10 3 22 7 Q30 10 38 6 Q52 -1 66 6 Q74 10 84 8 Q96 5 104 9 Q116 13 128 6 Q140 0 154 7 Q162 11 172 8 Q186 3 198 8 Q210 12 220 9 V16 Z%22 fill=%22%23f4f8ff%22/%3E%3C/svg%3E") 0 100% / 220px 16px repeat-x; opacity: 0.92; pointer-events: none; filter: drop-shadow(0 -1px 2px rgba(120,150,200,0.35)); }
 
 /* Toasts get a snowflake. */
 html[data-season="christmas"] .toast { display: flex; align-items: center; gap: 10px; }

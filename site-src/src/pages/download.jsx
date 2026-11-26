@@ -194,6 +194,7 @@ function Download() {
               <h2 class="panel-title" id="dl-dev"><Icon name="code" />Make plugins</h2>
               <p class="faint small">Build against <code class="mono">prism-api.jar</code> (Java 8).</p>
               <a class="link small" href={`${REPO_URL}#writing-a-plugin`} target="_blank" rel="noopener noreferrer">Plugin guide <Icon name="external" size={14} /></a>
+              <a class="btn small dl-plugins" href="plugins.html"><Icon name="code" />Browse and submit plugins</a>
             </section>
           </aside>
         </div>

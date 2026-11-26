@@ -67,7 +67,7 @@ export function Shell({ children, wide = false, search = true, bg = null }) {
   useEffect(() => { checkKey(); }, [key]);
   // Sounds, click effects and easter eggs on every page (Settings > Sound and effects; M mutes).
   useEffect(() => { installPaletteKey(); installFx(); }, []);
-  useEffect(() => { document.documentElement.dataset.page = bg || 'none'; if (bg && bg !== 'none') startBackdrop(bg); }, []);
+  useEffect(() => { document.documentElement.dataset.page = bg || 'none'; startBackdrop(bg && bg !== 'none' ? bg : 'plain'); }, []);
   // The holiday look: loaded only while it's on.
   const holiday = useSignal(season);
   useEffect(() => {
@@ -128,7 +128,7 @@ export function Shell({ children, wide = false, search = true, bg = null }) {
         <div class={`wrap ${wide ? 'wide' : ''} foot-row`}>
           <a class="brand small" href="index.html"><Logo size={20} /><span>Prism</span></a>
           <nav aria-label="Footer" class="foot-links">
-            {SECTIONS.flatMap(s => s.pages).map(p => <a key={p.href} href={p.href}>{p.label}</a>)}
+            {SECTIONS.flatMap(s => s.pages.flatMap(p => [p, ...(p.also ? [p.also] : [])])).map(p => <a key={p.href} href={p.href}>{p.label}</a>)}
           </nav>
           <p class="faint small">Not affiliated with Hypixel or Mojang.</p>
         </div>

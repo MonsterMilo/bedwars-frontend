@@ -23,7 +23,7 @@ export function cssColor(c, fallback = '#ffffff') {
   return new THREE.Color(probe.fillStyle);
 }
 
-export function startPrism({ canvas, layout, colors, background, reduce, onReady, intro = false, onLand }) {
+export function startPrism({ canvas, layout, colors, background, reduce, onReady, intro = false, onLand, backdrop = () => null }) {
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }); } catch { return null; }
   const DPR = Math.min(1.75, window.devicePixelRatio || 1);
@@ -59,13 +59,22 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
     depthWrite: false,
     uniforms: {
       uRes: { value: new THREE.Vector2(1, 1) }, uPrism: { value: new THREE.Vector2() }, uT: { value: 0 }, uMouse: { value: new THREE.Vector2() }, uOn: { value: 0 },
-      uBase: { value: new THREE.Color(0x06070b) }, uA: { value: new THREE.Color() }, uB: { value: new THREE.Color() }, uC: { value: new THREE.Color() }, uLight: { value: 0 }
+      uBase: { value: new THREE.Color(0x06070b) }, uA: { value: new THREE.Color() }, uB: { value: new THREE.Color() }, uC: { value: new THREE.Color() }, uLight: { value: 0 },
+      uTex: { value: null }, uWin: { value: 0 }
     },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.9999, 1.0); }',
-    fragmentShader: `uniform vec2 uRes, uPrism, uMouse; uniform float uT, uLight, uOn; uniform vec3 uBase, uA, uB, uC; varying vec2 vUv;
+    fragmentShader: `uniform vec2 uRes, uPrism, uMouse; uniform float uT, uLight, uOn, uWin; uniform vec3 uBase, uA, uB, uC; uniform sampler2D uTex; varying vec2 vUv;
       float blob(vec2 p, vec2 c, float r){ float d = length(p - c) / r; return exp(-d * d); }
       void main(){
         vec2 p = vUv * uRes;
+        if (uWin > 0.5) {
+          // The Christmas night from the page backdrop, so the glass refracts the snow.
+          vec3 w = texture2D(uTex, vUv).rgb;
+          vec2 mw = (uMouse * 0.5 + 0.5) * uRes;
+          w += vec3(0.55, 0.7, 1.0) * 0.06 * blob(p, mw, uRes.y * 0.25) * uOn;
+          gl_FragColor = vec4(pow(w, vec3(2.2)) * 1.12, 1.0);
+          return;
+        }
         vec3 col = uBase;
         float k = mix(1.0, 0.45, uLight);
         col += vec3(0.07, 0.12, 0.24) * 0.55 * k * blob(p, uPrism, uRes.y * 0.7);
@@ -199,6 +208,22 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
   const rim = new THREE.Mesh(geo, rimMat); rim.renderOrder = 4; prism.add(rim);
   const prismGroup = new THREE.Group(); prismGroup.add(prism); scene.add(prismGroup);
   const key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(300, 500, 800); scene.add(key);
+
+  // During Christmas the background is the page's winter backdrop canvas.
+  let winTex = null, winW = 0, winH = 0;
+  function winterFrame() {
+    const cv = document.documentElement.dataset.season === 'christmas' ? backdrop() : null;
+    if (!cv || cv.hidden || !cv.width) { bgMat.uniforms.uWin.value = 0; return; }
+    if (!winTex || cv.width !== winW || cv.height !== winH) {
+      if (winTex) winTex.dispose();
+      winTex = new THREE.CanvasTexture(cv);
+      winTex.generateMipmaps = false; winTex.minFilter = THREE.LinearFilter; winTex.magFilter = THREE.LinearFilter;
+      winW = cv.width; winH = cv.height;
+      bgMat.uniforms.uTex.value = winTex;
+    }
+    winTex.needsUpdate = true;
+    bgMat.uniforms.uWin.value = 1;
+  }
 
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
@@ -339,6 +364,7 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
       sp.position.set(tg.x, -tg.y, 0); const sz = (L.narrow ? 70 : S * 0.42) * (1 + h * 0.6 + land * 0.9); sp.scale.set(sz, sz, 1); sp.material.uniforms.uI.value = split >= 1 ? 0.4 + h * 0.5 + land * 1.4 : 0;
     });
     rimMat.uniforms.uT.value = t;
+    winterFrame();
     composer.render();
     if (!shown) { shown = true; introStart = performance.now(); canvas.classList.add('on'); if (onReady) onReady(); }
     const moving = spin.drag || Math.abs(spin.vy) > 0.02;
@@ -362,6 +388,7 @@ export function startPrism({ canvas, layout, colors, background, reduce, onReady
       removeEventListener('pointerdown', onDown); removeEventListener('pointermove', onDrag);
       removeEventListener('pointerup', endDrag); removeEventListener('pointercancel', endDrag);
       document.removeEventListener('visibilitychange', onVis); removeEventListener('resize', wake); removeEventListener('scroll', onScroll);
+      if (winTex) winTex.dispose();
       renderer.dispose();
     }
   };

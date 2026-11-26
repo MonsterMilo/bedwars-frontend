@@ -14,6 +14,10 @@ import { startIntro } from '../lib/intro.js';
 import { Palette, PaletteButton, installPaletteKey } from '../ui/Palette.jsx';
 import { installFx } from '../lib/fx.js';
 import fxCss from '../styles/fx.css';
+import xmCss from '../styles/christmas.css';
+import { prefs, season } from '../lib/prefs.js';
+import { activeSeason } from '../lib/season.js';
+import { startBackdrop } from '../lib/backdrop.js';
 
 const hasKey = () => { try { return !!localStorage.getItem('bedwarsAdminKey'); } catch { return false; } };
 
@@ -98,12 +102,15 @@ function Header() {
   );
 }
 
+const xmasOn = () => activeSeason(prefs.value.seasonal !== false) === 'christmas' && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 function mountNav() {
   if (document.querySelector('prism-nav')) return;
   const host = document.createElement('prism-nav');
   document.body.prepend(host);
   const root = host.attachShadow({ mode: 'open' });
-  const css = `${hostCss}\n${shellCss}`;
+  // The Christmas lights and logo hat live in the header, so their styles go in here too.
+  const css = `${hostCss}\n${shellCss}${xmasOn() ? `\n${xmCss.replaceAll('html[data-season="christmas"] ', '')}` : ''}`;
   try {
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(css);
@@ -122,5 +129,17 @@ function startFx() {
   st.textContent = fxCss;
   document.head.appendChild(st);
   installFx();
+  // The Christmas look reaches these pages too: snow, lights on panels, the winter night behind.
+  if (xmasOn()) {
+    const html = document.documentElement;
+    html.dataset.season = 'christmas';
+    const xs = document.createElement('style');
+    // Their own moving background steps aside for the winter night.
+    xs.textContent = `${xmCss}\nhtml[data-season="christmas"] .page-bg { display: none; }\nhtml[data-season="christmas"] body { background: transparent !important; }`;
+    document.head.appendChild(xs);
+    season.value = 'christmas';
+    import('../lib/christmas.js').then(m => m.startChristmas()).catch(() => {});
+    startBackdrop('plain');
+  }
 }
 if (document.body) { mountNav(); startIntro(); startFx(); } else document.addEventListener('DOMContentLoaded', () => { mountNav(); startIntro(); startFx(); });

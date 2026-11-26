@@ -8,7 +8,7 @@
 //   unlock        enchanting-table letters flowing to the pointer
 // Click-through (it never takes a click from the page), paused while the tab
 // is hidden, one still frame for less motion, gone with the background off.
-import { prefs } from './prefs.js';
+import { prefs, season } from './prefs.js';
 
 const reduce = () => document.documentElement.dataset.motion === 'reduce';
 const isLight = () => document.documentElement.dataset.surface === 'light';
@@ -339,7 +339,156 @@ function glyphs() {
   };
 }
 
-const SCENES = { player: orbs, nicks: nametags, leaderboards: pillars, download: portal, tracker: radar, unlock: glyphs };
+// ---------------------------------------------------------------- winter
+// The Christmas look on every page: a moonlit night with slow aurora,
+// twinkling stars and snowy hills with pines that shift a little with the
+// pointer. The falling snow and the drift are christmas.js, drawn on top.
+// Hills and trees are painted once per size, so a frame is a few blits.
+function winter() {
+  let stars = [], layers = [], base = null, aur = null, aurN = 0, key = '';
+  let px = 0, py = 0;
+  const dprOf = () => Math.min(2, devicePixelRatio || 1);
+  function canvas(w, h, dpr) {
+    const cv = document.createElement('canvas');
+    cv.width = Math.max(1, Math.round(w * dpr)); cv.height = Math.max(1, Math.round(h * dpr));
+    const c = cv.getContext('2d');
+    c.scale(dpr, dpr);
+    return [cv, c];
+  }
+  // One spruce: four soft tiers, snow resting on each.
+  function spruce(c, x, foot, th, fill, snow) {
+    c.fillStyle = fill;
+    c.fillRect(x - th * 0.03, foot - th * 0.12, th * 0.06, th * 0.14);
+    for (let t = 0; t < 4; t++) {
+      const y0 = foot - th * 0.1 - th * 0.2 * t, half = th * 0.36 * (1 - t * 0.2), tip = y0 - th * 0.36;
+      c.fillStyle = fill;
+      c.beginPath();
+      c.moveTo(x - half, y0);
+      c.quadraticCurveTo(x - half * 0.35, y0 - th * 0.07, x, tip);
+      c.quadraticCurveTo(x + half * 0.35, y0 - th * 0.07, x + half, y0);
+      c.quadraticCurveTo(x, y0 - th * 0.05, x - half, y0);
+      c.fill();
+      c.fillStyle = snow;
+      c.beginPath();
+      c.moveTo(x - half * 0.5, tip + th * 0.2);
+      c.quadraticCurveTo(x - half * 0.2, tip + th * 0.1, x, tip);
+      c.quadraticCurveTo(x + half * 0.2, tip + th * 0.1, x + half * 0.5, tip + th * 0.2);
+      c.quadraticCurveTo(x, tip + th * 0.15, x - half * 0.5, tip + th * 0.2);
+      c.fill();
+    }
+  }
+  function hillLayer(W, H, i, light) {
+    const pad = 40, w = W + pad * 2, top = H * (0.7 + i * 0.075), h = H - top + 24;
+    const [cv, c] = canvas(w, h, dprOf());
+    const r = seeded(9001 + i * 77);
+    const ph = [r() * TAU, r() * TAU, r() * TAU];
+    const amp = [22 - i * 5, 9, 3];
+    const ridge = x => 34 + amp[0] * Math.sin(x / (W * 0.23) + ph[0]) + amp[1] * Math.sin(x / (W * 0.07) + ph[1]) + amp[2] * Math.sin(x / 41 + ph[2]);
+    const tone = light
+      ? [['#e3eaf6', '#d0dbed'], ['#edf2f9', '#d9e2f0'], ['#fafcfe', '#e4eaf4']][i]
+      : [['#18233c', '#121a2c'], ['#223152', '#161f37'], ['#3d5076', '#1f2b47']][i];
+    const pine = light ? ['#b3c2d9', '#9fb2cd', '#8ba0bf'][i] : ['#0f1829', '#0d1524', '#0b1220'][i];
+    const snow = light ? 'rgba(255,255,255,0.95)' : `rgba(220,232,255,${0.22 + i * 0.14})`;
+    // Small stands of pines, not an even row.
+    const stands = Math.round(W / 260) + 2;
+    for (let k = 0; k < stands; k++) {
+      const cx = r() * w, n = 2 + Math.floor(r() * (5 - i));
+      for (let j = 0; j < n; j++) {
+        const x = cx + (r() - 0.5) * 90, th = (26 + r() * 30) * (0.65 + i * 0.32);
+        spruce(c, x, ridge(x) + 8, th, pine, snow);
+      }
+    }
+    c.beginPath();
+    c.moveTo(0, h);
+    for (let x = 0; x <= w; x += 6) c.lineTo(x, ridge(x));
+    c.lineTo(w, h);
+    c.closePath();
+    const g = c.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, tone[0]); g.addColorStop(1, tone[1]);
+    c.fillStyle = g;
+    c.fill();
+    c.strokeStyle = light ? 'rgba(255,255,255,0.95)' : `rgba(205,222,255,${0.14 + i * 0.12})`;
+    c.lineWidth = 1.5;
+    c.beginPath();
+    for (let x = 0; x <= w; x += 6) (x ? c.lineTo(x, ridge(x) + 0.5) : c.moveTo(x, ridge(x) + 0.5));
+    c.stroke();
+    return { cv, top, w, h, depth: 0.25 + i * 0.35 };
+  }
+  // Sky and moon change only with the size, so they're painted once.
+  function sky(W, H, light) {
+    const [cv, c] = canvas(W, H, 1);
+    const g = c.createLinearGradient(0, 0, 0, H);
+    if (light) { g.addColorStop(0, '#cfdcf1'); g.addColorStop(0.6, '#e6edf8'); g.addColorStop(1, '#f4f7fc'); }
+    else { g.addColorStop(0, '#060a16'); g.addColorStop(0.55, '#0b152d'); g.addColorStop(1, '#15203c'); }
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    const mx = W * (W < 700 ? 0.86 : 0.93), my = H * 0.2;
+    const mg = c.createRadialGradient(mx, my, 0, mx, my, Math.max(W, H) * 0.35);
+    mg.addColorStop(0, light ? 'rgba(255,255,255,0.7)' : 'rgba(190,210,255,0.15)'); mg.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = mg; c.fillRect(0, 0, W, H);
+    if (!light) {
+      c.shadowColor = 'rgba(210,225,255,0.8)'; c.shadowBlur = 18;
+      c.fillStyle = 'rgba(238,243,255,0.95)';
+      c.beginPath(); c.arc(mx, my, 15, 0, TAU); c.fill();
+      c.shadowBlur = 0;
+      c.fillStyle = '#0a1329';
+      c.beginPath(); c.arc(mx + 6, my - 4, 13, 0, TAU); c.fill();
+    }
+    return cv;
+  }
+  return {
+    init(W, H) {
+      const light = isLight();
+      key = `${W}x${H}:${light}`;
+      const rand = seeded(20261225);
+      stars = [];
+      const n = Math.round(Math.min(200, (W * H) / 9000));
+      for (let i = 0; i < n; i++) stars.push({ x: rand() * W, y: rand() * H * 0.66, r: rand() < 0.12 ? 1.4 + rand() : 0.5 + rand() * 0.8, tw: 0.6 + rand() * 1.8, ph: rand() * TAU });
+      layers = [0, 1, 2].map(i => hillLayer(W, H, i, light));
+      base = sky(W, H, light);
+      aur = light ? null : canvas(W / 3, H / 3, 1);
+      aurN = 0;
+    },
+    frame(ctx, t, dt, P, W, H, pal) {
+      if (key !== `${W}x${H}:${pal.light}`) this.init(W, H);
+      const s = t / 1000;
+      const tx = P.on ? (P.x / W - 0.5) : 0, ty = P.on ? (P.y / H - 0.5) : 0;
+      px += (tx - px) * Math.min(1, dt * 2.5); py += (ty - py) * Math.min(1, dt * 2.5);
+      ctx.drawImage(base, 0, 0, W, H);
+      // Aurora: drawn small every other frame, stretched soft across the sky.
+      if (aur) {
+        if (aurN++ % 2 === 0) {
+          const [cv, c] = aur, w = W / 3, h = H / 3;
+          c.clearRect(0, 0, w, h);
+          for (let k = 0; k < 2; k++) {
+            const col = k ? '125,95,255' : '60,230,170';
+            const y0 = h * (0.16 + k * 0.08);
+            const g = c.createLinearGradient(0, y0 - 18, 0, y0 + 30);
+            g.addColorStop(0, `rgba(${col},0)`); g.addColorStop(0.45, `rgba(${col},${0.09 - k * 0.03})`); g.addColorStop(1, `rgba(${col},0)`);
+            c.fillStyle = g;
+            c.beginPath();
+            c.moveTo(-8, y0 + 30);
+            for (let x = -8; x <= w + 8; x += 8) c.lineTo(x, y0 + Math.sin(x / (w * 0.18) + s * (0.12 + k * 0.05) + k * 2) * 9 + Math.sin(x / 30 + s * 0.3) * 2);
+            c.lineTo(w + 8, y0 + 30);
+            c.closePath(); c.fill();
+          }
+        }
+        ctx.drawImage(aur[0], -px * 14, 0, W, H);
+      }
+      ctx.fillStyle = pal.light ? '#7f93b8' : '#ffffff';
+      for (const st of stars) {
+        const a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(s * st.tw + st.ph));
+        ctx.globalAlpha = pal.light ? a * 0.35 : a * 0.85;
+        ctx.fillRect(st.x - px * 4 - st.r / 2, st.y - py * 3 - st.r / 2, st.r, st.r);
+      }
+      ctx.globalAlpha = 1;
+      for (const L of layers) ctx.drawImage(L.cv, -40 - px * 18 * L.depth, L.top - py * 8 * L.depth, L.w, L.h);
+    }
+  };
+}
+
+const SCENES = { player: orbs, nicks: nametags, leaderboards: pillars, download: portal, tracker: radar, unlock: glyphs, winter,
+  // Pages without a scene of their own: nothing, until Christmas brings the winter night.
+  plain: () => ({ idle: true, init() {}, frame() {} }) };
 
 export function startBackdrop(kind) {
   if (typeof window === 'undefined' || !SCENES[kind] || document.getElementById('backdrop')) return;
@@ -347,9 +496,15 @@ export function startBackdrop(kind) {
   cv.id = 'backdrop';
   cv.dataset.kind = kind;
   cv.setAttribute('aria-hidden', 'true');
+  // Inline too, so pages without base.css (atlas, cosmetics, recordings) get it right.
+  Object.assign(cv.style, { position: 'fixed', inset: '0', zIndex: '-1', pointerEvents: 'none' });
   document.body.prepend(cv);
   const ctx = cv.getContext('2d');
-  const scene = SCENES[kind]();
+  // The Christmas look swaps every page's scene for the winter night.
+  const own = SCENES[kind]();
+  let wint = null;
+  const pick = () => (season.value === 'christmas' ? (wint || (wint = winter())) : own);
+  let scene = pick();
   let W = 0, H = 0, dpr = 1, raf = 0, last = 0, pal = palette();
   const P = { x: -9999, y: -9999, on: false };
 
@@ -370,6 +525,7 @@ export function startBackdrop(kind) {
     if (document.hidden || cv.hidden) return;
     const dt = Math.min(0.05, last ? (t - last) / 1000 : 0.016);
     last = t;
+    if (scene.idle) return;
     draw(t, dt);
     if (!reduce()) raf = requestAnimationFrame(frame);
   }
@@ -379,6 +535,10 @@ export function startBackdrop(kind) {
     cancelAnimationFrame(raf); raf = 0; last = 0;
     if (!on) return;
     pal = palette();
+    const next = pick();
+    if (next !== scene) { scene = next; scene.init(W, H); }
+    cv.dataset.kind = scene === own ? kind : 'winter';
+    if (scene.idle) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); return; }
     if (reduce()) draw(performance.now(), 0.016);
     else raf = requestAnimationFrame(frame);
   }
@@ -393,5 +553,6 @@ export function startBackdrop(kind) {
   addEventListener('pointerup', e => { if (e.pointerType === 'touch') P.on = false; });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) apply(); });
   prefs.subscribe(() => requestAnimationFrame(apply));
+  season.subscribe(() => requestAnimationFrame(apply));
   apply();
 }

@@ -39,6 +39,7 @@ const P = {
   bed: <><path d="M3 18v-7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7M3 14h18M3 18v2M21 18v2" /><circle cx="7.5" cy="11.5" r="1.5" /></>,
   sword: <path d="M14.5 3H21v6.5L9 21l-3-3-3 3M6 18l-3-3 12-12M5 15l4 4" />,
   check: <path d="m5 12 5 5 9-10" />,
+  command: <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />,
   target: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.2" /></>,
   download: <><path d="M12 3v12M7 10l5 5 5-5" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></>,
   code: <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />

@@ -5,6 +5,7 @@ import { Icon } from './icons.jsx';
 import { Settings } from './Settings.jsx';
 import { KeyDialog, checkKey } from './KeyDialog.jsx';
 import { PlayerSearch } from './PlayerSearch.jsx';
+import { Palette, PaletteButton, installPaletteKey } from './Palette.jsx';
 import { SECTIONS, currentPage } from '../lib/site.js';
 import { siteKey, keyOwner, keyDialog } from '../lib/key.js';
 import { toasts } from '../lib/toast.js';
@@ -62,6 +63,7 @@ export function Shell({ children, wide = false, search = true, bg = null }) {
   const searchRef = useRef(null);
 
   useEffect(() => { checkKey(); }, [key]);
+  useEffect(() => { installPaletteKey(); }, []);
   useEffect(() => { document.documentElement.dataset.page = bg || 'none'; if (bg && bg !== 'none') startBackdrop(bg); }, []);
   // The holiday look: loaded only while it's on.
   const holiday = useSignal(season);
@@ -96,6 +98,7 @@ export function Shell({ children, wide = false, search = true, bg = null }) {
           </nav>
           <div class="head-tools">
             {search && <div class="head-search"><PlayerSearch inputRef={searchRef} /></div>}
+            <PaletteButton />
             <button type="button" class={`btn icon ghost key-btn ${unlocked ? 'on' : ''}`} onClick={() => setKeyOpen(true)}
               aria-label={unlocked ? `Key: unlocked as ${owner}` : 'Enter key'} title={unlocked ? `Unlocked as ${owner}` : 'Enter key'}>
               <Icon name={unlocked ? 'unlock' : 'key'} />
@@ -117,6 +120,7 @@ export function Shell({ children, wide = false, search = true, bg = null }) {
         )}
       </header>
       <main id="main" tabIndex={-1}>{children}</main>
+      <Palette unlocked={unlocked} />
       <footer class="site-foot">
         <div class={`wrap ${wide ? 'wide' : ''} foot-row`}>
           <a class="brand small" href="index.html"><Logo size={20} /><span>Prism</span></a>

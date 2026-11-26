@@ -72,24 +72,22 @@ function usePrism(canvas, spot, cards, left) {
       const narrow = innerWidth <= 980;
       const els = cards.current.filter(Boolean);
       const first = els[0] && els[0].getBoundingClientRect();
-      let size, x, y, source, targets;
+      let size, x, y, targets;
       if (narrow) {
         // Phones: the prism between the words and the stacked cards, beams into the first card's top.
         size = Math.max(90, Math.min(sp.height * 0.9, sp.width * 0.5, 230));
         x = sp.left + sp.width / 2; y = sp.top + sp.height * 0.5;
-        source = { x: -40, y: y - size * 0.5 };
         targets = els.map((el, i) => ({ x: first.left + first.width * ((i + 0.8) / (els.length + 0.6)), y: first.top + 1 }));
       } else {
         // Desktop: the prism top right, the cards in a row below. The white
-        // light falls from above the words and the colours fan down into the
-        // top of each card, nearer its middle the closer it is.
+        // light comes in from the right and the colours fan down out of the
+        // base into the top of each card.
         size = Math.max(120, Math.min(sp.height * 0.8, sp.width * 0.5, 240));
         x = sp.left + sp.width / 2; y = sp.top + sp.height * 0.48;
-        source = { x: x - size * 2.2, y: -80 };
         // Keep every beam off the words: slide its landing point along the
         // card's top edge until the line from the glass misses the text.
         const words = [...left.current.querySelectorAll('.kicker, .hero-title, .hero-sub, .hero-search, .people-row h2, .people-row li')].map(el => el.getBoundingClientRect()).filter(r => r.height);
-        const bx = x, by = y + size * 0.3;
+        const bx = x - size * 0.1, by = y + size * 0.32;
         const hits = (tx, ty) => {
           for (let k = 1; k < 24; k++) {
             const px = bx + (tx - bx) * (k / 24), py = by + (ty - by) * (k / 24);
@@ -105,7 +103,7 @@ function usePrism(canvas, spot, cards, left) {
         });
       }
       for (let i = 0; i < hot.current.length; i++) hot.current[i] += (hotT.current[i] - hot.current[i]) * 0.1;
-      return { prism: { x, y, size }, targets, hot: hot.current, source };
+      return { prism: { x, y, size }, targets, hot: hot.current };
     };
     function start() {
       if (scene || dead) return;

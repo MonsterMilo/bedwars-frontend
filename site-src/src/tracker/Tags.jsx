@@ -1,5 +1,5 @@
 // Cheater tags from blacklists, each with where it came from (Urchin only
-// for key holders, Astrus rollup, Aurora, Xadia).
+// for key holders, Astrus rollup, Aurora, Xadia, Zumo).
 import { Icon } from '../ui/icons.jsx';
 import { get } from '../lib/api.js';
 import { useAsync } from '../lib/useAsync.js';
@@ -14,7 +14,7 @@ export function tagTime(at) {
   const p = Date.parse(at);
   return Number.isNaN(p) ? null : p;
 }
-const SRC_CLASS = { urchin: 'src-urchin', aurora: 'src-aurora', xadia: 'src-xadia', astrus: 'src-astrus', antisniper: 'src-antisniper' };
+const SRC_CLASS = { urchin: 'src-urchin', aurora: 'src-aurora', xadia: 'src-xadia', astrus: 'src-astrus', antisniper: 'src-antisniper', zumo: 'src-zumo' };
 export const srcClass = s => SRC_CLASS[String(s || '').toLowerCase()] || 'src-other';
 
 export function TagList({ uuid, compact = false }) {

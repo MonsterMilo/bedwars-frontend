@@ -88,7 +88,7 @@ html[data-effects="off"] .he-ring, html[data-motion="reduce"] .he-ring { animati
 
 /* Tag source badge (Urchin, Aurora, Xadia, ...) */
 .t-src { --s: var(--dim); padding: 1px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--s); background: color-mix(in srgb, var(--s) 13%, transparent); border: 1px solid color-mix(in srgb, var(--s) 35%, transparent); }
-.t-src.src-urchin { --s: #ff6b81; } .t-src.src-aurora { --s: #4be3a8; } .t-src.src-xadia { --s: #b79bff; } .t-src.src-astrus { --s: #7fc8ff; } .t-src.src-antisniper { --s: #ffc46b; }
+.t-src.src-urchin { --s: #ff6b81; } .t-src.src-aurora { --s: #4be3a8; } .t-src.src-xadia { --s: #b79bff; } .t-src.src-astrus { --s: #7fc8ff; } .t-src.src-antisniper { --s: #ffc46b; } .t-src.src-zumo { --s: #ff5fa8; }
 .tag-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
 /* progress bar (star XP, guild level) */
 .xp-bar { position: relative; height: 10px; border-radius: 999px; background: color-mix(in srgb, var(--bg) 70%, var(--panel-2)); border: 1px solid var(--line-2); overflow: hidden; }
